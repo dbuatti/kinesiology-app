@@ -67,7 +67,7 @@ const NotionSettings = () => {
   };
 
   return (
-    <Card className="border-none shadow-xl rounded-[2.5rem] bg-white dark:bg-slate-950 overflow-hidden border-2 border-purple-100">
+    <Card className="border-none shadow-xl rounded-[2.5rem] bg-card overflow-hidden border-2 border-purple-100 dark:border-purple-900/30">
       <CardHeader className="p-8 pb-4 bg-purple-50/50">
         <CardTitle className="text-xl font-black flex items-center gap-3 text-purple-900">
           <Layers size={24} /> Notion Database Sync

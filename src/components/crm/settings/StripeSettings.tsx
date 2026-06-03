@@ -42,7 +42,7 @@ const StripeSettings = () => {
   };
 
   return (
-    <Card className="border-none shadow-xl rounded-[2.5rem] bg-white dark:bg-slate-950 overflow-hidden border-2 border-indigo-100">
+    <Card className="border-none shadow-xl rounded-[2.5rem] bg-card overflow-hidden border-2 border-indigo-100 dark:border-indigo-900/30">
       <CardHeader className="p-8 pb-4 bg-indigo-50/50">
         <CardTitle className="text-xl font-black flex items-center gap-3 text-indigo-900">
           <CreditCard size={24} /> Stripe Clinical Payments

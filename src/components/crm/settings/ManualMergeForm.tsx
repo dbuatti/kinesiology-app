@@ -49,7 +49,7 @@ const ManualMergeForm = ({
         <div className="space-y-2">
           <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Duplicate Client (To Remove)</label>
           <Select value={sourceClientId} onValueChange={setSourceClientId} disabled={loadingClients || merging}>
-            <SelectTrigger className="h-12 rounded-xl font-bold bg-slate-50 border-slate-200">
+            <SelectTrigger className="h-12 rounded-xl font-bold bg-muted/40 border-border">
               <SelectValue placeholder={loadingClients ? "Loading..." : "Select duplicate..."} />
             </SelectTrigger>
             <SelectContent className="max-h-[250px]">
@@ -63,7 +63,7 @@ const ManualMergeForm = ({
         <div className="space-y-2">
           <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Primary Client (To Keep)</label>
           <Select value={targetClientId} onValueChange={setTargetClientId} disabled={loadingClients || merging}>
-            <SelectTrigger className="h-12 rounded-xl font-bold bg-slate-50 border-slate-200">
+            <SelectTrigger className="h-12 rounded-xl font-bold bg-muted/40 border-border">
               <SelectValue placeholder={loadingClients ? "Loading..." : "Select primary..."} />
             </SelectTrigger>
             <SelectContent className="max-h-[250px]">

@@ -364,7 +364,7 @@ const DuplicateResolutionCenter = () => {
   };
 
   return (
-    <Card className="border-none shadow-xl rounded-[2.5rem] bg-white dark:bg-slate-950 overflow-hidden border-2 border-amber-100">
+    <Card className="border-none shadow-xl rounded-[2.5rem] bg-card overflow-hidden border-2 border-amber-100 dark:border-amber-900/30">
       <CardHeader className="p-8 pb-4 bg-amber-50/50">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
@@ -405,7 +405,7 @@ const DuplicateResolutionCenter = () => {
           onAutoMerge={handleAutoMergeGroup}
         />
 
-        <div className="h-px bg-slate-100 dark:bg-slate-800" />
+        <div className="h-px bg-border" />
 
         <ManualMergeForm 
           clients={clients}

@@ -33,23 +33,23 @@ const SettingsActionCard = ({
   };
 
   const buttonColors = {
-    purple: 'bg-purple-600 hover:bg-purple-700 shadow-purple-100',
-    indigo: 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100',
-    emerald: 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-100',
-    amber: 'bg-amber-500 hover:bg-amber-600 shadow-amber-100',
-    rose: 'bg-rose-600 hover:bg-rose-700 shadow-rose-100'
+    purple: 'bg-purple-600 hover:bg-purple-700',
+    indigo: 'bg-indigo-600 hover:bg-indigo-700',
+    emerald: 'bg-emerald-600 hover:bg-emerald-700',
+    amber: 'bg-amber-500 hover:bg-amber-600',
+    rose: 'bg-rose-600 hover:bg-rose-700'
   };
 
   return (
     <div className={cn(
-      "p-6 bg-white dark:bg-slate-900 rounded-3xl border space-y-4 flex flex-col justify-between h-full",
+      "p-6 bg-card rounded-3xl border space-y-4 flex flex-col justify-between h-full",
       borderColors[themeColor]
     )}>
       <div className="space-y-1">
-        <h4 className="font-black text-slate-900 dark:text-white text-sm uppercase tracking-tight">
+        <h4 className="font-black text-foreground text-sm uppercase tracking-tight">
           {title}
         </h4>
-        <p className="text-xs text-slate-500 leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           {description}
         </p>
       </div>

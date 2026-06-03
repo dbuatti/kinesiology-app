@@ -85,8 +85,8 @@ const MergeConflictDialog = ({
 
           <div className="space-y-6">
             {/* Side-by-side comparison */}
-            <div className="border border-slate-200 rounded-2xl overflow-hidden">
-              <div className="grid grid-cols-3 bg-slate-50 border-b border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-500 p-3">
+            <div className="border border-border rounded-2xl overflow-hidden">
+              <div className="grid grid-cols-3 bg-muted/40 border-b border-border text-[10px] font-black uppercase tracking-widest text-muted-foreground p-3">
                 <div>Field</div>
                 <div>Primary (Keep)</div>
                 <div>Duplicate (Merge & Delete)</div>
@@ -116,7 +116,7 @@ const MergeConflictDialog = ({
                           "p-2 rounded-xl text-left border transition-all",
                           activeMerge.fields[field] === valPrimary
                             ? "border-indigo-600 bg-indigo-50/50 font-bold text-indigo-900"
-                            : "border-slate-100 hover:border-slate-200 text-slate-600"
+                            : "border-border hover:border-primary/40 text-muted-foreground"
                         )}
                       >
                         {displayValue(valPrimary)}
@@ -130,7 +130,7 @@ const MergeConflictDialog = ({
                           "p-2 rounded-xl text-left border transition-all",
                           activeMerge.fields[field] === valDuplicate
                             ? "border-indigo-600 bg-indigo-50/50 font-bold text-indigo-900"
-                            : "border-slate-100 hover:border-slate-200 text-slate-600"
+                            : "border-border hover:border-primary/40 text-muted-foreground"
                         )}
                       >
                         {displayValue(valDuplicate)}
@@ -142,8 +142,8 @@ const MergeConflictDialog = ({
             </div>
 
             {/* Custom Edit Area for Merged Fields */}
-            <div className="space-y-4 p-5 bg-slate-50 rounded-2xl border border-slate-200">
-              <h4 className="text-xs font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
+            <div className="space-y-4 p-5 bg-muted/40 rounded-2xl border border-border">
+              <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                 <Edit3 size={14} /> Edit Merged Values
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

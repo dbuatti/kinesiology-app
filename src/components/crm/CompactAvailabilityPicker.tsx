@@ -102,8 +102,8 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
           <Loader2 className="absolute inset-0 m-auto w-8 h-8 text-indigo-600 animate-spin" />
         </div>
         <div className="space-y-1">
-          <p className="text-sm font-bold text-slate-900">Syncing Availability</p>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Checking Cal.com...</p>
+          <p className="text-sm font-bold text-foreground">Syncing Availability</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Checking Cal.com...</p>
         </div>
       </div>
     );
@@ -125,19 +125,19 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-500">
       {/* Date Scroller */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between px-1">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Available Days</p>
-          <Badge variant="outline" className="text-[8px] font-black border-slate-200 text-slate-400 uppercase tracking-widest">
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Available Days</p>
+          <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest">
             Next 30 Days
           </Badge>
         </div>
-        
+
         {availableDates.length > 0 ? (
-          <ScrollArea className="w-full whitespace-nowrap pb-4">
-            <div className="flex gap-3 px-1">
+          <ScrollArea className="w-full whitespace-nowrap">
+            <div className="flex gap-2.5 pb-2">
               {availableDates.map((date) => {
                 const isActive = selectedDate && isSameDay(date, selectedDate);
                 return (
@@ -145,19 +145,19 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
                     key={date.toISOString()}
                     onClick={() => setSelectedDate(date)}
                     className={cn(
-                      "flex flex-col items-center justify-center min-w-[80px] h-24 rounded-[1.5rem] border-2 transition-all duration-300",
-                      isActive 
-                        ? "bg-indigo-600 border-indigo-600 text-white shadow-xl scale-105 z-10" 
-                        : "bg-white border-slate-100 hover:border-indigo-200 text-slate-600"
+                      "flex flex-col items-center justify-center min-w-[72px] h-20 rounded-2xl border-2 transition-all duration-200 shrink-0",
+                      isActive
+                        ? "bg-indigo-600 border-indigo-600 text-white shadow-lg scale-105"
+                        : "bg-card border-border hover:border-indigo-300 dark:hover:border-indigo-700 text-foreground"
                     )}
                   >
-                    <span className="text-[9px] font-black uppercase tracking-widest mb-1 opacity-60">
+                    <span className="text-[9px] font-black uppercase tracking-wider opacity-60">
                       {format(date, "EEE")}
                     </span>
-                    <span className="text-2xl font-black leading-none">
+                    <span className="text-xl font-black leading-tight">
                       {format(date, "d")}
                     </span>
-                    <span className="text-[8px] font-bold mt-2 opacity-40 uppercase">
+                    <span className="text-[8px] font-bold opacity-40 uppercase">
                       {format(date, "MMM")}
                     </span>
                   </button>
@@ -167,29 +167,29 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
         ) : (
-          <div className="py-12 bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 text-center px-8">
-            <CalendarDays className="mx-auto text-slate-300 mb-4" size={40} />
-            <h3 className="text-lg font-bold text-slate-900">No availability found</h3>
-            <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-              There are no open slots in the next 30 days. Please check your schedule in Cal.com.
+          <div className="py-10 bg-muted/30 rounded-2xl border-2 border-dashed border-border text-center px-6">
+            <CalendarDays className="mx-auto text-muted-foreground/30 mb-3" size={36} />
+            <p className="text-sm font-bold text-foreground">No availability found</p>
+            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+              No open slots in the next 30 days. Check your schedule in Cal.com.
             </p>
           </div>
         )}
       </div>
 
-      {/* Slots Area */}
+      {/* Slots Grid */}
       {selectedDate && (
-        <div className="space-y-4 animate-in slide-in-from-top-2 duration-500">
-          <div className="flex items-center justify-between px-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
+        <div className="space-y-3 animate-in fade-in duration-300">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
               Times for {format(selectedDate, "EEEE, MMMM do")}
             </p>
-            <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-              {currentDaySlots.length} Slots
+            <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+              {currentDaySlots.length} slots
             </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             {currentDaySlots.map((slot, idx) => {
               const timeStr = slot.time || slot.start;
               const dateObj = parseISO(timeStr);
@@ -197,9 +197,9 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
                 <button
                   key={idx}
                   onClick={() => onSlotSelect(dateObj, format(dateObj, "HH:mm"), timeStr)}
-                  className="flex items-center justify-center p-4 rounded-2xl bg-white border border-slate-100 text-xs font-black text-slate-900 hover:bg-indigo-600 hover:border-indigo-600 hover:text-white transition-all group shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                  className="flex items-center justify-center gap-2 p-3.5 rounded-xl bg-card border border-border text-sm font-black text-foreground hover:bg-indigo-600 hover:border-indigo-600 hover:text-white transition-all group shadow-sm"
                 >
-                  <Clock size={14} className="mr-2 opacity-30 group-hover:opacity-100 transition-opacity" />
+                  <Clock size={13} className="opacity-40 group-hover:opacity-100 transition-opacity shrink-0" />
                   {format(dateObj, "h:mm a")}
                 </button>
               );
@@ -208,12 +208,10 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
         </div>
       )}
 
-      <div className="p-5 bg-indigo-50 rounded-[2rem] border-2 border-indigo-100 flex items-start gap-4">
-        <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-indigo-600 shadow-sm shrink-0">
-          <Info size={20} />
-        </div>
-        <p className="text-xs text-indigo-900 font-medium leading-relaxed">
-          <strong>Clinical Workflow:</strong> Selecting a slot will automatically prepare the booking form. You can still override the time manually if the client needs a specific off-grid adjustment.
+      <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 flex items-start gap-3">
+        <Info size={16} className="text-primary shrink-0 mt-0.5" />
+        <p className="text-xs text-foreground/80 font-medium leading-relaxed">
+          <strong>Clinical Workflow:</strong> Selecting a slot prepares the booking form automatically. You can still override the time for off-grid adjustments.
         </p>
       </div>
     </div>

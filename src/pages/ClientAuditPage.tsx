@@ -70,6 +70,7 @@ import { Client, Appointment } from "@/types/crm";
 import AppointmentForm from "@/components/crm/AppointmentForm";
 import { ClientRow } from "@/components/crm/settings/ClientRow";
 import TimetableVisualizer from "@/components/crm/settings/TimetableVisualizer";
+import RoadmapTasks from "@/components/crm/settings/RoadmapTasks";
 
 interface ClientWithAppointments extends Client {
   appointments: Appointment[];
@@ -2097,6 +2098,9 @@ export default function ClientAuditPage() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Action Plan Tasks */}
+              <RoadmapTasks rateDistribution={rateDistribution} averageSessionRate={averageSessionRate} />
 
               {/* Transition Roadmap & Value-Add Strategies */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

@@ -3,11 +3,11 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { format, formatDistanceToNow, differenceInMonths } from "date-fns";
-import { 
+import {
   Mail, Phone, CalendarPlus, Clock, CreditCard, ArrowRight,
   Check, X, Trash2, Loader2, Send, RefreshCw, AlertTriangle, Flame,
   MoreHorizontal, CalendarPlus as CalendarPlusIcon, Edit2, Users,
-  MessageSquare, CheckCircle2, Copy, Sparkles, ArrowUpRight, Lock
+  MessageSquare, CheckCircle2, Copy, Sparkles, ArrowUpRight, Lock, PhoneCall
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -288,6 +288,22 @@ Daniele`;
     setCopiedReengagementEmail(true);
     showSuccess("Re-engagement email copied to clipboard!");
     setTimeout(() => setCopiedReengagementEmail(false), 2000);
+  };
+
+  const handleLogContact = async () => {
+    setUpdatingStatus(true);
+    try {
+      const now = new Date().toISOString();
+      const updatedJournal = stringifyClientJournal({ ...journalData, last_contacted_at: now });
+      const { error } = await supabase.from('clients').update({ journal: updatedJournal }).eq('id', client.id);
+      if (error) throw error;
+      showSuccess(`Contact logged for ${client.name}.`);
+      onRefresh();
+    } catch {
+      showError("Failed to log contact.");
+    } finally {
+      setUpdatingStatus(false);
+    }
   };
 
   const handleMarkReengagementContacted = async () => {
@@ -726,6 +742,24 @@ Daniele`;
               </Tooltip>
             </TooltipProvider>
           )}
+
+          {/* Log Contact */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleLogContact}
+                  disabled={updatingStatus}
+                  className="h-8 w-8 rounded-xl text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-950/30"
+                >
+                  {updatingStatus ? <Loader2 size={14} className="animate-spin" /> : <PhoneCall size={14} />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="rounded-xl font-bold text-xs p-2">Log Contact (resets follow-up grace)</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
           {/* Quick Book */}
           <TooltipProvider>

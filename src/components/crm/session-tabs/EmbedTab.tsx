@@ -173,7 +173,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
       <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-          <p className="text-xs font-bold text-emerald-900 dark:text-emerald-100 uppercase tracking-tight">Session in Progress — Findings can be edited until finalized.</p>
+          <p className="text-xs font-bold text-emerald-900 dark:text-emerald-100 uppercase tracking-tight">Session in Progress — Findings can be edited until finalised.</p>
         </div>
         <Badge variant="outline" className="bg-white border-emerald-200 text-emerald-600 font-black text-[8px] uppercase tracking-widest">Active Window</Badge>
       </div>
@@ -201,26 +201,29 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
                 <Plus size={20} className="mr-2" /> Book Next Session
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-[3rem] p-0 mx-4 w-[calc(100%-2rem)]">
-              <div className="p-10 pb-14">
-                <DialogHeader className="mb-8">
-                  <div className="flex items-center gap-4 mb-2">
-                    <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xl">
-                      <CalendarPlus size={28} />
+            <DialogContent className="sm:max-w-[600px] rounded-[2.5rem] p-0 mx-4 w-[calc(100%-2rem)] flex flex-col max-h-[90vh]">
+              {/* Fixed header */}
+              <div className="px-8 pt-8 pb-5 border-b border-border shrink-0">
+                <DialogHeader>
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shrink-0">
+                      <CalendarPlus size={22} />
                     </div>
                     <div>
-                      <DialogTitle className="text-3xl font-black">
+                      <DialogTitle className="text-2xl font-black">
                         {selectedSlot ? "Confirm Booking" : "Select Available Time"}
                       </DialogTitle>
-                      <DialogDescription className="text-base font-medium">
-                        {selectedSlot 
-                          ? `Finalize details for ${appointment.clients.name}.`
-                          : `Live availability for ${appointment.clients.name}.`
-                        }
+                      <DialogDescription className="text-sm font-medium">
+                        {selectedSlot
+                          ? `Finalise details for ${appointment.clients.name}.`
+                          : `Live availability for ${appointment.clients.name}.`}
                       </DialogDescription>
                     </div>
                   </div>
                 </DialogHeader>
+              </div>
+              {/* Scrollable body */}
+              <div className="overflow-y-auto flex-1 px-8 py-6">
 
                 {selectedSlot ? (
                   <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
@@ -263,7 +266,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
                     onSlotSelect={(date, time, slotTime) => setSelectedSlot({ date, time, slotTime })}
                   />
                 )}
-              </div>
+              </div>{/* end scrollable body */}
             </DialogContent>
           </Dialog>
         </div>

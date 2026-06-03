@@ -85,7 +85,7 @@ const AppRoutes = () => {
           A
         </div>
         <div className="flex items-center gap-2 text-muted-foreground font-black text-[10px] uppercase tracking-[0.3em]">
-          <Loader2 className="animate-spin" size={14} /> Initializing Practice
+          <Loader2 className="animate-spin" size={14} /> Initialising Practice
         </div>
       </div>
     );

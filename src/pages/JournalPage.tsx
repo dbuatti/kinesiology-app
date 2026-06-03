@@ -176,7 +176,7 @@ const JournalPage = () => {
 
       if (error) throw error;
 
-      showSuccess("Journal entry saved. Analyzing for insights...");
+      showSuccess("Journal entry saved. Analysing for insights...");
       setContent("");
       if (data) handleAnalyze(data);
       fetchData();
@@ -221,7 +221,7 @@ const JournalPage = () => {
   const handleScanAll = async () => {
     const unanalyzed = reflections.filter(r => !r.ai_extractions || r.ai_extractions.length === 0);
     if (unanalyzed.length === 0) {
-      showSuccess("All entries have already been analyzed.");
+      showSuccess("All entries have already been analysed.");
       return;
     }
 

@@ -80,7 +80,7 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
 
       if (error) throw error;
 
-      showSuccess("Reflection saved. Analyzing...");
+      showSuccess("Reflection saved. Analysing...");
       setContent("");
       if (data) handleAnalyze(data);
       fetchReflections();

@@ -246,7 +246,7 @@ const CalcomSlotsView = () => {
         throw new Error("Client not found in CRM. Please ensure they have been synced.");
       }
 
-      const { error: fnError } = await supabase.functions.invoke('create-calcom-booking', {
+      const { data: fnData, error: fnError } = await supabase.functions.invoke('create-calcom-booking', {
         body: {
           bookingUid: rescheduleBooking.uid,
           clientId: client.id,
@@ -257,10 +257,14 @@ const CalcomSlotsView = () => {
 
       if (fnError) throw fnError;
 
-      // Update the date in the local appointments table
+      // Cal.com reschedule creates a new uid — update both date and calcom_booking_id
+      const newUid = fnData?.uid || rescheduleBooking.uid;
       await supabase
         .from('appointments')
-        .update({ date: new Date(newSlotTime).toISOString() })
+        .update({
+          date: new Date(newSlotTime).toISOString(),
+          calcom_booking_id: newUid,
+        })
         .eq('calcom_booking_id', rescheduleBooking.uid);
 
       showSuccess(`${rescheduleBooking.attendeeName} rescheduled to ${format(new Date(newSlotTime), "EEE MMM d 'at' h:mm a")}`);

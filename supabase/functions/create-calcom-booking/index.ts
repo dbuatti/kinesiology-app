@@ -56,40 +56,35 @@ serve(async (req) => {
       'Content-Type': 'application/json',
     };
 
-    // 2. Update existing booking if UID provided
+    // 2. Reschedule existing booking if UID provided (Cal.com v2 uses POST /reschedule)
     if (bookingUid && bookingUid !== "undefined" && bookingUid !== "null" && bookingUid !== "") {
-      console.log(`[${functionName}] Action: UPDATE booking ${bookingUid}`);
-      
-      const res = await fetch(`https://api.cal.com/v2/bookings/${bookingUid}`, {
-        method: "PATCH",
+      console.log(`[${functionName}] Action: RESCHEDULE booking ${bookingUid} → ${cleanStartTime}`);
+
+      const res = await fetch(`https://api.cal.com/v2/bookings/${bookingUid}/reschedule`, {
+        method: "POST",
         headers,
         body: JSON.stringify({
           start: cleanStartTime,
-          metadata: { 
-            crm_title: title, 
-            crm_notes: notes, 
-            is_paid: String(isPaidBool) 
-          }
+          reschedulingReason: "Rescheduled via Antigravity CRM",
         }),
       });
 
       const result = await res.json();
+      console.log(`[${functionName}] Reschedule response status: ${res.status}`, JSON.stringify(result).slice(0, 300));
 
       if (res.ok) {
-        console.log(`[${functionName}] Update successful for ${bookingUid}`);
-        return new Response(JSON.stringify({ success: true, uid: bookingUid, data: result.data }), { 
-          status: 200, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        // Cal.com creates a new booking uid for the rescheduled slot and cancels the old one
+        const newUid = result.data?.uid || bookingUid;
+        console.log(`[${functionName}] Reschedule successful. New uid: ${newUid}`);
+        return new Response(JSON.stringify({ success: true, uid: newUid, data: result.data }), {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
-      if (res.status !== 404) {
-        const errorMsg = result.error?.message || result.message || "Failed to update Cal.com booking";
-        throw new Error(`Cal.com Update Error: ${errorMsg}`);
-      }
-      
-      console.warn(`[${functionName}] Booking ${bookingUid} not found on Cal.com. Proceeding to CREATE new.`);
-    } 
+      const errorMsg = result.error?.message || result.message || "Failed to reschedule Cal.com booking";
+      throw new Error(`Cal.com Reschedule Error (${res.status}): ${errorMsg}`);
+    }
     
     // 3. Create new booking
     console.log(`[${functionName}] Action: CREATE new booking`);

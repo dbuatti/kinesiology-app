@@ -72,12 +72,27 @@ import {
   Zap,
   Edit3,
 } from "lucide-react";
-import { format, formatDistanceToNow, differenceInMonths, startOfWeek, endOfWeek } from "date-fns";
+import { format, formatDistanceToNow, differenceInMonths, startOfWeek, endOfWeek, startOfMonth } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
 import AppointmentForm from "@/components/crm/AppointmentForm";
 import { ClientRow } from "@/components/crm/settings/ClientRow";
 import TimetableVisualizer from "@/components/crm/settings/TimetableVisualizer";
 import RoadmapTasks from "@/components/crm/settings/RoadmapTasks";
+
+// ── Income stream types & defaults (outside component to avoid re-creation) ──
+interface IncomeStream {
+  id: string; name: string; unitLabel: string;
+  ratePerUnit: number; unitsPerMonth: number; enabled: boolean;
+}
+const DEFAULT_EXTRA_STREAMS: IncomeStream[] = [
+  { id: 'voice',     name: 'Voice Coaching',  unitLabel: 'sessions', ratePerUnit: 80,  unitsPerMonth: 3, enabled: true },
+  { id: 'corporate', name: 'Corporate Gigs',   unitLabel: 'gigs',     ratePerUnit: 350, unitsPerMonth: 1, enabled: true },
+  { id: 'theatre',   name: 'Musical Theatre',  unitLabel: 'shows',    ratePerUnit: 200, unitsPerMonth: 1, enabled: true },
+  { id: 'piano',     name: 'Piano Backings',   unitLabel: 'sessions', ratePerUnit: 80,  unitsPerMonth: 4, enabled: true },
+];
+const STREAM_ICONS: Record<string, React.ElementType> = {
+  fnh: Brain, voice: Mic2, corporate: Building2, theatre: Theater, piano: Music2,
+};
 
 interface ClientWithAppointments extends Client {
   appointments: Appointment[];
@@ -195,20 +210,13 @@ export default function ClientAuditPage() {
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
 
   // Income streams & weekly calculator
-  interface IncomeStream { id: string; name: string; ratePerUnit: number; unitsPerMonth: number; enabled: boolean; }
-  const DEFAULT_EXTRA_STREAMS: IncomeStream[] = [
-    { id: 'voice',     name: 'Voice Coaching',  ratePerUnit: 80,  unitsPerMonth: 3, enabled: true },
-    { id: 'corporate', name: 'Corporate Gigs',   ratePerUnit: 350, unitsPerMonth: 1, enabled: true },
-    { id: 'theatre',   name: 'Musical Theatre',  ratePerUnit: 200, unitsPerMonth: 1, enabled: true },
-    { id: 'piano',     name: 'Piano Backings',   ratePerUnit: 80,  unitsPerMonth: 4, enabled: true },
-  ];
   const [extraStreams, setExtraStreams] = useState<IncomeStream[]>(() => {
     try { const s = localStorage.getItem('income_streams_v1'); return s ? JSON.parse(s) : DEFAULT_EXTRA_STREAMS; }
     catch { return DEFAULT_EXTRA_STREAMS; }
   });
   const [weeklyTarget, setWeeklyTarget] = useState<number>(() => parseInt(localStorage.getItem('weekly_target') || '700'));
   const [editingWeeklyTarget, setEditingWeeklyTarget] = useState(false);
-  const [weeklyTargetInput, setWeeklyTargetInput] = useState('700');
+  const [weeklyTargetInput, setWeeklyTargetInput] = useState(() => localStorage.getItem('weekly_target') || '700');
 
   const updateStream = (id: string, field: keyof IncomeStream, value: any) => {
     setExtraStreams(prev => {
@@ -966,25 +974,31 @@ export default function ClientAuditPage() {
     };
   }, [clients, isSandboxActive, globalSimRate, globalSimFrequency, clientOverrides]);
 
-  // This week's revenue (Mon–Sun, from loaded appointment data)
-  const thisWeekRevenue = useMemo(() => {
-    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-    const weekEnd   = endOfWeek(new Date(), { weekStartsOn: 1 });
-    let total = 0;
-    clients.forEach(c => c.appointments.forEach(app => {
-      const d = new Date(app.date);
-      if (d >= weekStart && d <= weekEnd) total += Number(app.price_amount) || 0;
-    }));
-    return total;
+  // Weekly & monthly revenue — uses price_amount when set, falls back to client standard_rate
+  const { thisWeekRevenue, thisWeekSessions, thisMonthRevenue, thisMonthSessions, daysLeftInWeek } = useMemo(() => {
+    const now = new Date();
+    const weekStart  = startOfWeek(now, { weekStartsOn: 1 });
+    const weekEnd    = endOfWeek(now, { weekStartsOn: 1 });
+    const monthStart = startOfMonth(now);
+    let weekRev = 0, weekCount = 0, monthRev = 0, monthCount = 0;
+    clients.forEach(c => {
+      const rate = c.standard_rate ?? 50;
+      c.appointments.forEach(app => {
+        const d = new Date(app.date);
+        const earned = Number(app.price_amount) > 0 ? Number(app.price_amount) : rate;
+        if (d >= weekStart && d <= weekEnd)  { weekRev  += earned; weekCount++; }
+        if (d >= monthStart && d <= now)      { monthRev += earned; monthCount++; }
+      });
+    });
+    // Days remaining Mon(1)–Sun(7); if today is Sun, 0 days left
+    const todayDow = now.getDay(); // 0=Sun,1=Mon…6=Sat
+    const daysLeft = todayDow === 0 ? 0 : 7 - todayDow;
+    return { thisWeekRevenue: weekRev, thisWeekSessions: weekCount, thisMonthRevenue: monthRev, thisMonthSessions: monthCount, daysLeftInWeek: daysLeft };
   }, [clients]);
 
   const extraStreamsMonthly = useMemo(() =>
     extraStreams.filter(s => s.enabled).reduce((sum, s) => sum + s.ratePerUnit * s.unitsPerMonth, 0),
   [extraStreams]);
-
-  const STREAM_ICONS: Record<string, React.ElementType> = {
-    fnh: Brain, voice: Mic2, corporate: Building2, theatre: Theater, piano: Music2,
-  };
 
   const handleClientOverrideChange = (clientId: string, field: 'rate' | 'frequency' | 'active', value: any) => {
     setClientOverrides(prev => {
@@ -1159,6 +1173,23 @@ export default function ClientAuditPage() {
             <p className="text-sm text-muted-foreground font-bold uppercase tracking-widest">Loading Audit Data...</p>
           </div>
         ) : (
+          <div className="space-y-8">
+          {/* ── Persistent summary strip ── */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: "Active Clients", value: totalActiveClients.toString(), sub: "seen last 90 days", colour: "text-indigo-600 dark:text-indigo-400" },
+              { label: "Avg Session Rate", value: `$${averageSessionRate.toFixed(0)}`, sub: `target $150`, colour: "text-amber-600 dark:text-amber-400" },
+              { label: "This Week", value: `$${thisWeekRevenue.toLocaleString()}`, sub: `${thisWeekSessions} sessions · $${weeklyTarget} target`, colour: thisWeekRevenue >= weeklyTarget ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400" },
+              { label: "Proj. Monthly", value: `$${Math.round(projectedMonthlyRevenue).toLocaleString()}`, sub: "FNH only · current rates", colour: "text-primary" },
+            ].map(({ label, value, sub, colour }) => (
+              <div key={label} className="bg-card rounded-2xl border border-border px-5 py-4 space-y-1">
+                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{label}</p>
+                <p className={`text-xl font-black ${colour}`}>{value}</p>
+                <p className="text-[10px] text-muted-foreground font-medium">{sub}</p>
+              </div>
+            ))}
+          </div>
+
           <Tabs defaultValue="rates" className="space-y-8">
             <TabsList className="bg-muted/50 p-1 rounded-2xl border border-border/50 w-full max-w-3xl grid grid-cols-5">
               <TabsTrigger value="rates" className="rounded-xl font-bold text-xs py-2.5">
@@ -1673,19 +1704,22 @@ export default function ClientAuditPage() {
                   <Card className="border-none shadow-xl rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white overflow-hidden relative">
                     <div className="absolute top-0 right-0 p-10 opacity-[0.06] pointer-events-none"><Zap size={160} /></div>
                     <CardContent className="p-8 relative z-10 space-y-6">
-                      {/* Header row */}
+
+                      {/* Header + target */}
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                         <div className="space-y-1">
                           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400">Weekly Calculator</p>
-                          <h3 className="text-2xl font-black">What do I need to book this week?</h3>
-                          <p className="text-xs text-slate-400 font-medium">Mon–Sun · Based on sessions logged in Supabase</p>
+                          <h3 className="text-2xl font-black">What do I need this week?</h3>
+                          <p className="text-xs text-slate-400 font-medium">
+                            Mon–Sun · {thisWeekSessions} session{thisWeekSessions !== 1 ? 's' : ''} so far
+                            {daysLeftInWeek > 0 ? ` · ${daysLeftInWeek} day${daysLeftInWeek !== 1 ? 's' : ''} remaining` : ' · Last day of working week'}
+                          </p>
                         </div>
                         {/* Editable weekly target */}
-                        <div className="flex items-center gap-2 bg-white/5 rounded-2xl px-4 py-3 border border-white/10 self-start">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Weekly target</span>
+                        <div className="flex items-center gap-2 bg-white/5 rounded-2xl px-4 py-3 border border-white/10 self-start shrink-0">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Target</span>
                           {editingWeeklyTarget ? (
-                            <input
-                              autoFocus
+                            <input autoFocus
                               className="w-20 bg-transparent text-white font-black text-sm text-right outline-none border-b border-indigo-400 pb-0.5"
                               value={weeklyTargetInput}
                               onChange={e => setWeeklyTargetInput(e.target.value)}
@@ -1699,44 +1733,54 @@ export default function ClientAuditPage() {
                           ) : (
                             <button onClick={() => { setWeeklyTargetInput(String(weeklyTarget)); setEditingWeeklyTarget(true); }}
                               className="flex items-center gap-1.5 font-black text-sm text-white hover:text-indigo-300 transition-colors">
-                              ${weeklyTarget}<Edit3 size={11} className="opacity-40" />
+                              ${weeklyTarget.toLocaleString()}<Edit3 size={11} className="opacity-40" />
                             </button>
                           )}
                         </div>
                       </div>
 
-                      {/* Progress bar */}
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-xs font-bold">
-                          <span className="text-slate-300">${thisWeekRevenue.toLocaleString()} earned</span>
-                          <span className={onTarget ? "text-emerald-400" : "text-slate-400"}>${weeklyTarget.toLocaleString()} target</span>
+                      {/* This week vs this month side by side */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
+                          <p className="text-[9px] font-black uppercase tracking-widest text-indigo-400">This week</p>
+                          <p className="text-2xl font-black text-white">${thisWeekRevenue.toLocaleString()}</p>
+                          <p className="text-[10px] text-slate-400">{thisWeekSessions} session{thisWeekSessions !== 1 ? 's' : ''} · {pct}% of target</p>
                         </div>
-                        <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+                        <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
+                          <p className="text-[9px] font-black uppercase tracking-widest text-purple-400">This month</p>
+                          <p className="text-2xl font-black text-white">${thisMonthRevenue.toLocaleString()}</p>
+                          <p className="text-[10px] text-slate-400">{thisMonthSessions} session{thisMonthSessions !== 1 ? 's' : ''} total</p>
+                        </div>
+                      </div>
+
+                      {/* Progress bar */}
+                      <div className="space-y-1.5">
+                        <div className="h-2.5 bg-white/10 rounded-full overflow-hidden">
                           <div className={cn("h-full rounded-full transition-all duration-700", onTarget ? "bg-emerald-400" : "bg-indigo-400")}
                             style={{ width: `${pct}%` }} />
                         </div>
-                        <p className="text-[10px] text-slate-500 font-medium text-right">{pct}% of weekly target</p>
                       </div>
 
                       {onTarget ? (
                         <div className="flex items-center gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
                           <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
-                          <p className="text-sm font-bold text-emerald-300">You've hit your weekly target — great week!</p>
+                          <p className="text-sm font-bold text-emerald-300">Weekly target hit — great work!</p>
                         </div>
                       ) : (
                         <div className="space-y-3">
-                          <p className="text-sm font-bold text-slate-200">
-                            Still needed: <span className="text-white font-black">${gap.toLocaleString()}</span>
+                          <p className="text-xs text-slate-400 font-medium">
+                            Still needed: <span className="text-white font-black text-base">${gap.toLocaleString()}</span>
+                            {daysLeftInWeek > 0 && <span className="text-slate-500"> · ~${Math.ceil(gap / daysLeftInWeek).toLocaleString()}/day</span>}
                           </p>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl space-y-1">
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="p-3.5 bg-white/5 border border-white/10 rounded-2xl space-y-0.5">
                               <p className="text-[9px] font-black uppercase tracking-widest text-indigo-400">FNH sessions</p>
-                              <p className="text-xl font-black text-white">{sessionsNeeded} session{sessionsNeeded !== 1 ? 's' : ''}</p>
-                              <p className="text-[10px] text-slate-400">at ${fhnRate}/session avg</p>
+                              <p className="text-xl font-black text-white">{sessionsNeeded}</p>
+                              <p className="text-[10px] text-slate-400">at ${fhnRate} avg</p>
                             </div>
-                            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl space-y-1">
+                            <div className="p-3.5 bg-white/5 border border-white/10 rounded-2xl space-y-0.5">
                               <p className="text-[9px] font-black uppercase tracking-widest text-purple-400">Corporate gig</p>
-                              <p className="text-xl font-black text-white">{corpGigsNeeded} gig{corpGigsNeeded !== 1 ? 's' : ''}</p>
+                              <p className="text-xl font-black text-white">{corpGigsNeeded}</p>
                               <p className="text-[10px] text-slate-400">at ${corpRate}/gig</p>
                             </div>
                           </div>
@@ -1772,17 +1816,21 @@ export default function ClientAuditPage() {
                   <div className="divide-y divide-border/50">
                     {/* FNH row — read from real salary data */}
                     {(() => {
-                      const fnh_monthly = Math.round(isSandboxActive ? salaryMetrics.simulated.monthly : salaryMetrics.current.monthly);
-                      const fnh_annual = fnh_monthly * 12;
+                      const src = isSandboxActive ? salaryMetrics.simulated : salaryMetrics.current;
+                      const fnh_monthly = Math.round(src.monthly);
+                      const fnh_annual  = fnh_monthly * 12;
+                      const fnh_rate    = Math.round(src.avgRate) || Math.round(averageSessionRate) || 70;
+                      const fnh_sessions = fnh_rate > 0 ? Math.round(fnh_monthly / fnh_rate) : 0;
                       return (
                         <div className="flex items-center gap-4 px-8 py-4 bg-indigo-50/30 dark:bg-indigo-950/10">
                           <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-950/40 text-indigo-600 flex items-center justify-center shrink-0">
                             <Brain size={16} />
                           </div>
-                          <div className="flex-1 min-w-0">
+                          <div className="flex-1 min-w-0 space-y-1">
                             <p className="text-sm font-black text-foreground">FNH Sessions</p>
                             <p className="text-[10px] text-muted-foreground font-medium">
-                              Live from Salary Simulator{isSandboxActive ? ' (Sandbox)' : ''}
+                              ~{fnh_sessions} sessions/mo · ${fnh_rate}/session avg
+                              {isSandboxActive ? ' · Sandbox' : ' · Live'}
                             </p>
                           </div>
                           <div className="text-right shrink-0">
@@ -1816,7 +1864,7 @@ export default function ClientAuditPage() {
                               <div className="grid grid-cols-2 gap-4 pr-4 animate-in fade-in duration-200">
                                 <div className="space-y-1">
                                   <div className="flex justify-between text-[9px] font-bold text-muted-foreground">
-                                    <span>Rate per unit</span>
+                                    <span>Rate / {(stream as any).unitLabel ?? 'unit'}</span>
                                     <span className="text-foreground font-black">${stream.ratePerUnit}</span>
                                   </div>
                                   <Slider value={[stream.ratePerUnit]} onValueChange={([v]) => updateStream(stream.id, 'ratePerUnit', v)}
@@ -1824,7 +1872,7 @@ export default function ClientAuditPage() {
                                 </div>
                                 <div className="space-y-1">
                                   <div className="flex justify-between text-[9px] font-bold text-muted-foreground">
-                                    <span>Units / month</span>
+                                    <span>{(stream as any).unitLabel ?? 'units'} / month</span>
                                     <span className="text-foreground font-black">{stream.unitsPerMonth}</span>
                                   </div>
                                   <Slider value={[stream.unitsPerMonth]} onValueChange={([v]) => updateStream(stream.id, 'unitsPerMonth', v)}
@@ -2557,6 +2605,7 @@ export default function ClientAuditPage() {
               </Card>
             </TabsContent>
           </Tabs>
+          </div>
         )}
       </div>
 

@@ -237,8 +237,8 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
                     <AreaChart data={boltData}>
                       <defs>
                         <linearGradient id="colorBoltProgress" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1}/>
-                          <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="hsl(var(--chart-primary))" stopOpacity={0.1}/>
+                          <stop offset="95%" stopColor="hsl(var(--chart-primary))" stopOpacity={0}/>
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
@@ -252,7 +252,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
                         type="monotone" 
                         dataKey="score" 
                         name="BOLT Score"
-                        stroke="#4f46e5" 
+                        stroke="hsl(var(--chart-primary))" 
                         strokeWidth={4} 
                         fillOpacity={1} 
                         fill="url(#colorBoltProgress)" 
@@ -268,8 +268,8 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
                       <AreaChart data={threatTrendData}>
                         <defs>
                           <linearGradient id="colorThreat" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#e11d48" stopOpacity={0.1}/>
-                            <stop offset="95%" stopColor="#e11d48" stopOpacity={0}/>
+                            <stop offset="5%" stopColor="hsl(var(--chart-destructive))" stopOpacity={0.1}/>
+                            <stop offset="95%" stopColor="hsl(var(--chart-destructive))" stopOpacity={0}/>
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
@@ -283,7 +283,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
                           type="monotone" 
                           dataKey="threat" 
                           name="Total Threat"
-                          stroke="#e11d48" 
+                          stroke="hsl(var(--chart-destructive))" 
                           strokeWidth={4} 
                           fillOpacity={1} 
                           fill="url(#colorThreat)" 

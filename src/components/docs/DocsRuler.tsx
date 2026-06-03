@@ -4,7 +4,7 @@ import React from 'react';
 
 const DocsRuler = () => {
   return (
-    <div className="bg-[#F9FBFD] h-8 border-b border-slate-200 relative flex items-end print:hidden">
+    <div className="bg-[hsl(var(--docs-surface))] h-8 border-b border-slate-200 relative flex items-end print:hidden">
       <div className="absolute left-1/2 -translate-x-1/2 w-[816px] h-full flex items-end px-12">
         <div className="w-full h-4 flex items-end justify-between text-[9px] text-slate-400 font-medium pb-0.5">
           {[2, 1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map((num, i) => (

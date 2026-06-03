@@ -20,7 +20,7 @@ const DocsHeader = () => {
   const menuItems = ["File", "Edit", "View", "Insert", "Format", "Tools", "Extensions", "Help"];
 
   return (
-    <header className="bg-[#F9FBFD] border-b border-slate-200 px-4 py-2 flex flex-col gap-1 print:hidden">
+    <header className="bg-[hsl(var(--docs-surface))] border-b border-slate-200 px-4 py-2 flex flex-col gap-1 print:hidden">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="p-1.5 bg-blue-600 rounded-sm">
@@ -64,7 +64,7 @@ const DocsHeader = () => {
             </Button>
           </div>
           
-          <Button className="bg-[#C2E7FF] hover:bg-[#B3D7EF] text-[#001D35] rounded-full px-6 h-10 font-semibold gap-2 shadow-none border-none">
+          <Button className="bg-sky-200 hover:bg-sky-300 text-slate-950 rounded-full px-6 h-10 font-semibold gap-2 shadow-none border-none">
             <Lock size={18} />
             Share
           </Button>

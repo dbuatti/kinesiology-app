@@ -132,8 +132,8 @@ const BusinessModelWorksheet = () => {
   }, [answers.rev_target, answers.program_price]);
 
   const chartData = useMemo(() => [
-    { name: 'Hourly Grind', value: sessionsNeeded, color: '#6366f1', label: 'Sessions/mo' },
-    { name: 'Program Flow', value: programsNeeded, color: '#10b981', label: 'Clients/mo' }
+    { name: 'Hourly Grind', value: sessionsNeeded, color: 'hsl(var(--chart-primary))', label: 'Sessions/mo' },
+    { name: 'Program Flow', value: programsNeeded, color: 'hsl(var(--chart-emerald))', label: 'Clients/mo' }
   ], [sessionsNeeded, programsNeeded]);
 
   const forecastNeeded = useMemo(() => {

@@ -35,6 +35,15 @@
     --ring: 222 47% 11%;
 
     --radius: 1.25rem;
+
+    /* Chart accent colours (fixed, not theme-aware) */
+    --chart-primary: 244 79% 59%;     /* #4f46e5 indigo-600 */
+    --chart-destructive: 345 83% 50%; /* #e11d48 rose-600 */
+    --chart-emerald: 161 84% 39%;     /* #10b981 emerald-500 */
+
+    /* Docs editor surface (Google Docs-style UI) */
+    --docs-surface: 210 50% 98%;  /* #F9FBFD */
+    --docs-toolbar: 217 56% 96%;  /* #EDF2FA */
   }
 
   .dark {

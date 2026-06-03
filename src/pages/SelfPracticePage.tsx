@@ -267,15 +267,15 @@ const SelfPracticePage = () => {
                         <AreaChart data={boltTrendData}>
                           <defs>
                             <linearGradient id="colorBolt" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#e11d48" stopOpacity={0.1}/>
-                              <stop offset="95%" stopColor="#e11d48" stopOpacity={0}/>
+                              <stop offset="5%" stopColor="hsl(var(--chart-destructive))" stopOpacity={0.1}/>
+                              <stop offset="95%" stopColor="hsl(var(--chart-destructive))" stopOpacity={0}/>
                             </linearGradient>
                           </defs>
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                           <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: 'hsl(var(--muted-foreground))'}} />
                           <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: 'hsl(var(--muted-foreground))'}} />
                           <ChartTooltip contentStyle={{borderRadius: '12px', border: 'none', backgroundColor: 'hsl(var(--card))', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
-                          <Area type="monotone" dataKey="score" stroke="#e11d48" strokeWidth={3} fillOpacity={1} fill="url(#colorBolt)" />
+                          <Area type="monotone" dataKey="score" stroke="hsl(var(--chart-destructive))" strokeWidth={3} fillOpacity={1} fill="url(#colorBolt)" />
                         </AreaChart>
                       </ResponsiveContainer>
                     </div>

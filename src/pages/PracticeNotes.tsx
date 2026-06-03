@@ -345,7 +345,7 @@ const PracticeNotes = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white md:bg-[#F9FBFD] flex flex-col">
+    <div className="min-h-screen bg-white md:bg-[hsl(var(--docs-surface))] flex flex-col">
       <DocsHeader />
       <DocsToolbar />
       <DocsRuler />
@@ -716,7 +716,7 @@ const PracticeNotes = () => {
                 onChange={(e) => handleTextChange('observations', e.target.value)}
                 className="w-full min-h-[300px] bg-transparent border-none outline-none resize-none text-sm leading-[32px] font-medium"
                 style={{
-                  backgroundImage: 'linear-gradient(to bottom, transparent 31px, #e5e7eb 31px)',
+                  backgroundImage: 'linear-gradient(to bottom, transparent 31px, hsl(var(--border)) 31px)',
                   backgroundSize: '100% 32px',
                   backgroundAttachment: 'local'
                 }}

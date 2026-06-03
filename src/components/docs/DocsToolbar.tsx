@@ -41,7 +41,7 @@ const DocsToolbar = () => {
   );
 
   return (
-    <div className="bg-[#EDF2FA] border-b border-slate-200 px-4 py-1 flex items-center gap-0.5 overflow-x-auto no-scrollbar print:hidden">
+    <div className="bg-[hsl(var(--docs-toolbar))] border-b border-slate-200 px-4 py-1 flex items-center gap-0.5 overflow-x-auto no-scrollbar print:hidden">
       <div className="flex items-center bg-white rounded-full px-3 py-1.5 mr-2 border border-transparent hover:border-slate-300 transition-all cursor-text">
         <Search size={16} className="text-slate-500 mr-2" />
         <span className="text-sm text-slate-500">Menus</span>

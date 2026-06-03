@@ -74,16 +74,33 @@ import { ClientRow } from "@/components/crm/settings/ClientRow";
 import TimetableVisualizer from "@/components/crm/settings/TimetableVisualizer";
 import IdealScheduleBuilder from "@/components/crm/IdealScheduleBuilder";
 
-// Declare missing state
-const [loading, setLoading] = useState(true);
-const [clients, setClients] = useState<ClientWithAppointments[]>([]);
-
-// Declare missing functions
-const fetchClients = async () => { /* ... */ };
+interface ClientWithAppointments extends Client {
+  appointments: Appointment[];
+  lastSeenDate: Date | null;
+  preferredTimeAnalyzed: { text: string; isLowData: boolean };
+  followUpStatus: "Booked" | "Needs Follow-up" | "No Future Bookings";
+}
 
 export default function ClientAuditPage() {
+  const [loading, setLoading] = useState(true);
+  const [clients, setClients] = useState<ClientWithAppointments[]>([]);
+
   // Fetch clients data
   useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('clients')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        setClients(data as ClientWithAppointments[]);
+      } catch (err: any) {
+        console.error('Error fetching clients:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchClients();
   }, []);
 
@@ -128,7 +145,12 @@ export default function ClientAuditPage() {
 
             {/* TAB 1: RATES & RECENCY */}
             <TabsContent value="rates" className="space-y-6">
-              {/* ... [existing content] */}
+              {/* Placeholder content - would be the existing rates tab */}
+              <Card className="border-none shadow-md rounded-[2rem] bg-card">
+                <CardContent className="p-6">
+                  <p className="text-muted-foreground">Rates & Recency tab content would go here.</p>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* TAB 2: CURRENT TIMETABLE */}
@@ -143,23 +165,33 @@ export default function ClientAuditPage() {
 
             {/* TAB 4: SALARY SIMULATOR */}
             <TabsContent value="salary" className="space-y-8">
-              {/* ... [existing content] */}
+              <Card className="border-none shadow-md rounded-[2rem] bg-card">
+                <CardContent className="p-6">
+                  <p className="text-muted-foreground">Salary Simulator tab content would go here.</p>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* TAB 5: FULL AUDIT */}
             <TabsContent value="audit" className="space-y-8">
-              {/* ... [existing content] */}
+              <Card className="border-none shadow-md rounded-[2rem] bg-card">
+                <CardContent className="p-6">
+                  <p className="text-muted-foreground">Full Audit tab content would go here.</p>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* TAB 6: AI SUGGESTIONS */}
             <TabsContent value="suggestions" className="space-y-8">
-              {/* ... [existing content] */}
+              <Card className="border-none shadow-md rounded-[2rem] bg-card">
+                <CardContent className="p-6">
+                  <p className="text-muted-foreground">AI Suggestions tab content would go here.</p>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         )}
       </div>
-
-      {/* ... [all existing modals and components remain the same] */}
     </AppLayout>
   );
 }

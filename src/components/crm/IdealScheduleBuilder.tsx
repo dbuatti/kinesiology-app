@@ -36,7 +36,6 @@ import { cn } from "@/lib/utils";
 import { Client, Appointment } from "@/types/crm";
 import { Link } from "react-router-dom";
 
-// Declare missing variables/functions
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 const TIME_SLOTS = ["10:00", "14:00", "16:00"];
 const TIME_LABELS: Record<string, string> = {
@@ -70,10 +69,7 @@ interface IdealSchedule {
   updated_at: string;
 }
 
-const IdealScheduleBuilder = ({ clients }: { clients: ClientWithAppointments[] }) => {
-  // Declare missing state variables
-  const [loading, setLoading] = useState(true);
-  const [clients, setClients] = useState<ClientWithAppointments[]>([]);
+const IdealScheduleBuilder = ({ clients: propClients }: { clients: ClientWithAppointments[] }) => {
   const [schedules, setSchedules] = useState<IdealSchedule[]>([]);
   const [selectedSchedule, setSelectedSchedule] = useState<IdealSchedule | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -86,18 +82,180 @@ const IdealScheduleBuilder = ({ clients }: { clients: ClientWithAppointments[] }
   const [editSchedule, setEditSchedule] = useState<IdealSchedule | null>(null);
   const [activeWeek, setActiveWeek] = useState<1 | 2>(1);
 
-  // Declare missing functions
-  const loadSchedules = async () => { /* ... */ };
-  const createNewSchedule = async () => { /* ... */ };
-  const saveSchedule = async () => { /* ... */ };
-  const deleteSchedule = async (id: string) => { /* ... */ };
-  const handleDragStart = (client: ClientWithAppointments) => { /* ... */ };
-  const handleDrop = (day: string, slot: string, week: number) => { /* ... */ };
-  const removeSlot = (clientId: string, day: string, slot: string, week: number) => { /* ... */ };
-  const getSlotClients = (day: string, slot: string, week: number) => { /* ... */ };
-  const calculateScheduleEarnings = () => { /* ... */ };
+  // Filter to active clients for the builder
+  const activeClients = useMemo(() => {
+    const now = new Date();
+    return propClients.filter(c => {
+      if (c.appointments.some(app => new Date(app.date) > now)) return true;
+      if (!c.lastSeenDate) return false;
+      const diffDays = (now.getTime() - c.lastSeenDate.getTime()) / (1000 * 60 * 60 * 24);
+      return diffDays <= 90;
+    });
+  }, [propClients]);
 
-  // ... rest of the component ...
+  // Load schedules from database
+  const loadSchedules = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("ideal_schedules")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setSchedules(data || []);
+    } catch (err: any) {
+      console.error("Error loading schedules:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadSchedules();
+  }, []);
+
+  const createNewSchedule = async () => {
+    if (!newScheduleName.trim()) {
+      showError("Please enter a schedule name.");
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from("ideal_schedules")
+        .insert({
+          name: newScheduleName,
+          description: newScheduleDescription,
+          slots: []
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setSchedules(prev => [data, ...prev]);
+      setSelectedSchedule(data);
+      setIsCreating(false);
+      setNewScheduleName("");
+      setNewScheduleDescription("");
+      showSuccess("New ideal schedule created!");
+    } catch (err: any) {
+      showError(err.message || "Failed to create schedule.");
+    }
+  };
+
+  const saveSchedule = async () => {
+    if (!selectedSchedule) return;
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("ideal_schedules")
+        .update({
+          slots: selectedSchedule.slots,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", selectedSchedule.id);
+
+      if (error) throw error;
+      showSuccess("Schedule saved successfully!");
+    } catch (err: any) {
+      showError(err.message || "Failed to save schedule.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const deleteSchedule = async (scheduleId: string) => {
+    if (!confirm("Are you sure you want to delete this schedule?")) return;
+
+    try {
+      const { error } = await supabase
+        .from("ideal_schedules")
+        .delete()
+        .eq("id", scheduleId);
+
+      if (error) throw error;
+
+      setSchedules(prev => prev.filter(s => s.id !== scheduleId));
+      if (selectedSchedule?.id === scheduleId) {
+        setSelectedSchedule(null);
+      }
+      showSuccess("Schedule deleted successfully!");
+    } catch (err: any) {
+      showError(err.message || "Failed to delete schedule.");
+    }
+  };
+
+  const handleDragStart = (client: ClientWithAppointments) => {
+    setDraggedClient(client);
+  };
+
+  const handleDrop = (day: string, slot: string, week: number) => {
+    if (!draggedClient) return;
+
+    // Check if slot is already occupied
+    const isOccupied = selectedSchedule?.slots.some(s => 
+      s.day === day && s.slot === slot && s.week === week
+    );
+
+    if (isOccupied) {
+      showError("This time slot is already occupied.");
+      return;
+    }
+
+    // Add to schedule
+    const newSlot: ScheduledSlot = {
+      clientId: draggedClient.id,
+      clientName: draggedClient.name,
+      day,
+      slot,
+      week,
+      rate: draggedClient.standard_rate || 50
+    };
+
+    setSelectedSchedule(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        slots: [...prev.slots, newSlot]
+      };
+    });
+
+    setDraggedClient(null);
+  };
+
+  const removeSlot = (clientId: string, day: string, slot: string, week: number) => {
+    setSelectedSchedule(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        slots: prev.slots.filter(s => 
+          !(s.clientId === clientId && s.day === day && s.slot === slot && s.week === week)
+        )
+      };
+    });
+  };
+
+  const getSlotClients = (day: string, slot: string, week: number): ScheduledSlot[] => {
+    return selectedSchedule?.slots.filter(s => 
+      s.day === day && s.slot === slot && s.week === week
+    ) || [];
+  };
+
+  const calculateScheduleEarnings = () => {
+    if (!selectedSchedule) return { week1: 0, week2: 0, total: 0 };
+    
+    const week1 = selectedSchedule.slots
+      .filter(s => s.week === 1)
+      .reduce((sum, s) => sum + s.rate, 0);
+    
+    const week2 = selectedSchedule.slots
+      .filter(s => s.week === 2)
+      .reduce((sum, s) => sum + s.rate, 0);
+    
+    return { week1, week2, total: week1 + week2 };
+  };
+
+  const scheduleEarnings = calculateScheduleEarnings();
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -245,7 +403,7 @@ const IdealScheduleBuilder = ({ clients }: { clients: ClientWithAppointments[] }
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-3xl font-black text-foreground">${calculateScheduleEarnings().week1}</h3>
+                    <h3 className="text-3xl font-black text-foreground">${scheduleEarnings.week1}</h3>
                     <p className="text-xs text-muted-foreground font-medium">Total for Week 1</p>
                   </div>
                 </CardContent>
@@ -260,7 +418,7 @@ const IdealScheduleBuilder = ({ clients }: { clients: ClientWithAppointments[] }
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-3xl font-black text-foreground">${calculateScheduleEarnings().week2}</h3>
+                    <h3 className="text-3xl font-black text-foreground">${scheduleEarnings.week2}</h3>
                     <p className="text-xs text-muted-foreground font-medium">Total for Week 2</p>
                   </div>
                 </CardContent>
@@ -276,7 +434,7 @@ const IdealScheduleBuilder = ({ clients }: { clients: ClientWithAppointments[] }
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-3xl font-black">${calculateScheduleEarnings().total}</h3>
+                    <h3 className="text-3xl font-black">${scheduleEarnings.total}</h3>
                     <p className="text-xs text-indigo-200 font-medium">Combined 2-week earnings</p>
                   </div>
                 </CardContent>
@@ -408,7 +566,7 @@ const IdealScheduleBuilder = ({ clients }: { clients: ClientWithAppointments[] }
               <CardContent className="p-6">
                 <ScrollArea className="h-[300px] pr-2">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {clients.map(client => (
+                    {activeClients.map(client => (
                       <div
                         key={client.id}
                         draggable

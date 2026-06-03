@@ -201,8 +201,8 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
                 <Plus size={20} className="mr-2" /> Book Next Session
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-[3rem] p-0">
-              <div className="p-10">
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-[3rem] p-0 mx-4 w-[calc(100%-2rem)]">
+              <div className="p-10 pb-14">
                 <DialogHeader className="mb-8">
                   <div className="flex items-center gap-4 mb-2">
                     <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xl">

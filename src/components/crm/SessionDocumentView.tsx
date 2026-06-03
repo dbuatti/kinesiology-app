@@ -58,12 +58,35 @@ interface SessionDocumentViewProps {
   history?: any[];
 }
 
-const SectionHeader = ({ id, title, subtitle }: { id: string, title: string, subtitle?: string }) => (
-  <div id={id} className="border-b-2 border-black pb-1 mb-6 mt-16 md:mt-28 first:mt-0 scroll-mt-24">
-    <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter">{title}</h2>
-    {subtitle && <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{subtitle}</p>}
-  </div>
-);
+const SECTION_META: Record<string, { letter: string; color: string; bg: string; focus: string }> = {
+  "p-sec":  { letter: "P", color: "text-slate-700 dark:text-slate-200",  bg: "bg-slate-100 dark:bg-slate-800",   focus: "Intake vitals · BOLT score · Coherence · Zone baseline" },
+  "e-sec":  { letter: "E", color: "text-blue-700 dark:text-blue-300",    bg: "bg-blue-50 dark:bg-blue-950/40",    focus: "T1 reset · Diaphragm · Vagus nerve stimulation · Harmonic rocking" },
+  "a-sec":  { letter: "A", color: "text-violet-700 dark:text-violet-300", bg: "bg-violet-50 dark:bg-violet-950/40", focus: "Primitive reflexes · Cranial nerves · Muscle assessment · Pattern mapping" },
+  "c-sec":  { letter: "C", color: "text-amber-700 dark:text-amber-300",  bg: "bg-amber-50 dark:bg-amber-950/40",  focus: "LOFI calibration · Afferent / Efferent pathways · Emotional protocol" },
+  "e2-sec": { letter: "E", color: "text-emerald-700 dark:text-emerald-300", bg: "bg-emerald-50 dark:bg-emerald-950/40", focus: "Re-challenge all findings · Verify cleared · Prescribe homework" },
+};
+
+const SectionHeader = ({ id, title, subtitle }: { id: string; title: string; subtitle?: string }) => {
+  const meta = SECTION_META[id];
+  return (
+    <div id={id} className="mt-16 md:mt-24 mb-6 first:mt-0 scroll-mt-24">
+      <div className="flex items-start gap-4 pb-3 border-b-2 border-black">
+        {meta && (
+          <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center font-black text-xl shrink-0 mt-0.5", meta.bg, meta.color)}>
+            {meta.letter}
+          </div>
+        )}
+        <div className="min-w-0">
+          <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter leading-tight">{title}</h2>
+          {subtitle && <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-0.5">{subtitle}</p>}
+        </div>
+      </div>
+      {meta?.focus && (
+        <p className="mt-2 text-[11px] font-medium text-slate-400 dark:text-slate-500 leading-relaxed pl-14">{meta.focus}</p>
+      )}
+    </div>
+  );
+};
 
 const SessionDocumentView = ({ 
   appointment, 
@@ -94,6 +117,7 @@ const SessionDocumentView = ({
     scrollTo,
     toggleGuide,
     brainZoneOptions,
+    currentMuscleTests,
     unifiedPattern,
     inhibitedFindings,
     handleTogglePatternItem,
@@ -372,6 +396,8 @@ const SessionDocumentView = ({
               updatePriorityPattern={updatePriorityPattern}
               onTogglePatternItem={handleTogglePatternItem}
               onUpdate={onUpdate}
+              liveUnifiedPattern={unifiedPattern}
+              liveMuscleTests={currentMuscleTests}
             />
           </section>
 
@@ -386,14 +412,17 @@ const SessionDocumentView = ({
           </div>
         </div>
 
-        {/* Right Sidebar: Quick Timers, BOLT, and Coherence (Only rendered on Desktop) */}
+        {/* Right Sidebar: Timers + Clinical Reference (Only rendered on Desktop) */}
         {isDesktop && (
-          <DocumentRightSidebar 
+          <DocumentRightSidebar
             activeTimerDuration={activeTimerDuration}
             timeLeft={timeLeft}
             startQuickTimer={startQuickTimer}
             stopQuickTimer={stopQuickTimer}
             formatCountdown={formatCountdown}
+            currentTime={currentTime}
+            appointmentDate={appointment.date}
+            clientName={appointment.clients.name}
           />
         )}
       </div>

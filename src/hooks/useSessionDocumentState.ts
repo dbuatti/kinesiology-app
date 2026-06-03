@@ -350,6 +350,7 @@ export function useSessionDocumentState({
     scrollTo,
     toggleGuide,
     brainZoneOptions,
+    currentMuscleTests,
     unifiedPattern,
     inhibitedFindings,
     handleTogglePatternItem,

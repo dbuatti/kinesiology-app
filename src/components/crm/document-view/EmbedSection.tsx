@@ -5,26 +5,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { safeParse } from "@/utils/safe-json";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
-import { 
-  CheckCircle2, 
-  Loader2, 
-  Baby, 
-  Zap, 
-  Dumbbell, 
-  Brain, 
-  Activity, 
-  Heart, 
-  ShieldAlert, 
-  RefreshCw, 
-  Info, 
-  Target, 
-  Sparkles,
-  Check,
-  Trash2
+import {
+  CheckCircle2,
+  Loader2,
+  Baby,
+  Zap,
+  Dumbbell,
+  Brain,
+  Activity,
+  Heart,
+  ShieldAlert,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { showSuccess, showError } from '@/utils/toast';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import DocInput from './DocInput';
 
@@ -34,6 +27,10 @@ interface EmbedSectionProps {
   updatePriorityPattern: (category: string, itemName: string, status: string | null, side?: 'L' | 'R') => Promise<void>;
   onTogglePatternItem: (category: string, name: string, nextStatus: string, side?: 'L' | 'R') => void;
   onUpdate?: () => void;
+  /** Live unified pattern from useSessionDocumentState — updates in real-time without refresh */
+  liveUnifiedPattern?: Record<string, Record<string, string>>;
+  /** Live muscle tests from useSessionDocumentState — provides record IDs for updates */
+  liveMuscleTests?: any[];
 }
 
 interface RecheckItem {
@@ -49,14 +46,14 @@ interface RecheckItem {
 const getCanonicalName = (name: string): string => {
   const cleanName = name.replace(/ \([LR]\)$/, '').trim();
   const lowerClean = cleanName.toLowerCase();
-  const reflex = PRIMITIVE_REFLEXES.find(r => 
-    r.id.toLowerCase() === lowerClean || 
+  const reflex = PRIMITIVE_REFLEXES.find(r =>
+    r.id.toLowerCase() === lowerClean ||
     r.name.toLowerCase() === lowerClean ||
     r.name.toLowerCase().includes(lowerClean)
   );
   if (reflex) return reflex.name;
-  const point = BRAIN_REFLEX_POINTS.find(p => 
-    p.id.toLowerCase() === lowerClean || 
+  const point = BRAIN_REFLEX_POINTS.find(p =>
+    p.id.toLowerCase() === lowerClean ||
     p.name.toLowerCase() === lowerClean ||
     p.name.toLowerCase().split(':')[0].trim() === lowerClean
   );
@@ -64,172 +61,160 @@ const getCanonicalName = (name: string): string => {
   return cleanName;
 };
 
-const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onTogglePatternItem, onUpdate }: EmbedSectionProps) => {
-  const [muscleTests, setMuscleTests] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+const DYSFUNCTIONAL_STATUSES = new Set([
+  'Inhibited', 'Inhibition', 'Hypertonic', 'Switching', 'Dysfunctional',
+  'Inhibited_Cleared', 'Inhibition_Cleared', 'Hypertonic_Cleared',
+  'Switching_Cleared', 'Dysfunctional_Cleared', 'Normotonic_Cleared',
+]);
+
+const ACTIVE_INHIBITED = new Set(['Inhibited', 'Inhibition', 'Hypertonic', 'Switching', 'Dysfunctional']);
+
+const EmbedSection = ({
+  appointment,
+  saveField,
+  updatePriorityPattern,
+  onTogglePatternItem,
+  onUpdate,
+  liveUnifiedPattern,
+  liveMuscleTests,
+}: EmbedSectionProps) => {
+  // Fallback-only fetch — only used when liveUnifiedPattern is not provided
+  const [ownMuscleTests, setOwnMuscleTests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(!liveUnifiedPattern);
   const [clearingId, setClearingId] = useState<string | null>(null);
 
-  const fetchMuscleTests = async () => {
-    if (!appointment.id || appointment.id.includes('00000000')) {
-      setLoading(false);
-      return;
-    }
+  const fetchOwnMuscleTests = async () => {
+    if (!appointment.id || appointment.id.includes('00000000')) { setLoading(false); return; }
     try {
-      const { data, error } = await supabase
-        .from('muscle_tests')
-        .select('*')
-        .eq('appointment_id', appointment.id);
-      
-      if (!error) setMuscleTests(data || []);
+      const { data, error } = await supabase.from('muscle_tests').select('*').eq('appointment_id', appointment.id);
+      if (!error) setOwnMuscleTests(data || []);
     } catch (err) {
-      console.error("Error fetching muscle tests for embed section:", err);
+      console.error("EmbedSection fallback muscle fetch:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchMuscleTests();
-  }, [appointment.id]);
+    // Only do the independent fetch when the live data isn't being passed from the hook
+    if (!liveUnifiedPattern) {
+      fetchOwnMuscleTests();
+    } else {
+      setLoading(false);
+    }
+  }, [appointment.id, liveUnifiedPattern]);
 
-  const pattern = useMemo(() => safeParse(appointment.priority_pattern, {} as any), [appointment.priority_pattern]);
+  // Resolve which sources to use: live (from hook) vs own fetch (fallback)
+  const muscleTests = liveMuscleTests ?? ownMuscleTests;
 
-  // 1. Compute all findings (both clear and inhibited)
-  const allFindings = useMemo(() => {
-    const items: { name: string; status: string; category: string; type: 'pattern' | 'muscle' }[] = [];
-    
-    Object.entries(pattern).forEach(([catKey, categoryItems]: [string, any]) => {
+  // When liveUnifiedPattern is available, derive everything from it.
+  // Otherwise, fall back to computing from appointment.priority_pattern + muscleTests.
+  const sourcePattern = useMemo((): Record<string, Record<string, string>> => {
+    if (liveUnifiedPattern) return liveUnifiedPattern;
+    const base = safeParse(appointment.priority_pattern, {} as any);
+    if (!base.muscles) base.muscles = {};
+    ownMuscleTests.forEach(t => { base.muscles[t.muscle_name] = t.status; });
+    return base;
+  }, [liveUnifiedPattern, appointment.priority_pattern, ownMuscleTests]);
+
+  // Re-challenge list: all inhibited/hypertonic findings (cleared or not)
+  const inhibitedItems = useMemo((): RecheckItem[] => {
+    const items: RecheckItem[] = [];
+
+    Object.entries(sourcePattern).forEach(([catKey, categoryItems]) => {
+      if (!categoryItems || typeof categoryItems !== 'object') return;
+
+      const isMuscleCategory = catKey === 'muscles';
+
       Object.entries(categoryItems).forEach(([name, status]) => {
         const strStatus = status as string;
-        const isCleared = strStatus.endsWith('_Cleared');
-        const baseStatus = strStatus.replace('_Cleared', '');
+        if (!DYSFUNCTIONAL_STATUSES.has(strStatus)) return;
 
-        // Filter out non-dysfunctional 'Clear' items that were never active
-        if (baseStatus === 'Clear' && !isCleared) return;
-        if (baseStatus === 'Normotonic' && !isCleared) return;
+        const isCleared = strStatus.endsWith('_Cleared') || strStatus === 'Normotonic_Cleared';
+        const baseStatus = strStatus.replace('_Cleared', '');
+        if (!ACTIVE_INHIBITED.has(baseStatus)) return;
 
         const sideMatch = name.match(/\(([LR])\)$/);
-        const side = sideMatch ? sideMatch[1] : "";
-        const base = getCanonicalName(name);
-        const displayName = side ? `${base} (${side})` : base;
+        const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
+        const baseName = name.replace(/ \([LR]\)$/, '').trim();
 
-        items.push({
-          name: displayName,
-          status: strStatus,
-          category: catKey.replace(/([A-Z])/g, ' $1').trim(),
-          type: 'pattern'
-        });
-      });
-    });
-
-    muscleTests.forEach(test => {
-      const strStatus = test.status as string;
-      const isCleared = strStatus.endsWith('_Cleared') || strStatus === 'Normotonic_Cleared';
-      const baseStatus = strStatus.replace('_Cleared', '');
-
-      // Filter out non-dysfunctional 'Normotonic' items that were never active
-      if (baseStatus === 'Normotonic' && !isCleared) return;
-
-      const sideMatch = test.muscle_name.match(/\(([LR])\)$/);
-      const side = sideMatch ? sideMatch[1] : "";
-      const base = getCanonicalName(test.muscle_name);
-      const displayName = side ? `${base} (${side})` : base;
-
-      if (!items.find(i => i.name === displayName)) {
-        items.push({
-          name: displayName,
-          status: test.status,
-          category: 'Muscles',
-          type: 'muscle'
-        });
-      }
-    });
-
-    return items.sort((a, b) => a.name.localeCompare(b.name));
-  }, [pattern, muscleTests]);
-
-  // 2. Filter out only currently and historically inhibited findings for the "Clinical Verification" re-challenge list
-  const inhibitedItems = useMemo(() => {
-    const items: RecheckItem[] = [];
-    
-    Object.entries(pattern).forEach(([catKey, categoryItems]: [string, any]) => {
-      Object.entries(categoryItems).forEach(([name, status]) => {
-        const strStatus = status as string;
-        const isCleared = strStatus.endsWith('_Cleared');
-        const baseStatus = strStatus.replace('_Cleared', '');
-
-        if (baseStatus === 'Inhibited' || baseStatus === 'Hypertonic') {
-          const sideMatch = name.match(/\(([LR])\)$/);
-          const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
-          const baseName = name.replace(/ \([LR]\)$/, '');
-          
+        if (isMuscleCategory) {
+          // Find the actual DB record for this muscle so we have its ID
+          const testRecord = muscleTests.find(t => t.muscle_name === name);
+          items.push({
+            id: testRecord?.id ?? `muscle-${name}`,
+            name: baseName,
+            category: 'Muscles',
+            type: 'muscle',
+            status: baseStatus,
+            side,
+            isCleared,
+          });
+        } else {
           items.push({
             id: `${catKey}-${name}`,
-            name: baseName,
+            name: getCanonicalName(baseName),
             category: catKey,
             type: 'pattern',
             status: baseStatus,
             side,
-            isCleared
+            isCleared,
           });
         }
       });
     });
 
-    muscleTests.forEach(test => {
-      const strStatus = test.status as string;
-      const isCleared = strStatus.endsWith('_Cleared') || strStatus === 'Normotonic_Cleared';
-      const baseStatus = strStatus.replace('_Cleared', '');
+    return items.sort((a, b) => {
+      // Cleared items sink to the bottom
+      if (a.isCleared !== b.isCleared) return a.isCleared ? 1 : -1;
+      return a.name.localeCompare(b.name);
+    });
+  }, [sourcePattern, muscleTests]);
 
-      if (baseStatus === 'Inhibition' || baseStatus === 'Hypertonic' || baseStatus === 'Switching' || baseStatus === 'Dysfunctional' || isCleared) {
-        const sideMatch = test.muscle_name.match(/\(([LR])\)$/);
-        const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
-        const baseName = test.muscle_name.replace(/ \([LR]\)$/, '').trim();
+  // Pathway findings: everything that was ever dysfunctional (for the full review list)
+  const allFindings = useMemo(() => {
+    const items: { name: string; status: string; category: string }[] = [];
 
-        if (!items.find(i => i.name === baseName && i.side === side)) {
-          items.push({
-            id: test.id,
-            name: baseName,
-            category: 'Muscles',
-            type: 'muscle',
-            status: baseStatus === 'Normotonic' ? 'Inhibition' : baseStatus,
-            side,
-            isCleared
-          });
-        }
-      }
+    Object.entries(sourcePattern).forEach(([catKey, categoryItems]) => {
+      if (!categoryItems || typeof categoryItems !== 'object') return;
+      Object.entries(categoryItems).forEach(([name, status]) => {
+        const strStatus = status as string;
+        const baseStatus = strStatus.replace('_Cleared', '');
+        // Skip completely clear items that were never dysfunctional
+        if ((baseStatus === 'Clear' || baseStatus === 'Normotonic') && !strStatus.endsWith('_Cleared')) return;
+        const sideMatch = name.match(/\(([LR])\)$/);
+        const side = sideMatch ? ` (${sideMatch[1]})` : '';
+        const displayName = getCanonicalName(name.replace(/ \([LR]\)$/, '').trim()) + side;
+        items.push({ name: displayName, status: strStatus, category: catKey });
+      });
     });
 
     return items.sort((a, b) => a.name.localeCompare(b.name));
-  }, [pattern, muscleTests]);
+  }, [sourcePattern]);
+
+  const clearedCount = inhibitedItems.filter(i => i.isCleared).length;
+  const totalCount = inhibitedItems.length;
 
   const handleClearItem = async (item: RecheckItem) => {
     setClearingId(item.id);
     try {
       if (item.type === 'pattern') {
         const nextStatus = item.isCleared ? 'Inhibited' : 'Inhibited_Cleared';
-        await updatePriorityPattern(item.category, item.name, nextStatus, item.side);
+        await updatePriorityPattern(item.category, item.name, nextStatus === 'Inhibited' ? 'Inhibited' : 'Inhibited', item.side);
+        // Use onTogglePatternItem so the hook's local state updates immediately
+        onTogglePatternItem(item.category, item.name, item.isCleared ? 'Inhibited' : 'Inhibited_Cleared', item.side);
       } else {
         const nextStatus = item.isCleared ? 'Inhibition' : 'Inhibition_Cleared';
-        const { error } = await supabase
-          .from('muscle_tests')
-          .update({ status: nextStatus })
-          .eq('id', item.id);
-        
+        const { error } = await supabase.from('muscle_tests').update({ status: nextStatus }).eq('id', item.id);
         if (error) throw error;
-        await fetchMuscleTests();
+        onUpdate?.();
       }
-      showSuccess(`${item.name} status updated.`);
-      onUpdate?.();
+      showSuccess(`${item.name} ${item.isCleared ? 'unmarked' : 'marked as cleared'}.`);
     } catch (err) {
-      showError("Failed to update item status.");
+      showError("Failed to update finding status.");
     } finally {
       setClearingId(null);
     }
-  };
-
-  const handleFieldChange = (field: string, value: string) => {
-    saveField(field, value);
   };
 
   const getIcon = (category: string) => {
@@ -237,18 +222,28 @@ const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onToggleP
     if (cat.includes('reflex')) return Baby;
     if (cat.includes('nerve')) return Zap;
     if (cat.includes('muscle')) return Dumbbell;
-    return Brain;
+    if (cat.includes('brain') || cat.includes('zone')) return Brain;
+    if (cat.includes('heart')) return Heart;
+    return Activity;
   };
 
-  const hasSnsResets = !!(appointment.harmonic_rocking_notes || appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes);
+  const handleFieldChange = (field: string, value: string) => { saveField(field, value); };
 
   return (
     <div className="space-y-12">
-      {/* 1. Clinical Verification (Re-challenge) */}
+
+      {/* 1. Clinical Verification */}
       <div className="space-y-4">
-        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 border-l-4 border-slate-200 pl-3">
-          Clinical Verification
-        </h3>
+        <div className="flex items-center justify-between border-l-4 border-slate-200 pl-3">
+          <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+            Clinical Verification
+          </h3>
+          {totalCount > 0 && (
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+              {clearedCount}/{totalCount} cleared
+            </span>
+          )}
+        </div>
         <p className="text-xs text-slate-500 font-medium leading-relaxed">
           Re-challenge all inhibited findings to confirm integration.
         </p>
@@ -256,54 +251,69 @@ const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onToggleP
         {loading ? (
           <div className="py-6 flex justify-center"><Loader2 className="animate-spin text-slate-400" size={20} /></div>
         ) : inhibitedItems.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-2">
             {inhibitedItems.map((item) => {
               const Icon = getIcon(item.category);
               const isClearing = clearingId === item.id;
 
               return (
-                <div key={item.id} className={cn(
-                  "p-4 border flex items-center justify-between gap-4 bg-white transition-all",
-                  item.isCleared ? "border-emerald-200 bg-emerald-50/10" : "border-rose-200 bg-rose-50/10"
-                )}>
+                <div
+                  key={item.id}
+                  className={cn(
+                    "flex items-center justify-between gap-3 p-3 border transition-all",
+                    item.isCleared
+                      ? "border-emerald-200 bg-emerald-50/20 opacity-70"
+                      : "border-rose-200 bg-rose-50/10"
+                  )}
+                >
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={cn(
-                      "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                      "w-7 h-7 rounded-md flex items-center justify-center shrink-0",
                       item.isCleared ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
                     )}>
-                      <Icon size={16} />
+                      <Icon size={14} />
                     </div>
                     <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <p className={cn("font-bold text-xs text-slate-900 truncate", item.isCleared && "text-slate-500 line-through")}>{item.name}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={cn(
+                          "font-bold text-xs",
+                          item.isCleared ? "text-slate-400 line-through" : "text-slate-900"
+                        )}>
+                          {item.name}
+                        </span>
                         {item.side && (
                           <span className="text-[8px] font-black uppercase px-1.5 py-0 border border-slate-200 text-slate-400">
                             {item.side}
                           </span>
                         )}
+                        <span className={cn(
+                          "text-[8px] font-black uppercase tracking-widest",
+                          item.isCleared ? "text-emerald-600" : "text-rose-500"
+                        )}>
+                          {item.isCleared ? "✓ Cleared" : item.status}
+                        </span>
                       </div>
-                      <p className={cn(
-                        "text-[8px] font-black uppercase tracking-widest",
-                        item.isCleared ? "text-emerald-600" : "text-rose-500"
-                      )}>
-                        {item.isCleared ? "Cleared" : item.status}
+                      <p className="text-[9px] text-slate-400 font-medium mt-0.5 capitalize">
+                        {item.category.replace(/([A-Z])/g, ' $1').trim()}
                       </p>
                     </div>
                   </div>
 
-                  <Button 
+                  <Button
                     variant="ghost"
-                    size="sm" 
+                    size="sm"
                     onClick={() => handleClearItem(item)}
                     disabled={isClearing}
                     className={cn(
                       "h-8 px-3 rounded-none border text-[9px] font-black uppercase tracking-widest transition-all shrink-0",
-                      item.isCleared 
-                        ? "border-slate-200 hover:bg-slate-100 text-slate-600" 
-                        : "border-emerald-500 hover:bg-emerald-600 hover:text-white text-emerald-600"
+                      item.isCleared
+                        ? "border-slate-200 hover:bg-slate-100 text-slate-500"
+                        : "border-emerald-500 hover:bg-emerald-600 hover:text-white text-emerald-700"
                     )}
                   >
-                    {isClearing ? <Loader2 size={12} className="animate-spin" /> : item.isCleared ? "Undo" : "Mark Clear"}
+                    {isClearing
+                      ? <Loader2 size={12} className="animate-spin" />
+                      : item.isCleared ? "Undo" : "Mark Clear"}
                   </Button>
                 </div>
               );
@@ -319,89 +329,84 @@ const EmbedSection = ({ appointment, saveField, updatePriorityPattern, onToggleP
       </div>
 
       {/* 2. Pathway Findings Review */}
-      <div className="space-y-4">
-        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 border-l-4 border-slate-200 pl-3">
-          Pathway Findings
-        </h3>
-        <p className="text-xs text-slate-500 font-medium leading-relaxed">
-          Review of all findings and their final status logged during this session.
-        </p>
-
-        {allFindings.length > 0 ? (
+      {allFindings.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 border-l-4 border-slate-200 pl-3">
+            Pathway Findings
+          </h3>
+          <p className="text-xs text-slate-500 font-medium leading-relaxed">
+            All findings recorded and their final status.
+          </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {allFindings.map((finding, idx) => {
-              const isClear = finding.status === 'Clear' || finding.status === 'Normotonic' || finding.status.endsWith('_Cleared') || finding.status === 'Normotonic_Cleared';
+              const isClear = finding.status === 'Clear' || finding.status === 'Normotonic' || finding.status.endsWith('_Cleared');
               return (
-                <div 
-                  key={idx} 
+                <div
+                  key={idx}
                   className={cn(
-                    "p-2.5 border text-[9px] font-bold flex items-center justify-between rounded-sm",
+                    "p-2.5 border text-[9px] font-bold flex items-center justify-between gap-1",
                     isClear ? "bg-emerald-50/30 border-emerald-100 text-emerald-800" : "bg-rose-50/30 border-rose-100 text-rose-800"
                   )}
                 >
-                  <span className="truncate mr-2">{finding.name}</span>
+                  <span className="truncate">{finding.name}</span>
                   <span className={cn(
-                    "text-[7px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-sm",
+                    "text-[7px] font-black uppercase tracking-widest px-1.5 py-0.5 shrink-0",
                     isClear ? "bg-emerald-500 text-white" : "bg-rose-500 text-white"
                   )}>
-                    {finding.status.replace('_Cleared', ' (Cleared)')}
+                    {finding.status.replace('_Cleared', '✓')}
                   </span>
                 </div>
               );
             })}
           </div>
-        ) : (
-          <p className="text-xs text-slate-400 italic">No findings recorded in this session.</p>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* 3. Corrections & Logic */}
-      <div className="space-y-6">
-        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 border-l-4 border-slate-200 pl-3">
+      <div className="space-y-4">
+        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 border-l-4 border-slate-200 pl-3">
           Corrections & Logic
         </h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Balances Applied</label>
-            <div className="p-4 bg-slate-50/50 border border-slate-200 min-h-[100px] text-xs font-mono leading-relaxed text-slate-700 whitespace-pre-wrap">
-              {appointment.modes_balances || "No corrections logged."}
+            <div className="p-4 bg-slate-50/50 border border-slate-200 min-h-[90px] text-xs font-mono leading-relaxed text-slate-700 whitespace-pre-wrap">
+              {appointment.modes_balances || <span className="italic text-slate-300">No corrections logged.</span>}
             </div>
           </div>
-
           <div className="space-y-2">
             <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Acupoints</label>
-            <div className="p-4 bg-slate-50/50 border border-slate-200 min-h-[100px] text-xs font-bold text-indigo-600">
-              {appointment.acupoints || "No acupoints recorded."}
+            <div className="p-4 bg-slate-50/50 border border-slate-200 min-h-[90px] text-xs font-bold text-indigo-700">
+              {appointment.acupoints || <span className="italic font-normal text-slate-300">No acupoints recorded.</span>}
             </div>
           </div>
         </div>
       </div>
 
-      {/* 4. Standard Inputs */}
+      {/* 4. Documentation */}
       <div className="space-y-10 pt-6 border-t border-slate-200">
-        <DocInput 
-          label="Final Re-Assessment & Prescribed Homework" 
-          value={appointment.session_north_star} 
-          field="session_north_star" 
-          placeholder="Verify integration and define the client's daily practice..." 
-          multiline 
+        <DocInput
+          label="Final Re-Assessment & Prescribed Homework"
+          value={appointment.session_north_star}
+          field="session_north_star"
+          placeholder="Verify integration and define the client's daily practice..."
+          multiline
           onChange={handleFieldChange}
         />
-        <DocInput 
-          label="General Session Notes" 
-          value={appointment.notes} 
-          field="notes" 
-          placeholder="Any additional observations or context..." 
-          multiline 
+        <DocInput
+          label="General Session Notes"
+          value={appointment.notes}
+          field="notes"
+          placeholder="Any additional observations or context..."
+          multiline
           onChange={handleFieldChange}
         />
-        <DocInput 
-          label="Practitioner Reflection (Private)" 
-          value={appointment.journal} 
-          field="journal" 
-          placeholder="Personal insights for the Sandbox..." 
-          multiline 
+        <DocInput
+          label="Practitioner Reflection (Private)"
+          value={appointment.journal}
+          field="journal"
+          placeholder="Personal insights for the Sandbox..."
+          multiline
           onChange={handleFieldChange}
         />
       </div>

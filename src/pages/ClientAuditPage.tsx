@@ -93,43 +93,43 @@ const RATE_OPTIONS = [
 
 const STATIC_ROADMAP = [
   {
-    phase: "Phase 1: Q3 2026",
-    title: "Elevate Low-Tier Clients",
-    description: "Transition clients currently paying $30 to $50. Introduce basic homework tools and email support to justify the adjustment."
+    phase: "Phase 1 · Now → Q3 2026",
+    title: "Bring $30 clients to $50",
+    description: "Use the Contact button on the Rates tab to send the rate increase email. Target anyone on $30 first — it's the smallest jump and easiest conversation."
   },
   {
-    phase: "Phase 2: Q1 2027",
-    title: "Standardize Mid-Tier Clients",
-    description: "Transition $50 clients to $80, and $80 clients to $100. Offer custom integration worksheets and specialized neurological protocols."
+    phase: "Phase 2 · Q1 2027",
+    title: "Bring $50–$80 clients to $100",
+    description: "Set their Target rate in the Rates tab, send the notification email, and confirm the upgrade once they acknowledge. Use the Session Packages strategy to soften the transition."
   },
   {
-    phase: "Phase 3: Q3 2027",
-    title: "The Premium Shift",
-    description: "Transition $100 clients to $120. Introduce premium session packages (e.g., 5 sessions for $550) to lock in commitment and ease the transition."
+    phase: "Phase 3 · Q3 2027",
+    title: "Bring $100 clients to $120",
+    description: "At this stage most clients will expect incremental increases. Offer a 5-session package at $550 as an alternative to smooth the jump."
   },
   {
-    phase: "Phase 4: Q4 2027",
-    title: "Target Goal Achieved",
-    description: "Transition all active clients to the standard rate of $150/session. All new clients onboarded from this point forward start at the $150 rate."
+    phase: "Phase 4 · Q4 2027",
+    title: "Everyone at $150 · New clients start here",
+    description: "All active clients transition to $150. Every new client onboards at this rate from day one."
   }
 ];
 
 const STATIC_STRATEGIES = [
   {
-    title: "Package Sessions",
-    description: "Offer packages of 5 or 10 sessions at a slight discount (e.g., 5 sessions for $650 instead of $750) to secure upfront commitment, increase lifetime value, and ease the transition to higher rates."
+    title: "Session Packages",
+    description: "5 sessions for $650 (instead of $750 individually). Clients get a small saving; you get upfront commitment and smoother rate transitions."
   },
   {
-    title: "Premium Support",
-    description: "Provide email/chat support between sessions, custom homework tools, and personalized integration worksheets. This positions you as a dedicated partner in their healing journey."
+    title: "Between-Session Support",
+    description: "Email check-ins, custom homework, and integration worksheets make the work feel ongoing — not just 60 minutes once a fortnight. This is your clearest value differentiator."
   },
   {
-    title: "Highlight Clinical Wins",
-    description: "Use the Marketing Engine and Wins Vault to document and share client breakthroughs. Demonstrating high-value outcomes and clinical success builds trust and justifies premium pricing."
+    title: "Document Your Wins",
+    description: "Log client breakthroughs in the Wins Vault. When clients ask about the rate change, you can point to concrete outcomes from your work together."
   },
   {
-    title: "Specialized Protocols",
-    description: "Introduce advanced neurological and somatic protocols (e.g., Cranial Nerve, Primitive Reflex, Heart Wall) to justify specialist rates. Clients are willing to pay more for highly specialized expertise."
+    title: "Specialist Positioning",
+    description: "You use Cranial Nerve, Primitive Reflex, Heart Wall, and Identity protocols that most practitioners don't have. Mention your specialist training when clients query rates — it's a legitimate reason."
   }
 ];
 
@@ -1089,7 +1089,6 @@ export default function ClientAuditPage() {
 
   const activeRoadmap = aiSuggestions?.roadmap || STATIC_ROADMAP;
   const activeStrategies = aiSuggestions?.strategies || STATIC_STRATEGIES;
-  const activeSummary = aiSuggestions?.summary || "Reaching a $150 average session rate requires a gradual, value-driven transition plan. By elevating your clinical offerings, packaging sessions, and implementing structured rate increases, you can double your practice revenue while delivering exceptional client outcomes.";
 
   return (
     <AppLayout variant="full">
@@ -1109,21 +1108,21 @@ export default function ClientAuditPage() {
           </div>
         ) : (
           <Tabs defaultValue="rates" className="space-y-8">
-            <TabsList className="bg-muted/50 p-1 rounded-2xl border border-border/50 w-full max-w-2xl grid grid-cols-5">
+            <TabsList className="bg-muted/50 p-1 rounded-2xl border border-border/50 w-full max-w-3xl grid grid-cols-5">
               <TabsTrigger value="rates" className="rounded-xl font-bold text-xs py-2.5">
-                Rates & Recency
+                Rates
               </TabsTrigger>
               <TabsTrigger value="timetable" className="rounded-xl font-bold text-xs py-2.5">
                 Timetable
               </TabsTrigger>
               <TabsTrigger value="salary" className="rounded-xl font-bold text-xs py-2.5">
-                Salary Simulator
+                Salary Sim
               </TabsTrigger>
               <TabsTrigger value="audit" className="rounded-xl font-bold text-xs py-2.5">
-                Full Audit
+                Financials
               </TabsTrigger>
               <TabsTrigger value="suggestions" className="rounded-xl font-bold text-xs py-2.5">
-                AI Suggestions
+                AI Roadmap
               </TabsTrigger>
             </TabsList>
 
@@ -1160,7 +1159,7 @@ export default function ClientAuditPage() {
                   </div>
 
                   {/* Quick Select Buttons */}
-                  <div className="flex flex-wrap gap-2 p-3 bg-slate-900/60 rounded-2xl border border-slate-800/80">
+                  <div className="flex flex-wrap gap-2 p-3 bg-slate-900/70 dark:bg-slate-900/60 rounded-2xl border border-slate-800/80">
                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 self-center px-2">
                       Quick Select:
                     </span>
@@ -1291,7 +1290,7 @@ export default function ClientAuditPage() {
                           <SelectTrigger className="w-[130px] rounded-xl border-border/60 bg-muted/30">
                             <SelectValue placeholder="Rate Tier" />
                           </SelectTrigger>
-                          <SelectContent className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl">
+                          <SelectContent className="rounded-xl shadow-xl">
                             <SelectItem value="all">All Rates</SelectItem>
                             <SelectItem value="free">Free</SelectItem>
                             <SelectItem value="30">$30</SelectItem>
@@ -1312,7 +1311,7 @@ export default function ClientAuditPage() {
                         <SelectTrigger className="w-[150px] rounded-xl border-border/60 bg-muted/30">
                           <SelectValue placeholder="Follow-up" />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl">
+                        <SelectContent className="rounded-xl shadow-xl">
                           <SelectItem value="all">All Statuses</SelectItem>
                           <SelectItem value="Booked">Booked</SelectItem>
                           <SelectItem value="Needs Follow-up">Needs Follow-up</SelectItem>
@@ -1325,7 +1324,7 @@ export default function ClientAuditPage() {
                         <SelectTrigger className="w-[130px] rounded-xl border-border/60 bg-muted/30">
                           <SelectValue placeholder="Sort By" />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl">
+                        <SelectContent className="rounded-xl shadow-xl">
                           <SelectItem value="name">Name</SelectItem>
                           <SelectItem value="lastSeen">Last Seen</SelectItem>
                           <SelectItem value="rate">Standard Rate</SelectItem>
@@ -1421,6 +1420,7 @@ export default function ClientAuditPage() {
                                   isLapsedSection={false}
                                   onQuickBook={setBookingClientId}
                                   onRefresh={fetchData}
+                                  averageSessionRate={averageSessionRate}
                                 />
                               ))}
                             </tbody>
@@ -1503,6 +1503,7 @@ export default function ClientAuditPage() {
                                   isLapsedSection={false}
                                   onQuickBook={setBookingClientId}
                                   onRefresh={fetchData}
+                                  averageSessionRate={averageSessionRate}
                                 />
                               ))}
                             </tbody>
@@ -1585,6 +1586,7 @@ export default function ClientAuditPage() {
                                   isLapsedSection={true}
                                   onQuickBook={setBookingClientId}
                                   onRefresh={fetchData}
+                                  averageSessionRate={averageSessionRate}
                                 />
                               ))}
                             </tbody>
@@ -1604,6 +1606,34 @@ export default function ClientAuditPage() {
 
             {/* TAB 3: SALARY SIMULATOR */}
             <TabsContent value="salary" className="space-y-8">
+              {/* How-to guide */}
+              <Card className="border-none shadow-sm rounded-[2rem] bg-muted/30 border border-border">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-950/40 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
+                      <Info size={18} />
+                    </div>
+                    <div className="space-y-3 min-w-0">
+                      <h4 className="font-black text-foreground text-sm">How to use the Salary Simulator</h4>
+                      <ol className="space-y-2 text-xs text-muted-foreground font-medium list-none">
+                        <li className="flex items-start gap-2.5">
+                          <span className="w-5 h-5 rounded-full bg-indigo-600 text-white text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">1</span>
+                          <span><strong className="text-foreground">Check your current baseline</strong> — the left column shows what you're earning now, based on clients seen in the last 30 days and their actual session frequencies.</span>
+                        </li>
+                        <li className="flex items-start gap-2.5">
+                          <span className="w-5 h-5 rounded-full bg-indigo-600 text-white text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">2</span>
+                          <span><strong className="text-foreground">Toggle Sandbox Mode on</strong> — use the global sliders or client-by-client controls on the right to test a new rate or frequency scenario. The right column instantly reflects the impact.</span>
+                        </li>
+                        <li className="flex items-start gap-2.5">
+                          <span className="w-5 h-5 rounded-full bg-indigo-600 text-white text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">3</span>
+                          <span><strong className="text-foreground">Try a Preset</strong> — Conservative (+10%), Moderate (+25%), or Target ($150) are quick-start scenarios. Hit Reset Sandbox any time to return to your actual numbers.</span>
+                        </li>
+                      </ol>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Top Row: Progress to $150/session & Active Client Base */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Progress to $150/session */}
@@ -1718,7 +1748,7 @@ export default function ClientAuditPage() {
                             onCheckedChange={setIsSandboxActive}
                             className="data-[state=checked]:bg-indigo-600"
                           />
-                          <Label htmlFor="sandbox-mode-toggle" className="text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer">
+                          <Label htmlFor="sandbox-mode-toggle" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground cursor-pointer">
                             Sandbox Mode
                           </Label>
                         </div>
@@ -1726,13 +1756,13 @@ export default function ClientAuditPage() {
                     </CardHeader>
                     <CardContent className="p-8 space-y-8">
                       {/* Projections Table */}
-                      <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
-                        <div className="grid grid-cols-3 bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-500 p-4">
+                      <div className="border border-border rounded-2xl overflow-hidden">
+                        <div className="grid grid-cols-3 bg-muted/40 border-b border-border text-[10px] font-black uppercase tracking-widest text-muted-foreground p-4">
                           <div>Frequency</div>
-                          <div>Current Salary</div>
-                          <div className="text-indigo-600">Sandbox Salary</div>
+                          <div>Current</div>
+                          <div className="text-indigo-600 dark:text-indigo-400">Sandbox</div>
                         </div>
-                        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                        <div className="divide-y divide-border">
                           {[
                             { label: "Weekly", current: salaryMetrics.current.weekly, sim: salaryMetrics.simulated.weekly },
                             { label: "Fortnightly", current: salaryMetrics.current.fortnightly, sim: salaryMetrics.simulated.fortnightly },
@@ -1743,9 +1773,9 @@ export default function ClientAuditPage() {
                               "grid grid-cols-3 p-4 items-center text-sm",
                               row.highlight ? "bg-indigo-50/30 dark:bg-indigo-950/10 font-bold" : ""
                             )}>
-                              <div className="font-bold text-slate-700 dark:text-slate-300">{row.label}</div>
-                              <div className="text-slate-600 dark:text-slate-400">${Math.round(row.current).toLocaleString()}</div>
-                              <div className={cn("font-black", isSandboxActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-slate-600")}>
+                              <div className="font-bold text-foreground">{row.label}</div>
+                              <div className="text-muted-foreground">${Math.round(row.current).toLocaleString()}</div>
+                              <div className={cn("font-black", isSandboxActive ? "text-indigo-600 dark:text-indigo-400" : "text-muted-foreground/40")}>
                                 ${Math.round(row.sim).toLocaleString()}
                               </div>
                             </div>
@@ -1755,15 +1785,15 @@ export default function ClientAuditPage() {
 
                       {/* Global Sandbox Controls */}
                       {isSandboxActive && (
-                        <div className="space-y-6 p-6 bg-slate-50 dark:bg-slate-900/30 rounded-2xl border border-slate-200 dark:border-slate-800 animate-in slide-in-from-top-2 duration-300">
-                          <h4 className="text-xs font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                            <Sparkles size={14} className="text-indigo-500" /> Global Sandbox Controls
+                        <div className="space-y-6 p-6 bg-muted/30 rounded-2xl border border-border animate-in slide-in-from-top-2 duration-300">
+                          <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                            <Sparkles size={14} className="text-indigo-500 dark:text-indigo-400" /> Global Sandbox Controls
                           </h4>
-                          
+
                           {/* Global Rate Slider */}
                           <div className="space-y-2">
                             <div className="flex justify-between items-center">
-                              <label className="text-xs font-bold text-slate-600 dark:text-slate-400">
+                              <label className="text-xs font-bold text-muted-foreground">
                                 Global Simulated Rate
                               </label>
                               <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">${globalSimRate}/session</span>
@@ -1780,7 +1810,7 @@ export default function ClientAuditPage() {
                           {/* Global Frequency Slider */}
                           <div className="space-y-2">
                             <div className="flex justify-between items-center">
-                              <label className="text-xs font-bold text-slate-600 dark:text-slate-400">
+                              <label className="text-xs font-bold text-muted-foreground">
                                 Global Simulated Frequency
                               </label>
                               <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">{globalSimFrequency} sessions/mo</span>
@@ -1820,7 +1850,7 @@ export default function ClientAuditPage() {
                             return (
                               <div key={client.id} className={cn(
                                 "p-4 rounded-2xl border transition-all space-y-3",
-                                isActive ? "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm" : "bg-slate-50 dark:bg-slate-950/20 border-slate-100 dark:border-slate-900 opacity-50"
+                                isActive ? "bg-card border-border shadow-sm" : "bg-muted/20 border-border/40 opacity-50"
                               )}>
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-2">
@@ -1831,7 +1861,7 @@ export default function ClientAuditPage() {
                                     />
                                     <Link 
                                       to={`/clients/${client.id}`}
-                                      className="font-bold text-sm text-slate-900 dark:text-slate-100 hover:underline hover:text-indigo-600 transition-colors"
+                                      className="font-bold text-sm text-foreground hover:underline hover:text-indigo-600 transition-colors"
                                     >
                                       {client.name}
                                     </Link>
@@ -1842,14 +1872,14 @@ export default function ClientAuditPage() {
                                 </div>
 
                                 {isActive && isSandboxActive && (
-                                  <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800 animate-in fade-in duration-300">
+                                  <div className="space-y-3 pt-2 border-t border-border/60 animate-in fade-in duration-300">
                                     {/* Individual Rate Slider */}
                                     <div className="space-y-1">
-                                      <div className="flex justify-between text-[9px] font-bold text-slate-500">
+                                      <div className="flex justify-between text-[9px] font-bold text-muted-foreground">
                                         <span>Simulated Rate</span>
                                         <span className="text-indigo-600 dark:text-indigo-400 font-black">${rate}</span>
                                       </div>
-                                      <Slider 
+                                      <Slider
                                         value={[rate]}
                                         onValueChange={(val) => handleClientOverrideChange(client.id, 'rate', val[0])}
                                         min={0}
@@ -1860,11 +1890,11 @@ export default function ClientAuditPage() {
 
                                     {/* Individual Frequency Slider */}
                                     <div className="space-y-1">
-                                      <div className="flex justify-between text-[9px] font-bold text-slate-500">
-                                        <span>Simulated Sessions/Mo</span>
+                                      <div className="flex justify-between text-[9px] font-bold text-muted-foreground">
+                                        <span>Sessions/Mo</span>
                                         <span className="text-indigo-600 dark:text-indigo-400 font-black">{freq.toFixed(1)}</span>
                                       </div>
-                                      <Slider 
+                                      <Slider
                                         value={[freq]}
                                         onValueChange={(val) => handleClientOverrideChange(client.id, 'frequency', val[0])}
                                         min={0.5}
@@ -1941,13 +1971,16 @@ export default function ClientAuditPage() {
                 <Card className="border-none shadow-md rounded-[2rem] bg-card overflow-hidden relative group">
                   <CardContent className="p-6 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-rose-600 flex items-center justify-center">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Free Session Ratio</span>
+                      <div className="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 flex items-center justify-center">
                         <Percent size={16} />
-                      </span>
+                      </div>
                     </div>
                     <div className="space-y-1">
-                      <h3 className="text-3xl font-black text-foreground">{freeSessionRatio.toFixed(1)}%</h3>
-                      <p className="text-xs text-muted-foreground font-medium">Of total sessions logged</p>
+                      <h3 className={cn("text-3xl font-black", freeSessionRatio > 30 ? "text-rose-600 dark:text-rose-400" : "text-foreground")}>
+                        {freeSessionRatio.toFixed(1)}%
+                      </h3>
+                      <p className="text-xs text-muted-foreground font-medium">{freeSessions} of {totalSessions} sessions unpaid</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -2031,57 +2064,36 @@ export default function ClientAuditPage() {
             {/* TAB 4: AI SUGGESTIONS */}
             <TabsContent value="suggestions" className="space-y-8">
               {/* Goal Banner */}
-              <Card className="border-none shadow-2xl rounded-[3rem] bg-slate-900 text-white overflow-hidden relative group">
-                <div className="absolute inset-0 bg-gradient-to-br from-amber-900/40 via-slate-950 to-indigo-900/40" />
-                <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-700">
-                  <Sparkles size={200} />
-                </div>
-                <CardContent className="p-10 md:p-14 relative z-10">
-                  <div className="max-w-3xl space-y-6">
-                    <div className="flex items-center justify-between">
-                      <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1">
-                        Strategic AI Roadmap
-                      </Badge>
-                      <Button
-                        onClick={handleGenerateSuggestions}
-                        disabled={isAnalyzing}
-                        className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-[10px] uppercase tracking-widest h-10 px-6 rounded-xl shadow-lg"
-                      >
-                        {isAnalyzing ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Analyzing...
-                          </>
-                        ) : (
-                          <>
-                            <Wand2 className="mr-2 h-4 w-4" />
-                            Generate AI Suggestions
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                    <h2 className="text-4xl md:text-5xl font-serif font-bold tracking-tighter leading-tight">
-                      The Path to $150/Session <br/>by the End of 2027.
-                    </h2>
-                    <p className="text-lg text-slate-300 font-medium leading-relaxed">
-                      {activeSummary}
-                    </p>
-                    <div className="flex flex-wrap gap-4 pt-4">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 size={18} className="text-amber-400" />
-                        <span className="text-sm font-bold text-slate-200">Gradual Rate Escalation</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 size={18} className="text-amber-400" />
-                        <span className="text-sm font-bold text-slate-200">Value-Add Client Support</span>
-                      </div>
+              <Card className="border-none shadow-xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-900/30 via-slate-950 to-indigo-900/30" />
+                <CardContent className="p-8 md:p-10 relative z-10">
+                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                    <div className="space-y-3 max-w-2xl">
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-400">Rate Increase Roadmap</p>
+                      <h2 className="text-3xl font-black tracking-tight leading-tight text-white">
+                        $150/session by end of 2027
+                      </h2>
+                      <p className="text-sm text-slate-300 font-medium leading-relaxed">
+                        {aiSuggestions?.summary || "A four-phase plan to move every client to $150. Each phase targets a specific rate tier — use the Rates tab to action contact emails and confirm upgrades as you go."}
+                      </p>
                       {lastAnalyzed && (
-                        <div className="flex items-center gap-2 text-slate-400 text-xs font-medium ml-auto">
-                          <Clock size={14} />
-                          <span>Last Analyzed {formatDistanceToNow(new Date(lastAnalyzed), { addSuffix: true })}</span>
-                        </div>
+                        <p className="text-[10px] text-slate-500 font-medium flex items-center gap-1.5">
+                          <Clock size={12} />
+                          AI analysis updated {formatDistanceToNow(new Date(lastAnalyzed), { addSuffix: true })}
+                        </p>
                       )}
                     </div>
+                    <Button
+                      onClick={handleGenerateSuggestions}
+                      disabled={isAnalyzing}
+                      className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-[10px] uppercase tracking-widest h-10 px-6 rounded-xl shadow-lg shrink-0 self-start"
+                    >
+                      {isAnalyzing ? (
+                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Analysing...</>
+                      ) : (
+                        <><Wand2 className="mr-2 h-4 w-4" />Refresh AI Analysis</>
+                      )}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

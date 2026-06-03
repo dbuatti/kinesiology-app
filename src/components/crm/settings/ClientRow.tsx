@@ -62,6 +62,7 @@ interface ClientRowProps {
   isLapsedSection: boolean;
   onQuickBook: (clientId: string) => void;
   onRefresh: () => void;
+  averageSessionRate?: number;
 }
 
 const RATE_OPTIONS = [
@@ -90,9 +91,12 @@ export const ClientRow = ({
   isLapsedSection,
   onQuickBook,
   onRefresh,
+  averageSessionRate,
 }: ClientRowProps) => {
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [isReengagementEmailModalOpen, setIsReengagementEmailModalOpen] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
+  const [copiedReengagementEmail, setCopiedReengagementEmail] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const lastSeenText = client.lastSeenDate ? format(client.lastSeenDate, "MMM d, yyyy") : "Never";
@@ -229,26 +233,48 @@ export const ClientRow = ({
     return format(nextMonth, "MMMM");
   }, []);
 
-  // Generate personalized email template
+  // Generate personalized rate increase email template (British English)
   const emailTemplate = useMemo(() => {
     const firstName = client.name.split(' ')[0];
     return `Hi ${firstName},
 
-I hope you're doing well and having a great week!
+I hope this finds you well!
 
-I wanted to reach out and say a huge thank you for working with me and trusting me with your health and integration journey. It is always a privilege to support you.
+I just wanted to take a moment to say a huge thank you for working with me and for trusting me with your health and integration journey. It is always a privilege to support you.
 
-I'm writing to let you know that starting next month (${nextMonthName}), my standard session rates will be increasing to $${targetRate}. 
+I'm writing to let you know that from next month (${nextMonthName}), my standard session rate will be moving to $${targetRate}.
 
-This adjustment allows me to continue investing in advanced clinical training, specialized protocols, and high-value integration resources to support your healing in the deepest way possible.
+This allows me to continue investing in advanced clinical training, specialist protocols, and high-quality integration resources — all to ensure I'm able to support you in the very best way possible.
 
-If you have any questions or would like to discuss this, please feel free to reply directly to this email.
+Please don't hesitate to reply directly to this email if you have any questions or would like to have a chat about it.
 
 Looking forward to our next session!
 
 Warmly,
 Daniele`;
   }, [client.name, nextMonthName, targetRate]);
+
+  // Generate re-engagement email template (British English)
+  const ongoingRate = averageSessionRate ? Math.round(averageSessionRate) : 70;
+  const reengagementEmailTemplate = useMemo(() => {
+    const firstName = client.name.split(' ')[0];
+    return `Hi ${firstName},
+
+I hope you're keeping well and that life has been treating you kindly!
+
+It's been a little while since we last worked together, and I've been thinking about how you're getting on.
+
+I'm currently offering a special re-introductory package for returning clients: 3 sessions for $150 (roughly $50 per session), followed by my standard rate of $${ongoingRate} per session going forward.
+
+I'd love to welcome you back and pick up where we left off — whether that's continuing with where we were, or starting fresh with something new.
+
+If you're open to it, feel free to simply reply to this email and we can go from there.
+
+Looking forward to hearing from you!
+
+Warmly,
+Daniele`;
+  }, [client.name, ongoingRate]);
 
   const handleCopyEmail = () => {
     navigator.clipboard.writeText(emailTemplate);
@@ -257,13 +283,45 @@ Daniele`;
     setTimeout(() => setCopiedEmail(false), 2000);
   };
 
+  const handleCopyReengagementEmail = () => {
+    navigator.clipboard.writeText(reengagementEmailTemplate);
+    setCopiedReengagementEmail(true);
+    showSuccess("Re-engagement email copied to clipboard!");
+    setTimeout(() => setCopiedReengagementEmail(false), 2000);
+  };
+
+  const handleMarkReengagementContacted = async () => {
+    setUpdatingStatus(true);
+    try {
+      const now = new Date().toISOString();
+      const updatedJournal = stringifyClientJournal({
+        ...journalData,
+        last_contacted_at: now,
+      });
+      const { error } = await supabase
+        .from('clients')
+        .update({ journal: updatedJournal })
+        .eq('id', client.id);
+      if (error) throw error;
+      showSuccess(`${client.name} marked as contacted.`);
+      setIsReengagementEmailModalOpen(false);
+      onRefresh();
+    } catch (err) {
+      showError("Failed to update contact status.");
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
   const handleMarkContacted = async () => {
     setUpdatingStatus(true);
     try {
+      const now = new Date().toISOString();
       const updatedJournal = stringifyClientJournal({
         ...journalData,
         rate_increase_contacted: true,
-        rate_increase_contacted_at: new Date().toISOString()
+        rate_increase_contacted_at: now,
+        last_contacted_at: now,
       });
 
       const { error } = await supabase
@@ -549,19 +607,45 @@ Daniele`;
 
       {/* Follow-up Status */}
       <td className="p-4">
-        {client.followUpStatus === "Booked" ? (
-          <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-none font-bold text-xs px-2.5 py-0.5 rounded-full">
-            Booked
-          </Badge>
-        ) : client.followUpStatus === "Needs Follow-up" ? (
-          <Badge className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-none font-bold text-xs px-2.5 py-0.5 rounded-full animate-pulse">
-            Needs Follow-up
-          </Badge>
-        ) : (
-          <Badge className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-none font-bold text-xs px-2.5 py-0.5 rounded-full">
-            No Future Bookings
-          </Badge>
-        )}
+        <div className="space-y-1.5">
+          {(() => {
+            const lastContactedAt = journalData.last_contacted_at;
+            const recentlyContacted = lastContactedAt
+              ? (new Date().getTime() - new Date(lastContactedAt).getTime()) / (1000 * 60 * 60 * 24) < 14
+              : false;
+
+            if (client.followUpStatus === "Booked") {
+              return (
+                <Badge className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-none font-bold text-xs px-2.5 py-0.5 rounded-full">
+                  Booked
+                </Badge>
+              );
+            } else if (recentlyContacted) {
+              return (
+                <Badge className="bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 border-none font-bold text-xs px-2.5 py-0.5 rounded-full">
+                  Awaiting Reply
+                </Badge>
+              );
+            } else if (client.followUpStatus === "Needs Follow-up") {
+              return (
+                <Badge className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-none font-bold text-xs px-2.5 py-0.5 rounded-full animate-pulse">
+                  Needs Follow-up
+                </Badge>
+              );
+            } else {
+              return (
+                <Badge className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-none font-bold text-xs px-2.5 py-0.5 rounded-full">
+                  No Future Bookings
+                </Badge>
+              );
+            }
+          })()}
+          {journalData.last_contacted_at && (
+            <p className="text-[10px] text-muted-foreground font-medium">
+              Contacted {formatDistanceToNow(new Date(journalData.last_contacted_at), { addSuffix: true })}
+            </p>
+          )}
+        </div>
       </td>
 
       {/* Row Actions */}
@@ -621,6 +705,26 @@ Daniele`;
                 </TooltipProvider>
               )}
             </div>
+          )}
+
+          {/* Re-engagement email button for lapsed clients */}
+          {isLapsedSection && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsReengagementEmailModalOpen(true)}
+                    className="h-8 rounded-xl border-rose-200 text-rose-600 hover:bg-rose-50 dark:border-rose-900/50 dark:hover:bg-rose-950/30 font-black text-[9px] uppercase tracking-widest flex items-center gap-1"
+                  >
+                    <Mail size={12} />
+                    Re-engage
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="rounded-xl font-bold text-xs p-2">Send Re-engagement Email</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
 
           {/* Quick Book */}
@@ -687,6 +791,69 @@ Daniele`;
           </DropdownMenu>
         </div>
       </td>
+
+      {/* RE-ENGAGEMENT EMAIL DIALOG */}
+      <Dialog open={isReengagementEmailModalOpen} onOpenChange={setIsReengagementEmailModalOpen}>
+        <DialogContent className="sm:max-w-[600px] rounded-[2.5rem] p-10">
+          <DialogHeader>
+            <div className="flex items-center gap-4 mb-2">
+              <div className="w-14 h-14 rounded-2xl bg-rose-600 text-white flex items-center justify-center shadow-xl">
+                <Mail size={28} />
+              </div>
+              <div>
+                <DialogTitle className="text-2xl font-black">Re-engagement Email</DialogTitle>
+                <DialogDescription className="text-base font-medium">
+                  3+ month re-introductory offer for {client.name}.
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            <div className="p-4 bg-rose-50 dark:bg-rose-950/20 rounded-2xl border border-rose-100 dark:border-rose-900/30 flex items-center justify-between">
+              <div className="space-y-0.5">
+                <p className="text-[9px] font-black text-rose-600 uppercase tracking-widest">Introductory Offer</p>
+                <p className="text-lg font-black text-rose-900 dark:text-rose-300">3 sessions for $150 · then ${ongoingRate}/session</p>
+              </div>
+              <Badge className="bg-rose-600 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full">
+                Re-engagement
+              </Badge>
+            </div>
+
+            <div className="relative">
+              <Textarea
+                readOnly
+                value={reengagementEmailTemplate}
+                className="min-h-[280px] rounded-2xl border-2 border-slate-100 bg-slate-50/50 p-6 text-sm font-medium leading-relaxed resize-none"
+              />
+              <Button
+                onClick={handleCopyReengagementEmail}
+                className={cn(
+                  "absolute bottom-4 right-4 h-10 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-md",
+                  copiedReengagementEmail ? "bg-emerald-600 text-white" : "bg-slate-900 text-white hover:bg-slate-800"
+                )}
+              >
+                {copiedReengagementEmail ? <Check size={14} className="mr-1.5" /> : <Copy size={14} className="mr-1.5" />}
+                {copiedReengagementEmail ? "Copied!" : "Copy Email"}
+              </Button>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setIsReengagementEmailModalOpen(false)} className="rounded-xl">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleMarkReengagementContacted}
+              disabled={updatingStatus}
+              className="rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase tracking-widest px-6"
+            >
+              {updatingStatus ? <Loader2 className="animate-spin mr-2" /> : <CheckCircle2 size={16} className="mr-2" />}
+              Mark as Contacted
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* RATE INCREASE EMAIL DIALOG */}
       <Dialog open={isEmailModalOpen} onOpenChange={setIsEmailModalOpen}>

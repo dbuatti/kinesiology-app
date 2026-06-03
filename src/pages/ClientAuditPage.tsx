@@ -63,9 +63,16 @@ import {
   Target,
   Loader2,
   Wand2,
-  CalendarDays
+  CalendarDays,
+  Mic2,
+  Building2,
+  Theater,
+  Music2,
+  Brain,
+  Zap,
+  Edit3,
 } from "lucide-react";
-import { format, formatDistanceToNow, differenceInMonths } from "date-fns";
+import { format, formatDistanceToNow, differenceInMonths, startOfWeek, endOfWeek } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
 import AppointmentForm from "@/components/crm/AppointmentForm";
 import { ClientRow } from "@/components/crm/settings/ClientRow";
@@ -186,6 +193,30 @@ export default function ClientAuditPage() {
   // NEW FEATURES STATE
   const [selectedWeeklyClients, setSelectedWeeklyClients] = useState<string[]>([]);
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
+
+  // Income streams & weekly calculator
+  interface IncomeStream { id: string; name: string; ratePerUnit: number; unitsPerMonth: number; enabled: boolean; }
+  const DEFAULT_EXTRA_STREAMS: IncomeStream[] = [
+    { id: 'voice',     name: 'Voice Coaching',  ratePerUnit: 80,  unitsPerMonth: 3, enabled: true },
+    { id: 'corporate', name: 'Corporate Gigs',   ratePerUnit: 350, unitsPerMonth: 1, enabled: true },
+    { id: 'theatre',   name: 'Musical Theatre',  ratePerUnit: 200, unitsPerMonth: 1, enabled: true },
+    { id: 'piano',     name: 'Piano Backings',   ratePerUnit: 80,  unitsPerMonth: 4, enabled: true },
+  ];
+  const [extraStreams, setExtraStreams] = useState<IncomeStream[]>(() => {
+    try { const s = localStorage.getItem('income_streams_v1'); return s ? JSON.parse(s) : DEFAULT_EXTRA_STREAMS; }
+    catch { return DEFAULT_EXTRA_STREAMS; }
+  });
+  const [weeklyTarget, setWeeklyTarget] = useState<number>(() => parseInt(localStorage.getItem('weekly_target') || '700'));
+  const [editingWeeklyTarget, setEditingWeeklyTarget] = useState(false);
+  const [weeklyTargetInput, setWeeklyTargetInput] = useState('700');
+
+  const updateStream = (id: string, field: keyof IncomeStream, value: any) => {
+    setExtraStreams(prev => {
+      const next = prev.map(s => s.id === id ? { ...s, [field]: value } : s);
+      localStorage.setItem('income_streams_v1', JSON.stringify(next));
+      return next;
+    });
+  };
 
   useEffect(() => {
     fetchData();
@@ -935,6 +966,26 @@ export default function ClientAuditPage() {
     };
   }, [clients, isSandboxActive, globalSimRate, globalSimFrequency, clientOverrides]);
 
+  // This week's revenue (Mon–Sun, from loaded appointment data)
+  const thisWeekRevenue = useMemo(() => {
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const weekEnd   = endOfWeek(new Date(), { weekStartsOn: 1 });
+    let total = 0;
+    clients.forEach(c => c.appointments.forEach(app => {
+      const d = new Date(app.date);
+      if (d >= weekStart && d <= weekEnd) total += Number(app.price_amount) || 0;
+    }));
+    return total;
+  }, [clients]);
+
+  const extraStreamsMonthly = useMemo(() =>
+    extraStreams.filter(s => s.enabled).reduce((sum, s) => sum + s.ratePerUnit * s.unitsPerMonth, 0),
+  [extraStreams]);
+
+  const STREAM_ICONS: Record<string, React.ElementType> = {
+    fnh: Brain, voice: Mic2, corporate: Building2, theatre: Theater, piano: Music2,
+  };
+
   const handleClientOverrideChange = (clientId: string, field: 'rate' | 'frequency' | 'active', value: any) => {
     setClientOverrides(prev => {
       const current = prev[clientId] || {};
@@ -1607,6 +1658,209 @@ export default function ClientAuditPage() {
 
             {/* TAB 3: SALARY SIMULATOR */}
             <TabsContent value="salary" className="space-y-8">
+
+              {/* ── WEEKLY CALCULATOR ── */}
+              {(() => {
+                const gap = Math.max(0, weeklyTarget - thisWeekRevenue);
+                const fhnRate = Math.round(averageSessionRate) || 70;
+                const sessionsNeeded = fhnRate > 0 ? Math.ceil(gap / fhnRate) : 0;
+                const corpStream = extraStreams.find(s => s.id === 'corporate');
+                const corpRate = corpStream?.ratePerUnit ?? 350;
+                const corpGigsNeeded = corpRate > 0 ? Math.ceil(gap / corpRate) : 0;
+                const pct = Math.min(100, weeklyTarget > 0 ? Math.round((thisWeekRevenue / weeklyTarget) * 100) : 0);
+                const onTarget = thisWeekRevenue >= weeklyTarget;
+                return (
+                  <Card className="border-none shadow-xl rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white overflow-hidden relative">
+                    <div className="absolute top-0 right-0 p-10 opacity-[0.06] pointer-events-none"><Zap size={160} /></div>
+                    <CardContent className="p-8 relative z-10 space-y-6">
+                      {/* Header row */}
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400">Weekly Calculator</p>
+                          <h3 className="text-2xl font-black">What do I need to book this week?</h3>
+                          <p className="text-xs text-slate-400 font-medium">Mon–Sun · Based on sessions logged in Supabase</p>
+                        </div>
+                        {/* Editable weekly target */}
+                        <div className="flex items-center gap-2 bg-white/5 rounded-2xl px-4 py-3 border border-white/10 self-start">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Weekly target</span>
+                          {editingWeeklyTarget ? (
+                            <input
+                              autoFocus
+                              className="w-20 bg-transparent text-white font-black text-sm text-right outline-none border-b border-indigo-400 pb-0.5"
+                              value={weeklyTargetInput}
+                              onChange={e => setWeeklyTargetInput(e.target.value)}
+                              onBlur={() => {
+                                const n = parseInt(weeklyTargetInput);
+                                if (!isNaN(n) && n > 0) { setWeeklyTarget(n); localStorage.setItem('weekly_target', String(n)); }
+                                setEditingWeeklyTarget(false);
+                              }}
+                              onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
+                            />
+                          ) : (
+                            <button onClick={() => { setWeeklyTargetInput(String(weeklyTarget)); setEditingWeeklyTarget(true); }}
+                              className="flex items-center gap-1.5 font-black text-sm text-white hover:text-indigo-300 transition-colors">
+                              ${weeklyTarget}<Edit3 size={11} className="opacity-40" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Progress bar */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-xs font-bold">
+                          <span className="text-slate-300">${thisWeekRevenue.toLocaleString()} earned</span>
+                          <span className={onTarget ? "text-emerald-400" : "text-slate-400"}>${weeklyTarget.toLocaleString()} target</span>
+                        </div>
+                        <div className="h-3 bg-white/10 rounded-full overflow-hidden">
+                          <div className={cn("h-full rounded-full transition-all duration-700", onTarget ? "bg-emerald-400" : "bg-indigo-400")}
+                            style={{ width: `${pct}%` }} />
+                        </div>
+                        <p className="text-[10px] text-slate-500 font-medium text-right">{pct}% of weekly target</p>
+                      </div>
+
+                      {onTarget ? (
+                        <div className="flex items-center gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
+                          <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
+                          <p className="text-sm font-bold text-emerald-300">You've hit your weekly target — great week!</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <p className="text-sm font-bold text-slate-200">
+                            Still needed: <span className="text-white font-black">${gap.toLocaleString()}</span>
+                          </p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl space-y-1">
+                              <p className="text-[9px] font-black uppercase tracking-widest text-indigo-400">FNH sessions</p>
+                              <p className="text-xl font-black text-white">{sessionsNeeded} session{sessionsNeeded !== 1 ? 's' : ''}</p>
+                              <p className="text-[10px] text-slate-400">at ${fhnRate}/session avg</p>
+                            </div>
+                            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl space-y-1">
+                              <p className="text-[9px] font-black uppercase tracking-widest text-purple-400">Corporate gig</p>
+                              <p className="text-xl font-black text-white">{corpGigsNeeded} gig{corpGigsNeeded !== 1 ? 's' : ''}</p>
+                              <p className="text-[10px] text-slate-400">at ${corpRate}/gig</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })()}
+
+              {/* ── INCOME STREAMS ── */}
+              <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+                <CardHeader className="p-8 pb-4 border-b border-border bg-muted/20">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <CardTitle className="text-xl font-black flex items-center gap-3">
+                        <DollarSign size={22} className="text-emerald-600" /> Income Streams
+                      </CardTitle>
+                      <CardDescription className="font-medium">All five streams combined — adjust rates and frequency per stream.</CardDescription>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Combined Monthly</p>
+                      <p className="text-2xl font-black text-foreground">
+                        ${Math.round(salaryMetrics.current.monthly + extraStreamsMonthly).toLocaleString()}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground font-medium">
+                        ${Math.round((salaryMetrics.current.monthly + extraStreamsMonthly) * 12).toLocaleString()}/yr
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="divide-y divide-border/50">
+                    {/* FNH row — read from real salary data */}
+                    {(() => {
+                      const fnh_monthly = Math.round(isSandboxActive ? salaryMetrics.simulated.monthly : salaryMetrics.current.monthly);
+                      const fnh_annual = fnh_monthly * 12;
+                      return (
+                        <div className="flex items-center gap-4 px-8 py-4 bg-indigo-50/30 dark:bg-indigo-950/10">
+                          <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-950/40 text-indigo-600 flex items-center justify-center shrink-0">
+                            <Brain size={16} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-black text-foreground">FNH Sessions</p>
+                            <p className="text-[10px] text-muted-foreground font-medium">
+                              Live from Salary Simulator{isSandboxActive ? ' (Sandbox)' : ''}
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-sm font-black text-foreground">${fnh_monthly.toLocaleString()}<span className="text-[10px] text-muted-foreground font-medium">/mo</span></p>
+                            <p className="text-[10px] text-muted-foreground">${fnh_annual.toLocaleString()}/yr</p>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Extra streams — editable */}
+                    {extraStreams.map(stream => {
+                      const Icon = STREAM_ICONS[stream.id] ?? DollarSign;
+                      const monthly = stream.enabled ? Math.round(stream.ratePerUnit * stream.unitsPerMonth) : 0;
+                      const annual  = monthly * 12;
+                      return (
+                        <div key={stream.id} className={cn("flex items-center gap-4 px-8 py-4 transition-opacity", !stream.enabled && "opacity-40")}>
+                          <div className="w-8 h-8 rounded-lg bg-muted/60 text-muted-foreground flex items-center justify-center shrink-0">
+                            <Icon size={16} />
+                          </div>
+                          <div className="flex-1 min-w-0 space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Switch
+                                checked={stream.enabled}
+                                onCheckedChange={v => updateStream(stream.id, 'enabled', v)}
+                                className="scale-75 data-[state=checked]:bg-emerald-500"
+                              />
+                              <p className="text-sm font-black text-foreground">{stream.name}</p>
+                            </div>
+                            {stream.enabled && (
+                              <div className="grid grid-cols-2 gap-4 pr-4 animate-in fade-in duration-200">
+                                <div className="space-y-1">
+                                  <div className="flex justify-between text-[9px] font-bold text-muted-foreground">
+                                    <span>Rate per unit</span>
+                                    <span className="text-foreground font-black">${stream.ratePerUnit}</span>
+                                  </div>
+                                  <Slider value={[stream.ratePerUnit]} onValueChange={([v]) => updateStream(stream.id, 'ratePerUnit', v)}
+                                    min={20} max={600} step={5} className="py-1" />
+                                </div>
+                                <div className="space-y-1">
+                                  <div className="flex justify-between text-[9px] font-bold text-muted-foreground">
+                                    <span>Units / month</span>
+                                    <span className="text-foreground font-black">{stream.unitsPerMonth}</span>
+                                  </div>
+                                  <Slider value={[stream.unitsPerMonth]} onValueChange={([v]) => updateStream(stream.id, 'unitsPerMonth', v)}
+                                    min={0} max={20} step={0.5} className="py-1" />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-right shrink-0 min-w-[80px]">
+                            <p className="text-sm font-black text-foreground">${monthly.toLocaleString()}<span className="text-[10px] text-muted-foreground font-medium">/mo</span></p>
+                            <p className="text-[10px] text-muted-foreground">${annual.toLocaleString()}/yr</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* Total row */}
+                    <div className="flex items-center gap-4 px-8 py-5 bg-emerald-50/40 dark:bg-emerald-950/10">
+                      <div className="flex-1">
+                        <p className="text-sm font-black text-foreground uppercase tracking-wider">Total Combined</p>
+                        <p className="text-[10px] text-muted-foreground font-medium">All enabled streams · {isSandboxActive ? 'Sandbox' : 'Current'} FNH</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xl font-black text-emerald-700 dark:text-emerald-400">
+                          ${Math.round(salaryMetrics.current.monthly + extraStreamsMonthly).toLocaleString()}
+                          <span className="text-sm text-muted-foreground font-medium">/mo</span>
+                        </p>
+                        <p className="text-sm font-black text-emerald-600 dark:text-emerald-500">
+                          ${Math.round((salaryMetrics.current.monthly + extraStreamsMonthly) * 12).toLocaleString()}/yr
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* How-to guide */}
               <Card className="border-none shadow-sm rounded-[2rem] bg-muted/30 border border-border">
                 <CardContent className="p-6">

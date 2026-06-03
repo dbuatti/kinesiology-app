@@ -141,7 +141,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
   const [manualPlacements, setManualPlacements] = useState<Record<string, ManualPlacement>>({});
   const [pendingSaves, setPendingSaves] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
-  const [isLocked, setIsLocked] = useState(false);
+  const [isLocked, setIsLocked] = useState(() => localStorage.getItem('timetable_locked') === 'true');
 
   const activeClients = useMemo(() => {
     const now = new Date();
@@ -618,7 +618,11 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
           <Button
             variant={isLocked ? "default" : "outline"}
             size="sm"
-            onClick={() => setIsLocked(prev => !prev)}
+            onClick={() => setIsLocked(prev => {
+              const next = !prev;
+              localStorage.setItem('timetable_locked', String(next));
+              return next;
+            })}
             className={cn(
               "rounded-xl text-xs font-bold h-9 px-4",
               isLocked

@@ -4,12 +4,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Calendar, 
-  Clock, 
-  Loader2, 
-  RefreshCw, 
-  ChevronRight, 
+import {
+  Calendar,
+  Clock,
+  Loader2,
+  RefreshCw,
+  ChevronRight,
   ChevronLeft,
   ExternalLink,
   AlertCircle,
@@ -36,7 +36,8 @@ import {
   Mail,
   Send,
   Sparkles,
-  Instagram
+  Instagram,
+  CalendarClock
 } from "lucide-react";
 import { format, addWeeks, subWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays, isBefore, startOfDay, nextMonday, isMonday, startOfWeek, parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -86,6 +87,9 @@ const CalcomSlotsView = () => {
   
   const [bookingData, setBookingData] = useState<{ date: Date; time: string; slotTime?: string } | null>(null);
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
+
+  const [rescheduleBooking, setRescheduleBooking] = useState<any | null>(null);
+  const [rescheduling, setRescheduling] = useState(false);
   
   const [eventTypeId, setEventTypeId] = useState<string>(() => 
     localStorage.getItem('calcom_preferred_event_id') || CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID
@@ -224,6 +228,48 @@ const CalcomSlotsView = () => {
       showError("Failed to cancel booking.");
     } finally {
       setProcessingBooking(null);
+    }
+  };
+
+  const handleConfirmReschedule = async (newSlotTime: string) => {
+    if (!rescheduleBooking) return;
+    setRescheduling(true);
+    try {
+      // Look up the client by email to get their CRM id
+      const { data: client, error: clientError } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('email', rescheduleBooking.attendeeEmail?.toLowerCase().trim())
+        .maybeSingle();
+
+      if (clientError || !client) {
+        throw new Error("Client not found in CRM. Please ensure they have been synced.");
+      }
+
+      const { error: fnError } = await supabase.functions.invoke('create-calcom-booking', {
+        body: {
+          bookingUid: rescheduleBooking.uid,
+          clientId: client.id,
+          startTime: newSlotTime,
+          eventTypeId,
+        }
+      });
+
+      if (fnError) throw fnError;
+
+      // Update the date in the local appointments table
+      await supabase
+        .from('appointments')
+        .update({ date: new Date(newSlotTime).toISOString() })
+        .eq('calcom_booking_id', rescheduleBooking.uid);
+
+      showSuccess(`${rescheduleBooking.attendeeName} rescheduled to ${format(new Date(newSlotTime), "EEE MMM d 'at' h:mm a")}`);
+      setRescheduleBooking(null);
+      setTimeout(fetchSlots, 2000);
+    } catch (err: any) {
+      showError(err.message || "Failed to reschedule booking.");
+    } finally {
+      setRescheduling(false);
     }
   };
 
@@ -791,18 +837,27 @@ const CalcomSlotsView = () => {
                                         </div>
                                       </div>
                                       <div className="flex items-center gap-1">
-                                        <Button 
-                                          variant="ghost" 
-                                          size="icon" 
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          className="h-8 w-8 rounded-lg text-indigo-300 hover:text-amber-400 hover:bg-amber-500/20 opacity-0 group-hover/booking:opacity-100 transition-all"
+                                          title="Reschedule"
+                                          onClick={() => setRescheduleBooking(booking)}
+                                        >
+                                          <CalendarClock size={14} />
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
                                           className="h-8 w-8 rounded-lg text-indigo-300 hover:text-emerald-400 hover:bg-emerald-500/20 opacity-0 group-hover/booking:opacity-100 transition-all"
                                           onClick={() => handleSendOnboarding(booking)}
                                           disabled={sendingEmail === booking.uid}
                                         >
                                           {sendingEmail === booking.uid ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
                                         </Button>
-                                        <Button 
-                                          variant="ghost" 
-                                          size="icon" 
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
                                           className="h-8 w-8 rounded-lg text-indigo-300 hover:text-rose-400 hover:bg-rose-500/20 opacity-0 group-hover/booking:opacity-100 transition-all"
                                           onClick={() => handleCancelBooking(booking.uid, booking.attendeeName)}
                                           disabled={processingBooking === booking.uid}
@@ -887,6 +942,84 @@ const CalcomSlotsView = () => {
           </Button>
         </div>
       )}
+
+      {/* Reschedule Dialog */}
+      <Dialog open={!!rescheduleBooking} onOpenChange={(open) => { if (!open) setRescheduleBooking(null); }}>
+        <DialogContent className="sm:max-w-[640px] max-h-[85vh] overflow-y-auto rounded-[3rem] p-0">
+          <div className="p-10">
+            <DialogHeader className="mb-8">
+              <div className="flex items-center gap-4 mb-2">
+                <div className="w-14 h-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-xl">
+                  <CalendarClock size={28} />
+                </div>
+                <div>
+                  <DialogTitle className="text-3xl font-serif font-bold tracking-tight">Reschedule</DialogTitle>
+                  <DialogDescription className="text-base font-medium">
+                    Moving <span className="font-bold text-foreground">{rescheduleBooking?.attendeeName}</span> from{" "}
+                    {rescheduleBooking && format(new Date(rescheduleBooking.start), "EEE MMM d 'at' h:mm a")}
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+
+            {(() => {
+              const availableSlotsByDate = dateRange
+                .filter(date => {
+                  const daySlots = slots[date] || [];
+                  return !blockedDates.includes(date) && daySlots.length > 0;
+                })
+                .map(date => ({ date, daySlots: slots[date] || [] }));
+
+              if (availableSlotsByDate.length === 0) {
+                return (
+                  <div className="text-center py-12 text-slate-500">
+                    <CalendarDays size={40} className="mx-auto mb-4 text-slate-300" />
+                    <p className="font-bold">No available slots found in the current range.</p>
+                    <p className="text-sm mt-1">Try increasing the week range and refresh.</p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="space-y-6">
+                  {availableSlotsByDate.map(({ date, daySlots }) => (
+                    <div key={date} className="space-y-2">
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 ml-1">
+                        {format(new Date(date), "EEEE, MMMM d")}
+                      </p>
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                        {daySlots.map((slot, idx) => {
+                          const timeStr = slot.time || slot.start;
+                          const isCurrentTime = rescheduleBooking &&
+                            new Date(timeStr).toISOString() === new Date(rescheduleBooking.start).toISOString();
+                          return (
+                            <button
+                              key={idx}
+                              disabled={rescheduling || isCurrentTime}
+                              onClick={() => handleConfirmReschedule(timeStr)}
+                              className={cn(
+                                "flex items-center justify-center gap-1.5 p-2.5 rounded-xl text-[10px] font-black border transition-all",
+                                isCurrentTime
+                                  ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed line-through"
+                                  : rescheduling
+                                    ? "opacity-50 cursor-wait bg-muted border-border text-foreground"
+                                    : "bg-muted/50 border-border text-foreground hover:bg-amber-500 hover:border-amber-500 hover:text-white shadow-sm"
+                              )}
+                            >
+                              {rescheduling ? <Loader2 size={11} className="animate-spin" /> : <Clock size={11} className="opacity-60" />}
+                              {format(new Date(timeStr), "h:mm a")}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={bookingDialogOpen} onOpenChange={setBookingDialogOpen}>
         <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-[3rem] p-0">

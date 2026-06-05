@@ -8,7 +8,7 @@ import {
   Check, X, Trash2, Loader2, Send, RefreshCw, AlertTriangle, Flame,
   MoreHorizontal, CalendarPlus as CalendarPlusIcon, Edit2, Users,
   MessageSquare, CheckCircle2, Copy, Sparkles, ArrowUpRight, Lock, PhoneCall,
-  MessageCircle
+  MessageCircle, Calendar, Smile, ChevronRight as ChevronRightIcon
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,11 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -78,6 +83,197 @@ const RATE_OPTIONS = [
   { label: "$150", value: 150 },
   { label: "Custom", value: -1 }
 ];
+
+// ── SMS Template Button ──────────────────────────────────────────────────────
+
+interface SmsTemplateButtonProps {
+  client: ClientWithAppointments;
+  journalData: ReturnType<typeof parseClientJournal>;
+  nextApp: any | null;
+  onRefresh: () => void;
+}
+
+const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTemplateButtonProps) => {
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const firstName = client.name.split(' ')[0];
+  const lastSmsAt = journalData.last_sms_at ? new Date(journalData.last_sms_at) : null;
+  const daysSinceSms = lastSmsAt
+    ? Math.floor((Date.now() - lastSmsAt.getTime()) / (1000 * 60 * 60 * 24))
+    : null;
+  const recentlySmsed = daysSinceSms !== null && daysSinceSms <= 7;
+
+  const nextAppFormatted = nextApp
+    ? format(new Date(nextApp.date), "EEEE, MMMM d 'at' h:mm a")
+    : null;
+
+  const TEMPLATES = [
+    {
+      id: 'appointment_reminder',
+      label: 'Appointment Reminder',
+      icon: Calendar,
+      color: 'text-indigo-600',
+      bg: 'hover:bg-indigo-50 dark:hover:bg-indigo-950/30',
+      preview: nextAppFormatted
+        ? `Hi ${firstName}, just a reminder that your next appointment is on ${nextAppFormatted}. See you then! 😊`
+        : null,
+      disabled: !nextAppFormatted,
+      disabledReason: 'No upcoming appointment booked',
+    },
+    {
+      id: 'check_in',
+      label: 'Session Check-in',
+      icon: Smile,
+      color: 'text-emerald-600',
+      bg: 'hover:bg-emerald-50 dark:hover:bg-emerald-950/30',
+      preview: `Hi ${firstName}, just checking in to see how you're going since our last session. Hope you're feeling well! 😊`,
+      disabled: false,
+      disabledReason: '',
+    },
+    {
+      id: 'booking_nudge',
+      label: 'Booking Nudge',
+      icon: MessageCircle,
+      color: 'text-amber-600',
+      bg: 'hover:bg-amber-50 dark:hover:bg-amber-950/30',
+      preview: `Hi ${firstName}, I have some availability coming up and wanted to reach out — would you like to book in for a session soon? 😊`,
+      disabled: false,
+      disabledReason: '',
+    },
+  ] as const;
+
+  const handleSend = async (templateId: string, body: string) => {
+    setSaving(true);
+    // Open Messages immediately
+    window.location.href = `sms:${client.phone}?body=${encodeURIComponent(body)}`;
+    setOpen(false);
+
+    // Record in journal
+    try {
+      const now = new Date().toISOString();
+      const updatedJournal = stringifyClientJournal({
+        ...journalData,
+        last_sms_at: now,
+        last_sms_template: templateId,
+        last_contacted_at: now,
+      });
+      await supabase.from('clients').update({ journal: updatedJournal }).eq('id', client.id);
+      onRefresh();
+    } catch {
+      // Non-critical — message still opens fine
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          className={cn(
+            "relative h-8 w-8 rounded-xl flex items-center justify-center transition-colors",
+            recentlySmsed
+              ? "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30"
+              : "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+          )}
+          title="Send message template"
+        >
+          <MessageCircle size={15} />
+          {recentlySmsed && (
+            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900" />
+          )}
+        </button>
+      </PopoverTrigger>
+
+      <PopoverContent align="end" className="w-80 p-0 rounded-2xl shadow-2xl border-none overflow-hidden">
+        {/* Header */}
+        <div className="px-5 pt-5 pb-3 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/50 flex items-center justify-center">
+              <MessageCircle size={16} className="text-emerald-600" />
+            </div>
+            <div>
+              <p className="text-sm font-black text-foreground">Message {firstName}</p>
+              <p className="text-[10px] text-muted-foreground font-medium">{client.phone}</p>
+            </div>
+          </div>
+          {lastSmsAt && (
+            <div className={cn(
+              "mt-3 flex items-center gap-2 px-3 py-2 rounded-xl text-[10px] font-bold",
+              recentlySmsed
+                ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400"
+                : "bg-slate-100 dark:bg-slate-800 text-slate-500"
+            )}>
+              <span className={cn(
+                "w-1.5 h-1.5 rounded-full shrink-0",
+                recentlySmsed ? "bg-emerald-500" : "bg-slate-400"
+              )} />
+              Last messaged:{" "}
+              {daysSinceSms === 0
+                ? "today"
+                : daysSinceSms === 1
+                  ? "yesterday"
+                  : `${daysSinceSms} days ago`}
+              {" "}· {journalData.last_sms_template?.replace(/_/g, ' ')}
+            </div>
+          )}
+        </div>
+
+        {/* Templates */}
+        <div className="p-2 space-y-1">
+          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground px-3 pt-2 pb-1">Templates</p>
+          {TEMPLATES.map((t) => (
+            <button
+              key={t.id}
+              disabled={t.disabled || saving}
+              onClick={() => t.preview && handleSend(t.id, t.preview)}
+              className={cn(
+                "w-full flex items-start gap-3 p-3 rounded-xl transition-all text-left",
+                t.disabled
+                  ? "opacity-40 cursor-not-allowed"
+                  : `cursor-pointer ${t.bg}`
+              )}
+            >
+              <div className={cn(
+                "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
+                "bg-slate-100 dark:bg-slate-800"
+              )}>
+                <t.icon size={13} className={t.color} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-black text-foreground">{t.label}</p>
+                  {t.disabled
+                    ? <span className="text-[9px] text-muted-foreground font-medium shrink-0">{t.disabledReason}</span>
+                    : <ChevronRightIcon size={12} className="text-muted-foreground shrink-0" />
+                  }
+                </div>
+                {t.preview && (
+                  <p className="text-[10px] text-muted-foreground font-medium mt-0.5 line-clamp-2 leading-relaxed">
+                    {t.preview}
+                  </p>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+
+        <div className="px-4 pb-4">
+          <a
+            href={`sms:${client.phone}`}
+            className="flex items-center justify-center gap-2 w-full h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-[10px] font-black uppercase tracking-widest"
+          >
+            <MessageCircle size={12} />
+            Open Messages (blank)
+          </a>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+// ────────────────────────────────────────────────────────────────────────────
 
 export const ClientRow = ({
   client,
@@ -750,24 +946,14 @@ Daniele`;
             </TooltipProvider>
           )}
 
-          {/* Message via iMessage/SMS */}
+          {/* Message via iMessage/SMS — template picker */}
           {client.phone && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <a
-                    href={`sms:${client.phone}`}
-                    className="h-8 w-8 rounded-xl flex items-center justify-center text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors"
-                    title="Open in Messages"
-                  >
-                    <MessageCircle size={15} />
-                  </a>
-                </TooltipTrigger>
-                <TooltipContent className="rounded-xl font-bold text-xs p-2">
-                  Message {client.name.split(' ')[0]} · Opens Messages
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <SmsTemplateButton
+              client={client}
+              journalData={journalData}
+              nextApp={nextApp}
+              onRefresh={onRefresh}
+            />
           )}
 
           {/* Log Contact */}

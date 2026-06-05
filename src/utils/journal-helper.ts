@@ -6,6 +6,8 @@ export interface ClientJournalData {
   rate_increase_contacted_at?: string | null;
   upgrade_count?: number;
   last_contacted_at?: string | null;
+  last_sms_at?: string | null;
+  last_sms_template?: string | null;
 }
 
 export function parseClientJournal(raw: string | null | undefined): ClientJournalData {
@@ -19,12 +21,14 @@ export function parseClientJournal(raw: string | null | undefined): ClientJourna
         rate_increase_contacted_at: parsed.rate_increase_contacted_at || null,
         upgrade_count: parsed.upgrade_count || 0,
         last_contacted_at: parsed.last_contacted_at || null,
+        last_sms_at: parsed.last_sms_at || null,
+        last_sms_template: parsed.last_sms_template || null,
       };
     }
   } catch (e) {
     // Not JSON, treat as raw notes
   }
-  return { notes: raw || "", rate_increase_contacted: false, rate_increase_contacted_at: null, upgrade_count: 0, last_contacted_at: null };
+  return { notes: raw || "", rate_increase_contacted: false, rate_increase_contacted_at: null, upgrade_count: 0, last_contacted_at: null, last_sms_at: null, last_sms_template: null };
 }
 
 export function stringifyClientJournal(data: ClientJournalData): string {

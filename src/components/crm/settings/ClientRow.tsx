@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { format, formatDistanceToNow, differenceInMonths } from "date-fns";
+import { format, formatDistanceToNow, differenceInMonths, addWeeks, startOfWeek, addDays, endOfDay } from "date-fns";
 import {
   Mail, Phone, CalendarPlus, Clock, CreditCard, ArrowRight,
   Check, X, Trash2, Loader2, Send, RefreshCw, AlertTriangle, Flame,
   MoreHorizontal, CalendarPlus as CalendarPlusIcon, Edit2, Users,
   MessageSquare, CheckCircle2, Copy, Sparkles, ArrowUpRight, Lock, PhoneCall,
-  MessageCircle, Calendar, Smile, ChevronRight as ChevronRightIcon
+  MessageCircle, Calendar, Smile, ChevronRight as ChevronRightIcon, CalendarCheck2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -96,6 +96,8 @@ interface SmsTemplateButtonProps {
 const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTemplateButtonProps) => {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [availableSlots, setAvailableSlots] = useState<string[] | null>(null);
 
   const firstName = client.name.split(' ')[0];
   const lastSmsAt = journalData.last_sms_at ? new Date(journalData.last_sms_at) : null;
@@ -108,48 +110,94 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
     ? format(new Date(nextApp.date), "EEEE, MMMM d 'at' h:mm a")
     : null;
 
+  // Fetch available slots when popover opens
+  useEffect(() => {
+    if (!open || availableSlots !== null) return;
+    setLoadingSlots(true);
+    const start = startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString();
+    const end = endOfDay(addDays(addWeeks(new Date(), 4), 0)).toISOString();
+    supabase.functions.invoke('get-calcom-slots', {
+      body: { start, end, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }
+    }).then(({ data }) => {
+      if (!data?.data) { setAvailableSlots([]); return; }
+      // Flatten all slots across all days, sorted chronologically, take first 8
+      const flat: string[] = [];
+      Object.values(data.data as Record<string, { time?: string; start?: string }[]>).forEach(daySlots => {
+        (daySlots as { time?: string; start?: string }[]).forEach(s => {
+          const t = s.time || s.start;
+          if (t) flat.push(t);
+        });
+      });
+      flat.sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+      setAvailableSlots(flat.slice(0, 8));
+    }).catch(() => setAvailableSlots([])).finally(() => setLoadingSlots(false));
+  }, [open]);
+
+  const availabilityBody = useMemo(() => {
+    if (!availableSlots || availableSlots.length === 0) return null;
+    const lines = availableSlots
+      .map(t => format(new Date(t), "EEE d MMM 'at' h:mm a"))
+      .join('\n');
+    return `Hi ${firstName}, I have some availability coming up — here are my next open slots:\n\n${lines}\n\nWould any of these work for you? 😊`;
+  }, [availableSlots, firstName]);
+
   const TEMPLATES = [
     {
       id: 'appointment_reminder',
       label: 'Appointment Reminder',
       icon: Calendar,
       color: 'text-indigo-600',
-      bg: 'hover:bg-indigo-50 dark:hover:bg-indigo-950/30',
-      preview: nextAppFormatted
+      bg: 'hover:bg-indigo-50 dark:hover:bg-indigo-950/20',
+      body: nextAppFormatted
         ? `Hi ${firstName}, just a reminder that your next appointment is on ${nextAppFormatted}. See you then! 😊`
         : null,
+      preview: nextAppFormatted
+        ? `Reminder: ${nextAppFormatted}`
+        : 'No upcoming appointment booked',
       disabled: !nextAppFormatted,
-      disabledReason: 'No upcoming appointment booked',
+    },
+    {
+      id: 'available_slots',
+      label: 'Available Appointments',
+      icon: CalendarCheck2,
+      color: 'text-violet-600',
+      bg: 'hover:bg-violet-50 dark:hover:bg-violet-950/20',
+      body: availabilityBody,
+      preview: loadingSlots
+        ? 'Loading slots…'
+        : availableSlots === null
+          ? 'Opens to load slots'
+          : availableSlots.length === 0
+            ? 'No open slots found'
+            : availableSlots.slice(0, 2).map(t => format(new Date(t), "EEE d MMM 'at' h:mm a")).join(', ') + (availableSlots.length > 2 ? ` +${availableSlots.length - 2} more` : ''),
+      disabled: loadingSlots || !availabilityBody,
     },
     {
       id: 'check_in',
       label: 'Session Check-in',
       icon: Smile,
       color: 'text-emerald-600',
-      bg: 'hover:bg-emerald-50 dark:hover:bg-emerald-950/30',
-      preview: `Hi ${firstName}, just checking in to see how you're going since our last session. Hope you're feeling well! 😊`,
+      bg: 'hover:bg-emerald-50 dark:hover:bg-emerald-950/20',
+      body: `Hi ${firstName}, just checking in to see how you're going since our last session. Hope you're feeling well! 😊`,
+      preview: `Checking in on how you're going since your last session`,
       disabled: false,
-      disabledReason: '',
     },
     {
       id: 'booking_nudge',
       label: 'Booking Nudge',
       icon: MessageCircle,
       color: 'text-amber-600',
-      bg: 'hover:bg-amber-50 dark:hover:bg-amber-950/30',
-      preview: `Hi ${firstName}, I have some availability coming up and wanted to reach out — would you like to book in for a session soon? 😊`,
+      bg: 'hover:bg-amber-50 dark:hover:bg-amber-950/20',
+      body: `Hi ${firstName}, I have some availability coming up and wanted to reach out — would you like to book in for a session soon? 😊`,
+      preview: `Letting you know I have availability coming up`,
       disabled: false,
-      disabledReason: '',
     },
-  ] as const;
+  ];
 
   const handleSend = async (templateId: string, body: string) => {
     setSaving(true);
-    // Open Messages immediately
     window.location.href = `sms:${client.phone}?body=${encodeURIComponent(body)}`;
     setOpen(false);
-
-    // Record in journal
     try {
       const now = new Date().toISOString();
       const updatedJournal = stringifyClientJournal({
@@ -161,7 +209,7 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
       await supabase.from('clients').update({ journal: updatedJournal }).eq('id', client.id);
       onRefresh();
     } catch {
-      // Non-critical — message still opens fine
+      // Non-critical
     } finally {
       setSaving(false);
     }
@@ -186,48 +234,44 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
         </button>
       </PopoverTrigger>
 
-      <PopoverContent align="end" className="w-80 p-0 rounded-2xl shadow-2xl border-none overflow-hidden">
+      <PopoverContent
+        align="end"
+        className="w-[340px] p-0 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden"
+      >
         {/* Header */}
-        <div className="px-5 pt-5 pb-3 bg-slate-50 dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+        <div className="px-4 pt-4 pb-3 bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/50 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 flex items-center justify-center shrink-0">
               <MessageCircle size={16} className="text-emerald-600" />
             </div>
             <div>
-              <p className="text-sm font-black text-foreground">Message {firstName}</p>
-              <p className="text-[10px] text-muted-foreground font-medium">{client.phone}</p>
+              <p className="text-sm font-black text-slate-900 dark:text-white">Message {firstName}</p>
+              <p className="text-[10px] text-slate-500 font-medium">{client.phone}</p>
             </div>
           </div>
           {lastSmsAt && (
             <div className={cn(
-              "mt-3 flex items-center gap-2 px-3 py-2 rounded-xl text-[10px] font-bold",
+              "mt-2.5 flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold",
               recentlySmsed
-                ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-500"
+                ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400"
+                : "bg-slate-100 dark:bg-slate-700/60 text-slate-500 dark:text-slate-400"
             )}>
-              <span className={cn(
-                "w-1.5 h-1.5 rounded-full shrink-0",
-                recentlySmsed ? "bg-emerald-500" : "bg-slate-400"
-              )} />
+              <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", recentlySmsed ? "bg-emerald-500" : "bg-slate-400")} />
               Last messaged:{" "}
-              {daysSinceSms === 0
-                ? "today"
-                : daysSinceSms === 1
-                  ? "yesterday"
-                  : `${daysSinceSms} days ago`}
-              {" "}· {journalData.last_sms_template?.replace(/_/g, ' ')}
+              {daysSinceSms === 0 ? "today" : daysSinceSms === 1 ? "yesterday" : `${daysSinceSms} days ago`}
+              {journalData.last_sms_template && ` · ${journalData.last_sms_template.replace(/_/g, ' ')}`}
             </div>
           )}
         </div>
 
         {/* Templates */}
-        <div className="p-2 space-y-1">
-          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground px-3 pt-2 pb-1">Templates</p>
+        <div className="p-2 bg-white dark:bg-slate-900">
+          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500 px-3 pt-1.5 pb-1">Templates</p>
           {TEMPLATES.map((t) => (
             <button
               key={t.id}
               disabled={t.disabled || saving}
-              onClick={() => t.preview && handleSend(t.id, t.preview)}
+              onClick={() => t.body && handleSend(t.id, t.body)}
               className={cn(
                 "w-full flex items-start gap-3 p-3 rounded-xl transition-all text-left",
                 t.disabled
@@ -235,34 +279,32 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
                   : `cursor-pointer ${t.bg}`
               )}
             >
-              <div className={cn(
-                "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
-                "bg-slate-100 dark:bg-slate-800"
-              )}>
-                <t.icon size={13} className={t.color} />
+              <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 mt-0.5">
+                {t.id === 'available_slots' && loadingSlots
+                  ? <Loader2 size={12} className="animate-spin text-slate-400" />
+                  : <t.icon size={13} className={t.color} />
+                }
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs font-black text-foreground">{t.label}</p>
-                  {t.disabled
-                    ? <span className="text-[9px] text-muted-foreground font-medium shrink-0">{t.disabledReason}</span>
-                    : <ChevronRightIcon size={12} className="text-muted-foreground shrink-0" />
-                  }
+                  <p className="text-xs font-black text-slate-900 dark:text-white">{t.label}</p>
+                  {!t.disabled && <ChevronRightIcon size={12} className="text-slate-400 shrink-0" />}
                 </div>
-                {t.preview && (
-                  <p className="text-[10px] text-muted-foreground font-medium mt-0.5 line-clamp-2 leading-relaxed">
-                    {t.preview}
-                  </p>
-                )}
+                <p className={cn(
+                  "text-[10px] font-medium mt-0.5 leading-relaxed",
+                  t.disabled ? "text-slate-400" : "text-slate-500 dark:text-slate-400"
+                )}>
+                  {t.preview}
+                </p>
               </div>
             </button>
           ))}
         </div>
 
-        <div className="px-4 pb-4">
+        <div className="px-3 pb-3 bg-white dark:bg-slate-900">
           <a
             href={`sms:${client.phone}`}
-            className="flex items-center justify-center gap-2 w-full h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-[10px] font-black uppercase tracking-widest"
+            className="flex items-center justify-center gap-2 w-full h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-[10px] font-black uppercase tracking-widest"
           >
             <MessageCircle size={12} />
             Open Messages (blank)

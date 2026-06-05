@@ -295,12 +295,13 @@ export const ClientRow = ({
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedReengagementEmail, setCopiedReengagementEmail] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [confirmUpgrade, setConfirmUpgrade] = useState(false);
 
   const lastSeenText = client.lastSeenDate ? format(client.lastSeenDate, "MMM d, yyyy") : "Never";
   const relativeTime = client.lastSeenDate ? formatDistanceToNow(client.lastSeenDate, { addSuffix: true }) : "";
 
   const futureApps = client.appointments.filter(app => new Date(app.date) > new Date());
-  const nextApp = futureApps.length > 0 ? [...futureApps].sort((a, b) => new Date(a.date).getTime() - new Date(a.date).getTime())[0] : null;
+  const nextApp = futureApps.length > 0 ? [...futureApps].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0] : null;
   const nextAppText = nextApp ? format(new Date(nextApp.date), "MMM d, yyyy") : null;
   const nextAppRelative = nextApp ? formatDistanceToNow(new Date(nextApp.date), { addSuffix: true }) : null;
 
@@ -554,10 +555,6 @@ Daniele`;
   };
 
   const handleConfirmUpgrade = async () => {
-    if (!confirm(`Confirm rate upgrade for ${client.name} to $${targetRate}? This will update their current standard rate, increment their upgrade counter, and reset their contacted status.`)) {
-      return;
-    }
-
     setUpdatingStatus(true);
     try {
       const todayStr = new Date().toISOString();
@@ -618,10 +615,12 @@ Daniele`;
               <ArrowRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity text-indigo-600" />
             </Link>
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium flex-wrap">
             {client.pronouns && <span>{client.pronouns}</span>}
             {client.pronouns && <span>•</span>}
             <span>Age: {calculateAge(client.born)}</span>
+            <span>•</span>
+            <span>{client.appointments.length} sessions</span>
             <span>•</span>
             <span className="text-indigo-600 font-bold">Upgrades: {journalData.upgrade_count || 0}</span>
           </div>
@@ -888,23 +887,46 @@ Daniele`;
                   </Tooltip>
                 </TooltipProvider>
               ) : journalData.rate_increase_contacted ? (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
+                <div className="flex items-center gap-1">
+                  {confirmUpgrade ? (
+                    <>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
-                        onClick={handleConfirmUpgrade}
-                        disabled={updatingStatus}
-                        className="h-8 rounded-xl border-emerald-200 text-emerald-600 hover:bg-emerald-50 font-black text-[9px] uppercase tracking-widest flex items-center gap-1"
+                        onClick={() => setConfirmUpgrade(false)}
+                        className="h-8 px-2 rounded-xl text-slate-400 hover:bg-slate-100 font-black text-[9px]"
                       >
-                        {updatingStatus ? <Loader2 className="animate-spin" size={10} /> : <ArrowUpRight size={12} />}
-                        Upgrade
+                        <X size={12} />
                       </Button>
-                    </TooltipTrigger>
-                    <TooltipContent className="rounded-xl font-bold text-xs p-2">Confirm Rate Upgrade</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                      <Button
+                        size="sm"
+                        onClick={() => { setConfirmUpgrade(false); handleConfirmUpgrade(); }}
+                        disabled={updatingStatus}
+                        className="h-8 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[9px] uppercase tracking-widest px-3"
+                      >
+                        {updatingStatus ? <Loader2 className="animate-spin" size={10} /> : <Check size={10} className="mr-1" />}
+                        Confirm ${targetRate}?
+                      </Button>
+                    </>
+                  ) : (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setConfirmUpgrade(true)}
+                            className="h-8 rounded-xl border-emerald-200 text-emerald-600 hover:bg-emerald-50 font-black text-[9px] uppercase tracking-widest flex items-center gap-1"
+                          >
+                            <ArrowUpRight size={12} />
+                            Upgrade
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent className="rounded-xl font-bold text-xs p-2">Upgrade to ${targetRate}</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
               ) : (
                 <TooltipProvider>
                   <Tooltip>

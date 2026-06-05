@@ -1501,7 +1501,7 @@ export default function ClientAuditPage() {
                                   onSetRateUpdatedDate={handleSetRateUpdatedDate}
                                   onSetReengagementTag={handleSetReengagementTag}
                                   isLapsedSection={false}
-                                  onQuickBook={setBookingClientId}
+                                  onQuickBook={(id) => { setBookingClientId(id); setIsBookingModalOpen(true); }}
                                   onRefresh={fetchData}
                                   averageSessionRate={averageSessionRate}
                                 />
@@ -1584,7 +1584,7 @@ export default function ClientAuditPage() {
                                   onSetRateUpdatedDate={handleSetRateUpdatedDate}
                                   onSetReengagementTag={handleSetReengagementTag}
                                   isLapsedSection={false}
-                                  onQuickBook={setBookingClientId}
+                                  onQuickBook={(id) => { setBookingClientId(id); setIsBookingModalOpen(true); }}
                                   onRefresh={fetchData}
                                   averageSessionRate={averageSessionRate}
                                 />
@@ -1667,7 +1667,7 @@ export default function ClientAuditPage() {
                                   onSetRateUpdatedDate={handleSetRateUpdatedDate}
                                   onSetReengagementTag={handleSetReengagementTag}
                                   isLapsedSection={true}
-                                  onQuickBook={setBookingClientId}
+                                  onQuickBook={(id) => { setBookingClientId(id); setIsBookingModalOpen(true); }}
                                   onRefresh={fetchData}
                                   averageSessionRate={averageSessionRate}
                                 />
@@ -2248,7 +2248,7 @@ export default function ClientAuditPage() {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <h3 className="text-3xl font-black text-foreground">${averageSessionRate.toFixed(2)}</h3>
+                      <h3 className="text-3xl font-black text-foreground">${averageSessionRate.toFixed(0)}</h3>
                       <p className="text-xs text-muted-foreground font-medium">Across all clients</p>
                     </div>
                   </CardContent>

@@ -320,6 +320,35 @@ const CalcomSlotsView = () => {
     setBookingDialogOpen(true);
   };
 
+  const handleCopyWeek = (week: string[]) => {
+    let text = "Hi! Here is my availability for the week:\n\n";
+    let hasAny = false;
+
+    week.forEach(date => {
+      const isBlocked = blockedDates.includes(date);
+      const daySlots = slots[date] || [];
+      if (isBlocked || daySlots.length === 0) return;
+      if (isBefore(startOfDay(new Date(date)), startOfToday())) return;
+
+      hasAny = true;
+      const formattedDate = format(new Date(date), "EEEE, MMMM d");
+      const times = daySlots.map(s => format(new Date(s.time || s.start), "h:mm a")).join(", ");
+      text += `${formattedDate}: ${times}\n`;
+    });
+
+    if (!hasAny) {
+      showError("No available slots found for this week.");
+      return;
+    }
+
+    text += `\nYou can book directly here: ${CALCOM_CONFIG.BOOKING_URL}`;
+    navigator.clipboard.writeText(text);
+    const weekKey = week[0];
+    setCopied(`week-${weekKey}`);
+    showSuccess("Week availability copied!");
+    setTimeout(() => setCopied(null), 2000);
+  };
+
   const handleCopyDay = (dayName: string) => {
     if (dateRange.length === 0) return;
 
@@ -739,6 +768,22 @@ const CalcomSlotsView = () => {
                   Week of {format(new Date(week[0]), "MMM d")}
                 </h3>
                 <div className="flex-1 h-[2px] bg-slate-100 rounded-full" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleCopyWeek(week)}
+                  className={cn(
+                    "h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest shrink-0 transition-all",
+                    copied === `week-${week[0]}`
+                      ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                      : "text-slate-400 hover:bg-indigo-50 hover:text-indigo-600"
+                  )}
+                >
+                  {copied === `week-${week[0]}`
+                    ? <><Check size={12} className="mr-1.5" />Copied!</>
+                    : <><Copy size={12} className="mr-1.5" />Copy Week</>
+                  }
+                </Button>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-8">

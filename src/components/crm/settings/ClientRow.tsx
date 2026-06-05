@@ -7,7 +7,8 @@ import {
   Mail, Phone, CalendarPlus, Clock, CreditCard, ArrowRight,
   Check, X, Trash2, Loader2, Send, RefreshCw, AlertTriangle, Flame,
   MoreHorizontal, CalendarPlus as CalendarPlusIcon, Edit2, Users,
-  MessageSquare, CheckCircle2, Copy, Sparkles, ArrowUpRight, Lock, PhoneCall
+  MessageSquare, CheckCircle2, Copy, Sparkles, ArrowUpRight, Lock, PhoneCall,
+  MessageCircle
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -428,6 +429,12 @@ Daniele`;
             <span>•</span>
             <span className="text-indigo-600 font-bold">Upgrades: {journalData.upgrade_count || 0}</span>
           </div>
+          {client.phone && (
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <Phone size={10} className="text-muted-foreground shrink-0" />
+              <span className="text-[11px] text-muted-foreground font-medium tracking-wide">{client.phone}</span>
+            </div>
+          )}
         </div>
       </td>
 
@@ -739,6 +746,26 @@ Daniele`;
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent className="rounded-xl font-bold text-xs p-2">Send Re-engagement Email</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+
+          {/* Message via iMessage/SMS */}
+          {client.phone && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <a
+                    href={`sms:${client.phone}`}
+                    className="h-8 w-8 rounded-xl flex items-center justify-center text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors"
+                    title="Open in Messages"
+                  >
+                    <MessageCircle size={15} />
+                  </a>
+                </TooltipTrigger>
+                <TooltipContent className="rounded-xl font-bold text-xs p-2">
+                  Message {client.name.split(' ')[0]} · Opens Messages
+                </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           )}

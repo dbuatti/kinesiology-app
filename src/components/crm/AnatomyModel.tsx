@@ -1,4 +1,3 @@
-"use client";
 
 import React from 'react';
 import { Shield, Link as LinkIcon, Brain, Activity, Move, RefreshCw, Target, Zap } from 'lucide-react';

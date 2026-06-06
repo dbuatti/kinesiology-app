@@ -1,4 +1,3 @@
-"use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { BRAIN_REFLEX_POINTS, BrainRegionCategory, BrainReflexPoint } from "@/data/brain-reflex-data";

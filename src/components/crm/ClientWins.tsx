@@ -1,4 +1,3 @@
-"use client";
 
 import React, { useState, useEffect } from 'react';
 import { Heart, Quote, Sparkles, Plus, Loader2, Trash2, History, Save, ArrowRight } from "lucide-react";

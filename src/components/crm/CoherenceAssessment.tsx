@@ -1,4 +1,3 @@
-"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import { Activity, ChevronDown, Heart, Brain, RotateCcw, Zap, RefreshCw, Loader2, CheckCircle2, Info } from "lucide-react";

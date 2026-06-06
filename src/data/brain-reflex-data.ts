@@ -1,4 +1,3 @@
-"use client";
 
 import { CRANIAL_NERVES } from "./cranial-nerve-data";
 

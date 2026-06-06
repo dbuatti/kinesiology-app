@@ -1,4 +1,3 @@
-"use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Target, Sparkles, Zap, CheckCircle2, ChevronDown, Trophy, AlertCircle, PlayCircle, HelpCircle, ChevronsUp, MousePointer2 } from 'lucide-react';

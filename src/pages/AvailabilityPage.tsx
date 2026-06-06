@@ -1,4 +1,3 @@
-"use client";
 
 import React from "react";
 import CalcomSlotsView from "@/components/crm/CalcomSlotsView";

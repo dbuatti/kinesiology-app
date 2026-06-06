@@ -1,4 +1,3 @@
-"use client";
 
 import React, { useState, useEffect, useMemo } from "react";
 import { PRIMITIVE_REFLEXES, PrimitiveReflex } from "@/data/primitive-reflex-data";

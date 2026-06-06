@@ -1,4 +1,3 @@
-"use client";
 
 import React from 'react';
 import { EMOTION_CODE_CHART, ROW_DATA } from '@/data/emotion-code-data';

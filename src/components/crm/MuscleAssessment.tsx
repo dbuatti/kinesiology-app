@@ -1,4 +1,3 @@
-"use client";
 
 import React, { useState, useEffect, useMemo } from "react";
 import { MUSCLE_GROUPS, MIDLINE_MUSCLES } from "@/data/muscle-data";

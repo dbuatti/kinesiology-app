@@ -1,4 +1,3 @@
-"use client";
 
 import React from "react";
 import { Search, Layers, Eye, AlertTriangle, Filter } from "lucide-react";

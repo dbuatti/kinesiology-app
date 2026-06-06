@@ -1,4 +1,3 @@
-"use client";
 
 import React, { useState, useEffect, useMemo } from "react";
 import { CRANIAL_NERVES, CranialNerve } from "@/data/cranial-nerve-data";

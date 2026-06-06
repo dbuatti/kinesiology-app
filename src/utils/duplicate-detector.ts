@@ -1,4 +1,3 @@
-"use client";
 
 /**
  * Calculates the Levenshtein distance between two strings.

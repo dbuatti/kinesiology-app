@@ -1,4 +1,3 @@
-"use client";
 
 export interface BaGuaProfile {
   number: number;

@@ -1,4 +1,3 @@
-"use client";
 
 import React from "react";
 import { Activity, Zap, BookOpen, ChevronDown, Sparkles } from "lucide-react";

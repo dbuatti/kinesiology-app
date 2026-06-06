@@ -1,4 +1,3 @@
-"use client";
 
 export type BrainstemNuclei = 'Cortex' | 'Midbrain' | 'Pons' | 'Medulla';
 export type MotorToneEffect = 'Flexors' | 'Extensors' | 'None';

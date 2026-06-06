@@ -1,4 +1,3 @@
-"use client";
 
 import React from "react";
 import { Users, Calendar, FlaskConical, AlertCircle, ArrowUpRight } from "lucide-react";

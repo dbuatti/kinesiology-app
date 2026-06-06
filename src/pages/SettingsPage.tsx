@@ -1,4 +1,3 @@
-"use client";
 
 import React from "react";
 import { Settings, Mail, Link as LinkIcon, Sparkles, Globe, Calendar } from "lucide-react";

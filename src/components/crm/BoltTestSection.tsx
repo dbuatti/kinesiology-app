@@ -1,4 +1,3 @@
-"use client";
 
 import React, { useState } from "react";
 import { FlaskConical, ChevronDown, AlertCircle, BookOpen, RotateCcw, Info, Target, CheckCircle2, PlayCircle, X } from "lucide-react";

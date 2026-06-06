@@ -1,4 +1,3 @@
-"use client";
 
 import React, { useState } from 'react';
 import { JOINT_ACTION_LIBRARY } from '@/data/joint-action-data';

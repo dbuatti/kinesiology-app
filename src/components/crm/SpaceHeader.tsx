@@ -1,4 +1,3 @@
-"use client";
 
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -195,17 +194,27 @@ const SpaceHeader = () => {
             <div className="space-y-4">
               <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-2">Navigation</p>
               <div className="grid grid-cols-1 gap-2">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
-                  >
-                    <item.icon size={18} className="text-indigo-600" />
-                    <span className="font-bold text-sm uppercase tracking-widest">{item.label}</span>
-                  </Link>
-                ))}
+                {navItems.map((item) => {
+                  const isActive = location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path));
+                  const modeAccent = mode === 'clinical' ? 'text-indigo-600' : mode === 'lab' ? 'text-emerald-600' : 'text-amber-600';
+                  const modeActiveBg = mode === 'clinical' ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800' : mode === 'lab' ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800' : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800';
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={cn(
+                        "flex items-center gap-4 p-4 rounded-2xl border transition-all",
+                        isActive
+                          ? `${modeActiveBg} shadow-sm`
+                          : "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800"
+                      )}
+                    >
+                      <item.icon size={18} className={isActive ? modeAccent : "text-slate-400"} />
+                      <span className={cn("font-bold text-sm uppercase tracking-widest", isActive ? modeAccent : "text-slate-600 dark:text-slate-400")}>{item.label}</span>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
 
@@ -218,9 +227,10 @@ const SpaceHeader = () => {
                     onClick={() => { setMode(m); setMobileMenuOpen(false); }}
                     className={cn(
                       "flex flex-col items-center justify-center py-4 rounded-2xl border transition-all",
-                      mode === m 
-                        ? "bg-white dark:bg-slate-800 border-indigo-500 shadow-lg text-indigo-600" 
-                        : "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-400"
+                      mode === m && m === 'clinical' ? "bg-white dark:bg-slate-800 border-indigo-500 shadow-lg text-indigo-600" :
+                      mode === m && m === 'lab' ? "bg-white dark:bg-slate-800 border-emerald-500 shadow-lg text-emerald-600" :
+                      mode === m && m === 'library' ? "bg-white dark:bg-slate-800 border-amber-500 shadow-lg text-amber-600" :
+                      "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-400"
                     )}
                   >
                     {getModeIcon(m)}

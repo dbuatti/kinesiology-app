@@ -1,4 +1,3 @@
-"use client";
 
 import { FINDING_TO_NUCLEI, Nuclei } from "@/utils/brainstem-logic";
 import { getMuscleInfo } from "@/data/muscle-info-data";

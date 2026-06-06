@@ -1,4 +1,3 @@
-"use client";
 
 import React, { useState } from "react";
 import { CRANIAL_NERVES, BRAINSTEM_KEYS, BrainstemNuclei } from "@/data/cranial-nerve-data";

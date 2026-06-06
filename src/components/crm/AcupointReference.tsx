@@ -1,4 +1,3 @@
-"use client";
 
 import React, { useState } from "react";
 import { ACUPOINTS, Acupoint } from "@/data/acupoint-data";

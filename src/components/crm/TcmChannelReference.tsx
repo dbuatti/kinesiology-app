@@ -1,4 +1,3 @@
-"use client";
 
 import React, { useState, useEffect } from "react";
 import { TCM_CHANNELS, TcmChannel, TcmElement } from "@/data/tcm-channel-data";

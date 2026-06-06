@@ -1,4 +1,3 @@
-"use client";
 
 import React from 'react';
 import { CRANIAL_NERVES } from '@/data/cranial-nerve-data';

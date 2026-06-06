@@ -1,4 +1,3 @@
-"use client";
 
 import React, { useState } from "react";
 import { CLINICAL_COMPLAINTS, ClinicalComplaint } from "@/data/clinical-complaints-data";

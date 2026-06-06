@@ -1,4 +1,3 @@
-"use client";
 
 import React from "react";
 import { Dumbbell, ChevronUp, ChevronDown } from "lucide-react";

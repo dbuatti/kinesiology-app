@@ -1,4 +1,3 @@
-"use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { PRIMITIVE_REFLEXES, PrimitiveReflex } from "@/data/primitive-reflex-data";

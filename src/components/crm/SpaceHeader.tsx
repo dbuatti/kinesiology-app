@@ -46,8 +46,17 @@ const SpaceHeader = () => {
   const { isPrivate, togglePrivacy } = usePrivacyMode();
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
+  const [prefilledClientId, setPrefilledClientId] = useState<string | undefined>();
   const [helpOpen, setHelpOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleClientSuccess = (newClientId?: string) => {
+    setClientDialogOpen(false);
+    if (newClientId) {
+      setPrefilledClientId(newClientId);
+      setAppDialogOpen(true);
+    }
+  };
 
   const navItems = mode === 'clinical' ? CLINICAL_NAV_ITEMS : 
                    mode === 'lab' ? LAB_NAV_ITEMS : 
@@ -248,16 +257,16 @@ const SpaceHeader = () => {
           <DialogHeader className="mb-6">
             <DialogTitle className="text-2xl font-serif font-bold tracking-tight">Add New Client</DialogTitle>
           </DialogHeader>
-          <ClientForm onSuccess={() => setClientDialogOpen(false)} />
+          <ClientForm onSuccess={handleClientSuccess} />
         </DialogContent>
       </Dialog>
 
-      <Dialog open={appDialogOpen} onOpenChange={setAppDialogOpen}>
+      <Dialog open={appDialogOpen} onOpenChange={(open) => { setAppDialogOpen(open); if (!open) setPrefilledClientId(undefined); }}>
         <DialogContent className="sm:max-w-[550px] rounded-[2.5rem] p-8">
           <DialogHeader className="mb-6">
             <DialogTitle className="text-2xl font-serif font-bold tracking-tight">Schedule New Session</DialogTitle>
           </DialogHeader>
-          <AppointmentForm onSuccess={() => setAppDialogOpen(false)} />
+          <AppointmentForm initialClientId={prefilledClientId} onSuccess={() => { setAppDialogOpen(false); setPrefilledClientId(undefined); }} />
         </DialogContent>
       </Dialog>
 

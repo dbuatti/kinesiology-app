@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
-import { Loader2, User, Activity, ShieldAlert } from "lucide-react";
+import { Loader2, User, Activity, ShieldAlert, CheckCircle2, CalendarPlus } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { Client } from "@/types/crm";
 import { cn } from "@/lib/utils";
@@ -45,13 +45,15 @@ const formSchema = z.object({
 });
 
 interface ClientFormProps {
-  onSuccess: () => void;
+  onSuccess: (newClientId?: string) => void;
   initialData?: Client;
 }
 
 const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
   const { session } = useAuth();
   const [submitting, setSubmitting] = useState(false);
+  const [createdClientId, setCreatedClientId] = useState<string | null>(null);
+  const [createdClientName, setCreatedClientName] = useState<string>("");
 
   const journalData = useMemo(() => parseClientJournal(initialData?.journal), [initialData?.journal]);
 
@@ -124,13 +126,19 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
           .eq('id', initialData.id);
         if (error) throw error;
         showSuccess("Client updated successfully");
+        onSuccess();
       } else {
-        const { error } = await supabase.from("clients").insert(payload);
+        const { data: newClient, error } = await supabase
+          .from("clients")
+          .insert(payload)
+          .select('id')
+          .single();
         if (error) throw error;
         showSuccess("Client added successfully");
+        setCreatedClientId(newClient.id);
+        setCreatedClientName(values.name);
+        return;
       }
-
-      onSuccess();
     } catch (error: any) {
       showError(error.message || "Failed to save client");
     } finally {
@@ -144,6 +152,40 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
       <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-900">{title}</h3>
     </div>
   );
+
+  if (createdClientId) {
+    return (
+      <div className="flex flex-col items-center text-center space-y-8 py-8">
+        <div className="w-20 h-20 rounded-3xl bg-emerald-50 flex items-center justify-center">
+          <CheckCircle2 size={40} className="text-emerald-500" />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+            {createdClientName} added!
+          </h3>
+          <p className="text-sm text-slate-500 font-medium">
+            The client profile has been saved. Would you like to book their first session now?
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3 w-full">
+          <Button
+            className="flex-1 bg-indigo-600 hover:bg-indigo-700 h-12 rounded-2xl font-black text-xs uppercase tracking-widest gap-2"
+            onClick={() => onSuccess(createdClientId)}
+          >
+            <CalendarPlus size={16} />
+            Book First Session
+          </Button>
+          <Button
+            variant="outline"
+            className="flex-1 h-12 rounded-2xl font-bold text-xs uppercase tracking-widest border-slate-200"
+            onClick={() => onSuccess()}
+          >
+            Done
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Form {...form}>

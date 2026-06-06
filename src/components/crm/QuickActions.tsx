@@ -30,9 +30,18 @@ import { cn } from "@/lib/utils";
 const QuickActions = () => {
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appointmentDialogOpen, setAppointmentDialogOpen] = useState(false);
+  const [prefilledClientId, setPrefilledClientId] = useState<string | undefined>();
   const [helpOpen, setHelpOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+
+  const handleClientSuccess = (newClientId?: string) => {
+    setClientDialogOpen(false);
+    if (newClientId) {
+      setPrefilledClientId(newClientId);
+      setAppointmentDialogOpen(true);
+    }
+  };
 
   return (
     <>
@@ -173,16 +182,12 @@ const QuickActions = () => {
                 </div>
               </div>
             </DialogHeader>
-            <ClientForm
-              onSuccess={() => {
-                setClientDialogOpen(false);
-              }}
-            />
+            <ClientForm onSuccess={handleClientSuccess} />
           </div>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={appointmentDialogOpen} onOpenChange={setAppointmentDialogOpen}>
+      <Dialog open={appointmentDialogOpen} onOpenChange={(open) => { setAppointmentDialogOpen(open); if (!open) setPrefilledClientId(undefined); }}>
         <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh] overflow-y-auto rounded-[3rem] p-0 border-none shadow-3xl">
           <div className="p-10">
             <DialogHeader className="mb-8">
@@ -197,8 +202,10 @@ const QuickActions = () => {
               </div>
             </DialogHeader>
             <AppointmentForm
+              initialClientId={prefilledClientId}
               onSuccess={() => {
                 setAppointmentDialogOpen(false);
+                setPrefilledClientId(undefined);
               }}
             />
           </div>

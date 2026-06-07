@@ -16,7 +16,8 @@ import {
   CalendarPlus,
   Menu,
   X,
-  Sparkles
+  Sparkles,
+  Mic
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppMode, AppMode } from "@/components/ModeProvider";
@@ -29,7 +30,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { CLINICAL_NAV_ITEMS, LAB_NAV_ITEMS, LIBRARY_NAV_ITEMS } from "@/config/navigation";
+import { CLINICAL_NAV_ITEMS, LAB_NAV_ITEMS, LIBRARY_NAV_ITEMS, VOICE_NAV_ITEMS } from "@/config/navigation";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
 import SearchBar from "./SearchBar";
@@ -42,7 +43,7 @@ import HelpModal from "./HelpModal";
 const SpaceHeader = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { mode, setMode } = useAppMode();
+  const { mode, setMode, appMode, setAppMode } = useAppMode();
   const { isPrivate, togglePrivacy } = usePrivacyMode();
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appDialogOpen, setAppDialogOpen] = useState(false);
@@ -58,7 +59,8 @@ const SpaceHeader = () => {
     }
   };
 
-  const navItems = mode === 'clinical' ? CLINICAL_NAV_ITEMS : 
+  const navItems = appMode === 'voice' ? VOICE_NAV_ITEMS :
+                   mode === 'clinical' ? CLINICAL_NAV_ITEMS : 
                    mode === 'lab' ? LAB_NAV_ITEMS : 
                    LIBRARY_NAV_ITEMS;
 
@@ -93,6 +95,34 @@ const SpaceHeader = () => {
         <div className="h-8 w-px bg-slate-200 dark:bg-slate-800 hidden md:block" />
 
         <HubSwitcher />
+
+        <div className="h-8 w-px bg-slate-200 dark:bg-slate-800 hidden md:block" />
+
+        <div className="hidden md:flex items-center bg-slate-100 dark:bg-slate-900 rounded-xl p-0.5 border border-slate-200/50 dark:border-slate-800/50">
+          <button
+            onClick={() => setAppMode('default')}
+            className={cn(
+              "px-3 py-1.5 rounded-[10px] text-[9px] font-black uppercase tracking-widest transition-all",
+              appMode === 'default'
+                ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm"
+                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+            )}
+          >
+            Default
+          </button>
+          <button
+            onClick={() => setAppMode('voice')}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-[9px] font-black uppercase tracking-widest transition-all",
+              appMode === 'voice'
+                ? "bg-rose-500 text-white shadow-sm"
+                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+            )}
+          >
+            <Mic size={11} />
+            Voice Studio
+          </button>
+        </div>
       </div>
 
       {/* CENTER: CONTEXTUAL NAV */}
@@ -158,7 +188,7 @@ const SpaceHeader = () => {
                   <span className="font-black text-[10px] uppercase tracking-widest">{mode}</span>
                 </div>
               </div>
-              
+
               <DropdownMenuItem onClick={togglePrivacy} className="rounded-xl py-2.5 px-4 cursor-pointer gap-3">
                 {isPrivate ? <EyeOff size={16} className="text-rose-500" /> : <Eye size={16} />}
                 <span className="font-bold text-xs uppercase tracking-widest">{isPrivate ? "Disable Privacy" : "Enable Privacy"}</span>
@@ -224,6 +254,35 @@ const SpaceHeader = () => {
                     </Link>
                   );
                 })}
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-2">App Mode</p>
+              <div className="grid grid-cols-2 gap-2 px-2">
+                <button
+                  onClick={() => { setAppMode('default'); setMobileMenuOpen(false); }}
+                  className={cn(
+                    "flex items-center justify-center gap-2 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all",
+                    appMode === 'default'
+                      ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-lg"
+                      : "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-500"
+                  )}
+                >
+                  Default Mode
+                </button>
+                <button
+                  onClick={() => { setAppMode('voice'); setMobileMenuOpen(false); }}
+                  className={cn(
+                    "flex items-center justify-center gap-2 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all",
+                    appMode === 'voice'
+                      ? "bg-rose-500 text-white border-rose-500 shadow-lg"
+                      : "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-500"
+                  )}
+                >
+                  <Mic size={14} />
+                  Voice Studio
+                </button>
               </div>
             </div>
 

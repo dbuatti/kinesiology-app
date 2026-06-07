@@ -44,3 +44,10 @@ export const LIBRARY_NAV_ITEMS = [
   { label: "Knowledge Quiz", icon: GraduationCap, path: "/practice/quiz" },
   { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate" },
 ];
+
+export const VOICE_NAV_ITEMS = [
+  { label: "Dashboard", icon: LayoutDashboard, path: "/voice" },
+  { label: "Voice Clients", icon: Users, path: "/voice/clients" },
+  { label: "Book a Lesson", icon: Calendar, path: "/voice/book" },
+  { label: "Studio Calendar", icon: TrendingUp, path: "/voice/calendar" },
+];

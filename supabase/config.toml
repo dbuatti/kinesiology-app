@@ -27,3 +27,18 @@ verify_jwt = false
 
 [functions.notion-to-calcom]
 verify_jwt = false
+
+[functions.voice-onboard]
+verify_jwt = false
+
+[functions.voice-clients]
+verify_jwt = false
+
+[functions.voice-schedule-lesson]
+verify_jwt = false
+
+[functions.voice-lessons]
+verify_jwt = false
+
+[functions.calcom-voice-webhook]
+verify_jwt = false

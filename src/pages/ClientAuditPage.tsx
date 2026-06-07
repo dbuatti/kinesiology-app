@@ -2680,8 +2680,8 @@ export default function ClientAuditPage() {
 
       {/* Quick Booking Modal */}
       <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
-        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto rounded-[2rem] p-0">
-          <div className="p-8">
+        <DialogContent className="sm:max-w-[550px] max-h-[90vh] p-0 gap-0 bg-background">
+          <div className="overflow-y-auto p-8">
             <DialogHeader className="mb-6">
               <DialogTitle className="text-2xl font-black">Quick Book Session</DialogTitle>
               <DialogDescription className="font-medium">Schedule a new appointment for this client.</DialogDescription>

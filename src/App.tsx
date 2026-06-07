@@ -63,6 +63,13 @@ import HeartWallPrintPage from "./pages/HeartWallPrintPage";
 import BrainZonePrintPage from "./pages/BrainZonePrintPage";
 import JointActionPrintPage from "./pages/JointActionPrintPage";
 
+// --- Voice Studio ---
+import VoiceDashboardPage from "./pages/VoiceDashboardPage";
+import VoiceNewClientPage from "./pages/VoiceNewClientPage";
+import VoiceClientsPage from "./pages/VoiceClientsPage";
+import VoiceBookLessonPage from "./pages/VoiceBookLessonPage";
+import VoiceCalendarPage from "./pages/VoiceCalendarPage";
+
 // --- Business & System ---
 import BusinessHubPage from "./pages/BusinessHubPage";
 import ClientAuditPage from "./pages/ClientAuditPage";
@@ -148,6 +155,13 @@ const AppRoutes = () => {
         <Route path="/resources/worksheets/anger-flow" element={<AngerFlowWorksheetPage />} />
         <Route path="/resources/worksheets/business-model" element={<BusinessModelWorksheetPage />} />
         
+        {/* Voice Studio */}
+        <Route path="/voice" element={<VoiceDashboardPage />} />
+        <Route path="/voice/clients" element={<VoiceClientsPage />} />
+        <Route path="/voice/clients/new" element={<VoiceNewClientPage />} />
+        <Route path="/voice/book" element={<VoiceBookLessonPage />} />
+        <Route path="/voice/calendar" element={<VoiceCalendarPage />} />
+
         {/* Business Tools */}
         <Route path="/business" element={<BusinessHubPage />} />
         <Route path="/business/marketing-engine" element={<MarketingEnginePage />} />

@@ -1,6 +1,12 @@
 // @ts-nocheck
 export const CLIENTS_DB_ID = "074e2c006bd541d88c502feb397ef31d";
 
+// Voice Studio databases — used by the voice studio integration client
+export const VOICE_CLIENTS_DB_ID = "af3e38f400d84dc8975eff4b6269157b";
+export const VOICE_LESSONS_DB_1_ID = "8d6369c637c8425fb007adf261f8e576";
+// Reuses the existing planner database for voice lesson records
+export const VOICE_LESSONS_DB_2_ID = "11caad21cd0980d8a3eeeffb27fc43c0";
+
 export const normalizeId = (id: string) => id ? id.replace(/-/g, "").toLowerCase() : "";
 
 /**

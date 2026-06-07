@@ -85,10 +85,7 @@ const DocumentRightSidebar = ({
           <p className="text-[8px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest flex items-center justify-center gap-1">
             <Zap size={9} /> Peak Meridian
           </p>
-          <p className="text-[11px] font-black text-amber-800 dark:text-amber-300 leading-tight">{currentPeakMeridian.englishName}</p>
-          {currentPeakMeridian.organ && (
-            <p className="text-[9px] font-bold text-amber-600/70 dark:text-amber-500/70">{currentPeakMeridian.organ}</p>
-          )}
+          <p className="text-[11px] font-black text-amber-800 dark:text-amber-300 leading-tight">{currentPeakMeridian.name}</p>
         </div>
       )}
 

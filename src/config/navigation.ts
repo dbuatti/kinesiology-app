@@ -15,12 +15,14 @@ import {
   Trophy,
   GraduationCap,
   Zap,
-  FileText
+  FileText,
+  CalendarDays
 } from "lucide-react";
 
 export const CLINICAL_NAV_ITEMS = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/" },
   { label: "Schedule", icon: Calendar, path: "/schedule" },
+  { label: "Calendar", icon: CalendarDays, path: "/calendar" },
   { label: "Clients", icon: Users, path: "/clients" },
   { label: "Oversight", icon: TrendingUp, path: "/oversight" },
   { label: "Business Hub", icon: Briefcase, path: "/business" },

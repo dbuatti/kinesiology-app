@@ -8,7 +8,6 @@ const corsHeaders = {
 };
 
 const LESSONS_DB_1_ID = "8d6369c637c8425fb007adf261f8e576";
-const LESSONS_DB_2_ID = "11caad21cd0980d8a3eeeffb27fc43c0";
 
 serve(async (req) => {
   const functionName = "voice-lessons";
@@ -72,60 +71,11 @@ serve(async (req) => {
       return lessons;
     };
 
-    const queryDb2 = async () => {
-      const lessons = [];
-      let hasMore = true;
-      let startCursor = undefined;
-
-      while (hasMore) {
-        const queryBody = { page_size: 100 };
-        if (startCursor) queryBody.start_cursor = startCursor;
-
-        const res = await fetch(
-          `https://api.notion.com/v1/databases/${LESSONS_DB_2_ID}/query`,
-          {
-            method: "POST",
-            headers: notionHeaders,
-            body: JSON.stringify(queryBody),
-          }
-        );
-
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(`Notion query failed for DB 2: ${err.message || JSON.stringify(err)}`);
-        }
-
-        const data = await res.json();
-        for (const page of data.results || []) {
-          const props = page.properties;
-          lessons.push({
-            id: page.id,
-            notionUrl: page.url,
-            name: props.Title?.title?.map((t) => t.plain_text).join("") || null,
-            date: props.Date?.date?.start || null,
-            time: props.Details?.rich_text?.map((t) => t.plain_text).join("") || null,
-            studentIds: (props["Voice Students"]?.relation || []).map((r) => r.id),
-            paymentStatus: props.Payment?.select?.name || null,
-            studentName: null,
-            studentEmail: null,
-          });
-        }
-
-        hasMore = data.has_more;
-        startCursor = data.next_cursor;
-      }
-
-      return lessons;
-    };
-
-    const [db1Lessons, db2Lessons] = await Promise.all([
-      queryDb1(),
-      queryDb2(),
-    ]);
+    const db1Lessons = await queryDb1();
 
     // Resolve student names and emails from Voice Clients DB
     const allStudentIds = new Set<string>();
-    for (const l of [...db1Lessons, ...db2Lessons]) {
+    for (const l of db1Lessons) {
       for (const id of l.studentIds) allStudentIds.add(id);
     }
 
@@ -152,7 +102,7 @@ serve(async (req) => {
         }
       }
 
-      for (const l of [...db1Lessons, ...db2Lessons]) {
+      for (const l of db1Lessons) {
         if (l.studentIds.length > 0) {
           const student = studentMap[l.studentIds[0]];
           if (student) {
@@ -163,13 +113,7 @@ serve(async (req) => {
       }
     }
 
-    // Merge, deduplicate by id, and only include voice lessons (those with a student relation)
-    const seen = new Set();
-    const allLessons = [...db1Lessons, ...db2Lessons].filter((l) => {
-      if (seen.has(l.id)) return false;
-      seen.add(l.id);
-      return l.studentIds.length > 0;
-    });
+    const allLessons = db1Lessons.filter((l) => l.studentIds.length > 0);
 
     allLessons.sort((a, b) => {
       if (!a.date) return 1;
@@ -177,7 +121,7 @@ serve(async (req) => {
       return a.date.localeCompare(b.date);
     });
 
-    console.log(`[${functionName}] Returned ${allLessons.length} lessons`);
+    console.log(`[${functionName}] Returned ${allLessons.length} lessons from DB 1`);
 
     return new Response(JSON.stringify({ success: true, lessons: allLessons }), {
       status: 200,

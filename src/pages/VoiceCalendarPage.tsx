@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, Mic, Calendar as CalendarIcon, Clock, 
   ChevronLeft, ChevronRight, Loader2, ExternalLink, RefreshCw,
-  CreditCard, Copy, Check, DollarSign
+  CreditCard, Copy, Check, DollarSign, Trash2, CalendarSync,
+  XCircle, Search, ChevronDown
 } from "lucide-react";
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, 
   startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, 
-  eachDayOfInterval, isToday } from "date-fns";
-import { useQuery, useMutation } from "@tanstack/react-query";
+  eachDayOfInterval, isToday, parseISO, addWeeks, parse } from "date-fns";
+import { formatDateLine } from "@/utils/availability";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -25,10 +27,23 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { showSuccess, showError } from "@/utils/toast";
+import { CALCOM_CONFIG } from "@/config/integrations";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface VoiceLesson {
   id: string;
@@ -42,14 +57,39 @@ interface VoiceLesson {
   studentEmail: string | null;
 }
 
+interface VoiceBooking {
+  calcom_booking_id: string;
+  student_id: string;
+  student_name: string;
+  student_email: string;
+  lesson_date: string;
+  lesson_time: string;
+  duration: string;
+  cost: number | null;
+  status: string;
+  notion_lesson_id_1: string | null;
+  notion_lesson_id_2: string | null;
+}
+
+const EVENT_TYPES = [
+  { key: "60", label: "60 min", eventTypeId: "1945081", price: "$95" },
+  { key: "45", label: "45 min", eventTypeId: "5925021", price: "$75" },
+];
+
 const VoiceCalendarPage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [payDialogLesson, setPayDialogLesson] = useState<VoiceLesson | null>(null);
   const [payAmount, setPayAmount] = useState("");
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const [cancelLesson, setCancelLesson] = useState<{ lesson: VoiceLesson; booking: VoiceBooking } | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+  const [rescheduleLesson, setRescheduleLesson] = useState<{ lesson: VoiceLesson; booking: VoiceBooking } | null>(null);
+  const [rescheduleSlot, setRescheduleSlot] = useState<string | null>(null);
+  const [copyingWeeks, setCopyingWeeks] = useState<number | null>(null);
 
-  const { data, isLoading, refetch, isRefetching } = useQuery({
+  const { data: lessonsData, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ["voice-lessons"],
     queryFn: async () => {
       const res = await supabase.functions.invoke("voice-lessons");
@@ -59,7 +99,22 @@ const VoiceCalendarPage = () => {
     refetchInterval: 60_000,
   });
 
-  const lessons = data || [];
+  const lessons = lessonsData || [];
+
+  // Fetch voice_bookings to get calcom_booking_ids
+  const { data: bookingsData } = useQuery({
+    queryKey: ["voice-bookings"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("voice_bookings")
+        .select("*")
+        .neq("status", "cancelled");
+      return (data || []) as VoiceBooking[];
+    },
+    refetchInterval: 60_000,
+  });
+
+  const bookings = bookingsData || [];
 
   const generatePaymentLink = useMutation({
     mutationFn: async (params: { lesson: VoiceLesson; amount: number }) => {
@@ -84,13 +139,150 @@ const VoiceCalendarPage = () => {
     },
   });
 
-  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
-  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+  const findBooking = (lesson: VoiceLesson): VoiceBooking | undefined =>
+    bookings.find((b) => {
+      if (!lesson.date || !lesson.studentEmail) return false;
+      return b.lesson_date === lesson.date && b.student_email === lesson.studentEmail;
+    });
+
+  const resolveBooking = useMutation({
+    mutationFn: async (lesson: VoiceLesson) => {
+      const res = await supabase.functions.invoke("voice-resolve-booking", {
+        body: {
+          date: lesson.date,
+          studentEmail: lesson.studentEmail,
+          lessonNotionId1: lesson.id,
+        },
+      });
+      if (res.error) throw res.error;
+      return res.data;
+    },
+    onSuccess: (data, lesson) => {
+      if (data?.found && data?.booking) {
+        showSuccess("Cal.com booking linked! Cancel/reschedule now available.");
+        // Directly inject into cache so UI updates immediately
+        queryClient.setQueryData(["voice-bookings"], (old: VoiceBooking[] | undefined) => {
+          const newBooking: VoiceBooking = {
+            calcom_booking_id: data.booking.calcom_booking_id,
+            student_id: "",
+            student_name: lesson.studentName || "",
+            student_email: data.booking.student_email,
+            lesson_date: data.booking.lesson_date,
+            lesson_time: lesson.time || "",
+            duration: "",
+            cost: null,
+            status: "scheduled",
+            notion_lesson_id_1: lesson.id || null,
+            notion_lesson_id_2: null,
+          };
+          if (!old) return [newBooking];
+          const exists = old.find(b => b.calcom_booking_id === newBooking.calcom_booking_id);
+          if (exists) return [...old];
+          return [...old, newBooking];
+        });
+      } else {
+        showError("No matching Cal.com booking found for this lesson.");
+      }
+    },
+    onError: (err: any) => {
+      showError(err.message || "Failed to resolve booking");
+    },
+  });
+
+  const handleCancel = async () => {
+    if (!cancelLesson) return;
+    setCancelling(true);
+    try {
+      const { error } = await supabase.functions.invoke("voice-cancel-lesson", {
+        body: {
+          calcomBookingId: cancelLesson.booking.calcom_booking_id,
+          notionLessonId1: cancelLesson.booking.notion_lesson_id_1,
+          notionLessonId2: cancelLesson.booking.notion_lesson_id_2,
+        },
+      });
+      if (error) throw error;
+      showSuccess("Lesson cancelled in Cal.com and archived in Notion.");
+      queryClient.invalidateQueries({ queryKey: ["voice-lessons"] });
+      queryClient.invalidateQueries({ queryKey: ["voice-bookings"] });
+      setCancelLesson(null);
+    } catch (err: any) {
+      showError(err.message || "Failed to cancel lesson");
+    }
+    setCancelling(false);
+  };
+
+  const handleReschedule = async () => {
+    if (!rescheduleLesson || !rescheduleSlot) return;
+    try {
+      const { error } = await supabase.functions.invoke("voice-create-booking", {
+        body: {
+          bookingUid: rescheduleLesson.booking.calcom_booking_id,
+          studentName: rescheduleLesson.lesson.studentName,
+          studentEmail: rescheduleLesson.lesson.studentEmail,
+          startTime: rescheduleSlot,
+          eventTypeId: "1945081",
+          notionLessonId1: rescheduleLesson.booking.notion_lesson_id_1,
+          notionLessonId2: rescheduleLesson.booking.notion_lesson_id_2,
+        },
+      });
+      if (error) throw error;
+      showSuccess("Lesson rescheduled in Cal.com and Notion!");
+      queryClient.invalidateQueries({ queryKey: ["voice-lessons"] });
+      queryClient.invalidateQueries({ queryKey: ["voice-bookings"] });
+      setRescheduleLesson(null);
+      setRescheduleSlot(null);
+    } catch (err: any) {
+      showError(err.message || "Failed to reschedule");
+    }
+  };
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
   const startDate = startOfWeek(monthStart);
   const endDate = endOfWeek(monthEnd);
+
+  const handleCopySlots = useCallback(async (numDays: number) => {
+    setCopyingWeeks(numDays);
+    try {
+      const now = new Date();
+      const res = await supabase.functions.invoke("get-calcom-slots", {
+        body: {
+          start: now.toISOString(),
+          end: addDays(now, 60).toISOString(),
+          eventTypeId: "1945081",
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
+      });
+      if (res.error) throw res.error;
+
+      const slotsByDate: Record<string, any[]> = res.data?.data || {};
+      const allDates = Object.keys(slotsByDate).sort();
+      const datesWithSlots = allDates.filter((d) => slotsByDate[d]?.length > 0);
+
+      if (datesWithSlots.length === 0) {
+        showError("No available slots found in the next 60 days");
+        setCopyingWeeks(null);
+        return;
+      }
+
+      const selectedDates = datesWithSlots.slice(0, numDays);
+
+      let text = `Available slots:\n`;
+      for (const dateKey of selectedDates) {
+        const times = slotsByDate[dateKey].map((s: any) => s.time);
+        text += `\n${formatDateLine(dateKey, times)}`;
+      }
+
+      await navigator.clipboard.writeText(text);
+      showSuccess(`Copied ${selectedDates.length} day(s) of availability to clipboard!`);
+    } catch (err: any) {
+      showError(err.message || "Failed to get available slots");
+    }
+    setCopyingWeeks(null);
+  }, []);
+
+  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
+  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
 
   const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
 
@@ -175,7 +367,36 @@ const VoiceCalendarPage = () => {
                     {lessons.length} lesson{lessons.length !== 1 ? "s" : ""} scheduled
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="rounded-xl h-12 gap-2 font-bold text-xs"
+                        disabled={copyingWeeks !== null}
+                      >
+                        {copyingWeeks !== null ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          <Copy size={14} />
+                        )}
+                        {copyingWeeks !== null ? `Fetching ${copyingWeeks}d...` : "Get Slots"}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="rounded-xl min-w-[180px]">
+                      {[5, 10, 15, 20].map((days) => (
+                        <DropdownMenuItem
+                          key={days}
+                          onClick={() => handleCopySlots(days)}
+                          className="font-bold text-sm py-3"
+                          disabled={copyingWeeks !== null}
+                        >
+                          <Copy size={14} className="mr-2" />
+                          Next {days} days
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button variant="outline" size="icon" onClick={prevMonth} className="rounded-xl h-12 w-12">
                     <ChevronLeft size={24} />
                   </Button>
@@ -235,58 +456,110 @@ const VoiceCalendarPage = () => {
                       </div>
 
                       <div className="space-y-1">
-                        {dayLessons.slice(0, 2).map((lesson) => (
-                          <Tooltip key={lesson.id}>
-                            <TooltipTrigger asChild>
-                              <div className="block p-1.5 rounded-lg text-[9px] font-bold truncate transition-all hover:scale-[1.02] bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 border border-rose-100 dark:border-rose-800/40 cursor-default">
-                                <div className="flex items-center gap-1">
-                                  <Clock size={9} className="shrink-0 opacity-60" />
-                                  <span className="truncate">{lesson.name || "Lesson"}</span>
-                                </div>
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent className="rounded-xl p-3 shadow-2xl border-none w-64">
-                              <div className="space-y-2">
-                                <p className="font-black text-foreground">{lesson.name || "Voice Lesson"}</p>
-                                {lesson.time && (
-                                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                                    <Clock size={10} /> {lesson.time}
+                        {dayLessons.slice(0, 2).map((lesson) => {
+                          const booking = findBooking(lesson);
+                          return (
+                            <Tooltip key={lesson.id}>
+                              <TooltipTrigger asChild>
+                                <a
+                                  href={lesson.notionUrl || "#"}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="block p-1.5 rounded-lg text-[9px] font-bold truncate transition-all hover:scale-[1.02] bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 border border-rose-100 dark:border-rose-800/40"
+                                >
+                                  <div className="flex items-center gap-1">
+                                    <Clock size={9} className="shrink-0 opacity-60" />
+                                    <span className="truncate">{lesson.name || "Lesson"}</span>
                                   </div>
-                                )}
-                                {lesson.studentName && (
-                                  <div className="text-[10px] text-muted-foreground font-medium">
-                                    Student: {lesson.studentName}
-                                  </div>
-                                )}
-                                {lesson.paymentStatus && (
-                                  <div className="flex items-center gap-1.5">
-                                    <Badge className={cn("text-[9px] font-black border-none", paymentBadge(lesson.paymentStatus))}>
-                                      {lesson.paymentStatus}
-                                    </Badge>
-                                  </div>
-                                )}
-                                <div className="flex gap-1 pt-1">
-                                  {lesson.notionUrl && (
-                                    <a
-                                      href={lesson.notionUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="flex items-center gap-1 text-[10px] text-rose-500 hover:underline"
-                                    >
-                                      <ExternalLink size={10} /> Notion
-                                    </a>
+                                </a>
+                              </TooltipTrigger>
+                              <TooltipContent className="rounded-xl p-3 shadow-2xl border-none w-72 bg-popover">
+                                <div className="space-y-2">
+                                  <p className="font-black text-foreground">{lesson.name || "Voice Lesson"}</p>
+                                  {lesson.time && (
+                                    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                                      <Clock size={10} /> {lesson.time}
+                                    </div>
                                   )}
-                                  <button
-                                    onClick={() => openPayDialog(lesson)}
-                                    className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 hover:text-emerald-500 ml-auto"
-                                  >
-                                    <CreditCard size={10} /> Payment Link
-                                  </button>
+                                  {lesson.studentName && (
+                                    <div className="text-[10px] text-muted-foreground font-medium">
+                                      <span className="font-bold">Student:</span> {lesson.studentName}
+                                    </div>
+                                  )}
+                                  {lesson.studentEmail && (
+                                    <div className="text-[10px] text-muted-foreground">
+                                      <span className="font-bold">Email:</span> {lesson.studentEmail}
+                                    </div>
+                                  )}
+                                  {lesson.paymentStatus && (
+                                    <div className="flex items-center gap-1.5">
+                                      <Badge className={cn("text-[9px] font-black border-none", paymentBadge(lesson.paymentStatus))}>
+                                        {lesson.paymentStatus}
+                                      </Badge>
+                                    </div>
+                                  )}
+                                  <div className="flex flex-wrap gap-1 pt-1">
+                                    {lesson.notionUrl && (
+                                      <a
+                                        href={lesson.notionUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-1 text-[10px] text-rose-500 hover:underline"
+                                      >
+                                        <ExternalLink size={10} /> Notion
+                                      </a>
+                                    )}
+                                    <button
+                                      onClick={() => openPayDialog(lesson)}
+                                      className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 hover:text-emerald-500 ml-auto"
+                                    >
+                                      <CreditCard size={10} /> Payment Link
+                                    </button>
+                                    {booking ? (
+                                      <>
+                                        <button
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            setCancelLesson({ lesson, booking });
+                                          }}
+                                          className="flex items-center gap-1 text-[10px] font-bold text-red-500 hover:text-red-400"
+                                        >
+                                          <XCircle size={10} /> Cancel
+                                        </button>
+                                        <button
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            setRescheduleLesson({ lesson, booking });
+                                            setRescheduleSlot(null);
+                                          }}
+                                          className="flex items-center gap-1 text-[10px] font-bold text-amber-600 hover:text-amber-500"
+                                        >
+                                          <CalendarSync size={10} /> Reschedule
+                                        </button>
+                                      </>
+                                    ) : lesson.date && lesson.studentEmail && (
+                                      <button
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          resolveBooking.mutate(lesson);
+                                        }}
+                                        disabled={resolveBooking.isPending}
+                                        className="flex items-center gap-1 text-[10px] font-bold text-indigo-500 hover:text-indigo-400"
+                                      >
+                                        {resolveBooking.isPending ? (
+                                          <Loader2 size={10} className="animate-spin" />
+                                        ) : (
+                                          <Search size={10} />
+                                        )}
+                                        {resolveBooking.isPending ? "Linking..." : "Link Cal.com"}
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            </TooltipContent>
-                          </Tooltip>
-                        ))}
+                              </TooltipContent>
+                            </Tooltip>
+                          );
+                        })}
                         {dayLessons.length > 2 && (
                           <p className="text-[9px] font-black text-muted-foreground text-center pt-0.5">
                             + {dayLessons.length - 2} more
@@ -301,6 +574,70 @@ const VoiceCalendarPage = () => {
           </>
         )}
       </div>
+
+      {/* Cancel Confirmation Dialog */}
+      <Dialog open={!!cancelLesson} onOpenChange={(o) => !o && setCancelLesson(null)}>
+        <DialogContent className="sm:max-w-[400px] rounded-[2rem] bg-white dark:bg-gray-950">
+          <DialogHeader>
+            <DialogTitle>Cancel Lesson</DialogTitle>
+            <DialogDescription>
+              This will cancel the booking in Cal.com and archive the lesson in Notion.
+            </DialogDescription>
+          </DialogHeader>
+          {cancelLesson && (
+            <div className="bg-rose-50 dark:bg-rose-950/20 rounded-xl p-4 space-y-1">
+              <p className="font-black text-sm">{cancelLesson.lesson.name || "Voice Lesson"}</p>
+              {cancelLesson.lesson.date && (
+                <p className="text-xs text-muted-foreground">{cancelLesson.lesson.date} at {cancelLesson.lesson.time}</p>
+              )}
+              <p className="text-xs text-muted-foreground">Student: {cancelLesson.lesson.studentName}</p>
+            </div>
+          )}
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" onClick={() => setCancelLesson(null)} className="rounded-xl font-bold text-xs">
+              Keep
+            </Button>
+            <Button
+              onClick={handleCancel}
+              disabled={cancelling}
+              className="bg-red-500 hover:bg-red-600 rounded-xl font-bold text-xs gap-2"
+            >
+              {cancelling ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+              {cancelling ? "Cancelling..." : "Confirm Cancel"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reschedule Dialog */}
+      <Dialog open={!!rescheduleLesson} onOpenChange={(o) => !o && setRescheduleLesson(null)}>
+        <DialogContent className="sm:max-w-[500px] rounded-[2rem] bg-white dark:bg-gray-950">
+          <DialogHeader>
+            <DialogTitle>Reschedule Lesson</DialogTitle>
+            <DialogDescription>
+              Pick a new time slot for this lesson.
+            </DialogDescription>
+          </DialogHeader>
+          <RescheduleSlotPicker
+            booking={rescheduleLesson?.booking}
+            selectedSlot={rescheduleSlot}
+            onSelect={setRescheduleSlot}
+          />
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" onClick={() => setRescheduleLesson(null)} className="rounded-xl font-bold text-xs">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleReschedule}
+              disabled={!rescheduleSlot}
+              className="bg-amber-500 hover:bg-amber-600 rounded-xl font-bold text-xs gap-2"
+            >
+              <CalendarSync size={14} />
+              Confirm Reschedule
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Payment Link Dialog */}
       <Dialog open={!!payDialogLesson} onOpenChange={(o) => !o && setPayDialogLesson(null)}>
@@ -386,6 +723,105 @@ const VoiceCalendarPage = () => {
         </DialogContent>
       </Dialog>
     </AppLayout>
+  );
+};
+
+const RescheduleSlotPicker = ({
+  booking,
+  selectedSlot,
+  onSelect,
+}: {
+  booking: VoiceBooking | undefined;
+  selectedSlot: string | null;
+  onSelect: (slot: string) => void;
+}) => {
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  const { data: slotsData, isLoading } = useQuery({
+    queryKey: ["reschedule-slots", booking?.lesson_date],
+    queryFn: async () => {
+      const res = await supabase.functions.invoke("get-calcom-slots", {
+        body: {
+          start: new Date().toISOString(),
+          end: addDays(new Date(), 30).toISOString(),
+          eventTypeId: "1945081",
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
+      });
+      if (res.error) throw res.error;
+      return res.data;
+    },
+    enabled: !!booking,
+    staleTime: 30_000,
+  });
+
+  const slotsByDate: Record<string, any[]> = slotsData?.data || {};
+  const availableDates = useMemo(() => {
+    return Object.keys(slotsByDate)
+      .filter((key) => slotsByDate[key].length > 0)
+      .map((key) => parseISO(key))
+      .sort((a, b) => a.getTime() - b.getTime());
+  }, [slotsByDate]);
+
+  const currentSlots = selectedDate
+    ? (slotsByDate[format(selectedDate, "yyyy-MM-dd")] || [])
+    : [];
+
+  return (
+    <div className="py-4 space-y-4">
+      {isLoading ? (
+        <div className="flex justify-center py-8">
+          <Loader2 className="animate-spin text-amber-500" size={24} />
+        </div>
+      ) : (
+        <>
+          {/* Date chips */}
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {availableDates.map((date) => (
+              <button
+                key={date.toISOString()}
+                onClick={() => { setSelectedDate(date); onSelect(""); }}
+                className={cn(
+                  "flex flex-col items-center justify-center min-w-[64px] h-16 rounded-xl border-2 transition-all shrink-0",
+                  selectedDate?.getTime() === date.getTime()
+                    ? "bg-amber-500 border-amber-500 text-white"
+                    : "bg-card border-border hover:border-amber-300 text-foreground"
+                )}
+              >
+                <span className="text-[8px] font-black uppercase opacity-60">{format(date, "EEE")}</span>
+                <span className="text-lg font-black leading-tight">{format(date, "d")}</span>
+                <span className="text-[7px] font-bold uppercase opacity-40">{format(date, "MMM")}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Time slots */}
+          {selectedDate && (
+            <div className="grid grid-cols-2 gap-2">
+              {currentSlots.map((slot: any) => {
+                const time = format(parseISO(slot.time), "h:mm a");
+                const timeVal = slot.time;
+                return (
+                  <button
+                    key={timeVal}
+                    onClick={() => onSelect(timeVal)}
+                    className={cn(
+                      "flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-black transition-all",
+                      selectedSlot === timeVal
+                        ? "bg-amber-500 border-amber-500 text-white"
+                        : "bg-card border-border text-foreground hover:bg-amber-50"
+                    )}
+                  >
+                    <Clock size={12} />
+                    {time}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
+    </div>
   );
 };
 

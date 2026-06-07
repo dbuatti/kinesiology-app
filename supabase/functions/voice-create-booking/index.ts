@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,8 +18,10 @@ serve(async (req) => {
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY');
     if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY secret.");
 
+    const NOTION_KEY = Deno.env.get('NOTION_API_KEY');
+
     const body = await req.json();
-    const { studentName, studentEmail, startTime, eventTypeId, title, notes, bookingUid } = body;
+    const { studentName, studentEmail, startTime, eventTypeId, title, notes, bookingUid, notionLessonId1, notionLessonId2 } = body;
 
     if (!studentName || !studentEmail) throw new Error("Missing studentName or studentEmail.");
     if (!startTime) throw new Error("Missing startTime.");
@@ -50,6 +53,83 @@ serve(async (req) => {
 
       if (res.ok) {
         const newUid = result.data?.uid || bookingUid;
+
+        // Update Notion lesson pages with new date/time
+        if (NOTION_KEY) {
+          const notionHeaders = {
+            Authorization: `Bearer ${NOTION_KEY}`,
+            "Content-Type": "application/json",
+            "Notion-Version": "2022-06-28",
+          };
+
+          const newDate = cleanStartTime.split("T")[0];
+          const newTime = new Date(cleanStartTime).toLocaleTimeString("en-US", {
+            hour: "numeric", minute: "2-digit", timeZone: "Australia/Melbourne",
+          });
+
+          // Update DB 1 lesson (has Date + Breakthroughs properties)
+          if (notionLessonId1) {
+            try {
+              await fetch(`https://api.notion.com/v1/pages/${notionLessonId1}`, {
+                method: "PATCH",
+                headers: notionHeaders,
+                body: JSON.stringify({
+                  properties: {
+                    Date: { date: { start: newDate } },
+                    Breakthroughs: { rich_text: [{ text: { content: newTime } }] },
+                  },
+                }),
+              });
+              console.log(`[${functionName}] Updated DB 1 lesson ${notionLessonId1}`);
+            } catch (notionErr) {
+              console.error(`[${functionName}] DB 1 update error:`, notionErr.message);
+            }
+          }
+
+          // Update DB 2 lesson (has Title, Date, Details properties)
+          if (notionLessonId2) {
+            try {
+              await fetch(`https://api.notion.com/v1/pages/${notionLessonId2}`, {
+                method: "PATCH",
+                headers: notionHeaders,
+                body: JSON.stringify({
+                  properties: {
+                    Date: { date: { start: newDate } },
+                    Details: { rich_text: [{ text: { content: newTime } }] },
+                  },
+                }),
+              });
+              console.log(`[${functionName}] Updated DB 2 lesson ${notionLessonId2}`);
+            } catch (notionErr) {
+              console.error(`[${functionName}] DB 2 update error:`, notionErr.message);
+            }
+          }
+        }
+
+        // Update voice_bookings table
+        try {
+          const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
+          // Mark old booking as rescheduled
+          await supabase
+            .from("voice_bookings")
+            .update({ status: "rescheduled" })
+            .eq("calcom_booking_id", bookingUid);
+          // Insert new booking record with the new Cal.com UID so it stays linked
+          await supabase
+            .from("voice_bookings")
+            .insert({
+              calcom_booking_id: newUid,
+              student_email: studentEmail,
+              student_name: studentName,
+              lesson_date: cleanStartTime.split("T")[0],
+              status: "scheduled",
+              notion_lesson_id_1: notionLessonId1 || null,
+              notion_lesson_id_2: notionLessonId2 || null,
+            });
+        } catch (dbErr) {
+          console.error(`[${functionName}] DB update error:`, dbErr.message);
+        }
+
         return new Response(JSON.stringify({ success: true, uid: newUid, action: "rescheduled" }), {
           status: 200,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },

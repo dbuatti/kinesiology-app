@@ -73,7 +73,7 @@ import {
 } from "lucide-react";
 import { format, formatDistanceToNow, differenceInMonths, startOfWeek, endOfWeek, startOfMonth } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
-import AppointmentForm from "@/components/crm/AppointmentForm";
+import QuickBookDialog from "@/components/crm/QuickBookDialog";
 import { ClientRow } from "@/components/crm/settings/ClientRow";
 import TimetableVisualizer from "@/components/crm/settings/TimetableVisualizer";
 import RoadmapTasks from "@/components/crm/settings/RoadmapTasks";
@@ -2679,25 +2679,15 @@ export default function ClientAuditPage() {
       </Dialog>
 
       {/* Quick Booking Modal */}
-      <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
-        <DialogContent className="sm:max-w-[550px] max-h-[90vh] p-0 gap-0 bg-background">
-          <div className="overflow-y-auto p-8">
-            <DialogHeader className="mb-6">
-              <DialogTitle className="text-2xl font-black">Quick Book Session</DialogTitle>
-              <DialogDescription className="font-medium">Schedule a new appointment for this client.</DialogDescription>
-            </DialogHeader>
-            {bookingClientId && (
-              <AppointmentForm 
-                initialClientId={bookingClientId} 
-                onSuccess={() => {
-                  setIsBookingModalOpen(false);
-                  fetchData();
-                }} 
-              />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <QuickBookDialog
+        clientId={bookingClientId}
+        open={isBookingModalOpen}
+        onOpenChange={setIsBookingModalOpen}
+        onSuccess={() => {
+          setIsBookingModalOpen(false);
+          fetchData();
+        }}
+      />
 
       {/* STICKY BULK ACTIONS BAR */}
       {selectedWeeklyClients.length > 0 && (

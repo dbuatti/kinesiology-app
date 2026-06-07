@@ -69,6 +69,8 @@ import VoiceNewClientPage from "./pages/VoiceNewClientPage";
 import VoiceClientsPage from "./pages/VoiceClientsPage";
 import VoiceBookLessonPage from "./pages/VoiceBookLessonPage";
 import VoiceCalendarPage from "./pages/VoiceCalendarPage";
+import VoiceOnboardingPage from "./pages/public/VoiceOnboardingPage";
+import UnifiedCalendarPage from "./pages/UnifiedCalendarPage";
 
 // --- Business & System ---
 import BusinessHubPage from "./pages/BusinessHubPage";
@@ -107,6 +109,9 @@ const AppRoutes = () => {
         <Route path="/onboarding/:id" element={<OnboardingPage />} />
       </Route>
 
+      {/* Public Voice Onboarding (no auth required) */}
+      <Route path="/voice-onboarding/:email" element={<VoiceOnboardingPage />} />
+
       {/* Protected App Routes */}
       <Route path="/notes-doc" element={session ? <PracticeNotes /> : <Navigate to="/login" replace />} />
       <Route path="/resources/cranial-nerves/print" element={session ? <CranialNervePrintPage /> : <Navigate to="/login" replace />} />
@@ -129,6 +134,7 @@ const AppRoutes = () => {
         <Route path="/appointments/:id" element={<AppointmentDetailPage />} />
         <Route path="/appointments/:id/protocols" element={<ClinicalProtocolsPage />} />
         <Route path="/oversight" element={<ClinicalOversightPage />} />
+        <Route path="/calendar" element={<UnifiedCalendarPage />} />
         
         {/* Practice Lab */}
         <Route path="/lab" element={<LabPage />} />

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { formatDateLine } from "@/utils/availability";
 
 interface VoiceStudent {
   id: string;
@@ -104,13 +105,13 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
 
   const firstName = (student.name || "Student").split(" ")[0];
 
-  const { data: msgSlots } = useQuery({
+  const { data: msgSlots, isLoading: slotsLoading } = useQuery({
     queryKey: ["voice-msg-slots", student.id],
     queryFn: async () => {
       const res = await supabase.functions.invoke("get-calcom-slots", {
         body: {
           start: new Date().toISOString(),
-          end: addDays(new Date(), 14).toISOString(),
+          end: addDays(new Date(), 60).toISOString(),
           eventTypeId: "1945081",
           timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         },
@@ -128,11 +129,9 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
     const dates = Object.keys(slotsByDate).sort().slice(0, 2);
     if (dates.length === 0) return null;
     return dates.map((dateKey) => {
-      const times = slotsByDate[dateKey]
-        .slice(0, 3)
-        .map((s: any) => format(parseISO(s.time), "h:mm a"))
-        .join(", ");
-      return `${format(parseISO(dateKey + "T12:00:00"), "EEE")} ${times}`;
+      const times = slotsByDate[dateKey].slice(0, 3).map((s: any) => s.time);
+      const ranges = formatSlotRanges(times);
+      return `${format(parseISO(dateKey + "T12:00:00"), "EEE")}: ${ranges}`;
     }).join(" • ");
   };
 
@@ -294,8 +293,23 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
               </button>
 
               <button
-                onClick={() => {
-                  const slotLines = formatEmailSlots();
+                onClick={async () => {
+                  const res = await supabase.functions.invoke("get-calcom-slots", {
+                    body: {
+                      start: new Date().toISOString(),
+                      end: addDays(new Date(), 60).toISOString(),
+                      eventTypeId: "1945081",
+                      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    },
+                  });
+                  const freshSlotsByDate: Record<string, any[]> = res.data?.data || {};
+                  const dateKeys = Object.keys(freshSlotsByDate).sort().slice(0, 5);
+                  const slotLines = dateKeys.length > 0
+                    ? dateKeys.map((k) => {
+                        const times = freshSlotsByDate[k].map((s: any) => format(parseISO(s.time), "h:mm a")).join(", ");
+                        return `${format(parseISO(k + "T12:00:00"), "EEEE, MMMM d")}: ${times}`;
+                      }).join("\n")
+                    : null;
                   const body = slotLines
                     ? `Hi ${firstName},\n\nI've got some time coming up. Here's my availability:\n\n${slotLines}\n\nWould you like me to book you in for a session?\n\nBest,\nDaniele Buatti`
                     : `Hi ${firstName},\n\nI've got some time coming up. Here's my availability:\n\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-60\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-45\n\nWould you like me to book you in for a session?\n\nBest,\nDaniele Buatti`;

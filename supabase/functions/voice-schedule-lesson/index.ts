@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,7 +21,7 @@ serve(async (req) => {
     const NOTION_KEY = Deno.env.get("NOTION_API_KEY");
     if (!NOTION_KEY) throw new Error("Missing NOTION_API_KEY in Supabase Secrets.");
 
-    const { studentId, date, time, cost } = await req.json();
+    const { studentId, date, time, cost, studentName, studentEmail, calcomBookingUid } = await req.json();
 
     if (!studentId || !date || !time) {
       throw new Error("Missing required fields: studentId, date, time");
@@ -32,7 +33,8 @@ serve(async (req) => {
       "Notion-Version": "2022-06-28",
     };
 
-    const title = `Voice Lesson — ${date}`;
+    const namePart = studentName ? ` ${studentName} —` : '';
+    const title = `Voice Lesson —${namePart} ${date}`;
 
     const db1Properties = {
       Name: { title: [{ text: { content: title } }] },
@@ -49,9 +51,7 @@ serve(async (req) => {
       "Voice Students": { relation: [{ id: studentId }] },
     };
 
-    if (cost) {
-      db2Properties.Cost = { number: cost };
-    }
+    // DB 2 doesn't have a Cost property; only include it for DB 1
 
     const createPage = async (dbId, properties, label) => {
       console.log(`[${functionName}] Creating page in ${label} (${dbId})...`);
@@ -77,7 +77,50 @@ serve(async (req) => {
       createPage(LESSONS_DB_2_ID, db2Properties, "Lesson Database 2"),
     ]);
 
-    const allOk = result1.success && result2.success;
+    // If DB 2 failed because of the Voice Students relation, retry without it
+    let finalResult2 = result2;
+    if (!result2.success && result2.error?.includes("relation") || result2.error?.includes("not found") || result2.error?.includes("validation")) {
+      console.log(`[${functionName}] DB 2 failed with relation, retrying without Voice Students...`);
+      const db2PropsNoRelation = { ...db2Properties };
+      delete db2PropsNoRelation["Voice Students"];
+      const retryResult = await createPage(LESSONS_DB_2_ID, db2PropsNoRelation, "Lesson Database 2 (no relation)");
+      if (retryResult.success) {
+        finalResult2 = retryResult;
+        console.log(`[${functionName}] DB 2 created successfully without Voice Students relation`);
+      } else {
+        console.error(`[${functionName}] DB 2 retry also failed:`, retryResult.error);
+      }
+    }
+
+    const allOk = result1.success && finalResult2.success;
+
+    // Store booking UID in voice_bookings for cancel/reschedule
+    // Insert even if DB 2 failed (DB 1 success is enough to have a lesson to manage)
+    if (calcomBookingUid && studentEmail && result1.success) {
+      try {
+        const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
+        const { error: insertError } = await supabase
+          .from("voice_bookings")
+          .insert({
+            calcom_booking_id: calcomBookingUid,
+            student_id: studentId,
+            student_name: studentName || null,
+            student_email: studentEmail,
+            lesson_date: date,
+            lesson_time: time,
+            duration: null,
+            cost: cost || null,
+            notion_lesson_id_1: result1.id || null,
+            notion_lesson_id_2: result2.id || null,
+          });
+        if (insertError && !insertError.message?.includes('duplicate key')) {
+          console.error(`[${functionName}] voice_bookings insert error:`, insertError.message);
+        }
+        console.log(`[${functionName}] voice_bookings record saved for ${calcomBookingUid}`);
+      } catch (dbErr) {
+        console.error(`[${functionName}] voice_bookings insert error (non-fatal):`, dbErr.message);
+      }
+    }
 
     return new Response(
       JSON.stringify({

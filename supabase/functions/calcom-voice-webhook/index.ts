@@ -56,6 +56,7 @@ serve(async (req) => {
     }
 
     const attendeeEmail = attendee.email.toLowerCase().trim();
+    const calcomBookingUid = payload.uid || payload.data?.uid || null;
     const startTime = payload.startTime || payload.start;
     const endTime = payload.endTime || payload.end;
 
@@ -191,6 +192,9 @@ serve(async (req) => {
           studentId,
           date: lessonDate,
           time: lessonTime,
+          studentName: attendee.name || null,
+          studentEmail: attendeeEmail,
+          calcomBookingUid,
         }),
       }
     );

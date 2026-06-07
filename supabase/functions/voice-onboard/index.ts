@@ -28,10 +28,83 @@ serve(async (req) => {
       "Notion-Version": "2022-06-28",
     };
 
+    // Check for existing client by email first
+    let existingPageId = null;
+    if (email && email.trim()) {
+      console.log(`[${functionName}] Checking for existing client with email: ${email.trim()}`);
+      const queryRes = await fetch(
+        `https://api.notion.com/v1/databases/${VOICE_CLIENTS_DB_ID}/query`,
+        {
+          method: "POST",
+          headers: notionHeaders,
+          body: JSON.stringify({
+            filter: {
+              property: "Email",
+              email: { equals: email.trim() },
+            },
+            page_size: 1,
+          }),
+        }
+      );
+
+      if (queryRes.ok) {
+        const queryData = await queryRes.json();
+        if (queryData.results?.length > 0) {
+          existingPageId = queryData.results[0].id;
+          console.log(`[${functionName}] Found existing client: ${existingPageId}`);
+        }
+      }
+    }
+
+    if (existingPageId) {
+      // Update existing page
+      console.log(`[${functionName}] Updating existing client: ${existingPageId}`);
+
+      const updateProperties = {
+        Name: { title: [{ text: { content: name.trim() } }] },
+      };
+      if (phone && phone.trim()) {
+        updateProperties["Phone"] = { phone_number: phone.trim() };
+      }
+      if (notes && notes.trim()) {
+        updateProperties["Additional Notes"] = {
+          rich_text: [{ text: { content: notes.trim() } }],
+        };
+      }
+
+      const updateRes = await fetch(`https://api.notion.com/v1/pages/${existingPageId}`, {
+        method: "PATCH",
+        headers: notionHeaders,
+        body: JSON.stringify({ properties: updateProperties }),
+      });
+
+      if (!updateRes.ok) {
+        const err = await updateRes.json();
+        console.error(`[${functionName}] Update failed:`, JSON.stringify(err));
+        throw new Error(err.message || "Notion update failed");
+      }
+
+      console.log(`[${functionName}] Existing client updated: ${existingPageId}`);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          notionPageId: existingPageId,
+          updated: true,
+          message: `Student ${name.trim()} already existed — updated their record.`,
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Create new page
+    console.log(`[${functionName}] Creating new Notion page in Voice Clients DB...`);
+
     const properties = {
-      Name: {
-        title: [{ text: { content: name.trim() } }],
-      },
+      Name: { title: [{ text: { content: name.trim() } }] },
     };
 
     if (email && email.trim()) {
@@ -45,8 +118,6 @@ serve(async (req) => {
         rich_text: [{ text: { content: notes.trim() } }],
       };
     }
-
-    console.log(`[${functionName}] Creating Notion page in Voice Clients DB...`);
 
     const res = await fetch("https://api.notion.com/v1/pages", {
       method: "POST",
@@ -71,6 +142,7 @@ serve(async (req) => {
         success: true,
         notionPageId: data.id,
         notionUrl: data.url,
+        updated: false,
         message: `Student ${name.trim()} onboarded successfully.`,
       }),
       {

@@ -62,17 +62,6 @@ const VoiceQuickBookDialog = ({ student, open, onOpenChange }: VoiceQuickBookDia
     }
   }, [open]);
 
-  // Auto-advance to next period if current has no slots
-  useEffect(() => {
-    if (slotsData && weekOffset === 0 && !autoAdvanced) {
-      const hasSlots = dates.some((d) => slotsForDate(d).length > 0);
-      if (!hasSlots) {
-        setAutoAdvanced(true);
-        setWeekOffset(1);
-      }
-    }
-  }, [slotsData, weekOffset, autoAdvanced]);
-
   const eventType = EVENT_TYPES.find((e) => e.key === duration)!;
 
   const startDate = startOfWeek(addDays(new Date(), weekOffset * 7 + 1), { weekStartsOn: 1 });
@@ -148,6 +137,17 @@ const VoiceQuickBookDialog = ({ student, open, onOpenChange }: VoiceQuickBookDia
     const key = format(date, "yyyy-MM-dd");
     return (slotsByDate[key] || []).filter((s) => !isSlotBooked(s.time));
   };
+
+  // Auto-advance to next period if current has no slots
+  useEffect(() => {
+    if (slotsData && weekOffset === 0 && !autoAdvanced) {
+      const hasSlots = dates.some((d) => slotsForDate(d).length > 0);
+      if (!hasSlots) {
+        setAutoAdvanced(true);
+        setWeekOffset(1);
+      }
+    }
+  }, [slotsData, weekOffset, autoAdvanced]);
 
   const handleSelectSlot = (slot: Slot, date: Date) => {
     setSelectedSlot(slot);

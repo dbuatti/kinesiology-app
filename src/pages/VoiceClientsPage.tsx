@@ -150,22 +150,31 @@ const VoiceClientsPage = () => {
     );
   }, [enriched, search]);
 
+  const sortByLastSeen = (a: typeof filtered[0], b: typeof filtered[0]) => {
+    if (a.hasUpcoming && !b.hasUpcoming) return -1;
+    if (!a.hasUpcoming && b.hasUpcoming) return 1;
+    if (a.lastSeenDate && b.lastSeenDate) return b.lastSeenDate.getTime() - a.lastSeenDate.getTime();
+    if (a.lastSeenDate && !b.lastSeenDate) return -1;
+    if (!a.lastSeenDate && b.lastSeenDate) return 1;
+    return 0;
+  };
+
   const groups = useMemo(() => ({
     active: filtered.filter(
       (s) => (s.lastSeenDate && s.lastSeenDate >= oneMonthAgo) || s.hasUpcoming
-    ),
+    ).sort(sortByLastSeen),
     oneToThree: filtered.filter(
       (s) =>
         !s.hasUpcoming &&
         s.lastSeenDate &&
         s.lastSeenDate < oneMonthAgo &&
         s.lastSeenDate >= threeMonthsAgo
-    ),
+    ).sort(sortByLastSeen),
     threePlus: filtered.filter(
       (s) =>
         !s.hasUpcoming &&
         (!s.lastSeenDate || s.lastSeenDate < threeMonthsAgo)
-    ),
+    ).sort(sortByLastSeen),
   }), [filtered]);
 
   const toggleCollapse = (key: string) =>

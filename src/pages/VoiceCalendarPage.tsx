@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, 
   startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, 
-  eachDayOfInterval, isToday, parseISO, addWeeks, parse } from "date-fns";
+  eachDayOfInterval, isToday, parseISO, addWeeks, parse, getISOWeek } from "date-fns";
 import { formatDateLine } from "@/utils/availability";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -241,14 +241,23 @@ const VoiceCalendarPage = () => {
   const startDate = startOfWeek(monthStart);
   const endDate = endOfWeek(monthEnd);
 
-  const handleCopySlots = useCallback(async (numDays: number) => {
-    setCopyingWeeks(numDays);
+  type SlotRange = "upcoming" | "near" | "future" | "ten";
+  const rangeConfig: Record<string, { label: string; startDays: number; endDays: number }> = {
+    upcoming: { label: "Active & Upcoming", startDays: 0, endDays: 30 },
+    near: { label: "1–3 Months", startDays: 30, endDays: 90 },
+    future: { label: "3+ Months", startDays: 90, endDays: 180 },
+    ten: { label: "Next 10 Days", startDays: 0, endDays: 60 },
+  };
+
+  const handleCopySlots = useCallback(async (range: SlotRange) => {
+    const cfg = rangeConfig[range];
+    setCopyingWeeks(range === "ten" ? 10 : cfg.endDays);
     try {
       const now = new Date();
       const res = await supabase.functions.invoke("get-calcom-slots", {
         body: {
-          start: now.toISOString(),
-          end: addDays(now, 60).toISOString(),
+          start: addDays(now, range === "upcoming" ? 0 : cfg.startDays).toISOString(),
+          end: addDays(now, range === "ten" ? 60 : cfg.endDays).toISOString(),
           eventTypeId: "1945081",
           timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         },
@@ -256,19 +265,26 @@ const VoiceCalendarPage = () => {
       if (res.error) throw res.error;
 
       const slotsByDate: Record<string, any[]> = res.data?.data || {};
-      const allDates = Object.keys(slotsByDate).sort();
-      const datesWithSlots = allDates.filter((d) => slotsByDate[d]?.length > 0);
+      const datesWithSlots = Object.keys(slotsByDate).sort().filter((d) => slotsByDate[d]?.length > 0);
 
       if (datesWithSlots.length === 0) {
-        showError("No available slots found in the next 60 days");
+        showError(`No available slots in ${cfg.label.toLowerCase()}`);
         setCopyingWeeks(null);
         return;
       }
 
-      const selectedDates = datesWithSlots.slice(0, numDays);
+      let text = `${cfg.label}:\n`;
+      const selectedDates = range === "ten" ? datesWithSlots.slice(0, 10) : datesWithSlots;
+      let prevWeek: number | null = null;
 
-      let text = `Available slots:\n`;
       for (const dateKey of selectedDates) {
+        if (range === "ten") {
+          const week = getISOWeek(parseISO(dateKey));
+          if (prevWeek !== null && week !== prevWeek) {
+            text += "\n";
+          }
+          prevWeek = week;
+        }
         const times = slotsByDate[dateKey].map((s: any) => s.time);
         text += `\n${formatDateLine(dateKey, times)}`;
       }
@@ -380,19 +396,19 @@ const VoiceCalendarPage = () => {
                         ) : (
                           <Copy size={14} />
                         )}
-                        {copyingWeeks !== null ? `Fetching ${copyingWeeks}d...` : "Get Slots"}
+                        {copyingWeeks !== null ? "Fetching..." : "Get Slots"}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="rounded-xl min-w-[180px]">
-                      {[5, 10, 15, 20].map((days) => (
+                    <DropdownMenuContent align="end" className="rounded-xl min-w-[220px]">
+                      {(["upcoming", "near", "future"] as SlotRange[]).map((key) => (
                         <DropdownMenuItem
-                          key={days}
-                          onClick={() => handleCopySlots(days)}
+                          key={key}
+                          onClick={() => handleCopySlots(key)}
                           className="font-bold text-sm py-3"
                           disabled={copyingWeeks !== null}
                         >
                           <Copy size={14} className="mr-2" />
-                          Next {days} days
+                          {rangeConfig[key].label}
                         </DropdownMenuItem>
                       ))}
                     </DropdownMenuContent>

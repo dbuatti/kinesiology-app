@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { format, addDays, parseISO } from "date-fns";
+import { format, addDays, parseISO, getISOWeek } from "date-fns";
 import {
-  MessageCircle, Mail, Calendar, CalendarCheck2, Smile,
+  MessageCircle, Mail, Calendar, CalendarCheck2, CalendarPlus, Smile,
   Loader2, ChevronRight, ExternalLink, Phone, CreditCard
 } from "lucide-react";
 import {
@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { formatDateLine } from "@/utils/availability";
+import { formatDateLine, formatSlotRanges } from "@/utils/availability";
 
 interface VoiceStudent {
   id: string;
@@ -124,25 +124,27 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
   });
 
   const slotsByDate: Record<string, any[]> = msgSlots?.data || {};
+  const sortedDates = Object.keys(slotsByDate).sort().filter((d) => slotsByDate[d]?.length > 0);
+  const totalSlotDays = sortedDates.length;
+  const totalSlots = sortedDates.reduce((sum, d) => sum + slotsByDate[d].length, 0);
 
   const formatSmsSlots = (): string | null => {
-    const dates = Object.keys(slotsByDate).sort().slice(0, 2);
+    if (totalSlotDays > 3) return null;
+    const dates = sortedDates.slice(0, 2);
     if (dates.length === 0) return null;
     return dates.map((dateKey) => {
-      const times = slotsByDate[dateKey].slice(0, 3).map((s: any) => s.time);
+      const times = slotsByDate[dateKey].map((s: any) => s.time);
       const ranges = formatSlotRanges(times);
       return `${format(parseISO(dateKey + "T12:00:00"), "EEE")}: ${ranges}`;
     }).join(" • ");
   };
 
   const formatEmailSlots = (): string | null => {
-    const dates = Object.keys(slotsByDate).sort().slice(0, 5);
-    if (dates.length === 0) return null;
-    return dates.map((dateKey) => {
-      const times = slotsByDate[dateKey]
-        .map((s: any) => format(parseISO(s.time), "h:mm a"))
-        .join(", ");
-      return `${format(parseISO(dateKey + "T12:00:00"), "EEEE, MMMM d")}: ${times}`;
+    if (totalSlotDays > 5) return null;
+    if (totalSlotDays === 0) return null;
+    return sortedDates.slice(0, 5).map((dateKey) => {
+      const times = slotsByDate[dateKey].map((s: any) => s.time);
+      return formatDateLine(dateKey, times);
     }).join("\n");
   };
 
@@ -237,10 +239,14 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
                   onClick={() => {
                     let body: string;
                     if (t.id === "availability") {
-                      const slots = formatSmsSlots();
-                      body = slots
-                        ? `Hi ${firstName}, here's my availability: ${slots}. Want to book? 😊`
-                        : t.buildBody(firstName);
+                      if (totalSlotDays <= 3) {
+                        const slots = formatSmsSlots();
+                        body = slots
+                          ? `Hi ${firstName}, here's my availability: ${slots}. Want to book? 😊`
+                          : t.buildBody(firstName);
+                      } else {
+                        body = `Hi ${firstName}, I've got lots of availability coming up. Best to pick a time that suits you: https://cal.com/danielebuatti/voice-and-piano-coaching-60 😊`;
+                      }
                     } else {
                       body = t.buildBody(firstName);
                     }
@@ -303,16 +309,27 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
                     },
                   });
                   const freshSlotsByDate: Record<string, any[]> = res.data?.data || {};
-                  const dateKeys = Object.keys(freshSlotsByDate).sort().slice(0, 5);
-                  const slotLines = dateKeys.length > 0
-                    ? dateKeys.map((k) => {
-                        const times = freshSlotsByDate[k].map((s: any) => format(parseISO(s.time), "h:mm a")).join(", ");
-                        return `${format(parseISO(k + "T12:00:00"), "EEEE, MMMM d")}: ${times}`;
-                      }).join("\n")
-                    : null;
-                  const body = slotLines
-                    ? `Hi ${firstName},\n\nI've got some time coming up. Here's my availability:\n\n${slotLines}\n\nWould you like me to book you in for a session?\n\nBest,\nDaniele Buatti`
-                    : `Hi ${firstName},\n\nI've got some time coming up. Here's my availability:\n\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-60\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-45\n\nWould you like me to book you in for a session?\n\nBest,\nDaniele Buatti`;
+                  const freshDates = Object.keys(freshSlotsByDate).sort().filter((d) => freshSlotsByDate[d]?.length > 0);
+                  const freshCount = freshDates.length;
+
+                  let body: string;
+                  if (freshCount === 0) {
+                    body = `Hi ${firstName},\n\nI've got some time coming up. You can book a session here:\n\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-60\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-45\n\nBest,\nDaniele Buatti`;
+                  } else if (freshCount <= 3) {
+                    const slotLines = freshDates.slice(0, 5).map((k) => {
+                      const times = freshSlotsByDate[k].map((s: any) => s.time);
+                      return formatDateLine(k, times);
+                    }).join("\n");
+                    body = `Hi ${firstName},\n\nI've got some time coming up. Here's my availability:\n\n${slotLines}\n\nWould any of these work?\n\nBest,\nDaniele Buatti`;
+                  } else if (freshCount <= 6) {
+                    const slotLines = freshDates.slice(0, 5).map((k) => {
+                      const times = freshSlotsByDate[k].map((s: any) => s.time);
+                      return formatDateLine(k, times);
+                    }).join("\n");
+                    body = `Hi ${firstName},\n\nI've got some time coming up. Here's my availability:\n\n${slotLines}\n\nWould any of these work? Or feel free to book directly at:\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-60\n\nBest,\nDaniele Buatti`;
+                  } else {
+                    body = `Hi ${firstName},\n\nI've got lots of availability coming up. Best to pick a time that works for you here:\n\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-60\n\nBest,\nDaniele Buatti`;
+                  }
                   handleEmail("Availability — Voice Coaching", body);
                 }}
                 className="w-full flex items-start gap-3 p-3 rounded-xl transition-all text-left hover:bg-muted"
@@ -327,6 +344,49 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
                   </div>
                   <p className="text-[10px] font-medium mt-0.5 leading-relaxed text-muted-foreground">
                     "I've got time coming up — here's my availability"
+                  </p>
+                </div>
+              </button>
+
+              <button
+                onClick={async () => {
+                  const res = await supabase.functions.invoke("get-calcom-slots", {
+                    body: {
+                      start: new Date().toISOString(),
+                      end: addDays(new Date(), 60).toISOString(),
+                      eventTypeId: "1945081",
+                      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    },
+                  });
+                  const freshSlotsByDate: Record<string, any[]> = res.data?.data || {};
+                  const freshDates = Object.keys(freshSlotsByDate).sort().filter((d) => freshSlotsByDate[d]?.length > 0);
+                  const days = freshDates.slice(0, 10);
+                  let slotLines = "";
+                  let prevWeek: number | null = null;
+                  for (const k of days) {
+                    const week = getISOWeek(parseISO(k));
+                    if (prevWeek !== null && week !== prevWeek) slotLines += "\n";
+                    prevWeek = week;
+                    const times = freshSlotsByDate[k].map((s: any) => s.time);
+                    slotLines += formatDateLine(k, times) + "\n";
+                  }
+                  const body = slotLines
+                    ? `Hi ${firstName},\n\nHere's my availability for the next couple of weeks:\n\n${slotLines}\nWould any of these work?\n\nBest,\nDaniele Buatti`
+                    : `Hi ${firstName},\n\nI've got availability coming up. Best to pick a time here:\n\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-60\n\nBest,\nDaniele Buatti`;
+                  handleEmail("Availability — Voice Coaching", body);
+                }}
+                className="w-full flex items-start gap-3 p-3 rounded-xl transition-all text-left hover:bg-muted"
+              >
+                <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
+                  <CalendarPlus size={13} className="text-violet-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-black text-foreground">Share 10 Days</p>
+                    <ChevronRight size={12} className="text-muted-foreground shrink-0" />
+                  </div>
+                  <p className="text-[10px] font-medium mt-0.5 leading-relaxed text-muted-foreground">
+                    10 days of availability with week separators
                   </p>
                 </div>
               </button>

@@ -9,7 +9,7 @@ const corsHeaders = {
 }
 
 // Only process these specific clinical event types
-const ALLOWED_EVENT_IDS = [4279898, 5302336];
+const ALLOWED_EVENT_IDS = [4279898, 5302336, 5927215];
 
 serve(async (req) => {
   const functionName = "calcom-webhook";
@@ -132,7 +132,8 @@ serve(async (req) => {
     }
 
     let priceAmount = 0;
-    if (String(eventTypeId) === "4279898") priceAmount = 50;
+    if (String(eventTypeId) === "4279898") priceAmount = 70;
+    else if (String(eventTypeId) === "5927215") priceAmount = 0;
     else if (String(eventTypeId) === "5302336") priceAmount = 100;
     if (payload.payment && payload.payment[0]) priceAmount = payload.payment[0].amount / 100;
 

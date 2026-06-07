@@ -52,7 +52,7 @@ const StripeSettings = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <SettingsActionCard
             title="1. Initialize FNH Product"
-            description="Creates the '$50 FNH Clinical Assessment' product in Stripe."
+            description="Creates the '$70 FNH Clinical Assessment' product in Stripe."
             buttonText="Initialize"
             buttonIcon={Zap}
             onClick={handleInitializeStripe}

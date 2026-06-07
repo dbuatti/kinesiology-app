@@ -16,13 +16,13 @@ export const CALCOM_CONFIG = {
   VOICE_COACHING_45_URL: "https://cal.com/danielebuatti/voice-and-piano-coaching-45",
   
   // Only these IDs will be processed by the CRM webhooks and sync functions
-  CLINICAL_EVENT_IDS: [4279898, 5302336],
+  CLINICAL_EVENT_IDS: [4279898, 5302336, 5927215],
 
   EVENT_TYPES: [
     {
       id: "4279898",
       name: "Standard Session",
-      price: 50,
+      price: 70,
       currency: "AUD",
       description: "75-minute neurological kinesiology session"
     },
@@ -32,6 +32,13 @@ export const CALCOM_CONFIG = {
       price: 100,
       currency: "AUD",
       description: "Full price neurological kinesiology session"
+    },
+    {
+      id: "5927215",
+      name: "Community Free Session",
+      price: 0,
+      currency: "AUD",
+      description: "Free weekly community FNH session"
     }
   ]
 };

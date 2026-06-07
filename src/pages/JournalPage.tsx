@@ -72,6 +72,7 @@ const JournalPage = () => {
   const [reflections, setReflections] = useState<any[]>([]);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [isAddingAll, setIsAddingAll] = useState(false);
@@ -86,6 +87,8 @@ const JournalPage = () => {
   const [tempResponse, setTempResponse] = useState("");
 
   const fetchData = async () => {
+    setError(null);
+    setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -107,8 +110,8 @@ const JournalPage = () => {
 
       setReflections(refRes.data || []);
       setAppointments(appRes.data || []);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setError(err.message || "Failed to load journal data");
     } finally {
       setLoading(false);
     }
@@ -440,6 +443,23 @@ const JournalPage = () => {
           }
         />
 
+        {loading ? (
+          <div className="p-24 flex flex-col items-center justify-center gap-6 bg-slate-50 rounded-[3rem]">
+            <Loader2 className="animate-spin text-indigo-500" size={48} />
+            <p className="text-indigo-600 font-black text-xs uppercase tracking-widest">Loading journal...</p>
+          </div>
+        ) : error ? (
+          <div className="p-24 flex flex-col items-center justify-center gap-6 bg-red-50 rounded-[3rem]">
+            <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
+              <span className="text-2xl font-black text-red-500">!</span>
+            </div>
+            <p className="text-red-600 font-black text-xs uppercase tracking-widest text-center">Failed to load journal</p>
+            <p className="text-red-400 text-xs text-center max-w-md">{error}</p>
+            <Button onClick={fetchData} className="bg-red-500 hover:bg-red-600 rounded-xl font-bold text-xs">
+              <RotateCcw size={14} className="mr-2" /> Retry
+            </Button>
+          </div>
+        ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 h-14 bg-slate-200/50 p-1.5 rounded-2xl mb-8">
             <TabsTrigger value="log" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
@@ -516,7 +536,17 @@ const JournalPage = () => {
             </Card>
 
             <div className="grid grid-cols-1 gap-6">
-              {reflections.map((ref) => {
+              {reflections.length === 0 ? (
+                <div className="text-center py-24 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
+                  <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-sm">
+                    <BookOpen size={28} className="text-slate-400" />
+                  </div>
+                  <h3 className="text-lg font-black text-slate-900">No journal entries yet</h3>
+                  <p className="text-sm text-slate-500 mt-1 max-w-xs mx-auto">
+                    Write your first reflection above, or link it to a session for clinical tracking.
+                  </p>
+                </div>
+              ) : reflections.map((ref) => {
                 const catInfo = CATEGORIES.find(c => c.id === ref.category) || CATEGORIES[0];
                 const extractions = ref.ai_extractions || [];
                 const isAnalyzing = analyzingIds.has(ref.id);
@@ -750,6 +780,7 @@ const JournalPage = () => {
             </div>
           </TabsContent>
         </Tabs>
+        )}
       </div>
     </AppLayout>
   );

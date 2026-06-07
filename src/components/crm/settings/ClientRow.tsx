@@ -1,13 +1,14 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { format, formatDistanceToNow, differenceInMonths, addWeeks, startOfWeek, addDays, endOfDay } from "date-fns";
+import { format, formatDistanceToNow, differenceInMonths, addWeeks, startOfWeek, addDays, endOfDay, parseISO, getISOWeek } from "date-fns";
 import {
   Mail, Phone, CalendarPlus, Clock, CreditCard, ArrowRight,
   Check, X, Trash2, Loader2, Send, RefreshCw, AlertTriangle, Flame,
   MoreHorizontal, CalendarPlus as CalendarPlusIcon, Edit2, Users,
-  MessageSquare, CheckCircle2, Copy, Sparkles, ArrowUpRight, Lock, PhoneCall,
-  MessageCircle, Calendar, Smile, ChevronRight as ChevronRightIcon, CalendarCheck2
+  MessageSquare, CheckCircle2, Copy, Sparkles, ArrowUpRight, PhoneCall,
+  MessageCircle, Calendar, Smile, ChevronRight as ChevronRightIcon, CalendarCheck2,
+  ExternalLink
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import { Client, Appointment } from "@/types/crm";
 import { parseClientJournal, stringifyClientJournal } from "@/utils/journal-helper";
+import { formatDateLine } from "@/utils/availability";
 
 interface ClientWithAppointments extends Client {
   appointments: Appointment[];
@@ -97,6 +99,8 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
   const [saving, setSaving] = useState(false);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [availableSlots, setAvailableSlots] = useState<string[] | null>(null);
+  const [slotsByDate, setSlotsByDate] = useState<Record<string, { time?: string; start?: string }[]> | null>(null);
+  const [availabilityType, setAvailabilityType] = useState<"share" | "days" | null>(null);
 
   const firstName = client.name.split(' ')[0];
   const lastSmsAt = journalData.last_sms_at ? new Date(journalData.last_sms_at) : null;
@@ -113,15 +117,17 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
   useEffect(() => {
     if (!open || availableSlots !== null) return;
     setLoadingSlots(true);
-    const start = startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString();
-    const end = endOfDay(addDays(addWeeks(new Date(), 4), 0)).toISOString();
+    const start = new Date().toISOString();
+    const end = addDays(new Date(), 60).toISOString();
     supabase.functions.invoke('get-calcom-slots', {
       body: { start, end, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }
     }).then(({ data }) => {
       if (!data?.data) { setAvailableSlots([]); return; }
+      const raw = data.data as Record<string, { time?: string; start?: string }[]>;
+      setSlotsByDate(raw);
       // Flatten all slots across all days, sorted chronologically, take first 8
       const flat: string[] = [];
-      Object.values(data.data as Record<string, { time?: string; start?: string }[]>).forEach(daySlots => {
+      Object.values(raw).forEach(daySlots => {
         (daySlots as { time?: string; start?: string }[]).forEach(s => {
           const t = s.time || s.start;
           if (t) flat.push(t);
@@ -133,12 +139,27 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
   }, [open]);
 
   const availabilityBody = useMemo(() => {
-    if (!availableSlots || availableSlots.length === 0) return null;
-    const lines = availableSlots
-      .map(t => format(new Date(t), "EEE d MMM 'at' h:mm a"))
-      .join('\n');
-    return `Hi ${firstName}, I have some availability coming up — here are my next open slots:\n\n${lines}\n\nWould any of these work for you? 😊`;
-  }, [availableSlots, firstName]);
+    if (!slotsByDate) return null;
+    const dates = Object.keys(slotsByDate).sort().filter(d => slotsByDate[d]?.length > 0);
+    const totalDays = dates.length;
+    if (totalDays === 0) return null;
+    if (totalDays <= 3) {
+      const lines = dates.slice(0, 3).flatMap(dateKey =>
+        slotsByDate[dateKey].map(s => {
+          const t = s.time || s.start;
+          return t ? format(parseISO(t), "EEE d MMM 'at' h:mm a") : "";
+        }).filter(Boolean)
+      ).slice(0, 10);
+      return `Hi ${firstName}, I have some availability coming up — here are my next open slots:\n\n${lines.join('\n')}\n\nWould any of these work for you? 😊`;
+    }
+    if (totalDays <= 6) {
+      const lines = dates.slice(0, 5).map(dateKey =>
+        formatDateLine(dateKey, slotsByDate[dateKey].map(s => s.time || s.start).filter(Boolean) as string[])
+      );
+      return `Hi ${firstName}, I've got some availability coming up — here are my open times:\n\n${lines.join('\n')}\n\nWould any of these work? Or book directly: https://cal.com/daniele-buatti/30min 😊`;
+    }
+    return `Hi ${firstName}, I've got lots of availability coming up. Best to pick a time that works for you: https://cal.com/daniele-buatti/30min 😊`;
+  }, [slotsByDate, firstName]);
 
   const TEMPLATES = [
     {
@@ -164,11 +185,16 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
       body: availabilityBody,
       preview: loadingSlots
         ? 'Loading slots…'
-        : availableSlots === null
+        : !slotsByDate
           ? 'Opens to load slots'
-          : availableSlots.length === 0
+          : Object.keys(slotsByDate).filter(d => slotsByDate[d]?.length > 0).length === 0
             ? 'No open slots found'
-            : availableSlots.slice(0, 2).map(t => format(new Date(t), "EEE d MMM 'at' h:mm a")).join(', ') + (availableSlots.length > 2 ? ` +${availableSlots.length - 2} more` : ''),
+            : Object.keys(slotsByDate).sort().slice(0, 2).map(d =>
+                `${format(parseISO(d), "EEE d MMM")}: ${slotsByDate[d].slice(0, 2).map(s => {
+                  const t = s.time || s.start;
+                  return t ? format(parseISO(t), "h:mm a") : "";
+                }).filter(Boolean).join(", ")}`
+              ).join(" · ") + (Object.keys(slotsByDate).length > 2 ? ` +${Object.keys(slotsByDate).length - 2} more days` : ""),
       disabled: loadingSlots || !availabilityBody,
     },
     {
@@ -300,19 +326,158 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
           ))}
         </div>
 
-        <div className="px-3 pb-3 bg-white dark:bg-slate-900">
-          <a
-            href={`sms:${client.phone}`}
-            className="flex items-center justify-center gap-2 w-full h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-[10px] font-black uppercase tracking-widest"
+        {/* Availability actions */}
+        <div className="px-2 pb-2 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-slate-500 px-3 pt-3 pb-1">Send Availability</p>
+
+          <button
+            onClick={() => setAvailabilityType("share")}
+            className="w-full flex items-start gap-3 p-3 rounded-xl transition-all text-left hover:bg-muted"
           >
-            <MessageCircle size={12} />
-            Open Messages (blank)
-          </a>
+            <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 mt-0.5">
+              <CalendarCheck2 size={13} className="text-violet-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs font-black text-slate-900 dark:text-white">Share Availability</p>
+                <ChevronRightIcon size={12} className="text-slate-400 shrink-0" />
+              </div>
+              <p className="text-[10px] font-medium mt-0.5 leading-relaxed text-slate-500 dark:text-slate-400">
+                5 days of availability — send via email or SMS
+              </p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setAvailabilityType("days")}
+            className="w-full flex items-start gap-3 p-3 rounded-xl transition-all text-left hover:bg-muted"
+          >
+            <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 mt-0.5">
+              <CalendarPlusIcon size={13} className="text-violet-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs font-black text-slate-900 dark:text-white">Share 10 Days</p>
+                <ChevronRightIcon size={12} className="text-slate-400 shrink-0" />
+              </div>
+              <p className="text-[10px] font-medium mt-0.5 leading-relaxed text-slate-500 dark:text-slate-400">
+                10 days with week separators — send via email or SMS
+              </p>
+            </div>
+          </button>
         </div>
+
+        {/* Availability popover */}
+        {availabilityType && slotsByDate && (
+          <div className="border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+            <AvailabilityPopover
+              type={availabilityType}
+              slotsByDate={slotsByDate}
+              client={client}
+              firstName={firstName}
+              onClose={() => setAvailabilityType(null)}
+            />
+          </div>
+        )}
+
       </PopoverContent>
     </Popover>
   );
 };
+
+// ── Availability popover shared by SmsTemplateButton ──
+
+const calLink = "https://cal.com/daniele-buatti/30min";
+
+function formatAvailabilityLines(
+  type: "share" | "days",
+  slotsByDate: Record<string, { time?: string; start?: string }[]>
+) {
+  const dates = Object.keys(slotsByDate).sort().filter(d => slotsByDate[d]?.length > 0);
+  if (dates.length === 0) return [];
+
+  const entries = type === "share"
+    ? dates.slice(0, 5).map(k => ({ k, slots: slotsByDate[k] }))
+    : dates.slice(0, 10).map(k => ({ k, slots: slotsByDate[k] }));
+
+  const lines: string[] = [];
+  let prevWeek: number | null = null;
+  for (const { k, slots } of entries) {
+    if (type === "days") {
+      const week = getISOWeek(parseISO(k));
+      if (prevWeek !== null && week !== prevWeek) lines.push("");
+      prevWeek = week;
+    }
+    const times = slots.map(s => s.time || s.start).filter(Boolean) as string[];
+    lines.push(formatDateLine(k, times));
+  }
+  return lines;
+}
+
+function AvailabilityPopover({
+  type,
+  slotsByDate,
+  client,
+  firstName,
+  onClose,
+}: {
+  type: "share" | "days";
+  slotsByDate: Record<string, { time?: string; start?: string }[]>;
+  client: { email?: string; phone?: string };
+  firstName: string;
+  onClose: () => void;
+}) {
+  const lines = useMemo(() => formatAvailabilityLines(type, slotsByDate), [type, slotsByDate]);
+
+  const emailBody = lines.length > 0
+    ? `Hi ${firstName},\n\nHere's my availability:\n\n${lines.join('\n')}\n\nBooking link: ${calLink}`
+    : `Hi ${firstName},\n\nI have availability coming up. Book a session here:\n${calLink}`;
+
+  const smsBody = lines.length > 0
+    ? `Hi ${firstName}, here's my availability:\n\n${lines.join('\n')}\n\nBook: ${calLink}`
+    : `Hi ${firstName}, book here: ${calLink}`;
+
+  const subject = "Availability — Session Booking";
+
+  const openEmail = () => {
+    if (!client.email) return;
+    const gmailUrl = `https://mail.google.com/mail/u/0/?view=cm&fs=1&to=${encodeURIComponent(client.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+    window.open(gmailUrl, "_blank");
+  };
+
+  const openSms = () => {
+    if (!client.phone) return;
+    window.location.href = `sms:${client.phone}?body=${encodeURIComponent(smsBody)}`;
+  };
+
+  return (
+    <div className="p-3 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+      <div className="flex items-center justify-between">
+        <p className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">Send via</p>
+        <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+          <X size={13} />
+        </button>
+      </div>
+      <div className="flex gap-2">
+        {client.email && (
+          <Button onClick={openEmail} variant="outline" size="sm" className="flex-1 rounded-xl h-9 text-[10px] font-black uppercase tracking-widest">
+            <Mail size={11} className="mr-1.5" /> Email
+          </Button>
+        )}
+        {client.phone && (
+          <Button onClick={openSms} variant="outline" size="sm" className="flex-1 rounded-xl h-9 text-[10px] font-black uppercase tracking-widest">
+            <MessageSquare size={11} className="mr-1.5" /> SMS
+          </Button>
+        )}
+      </div>
+      <div className="max-h-32 overflow-y-auto rounded-xl bg-muted/30 p-2.5">
+        <p className="text-[10px] text-muted-foreground whitespace-pre-wrap leading-relaxed font-medium">
+          {emailBody}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -473,6 +638,8 @@ export const ClientRow = ({
   }, []);
 
   // Generate personalized rate increase email template (British English)
+  const currentRateNum = client.standard_rate ?? 50;
+
   const emailTemplate = useMemo(() => {
     const firstName = client.name.split(' ')[0];
     return `Hi ${firstName},
@@ -481,7 +648,7 @@ I hope this finds you well!
 
 I just wanted to take a moment to say a huge thank you for working with me and for trusting me with your health and integration journey. It is always a privilege to support you.
 
-I'm writing to let you know that from next month (${nextMonthName}), my standard session rate will be moving to $${targetRate}.
+I'm writing to let you know that from ${nextMonthName} onwards, my session rate for you will be moving from $${currentRateNum} to $${targetRate} per session.
 
 This allows me to continue investing in advanced clinical training, specialist protocols, and high-quality integration resources — all to ensure I'm able to support you in the very best way possible.
 
@@ -491,7 +658,7 @@ Looking forward to our next session!
 
 Warmly,
 Daniele`;
-  }, [client.name, nextMonthName, targetRate]);
+  }, [client.name, nextMonthName, targetRate, currentRateNum]);
 
   // Generate re-engagement email template (British English)
   const ongoingRate = averageSessionRate ? Math.round(averageSessionRate) : 70;
@@ -664,6 +831,12 @@ Daniele`;
             <span>{client.appointments.length} sessions</span>
             <span>•</span>
             <span className="text-indigo-600 font-bold">Upgrades: {journalData.upgrade_count || 0}</span>
+            {(journalData.upgrade_count || 0) >= 4 && (
+              <span className="flex items-center gap-1 text-[10px] font-black text-amber-600 bg-amber-50 dark:bg-amber-950/30 px-1.5 py-0.5 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                Due
+              </span>
+            )}
           </div>
           {client.phone && (
             <div className="flex items-center gap-1.5 mt-0.5">
@@ -702,81 +875,66 @@ Daniele`;
 
       {/* Rate Ladder (Current vs Target) */}
       <td className="p-4">
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            {/* Current Rate */}
-            <div className="space-y-0.5">
-              <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground block">Current</span>
-              <div className="flex items-center gap-1.5">
-                <Select
-                  value={currentRateValue.toString()}
-                  onValueChange={(val) => handleRateChange(client.id, parseInt(val))}
-                >
-                  <SelectTrigger className="w-[90px] h-8 rounded-xl border-border/60 bg-muted/30 text-xs font-bold">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl">
-                    {RATE_OPTIONS.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value.toString()} className="text-xs font-bold">
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {isCustomRate && (
-                  <Badge variant="outline" className="rounded-lg border-indigo-200 dark:border-indigo-900/50 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 font-bold text-[10px] h-6">
-                    ${client.standard_rate}
-                  </Badge>
-                )}
-              </div>
-            </div>
-
-            <ArrowRight size={14} className="text-muted-foreground mt-4" />
-
-            {/* Target Rate */}
-            <div className="space-y-0.5">
-              <span className="text-[9px] font-black uppercase tracking-wider text-indigo-600 block">Target</span>
-              <Select
-                value={targetRate.toString()}
-                onValueChange={(val) => onSetTargetRate(client.id, parseInt(val))}
-              >
-                <SelectTrigger className="w-[90px] h-8 rounded-xl border-indigo-200 bg-indigo-50/30 text-indigo-600 text-xs font-black">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl">
-                  {RATE_OPTIONS.filter(opt => opt.value !== -1).map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value.toString()} className="text-xs font-bold">
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2">
+            <Select
+              value={currentRateValue.toString()}
+              onValueChange={(val) => handleRateChange(client.id, parseInt(val))}
+            >
+              <SelectTrigger className="w-[82px] h-7 rounded-lg border-border/60 bg-muted/30 text-[11px] font-bold">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl">
+                {RATE_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value.toString()} className="text-xs font-bold">
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {isCustomRate && (
+              <Badge variant="outline" className="rounded-lg border-indigo-200 dark:border-indigo-900/50 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 font-bold text-[10px] h-5">
+                ${client.standard_rate}
+              </Badge>
+            )}
+            <ArrowRight size={12} className="text-muted-foreground shrink-0" />
+            <Select
+              value={targetRate.toString()}
+              onValueChange={(val) => onSetTargetRate(client.id, parseInt(val))}
+            >
+              <SelectTrigger className="w-[82px] h-7 rounded-lg border-indigo-200 bg-indigo-50/30 text-indigo-600 text-[11px] font-black">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl">
+                {RATE_OPTIONS.filter(opt => opt.value !== -1).map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value.toString()} className="text-xs font-bold">
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* Rate Age & Review Flag */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-[10px] text-muted-foreground font-medium">
-              Rate set {monthsSinceUpdate === 0 ? "this month" : `${monthsSinceUpdate} ${monthsSinceUpdate === 1 ? "month" : "months"} ago`}
+              Set {monthsSinceUpdate === 0 ? "this month" : `${monthsSinceUpdate}mo ago`}
             </span>
             {needsReview ? (
-              <Badge className="bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-none font-black text-[8px] uppercase tracking-wider px-2 py-0.5 flex items-center gap-1 animate-pulse">
-                <AlertTriangle size={10} /> Review Rate
-              </Badge>
+              <>
+                <Badge className="bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-none font-black text-[7px] uppercase tracking-wider px-1.5 py-0 flex items-center gap-0.5 animate-pulse h-4">
+                  <AlertTriangle size={8} /> Review
+                </Badge>
+                <button
+                  onClick={() => {
+                    onSetRateUpdatedDate(client.id, new Date().toISOString());
+                    showSuccess("Rate marked as reviewed today.");
+                  }}
+                  className="h-4 px-1 text-[8px] font-black uppercase tracking-wider text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded"
+                >
+                  Dismiss
+                </button>
+              </>
             ) : null}
-            {needsReview && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  onSetRateUpdatedDate(client.id, new Date().toISOString());
-                  showSuccess("Rate marked as reviewed today.");
-                }}
-                className="h-5 px-1.5 text-[9px] font-black uppercase tracking-wider text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-md"
-              >
-                Mark Reviewed
-              </Button>
-            )}
           </div>
         </div>
       </td>
@@ -913,61 +1071,45 @@ Daniele`;
           {/* Rate Increase Follow-up Action */}
           {client.standard_rate !== targetRate && (
             <div className="flex items-center gap-1.5">
-              {client.appointments.length < 8 ? (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="h-8 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-400 font-black text-[9px] uppercase tracking-widest flex items-center gap-1 cursor-help">
-                        <Lock size={12} />
-                        Locked ({client.appointments.length}/8)
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="rounded-xl font-bold text-xs p-2">
-                      Clients need at least 8 sessions before they can be upgraded.
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              ) : journalData.rate_increase_contacted ? (
-                <div className="flex items-center gap-1">
-                  {confirmUpgrade ? (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setConfirmUpgrade(false)}
-                        className="h-8 px-2 rounded-xl text-slate-400 hover:bg-slate-100 font-black text-[9px]"
-                      >
-                        <X size={12} />
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => { setConfirmUpgrade(false); handleConfirmUpgrade(); }}
-                        disabled={updatingStatus}
-                        className="h-8 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[9px] uppercase tracking-widest px-3"
-                      >
-                        {updatingStatus ? <Loader2 className="animate-spin" size={10} /> : <Check size={10} className="mr-1" />}
-                        Confirm ${targetRate}?
-                      </Button>
-                    </>
-                  ) : (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setConfirmUpgrade(true)}
-                            className="h-8 rounded-xl border-emerald-200 text-emerald-600 hover:bg-emerald-50 font-black text-[9px] uppercase tracking-widest flex items-center gap-1"
-                          >
-                            <ArrowUpRight size={12} />
-                            Upgrade
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent className="rounded-xl font-bold text-xs p-2">Upgrade to ${targetRate}</TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsEmailModalOpen(true)}
+                      className="h-8 rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50 font-black text-[9px] uppercase tracking-widest flex items-center gap-1"
+                    >
+                      <MessageSquare size={12} />
+                      Contact
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent className="rounded-xl font-bold text-xs p-2">
+                    Send rate increase email: ${currentRateNum} → ${targetRate}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              {confirmUpgrade ? (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setConfirmUpgrade(false)}
+                    className="h-8 px-2 rounded-xl text-slate-400 hover:bg-slate-100 font-black text-[9px]"
+                  >
+                    <X size={12} />
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => { setConfirmUpgrade(false); handleConfirmUpgrade(); }}
+                    disabled={updatingStatus}
+                    className="h-8 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[9px] uppercase tracking-widest px-3"
+                  >
+                    {updatingStatus ? <Loader2 className="animate-spin" size={10} /> : <Check size={10} className="mr-1" />}
+                    Confirm ${targetRate}?
+                  </Button>
+                </>
               ) : (
                 <TooltipProvider>
                   <Tooltip>
@@ -975,14 +1117,14 @@ Daniele`;
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setIsEmailModalOpen(true)}
-                        className="h-8 rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50 font-black text-[9px] uppercase tracking-widest flex items-center gap-1"
+                        onClick={() => setConfirmUpgrade(true)}
+                        className="h-8 rounded-xl border-emerald-200 text-emerald-600 hover:bg-emerald-50 font-black text-[9px] uppercase tracking-widest flex items-center gap-1"
                       >
-                        <MessageSquare size={12} />
-                        Contact
+                        <ArrowUpRight size={12} />
+                        Upgrade
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent className="rounded-xl font-bold text-xs p-2">Generate Rate Increase Email</TooltipContent>
+                    <TooltipContent className="rounded-xl font-bold text-xs p-2">Upgrade to ${targetRate}</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               )}
@@ -1054,26 +1196,6 @@ Daniele`;
             </Tooltip>
           </TooltipProvider>
 
-          {/* Send Onboarding */}
-          {client.email && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleSendOnboarding}
-                    disabled={sendingOnboarding}
-                    className="h-8 w-8 rounded-xl text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
-                  >
-                    {sendingOnboarding ? <Loader2 className="animate-spin" size={14} /> : <Send size={14} />}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent className="rounded-xl font-bold text-xs p-2">Send Onboarding Email</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-
           {/* More Actions Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -1082,6 +1204,12 @@ Daniele`;
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-2xl border-none bg-card">
+              {client.email && (
+                <DropdownMenuItem onClick={handleSendOnboarding} disabled={sendingOnboarding} className="rounded-xl py-2 px-4 cursor-pointer flex items-center gap-3">
+                  {sendingOnboarding ? <Loader2 className="animate-spin" size={14} /> : <Send size={14} className="text-emerald-500" />}
+                  <span className="font-bold text-xs uppercase tracking-widest">Send Onboarding</span>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={handleSyncToNotion} disabled={syncingNotion} className="rounded-xl py-2 px-4 cursor-pointer flex items-center gap-3">
                 {syncingNotion ? <Loader2 className="animate-spin" size={14} /> : <RefreshCw size={14} className="text-purple-500" />}
                 <span className="font-bold text-xs uppercase tracking-widest">Sync to Notion</span>
@@ -1185,8 +1313,8 @@ Daniele`;
           <div className="space-y-6 py-4">
             <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between">
               <div className="space-y-0.5">
-                <p className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">Target Rate</p>
-                <p className="text-lg font-black text-indigo-900">${targetRate} / session</p>
+                <p className="text-[9px] font-black text-indigo-600 uppercase tracking-widest">Rate Change</p>
+                <p className="text-lg font-black text-indigo-900">$${currentRateNum} → $${targetRate} / session</p>
               </div>
               <Badge className="bg-indigo-600 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full">
                 Effective: {nextMonthName}

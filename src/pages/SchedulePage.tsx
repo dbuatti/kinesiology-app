@@ -13,7 +13,7 @@ const SchedulePage = () => {
   const activeTab = searchParams.get("view") || "list";
 
   return (
-    <AppLayout variant="workspace">
+    <AppLayout>
       <div className="space-y-8">
         <PageHeader 
           title="Clinical Schedule"

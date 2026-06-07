@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, ExternalLink, Mic, User
+  ArrowLeft, Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, ExternalLink, Mic, User, RotateCcw
 } from "lucide-react";
 import {
   format, addMonths, subMonths, startOfMonth, endOfMonth,
@@ -66,7 +66,7 @@ const UnifiedCalendarPage = () => {
   const fetchStart = subMonths(startDate, 1).toISOString();
   const fetchEnd = addMonths(endDate, 1).toISOString();
 
-  const { data: voiceLessons, isLoading: voiceLoading } = useQuery({
+  const { data: voiceLessons, isLoading: voiceLoading, isError: voiceError, refetch: refetchVoice } = useQuery({
     queryKey: ["unified-voice-lessons", currentMonth.toISOString()],
     queryFn: async () => {
       const res = await supabase.functions.invoke("voice-lessons");
@@ -76,7 +76,7 @@ const UnifiedCalendarPage = () => {
     staleTime: 60_000,
   });
 
-  const { data: kinesiologyAppts, isLoading: kinesiologyLoading } = useQuery({
+  const { data: kinesiologyAppts, isLoading: kinesiologyLoading, isError: kinesiologyError, refetch: refetchKinesiology } = useQuery({
     queryKey: ["unified-kinesiology-appts", currentMonth.toISOString()],
     queryFn: async () => {
       const { data } = await supabase
@@ -135,10 +135,38 @@ const UnifiedCalendarPage = () => {
 
   const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
   const isLoading = voiceLoading || kinesiologyLoading;
+  const hasError = voiceError || kinesiologyError;
+
+  if (hasError) {
+    return (
+      <AppLayout>
+        <div className="space-y-8 max-w-7xl mx-auto">
+          <PageHeader
+            title="Calendar"
+            subtitle="Kinesiology appointments and voice lessons at a glance."
+            icon={CalendarIcon}
+            breadcrumbs={[{ label: "Home", path: "/" }, { label: "Calendar" }]}
+          />
+          <div className="p-24 flex flex-col items-center justify-center gap-6 bg-red-50 dark:bg-red-950/10 rounded-[2.5rem]">
+            <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-950/30 flex items-center justify-center">
+              <span className="text-2xl font-black text-red-500">!</span>
+            </div>
+            <p className="text-red-600 font-black text-xs uppercase tracking-widest text-center">Failed to load calendar data</p>
+            <Button
+              onClick={() => { refetchVoice(); refetchKinesiology(); }}
+              className="bg-red-500 hover:bg-red-600 rounded-xl font-bold text-xs"
+            >
+              <RotateCcw size={14} className="mr-2" /> Retry
+            </Button>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
-    <AppLayout variant="workspace">
-      <div className="space-y-8">
+    <AppLayout>
+      <div className="space-y-8 max-w-7xl mx-auto">
         <PageHeader
           title="Calendar"
           subtitle="Kinesiology appointments and voice lessons at a glance."

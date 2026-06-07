@@ -20,7 +20,7 @@ const VoiceBookLessonPage = () => {
   const selected = DURATIONS.find((d) => d.key === duration)!;
 
   return (
-    <AppLayout variant="workspace">
+    <AppLayout>
       <div className="space-y-8">
         <PageHeader
           title="Book a Lesson"

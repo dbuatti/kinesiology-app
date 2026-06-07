@@ -101,7 +101,7 @@ const MorningProgramPage = () => {
   const progress = (completedTasks.length / RITUAL_STEPS.length) * 100;
 
   return (
-    <AppLayout variant="workspace">
+    <AppLayout>
       <div className="max-w-5xl mx-auto py-12 px-4 sm:px-6 lg:px-8 animate-in fade-in duration-700 space-y-12">
         <Breadcrumbs items={[{ label: "Practice Lab", path: "/lab" }, { label: "Morning Program" }]} />
 

@@ -73,7 +73,8 @@ import VoiceOnboardingPage from "./pages/public/VoiceOnboardingPage";
 import UnifiedCalendarPage from "./pages/UnifiedCalendarPage";
 
 // --- Business & System ---
-import BusinessHubPage from "./pages/BusinessHubPage";
+import BusinessOverviewPage from "./pages/BusinessOverviewPage";
+import BusinessDashboardPage from "./pages/BusinessDashboardPage";
 import ClientAuditPage from "./pages/ClientAuditPage";
 import MarketingEnginePage from "./pages/MarketingEnginePage";
 import SettingsPage from "./pages/SettingsPage";
@@ -169,7 +170,9 @@ const AppRoutes = () => {
         <Route path="/voice/calendar" element={<VoiceCalendarPage />} />
 
         {/* Business Tools */}
-        <Route path="/business" element={<BusinessHubPage />} />
+        <Route path="/business" element={<Navigate to="/business/dashboard" replace />} />
+        <Route path="/business/dashboard" element={<BusinessDashboardPage />} />
+        <Route path="/business/overview" element={<BusinessOverviewPage />} />
         <Route path="/business/marketing-engine" element={<MarketingEnginePage />} />
         <Route path="/business/client-audit" element={<ClientAuditPage />} />
 

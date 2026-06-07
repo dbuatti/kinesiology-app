@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-export type AppMode = 'clinical' | 'lab' | 'library';
+export type AppMode = 'clinical' | 'lab' | 'library' | 'business';
 export type AppViewMode = 'default' | 'voice';
 
 interface ModeContextType {

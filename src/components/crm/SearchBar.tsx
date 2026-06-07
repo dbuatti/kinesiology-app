@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 import { useAppMode } from "@/components/ModeProvider";
@@ -17,7 +17,7 @@ import {
   Search, User, Calendar, Target, Zap, Clock, Trash2, 
   UserPlus, CalendarPlus, Upload, Settings, Layers, 
   ShieldCheck, Mic, Sparkles, Activity, BookOpen,
-  Fingerprint, Heart, Brain, LayoutDashboard
+  Fingerprint, Heart, Brain, LayoutDashboard, CalendarDays, Users
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -41,6 +41,8 @@ const SearchBar = () => {
   const [loading, setLoading] = useState(false);
   const { mode, setMode } = useAppMode();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isVoiceMode = location.pathname.startsWith('/voice');
 
   useEffect(() => {
     const stored = localStorage.getItem(RECENT_SEARCHES_KEY);
@@ -88,7 +90,7 @@ const SearchBar = () => {
     setLoading(true);
 
     try {
-      const [clientsData, appointmentsData, proceduresData] = await Promise.all([
+      const [clientsData, appointmentsData, proceduresData, voiceStudentsData, voiceBookingsData] = await Promise.all([
         supabase
           .from("clients")
           .select("id, name, email")
@@ -111,7 +113,17 @@ const SearchBar = () => {
           .from("procedures")
           .select("id, name, description")
           .ilike("name", `%${query}%`)
-          .limit(3)
+          .limit(3),
+        supabase
+          .from("voice_onboarding")
+          .select("id, name, email")
+          .or(`name.ilike.%${query}%,email.ilike.%${query}%`)
+          .limit(5),
+        supabase
+          .from("voice_bookings")
+          .select("id, student_name, student_email, lesson_date, status")
+          .or(`student_name.ilike.%${query}%,student_email.ilike.%${query}%`)
+          .limit(5),
       ]);
 
       const searchResults: SearchResult[] = [];
@@ -126,6 +138,9 @@ const SearchBar = () => {
       if ("knowledge hub".includes(query.toLowerCase())) {
         searchResults.push({ type: "mode", id: "library", title: "Switch to Knowledge Hub", subtitle: "Protocols & study", path: "/", icon: BookOpen, color: "text-amber-500" });
       }
+      if ("voice studio".includes(query.toLowerCase())) {
+        searchResults.push({ type: "mode", id: "voice", title: "Switch to Voice Studio", subtitle: "Voice & piano lessons", path: "/voice", icon: Mic, color: "text-rose-500" });
+      }
 
       // Pages
       if ("peace framework".includes(query.toLowerCase())) {
@@ -133,6 +148,12 @@ const SearchBar = () => {
       }
       if ("marketing engine".includes(query.toLowerCase())) {
         searchResults.push({ type: "page", id: "marketing-engine", title: "AI Marketing Engine", subtitle: "Voice to Notion Workflow", path: "/business/marketing-engine", icon: Mic, color: "text-emerald-500" });
+      }
+      if ("voice clients".includes(query.toLowerCase())) {
+        searchResults.push({ type: "page", id: "voice-clients", title: "Voice Clients", subtitle: "Student directory", path: "/voice/clients", icon: Users, color: "text-rose-500" });
+      }
+      if ("studio calendar".includes(query.toLowerCase()) || "voice calendar".includes(query.toLowerCase())) {
+        searchResults.push({ type: "page", id: "voice-calendar", title: "Studio Calendar", subtitle: "Voice lesson schedule", path: "/voice/calendar", icon: CalendarDays, color: "text-rose-500" });
       }
 
       // TCM Channels
@@ -162,6 +183,18 @@ const SearchBar = () => {
         });
       }
 
+      if (voiceStudentsData.data) {
+        voiceStudentsData.data.forEach((student: any) => {
+          searchResults.push({ type: "client", id: `voice-${student.id}`, title: `${student.name} (Voice)`, subtitle: student.email || undefined, path: `/voice/clients`, icon: Mic, color: "text-rose-500" });
+        });
+      }
+
+      if (voiceBookingsData.data) {
+        voiceBookingsData.data.forEach((booking: any) => {
+          searchResults.push({ type: "appointment", id: `voice-booking-${booking.id}`, title: `${booking.student_name} — Voice Lesson`, subtitle: booking.lesson_date ? format(new Date(booking.lesson_date), "MMM d, yyyy") : undefined, path: `/voice/calendar`, icon: Calendar, color: "text-rose-500" });
+        });
+      }
+
       setResults(searchResults);
     } catch (error) {
       console.error("Search error:", error);
@@ -172,9 +205,14 @@ const SearchBar = () => {
 
   const handleSelect = (result: SearchResult) => {
     if (result.type === 'mode') {
-      setMode(result.id as any);
-      setOpen(false);
-      navigate('/');
+      if (result.id === 'voice') {
+        setOpen(false);
+        navigate('/voice');
+      } else {
+        setMode(result.id as any);
+        setOpen(false);
+        navigate('/');
+      }
       return;
     }
     saveRecentSearch(result);
@@ -187,6 +225,15 @@ const SearchBar = () => {
       { type: "action", id: "dashboard", title: "Go to Dashboard", subtitle: "Main overview", path: "/", icon: LayoutDashboard, color: "text-slate-500" },
       { type: "action", id: "settings", title: "System Settings", subtitle: "Account & preferences", path: "/settings", icon: Settings, color: "text-slate-500" },
     ];
+
+    if (isVoiceMode) {
+      return [
+        { type: "action", id: "voice-clients", title: "Voice Clients", subtitle: "Student directory", path: "/voice/clients", icon: Users, color: "text-rose-500" },
+        { type: "action", id: "book-lesson", title: "Book a Lesson", subtitle: "Schedule voice lesson", path: "/voice/book", icon: CalendarPlus, color: "text-rose-500" },
+        { type: "action", id: "studio-calendar", title: "Studio Calendar", subtitle: "Lesson schedule", path: "/voice/calendar", icon: CalendarDays, color: "text-rose-500" },
+        ...baseActions
+      ];
+    }
 
     if (mode === 'clinical') {
       return [
@@ -215,11 +262,11 @@ const SearchBar = () => {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="hidden lg:flex items-center gap-3 px-4 py-2.5 text-sm text-slate-500 bg-slate-100/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl hover:bg-white dark:hover:bg-slate-800 hover:shadow-md transition-all w-full group"
+        className="flex items-center justify-center lg:justify-start gap-3 px-3 lg:px-4 py-2.5 text-sm text-slate-500 bg-slate-100/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl hover:bg-white dark:hover:bg-slate-800 hover:shadow-md transition-all w-full group"
       >
-        <Search size={16} className="group-hover:text-indigo-600 transition-colors" />
-        <span className="font-medium">Command Center...</span>
-        <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded-lg border bg-white dark:bg-slate-950 px-2 font-mono text-[10px] font-black text-slate-400 shadow-sm">
+        <Search size={16} className="group-hover:text-indigo-600 transition-colors shrink-0" />
+        <span className="font-medium hidden lg:inline">Command Center...</span>
+        <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded-lg border bg-white dark:bg-slate-950 px-2 font-mono text-[10px] font-black text-slate-400 shadow-sm hidden lg:inline-flex">
           <span className="text-xs">⌘</span>K
         </kbd>
       </button>
@@ -252,7 +299,7 @@ const SearchBar = () => {
             <CommandGroup heading={
               <div className="flex items-center gap-2">
                 <Sparkles size={12} className="text-indigo-500" />
-                <span>Contextual Actions ({mode})</span>
+                <span>Contextual Actions ({isVoiceMode ? 'voice' : mode})</span>
               </div>
             }>
               {getQuickActions().map((action) => (

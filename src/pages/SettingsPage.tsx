@@ -16,7 +16,7 @@ import AppearanceSettings from "../components/crm/settings/AppearanceSettings";
 
 const SettingsPage = () => {
   return (
-    <AppLayout variant="wide">
+    <AppLayout>
       <div className="space-y-8 animate-in fade-in duration-500 pb-20">
         <PageHeader
           title="Settings"

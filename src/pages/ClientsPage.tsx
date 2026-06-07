@@ -92,7 +92,7 @@ const ClientsPage = () => {
   );
 
   return (
-    <AppLayout variant="workspace">
+    <AppLayout>
       <div className="flex flex-col gap-8">
         <PageHeader 
           title="Client Database"

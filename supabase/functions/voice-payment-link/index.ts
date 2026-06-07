@@ -49,8 +49,8 @@ serve(async (req) => {
         type: "voice_lesson",
       },
       ...(email ? { customer_email: email } : {}),
-      success_url: `${req.headers.get("origin") || "http://localhost:8080"}/voice/calendar`,
-      cancel_url: `${req.headers.get("origin") || "http://localhost:8080"}/voice/calendar`,
+      success_url: `${req.headers.get("origin") || req.headers.get("referer")?.replace(/\/+$/, "") || "https://antigravity.io"}/voice/calendar`,
+      cancel_url: `${req.headers.get("origin") || req.headers.get("referer")?.replace(/\/+$/, "") || "https://antigravity.io"}/voice/calendar`,
     });
 
     console.log(`[${functionName}] Created checkout session: ${session.id} for ${lessonTitle}`);

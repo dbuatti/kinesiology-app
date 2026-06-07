@@ -44,6 +44,11 @@ serve(async (req) => {
       Payment: { select: { name: "Unpaid" } },
     };
 
+    // DB 2 doesn't have a Cost property; only include it for DB 1
+    if (cost) {
+      db1Properties.Cost = { number: Number(cost) };
+    }
+
     const db2Properties: Record<string, unknown> = {
       Title: { title: [{ text: { content: title } }] },
       Date: { date: { start: date } },

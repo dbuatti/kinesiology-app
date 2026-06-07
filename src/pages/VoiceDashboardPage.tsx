@@ -91,7 +91,7 @@ const VoiceDashboardPage = () => {
 
   if (isLoading) {
     return (
-      <AppLayout variant="workspace">
+      <AppLayout>
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
           <Loader2 className="animate-spin text-rose-500" size={48} />
           <p className="text-muted-foreground font-black text-xs uppercase tracking-widest">Loading voice studio...</p>
@@ -101,7 +101,7 @@ const VoiceDashboardPage = () => {
   }
 
   return (
-    <AppLayout variant="workspace">
+    <AppLayout>
       <div className="space-y-8 pb-32">
         <PageHeader
           title="Voice Studio"

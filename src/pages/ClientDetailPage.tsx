@@ -288,7 +288,7 @@ const ClientDetailPage = () => {
   const rollups = getClientRollups(appointments);
 
   return (
-    <AppLayout variant="workspace">
+    <AppLayout>
       <div className="space-y-6">
         <PageHeader 
           title={client.name}

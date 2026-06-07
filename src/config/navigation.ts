@@ -15,8 +15,10 @@ import {
   Trophy,
   GraduationCap,
   Zap,
-  FileText,
-  CalendarDays
+  CalendarDays,
+  BarChart3,
+  DollarSign,
+  Target,
 } from "lucide-react";
 
 export const CLINICAL_NAV_ITEMS = [
@@ -25,9 +27,6 @@ export const CLINICAL_NAV_ITEMS = [
   { label: "Calendar", icon: CalendarDays, path: "/calendar" },
   { label: "Clients", icon: Users, path: "/clients" },
   { label: "Oversight", icon: TrendingUp, path: "/oversight" },
-  { label: "Business Hub", icon: Briefcase, path: "/business" },
-  { label: "Marketing Engine", icon: Mic, path: "/business/marketing-engine" },
-  { label: "Client Audit", icon: FileText, path: "/business/client-audit" },
 ];
 
 export const LAB_NAV_ITEMS = [
@@ -52,4 +51,10 @@ export const VOICE_NAV_ITEMS = [
   { label: "Voice Clients", icon: Users, path: "/voice/clients" },
   { label: "Book a Lesson", icon: Calendar, path: "/voice/book" },
   { label: "Studio Calendar", icon: TrendingUp, path: "/voice/calendar" },
+];
+
+export const BUSINESS_NAV_ITEMS = [
+  { label: "Dashboard", icon: LayoutDashboard, path: "/business" },
+  { label: "Client Audit", icon: DollarSign, path: "/business/client-audit" },
+  { label: "Marketing Engine", icon: Target, path: "/business/marketing-engine" },
 ];

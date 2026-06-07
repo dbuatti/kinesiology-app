@@ -116,6 +116,34 @@ const VoiceCalendarPage = () => {
 
   const bookings = bookingsData || [];
 
+  const { data: availabilityData } = useQuery({
+    queryKey: ["voice-calendar-availability", format(currentMonth, "yyyy-MM")],
+    queryFn: async () => {
+      const res = await supabase.functions.invoke("get-calcom-slots", {
+        body: {
+          start: startOfMonth(currentMonth).toISOString(),
+          end: endOfMonth(currentMonth).toISOString(),
+          eventTypeId: "1945081",
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        },
+      });
+      if (res.error) throw res.error;
+      return (res.data?.data || {}) as Record<string, any[]>;
+    },
+    staleTime: 30_000,
+  });
+
+  const datesWithSlots = useMemo(() => {
+    if (!availabilityData) return new Set<string>();
+    const set = new Set<string>();
+    for (const [key, slots] of Object.entries(availabilityData)) {
+      if (Array.isArray(slots) && slots.length > 0) {
+        set.add(key);
+      }
+    }
+    return set;
+  }, [availabilityData]);
+
   const generatePaymentLink = useMutation({
     mutationFn: async (params: { lesson: VoiceLesson; amount: number }) => {
       const res = await supabase.functions.invoke("voice-payment-link", {
@@ -326,7 +354,7 @@ const VoiceCalendarPage = () => {
   };
 
   return (
-    <AppLayout variant="workspace">
+    <AppLayout>
       <div className="space-y-8">
         <PageHeader
           title="Studio Calendar"
@@ -382,6 +410,16 @@ const VoiceCalendarPage = () => {
                   <p className="text-muted-foreground font-medium text-sm mt-1">
                     {lessons.length} lesson{lessons.length !== 1 ? "s" : ""} scheduled
                   </p>
+                  {availabilityData && (
+                    <div className="flex items-center gap-4 mt-2">
+                      <span className="flex items-center gap-1.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                        <span className="w-3 h-3 rounded-sm bg-emerald-400" /> Free
+                      </span>
+                      <span className="flex items-center gap-1.5 text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                        <span className="w-3 h-3 rounded-sm bg-gray-300 dark:bg-gray-600" /> Full
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-2 items-center">
                   <DropdownMenu>
@@ -440,6 +478,12 @@ const VoiceCalendarPage = () => {
                   const dayLessons = getLessonsForDay(day);
                   const isCurrent = isSameMonth(day, monthStart);
                   const isCurrentDay = isToday(day);
+                  const dayKey = format(day, "yyyy-MM-dd");
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const isPast = day.getTime() < today.getTime();
+                  const dayHasAvailability = isCurrent && !isPast && datesWithSlots.has(dayKey);
+                  const dayNoAvailability = isCurrent && !isPast && !datesWithSlots.has(dayKey) && !!availabilityData;
 
                   return (
                     <div
@@ -447,10 +491,13 @@ const VoiceCalendarPage = () => {
                       className={cn(
                         "min-h-[130px] p-3 border-r border-b border-border/50 transition-colors",
                         !isCurrent && "bg-muted/20 opacity-40",
-                        isCurrentDay && "bg-rose-50/30 dark:bg-rose-950/10"
+                        isCurrentDay && "bg-rose-50/40 dark:bg-rose-950/15",
+                        dayHasAvailability && "bg-emerald-100 dark:bg-emerald-900/40 border-l-[3px] border-emerald-400 dark:border-emerald-600",
+                        dayNoAvailability && "bg-gray-100/50 dark:bg-gray-800/20 border-l-[3px] border-gray-200 dark:border-gray-600"
                       )}
                     >
                       <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-1.5">
                         <span
                           className={cn(
                             "w-8 h-8 flex items-center justify-center rounded-full text-sm font-black",
@@ -461,6 +508,13 @@ const VoiceCalendarPage = () => {
                         >
                           {format(day, "d")}
                         </span>
+                        {dayHasAvailability && (
+                          <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm" />
+                        )}
+                        {dayNoAvailability && (
+                          <div className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600" />
+                        )}
+                        </div>
                         {dayLessons.length > 0 && (
                           <Badge
                             variant="secondary"

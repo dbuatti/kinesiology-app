@@ -15,7 +15,7 @@ const AppLayout = ({
   children,
   hasFixedHeader = false,
   className,
-  variant = "standard",
+  variant = "full",
 }: AppLayoutProps) => {
   const location = useLocation();
 

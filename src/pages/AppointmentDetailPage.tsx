@@ -249,11 +249,38 @@ const AppointmentDetailPage = () => {
     </div>
   );
 
-  if (!appointment) return (
-    <div className="flex min-h-screen items-center justify-center p-8 text-center">
-      <Button asChild><Link to="/appointments">Back to Appointments</Link></Button>
-    </div>
-  );
+  if (!appointment) {
+    const isInvalidId = id && !loading;
+    return (
+      <div className="min-h-screen flex items-center justify-center p-8 bg-background">
+        <div className="flex flex-col items-center gap-6 max-w-md text-center">
+          <div className={cn("w-20 h-20 rounded-[2rem] flex items-center justify-center", isInvalidId ? "bg-red-50 dark:bg-red-950/20" : "bg-muted")}>
+            {isInvalidId ? (
+              <span className="text-3xl font-black text-red-400">?</span>
+            ) : (
+              <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+            )}
+          </div>
+          <div>
+            <h2 className="text-2xl font-black text-foreground">{isInvalidId ? "Appointment Not Found" : "Loading..."}</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              {isInvalidId ? "The appointment you're looking for doesn't exist or was deleted." : "Fetching appointment data..."}
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" asChild className="rounded-xl font-bold text-xs">
+              <Link to="/schedule?view=list"><ArrowLeft size={14} className="mr-2" /> Back to Schedule</Link>
+            </Button>
+            {isInvalidId && (
+              <Button asChild className="rounded-xl font-bold text-xs bg-indigo-600 hover:bg-indigo-700">
+                <Link to="/appointments">View All Appointments</Link>
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isDocumentView) {
     return (
@@ -274,7 +301,7 @@ const AppointmentDetailPage = () => {
 
   return (
     <ErrorBoundary>
-      <AppLayout variant="full" className="pb-0">
+      <AppLayout className="pb-0">
         <div className="max-w-[1600px] mx-auto space-y-6">
 
           {/* SESSION HEADER */}
@@ -332,20 +359,20 @@ const AppointmentDetailPage = () => {
             </div>
 
             {/* Action buttons */}
-            <div className="flex items-center gap-2 w-full lg:w-auto overflow-x-auto no-scrollbar pb-1">
+            <div className="flex items-center gap-1.5 w-full lg:w-auto overflow-x-auto no-scrollbar pb-1">
               {appointment.notion_link && (
                 <Button asChild variant="outline" size="sm"
-                  className="flex-1 sm:flex-none h-10 md:h-12 px-4 md:px-6 gap-2 border-border bg-card rounded-xl font-black text-[9px] uppercase tracking-widest text-muted-foreground hover:bg-muted/50 hover:border-border transition-all shadow-sm shrink-0">
+                  className="shrink-0 h-10 md:h-12 px-3 md:px-6 gap-2 border-border bg-card rounded-xl font-black text-[9px] uppercase tracking-widest text-muted-foreground hover:bg-muted/50 hover:border-border transition-all shadow-sm">
                   <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
                     <ExternalLink size={14} className="text-emerald-600" />
-                    <span className="hidden sm:inline">Notion</span>
                   </a>
                 </Button>
               )}
 
               <Button variant="outline" size="sm" onClick={() => setIsDocumentView(true)}
-                className="flex-1 sm:flex-none h-10 md:h-12 px-4 md:px-6 gap-2 border-border bg-card rounded-xl font-black text-[9px] uppercase tracking-widest text-muted-foreground hover:bg-indigo-50 dark:hover:bg-indigo-950/30 hover:border-indigo-300 hover:text-indigo-700 dark:hover:text-indigo-300 transition-all shadow-sm shrink-0">
-                <FileText size={14} className="text-indigo-600" /> Doc View
+                className="shrink-0 h-10 md:h-12 px-3 md:px-6 gap-2 border-border bg-card rounded-xl font-black text-[9px] uppercase tracking-widest text-muted-foreground hover:bg-indigo-50 dark:hover:bg-indigo-950/30 hover:border-indigo-300 hover:text-indigo-700 dark:hover:text-indigo-300 transition-all shadow-sm">
+                <FileText size={14} className="text-indigo-600" />
+                <span className="hidden md:inline">Doc View</span>
               </Button>
 
               <Button
@@ -353,14 +380,13 @@ const AppointmentDetailPage = () => {
                 size="sm"
                 onClick={() => setShowSidebar(!showSidebar)}
                 className={cn(
-                  "flex-1 sm:flex-none h-10 md:h-12 px-4 md:px-6 gap-2 border-border rounded-xl font-black text-[9px] uppercase tracking-widest transition-all shadow-sm shrink-0",
+                  "shrink-0 h-10 md:h-12 px-3 md:px-6 gap-2 border-border rounded-xl font-black text-[9px] uppercase tracking-widest transition-all shadow-sm",
                   showSidebar
                     ? "bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700"
                     : "bg-card text-muted-foreground hover:bg-muted/50"
                 )}
               >
                 {showSidebar ? <PanelLeftClose size={14} /> : <PanelLeftOpen size={14} />}
-                <span className="hidden sm:inline">Sidebar</span>
               </Button>
 
               <DropdownMenu>
@@ -408,8 +434,9 @@ const AppointmentDetailPage = () => {
 
               {isSessionToday && appointment.status === 'Scheduled' && (
                 <Button onClick={handleStartSession}
-                  className="flex-1 sm:flex-none h-10 md:h-12 px-6 md:px-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-lg shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95 shrink-0">
-                  Start Session
+                  className="shrink-0 h-10 md:h-12 px-4 md:px-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-lg shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95 gap-2">
+                  <Zap size={14} className="md:hidden" />
+                  <span className="hidden md:inline">Start Session</span>
                 </Button>
               )}
             </div>

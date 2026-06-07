@@ -136,7 +136,7 @@ const ResourcesPage = () => {
   };
 
   return (
-    <AppLayout variant="wide">
+    <AppLayout>
       <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
         <PageHeader 
           title="Clinical Bible"

@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Search, Plus, Mic, Mail, Phone, ExternalLink, Users,
   ChevronDown, ChevronRight, CheckCheck, Square, Loader2,
-  Calendar, Music, MessageCircle, Trash2
+  Calendar, Music, MessageCircle, Trash2, RotateCcw
 } from "lucide-react";
 import {
   Dialog,
@@ -94,7 +94,7 @@ const VoiceClientsPage = () => {
     },
   });
 
-  const { data: students = [], isLoading } = useQuery<VoiceStudent[]>({
+  const { data: students = [], isLoading, isError, error, refetch } = useQuery<VoiceStudent[]>({
     queryKey: ["voice-students"],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke("voice-clients");
@@ -251,7 +251,7 @@ const VoiceClientsPage = () => {
 
   if (isLoading) {
     return (
-      <AppLayout variant="workspace">
+      <AppLayout>
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
           <Loader2 className="animate-spin text-rose-500" size={48} />
           <p className="text-muted-foreground font-black text-xs uppercase tracking-widest">
@@ -262,8 +262,25 @@ const VoiceClientsPage = () => {
     );
   }
 
+  if (isError) {
+    return (
+      <AppLayout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
+          <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-950/30 flex items-center justify-center">
+            <span className="text-2xl font-black text-red-500">!</span>
+          </div>
+          <p className="text-red-600 font-black text-xs uppercase tracking-widest text-center">Failed to load students</p>
+          <p className="text-red-400 text-xs text-center max-w-md">{(error as any)?.message || "An unexpected error occurred"}</p>
+          <Button onClick={() => refetch()} className="bg-red-500 hover:bg-red-600 rounded-xl font-bold text-xs">
+            <RotateCcw size={14} className="mr-2" /> Retry
+          </Button>
+        </div>
+      </AppLayout>
+    );
+  }
+
   return (
-    <AppLayout variant="workspace">
+    <AppLayout>
       <div className="flex flex-col gap-8 pb-32">
         <PageHeader
           title="Voice Clients"
@@ -329,8 +346,24 @@ const VoiceClientsPage = () => {
           />
         </div>
 
-        {/* Buckets */}
-        {bucketConfig.map((cfg) => {
+        {/* Empty state */}
+        {students.length === 0 && !search ? (
+          <div className="flex flex-col items-center justify-center py-24 bg-card rounded-[2.5rem] border-2 border-dashed border-border">
+            <div className="w-16 h-16 rounded-2xl bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center mb-5">
+              <Mic size={28} className="text-rose-500" />
+            </div>
+            <h3 className="text-xl font-black text-foreground">No voice students yet</h3>
+            <p className="text-sm text-muted-foreground mt-1 mb-6 max-w-xs text-center">
+              Add your first student to start tracking lessons and availability.
+            </p>
+            <Button
+              onClick={() => setOnboardOpen(true)}
+              className="bg-rose-500 hover:bg-rose-600 rounded-xl font-bold text-xs gap-2"
+            >
+              <Plus size={16} /> Add Your First Student
+            </Button>
+          </div>
+        ) : bucketConfig.map((cfg) => {
           const collapsedKey = `bucket_${cfg.key}`;
           const isCollapsed = collapsed[collapsedKey];
           const ids = cfg.students.map((s) => s.id);

@@ -756,22 +756,28 @@ export default function ClientAuditPage() {
   const threeMonthsAgo = new Date();
   threeMonthsAgo.setDate(now.getDate() - 90);
 
+  const sortByLastSeenDesc = (a: ClientWithAppointments, b: ClientWithAppointments) => {
+    const timeA = a.lastSeenDate ? a.lastSeenDate.getTime() : 0;
+    const timeB = b.lastSeenDate ? b.lastSeenDate.getTime() : 0;
+    return timeB - timeA;
+  };
+
   const groups = {
     lastMonth: sortedClients.filter(
       (c) => (c.lastSeenDate && c.lastSeenDate >= oneMonthAgo) || c.appointments.some(app => new Date(app.date) > now)
-    ),
+    ).sort(sortByLastSeenDesc),
     oneToThreeMonths: sortedClients.filter(
       (c) =>
         !c.appointments.some(app => new Date(app.date) > now) &&
         c.lastSeenDate &&
         c.lastSeenDate < oneMonthAgo &&
         c.lastSeenDate >= threeMonthsAgo
-    ),
+    ).sort(sortByLastSeenDesc),
     threePlusMonths: sortedClients.filter(
       (c) =>
         !c.appointments.some(app => new Date(app.date) > now) &&
         (!c.lastSeenDate || c.lastSeenDate < threeMonthsAgo)
-    ),
+    ).sort(sortByLastSeenDesc),
   };
 
   // Financial Calculations
@@ -1156,7 +1162,7 @@ export default function ClientAuditPage() {
   const activeStrategies = aiSuggestions?.strategies || STATIC_STRATEGIES;
 
   return (
-    <AppLayout variant="full">
+    <AppLayout>
       <div className="space-y-8 animate-in fade-in duration-700 pb-20">
         <PageHeader
           title="Client Payment & Audit"

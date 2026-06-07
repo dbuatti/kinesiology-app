@@ -87,7 +87,7 @@ const ClinicalOversightPage = () => {
   );
 
   return (
-    <AppLayout variant="workspace">
+    <AppLayout>
       <div className="space-y-10">
         <PageHeader 
           title="Clinical Oversight"

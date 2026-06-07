@@ -324,7 +324,7 @@ const AppointmentDetailPage = () => {
                   </span>
                   {currentPeakMeridian && (
                     <span className="flex items-center gap-1 text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest">
-                      <Zap size={10} /> {currentPeakMeridian.name} peak
+                      <Zap size={10} /> {currentPeakMeridian.englishName} peak
                     </span>
                   )}
                 </div>

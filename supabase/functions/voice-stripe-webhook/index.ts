@@ -8,6 +8,55 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+async function syncCalcomVoicePayment(calcomBookingId: string) {
+  const CALCOM_KEY = Deno.env.get("CALCOM_API_KEY");
+  if (!CALCOM_KEY) {
+    console.log(`[voice-stripe-webhook] Skipping cal.com sync: CALCOM_API_KEY not set`);
+    return;
+  }
+
+  const headers = {
+    "Authorization": `Bearer ${CALCOM_KEY}`,
+    "cal-api-version": "2024-08-13",
+    "Content-Type": "application/json",
+  };
+
+  try {
+    const res = await fetch(`https://api.cal.com/v2/bookings/${calcomBookingId}/confirm`, {
+      method: "POST",
+      headers,
+    });
+
+    if (res.ok) {
+      console.log(`[voice-stripe-webhook] Cal.com sync: Booking ${calcomBookingId} confirmed as paid`);
+
+      await fetch(`https://api.cal.com/v2/bookings/${calcomBookingId}`, {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ metadata: { is_paid: "true" } }),
+      }).catch(() => {});
+    } else {
+      const err = await res.json();
+      console.error(`[voice-stripe-webhook] Cal.com confirm failed: ${res.status}`, JSON.stringify(err).slice(0, 200));
+
+      const metaRes = await fetch(`https://api.cal.com/v2/bookings/${calcomBookingId}`, {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ metadata: { is_paid: "true" } }),
+      });
+
+      if (metaRes.ok) {
+        console.log(`[voice-stripe-webhook] Cal.com sync (metadata): Booking ${calcomBookingId} marked as paid`);
+      } else {
+        const metaErr = await metaRes.json();
+        console.error(`[voice-stripe-webhook] Cal.com sync (metadata) failed: ${metaRes.status}`, JSON.stringify(metaErr).slice(0, 200));
+      }
+    }
+  } catch (err) {
+    console.error(`[voice-stripe-webhook] Cal.com sync error:`, err.message);
+  }
+}
+
 serve(async (req) => {
   const functionName = "voice-stripe-webhook";
 
@@ -15,7 +64,7 @@ serve(async (req) => {
 
   try {
     const STRIPE_KEY = Deno.env.get("STRIPE_SECRET_KEY");
-    const WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+    const WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET_VOICE");
     if (!STRIPE_KEY) throw new Error("Missing STRIPE_SECRET_KEY");
 
     const stripe = new Stripe(STRIPE_KEY, {
@@ -38,6 +87,7 @@ serve(async (req) => {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
       let lessonId = session.metadata?.lesson_id || session.metadata?.lessonId;
+      let calcomBookingId = null;
       const customerEmail = session.customer_details?.email || session.customer_email;
 
       console.log(`[${functionName}] Session ${session.id}, lessonId: "${lessonId}", email: ${customerEmail || "none"}`);
@@ -52,7 +102,7 @@ serve(async (req) => {
         console.log(`[${functionName}] No lesson_id, looking up booking by email: ${customerEmail}`);
         const { data: booking } = await supabase
           .from("voice_bookings")
-          .select("notion_lesson_id_1, id")
+          .select("notion_lesson_id_1, id, calcom_booking_id")
           .eq("student_email", customerEmail)
           .eq("status", "scheduled")
           .order("lesson_date", { ascending: false })
@@ -61,6 +111,7 @@ serve(async (req) => {
 
         if (booking?.notion_lesson_id_1) {
           lessonId = booking.notion_lesson_id_1;
+          calcomBookingId = booking.calcom_booking_id;
           console.log(`[${functionName}] Resolved lesson_id ${lessonId} from booking ${booking.id}`);
         } else {
           console.log(`[${functionName}] No matching scheduled booking found for ${customerEmail}`);
@@ -81,6 +132,11 @@ serve(async (req) => {
         }
       } else {
         console.log(`[${functionName}] Could not resolve lessonId, skipping voice_bookings update`);
+      }
+
+      // Sync payment status back to cal.com
+      if (calcomBookingId) {
+        await syncCalcomVoicePayment(calcomBookingId);
       }
 
       // Update Notion payment status

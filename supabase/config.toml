@@ -42,3 +42,9 @@ verify_jwt = false
 
 [functions.calcom-voice-webhook]
 verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.voice-stripe-webhook]
+verify_jwt = false

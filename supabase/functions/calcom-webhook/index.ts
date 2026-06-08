@@ -40,17 +40,17 @@ serve(async (req) => {
     const payload = body.payload || body.data || body;
     const calcomId = String(payload.bookingId || payload.id || payload.uid);
 
-    // SECURITY FILTER: Check if this is a clinical event
-    const eventTypeId = parseInt(payload.eventTypeId);
-    if (eventTypeId && !ALLOWED_EVENT_IDS.includes(eventTypeId)) {
-      console.log(`[${functionName}] Skipping non-clinical event type: ${eventTypeId}`);
-      return new Response(JSON.stringify({ success: true, message: "Skipped: Non-clinical event type" }), { status: 200, headers: corsHeaders });
-    }
-
     if (triggerEvent === 'BOOKING_CANCELLED') {
       console.log(`[${functionName}] Deleting cancelled booking: ${calcomId}`);
       await supabase.from('appointments').delete().eq('calcom_booking_id', calcomId);
       return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
+    }
+
+    // SECURITY FILTER: Check if this is a clinical event (creation/reschedule only)
+    const eventTypeId = parseInt(payload.eventTypeId);
+    if (eventTypeId && !ALLOWED_EVENT_IDS.includes(eventTypeId)) {
+      console.log(`[${functionName}] Skipping non-clinical event type: ${eventTypeId}`);
+      return new Response(JSON.stringify({ success: true, message: "Skipped: Non-clinical event type" }), { status: 200, headers: corsHeaders });
     }
 
     const attendee = (payload.attendees && payload.attendees[0]) || 

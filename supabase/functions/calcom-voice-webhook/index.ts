@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,6 +30,29 @@ serve(async (req) => {
     // Acknowledge PING health checks from Cal.com
     if (triggerEvent === "PING") {
       return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: corsHeaders,
+      });
+    }
+
+    // Handle cancellations
+    if (triggerEvent === "BOOKING_CANCELLED") {
+      const payload = body.payload || body.data || body;
+      const calcomBookingUid = payload.uid || payload.data?.uid || null;
+      console.log(`[${functionName}] Processing cancellation for booking: ${calcomBookingUid}`);
+
+      if (calcomBookingUid) {
+        const supabase = createClient(
+          Deno.env.get("SUPABASE_URL") ?? "",
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+        );
+        await supabase
+          .from("voice_bookings")
+          .update({ status: "cancelled" })
+          .eq("calcom_booking_id", calcomBookingUid);
+      }
+
+      return new Response(JSON.stringify({ success: true, message: "Cancelled" }), {
         status: 200,
         headers: corsHeaders,
       });

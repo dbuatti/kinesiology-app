@@ -63,10 +63,10 @@ const SessionToolNavigation = ({
       variant="ghost"
       onClick={() => onViewChange(view)}
       className={cn(
-        "h-10 px-5 rounded-xl transition-all font-medium text-[10px] uppercase tracking-wider shrink-0 gap-2.5",
+        "h-10 px-5 rounded-xl transition-all font-medium text-[10px] uppercase tracking-wider shrink-0 gap-2.5 text-foreground",
         activeView === view 
-          ? "bg-card text-foreground shadow-sm border border-border" 
-          : "text-muted-foreground hover:bg-muted/80"
+          ? "bg-card shadow-sm border border-border" 
+          : "hover:bg-muted/80"
       )}
     >
       <Icon size={16} className={cn(activeView === view ? "text-foreground" : "text-muted-foreground")} />
@@ -83,8 +83,8 @@ const SessionToolNavigation = ({
           variant="ghost"
           asChild
           className={cn(
-            "h-10 px-5 rounded-xl transition-all font-medium text-[10px] uppercase tracking-wider shrink-0 gap-2.5",
-            location.pathname.includes('/protocols') ? "bg-card text-foreground shadow-sm border border-border" : "text-muted-foreground hover:bg-muted/80"
+            "h-10 px-5 rounded-xl transition-all font-medium text-[10px] uppercase tracking-wider shrink-0 gap-2.5 text-foreground",
+            location.pathname.includes('/protocols') ? "bg-card shadow-sm border border-border" : "hover:bg-muted/80"
           )}
         >
           <Link to={`/appointments/${appointmentId}/protocols`}>
@@ -100,8 +100,8 @@ const SessionToolNavigation = ({
           <DropdownMenuTrigger asChild>
             <button
               className={cn(
-                "h-10 px-5 rounded-xl transition-all font-medium text-[10px] uppercase tracking-wider shrink-0 flex items-center gap-2.5",
-                isToolActive ? "bg-card text-foreground shadow-sm border border-border" : "text-muted-foreground hover:bg-muted/80"
+                "h-10 px-5 rounded-xl transition-all font-medium text-[10px] uppercase tracking-wider shrink-0 flex items-center gap-2.5 text-foreground",
+                isToolActive ? "bg-card shadow-sm border border-border" : "hover:bg-muted/80"
               )}
             >
               <Wrench size={16} className={cn(isToolActive ? "text-foreground" : "text-muted-foreground")} />

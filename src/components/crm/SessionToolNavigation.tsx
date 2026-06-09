@@ -107,7 +107,7 @@ const SessionToolNavigation = ({
               <ChevronDown size={12} className="opacity-50" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-72 md:w-80 p-2 rounded-xl border border-border shadow-sm bg-card">
+          <DropdownMenuContent align="start" className="w-72 md:w-80 p-2 rounded-xl border border-border shadow-sm bg-card max-h-[80vh] overflow-y-auto">
             <div className="px-4 py-2 mb-1">
               <p className="text-[10px] font-medium text-muted-foreground">Clinical Utilities</p>
             </div>

@@ -495,6 +495,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
         </div>
       </div>
 
+      {!singlePage && (
       <div className="pt-8 flex gap-4">
         <Button variant="outline" onClick={() => saveProgress(false)} disabled={isSaving} className="flex-1 rounded-xl h-14 font-semibold text-xs uppercase tracking-wider border-border">
           <Save className="mr-2" size={18} /> Save Draft
@@ -503,6 +504,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
           Begin Dissolving <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
+      )}
     </div>
   );
 
@@ -607,41 +609,45 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
         </div>
       </div>
 
-      <div className="flex justify-center pt-8">
-        <Button onClick={handleNext} className="bg-primary hover:bg-primary/90 text-white rounded-xl h-16 px-16 font-semibold text-xs uppercase tracking-wider shadow-sm shadow-indigo-100">
+      {!singlePage && (
+      <div className="flex justify-center pt-6">
+        <Button onClick={handleNext} className="bg-primary hover:bg-primary/90 text-white rounded-xl h-12 px-16 font-semibold text-xs uppercase tracking-wider">
           Move to Phase 4 <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
+      )}
     </div>
   );
 
   const renderPhase4 = () => (
-    <div className="space-y-12 animate-in fade-in slide-in-from-right-4 duration-500 text-center py-20">
-      <div className="space-y-6">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-muted rounded-xl text-muted-foreground mb-2 shadow-inner">
-          <Zap size={40} />
+    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 text-center py-8">
+      <div className="space-y-4">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-muted rounded-xl text-muted-foreground mb-2">
+          <Zap size={32} />
         </div>
-        <h3 className="text-3xl md:text-4xl font-serif font-medium">Re-assessing the Problem</h3>
+        <h3 className="text-2xl font-serif font-medium">Re-assessing the Problem</h3>
         <p className="text-xl text-muted-foreground">"Feel <span className="text-foreground font-medium">"{formData.problem}"</span>... does it still feel like a problem?"</p>
       </div>
-      <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
-        <Button variant="outline" onClick={() => { reset(); setPhase(1); }} className="h-16 px-12 rounded-xl border-2 border-rose-200 text-chart-destructive font-semibold text-xs uppercase tracking-wider hover:bg-muted">
+      {!singlePage && (
+      <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
+        <Button variant="outline" onClick={() => { reset(); setPhase(1); }} className="h-12 px-12 rounded-xl border-2 border-rose-200 text-chart-destructive font-semibold text-xs uppercase tracking-wider hover:bg-muted">
           Yes, start new process
         </Button>
-        <Button onClick={handleNext} className="h-16 px-12 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-xs uppercase tracking-wider shadow-sm shadow-emerald-100">
+        <Button onClick={handleNext} className="h-12 px-12 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-xs uppercase tracking-wider shadow-sm shadow-emerald-100">
           No, it's clear
         </Button>
       </div>
+      )}
     </div>
   );
 
   const renderPhase5 = () => (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 py-8">
-      <div className="text-center space-y-4">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-chart-emerald/10 rounded-[1.5rem] text-chart-emerald mb-2 shadow-inner">
-          <Sparkles size={32} />
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 py-4">
+      <div className="text-center space-y-3">
+        <div className="inline-flex items-center justify-center w-12 h-12 bg-chart-emerald/10 rounded-xl text-chart-emerald mb-1">
+          <Sparkles size={24} />
         </div>
-        <h3 className="text-3xl md:text-4xl font-serif font-medium">Conscious Integration</h3>
+        <h3 className="text-2xl font-serif font-medium">Conscious Integration</h3>
         <p className="text-lg text-muted-foreground">Final reflections to ground the new state.</p>
       </div>
 
@@ -679,19 +685,19 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 pt-12">
+      <div className="flex flex-col sm:flex-row gap-4 pt-6">
         <Button 
           onClick={handleDeepScan} 
           disabled={isAnalyzing}
           variant="outline"
-          className="flex-1 h-16 rounded-xl border-indigo-200 text-chart-primary font-semibold text-xs uppercase tracking-wider hover:bg-muted"
+          className="flex-1 h-12 rounded-xl border-indigo-200 text-chart-primary font-semibold text-xs uppercase tracking-wider hover:bg-muted"
         >
           {isAnalyzing ? <Loader2 className="mr-2 animate-spin" /> : <Wand2 className="mr-2" />} Scan for Deeper Patterns
         </Button>
-        <Button onClick={() => saveProgress(true)} disabled={isSaving} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-16 font-semibold text-xs uppercase tracking-wider shadow-sm shadow-indigo-100">
-          {isSaving ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 className="mr-2" />} Complete & Save Session
+        <Button onClick={() => saveProgress(true)} disabled={isSaving} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-semibold text-xs uppercase tracking-wider">
+          {isSaving ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 className="mr-2" />} Complete &amp; Save Session
         </Button>
-        <Button onClick={reset} variant="ghost" className="flex-1 text-muted-foreground rounded-xl h-16 font-medium hover:bg-muted">
+        <Button onClick={reset} variant="ghost" className="flex-1 text-muted-foreground rounded-xl h-12 font-medium hover:bg-muted">
           Start Fresh
         </Button>
       </div>

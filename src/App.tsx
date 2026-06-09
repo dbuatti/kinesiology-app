@@ -49,6 +49,7 @@ import BusinessModelWorksheetPage from "./pages/BusinessModelWorksheetPage";
 // --- Knowledge & Reference ---
 import ResourcesPage from "./pages/ResourcesPage";
 import PEACEFrameworkPage from "./pages/PEACEFrameworkPage";
+import CogsLearningPage from "./pages/CogsLearningPage";
 import ProceduresPage from "./pages/ProceduresPage";
 import QuizPage from "./pages/QuizPage";
 import QuickCalibratePage from "./pages/QuickCalibratePage";
@@ -149,6 +150,7 @@ const AppRoutes = () => {
 
         {/* Knowledge Base */}
         <Route path="/resources" element={<ResourcesPage />} />
+        <Route path="/resources/cogs" element={<CogsLearningPage />} />
         <Route path="/peace-framework" element={<PEACEFrameworkPage />} />
         <Route path="/practice/procedures" element={<ProceduresPage />} />
         <Route path="/practice/quiz" element={<QuizPage />} />

@@ -406,17 +406,17 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
   };
 
   const renderPhase1 = () => (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {backlogItem && (
-        <div className="p-8 bg-muted dark:bg-indigo-900/20 rounded-[2.5rem] border-2 border-indigo-100 dark:border-indigo-900/30 space-y-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none"><Quote size={120} /></div>
+        <div className="p-5 bg-muted dark:bg-indigo-900/20 rounded-xl border-2 border-indigo-100 dark:border-indigo-900/30 space-y-4 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none"><Quote size={120} /></div>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-sm">
-              <History size={20} />
+              <History size={16} />
             </div>
             <h4 className="text-sm font-semibold text-indigo-900 dark:text-indigo-100 uppercase tracking-wider">Source Context</h4>
           </div>
-          <div className="space-y-6 relative z-10">
+          <div className="space-y-4 relative z-10">
             {backlogItem.practitioner_reflections?.content && (
               <div className="space-y-1">
                 <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider">Original Journal Entry</p>
@@ -448,25 +448,25 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
         </div>
       )}
 
-      <div className="space-y-8">
+      <div className="space-y-5">
         <div className="space-y-4">
           <Label className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground ml-1">1. The Challenge</Label>
           <Textarea 
             placeholder="What is the problem or pattern you're facing?" 
             value={formData.problem}
             onChange={(e) => setFormData({ ...formData, problem: e.target.value })}
-            className="min-h-[120px] rounded-xl border-2 border-border focus:border-indigo-500 bg-white p-8 text-xl font-medium leading-relaxed shadow-inner resize-none transition-all"
+            className="min-h-[80px] rounded-xl border-2 border-border focus:border-indigo-500 bg-white p-4 text-base font-medium leading-relaxed shadow-inner resize-none transition-all"
           />
         </div>
         
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div className="space-y-4">
             <Label className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground ml-1">2. Primary Emotion</Label>
             <Input 
               placeholder="Fear, Worry, Anger, etc." 
               value={formData.emotion}
               onChange={(e) => setFormData({ ...formData, emotion: e.target.value })}
-              className="h-14 rounded-xl border-2 border-border px-6 text-lg font-medium bg-white"
+              className="h-10 rounded-xl border-2 border-border px-6 text-base font-medium bg-white"
             />
           </div>
           <div className="space-y-4">
@@ -475,7 +475,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
               placeholder="Where is it in the body?" 
               value={formData.feltSense}
               onChange={(e) => setFormData({ ...formData, feltSense: e.target.value })}
-              className="h-14 rounded-xl border-2 border-border px-6 text-lg font-medium bg-white"
+              className="h-10 rounded-xl border-2 border-border px-6 text-base font-medium bg-white"
             />
           </div>
         </div>
@@ -495,7 +495,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
             placeholder="Who are you being when you have this problem?"
             value={formData.identity}
             onChange={(e) => setFormData({ ...formData, identity: e.target.value })}
-            className="h-14 rounded-xl border-2 border-border px-6 text-lg font-medium bg-white"
+            className="h-10 rounded-xl border-2 border-border px-6 text-base font-medium bg-white"
           />
           {suggestions.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-4">
@@ -510,11 +510,11 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
       </div>
 
       {!singlePage && (
-      <div className="pt-8 flex gap-4">
-        <Button variant="outline" onClick={() => saveProgress(false)} disabled={isSaving} className="flex-1 rounded-xl h-14 font-semibold text-xs uppercase tracking-wider border-border">
+      <div className="pt-5 flex gap-4">
+        <Button variant="outline" onClick={() => saveProgress(false)} disabled={isSaving} className="flex-1 rounded-xl h-10 font-semibold text-xs uppercase tracking-wider border-border">
           <Save className="mr-2" size={18} /> Save Draft
         </Button>
-        <Button onClick={handleNext} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-14 font-semibold text-xs uppercase tracking-wider shadow-sm shadow-indigo-100">
+        <Button onClick={handleNext} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-10 font-semibold text-xs uppercase tracking-wider shadow-sm shadow-indigo-100">
           Begin Dissolving <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
@@ -525,19 +525,19 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
   const renderPhase2 = () => {
     if (loopStep === 5) {
       return (
-        <div className="space-y-12 animate-in zoom-in-95 duration-500 text-center py-20">
-          <div className="w-24 h-24 bg-muted rounded-xl flex items-center justify-center mx-auto mb-8 shadow-inner">
-            <RefreshCw className="text-chart-primary" size={48} />
+        <div className="space-y-8 animate-in zoom-in-95 duration-500 text-center py-20">
+          <div className="w-16 h-16 bg-muted rounded-xl flex items-center justify-center mx-auto mb-8 shadow-inner">
+            <RefreshCw className="text-chart-primary" size={28} />
           </div>
           <div className="space-y-4">
-            <h3 className="text-3xl md:text-4xl font-serif font-medium">Check Identity</h3>
-            <p className="text-xl text-muted-foreground">"Can you still feel yourself being <span className="text-chart-primary font-medium">"{loopContext || formData.identity}"</span>?"</p>
+            <h3 className="text-xl md:text-xl font-serif font-medium">Check Identity</h3>
+            <p className="text-base text-muted-foreground">"Can you still feel yourself being <span className="text-chart-primary font-medium">"{loopContext || formData.identity}"</span>?"</p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
-            <Button variant="outline" onClick={() => handleCheckIdentity(true)} className="h-16 px-12 rounded-xl border-2 border-indigo-100 text-chart-primary font-semibold text-xs uppercase tracking-wider hover:bg-muted">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-5">
+            <Button variant="outline" onClick={() => handleCheckIdentity(true)} className="h-10 px-8 rounded-xl border-2 border-indigo-100 text-chart-primary font-semibold text-xs uppercase tracking-wider hover:bg-muted">
               Yes, it's still there
             </Button>
-            <Button onClick={() => handleCheckIdentity(false)} className="h-16 px-12 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-xs uppercase tracking-wider shadow-sm shadow-indigo-100">
+            <Button onClick={() => handleCheckIdentity(false)} className="h-10 px-8 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-xs uppercase tracking-wider shadow-sm shadow-indigo-100">
               No, it has dissolved
             </Button>
           </div>
@@ -546,7 +546,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
     }
 
     return (
-      <div className="flex flex-col items-center text-center space-y-16 py-12 animate-in fade-in zoom-in-95 duration-500">
+      <div className="flex flex-col items-center text-center space-y-10 py-12 animate-in fade-in zoom-in-95 duration-500">
         <div className="w-full max-w-md space-y-3">
           <div className="flex justify-between text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">
             <span>Dissolving Identity</span>
@@ -555,15 +555,15 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
           <Progress value={((loopStep + 1) / 5) * 100} className="h-1 bg-muted [&>div]:bg-primary" />
         </div>
 
-        <div className="space-y-8 w-full max-w-3xl">
-          <h2 className="text-3xl md:text-5xl font-serif font-medium leading-tight text-foreground">
+        <div className="space-y-5 w-full max-w-3xl">
+          <h2 className="text-xl md:text-xl font-serif font-medium leading-tight text-foreground">
             {getLoopQuestion()}
           </h2>
 
           <div className="w-full relative">
             <textarea 
               autoFocus
-              className="w-full bg-transparent text-2xl md:text-3xl text-center border-none focus:ring-0 placeholder:text-slate-200 resize-none min-h-[120px] font-medium"
+              className="w-full bg-transparent text-lg md:text-xl text-center border-none focus:ring-0 placeholder:text-slate-200 resize-none min-h-[80px] font-medium"
               placeholder="First thing that comes up..."
               value={currentLoopResponse}
               onChange={(e) => setCurrentLoopResponse(e.target.value)}
@@ -573,20 +573,20 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
           </div>
         </div>
 
-        <div className="flex gap-8 items-center">
+        <div className="flex gap-5 items-center">
           <Button variant="ghost" onClick={handleLoopBack} className="text-muted-foreground uppercase tracking-wider text-[10px] font-semibold hover:text-chart-primary hover:bg-transparent">
             <ArrowLeft className="mr-2" size={14} /> Back
           </Button>
           <Button 
             onClick={handleLoopNext} 
             disabled={isGenerating}
-            className="bg-primary hover:bg-primary/90 text-white rounded-full px-12 h-16 font-semibold uppercase tracking-wider text-xs shadow-sm shadow-indigo-200 transition-all hover:scale-105"
+            className="bg-primary hover:bg-primary/90 text-white rounded-full px-8 h-10 font-semibold uppercase tracking-wider text-xs shadow-sm shadow-indigo-200 transition-all hover:scale-105"
           >
             Continue <ArrowRight className="ml-2" size={18} />
           </Button>
         </div>
 
-        <div className="pt-8">
+        <div className="pt-5">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted rounded-full text-[10px] font-semibold text-indigo-400 uppercase tracking-wider">
             <Info size={14} /> Keep answers brief and intuitive
           </div>
@@ -596,36 +596,36 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
   };
 
   const renderPhase3 = () => (
-    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500 py-4">
+    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500 py-2">
       <div className="text-center space-y-4">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-chart-primary/10 rounded-[1.5rem] text-chart-primary mb-2 shadow-inner">
-          <ShieldCheck size={32} />
+        <div className="inline-flex items-center justify-center w-10 h-10 bg-chart-primary/10 rounded-xl text-chart-primary mb-2 shadow-inner">
+          <ShieldCheck size={22} />
         </div>
-        <h3 className="text-3xl md:text-4xl font-serif font-medium">Checking Identity</h3>
-        <p className="text-lg text-muted-foreground">Testing the stability of the shift across time and space.</p>
+        <h3 className="text-xl md:text-xl font-serif font-medium">Checking Identity</h3>
+        <p className="text-base text-muted-foreground">Testing the stability of the shift across time and space.</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 max-w-lg mx-auto">
-        <div className="p-6 rounded-xl border border-border bg-card space-y-6">
-          <p className="text-lg font-medium text-center leading-relaxed">"Do you think you might feel yourself being <span className="text-chart-primary">"{formData.identity}"</span> in the future?"</p>
+      <div className="grid grid-cols-1 gap-4 max-w-lg mx-auto">
+        <div className="p-4 rounded-xl border border-border bg-card space-y-4">
+          <p className="text-base font-medium text-center leading-relaxed">"Do you think you might feel yourself being <span className="text-chart-primary">"{formData.identity}"</span> in the future?"</p>
           <div className="flex gap-4 justify-center">
-            <Button variant="outline" onClick={() => handlePhase3Check(true, `${formData.identity} in the future`)} className="flex-1 h-14 rounded-xl border-destructive bg-destructive/10 text-destructive font-semibold text-xs uppercase tracking-wider">Yes</Button>
-            <Button variant="outline" onClick={() => handlePhase3Check(false, '')} className="flex-1 h-14 rounded-xl border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-xs uppercase tracking-wider">No</Button>
+            <Button variant="outline" onClick={() => handlePhase3Check(true, `${formData.identity} in the future`)} className="flex-1 h-10 rounded-xl border-destructive bg-destructive/10 text-destructive font-semibold text-xs uppercase tracking-wider">Yes</Button>
+            <Button variant="outline" onClick={() => handlePhase3Check(false, '')} className="flex-1 h-10 rounded-xl border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-xs uppercase tracking-wider">No</Button>
           </div>
         </div>
 
-        <div className="p-6 rounded-xl border border-border bg-card space-y-6">
-          <p className="text-lg font-medium text-center leading-relaxed">"Is there any scenario in which you might still feel yourself being <span className="text-chart-primary">"{formData.identity}"</span>?"</p>
+        <div className="p-4 rounded-xl border border-border bg-card space-y-4">
+          <p className="text-base font-medium text-center leading-relaxed">"Is there any scenario in which you might still feel yourself being <span className="text-chart-primary">"{formData.identity}"</span>?"</p>
           <div className="flex gap-4 justify-center">
-            <Button variant="outline" onClick={() => handlePhase3Check(true, `${formData.identity} in that scenario`)} className="flex-1 h-14 rounded-xl border-destructive bg-destructive/10 text-destructive font-semibold text-xs uppercase tracking-wider">Yes</Button>
-            <Button variant="outline" onClick={() => handlePhase3Check(false, '')} className="flex-1 h-14 rounded-xl border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-xs uppercase tracking-wider">No</Button>
+            <Button variant="outline" onClick={() => handlePhase3Check(true, `${formData.identity} in that scenario`)} className="flex-1 h-10 rounded-xl border-destructive bg-destructive/10 text-destructive font-semibold text-xs uppercase tracking-wider">Yes</Button>
+            <Button variant="outline" onClick={() => handlePhase3Check(false, '')} className="flex-1 h-10 rounded-xl border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-xs uppercase tracking-wider">No</Button>
           </div>
         </div>
       </div>
 
       {!singlePage && (
-      <div className="flex justify-center pt-6">
-        <Button onClick={handleNext} className="bg-primary hover:bg-primary/90 text-white rounded-xl h-12 px-16 font-semibold text-xs uppercase tracking-wider">
+      <div className="flex justify-center pt-4">
+        <Button onClick={handleNext} className="bg-primary hover:bg-primary/90 text-white rounded-xl h-9 px-12 font-semibold text-xs uppercase tracking-wider">
           Move to Phase 4 <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
@@ -634,20 +634,20 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
   );
 
   const renderPhase4 = () => (
-    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 text-center py-8">
+    <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500 text-center py-3">
       <div className="space-y-4">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-muted rounded-xl text-muted-foreground mb-2">
-          <Zap size={32} />
+        <div className="inline-flex items-center justify-center w-10 h-10 bg-muted rounded-xl text-muted-foreground mb-2">
+          <Zap size={22} />
         </div>
-        <h3 className="text-2xl font-serif font-medium">Re-assessing the Problem</h3>
-        <p className="text-xl text-muted-foreground">"Feel <span className="text-foreground font-medium">"{formData.problem}"</span>... does it still feel like a problem?"</p>
+        <h3 className="text-lg font-serif font-medium">Re-assessing the Problem</h3>
+        <p className="text-base text-muted-foreground">"Feel <span className="text-foreground font-medium">"{formData.problem}"</span>... does it still feel like a problem?"</p>
       </div>
       {!singlePage && (
-      <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
-        <Button variant="outline" onClick={() => { reset(); setPhase(1); }} className="h-12 px-12 rounded-xl border-2 border-rose-200 text-chart-destructive font-semibold text-xs uppercase tracking-wider hover:bg-muted">
+      <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+        <Button variant="outline" onClick={() => { reset(); setPhase(1); }} className="h-9 px-8 rounded-xl border-2 border-rose-200 text-chart-destructive font-semibold text-xs uppercase tracking-wider hover:bg-muted">
           Yes, start new process
         </Button>
-        <Button onClick={handleNext} className="h-12 px-12 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-xs uppercase tracking-wider shadow-sm shadow-emerald-100">
+        <Button onClick={handleNext} className="h-9 px-8 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-xs uppercase tracking-wider shadow-sm shadow-emerald-100">
           No, it's clear
         </Button>
       </div>
@@ -656,62 +656,62 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
   );
 
   const renderPhase5 = () => (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 py-4">
+    <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-700 py-2">
       <div className="text-center space-y-3">
-        <div className="inline-flex items-center justify-center w-12 h-12 bg-chart-emerald/10 rounded-xl text-chart-emerald mb-1">
-          <Sparkles size={24} />
+        <div className="inline-flex items-center justify-center w-8 h-8 bg-chart-emerald/10 rounded-xl text-chart-emerald mb-1">
+          <Sparkles size={18} />
         </div>
-        <h3 className="text-2xl font-serif font-medium">Conscious Integration</h3>
-        <p className="text-lg text-muted-foreground">Final reflections to ground the new state.</p>
+        <h3 className="text-lg font-serif font-medium">Conscious Integration</h3>
+        <p className="text-base text-muted-foreground">Final reflections to ground the new state.</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-12">
-        <div className="space-y-8">
+      <div className="grid grid-cols-1 gap-8">
+        <div className="space-y-5">
           <h4 className="text-[10px] font-semibold uppercase tracking-[0.4em] text-muted-foreground px-2 border-l-4 border-indigo-500">Awareness</h4>
-          <div className="space-y-8">
+          <div className="space-y-5">
             <div className="space-y-3">
               <Label className="text-base font-medium text-foreground ml-1">1. How do you feel about the problem now?</Label>
-              <Input value={formData.feelingsNow} onChange={e => setFormData({...formData, feelingsNow: e.target.value})} className="rounded-xl h-14 border-2 border-border px-6 text-lg font-medium bg-white" />
+              <Input value={formData.feelingsNow} onChange={e => setFormData({...formData, feelingsNow: e.target.value})} className="rounded-xl h-10 border-2 border-border px-6 text-base font-medium bg-white" />
             </div>
             <div className="space-y-3">
               <Label className="text-base font-medium text-foreground ml-1">2. What are you more conscious of now than before?</Label>
-              <Input value={formData.moreConsciousOf} onChange={e => setFormData({...formData, moreConsciousOf: e.target.value})} className="rounded-xl h-14 border-2 border-border px-6 text-lg font-medium bg-white" />
+              <Input value={formData.moreConsciousOf} onChange={e => setFormData({...formData, moreConsciousOf: e.target.value})} className="rounded-xl h-10 border-2 border-border px-6 text-base font-medium bg-white" />
             </div>
             <div className="space-y-3">
               <Label className="text-base font-medium text-foreground ml-1">3. What's your new intention?</Label>
-              <Input value={formData.newIntention} onChange={e => setFormData({...formData, newIntention: e.target.value})} className="rounded-xl h-14 border-2 border-border px-6 text-lg font-medium bg-white" />
+              <Input value={formData.newIntention} onChange={e => setFormData({...formData, newIntention: e.target.value})} className="rounded-xl h-10 border-2 border-border px-6 text-base font-medium bg-white" />
             </div>
           </div>
         </div>
 
-        <div className="space-y-8 pt-8 border-t border-border">
+        <div className="space-y-5 pt-5 border-t border-border">
           <h4 className="text-[10px] font-semibold uppercase tracking-[0.4em] text-muted-foreground px-2 border-l-4 border-emerald-500">Action & Next Steps</h4>
-          <div className="space-y-8">
+          <div className="space-y-5">
             <div className="space-y-3">
               <Label className="text-base font-medium text-foreground ml-1">1. How are you going to put that intention or awareness into action?</Label>
-              <Input value={formData.actionPlan} onChange={e => setFormData({...formData, actionPlan: e.target.value})} className="rounded-xl h-14 border-2 border-border px-6 text-lg font-medium bg-white" />
+              <Input value={formData.actionPlan} onChange={e => setFormData({...formData, actionPlan: e.target.value})} className="rounded-xl h-10 border-2 border-border px-6 text-base font-medium bg-white" />
             </div>
             <div className="space-y-3">
               <Label className="text-base font-medium text-foreground ml-1">2. What is the No.1 thing to do to make that happen?</Label>
-              <Input value={formData.no1Thing} onChange={e => setFormData({...formData, no1Thing: e.target.value})} className="rounded-xl h-14 border-2 border-border px-6 text-lg font-medium bg-white" />
+              <Input value={formData.no1Thing} onChange={e => setFormData({...formData, no1Thing: e.target.value})} className="rounded-xl h-10 border-2 border-border px-6 text-base font-medium bg-white" />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 pt-6">
+      <div className="flex flex-col sm:flex-row gap-4 pt-4">
         <Button 
           onClick={handleDeepScan} 
           disabled={isAnalyzing}
           variant="outline"
-          className="flex-1 h-12 rounded-xl border-indigo-200 text-chart-primary font-semibold text-xs uppercase tracking-wider hover:bg-muted"
+          className="flex-1 h-9 rounded-xl border-indigo-200 text-chart-primary font-semibold text-xs uppercase tracking-wider hover:bg-muted"
         >
           {isAnalyzing ? <Loader2 className="mr-2 animate-spin" /> : <Wand2 className="mr-2" />} Scan for Deeper Patterns
         </Button>
-        <Button onClick={() => saveProgress(true)} disabled={isSaving} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-semibold text-xs uppercase tracking-wider">
+        <Button onClick={() => saveProgress(true)} disabled={isSaving} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-9 font-semibold text-xs uppercase tracking-wider">
           {isSaving ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 className="mr-2" />} Complete &amp; Save Session
         </Button>
-        <Button onClick={reset} variant="ghost" className="flex-1 text-muted-foreground rounded-xl h-12 font-medium hover:bg-muted">
+        <Button onClick={reset} variant="ghost" className="flex-1 text-muted-foreground rounded-xl h-9 font-medium hover:bg-muted">
           Start Fresh
         </Button>
       </div>
@@ -723,26 +723,26 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
     const completedSessions = pastSessions.filter(s => s.is_complete);
 
     return (
-      <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex items-center justify-between">
-          <h3 className="text-2xl font-serif font-medium">Session History</h3>
+          <h3 className="text-lg font-serif font-medium">Session History</h3>
           <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)} className="rounded-xl font-medium text-xs uppercase tracking-wider">Close</Button>
         </div>
         
         {activeDrafts.length > 0 && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.3em] px-2 flex items-center gap-2">
               <Clock size={14} /> Active Drafts
             </p>
             <div className="grid grid-cols-1 gap-4">
               {activeDrafts.map((session) => (
-                <div key={session.id} className="p-6 bg-white rounded-xl border-2 border-amber-100 hover:border-amber-400 transition-all cursor-pointer group flex items-center justify-between shadow-sm" onClick={() => loadSession(session)}>
-                  <div className="flex items-center gap-6 flex-1 min-w-0">
-                    <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shadow-inner">
-                      <Zap size={24} />
+                <div key={session.id} className="p-4 bg-white rounded-xl border-2 border-amber-100 hover:border-amber-400 transition-all cursor-pointer group flex items-center justify-between shadow-sm" onClick={() => loadSession(session)}>
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shadow-inner">
+                      <Zap size={18} />
                     </div>
                     <div className="min-w-0">
-                      <h4 className="font-semibold text-lg text-foreground truncate">{session.problem}</h4>
+                      <h4 className="font-semibold text-base text-foreground truncate">{session.problem}</h4>
                       <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-1">Phase {session.current_phase} • {new Date(session.created_at).toLocaleDateString()}</p>
                     </div>
                   </div>
@@ -753,23 +753,23 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
           </div>
         )}
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.3em] px-2">Completed Sessions</p>
           {completedSessions.length === 0 ? (
-            <div className="text-center py-20 text-muted-foreground bg-muted rounded-[3rem] border-2 border-dashed border-border">
+            <div className="text-center py-20 text-muted-foreground bg-muted rounded-xl border-2 border-dashed border-border">
               <History className="mx-auto mb-4 opacity-20" size={64} />
               <p className="font-medium">No completed sessions yet.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4">
               {completedSessions.map((session) => (
-                <div key={session.id} className="p-6 bg-white rounded-xl border-2 border-border hover:border-indigo-400 transition-all cursor-pointer group flex items-center justify-between shadow-sm" onClick={() => setViewingReportId(session.id)}>
-                  <div className="flex items-center gap-6 flex-1 min-w-0">
-                    <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center text-chart-primary group-hover:bg-primary group-hover:text-white transition-colors shadow-inner">
-                      <FileText size={24} />
+                <div key={session.id} className="p-4 bg-white rounded-xl border-2 border-border hover:border-indigo-400 transition-all cursor-pointer group flex items-center justify-between shadow-sm" onClick={() => setViewingReportId(session.id)}>
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-chart-primary group-hover:bg-primary group-hover:text-white transition-colors shadow-inner">
+                      <FileText size={18} />
                     </div>
                     <div className="min-w-0">
-                      <h4 className="font-semibold text-lg text-foreground truncate">{session.problem}</h4>
+                      <h4 className="font-semibold text-base text-foreground truncate">{session.problem}</h4>
                       <div className="flex items-center gap-3 mt-1">
                         <Badge variant="secondary" className="text-[10px] font-semibold uppercase tracking-wider bg-muted text-muted-foreground border-none px-2 py-0.5">{session.identity}</Badge>
                         <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{new Date(session.created_at).toLocaleDateString()}</span>
@@ -778,7 +778,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
                   </div>
                   <div className="flex items-center gap-3">
                     <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-muted-foreground/60 hover:text-chart-destructive opacity-0 group-hover:opacity-100 transition-all" onClick={(e) => deleteSession(e, session.id)}><Trash2 size={18} /></Button>
-                    <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-white transition-all shadow-sm"><ArrowRight size={20} /></div>
+                    <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-white transition-all shadow-sm"><ArrowRight size={16} /></div>
                   </div>
                 </div>
               ))}
@@ -797,11 +797,11 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
   return (
     <div className="w-full">
       {!singlePage && (
-        <div className="mb-12 space-y-6">
+        <div className="mb-12 space-y-4">
           <div className="flex justify-between items-end">
             <div className="space-y-1">
               <h2 className="text-[10px] font-semibold uppercase tracking-[0.4em] text-chart-primary">Phase {phase} of 5</h2>
-              <p className="text-2xl font-semibold text-foreground">
+              <p className="text-lg font-semibold text-foreground">
                 {phase === 1 && "Isolating the Identity"}
                 {phase === 2 && "Dissolving the Construct"}
                 {phase === 3 && "Checking Stability"}
@@ -828,42 +828,42 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
         </div>
       )}
 
-      <div className={singlePage ? "space-y-12" : "min-h-[500px]"}>
+      <div className={singlePage ? "space-y-8" : "min-h-[500px]"}>
         {showHistory ? renderHistory() : (
           singlePage ? (
-            <div className="space-y-8">
+            <div className="space-y-5">
               <section id="shift-phase-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">1</span>
-                  <h3 className="text-sm font-semibold text-foreground">Isolating the Identity</h3>
+                  <span className="w-4 h-4 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">1</span>
+                  <h3 className="text-xs font-semibold text-foreground">Isolating the Identity</h3>
                 </div>
                 {renderPhase1()}
               </section>
               <section id="shift-phase-2">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">2</span>
-                  <h3 className="text-sm font-semibold text-foreground">Dissolving the Construct</h3>
+                  <span className="w-4 h-4 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">2</span>
+                  <h3 className="text-xs font-semibold text-foreground">Dissolving the Construct</h3>
                 </div>
                 {renderPhase2()}
               </section>
               <section id="shift-phase-3">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">3</span>
-                  <h3 className="text-sm font-semibold text-foreground">Checking Stability</h3>
+                  <span className="w-4 h-4 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">3</span>
+                  <h3 className="text-xs font-semibold text-foreground">Checking Stability</h3>
                 </div>
                 {renderPhase3()}
               </section>
               <section id="shift-phase-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">4</span>
-                  <h3 className="text-sm font-semibold text-foreground">Re-assessing Problem</h3>
+                  <span className="w-4 h-4 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">4</span>
+                  <h3 className="text-xs font-semibold text-foreground">Re-assessing Problem</h3>
                 </div>
                 {renderPhase4()}
               </section>
               <section id="shift-phase-5">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">5</span>
-                  <h3 className="text-sm font-semibold text-foreground">Conscious Integration</h3>
+                  <span className="w-4 h-4 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">5</span>
+                  <h3 className="text-xs font-semibold text-foreground">Conscious Integration</h3>
                 </div>
                 {renderPhase5()}
               </section>

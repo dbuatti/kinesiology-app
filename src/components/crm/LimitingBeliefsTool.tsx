@@ -374,17 +374,17 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
   };
 
   const renderStep1 = () => (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {backlogItem && (
-        <div className="p-6 bg-muted dark:bg-rose-950/10 rounded-xl border border-destructive dark:border-destructive/30 space-y-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none"><Quote size={120} /></div>
+        <div className="p-4 bg-muted dark:bg-rose-950/10 rounded-xl border border-destructive dark:border-destructive/30 space-y-4 relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none"><Quote size={120} /></div>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-destructive text-white flex items-center justify-center shadow-lg">
-              <History size={20} />
+              <History size={16} />
             </div>
             <h4 className="text-sm font-semibold text-rose-900 dark:text-rose-100 uppercase tracking-wider">Source Context</h4>
           </div>
-          <div className="space-y-6 relative z-10">
+          <div className="space-y-4 relative z-10">
             {backlogItem.practitioner_reflections?.content && (
               <div className="space-y-1">
                 <p className="text-[10px] font-semibold text-rose-400 uppercase tracking-wider">Original Journal Entry</p>
@@ -416,14 +416,14 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
         </div>
       )}
 
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="space-y-4">
           <Label className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground ml-1">1. The Problem</Label>
           <Textarea 
             placeholder="Clearly define the problem..." 
             value={formData.problem}
             onChange={(e) => setFormData({ ...formData, problem: e.target.value })}
-            className="min-h-[120px] rounded-xl border border-border focus:border-primary bg-card p-6 text-lg font-medium leading-relaxed resize-none transition-all"
+            className="min-h-[80px] rounded-xl border border-border focus:border-primary bg-card p-4 text-base font-medium leading-relaxed resize-none transition-all"
           />
         </div>
         <div className="space-y-4">
@@ -432,16 +432,16 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
             placeholder="Where do you feel it in your body?" 
             value={formData.feltSense}
             onChange={(e) => setFormData({ ...formData, feltSense: e.target.value })}
-            className="h-14 rounded-xl border border-border px-6 text-lg font-medium bg-card"
+            className="h-10 rounded-xl border border-border px-6 text-base font-medium bg-card"
           />
         </div>
       </div>
       {!singlePage && (
-      <div className="pt-6 flex gap-4">
-        <Button variant="outline" onClick={() => saveProgress(false)} disabled={isSaving || !formData.problem} className="flex-1 rounded-xl h-12 font-semibold text-xs uppercase tracking-wider border-border">
+      <div className="pt-4 flex gap-4">
+        <Button variant="outline" onClick={() => saveProgress(false)} disabled={isSaving || !formData.problem} className="flex-1 rounded-xl h-9 font-semibold text-xs uppercase tracking-wider border-border">
           <Save className="mr-2" size={18} /> Save Draft
         </Button>
-        <Button onClick={handleNext} disabled={!formData.problem || !formData.feltSense} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-semibold text-xs uppercase tracking-wider shadow-sm">
+        <Button onClick={handleNext} disabled={!formData.problem || !formData.feltSense} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-9 font-semibold text-xs uppercase tracking-wider shadow-sm">
           Next: Extract Beliefs <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
@@ -450,8 +450,8 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
   );
 
   const renderStep2 = () => (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <Label className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">Limiting Belief</Label>
@@ -467,7 +467,7 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
             placeholder="I am..."
             value={formData.limitingBelief}
             onChange={(e) => setFormData({ ...formData, limitingBelief: e.target.value })}
-            className="h-14 rounded-xl border border-border px-6 text-lg font-medium bg-card"
+            className="h-10 rounded-xl border border-border px-6 text-base font-medium bg-card"
           />
           {limitingSuggestions.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-4">
@@ -491,7 +491,7 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
             placeholder="I am..."
             value={formData.positiveBelief}
             onChange={(e) => setFormData({ ...formData, positiveBelief: e.target.value })}
-            className="h-14 rounded-xl border border-border px-6 text-lg font-medium bg-card"
+            className="h-10 rounded-xl border border-border px-6 text-base font-medium bg-card"
           />
           {positiveSuggestions.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-4">
@@ -505,11 +505,11 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
         </div>
       </div>
       {!singlePage && (
-      <div className="pt-6 flex gap-4">
-        <Button variant="outline" onClick={handleBack} className="flex-1 rounded-xl h-12 font-semibold text-xs uppercase tracking-wider border-border">
+      <div className="pt-4 flex gap-4">
+        <Button variant="outline" onClick={handleBack} className="flex-1 rounded-xl h-9 font-semibold text-xs uppercase tracking-wider border-border">
           <ArrowLeft className="mr-2" size={18} /> Back
         </Button>
-        <Button onClick={handleNext} disabled={!formData.limitingBelief || !formData.positiveBelief} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-semibold text-xs uppercase tracking-wider shadow-sm">
+        <Button onClick={handleNext} disabled={!formData.limitingBelief || !formData.positiveBelief} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-9 font-semibold text-xs uppercase tracking-wider shadow-sm">
           Begin Dissolving Loop <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
@@ -543,7 +543,7 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
     }
 
     return (
-      <div className="flex flex-col items-center text-center space-y-6 py-4 animate-in fade-in zoom-in-95 duration-500">
+      <div className="flex flex-col items-center text-center space-y-4 py-2 animate-in fade-in zoom-in-95 duration-500">
         <div className="w-full max-w-md space-y-3">
           <div className="flex justify-between text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">
             <span className={cn(currentLoopType === 'A' ? "text-rose-500" : "text-emerald-500")}>
@@ -554,15 +554,15 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
           <Progress value={(loopSubStep / 3) * 100} className={cn("h-1 bg-muted", currentLoopType === 'A' ? "[&>div]:bg-chart-destructive" : "[&>div]:bg-chart-emerald")} />
         </div>
 
-        <div className="space-y-6 w-full max-w-3xl">
-          <h2 className="text-2xl md:text-2xl font-serif font-medium leading-tight text-foreground">
+        <div className="space-y-4 w-full max-w-3xl">
+          <h2 className="text-lg md:text-lg font-serif font-medium leading-tight text-foreground">
             {question}
           </h2>
 
           <div className="w-full relative">
             <textarea 
               autoFocus
-              className="w-full bg-transparent text-2xl md:text-3xl text-center border-none focus:ring-0 placeholder:text-muted-foreground/60 resize-none min-h-[120px] font-medium"
+              className="w-full bg-transparent text-lg md:text-xl text-center border-none focus:ring-0 placeholder:text-muted-foreground/60 resize-none min-h-[80px] font-medium"
               placeholder={placeholder}
               value={value}
               onChange={(e) => onChange(e.target.value)}
@@ -572,7 +572,7 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
           </div>
         </div>
 
-        <div className="flex gap-6 items-center">
+        <div className="flex gap-4 items-center">
           {!singlePage && (
           <Button variant="ghost" onClick={handleBack} className="text-muted-foreground uppercase tracking-wider text-[10px] font-semibold hover:text-chart-primary hover:bg-transparent">
             <ArrowLeft className="mr-2" size={14} /> Back
@@ -583,14 +583,14 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
               onClick={handleLoopNext} 
               disabled={!value.trim()}
               className={cn(
-                "rounded-full px-12 h-16 font-semibold uppercase tracking-wider text-xs shadow-sm transition-all hover:scale-105 text-white",
+                "rounded-full px-8 h-10 font-semibold uppercase tracking-wider text-xs shadow-sm transition-all hover:scale-105 text-white",
                 currentLoopType === 'A' ? "bg-destructive hover:bg-destructive/90" : "bg-primary hover:bg-primary/90"
               )}
             >
               {loopSubStep === 3 ? "Complete Part" : "Continue"} <ArrowRight className="ml-2" size={18} />
             </Button>
             {!singlePage && formData.dissolveLog.length >= 2 && loopSubStep === 1 && (
-              <Button onClick={handleNext} variant="outline" className="rounded-full px-8 h-12 border-chart-primary text-chart-primary font-semibold uppercase tracking-wider text-xs">
+              <Button onClick={handleNext} variant="outline" className="rounded-full px-8 h-9 border-chart-primary text-chart-primary font-semibold uppercase tracking-wider text-xs">
                 Shift Occurred
               </Button>
             )}
@@ -601,36 +601,36 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
   };
 
   const renderStep4 = () => (
-    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500 text-center py-4">
+    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500 text-center py-2">
       <div className="space-y-4">
-        <div className="inline-flex items-center justify-center w-12 h-12 bg-muted rounded-xl text-chart-primary mb-2 shadow-inner">
-          <ShieldCheck size={32} />
+        <div className="inline-flex items-center justify-center w-8 h-8 bg-muted rounded-xl text-chart-primary mb-2 shadow-inner">
+          <ShieldCheck size={22} />
         </div>
-        <h3 className="text-2xl md:text-2xl font-serif font-medium">Verification</h3>
-        <p className="text-lg text-muted-foreground">Testing the stability of the shift.</p>
+        <h3 className="text-lg md:text-lg font-serif font-medium">Verification</h3>
+        <p className="text-base text-muted-foreground">Testing the stability of the shift.</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 max-w-lg mx-auto">
-        <div className="p-6 rounded-xl border border-border bg-card space-y-6">
-          <p className="text-lg font-medium text-center leading-relaxed">"Do you still believe <span className="text-chart-destructive">"I am {formData.limitingBelief}"</span>?"</p>
+      <div className="grid grid-cols-1 gap-4 max-w-lg mx-auto">
+        <div className="p-4 rounded-xl border border-border bg-card space-y-4">
+          <p className="text-base font-medium text-center leading-relaxed">"Do you still believe <span className="text-chart-destructive">"I am {formData.limitingBelief}"</span>?"</p>
           <div className="flex gap-4 justify-center">
-            <Button variant="outline" onClick={() => { setFormData({ ...formData, checkBeliefResult: false }); saveProgress(false, { checkBeliefResult: false }); }} className={cn("flex-1 h-12 rounded-xl border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-xs uppercase tracking-wider", formData.checkBeliefResult === false && "bg-chart-emerald/30")}>No</Button>
-            <Button variant="outline" onClick={() => { setFormData({ ...formData, checkBeliefResult: true }); saveProgress(false, { checkBeliefResult: true }); }} className={cn("flex-1 h-12 rounded-xl border-destructive bg-destructive/10 text-destructive font-semibold text-xs uppercase tracking-wider", formData.checkBeliefResult === true && "bg-destructive/30")}>Yes</Button>
+            <Button variant="outline" onClick={() => { setFormData({ ...formData, checkBeliefResult: false }); saveProgress(false, { checkBeliefResult: false }); }} className={cn("flex-1 h-9 rounded-xl border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-xs uppercase tracking-wider", formData.checkBeliefResult === false && "bg-chart-emerald/30")}>No</Button>
+            <Button variant="outline" onClick={() => { setFormData({ ...formData, checkBeliefResult: true }); saveProgress(false, { checkBeliefResult: true }); }} className={cn("flex-1 h-9 rounded-xl border-destructive bg-destructive/10 text-destructive font-semibold text-xs uppercase tracking-wider", formData.checkBeliefResult === true && "bg-destructive/30")}>Yes</Button>
           </div>
         </div>
 
-        <div className="p-6 rounded-xl border border-border bg-card space-y-6">
-          <p className="text-lg font-medium text-center leading-relaxed">"Feel the problem of <span className="text-chart-primary">"{formData.problem}"</span>... does it still feel like a problem?"</p>
+        <div className="p-4 rounded-xl border border-border bg-card space-y-4">
+          <p className="text-base font-medium text-center leading-relaxed">"Feel the problem of <span className="text-chart-primary">"{formData.problem}"</span>... does it still feel like a problem?"</p>
           <div className="flex gap-4 justify-center">
-            <Button variant="outline" onClick={() => { setFormData({ ...formData, checkProblemResult: false }); saveProgress(false, { checkProblemResult: false }); }} className={cn("flex-1 h-12 rounded-xl border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-xs uppercase tracking-wider", formData.checkProblemResult === false && "bg-chart-emerald/30")}>No</Button>
-            <Button variant="outline" onClick={() => { setFormData({ ...formData, checkProblemResult: true }); saveProgress(false, { checkProblemResult: true }); }} className={cn("flex-1 h-12 rounded-xl border-destructive bg-destructive/10 text-destructive font-semibold text-xs uppercase tracking-wider", formData.checkProblemResult === true && "bg-destructive/30")}>Yes</Button>
+            <Button variant="outline" onClick={() => { setFormData({ ...formData, checkProblemResult: false }); saveProgress(false, { checkProblemResult: false }); }} className={cn("flex-1 h-9 rounded-xl border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-xs uppercase tracking-wider", formData.checkProblemResult === false && "bg-chart-emerald/30")}>No</Button>
+            <Button variant="outline" onClick={() => { setFormData({ ...formData, checkProblemResult: true }); saveProgress(false, { checkProblemResult: true }); }} className={cn("flex-1 h-9 rounded-xl border-destructive bg-destructive/10 text-destructive font-semibold text-xs uppercase tracking-wider", formData.checkProblemResult === true && "bg-destructive/30")}>Yes</Button>
           </div>
         </div>
       </div>
 
       {!singlePage && (
-      <div className="flex justify-center pt-6">
-        <Button onClick={handleNext} className="bg-primary hover:bg-primary/90 text-white rounded-xl h-12 px-16 font-semibold text-xs uppercase tracking-wider shadow-sm">
+      <div className="flex justify-center pt-4">
+        <Button onClick={handleNext} className="bg-primary hover:bg-primary/90 text-white rounded-xl h-9 px-12 font-semibold text-xs uppercase tracking-wider shadow-sm">
           Move to Integration <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
@@ -639,46 +639,46 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
   );
 
   const renderStep5 = () => (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 py-4">
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700 py-2">
       <div className="text-center space-y-4">
-        <div className="inline-flex items-center justify-center w-12 h-12 bg-muted rounded-xl text-chart-emerald mb-2 shadow-inner">
-          <Sparkles size={32} />
+        <div className="inline-flex items-center justify-center w-8 h-8 bg-muted rounded-xl text-chart-emerald mb-2 shadow-inner">
+          <Sparkles size={22} />
         </div>
-        <h3 className="text-2xl md:text-2xl font-serif font-medium">Integration</h3>
-        <p className="text-lg text-muted-foreground">Final reflections to ground the shift.</p>
+        <h3 className="text-lg md:text-lg font-serif font-medium">Integration</h3>
+        <p className="text-base text-muted-foreground">Final reflections to ground the shift.</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
-        <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-4">
+        <div className="space-y-4">
           <h4 className="text-[10px] font-semibold uppercase tracking-[0.4em] text-muted-foreground px-2 border-l-4 border-primary">Awareness</h4>
           <div className="space-y-4">
             <Label className="text-base font-medium text-foreground ml-1">What is the new awareness or perspective you're taking away?</Label>
-            <Textarea value={formData.integrationAwareness} onChange={e => setFormData({...formData, integrationAwareness: e.target.value})} className="rounded-xl min-h-[120px] border border-border p-6 text-lg font-medium bg-card" />
+            <Textarea value={formData.integrationAwareness} onChange={e => setFormData({...formData, integrationAwareness: e.target.value})} className="rounded-xl min-h-[80px] border border-border p-4 text-base font-medium bg-card" />
           </div>
         </div>
 
-        <div className="space-y-6 pt-4 border-t border-border">
+        <div className="space-y-4 pt-4 border-t border-border">
           <h4 className="text-[10px] font-semibold uppercase tracking-[0.4em] text-muted-foreground px-2 border-l-4 border-chart-emerald">Action</h4>
           <div className="space-y-4">
             <Label className="text-base font-medium text-foreground ml-1">What is one small action you can take from this new space?</Label>
-            <Input value={formData.integrationAction} onChange={e => setFormData({...formData, integrationAction: e.target.value})} className="rounded-xl h-14 border border-border px-6 text-lg font-medium bg-card" />
+            <Input value={formData.integrationAction} onChange={e => setFormData({...formData, integrationAction: e.target.value})} className="rounded-xl h-10 border border-border px-6 text-base font-medium bg-card" />
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 pt-6">
+      <div className="flex flex-col sm:flex-row gap-4 pt-4">
         <Button 
           onClick={handleDeepScan} 
           disabled={isAnalyzing || !formData.integrationAwareness}
           variant="outline"
-          className="flex-1 h-12 rounded-xl border-border text-chart-primary font-semibold text-xs uppercase tracking-wider hover:bg-muted"
+          className="flex-1 h-9 rounded-xl border-border text-chart-primary font-semibold text-xs uppercase tracking-wider hover:bg-muted"
         >
           {isAnalyzing ? <Loader2 className="mr-2 animate-spin" /> : <Wand2 className="mr-2" />} Scan for Deeper Patterns
         </Button>
-        <Button onClick={() => saveProgress(true)} disabled={isSaving || !formData.integrationAwareness} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-semibold text-xs uppercase tracking-wider shadow-sm">
+        <Button onClick={() => saveProgress(true)} disabled={isSaving || !formData.integrationAwareness} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-9 font-semibold text-xs uppercase tracking-wider shadow-sm">
           {isSaving ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 className="mr-2" />} Complete & Save Session
         </Button>
-        <Button onClick={reset} variant="ghost" className="flex-1 text-muted-foreground rounded-xl h-12 font-medium hover:bg-muted">
+        <Button onClick={reset} variant="ghost" className="flex-1 text-muted-foreground rounded-xl h-9 font-medium hover:bg-muted">
           Start Fresh
         </Button>
       </div>
@@ -690,26 +690,26 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
     const completedSessions = pastSessions.filter(s => s.is_complete);
 
     return (
-      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex items-center justify-between">
-          <h3 className="text-2xl font-serif font-medium">Session History</h3>
+          <h3 className="text-lg font-serif font-medium">Session History</h3>
           <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)} className="rounded-xl font-medium text-xs uppercase tracking-wider">Close</Button>
         </div>
         
         {activeDrafts.length > 0 && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.3em] px-2 flex items-center gap-2">
               <Clock size={14} /> Active Drafts
             </p>
             <div className="grid grid-cols-1 gap-4">
               {activeDrafts.map((session) => (
-                <div key={session.id} className="p-6 bg-card rounded-xl border border-border hover:border-border transition-all cursor-pointer group flex items-center justify-between" onClick={() => loadSession(session)}>
-                  <div className="flex items-center gap-6 flex-1 min-w-0">
-                    <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shadow-inner">
-                      <Zap size={24} />
+                <div key={session.id} className="p-4 bg-card rounded-xl border border-border hover:border-border transition-all cursor-pointer group flex items-center justify-between" onClick={() => loadSession(session)}>
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground shadow-inner">
+                      <Zap size={18} />
                     </div>
                     <div className="min-w-0">
-                      <h4 className="font-semibold text-lg text-foreground truncate">{session.problem}</h4>
+                      <h4 className="font-semibold text-base text-foreground truncate">{session.problem}</h4>
                       <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-1">Step {session.current_step} • {new Date(session.created_at).toLocaleDateString()}</p>
                     </div>
                   </div>
@@ -720,23 +720,23 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
           </div>
         )}
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.3em] px-2">Completed Sessions</p>
           {completedSessions.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground bg-muted rounded-xl border border-dashed border-border">
+            <div className="text-center py-3 text-muted-foreground bg-muted rounded-xl border border-dashed border-border">
               <History className="mx-auto mb-4 opacity-20" size={64} />
               <p className="font-medium">No completed sessions yet.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4">
               {completedSessions.map((session) => (
-                <div key={session.id} className="p-6 bg-card rounded-xl border border-border hover:border-border transition-all cursor-pointer group flex items-center justify-between" onClick={() => setViewingReportId(session.id)}>
-                  <div className="flex items-center gap-6 flex-1 min-w-0">
-                    <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center text-chart-primary group-hover:bg-primary group-hover:text-white transition-colors shadow-inner">
-                      <FileText size={24} />
+                <div key={session.id} className="p-4 bg-card rounded-xl border border-border hover:border-border transition-all cursor-pointer group flex items-center justify-between" onClick={() => setViewingReportId(session.id)}>
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-chart-primary group-hover:bg-primary group-hover:text-white transition-colors shadow-inner">
+                      <FileText size={18} />
                     </div>
                     <div className="min-w-0">
-                      <h4 className="font-semibold text-lg text-foreground truncate">{session.problem}</h4>
+                      <h4 className="font-semibold text-base text-foreground truncate">{session.problem}</h4>
                       <div className="flex items-center gap-3 mt-1">
                         <Badge variant="secondary" className="text-[10px] font-semibold uppercase tracking-wider bg-muted text-muted-foreground border-none px-2 py-0.5">{session.limiting_belief}</Badge>
                         <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{new Date(session.created_at).toLocaleDateString()}</span>
@@ -745,7 +745,7 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
                   </div>
                   <div className="flex items-center gap-3">
                     <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-muted-foreground/60 hover:text-chart-destructive opacity-0 group-hover:opacity-100 transition-all" onClick={(e) => deleteSession(e, session.id)}><Trash2 size={18} /></Button>
-                    <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-white transition-all shadow-sm"><ArrowRight size={20} /></div>
+                    <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-white transition-all shadow-sm"><ArrowRight size={16} /></div>
                   </div>
                 </div>
               ))}
@@ -764,11 +764,11 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
   return (
     <div className="w-full">
       {!singlePage && (
-        <div className="mb-12 space-y-6">
+        <div className="mb-12 space-y-4">
           <div className="flex justify-between items-end">
             <div className="space-y-1">
               <h2 className="text-[10px] font-semibold uppercase tracking-[0.4em] text-chart-primary">Step {step} of 5</h2>
-              <p className="text-2xl font-semibold text-foreground">
+              <p className="text-lg font-semibold text-foreground">
                 {step === 1 && "Problem &amp; Feeling"}
                 {step === 2 && "Belief Extraction"}
                 {step === 3 && "Dissolving Loop"}
@@ -795,42 +795,42 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
         </div>
       )}
 
-      <div className={singlePage ? "space-y-6" : "min-h-[500px]"}>
+      <div className={singlePage ? "space-y-4" : "min-h-[500px]"}>
         {showHistory ? renderHistory() : (
           singlePage ? (
-            <div className="space-y-6">
+            <div className="space-y-4">
               <section id="belief-phase-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">1</span>
-                  <h3 className="text-sm font-semibold text-foreground">Problem &amp; Feeling</h3>
+                  <span className="w-4 h-4 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">1</span>
+                  <h3 className="text-xs font-semibold text-foreground">Problem &amp; Feeling</h3>
                 </div>
                 {renderStep1()}
               </section>
               <section id="belief-phase-2">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">2</span>
-                  <h3 className="text-sm font-semibold text-foreground">Belief Extraction</h3>
+                  <span className="w-4 h-4 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">2</span>
+                  <h3 className="text-xs font-semibold text-foreground">Belief Extraction</h3>
                 </div>
                 {renderStep2()}
               </section>
               <section id="belief-phase-3">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">3</span>
-                  <h3 className="text-sm font-semibold text-foreground">Dissolving Loop</h3>
+                  <span className="w-4 h-4 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">3</span>
+                  <h3 className="text-xs font-semibold text-foreground">Dissolving Loop</h3>
                 </div>
                 {renderStep3()}
               </section>
               <section id="belief-phase-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">4</span>
-                  <h3 className="text-sm font-semibold text-foreground">Verification</h3>
+                  <span className="w-4 h-4 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">4</span>
+                  <h3 className="text-xs font-semibold text-foreground">Verification</h3>
                 </div>
                 {renderStep4()}
               </section>
               <section id="belief-phase-5">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">5</span>
-                  <h3 className="text-sm font-semibold text-foreground">Integration</h3>
+                  <span className="w-4 h-4 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">5</span>
+                  <h3 className="text-xs font-semibold text-foreground">Integration</h3>
                 </div>
                 {renderStep5()}
               </section>

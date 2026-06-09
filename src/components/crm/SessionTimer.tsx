@@ -233,7 +233,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
             <Button
               size="sm"
               onClick={toggleDocumentView}
-              className="h-7 md:h-8 px-2 md:px-3 rounded-xl bg-muted hover:bg-muted/80 text-foreground font-semibold text-[10px] uppercase tracking-wider gap-1 md:gap-1.5"
+              className="h-7 md:h-8 px-2 md:px-3 rounded-xl border border-border bg-card hover:bg-muted text-foreground font-semibold text-[10px] uppercase tracking-wider gap-1 md:gap-1.5"
               title="Toggle Document View (Option + D)"
             >
               {isDocViewActive ? <LayoutGrid size={12} /> : <FileText size={12} />}
@@ -257,7 +257,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
                 size="sm" 
                 className={cn(
                   "border-none h-7 md:h-8 px-2.5 md:px-4 rounded-xl font-semibold text-[10px] uppercase tracking-wider transition-colors",
-                  isOvertime && !isFinished ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : "bg-muted hover:bg-muted/80 text-foreground"
+                  isOvertime && !isFinished ? "border border-destructive bg-destructive text-destructive-foreground hover:bg-destructive/90" : "border border-border bg-card hover:bg-muted text-foreground"
                 )}
               >
                 <span className="hidden sm:inline">Actions</span> <ChevronDown size={10} className="sm:ml-2 opacity-50" />

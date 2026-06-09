@@ -98,7 +98,7 @@ const SessionToolNavigation = ({
           <DropdownMenuTrigger asChild>
             <button
               className={cn(
-                "h-10 px-5 rounded-xl transition-all font-medium text-[10px] uppercase tracking-wider shrink-0 flex items-center gap-2.5 text-foreground hover:bg-accent",
+                "h-10 px-5 rounded-xl transition-all font-medium text-[10px] uppercase tracking-wider shrink-0 flex items-center gap-2.5 text-foreground hover:bg-accent hover:text-accent-foreground",
                 isToolActive && "bg-card shadow-sm border border-border"
               )}
             >

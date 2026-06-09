@@ -199,13 +199,10 @@ const SpaceHeader = () => {
           <>
             <div className="w-px h-6 bg-slate-200 mx-1" />
             <div className="flex items-center">
-              <button
-                onClick={() => navigate(
-                  isVoiceMode ? '/voice' :
-                  mode === 'business' ? '/business/dashboard' : '/'
-                )}
+              <Link
+                to={isVoiceMode ? '/voice' : mode === 'business' ? '/business/dashboard' : '/'}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-500",
+                  "flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-500 no-underline",
                   modeNavItems.some(item => isModeItemActive(item.path))
                     ? "bg-white text-foreground shadow-md scale-[1.02]"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -213,7 +210,7 @@ const SpaceHeader = () => {
               >
                 {modeIcon}
                 <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">{modeLabel}</span>
-              </button>
+              </Link>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className={cn(

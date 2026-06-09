@@ -167,7 +167,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
     <div className="w-full">
       <div className={cn(
         "transition-colors duration-1000 p-2 flex items-center justify-between px-4 md:px-6",
-        isOvertime && !isFinished ? "bg-chart-destructive/10 border-b border-chart-destructive/20" : "bg-foreground text-background border-b border-border"
+        isOvertime && !isFinished ? "bg-chart-destructive/10 border-b border-chart-destructive/20" : "bg-card border-b border-border"
       )}>
         <div className="flex items-center gap-2 md:gap-4 overflow-hidden min-w-0 flex-1">
           <div className="flex items-center gap-1.5 shrink-0">
@@ -208,7 +208,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
           <div className="h-4 w-px bg-muted shrink-0" />
 
           <div className="flex items-center gap-1.5 min-w-0 flex-1 sm:flex-none">
-            <span className="text-xs md:text-sm font-semibold text-white truncate privacy-mode-active:blur-sm">
+            <span className="text-xs md:text-sm font-semibold text-foreground truncate privacy-mode-active:blur-sm">
               {clientName}
             </span>
             <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider hidden md:inline">
@@ -233,7 +233,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
             <Button
               size="sm"
               onClick={toggleDocumentView}
-              className="h-7 md:h-8 px-2 md:px-3 rounded-xl bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-[10px] uppercase tracking-wider gap-1 md:gap-1.5"
+              className="h-7 md:h-8 px-2 md:px-3 rounded-xl bg-muted hover:bg-muted/80 text-foreground font-semibold text-[10px] uppercase tracking-wider gap-1 md:gap-1.5"
               title="Toggle Document View (Option + D)"
             >
               {isDocViewActive ? <LayoutGrid size={12} /> : <FileText size={12} />}
@@ -257,7 +257,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
                 size="sm" 
                 className={cn(
                   "border-none h-7 md:h-8 px-2.5 md:px-4 rounded-xl font-semibold text-[10px] uppercase tracking-wider transition-colors",
-                  isOvertime && !isFinished ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : "bg-muted hover:bg-muted/80 text-muted-foreground"
+                  isOvertime && !isFinished ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : "bg-muted hover:bg-muted/80 text-foreground"
                 )}
               >
                 <span className="hidden sm:inline">Actions</span> <ChevronDown size={10} className="sm:ml-2 opacity-50" />

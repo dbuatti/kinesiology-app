@@ -297,6 +297,7 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
       if (!error && data?.suggestions) {
         if (type === 'limiting_belief') setLimitingSuggestions(data.suggestions);
         else setPositiveSuggestions(data.suggestions);
+        if (singlePage) scrollTo('belief-phase-2');
       }
     } catch (error) {
       console.error(error);
@@ -310,6 +311,7 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
     if (step < 5) {
       const nextStep = (step + 1) as Step;
       setStep(nextStep);
+      if (singlePage) scrollTo(`belief-phase-${nextStep}`);
       saveProgress(false, {}, nextStep);
     }
   };
@@ -336,6 +338,10 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
     setCurrentIdentity('');
     setCurrentNotice1('');
     setCurrentNotice2('');
+  };
+
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const handleLoopNext = () => {
@@ -793,35 +799,35 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
         {showHistory ? renderHistory() : (
           singlePage ? (
             <div className="space-y-8">
-              <section>
+              <section id="belief-phase-1">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">1</span>
                   <h3 className="text-sm font-semibold text-foreground">Problem &amp; Feeling</h3>
                 </div>
                 {renderStep1()}
               </section>
-              <section>
+              <section id="belief-phase-2">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">2</span>
                   <h3 className="text-sm font-semibold text-foreground">Belief Extraction</h3>
                 </div>
                 {renderStep2()}
               </section>
-              <section>
+              <section id="belief-phase-3">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">3</span>
                   <h3 className="text-sm font-semibold text-foreground">Dissolving Loop</h3>
                 </div>
                 {renderStep3()}
               </section>
-              <section>
+              <section id="belief-phase-4">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">4</span>
                   <h3 className="text-sm font-semibold text-foreground">Verification</h3>
                 </div>
                 {renderStep4()}
               </section>
-              <section>
+              <section id="belief-phase-5">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">5</span>
                   <h3 className="text-sm font-semibold text-foreground">Integration</h3>

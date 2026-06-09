@@ -298,7 +298,10 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
       const { data, error } = await supabase.functions.invoke('generate-identity', {
         body: { goal: formData.goal, type: 'target' },
       });
-      if (!error && data?.suggestions) setSuggestions(data.suggestions);
+      if (!error && data?.suggestions) {
+        setSuggestions(data.suggestions);
+        if (singlePage) scrollTo('align-phase-1');
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -310,6 +313,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
     if (phase < 5) {
       const nextPhase = (phase + 1) as Phase;
       setPhase(nextPhase);
+      if (singlePage) scrollTo(`align-phase-${nextPhase}`);
       saveProgress(false, {}, nextPhase);
     }
   };
@@ -354,6 +358,10 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
     });
     setCurrentLoop({});
     setLoopStep(1);
+  };
+
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const renderPhase1 = () => (
@@ -766,35 +774,35 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
         {showHistory ? renderHistory() : (
           singlePage ? (
             <div className="space-y-8">
-              <section>
+              <section id="align-phase-1">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">1</span>
                   <h3 className="text-sm font-semibold text-foreground">Setup &amp; Extraction</h3>
                 </div>
                 {renderPhase1()}
               </section>
-              <section>
+              <section id="align-phase-2">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">2</span>
                   <h3 className="text-sm font-semibold text-foreground">Somatic Embodiment</h3>
                 </div>
                 {renderPhase2()}
               </section>
-              <section>
+              <section id="align-phase-3">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">3</span>
                   <h3 className="text-sm font-semibold text-foreground">Reconsolidation Loop</h3>
                 </div>
                 {renderPhase3()}
               </section>
-              <section>
+              <section id="align-phase-4">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">4</span>
                   <h3 className="text-sm font-semibold text-foreground">Time-Space Testing</h3>
                 </div>
                 {renderPhase4()}
               </section>
-              <section>
+              <section id="align-phase-5">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">5</span>
                   <h3 className="text-sm font-semibold text-foreground">Final Anchoring</h3>

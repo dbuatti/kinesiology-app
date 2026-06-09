@@ -291,6 +291,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
       console.error(error);
     } finally {
       setIsGenerating(false);
+      if (singlePage) scrollTo('shift-phase-2');
     }
   };
 
@@ -299,6 +300,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
       const nextPhase = (phase + 1) as Phase;
       setPhase(nextPhase);
       saveProgress(false, {}, nextPhase);
+      if (singlePage) scrollTo(`shift-phase-${nextPhase}`);
     }
   };
 
@@ -369,6 +371,14 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
       setLoopContext(context);
       setPhase(2);
       handleLoopRestart();
+      if (singlePage) scrollTo('shift-phase-2');
+    } else {
+      if (singlePage) {
+        setPhase(4);
+        scrollTo('shift-phase-4');
+      } else {
+        handleNext();
+      }
     }
   };
 
@@ -389,6 +399,10 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
     setLoopStep(0);
     setCurrentLoopResponse('');
     setLoopContext(null);
+  };
+
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const renderPhase1 = () => (
@@ -596,7 +610,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
           <p className="text-xl font-medium text-center leading-relaxed">"Do you think you might feel yourself being <span className="text-chart-primary">"{formData.identity}"</span> in the future?"</p>
           <div className="flex gap-4 justify-center">
             <Button variant="outline" onClick={() => handlePhase3Check(true, `${formData.identity} in the future`)} className="flex-1 h-14 rounded-xl border-rose-200 text-chart-destructive font-semibold text-xs uppercase tracking-wider">Yes</Button>
-            <Button variant="outline" className="flex-1 h-14 rounded-xl border-emerald-200 text-chart-emerald hover:bg-muted font-semibold text-xs uppercase tracking-wider">No</Button>
+            <Button variant="outline" onClick={() => handlePhase3Check(false, '')} className="flex-1 h-14 rounded-xl border-emerald-200 text-chart-emerald hover:bg-muted font-semibold text-xs uppercase tracking-wider">No</Button>
           </div>
         </div>
 
@@ -604,7 +618,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
           <p className="text-xl font-medium text-center leading-relaxed">"Is there any scenario in which you might still feel yourself being <span className="text-chart-primary">"{formData.identity}"</span>?"</p>
           <div className="flex gap-4 justify-center">
             <Button variant="outline" onClick={() => handlePhase3Check(true, `${formData.identity} in that scenario`)} className="flex-1 h-14 rounded-xl border-rose-200 text-chart-destructive font-semibold text-xs uppercase tracking-wider">Yes</Button>
-            <Button variant="outline" className="flex-1 h-14 rounded-xl border-emerald-200 text-chart-emerald hover:bg-muted font-semibold text-xs uppercase tracking-wider">No</Button>
+            <Button variant="outline" onClick={() => handlePhase3Check(false, '')} className="flex-1 h-14 rounded-xl border-emerald-200 text-chart-emerald hover:bg-muted font-semibold text-xs uppercase tracking-wider">No</Button>
           </div>
         </div>
       </div>
@@ -818,35 +832,35 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
         {showHistory ? renderHistory() : (
           singlePage ? (
             <div className="space-y-8">
-              <section>
+              <section id="shift-phase-1">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">1</span>
                   <h3 className="text-sm font-semibold text-foreground">Isolating the Identity</h3>
                 </div>
                 {renderPhase1()}
               </section>
-              <section>
+              <section id="shift-phase-2">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">2</span>
                   <h3 className="text-sm font-semibold text-foreground">Dissolving the Construct</h3>
                 </div>
                 {renderPhase2()}
               </section>
-              <section>
+              <section id="shift-phase-3">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">3</span>
                   <h3 className="text-sm font-semibold text-foreground">Checking Stability</h3>
                 </div>
                 {renderPhase3()}
               </section>
-              <section>
+              <section id="shift-phase-4">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">4</span>
                   <h3 className="text-sm font-semibold text-foreground">Re-assessing Problem</h3>
                 </div>
                 {renderPhase4()}
               </section>
-              <section>
+              <section id="shift-phase-5">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">5</span>
                   <h3 className="text-sm font-semibold text-foreground">Conscious Integration</h3>

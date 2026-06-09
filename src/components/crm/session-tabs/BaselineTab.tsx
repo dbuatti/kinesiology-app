@@ -90,7 +90,8 @@ const BaselineTab = ({ appointment, history = [], onUpdate, saveField }: Baselin
           <BoltTestSection 
             appointmentId={appointment.id} 
             initialBoltScore={appointment.bolt_score} 
-            onUpdate={onUpdate} 
+            onUpdate={onUpdate}
+            history={history}
           />
           <CoherenceAssessment 
             appointmentId={appointment.id} 

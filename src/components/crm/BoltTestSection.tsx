@@ -14,18 +14,25 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
 
 interface BoltTestSectionProps {
   appointmentId: string;
   initialBoltScore: number | null | undefined;
   onUpdate: () => void;
+  history?: any[];
 }
 
-const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTestSectionProps) => {
+const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = [] }: BoltTestSectionProps) => {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
   const [showExercise, setShowExercise] = useState(false);
+
+  const pastBoltScores = history
+    .filter((a: any) => a.bolt_score != null)
+    .map((a: any) => ({ date: new Date(a.date), score: a.bolt_score }))
+    .slice(0, 5);
 
   const handleSaveScore = async (score: number) => {
     setLoading(true);
@@ -174,6 +181,23 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
           </div>
         </CollapsibleContent>
       </Collapsible>
+
+      {pastBoltScores.length > 0 && (
+        <div className="px-4 pb-4">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
+            <Target size={12} />
+            <span>Past BOLT Scores</span>
+          </div>
+          <div className="flex gap-2 overflow-x-auto">
+            {pastBoltScores.map((entry: any, i: number) => (
+              <div key={i} className="shrink-0 text-center px-3 py-1.5 rounded-lg bg-muted/50 border border-border">
+                <div className="text-sm font-semibold tabular-nums text-foreground">{entry.score}s</div>
+                <div className="text-[10px] text-muted-foreground">{format(entry.date, 'M/d')}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <BoltResourcesModal open={resourcesOpen} onOpenChange={setResourcesOpen} currentScore={initialBoltScore} />
     </div>

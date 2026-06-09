@@ -501,8 +501,22 @@ const AppointmentDetailPage = () => {
 
             {/* Row 3: Meta footer */}
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-3 border-t border-border">
-              <button onClick={() => saveField('is_paid', !appointment.is_paid)}
-                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
+              <button onClick={async () => {
+                if (!appointment.is_paid) {
+                  await saveField('is_paid', true);
+                } else if (!appointment.payment_received) {
+                  await saveField('payment_received', true);
+                } else {
+                  await saveField('is_paid', false);
+                  await saveField('payment_received', false);
+                }
+              }}
+                className={cn(
+                  "flex items-center gap-1 text-xs transition-colors",
+                  appointment.payment_received ? "text-chart-emerald hover:text-chart-emerald/80" :
+                  appointment.is_paid ? "text-chart-destructive hover:text-chart-destructive/80" :
+                  "text-muted-foreground hover:text-foreground"
+                )}>
                 <CreditCard size={12} />
                 {!appointment.is_paid ? "Free" : appointment.payment_received ? "Paid" : `$${appointment.clients.standard_rate || appointment.price_amount || 50}`}
               </button>

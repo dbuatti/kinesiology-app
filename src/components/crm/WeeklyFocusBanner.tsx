@@ -141,7 +141,7 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
   return (
     <div className="w-full mb-4 animate-in slide-in-from-top-4 duration-700 print:hidden">
       <div className={cn(
-        "bg-card text-foreground rounded-2xl p-4 shadow-sm border border-border relative overflow-hidden group transition-all duration-700",
+        "bg-card text-foreground rounded-xl p-4 shadow-sm border border-border relative overflow-hidden group transition-all duration-700",
         isAllPracticed && "bg-muted border-border"
       )}>
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">

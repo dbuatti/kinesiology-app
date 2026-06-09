@@ -334,254 +334,216 @@ const AppointmentDetailPage = () => {
         <div className="max-w-[1600px] mx-auto space-y-6">
 
           {/* SESSION HEADER */}
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 bg-card p-5 md:p-7 rounded-xl border border-border shadow-sm">
-            <div className="flex items-start sm:items-center gap-4 md:gap-6 w-full lg:w-auto">
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/schedule?view=list')}
-                className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-muted/50 border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-all shrink-0"
-              >
-                <ArrowLeft size={18} />
-              </Button>
-
-              <div className="space-y-1 min-w-0 flex-1">
-                {/* Client name + live badge */}
-                <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                  <h1 className="text-xl sm:text-2xl md:text-4xl font-serif font-bold text-foreground tracking-tighter truncate leading-none privacy-mode-active:blur-sm">
-                    {appointment.clients.name}
-                  </h1>
-                  {isSessionToday && isOngoing && (
-                    <Badge className="bg-chart-emerald/10 text-chart-emerald border-none font-medium text-[10px] uppercase tracking-wider px-3 py-1 rounded-full animate-pulse shrink-0">
-                      ● LIVE
-                    </Badge>
-                  )}
-                  {appointment.status === 'Completed' && (
-                    <Badge className="bg-muted text-muted-foreground border-none font-medium text-[10px] uppercase tracking-wider px-3 py-1 rounded-full shrink-0">
-                      Completed
-                    </Badge>
-                  )}
-                </div>
-
-                {/* Meta row */}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground font-medium text-xs md:text-sm">
-                  <span className="flex items-center gap-1.5">
-                    <Calendar size={13} className="text-muted-foreground shrink-0" />
-                    {format(appointment.date, "EEEE, MMMM d")}
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Clock size={13} className="text-muted-foreground shrink-0" />
-                    {format(appointment.date, "h:mm a")}
-                  </span>
-                  <Badge variant="outline" className="bg-muted/50 border-border text-muted-foreground font-medium text-[10px] uppercase tracking-wider px-2 py-0.5 shrink-0">
-                    {appointment.tag}
-                  </Badge>
-                  <span className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">
-                    Session #{sessionNumber}
-                  </span>
-                  {currentPeakMeridian && (
-                    <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                      <Zap size={10} /> {currentPeakMeridian.name} peak
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Action buttons */}
-            <div className="flex items-center gap-1.5 w-full lg:w-auto overflow-x-auto no-scrollbar pb-1">
-              {appointment.notion_link && (
-                <Button asChild variant="outline" size="sm"
-                  className="shrink-0 h-10 md:h-12 px-3 md:px-6 gap-2 border-border bg-card rounded-xl text-muted-foreground hover:bg-muted transition-all shadow-sm">
-                  <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink size={14} />
-                  </a>
+          <div className="bg-card rounded-xl border border-border shadow-sm p-5 md:p-6 space-y-4">
+            {/* Row 1: Back + Client name + Actions */}
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3 min-w-0 flex-1">
+                <Button
+                  variant="ghost"
+                  onClick={() => navigate('/schedule?view=list')}
+                  className="h-9 w-9 rounded-xl bg-muted/50 border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-all shrink-0 mt-0.5"
+                >
+                  <ArrowLeft size={16} />
                 </Button>
-              )}
-
-              <Button variant="outline" size="sm" onClick={() => setIsDocumentView(true)}
-                className="shrink-0 h-10 md:h-12 px-3 md:px-6 gap-2 border-border bg-card rounded-xl font-medium text-[10px] uppercase tracking-wider text-muted-foreground hover:bg-muted transition-all shadow-sm">
-                <FileText size={14} className="text-muted-foreground" />
-                <span className="hidden md:inline">Doc View</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowSidebar(!showSidebar)}
-                className={cn(
-                  "shrink-0 h-10 md:h-12 px-3 md:px-6 gap-2 border-border rounded-xl font-medium text-[10px] uppercase tracking-wider transition-all shadow-sm",
-                  showSidebar
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-card text-muted-foreground hover:bg-muted"
-                )}
-              >
-                {showSidebar ? <PanelLeftClose size={14} /> : <PanelLeftOpen size={14} />}
-              </Button>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm"
-                    className="h-10 w-10 md:h-12 md:w-12 rounded-xl border-border bg-card text-muted-foreground hover:bg-muted/50 transition-all shadow-sm shrink-0">
-                    <MoreHorizontal size={18} />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-72 p-3 rounded-xl">
-                  <div className="px-3 py-2 mb-1">
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Session Management</p>
-                  </div>
-                  <DropdownMenuItem onClick={toggleFullScreen} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
-                    {isFullScreen ? <Minimize2 size={16} className="text-muted-foreground" /> : <Maximize2 size={16} className="text-muted-foreground" />}
-                    <span className="font-medium text-xs">{isFullScreen ? "Exit Full Screen" : "Full Screen (Alt+F)"}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleCopyOnboardingLink} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
-                    <LinkIcon size={16} className="text-muted-foreground" />
-                    <span className="font-medium text-xs">Copy Onboarding Link</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSyncToNotion} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
-                    <RefreshCw size={16} className="text-muted-foreground" />
-                    <span className="font-medium text-xs">Sync to Notion</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleCopyForAI} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
-                    <Sparkles size={16} className="text-muted-foreground" />
-                    <span className="font-medium text-xs">Copy AI Case Prompt</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="my-2" />
-                  <DropdownMenuItem onClick={() => window.print()} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
-                    <Printer size={16} className="text-muted-foreground" />
-                    <span className="font-medium text-xs">Print Session Report</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="my-2" />
-                  <DropdownMenuItem
-                    className="text-destructive focus:text-destructive rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"
-                    onClick={handleDeleteAppointment}
-                  >
-                    <Trash2 size={16} />
-                    <span className="font-medium text-xs">Delete Appointment</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {isSessionToday && appointment.status === 'Scheduled' && (
-                <Button onClick={handleStartSession}
-                  className="shrink-0 h-10 md:h-12 px-4 md:px-8 bg-primary text-primary-foreground rounded-xl font-medium text-[10px] uppercase tracking-wider transition-all hover:scale-105 active:scale-95 gap-2">
-                  <Zap size={14} className="md:hidden" />
-                  <span className="hidden md:inline">Start Session</span>
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {/* Unified session meta strip */}
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1">
-                <WeeklyFocusBanner appointmentId={appointment.id} priorityPattern={appointment.priority_pattern} onSaveField={saveField} />
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                {appointment.clients.medical_history ? (
-                  <div className="group relative">
-                    <button
-                      onClick={() => { setMedicalHistoryValue(appointment.clients.medical_history || ""); setMedicalHistoryEditing(true); }}
-                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-chart-primary/20 bg-chart-primary/5 text-chart-primary text-xs font-medium hover:bg-chart-primary/10 transition-colors"
-                    >
-                      <Activity size={12} />
-                      <span className="truncate max-w-[200px]">{appointment.clients.medical_history}</span>
-                    </button>
-                    {medicalHistoryEditing && (
-                      <div className="absolute top-full right-0 mt-2 z-50 w-80 p-3 rounded-xl border border-border bg-card shadow-lg">
-                        <textarea
-                          value={medicalHistoryValue}
-                          onChange={(e) => setMedicalHistoryValue(e.target.value)}
-                          className="w-full min-h-[60px] rounded-lg border border-border bg-background p-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-ring mb-2"
-                          placeholder="e.g., Vasovagal syncope / autonomic dysfunction"
-                          autoFocus
-                        />
-                        <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => setMedicalHistoryEditing(false)} className="h-7 text-xs rounded-lg">
-                            Cancel
-                          </Button>
-                          <Button size="sm" onClick={async () => {
-                            await saveClientField('medical_history', medicalHistoryValue || null);
-                            setMedicalHistoryEditing(false);
-                          }} className="h-7 text-xs rounded-lg">
-                            Save
-                          </Button>
-                        </div>
-                      </div>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-foreground tracking-tight truncate leading-tight privacy-mode-active:blur-sm">
+                      {appointment.clients.name}
+                    </h1>
+                    {isSessionToday && isOngoing && (
+                      <Badge className="bg-chart-emerald/10 text-chart-emerald border-none font-medium text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full animate-pulse shrink-0">
+                        ● LIVE
+                      </Badge>
+                    )}
+                    {appointment.status === 'Completed' && (
+                      <Badge className="bg-muted text-muted-foreground border-none font-medium text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full shrink-0">
+                        Completed
+                      </Badge>
                     )}
                   </div>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm text-muted-foreground mt-1">
+                    <span className="flex items-center gap-1.5">
+                      <Calendar size={12} className="shrink-0" />{format(appointment.date, "E, MMM d")}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <Clock size={12} className="shrink-0" />{format(appointment.date, "h:mm a")}
+                    </span>
+                    <span className="text-[11px] opacity-60">#{sessionNumber}</span>
+                    <Badge variant="outline" className="text-[10px] font-medium border-border text-muted-foreground px-1.5 py-0">{appointment.tag}</Badge>
+                    {currentPeakMeridian && (
+                      <span className="text-[11px] opacity-60">{currentPeakMeridian.name} peak</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5 shrink-0">
+                <Select value={appointment.status} onValueChange={(v) => saveField('status', v)}>
+                  <SelectTrigger className="h-8 w-auto min-w-[100px] text-xs font-medium border-border bg-card rounded-lg px-2.5">
+                    <SelectValue placeholder={appointment.status} />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-lg border-border bg-card p-1">
+                    {APPOINTMENT_STATUSES.map(s => (
+                      <SelectItem key={s} value={s} className="rounded-md text-xs py-1.5 px-3">{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" size="sm" onClick={() => setIsDocumentView(true)}
+                  className="h-8 px-3 gap-1.5 border-border bg-card rounded-lg text-xs font-medium text-muted-foreground hover:bg-muted transition-colors">
+                  <FileText size={13} />
+                  <span className="hidden md:inline">Doc View</span>
+                </Button>
+                <Button variant="outline" size="sm"
+                  onClick={() => setShowSidebar(!showSidebar)}
+                  className={cn(
+                    "h-8 px-2.5 gap-1.5 border-border rounded-lg text-xs font-medium transition-colors",
+                    showSidebar ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground hover:bg-muted"
+                  )}>
+                  {showSidebar ? <PanelLeftClose size={13} /> : <PanelLeftOpen size={13} />}
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm"
+                      className="h-8 w-8 rounded-lg border-border bg-card text-muted-foreground hover:bg-muted transition-colors shrink-0">
+                      <MoreHorizontal size={15} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-64 p-2 rounded-xl">
+                    <div className="px-3 py-1.5 mb-0.5">
+                      <p className="text-[10px] font-medium text-muted-foreground">Session Actions</p>
+                    </div>
+                    <DropdownMenuItem onClick={toggleFullScreen} className="rounded-lg py-2 px-3 cursor-pointer flex items-center gap-2.5">
+                      {isFullScreen ? <Minimize2 size={14} className="text-muted-foreground" /> : <Maximize2 size={14} className="text-muted-foreground" />}
+                      <span className="text-xs">{isFullScreen ? "Exit Full Screen" : "Full Screen (Alt+F)"}</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleCopyOnboardingLink} className="rounded-lg py-2 px-3 cursor-pointer flex items-center gap-2.5">
+                      <LinkIcon size={14} className="text-muted-foreground" />
+                      <span className="text-xs">Copy Onboarding Link</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleSyncToNotion} className="rounded-lg py-2 px-3 cursor-pointer flex items-center gap-2.5">
+                      <RefreshCw size={14} className="text-muted-foreground" />
+                      <span className="text-xs">Sync to Notion</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleCopyForAI} className="rounded-lg py-2 px-3 cursor-pointer flex items-center gap-2.5">
+                      <Sparkles size={14} className="text-muted-foreground" />
+                      <span className="text-xs">Copy AI Case Prompt</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="my-1" />
+                    <DropdownMenuItem onClick={() => window.print()} className="rounded-lg py-2 px-3 cursor-pointer flex items-center gap-2.5">
+                      <Printer size={14} className="text-muted-foreground" />
+                      <span className="text-xs">Print Session Report</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator className="my-1" />
+                    <DropdownMenuItem onClick={handleDeleteAppointment} className="rounded-lg py-2 px-3 cursor-pointer flex items-center gap-2.5 text-destructive focus:text-destructive">
+                      <Trash2 size={14} />
+                      <span className="text-xs">Delete Appointment</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                {isSessionToday && appointment.status === 'Scheduled' && (
+                  <Button onClick={handleStartSession}
+                    className="h-8 px-4 bg-chart-primary text-white rounded-lg font-medium text-xs transition-all hover:scale-105 active:scale-95 gap-1.5">
+                    <Zap size={13} className="md:hidden" />
+                    <span className="hidden md:inline">Start Session</span>
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Row 2: Condition + Weekly Focus */}
+            <div className="space-y-3">
+              {/* Condition Card */}
+              <div className="rounded-lg border border-border bg-muted/30 p-3">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Condition</span>
+                  {appointment.clients.medical_history && (
+                    <button
+                      onClick={() => { setMedicalHistoryValue(appointment.clients.medical_history || ""); setMedicalHistoryEditing(true); }}
+                      className="text-[10px] text-muted-foreground hover:text-foreground"
+                    >Edit</button>
+                  )}
+                </div>
+                {appointment.clients.medical_history ? (
+                  <p className="text-sm font-medium text-foreground">
+                    {appointment.clients.medical_history}
+                  </p>
                 ) : (
                   <button
                     onClick={() => { setMedicalHistoryValue(""); setMedicalHistoryEditing(true); }}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-dashed border-border text-muted-foreground/50 text-xs hover:text-muted-foreground hover:border-muted-foreground/30 transition-colors"
-                  >
-                    <Plus size={12} />
-                    Condition
-                  </button>
+                    className="text-sm text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+                  >+ Add condition</button>
+                )}
+                {medicalHistoryEditing && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20" onClick={() => setMedicalHistoryEditing(false)}>
+                    <div className="w-96 p-4 rounded-xl border border-border bg-card shadow-lg" onClick={(e) => e.stopPropagation()}>
+                      <textarea
+                        value={medicalHistoryValue}
+                        onChange={(e) => setMedicalHistoryValue(e.target.value)}
+                        className="w-full min-h-[80px] rounded-lg border border-border bg-background p-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-ring mb-3"
+                        placeholder="e.g., Vasovagal syncope / autonomic dysfunction"
+                        autoFocus
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => setMedicalHistoryEditing(false)} className="h-7 text-xs rounded-lg">Cancel</Button>
+                        <Button size="sm" onClick={async () => {
+                          await saveClientField('medical_history', medicalHistoryValue || null);
+                          setMedicalHistoryEditing(false);
+                        }} className="h-7 text-xs rounded-lg">Save</Button>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
+
+              {/* Weekly Focus */}
+              <WeeklyFocusBanner appointmentId={appointment.id} priorityPattern={appointment.priority_pattern} onSaveField={saveField} />
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Calendar size={13} />
-                {format(appointment.date, "MMM d, yyyy")}
-                <Clock size={13} className="ml-1" />
-                {format(appointment.date, "h:mm a")}
-              </div>
-              <span className="w-px h-3 bg-border" />
-              <Select value={appointment.status} onValueChange={(v) => saveField('status', v)}>
-                <SelectTrigger className="h-7 w-auto min-w-[100px] text-xs font-medium border-border bg-card rounded-lg px-2.5">
-                  <SelectValue placeholder={appointment.status} />
-                </SelectTrigger>
-                <SelectContent className="rounded-lg border-border bg-card p-1">
-                  {APPOINTMENT_STATUSES.map(s => (
-                    <SelectItem key={s} value={s} className="rounded-md text-xs py-1.5 px-3">{s}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <span className="w-px h-3 bg-border" />
+            {/* Row 3: Meta footer */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-3 border-t border-border">
               <button onClick={() => saveField('is_paid', !appointment.is_paid)}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border bg-muted text-muted-foreground text-xs font-medium hover:bg-muted/80 transition-colors"
-              >
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
                 <CreditCard size={12} />
                 {!appointment.is_paid ? "Free" : appointment.payment_received ? "Paid" : `$${appointment.price_amount || 50}`}
               </button>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border bg-muted text-muted-foreground text-xs font-medium">
-                <Droplets size={12} />
+              <span className="text-muted-foreground/30">·</span>
+              <div className="flex items-center gap-1">
+                <Droplets size={12} className={cn("text-muted-foreground", !appointment.hydrated && "text-chart-destructive")} />
                 <Switch checked={appointment.hydrated || false} onCheckedChange={(c) => saveField('hydrated', c)}
-                  className="scale-[0.55] origin-right ml-0.5 data-[state=checked]:bg-muted-foreground data-[state=unchecked]:bg-muted-foreground/30" />
+                  className="scale-[0.5] origin-left data-[state=checked]:bg-chart-emerald data-[state=unchecked]:bg-muted-foreground/30" />
               </div>
+              {!appointment.hydrated && (
+                <span className="text-[11px] text-chart-destructive">Hydration priority</span>
+              )}
+              <span className="text-muted-foreground/30">·</span>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border bg-muted text-muted-foreground text-xs font-medium">
-                      <ShieldAlert size={12} />{calculateNeuralLoad(appointment.priority_pattern || null)}%
-                    </div>
+                    <span className="text-xs text-muted-foreground cursor-help flex items-center gap-1">
+                      <ShieldAlert size={12} />{calculateNeuralLoad(appointment.priority_pattern || null)}% load
+                    </span>
                   </TooltipTrigger>
                   <TooltipContent className="rounded-lg p-2 bg-foreground text-background text-xs">Threat level based on brainstem nuclei inhibition</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+              <span className="text-muted-foreground/30">·</span>
               <Badge variant="outline" className="text-[10px] font-mono text-muted-foreground/50 border-border rounded-md px-2 py-0">
                 {appointment.display_id || appointment.id.slice(0,8)}
               </Badge>
+              {appointment.bolt_score && appointment.bolt_score < 25 && (
+                <>
+                  <span className="text-muted-foreground/30">·</span>
+                  <span className="text-[11px] text-chart-destructive flex items-center gap-1">
+                    <AlertCircle size={12} />Low CO₂
+                  </span>
+                </>
+              )}
+              {appointment.notion_link && (
+                <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer" className="ml-auto">
+                  <ExternalLink size={13} className="text-muted-foreground hover:text-foreground transition-colors" />
+                </a>
+              )}
             </div>
-
-            {/* Alerts */}
-            {(!appointment.hydrated || (appointment.bolt_score && appointment.bolt_score < 25)) && (
-              <div className="flex flex-wrap gap-2">
-                {!appointment.hydrated && (
-                  <div className="flex items-center gap-2 px-3 py-1 rounded-lg border border-chart-primary/20 bg-chart-primary/5 text-chart-primary text-xs">
-                    <Droplets size={14} /> Hydration Priority — Recommend water + electrolytes
-                  </div>
-                )}
-                {appointment.bolt_score && appointment.bolt_score < 25 && (
-                  <div className="flex items-center gap-2 px-3 py-1 rounded-lg border border-chart-destructive/20 bg-chart-destructive/5 text-chart-destructive text-xs">
-                    <AlertCircle size={14} /> Low CO₂ Tolerance — BOLT below functional threshold
-                  </div>
-                )}
-              </div>
-            )}
           </div>
 
           <hr className="border-border" />

@@ -610,20 +610,20 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
         <p className="text-lg text-muted-foreground">Testing the stability of the shift.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="p-10 rounded-xl border-2 border-border hover:border-indigo-200 transition-all space-y-8 bg-white shadow-sm">
-          <p className="text-xl font-medium text-center leading-relaxed">"Do you still believe <span className="text-chart-destructive">"I am {formData.limitingBelief}"</span>?"</p>
+      <div className="grid grid-cols-1 gap-6 max-w-lg mx-auto">
+        <div className="p-8 rounded-xl border border-border bg-card space-y-6">
+          <p className="text-lg font-medium text-center leading-relaxed">"Do you still believe <span className="text-chart-destructive">"I am {formData.limitingBelief}"</span>?"</p>
           <div className="flex gap-4 justify-center">
-            <Button variant="outline" onClick={() => { setFormData({ ...formData, checkBeliefResult: false }); saveProgress(false, { checkBeliefResult: false }); }} className={cn("flex-1 h-14 rounded-xl border-emerald-200 text-chart-emerald font-semibold text-xs uppercase tracking-wider", formData.checkBeliefResult === false && "bg-muted")}>No</Button>
-            <Button variant="outline" onClick={() => { setFormData({ ...formData, checkBeliefResult: true }); saveProgress(false, { checkBeliefResult: true }); }} className={cn("flex-1 h-14 rounded-xl border-rose-200 text-chart-destructive font-semibold text-xs uppercase tracking-wider", formData.checkBeliefResult === true && "bg-muted")}>Yes</Button>
+            <Button variant="outline" onClick={() => { setFormData({ ...formData, checkBeliefResult: false }); saveProgress(false, { checkBeliefResult: false }); }} className={cn("flex-1 h-12 rounded-xl border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-xs uppercase tracking-wider", formData.checkBeliefResult === false && "bg-chart-emerald/30")}>No</Button>
+            <Button variant="outline" onClick={() => { setFormData({ ...formData, checkBeliefResult: true }); saveProgress(false, { checkBeliefResult: true }); }} className={cn("flex-1 h-12 rounded-xl border-destructive bg-destructive/10 text-destructive font-semibold text-xs uppercase tracking-wider", formData.checkBeliefResult === true && "bg-destructive/30")}>Yes</Button>
           </div>
         </div>
 
-        <div className="p-10 rounded-xl border-2 border-border hover:border-indigo-200 transition-all space-y-8 bg-white shadow-sm">
-          <p className="text-xl font-medium text-center leading-relaxed">"Feel the problem of <span className="text-chart-primary">"{formData.problem}"</span>... does it still feel like a problem?"</p>
+        <div className="p-8 rounded-xl border border-border bg-card space-y-6">
+          <p className="text-lg font-medium text-center leading-relaxed">"Feel the problem of <span className="text-chart-primary">"{formData.problem}"</span>... does it still feel like a problem?"</p>
           <div className="flex gap-4 justify-center">
-            <Button variant="outline" onClick={() => { setFormData({ ...formData, checkProblemResult: false }); saveProgress(false, { checkProblemResult: false }); }} className={cn("flex-1 h-14 rounded-xl border-emerald-200 text-chart-emerald font-semibold text-xs uppercase tracking-wider", formData.checkProblemResult === false && "bg-muted")}>No</Button>
-            <Button variant="outline" onClick={() => { setFormData({ ...formData, checkProblemResult: true }); saveProgress(false, { checkProblemResult: true }); }} className={cn("flex-1 h-14 rounded-xl border-rose-200 text-chart-destructive font-semibold text-xs uppercase tracking-wider", formData.checkProblemResult === true && "bg-muted")}>Yes</Button>
+            <Button variant="outline" onClick={() => { setFormData({ ...formData, checkProblemResult: false }); saveProgress(false, { checkProblemResult: false }); }} className={cn("flex-1 h-12 rounded-xl border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-xs uppercase tracking-wider", formData.checkProblemResult === false && "bg-chart-emerald/30")}>No</Button>
+            <Button variant="outline" onClick={() => { setFormData({ ...formData, checkProblemResult: true }); saveProgress(false, { checkProblemResult: true }); }} className={cn("flex-1 h-12 rounded-xl border-destructive bg-destructive/10 text-destructive font-semibold text-xs uppercase tracking-wider", formData.checkProblemResult === true && "bg-destructive/30")}>Yes</Button>
           </div>
         </div>
       </div>

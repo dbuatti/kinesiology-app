@@ -459,7 +459,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
           />
         </div>
         
-      <div className="grid grid-cols-1 gap-6 max-w-lg mx-auto">
+        <div className="space-y-6">
           <div className="space-y-4">
             <Label className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground ml-1">2. Primary Emotion</Label>
             <Input 
@@ -596,7 +596,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
   };
 
   const renderPhase3 = () => (
-    <div className="space-y-12 animate-in fade-in slide-in-from-right-4 duration-500 py-12">
+    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500 py-4">
       <div className="text-center space-y-4">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-chart-primary/10 rounded-[1.5rem] text-chart-primary mb-2 shadow-inner">
           <ShieldCheck size={32} />
@@ -605,20 +605,20 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
         <p className="text-lg text-muted-foreground">Testing the stability of the shift across time and space.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="p-10 rounded-[3rem] border-2 border-border hover:border-indigo-200 transition-all space-y-8 bg-white shadow-sm">
-          <p className="text-xl font-medium text-center leading-relaxed">"Do you think you might feel yourself being <span className="text-chart-primary">"{formData.identity}"</span> in the future?"</p>
+      <div className="grid grid-cols-1 gap-6 max-w-lg mx-auto">
+        <div className="p-6 rounded-xl border border-border bg-card space-y-6">
+          <p className="text-lg font-medium text-center leading-relaxed">"Do you think you might feel yourself being <span className="text-chart-primary">"{formData.identity}"</span> in the future?"</p>
           <div className="flex gap-4 justify-center">
-            <Button variant="outline" onClick={() => handlePhase3Check(true, `${formData.identity} in the future`)} className="flex-1 h-14 rounded-xl border-rose-200 text-chart-destructive font-semibold text-xs uppercase tracking-wider">Yes</Button>
-            <Button variant="outline" onClick={() => handlePhase3Check(false, '')} className="flex-1 h-14 rounded-xl border-emerald-200 text-chart-emerald hover:bg-muted font-semibold text-xs uppercase tracking-wider">No</Button>
+            <Button variant="outline" onClick={() => handlePhase3Check(true, `${formData.identity} in the future`)} className="flex-1 h-14 rounded-xl border-destructive bg-destructive/10 text-destructive font-semibold text-xs uppercase tracking-wider">Yes</Button>
+            <Button variant="outline" onClick={() => handlePhase3Check(false, '')} className="flex-1 h-14 rounded-xl border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-xs uppercase tracking-wider">No</Button>
           </div>
         </div>
 
-        <div className="p-10 rounded-[3rem] border-2 border-border hover:border-indigo-200 transition-all space-y-8 bg-white shadow-sm">
-          <p className="text-xl font-medium text-center leading-relaxed">"Is there any scenario in which you might still feel yourself being <span className="text-chart-primary">"{formData.identity}"</span>?"</p>
+        <div className="p-6 rounded-xl border border-border bg-card space-y-6">
+          <p className="text-lg font-medium text-center leading-relaxed">"Is there any scenario in which you might still feel yourself being <span className="text-chart-primary">"{formData.identity}"</span>?"</p>
           <div className="flex gap-4 justify-center">
-            <Button variant="outline" onClick={() => handlePhase3Check(true, `${formData.identity} in that scenario`)} className="flex-1 h-14 rounded-xl border-rose-200 text-chart-destructive font-semibold text-xs uppercase tracking-wider">Yes</Button>
-            <Button variant="outline" onClick={() => handlePhase3Check(false, '')} className="flex-1 h-14 rounded-xl border-emerald-200 text-chart-emerald hover:bg-muted font-semibold text-xs uppercase tracking-wider">No</Button>
+            <Button variant="outline" onClick={() => handlePhase3Check(true, `${formData.identity} in that scenario`)} className="flex-1 h-14 rounded-xl border-destructive bg-destructive/10 text-destructive font-semibold text-xs uppercase tracking-wider">Yes</Button>
+            <Button variant="outline" onClick={() => handlePhase3Check(false, '')} className="flex-1 h-14 rounded-xl border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-xs uppercase tracking-wider">No</Button>
           </div>
         </div>
       </div>

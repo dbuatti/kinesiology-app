@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Brain, Fingerprint, Target, ShieldAlert, ChevronDown, ChevronRight, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
@@ -40,6 +40,13 @@ const TOOLS = [
 const PsychologyHub = ({ appointment }: PsychologyHubProps) => {
   const [expandedTool, setExpandedTool] = useState<string | null>(null);
   const [activeDialog, setActiveDialog] = useState<string | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (activeDialog) {
+      setTimeout(() => dialogRef.current?.scrollIntoView({ behavior: 'instant', block: 'start' }), 0);
+    }
+  }, [activeDialog]);
 
   const ActiveToolComponent = TOOLS.find(t => t.id === activeDialog)?.component;
 
@@ -91,7 +98,7 @@ const PsychologyHub = ({ appointment }: PsychologyHubProps) => {
 
       {/* Full-screen dialog for active tool */}
       {activeDialog && ActiveToolComponent && (
-        <div className="fixed inset-0 z-[200] bg-background overflow-y-auto">
+        <div ref={dialogRef} className="fixed inset-0 z-[200] bg-background overflow-y-auto">
           <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">

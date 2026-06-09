@@ -54,7 +54,7 @@ const HubSwitcher = () => {
     <div className="flex items-center">
       <Link
         to={activeMode.path}
-        onClick={() => setMode(activeMode.id)}
+        onClick={(e) => { if (!e.metaKey && !e.ctrlKey) setMode(activeMode.id); }}
         className={cn(
           "flex items-center gap-2 sm:gap-3 px-2.5 py-2 sm:px-4 rounded-2xl border transition-all duration-500 hover:shadow-lg group cursor-pointer no-underline",
           activeMode.color
@@ -94,7 +94,7 @@ const HubSwitcher = () => {
               <DropdownMenuItem key={m.id} asChild>
                 <Link
                   to={m.path}
-                  onClick={() => setMode(m.id)}
+                  onClick={(e) => { if (!e.metaKey && !e.ctrlKey) setMode(m.id); }}
                   className={cn(
                     "rounded-2xl p-3 cursor-pointer transition-all duration-300 flex items-start gap-4 no-underline",
                     mode === m.id ? "bg-slate-100 dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-700" : "hover:bg-slate-50 dark:hover:bg-slate-800/50"

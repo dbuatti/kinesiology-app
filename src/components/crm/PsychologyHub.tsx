@@ -44,8 +44,12 @@ const PsychologyHub = ({ appointment }: PsychologyHubProps) => {
 
   useEffect(() => {
     if (activeDialog) {
+      document.body.style.overflow = 'hidden';
       setTimeout(() => dialogRef.current?.scrollIntoView({ behavior: 'instant', block: 'start' }), 0);
+    } else {
+      document.body.style.overflow = '';
     }
+    return () => { document.body.style.overflow = ''; };
   }, [activeDialog]);
 
   const ActiveToolComponent = TOOLS.find(t => t.id === activeDialog)?.component;
@@ -98,7 +102,7 @@ const PsychologyHub = ({ appointment }: PsychologyHubProps) => {
 
       {/* Full-screen dialog for active tool */}
       {activeDialog && ActiveToolComponent && (
-        <div ref={dialogRef} className="fixed inset-0 z-[200] bg-background overflow-y-auto">
+        <div ref={dialogRef} className="fixed inset-0 z-[200] bg-background overflow-y-auto overscroll-contain pb-16" style={{ WebkitOverflowScrolling: 'touch' }}>
           <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">

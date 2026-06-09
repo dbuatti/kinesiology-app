@@ -25,19 +25,19 @@ const LabPage = () => {
           badge="Internal Integration"
         />
         
-        <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
+          <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
           <div className="flex justify-center mb-12">
-            <TabsList className="bg-slate-200/50 p-1.5 rounded-2xl h-14 border border-slate-200">
+            <TabsList className="bg-muted p-1.5 rounded-xl h-14 border border-border">
               <TabsTrigger 
                 value="map" 
-                className="rounded-xl px-10 h-11 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"
+                className="rounded-lg px-10 h-11 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all font-medium text-xs tracking-wider"
               >
                 <Compass className="mr-2" size={18} />
                 Identity Map
               </TabsTrigger>
               <TabsTrigger 
                 value="worksheets" 
-                className="rounded-xl px-10 h-11 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"
+                className="rounded-lg px-10 h-11 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all font-medium text-xs tracking-wider"
               >
                 <FileText className="mr-2" size={18} />
                 Worksheets

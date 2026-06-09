@@ -780,39 +780,39 @@ const LimitingBeliefsTool = ({ singlePage = false }: LimitingBeliefsToolProps = 
       <div className={singlePage ? "space-y-12" : "min-h-[500px]"}>
         {showHistory ? renderHistory() : (
           singlePage ? (
-            <div className="space-y-12">
+            <div className="space-y-8">
               <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="w-7 h-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-semibold">1</span>
-                  <h3 className="text-base font-semibold text-foreground">Problem &amp; Feeling</h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">1</span>
+                  <h3 className="text-sm font-semibold text-foreground">Problem &amp; Feeling</h3>
                 </div>
                 {renderStep1()}
               </section>
               <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="w-7 h-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-semibold">2</span>
-                  <h3 className="text-base font-semibold text-foreground">Belief Extraction</h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">2</span>
+                  <h3 className="text-sm font-semibold text-foreground">Belief Extraction</h3>
                 </div>
                 {renderStep2()}
               </section>
               <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="w-7 h-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-semibold">3</span>
-                  <h3 className="text-base font-semibold text-foreground">Dissolving Loop</h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">3</span>
+                  <h3 className="text-sm font-semibold text-foreground">Dissolving Loop</h3>
                 </div>
                 {renderStep3()}
               </section>
               <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="w-7 h-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-semibold">4</span>
-                  <h3 className="text-base font-semibold text-foreground">Verification</h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">4</span>
+                  <h3 className="text-sm font-semibold text-foreground">Verification</h3>
                 </div>
                 {renderStep4()}
               </section>
               <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="w-7 h-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-semibold">5</span>
-                  <h3 className="text-base font-semibold text-foreground">Integration</h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-5 h-5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">5</span>
+                  <h3 className="text-sm font-semibold text-foreground">Integration</h3>
                 </div>
                 {renderStep5()}
               </section>

@@ -68,9 +68,11 @@ interface FormData {
 
 interface IdentityAlignmentToolProps {
   singlePage?: boolean;
+  clientId?: string;
+  appointmentId?: string;
 }
 
-const IdentityAlignmentTool = ({ singlePage = false }: IdentityAlignmentToolProps = {}) => {
+const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: IdentityAlignmentToolProps = {}) => {
   const location = useLocation();
   const navigate = useNavigate();
   const prefillData = location.state?.prefill;
@@ -166,6 +168,8 @@ const IdentityAlignmentTool = ({ singlePage = false }: IdentityAlignmentToolProp
     try {
       const payload = {
         user_id: user.id,
+        client_id: clientId || null,
+        appointment_id: appointmentId || null,
         backlog_id: currentBacklogId || null,
         goal: dataToSave.goal,
         target_identity: dataToSave.targetIdentity,

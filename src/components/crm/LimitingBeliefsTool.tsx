@@ -60,9 +60,11 @@ interface FormData {
 
 interface LimitingBeliefsToolProps {
   singlePage?: boolean;
+  clientId?: string;
+  appointmentId?: string;
 }
 
-const LimitingBeliefsTool = ({ singlePage = false }: LimitingBeliefsToolProps = {}) => {
+const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: LimitingBeliefsToolProps = {}) => {
   const location = useLocation();
   const navigate = useNavigate();
   const prefillData = location.state?.prefill;
@@ -162,6 +164,8 @@ const LimitingBeliefsTool = ({ singlePage = false }: LimitingBeliefsToolProps = 
     try {
       const payload = {
         user_id: user.id,
+        client_id: clientId || null,
+        appointment_id: appointmentId || null,
         backlog_id: currentBacklogId || null,
         problem: dataToSave.problem,
         felt_sense: dataToSave.feltSense,

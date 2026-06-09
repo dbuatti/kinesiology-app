@@ -57,9 +57,11 @@ interface FormData {
 
 interface IdentityShiftingToolProps {
   singlePage?: boolean;
+  clientId?: string;
+  appointmentId?: string;
 }
 
-const IdentityShiftingTool = ({ singlePage = false }: IdentityShiftingToolProps = {}) => {
+const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: IdentityShiftingToolProps = {}) => {
   const location = useLocation();
   const navigate = useNavigate();
   const prefillData = location.state?.prefill;
@@ -197,6 +199,8 @@ const IdentityShiftingTool = ({ singlePage = false }: IdentityShiftingToolProps 
       const payload = {
         user_id: user.id,
         backlog_id: currentBacklogId || null,
+        client_id: clientId || null,
+        appointment_id: appointmentId || null,
         problem: dataToSave.problem,
         emotion: dataToSave.emotion,
         felt_sense: dataToSave.feltSense,

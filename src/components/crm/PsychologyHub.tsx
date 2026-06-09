@@ -111,7 +111,7 @@ const PsychologyHub = ({ appointment }: PsychologyHubProps) => {
             </Button>
           </div>
           <div className="max-w-3xl mx-auto p-4 md:p-8">
-            <ActiveToolComponent singlePage />
+            <ActiveToolComponent singlePage clientId={appointment.clients.id} appointmentId={appointment.id} />
           </div>
         </div>
       )}

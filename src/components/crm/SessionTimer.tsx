@@ -51,6 +51,11 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
   const location = useLocation();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const interval = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   const [isFullScreen, setIsFullScreen] = useState(() => {
     return localStorage.getItem('antigravity_fullscreen') === 'true';
   });

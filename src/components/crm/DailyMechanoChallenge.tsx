@@ -77,38 +77,38 @@ const DailyMechanoChallenge = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700">
-      <Card className="border-none shadow-2xl rounded-[3rem] bg-slate-900 text-white overflow-hidden relative">
+      <Card className="border-none shadow-sm rounded-xl bg-card text-card-foreground overflow-hidden relative">
         <div className="absolute top-0 right-0 p-8 opacity-10"><Target size={120} /></div>
         <CardHeader className="p-8 pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg">
-                <Sparkles size={20} className="text-amber-400" />
+              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-sm">
+                <Sparkles size={20} className="text-primary-foreground" />
               </div>
               <div>
-                <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30 font-black text-[8px] uppercase tracking-widest mb-1 rounded-full">Daily Drill</Badge>
-                <CardTitle className="text-2xl font-black">Clinical Case Study</CardTitle>
+                <Badge className="bg-chart-primary/10 text-chart-primary border-chart-primary/20 font-semibold text-[10px] uppercase tracking-wider mb-1 rounded-full">Daily Drill</Badge>
+                <CardTitle className="text-2xl font-semibold">Clinical Case Study</CardTitle>
               </div>
             </div>
-            <div className="flex items-center gap-2 bg-white/10 px-4 py-1.5 rounded-xl border border-white/10">
-              <Trophy size={14} className="text-amber-400 fill-amber-400" />
-              <span className="text-xs font-black uppercase tracking-widest">Streak: {streak}</span>
+            <div className="flex items-center gap-2 bg-muted px-4 py-1.5 rounded-xl border border-border">
+              <Trophy size={14} className="text-muted-foreground fill-muted-foreground" />
+              <span className="text-xs font-semibold uppercase tracking-wider">Streak: {streak}</span>
             </div>
           </div>
         </CardHeader>
         <CardContent className="p-8 pt-0 space-y-8 relative z-10">
           <div className="space-y-4">
-            <div className="p-6 bg-white/5 rounded-[2rem] border border-white/10">
-              <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">The Presenting Symptom</p>
-              <p className="text-xl font-bold leading-tight">"{currentCase.symptom}"</p>
-              <p className="text-sm text-slate-400 mt-2 font-medium italic">History: {currentCase.history}</p>
+            <div className="p-6 bg-muted rounded-xl border border-border">
+              <p className="text-[10px] font-semibold text-chart-primary uppercase tracking-wider mb-2">The Presenting Symptom</p>
+              <p className="text-xl font-medium leading-tight">"{currentCase.symptom}"</p>
+              <p className="text-sm text-muted-foreground mt-2 font-medium italic">History: {currentCase.history}</p>
             </div>
 
-            <div className="p-6 bg-amber-500/10 rounded-[2rem] border border-amber-500/20">
-              <p className="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+            <div className="p-6 bg-muted rounded-xl border border-border">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-2">
                 <ShieldAlert size={14} /> Diagnostic Clue
               </p>
-              <p className="text-sm font-bold text-amber-100 leading-relaxed">
+              <p className="text-sm font-medium text-foreground leading-relaxed">
                 {currentCase.diagnosticClue}
               </p>
             </div>
@@ -117,31 +117,31 @@ const DailyMechanoChallenge = () => {
           {!showResult ? (
             <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
               <div className="space-y-2">
-                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <div className="flex justify-between text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                   <span>Clinical Reasoning Flow</span>
                   <span>Step {challengeStep} of 6</span>
                 </div>
-                <Progress value={progress} className="h-1.5 bg-white/10 [&>div]:bg-indigo-500" />
+                <Progress value={progress} className="h-1.5 bg-muted [&>div]:bg-chart-primary" />
               </div>
 
               {/* Step 1: Pathway */}
               {challengeStep === 1 && (
                 <div className="space-y-4 animate-in fade-in duration-300">
-                  <p className="text-sm font-black text-slate-400 uppercase tracking-widest">1. Identify the Pathway</p>
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">1. Identify the Pathway</p>
                   <div className="grid grid-cols-2 gap-4">
                     <Button 
                       variant="outline" 
                       onClick={() => handleSelectAnswer('path', 'Conscious')}
-                      className="h-20 rounded-2xl border-2 border-white/10 bg-white/5 hover:bg-white/10 text-white font-black text-xs uppercase tracking-widest"
+                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs uppercase tracking-wider"
                     >
-                      <Brain size={18} className="mr-2 text-blue-400" /> Conscious (DCML)
+                      <Brain size={18} className="mr-2 text-chart-primary" /> Conscious (DCML)
                     </Button>
                     <Button 
                       variant="outline" 
                       onClick={() => handleSelectAnswer('path', 'Unconscious')}
-                      className="h-20 rounded-2xl border-2 border-white/10 bg-white/5 hover:bg-white/10 text-white font-black text-xs uppercase tracking-widest"
+                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs uppercase tracking-wider"
                     >
-                      <Activity size={18} className="mr-2 text-emerald-400" /> Unconscious (SC)
+                      <Activity size={18} className="mr-2 text-chart-emerald" /> Unconscious (SC)
                     </Button>
                   </div>
                 </div>
@@ -150,19 +150,19 @@ const DailyMechanoChallenge = () => {
               {/* Step 2: Skeleton Type */}
               {challengeStep === 2 && (
                 <div className="space-y-4 animate-in fade-in duration-300">
-                  <p className="text-sm font-black text-slate-400 uppercase tracking-widest">2. Identify the Skeleton Type</p>
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">2. Identify the Skeleton Type</p>
                   <div className="grid grid-cols-2 gap-4">
                     <Button 
                       variant="outline" 
                       onClick={() => handleSelectAnswer('skeleton', 'Axial')}
-                      className="h-20 rounded-2xl border-2 border-white/10 bg-white/5 hover:bg-white/10 text-white font-black text-xs uppercase tracking-widest"
+                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs uppercase tracking-wider"
                     >
                       Axial (Spine/Skull)
                     </Button>
                     <Button 
                       variant="outline" 
                       onClick={() => handleSelectAnswer('skeleton', 'Appendicular')}
-                      className="h-20 rounded-2xl border-2 border-white/10 bg-white/5 hover:bg-white/10 text-white font-black text-xs uppercase tracking-widest"
+                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs uppercase tracking-wider"
                     >
                       Appendicular (Limbs)
                     </Button>
@@ -173,19 +173,19 @@ const DailyMechanoChallenge = () => {
               {/* Step 3: Region */}
               {challengeStep === 3 && (
                 <div className="space-y-4 animate-in fade-in duration-300">
-                  <p className="text-sm font-black text-slate-400 uppercase tracking-widest">3. Identify the Body Region</p>
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">3. Identify the Body Region</p>
                   <div className="grid grid-cols-2 gap-4">
                     <Button 
                       variant="outline" 
                       onClick={() => handleSelectAnswer('region', 'Upper')}
-                      className="h-20 rounded-2xl border-2 border-white/10 bg-white/5 hover:bg-white/10 text-white font-black text-xs uppercase tracking-widest"
+                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs uppercase tracking-wider"
                     >
                       Upper Body (Above T12)
                     </Button>
                     <Button 
                       variant="outline" 
                       onClick={() => handleSelectAnswer('region', 'Lower')}
-                      className="h-20 rounded-2xl border-2 border-white/10 bg-white/5 hover:bg-white/10 text-white font-black text-xs uppercase tracking-widest"
+                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs uppercase tracking-wider"
                     >
                       Lower Body (Below T12)
                     </Button>
@@ -196,14 +196,14 @@ const DailyMechanoChallenge = () => {
               {/* Step 4: Joint */}
               {challengeStep === 4 && (
                 <div className="space-y-4 animate-in fade-in duration-300">
-                  <p className="text-sm font-black text-slate-400 uppercase tracking-widest">4. Localize the Joint</p>
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">4. Localize the Joint</p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {["Shoulder (GH Joint)", "Foot/Ankle", "Lumbar Spine", "Cervical Spine", "Hip", "Knee", "Jaw (TMJ)", "Pelvis"].map(joint => (
                       <Button 
                         key={joint}
                         variant="outline"
                         onClick={() => handleSelectAnswer('joint', joint)}
-                        className="h-12 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white text-[10px] font-bold"
+                        className="h-12 rounded-xl border border-border bg-muted hover:bg-muted/80 text-muted-foreground text-[10px] font-medium"
                       >
                         {joint}
                       </Button>
@@ -215,14 +215,14 @@ const DailyMechanoChallenge = () => {
               {/* Step 5: Plane of Motion */}
               {challengeStep === 5 && (
                 <div className="space-y-4 animate-in fade-in duration-300">
-                  <p className="text-sm font-black text-slate-400 uppercase tracking-widest">5. Identify the Plane of Motion</p>
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">5. Identify the Plane of Motion</p>
                   <div className="grid grid-cols-3 gap-4">
                     {["Sagittal", "Frontal", "Transverse"].map(plane => (
                       <Button 
                         key={plane}
                         variant="outline"
                         onClick={() => handleSelectAnswer('plane', plane)}
-                        className="h-16 rounded-2xl border-2 border-white/10 bg-white/5 hover:bg-white/10 text-white font-black text-xs uppercase tracking-widest"
+                        className="h-16 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs uppercase tracking-wider"
                       >
                         {plane}
                       </Button>
@@ -234,27 +234,27 @@ const DailyMechanoChallenge = () => {
               {/* Step 6: Review & Submit */}
               {challengeStep === 6 && (
                 <div className="space-y-6 animate-in fade-in duration-300">
-                  <p className="text-sm font-black text-slate-400 uppercase tracking-widest">6. Review Your Clinical Logic</p>
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">6. Review Your Clinical Logic</p>
                   <div className="grid grid-cols-2 gap-4 text-xs">
-                    <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                      <span className="text-[8px] font-black text-slate-500 uppercase">Pathway</span>
-                      <p className="font-bold text-sm mt-1">{userAnswers.path}</p>
+                    <div className="p-4 bg-muted rounded-xl border border-border">
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">Pathway</span>
+                      <p className="font-medium text-sm mt-1">{userAnswers.path}</p>
                     </div>
-                    <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                      <span className="text-[8px] font-black text-slate-500 uppercase">Skeleton</span>
-                      <p className="font-bold text-sm mt-1">{userAnswers.skeleton}</p>
+                    <div className="p-4 bg-muted rounded-xl border border-border">
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">Skeleton</span>
+                      <p className="font-medium text-sm mt-1">{userAnswers.skeleton}</p>
                     </div>
-                    <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                      <span className="text-[8px] font-black text-slate-500 uppercase">Region</span>
-                      <p className="font-bold text-sm mt-1">{userAnswers.region}</p>
+                    <div className="p-4 bg-muted rounded-xl border border-border">
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">Region</span>
+                      <p className="font-medium text-sm mt-1">{userAnswers.region}</p>
                     </div>
-                    <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                      <span className="text-[8px] font-black text-slate-500 uppercase">Joint</span>
-                      <p className="font-bold text-sm mt-1">{userAnswers.joint}</p>
+                    <div className="p-4 bg-muted rounded-xl border border-border">
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">Joint</span>
+                      <p className="font-medium text-sm mt-1">{userAnswers.joint}</p>
                     </div>
-                    <div className="p-4 bg-white/5 rounded-xl border border-white/10 col-span-2">
-                      <span className="text-[8px] font-black text-slate-500 uppercase">Plane of Motion</span>
-                      <p className="font-bold text-sm mt-1">{userAnswers.plane}</p>
+                    <div className="p-4 bg-muted rounded-xl border border-border col-span-2">
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">Plane of Motion</span>
+                      <p className="font-medium text-sm mt-1">{userAnswers.plane}</p>
                     </div>
                   </div>
 
@@ -262,13 +262,13 @@ const DailyMechanoChallenge = () => {
                     <Button 
                       variant="ghost" 
                       onClick={() => setChallengeStep(5)}
-                      className="flex-1 h-14 rounded-2xl text-slate-400 hover:text-white"
+                      className="flex-1 h-14 rounded-xl text-muted-foreground hover:text-foreground"
                     >
                       <ChevronLeft size={18} className="mr-2" /> Back
                     </Button>
                     <Button 
                       onClick={checkAnswer}
-                      className="flex-[2] h-14 rounded-2xl bg-white text-slate-900 hover:bg-slate-100 font-black text-xs uppercase tracking-widest shadow-xl"
+                      className="flex-[2] h-14 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs uppercase tracking-wider shadow-sm"
                     >
                       Submit Clinical Logic
                     </Button>
@@ -279,38 +279,38 @@ const DailyMechanoChallenge = () => {
           ) : (
             <div className="space-y-6 animate-in zoom-in-95 duration-500">
               <div className={cn(
-                "p-8 rounded-[2rem] border-4 text-center space-y-4",
-                isCorrect ? "bg-emerald-500/10 border-emerald-500/50" : "bg-rose-500/10 border-rose-500/50"
+                "p-8 rounded-xl border-4 text-center space-y-4",
+                isCorrect ? "bg-chart-emerald/10 border-chart-emerald/50" : "bg-chart-destructive/10 border-chart-destructive/50"
               )}>
-                <div className="w-16 h-16 rounded-full bg-white mx-auto flex items-center justify-center shadow-lg">
-                  {isCorrect ? <CheckCircle2 size={40} className="text-emerald-500" /> : <XCircle size={40} className="text-rose-500" />}
+                <div className="w-16 h-16 rounded-full bg-card mx-auto flex items-center justify-center shadow-sm">
+                  {isCorrect ? <CheckCircle2 size={40} className="text-chart-emerald" /> : <XCircle size={40} className="text-chart-destructive" />}
                 </div>
-                <h3 className="text-2xl font-black">{isCorrect ? "Clinical Mastery!" : "Logic Refinement Needed"}</h3>
-                <p className="text-slate-300 font-medium leading-relaxed">
+                <h3 className="text-2xl font-semibold">{isCorrect ? "Clinical Mastery!" : "Logic Refinement Needed"}</h3>
+                <p className="text-muted-foreground/60 font-medium leading-relaxed">
                   {currentCase.logicExplanation}
                 </p>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
-                <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                  <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Correct Pathway</p>
-                  <Badge className={cn("border-none font-black rounded-full", currentCase.correctPath === 'Conscious' ? "bg-blue-600" : "bg-emerald-600")}>
+                <div className="p-4 bg-muted rounded-xl border border-border">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Correct Pathway</p>
+                  <Badge className={cn("border-none font-semibold rounded-full", currentCase.correctPath === 'Conscious' ? "bg-primary" : "bg-primary")}>
                     {currentCase.correctPath}
                   </Badge>
                 </div>
-                <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
-                  <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Correct Joint</p>
-                  <p className="text-sm font-bold">{currentCase.localization.joint}</p>
+                <div className="p-4 bg-muted rounded-xl border border-border">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Correct Joint</p>
+                  <p className="text-sm font-medium">{currentCase.localization.joint}</p>
                 </div>
-                <div className="p-4 bg-white/5 rounded-2xl border border-white/10 col-span-2 sm:col-span-1">
-                  <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Correct Plane</p>
-                  <p className="text-sm font-bold">{currentCase.localization.plane}</p>
+                <div className="p-4 bg-muted rounded-xl border border-border col-span-2 sm:col-span-1">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Correct Plane</p>
+                  <p className="text-sm font-medium">{currentCase.localization.plane}</p>
                 </div>
               </div>
 
               <Button 
                 onClick={generateNewCase}
-                className="w-full h-12 rounded-2xl bg-indigo-600 hover:bg-indigo-700 font-black text-[10px] uppercase tracking-widest"
+                className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 font-semibold text-[10px] uppercase tracking-wider text-primary-foreground"
               >
                 <RefreshCw size={16} className="mr-2" /> Next Case Study
               </Button>

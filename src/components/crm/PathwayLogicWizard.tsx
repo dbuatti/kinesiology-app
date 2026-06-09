@@ -287,26 +287,26 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
           return (
             <div className="py-12 flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in zoom-in-95 duration-500">
               <div className={cn(
-                "w-20 h-20 rounded-[2rem] flex items-center justify-center shadow-xl",
-                hasAnyTested ? "bg-emerald-50 text-emerald-500" : "bg-slate-50 text-slate-300"
+                "w-20 h-20 rounded-xl flex items-center justify-center shadow-xl",
+                hasAnyTested ? "bg-chart-emerald/10 text-chart-emerald" : "bg-muted text-muted-foreground"
               )}>
                 {hasAnyTested ? <CheckCircle2 size={40} /> : <ClipboardCheck size={40} />}
               </div>
               <div className="space-y-2">
-                <h3 className="text-2xl font-black text-slate-900">
+                <h3 className="text-xl font-semibold text-foreground">
                   {hasAnyTested ? "All findings clear" : "Align phase pending"}
                 </h3>
-                <p className="text-slate-500 font-medium max-w-xs mx-auto">
+                <p className="text-muted-foreground max-w-xs mx-auto">
                   {hasAnyTested 
                     ? `✓ All findings from this session tested clear — no corrections required. (${format(new Date(), "h:mm a")})`
                     : "Complete the Align phase first to populate correction targets."}
                 </p>
               </div>
-              <div className="pt-4 border-t border-slate-100 w-full max-w-xs">
+              <div className="pt-4 border-t border-border w-full max-w-xs">
                 <Button 
                   variant="ghost" 
                   onClick={() => setSelectedFinding('CUSTOM')}
-                  className="w-full h-10 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600"
+                  className="w-full h-10 text-[10px] font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground"
                 >
                   + Manual Correction Entry
                 </Button>
@@ -319,32 +319,32 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
           <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
             <div className="space-y-6">
               <div className="space-y-2">
-                <h3 className="text-xl font-black text-slate-900">1. Select Finding to Correct</h3>
-                <p className="text-sm text-slate-500 font-medium">Choose an inhibited item or enter a custom entry point.</p>
+                <h3 className="text-lg font-semibold text-foreground">1. Select Finding to Correct</h3>
+                <p className="text-sm text-muted-foreground">Choose an inhibited item or enter a custom entry point.</p>
               </div>
               
               <div className="grid grid-cols-1 gap-4">
                 <Select value={selectedFinding} onValueChange={(v) => setSelectedFinding(v)}>
-                  <SelectTrigger className="h-14 rounded-2xl border-2 border-slate-100 bg-white font-bold text-lg">
+                  <SelectTrigger className="h-14 rounded-xl border border-border bg-card font-medium text-base">
                     <SelectValue placeholder={loadingMuscles ? "Loading findings..." : "Select inhibited finding..."} />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl border-none shadow-2xl p-2 bg-white dark:bg-slate-900">
+                  <SelectContent className="rounded-xl border-border bg-card p-1">
                     {inhibitedItems.map(item => (
                       <SelectItem key={item} value={item} className={cn(
-                        "rounded-xl py-3 font-bold",
-                        item.includes('(Bilateral)') && "text-indigo-600 bg-indigo-50/50"
+                        "rounded-xl py-3 font-medium",
+                        item.includes('(Bilateral)') && "text-chart-primary bg-chart-primary/5"
                       )}>
                         {item}
                       </SelectItem>
                     ))}
-                    <SelectItem value="CUSTOM" className="rounded-xl py-3 font-bold text-indigo-600">+ New Correction Entry</SelectItem>
+                    <SelectItem value="CUSTOM" className="rounded-xl py-3 font-medium text-chart-primary">+ New Correction Entry</SelectItem>
                   </SelectContent>
                 </Select>
 
                 {selectedFinding === 'CUSTOM' && (
                   <Input 
                     placeholder="Enter custom entry point..." 
-                    className="h-12 rounded-xl font-bold border-2 border-indigo-100 animate-in slide-in-from-top-2"
+                    className="h-12 rounded-xl font-medium border border-border animate-in slide-in-from-top-2"
                     value={customText}
                     onChange={(e) => setCustomText(e.target.value)}
                     autoFocus
@@ -355,80 +355,80 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <h3 className="text-xl font-black text-slate-900">2. Choose Correction Direction</h3>
-                <p className="text-sm text-slate-500 font-medium">Determine if the system needs bottom-up or top-down input.</p>
+                <h3 className="text-lg font-semibold text-foreground">2. Choose Correction Direction</h3>
+                <p className="text-sm text-muted-foreground">Determine if the system needs bottom-up or top-down input.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <button 
                     onClick={() => goToStep('AFFERENT_SELECT')} 
-                    className="p-8 rounded-[2.5rem] border-2 transition-all duration-500 text-left group border-blue-100 bg-blue-50/30 hover:border-blue-400 hover:bg-blue-50"
+                    className="p-8 rounded-xl border border-border bg-card hover:bg-muted transition-all duration-500 text-left group"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 rounded-2xl bg-white shadow-md flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all">
-                      <GitBranch size={24} className="text-blue-600 group-hover:text-white" />
+                    <div className="w-12 h-12 rounded-xl bg-muted text-muted-foreground flex items-center justify-center transition-all">
+                      <GitBranch size={24} className="text-chart-primary" />
                     </div>
-                    <Badge className="bg-blue-100 text-blue-700 border-none font-black text-[8px] uppercase tracking-widest rounded-full">Bottom-Up</Badge>
+                    <Badge className="bg-chart-primary/10 text-chart-primary border-none font-medium text-[10px] uppercase tracking-wider rounded-full">Bottom-Up</Badge>
                   </div>
-                  <h3 className="text-2xl font-black text-blue-900 tracking-tight">Afferent</h3>
-                  <p className="text-xs font-bold text-blue-700 mt-2">Sensory input issue.</p>
+                  <h3 className="text-xl font-semibold text-foreground tracking-tight">Afferent</h3>
+                  <p className="text-xs font-medium text-muted-foreground mt-2">Sensory input issue.</p>
                 </button>
 
                 <button 
                     onClick={() => goToStep('EFFERENT_SELECT')} 
-                    className="p-8 rounded-[2.5rem] border-2 transition-all duration-500 text-left group border-purple-100 bg-purple-50/30 hover:border-purple-400 hover:bg-purple-50"
+                    className="p-8 rounded-xl border border-border bg-card hover:bg-muted transition-all duration-500 text-left group"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 rounded-2xl bg-white shadow-md flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-all">
-                      <Sparkles size={24} className="text-purple-600 group-hover:text-white" />
+                    <div className="w-12 h-12 rounded-xl bg-muted text-muted-foreground flex items-center justify-center transition-all">
+                      <Sparkles size={24} className="text-muted-foreground" />
                     </div>
-                    <Badge className="bg-purple-100 text-purple-700 border-none font-black text-[8px] uppercase tracking-widest rounded-full">Top-Down</Badge>
+                    <Badge className="bg-muted text-muted-foreground border-none font-medium text-[10px] uppercase tracking-wider rounded-full">Top-Down</Badge>
                   </div>
-                  <h3 className="text-2xl font-black text-purple-900 tracking-tight">Efferent</h3>
-                  <p className="text-xs font-bold text-purple-700 mt-2">Processing issue.</p>
+                  <h3 className="text-xl font-semibold text-foreground tracking-tight">Efferent</h3>
+                  <p className="text-xs font-medium text-muted-foreground mt-2">Processing issue.</p>
                 </button>
               </div>
             </div>
 
             {clinicalTip && (
-              <div className="p-8 bg-amber-50 rounded-[2.5rem] border-2 border-amber-100 animate-in zoom-in-95 duration-500 space-y-6">
+              <div className="p-6 rounded-xl border border-border bg-card animate-in zoom-in-95 duration-500 space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <clinicalTip.icon size={24} className="text-amber-600" />
-                    <h4 className="font-black text-amber-900 text-sm uppercase tracking-widest">Clinical Insight: {clinicalTip.title}</h4>
+                    <clinicalTip.icon size={24} className="text-muted-foreground" />
+                    <h4 className="font-medium text-foreground text-sm">Clinical Insight: {clinicalTip.title}</h4>
                   </div>
                   <div className="flex gap-2">
-                    <Badge variant="outline" className="bg-white border-amber-200 text-amber-700 font-black text-[8px] uppercase tracking-widest rounded-full">
+                    <Badge variant="outline" className="bg-muted border-border text-muted-foreground font-medium text-[10px] uppercase tracking-wider rounded-full">
                       {clinicalTip.type}
                     </Badge>
-                    <Badge className="bg-amber-600 text-white border-none font-black text-[8px] uppercase tracking-widest rounded-full">
+                    <Badge className="bg-primary text-primary-foreground border-none font-medium text-[10px] uppercase tracking-wider rounded-full">
                       {clinicalTip.logic}
                     </Badge>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 bg-white/60 rounded-2xl border border-amber-200 space-y-1">
-                    <p className="text-[8px] font-black text-amber-600 uppercase tracking-widest flex items-center gap-1">
+                  <div className="p-4 bg-muted rounded-xl border border-border space-y-1">
+                    <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
                       {clinicalTip.type === 'Primitive Reflex' ? <ShieldAlert size={10} /> : <Hand size={10} />}
                       {clinicalTip.type === 'Primitive Reflex' ? 'Inhibition Pattern' : 'Reflex Point'}
                     </p>
-                    <p className="text-xs font-bold text-amber-900 leading-tight">{clinicalTip.location}</p>
+                    <p className="text-xs font-medium text-foreground leading-tight">{clinicalTip.location}</p>
                   </div>
-                  <div className="p-4 bg-white/60 rounded-2xl border border-amber-200 space-y-1">
-                    <p className="text-[8px] font-black text-amber-600 uppercase tracking-widest flex items-center gap-1">
+                  <div className="p-4 bg-muted rounded-xl border border-border space-y-1">
+                    <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
                       <PlayCircle size={10} /> Stimulus
                     </p>
-                    <p className="text-xs font-bold text-amber-900 leading-tight">{clinicalTip.stimulus}</p>
+                    <p className="text-xs font-medium text-foreground leading-tight">{clinicalTip.stimulus}</p>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-amber-200">
-                  <p className="text-sm text-amber-800 font-medium leading-relaxed italic">
+                <div className="pt-4 border-t border-border">
+                  <p className="text-sm text-muted-foreground leading-relaxed italic">
                     "{clinicalTip.content}"
                   </p>
                   {clinicalTip.extra && (
-                    <div className="mt-3 flex items-center gap-2 text-[10px] font-black text-amber-600 uppercase tracking-widest">
+                    <div className="mt-3 flex items-center gap-2 text-[10px] font-medium text-muted-foreground">
                       <ShieldAlert size={12} /> {clinicalTip.extra}
                     </div>
                   )}
@@ -441,85 +441,75 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
       case 'AFFERENT_SELECT':
         return (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between mb-4">
+            <div className="p-4 bg-muted rounded-xl border border-border flex items-center justify-between mb-4">
               <div>
-                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Correcting</p>
-                <p className="text-lg font-black text-indigo-900">{effectiveItem || "General Correction"}</p>
+                <p className="text-[10px] font-medium text-muted-foreground">Correcting</p>
+                <p className="text-base font-semibold text-foreground">{effectiveItem || "General Correction"}</p>
               </div>
-              <Badge className="bg-blue-600 text-white border-none font-black text-[8px] uppercase tracking-widest rounded-full">Afferent</Badge>
+              <Badge className="bg-chart-primary text-primary-foreground border-none font-medium text-[10px] uppercase tracking-wider rounded-full">Afferent</Badge>
             </div>
             {[
               { type: 'Mechanoreceptive', icon: Activity, color: 'blue', step: 'MECHANO_PROCESS', desc: 'Joint and muscle receptor calibration.' },
               { type: 'Vestibular', icon: Eye, color: 'cyan', step: 'VESTIBULAR_PROCESS', desc: 'Balance and visual system integration.' },
               { type: 'Nociceptive', icon: AlertTriangle, color: 'orange', step: 'NOCICEPTIVE_PROCESS', desc: 'Clearing threat from scars or old injuries.' }
             ].map(item => (
-              <button key={item.type} onClick={() => goToStep(item.step as Step)} className={cn(
-                "p-6 rounded-2xl border-2 transition-all duration-300 text-left group w-full",
-                item.color === 'blue' ? "border-blue-100 bg-blue-50/30 hover:border-blue-300" :
-                item.color === 'cyan' ? "border-cyan-100 bg-cyan-50/30 hover:border-cyan-300" :
-                "border-orange-100 bg-orange-50/30 hover:border-orange-300"
-              )}>
+              <button key={item.type} onClick={() => goToStep(item.step as Step)} className="p-6 rounded-xl border border-border bg-card hover:bg-muted transition-all duration-300 text-left group w-full">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-card shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <div className="w-12 h-12 rounded-xl bg-card shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
                       <item.icon size={24} className={cn(
-                        item.color === 'blue' ? "text-blue-600" :
-                        item.color === 'cyan' ? "text-cyan-600" :
-                        "text-orange-600"
+                        item.color === 'blue' ? "text-chart-primary" :
+                        item.color === 'cyan' ? "text-muted-foreground" :
+                        "text-muted-foreground"
                       )} />
                     </div>
                     <div>
-                        <p className="font-black text-lg text-foreground">{item.type}</p>
+                        <p className="font-semibold text-base text-foreground">{item.type}</p>
                         <p className="text-xs font-medium text-muted-foreground">{item.desc}</p>
                     </div>
                   </div>
-                  <ArrowRight size={20} className="text-muted-foreground group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+                  <ArrowRight size={20} className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
                 </div>
               </button>
             ))}
-            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-bold text-muted-foreground"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-medium text-muted-foreground"><ChevronLeft size={18} className="mr-2" /> Back</Button>
           </div>
         );
 
       case 'EFFERENT_SELECT':
         return (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between mb-4">
+            <div className="p-4 bg-muted rounded-xl border border-border flex items-center justify-between mb-4">
               <div>
-                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Correcting</p>
-                <p className="text-lg font-black text-indigo-900">{effectiveItem || "General Correction"}</p>
+                <p className="text-[10px] font-medium text-muted-foreground">Correcting</p>
+                <p className="text-base font-semibold text-foreground">{effectiveItem || "General Correction"}</p>
               </div>
-              <Badge className="bg-purple-600 text-white border-none font-black text-[8px] uppercase tracking-widest rounded-full">Efferent</Badge>
+              <Badge className="bg-foreground text-background border-none font-medium text-[10px] uppercase tracking-wider rounded-full">Efferent</Badge>
             </div>
             {[
               { type: 'Brain Integration', icon: Brain, color: 'purple', step: 'EFFERENT_PROCESS', desc: 'Cortical and subcortical zone pairing.' },
               { type: 'Emotional Integration', icon: Heart, color: 'rose', step: 'EMOTIONS_PROCESS', desc: 'Limbic system and emotional context balancing.' }
             ].map(item => (
-              <button key={item.type} onClick={() => goToStep(item.step as Step)} className={cn(
-                "p-6 rounded-2xl border-2 transition-all duration-300 text-left group w-full",
-                item.color === 'purple' ? "border-purple-100 bg-purple-50/30 hover:border-purple-300" :
-                item.color === 'rose' ? "border-rose-100 bg-rose-50/30 hover:border-rose-300" :
-                "border-slate-100 bg-slate-50/30 hover:border-slate-300"
-              )}>
+              <button key={item.type} onClick={() => goToStep(item.step as Step)} className="p-6 rounded-xl border border-border bg-card hover:bg-muted transition-all duration-300 text-left group w-full">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-card shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <div className="w-12 h-12 rounded-xl bg-card shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
                       <item.icon size={24} className={cn(
-                        item.color === 'purple' ? "text-purple-600" :
-                        item.color === 'rose' ? "text-rose-600" :
-                        "text-slate-600"
+                        item.color === 'purple' ? "text-muted-foreground" :
+                        item.color === 'rose' ? "text-chart-destructive" :
+                        "text-muted-foreground"
                       )} />
                     </div>
                     <div>
-                        <p className="font-black text-lg text-foreground">{item.type}</p>
+                        <p className="font-semibold text-base text-foreground">{item.type}</p>
                         <p className="text-xs font-medium text-muted-foreground">{item.desc}</p>
                     </div>
                   </div>
-                  <ArrowRight size={20} className="text-muted-foreground group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+                  <ArrowRight size={20} className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
                 </div>
               </button>
             ))}
-            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-bold text-muted-foreground"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-medium text-muted-foreground"><ChevronLeft size={18} className="mr-2" /> Back</Button>
           </div>
         );
 
@@ -554,17 +544,17 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
 
   return (
     <>
-      <Card className="border-none shadow-xl rounded-[3rem] bg-card overflow-hidden">
+      <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
         <CardHeader className="p-10 pb-6">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-                <CardTitle className="text-3xl font-black text-foreground tracking-tight">Calibration Wizard</CardTitle>
-                <CardDescription className="text-muted-foreground font-medium text-lg">
+                <CardTitle className="text-xl font-semibold text-foreground">Calibration Wizard</CardTitle>
+                <CardDescription className="text-muted-foreground text-sm">
                     Correct inhibited findings via Afferent or Efferent pathways.
                 </CardDescription>
             </div>
             {step !== 'SELECT_START' && (
-                <Button variant="ghost" size="sm" onClick={resetWizard} className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-rose-600 rounded-xl">
+                <Button variant="ghost" size="sm" onClick={resetWizard} className="text-[10px] font-medium text-muted-foreground hover:text-foreground rounded-xl">
                     <RefreshCw size={14} className="mr-2" /> Reset Wizard
                 </Button>
             )}
@@ -575,9 +565,9 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
         </CardContent>
       </Card>
       <Dialog open={ligamentModalOpen} onOpenChange={setLigamentModalOpen}>
-        <DialogContent className="sm:max-w-[80vw] max-h-[90vh] rounded-[3rem] p-0 overflow-hidden border-none shadow-2xl bg-card">
-          <DialogHeader className="p-8 bg-slate-900 dark:bg-slate-950 text-white">
-            <DialogTitle className="text-2xl font-black">Ligament Reference Images</DialogTitle>
+        <DialogContent className="sm:max-w-[80vw] max-h-[90vh] rounded-xl p-0 overflow-hidden border-none shadow-sm bg-card">
+          <DialogHeader className="p-8 bg-muted text-foreground">
+            <DialogTitle className="text-lg font-semibold">Ligament Reference Images</DialogTitle>
             <DialogDescription>Visual guides for mechanoreceptive ligament corrections.</DialogDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[70vh] p-8">
@@ -585,15 +575,15 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
               {Object.entries(ligamentImages).map(([category, urls]) => (
                 <div key={category} className="space-y-6">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center">
                         <ImageIcon size={18} />
                     </div>
-                    <h3 className="text-xl font-black text-foreground capitalize">{category.replace('_', ' ')}</h3>
+                    <h3 className="text-base font-semibold text-foreground capitalize">{category.replace('_', ' ')}</h3>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {urls.map((url, index) => (
                       url ? (
-                        <div key={index} className="aspect-video rounded-2xl overflow-hidden border-2 border-border shadow-sm hover:border-indigo-300 dark:hover:border-indigo-900 transition-all">
+                        <div key={index} className="aspect-video rounded-xl overflow-hidden border border-border shadow-sm hover:border-muted-foreground transition-all">
                             <img src={url} alt={`${category} ${index}`} className="w-full h-full object-cover" />
                         </div>
                       ) : null

@@ -39,33 +39,30 @@ const NeurologicalAssessments = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden transition-all hover:shadow-xl">
+      <Card className="border-none shadow-sm rounded-2xl bg-card overflow-hidden transition-all hover:shadow-md">
         <CollapsibleTrigger asChild>
           <div className={cn(
-            "p-6 flex items-center justify-between cursor-pointer transition-all duration-500",
+            "p-4 flex items-center justify-between cursor-pointer transition-all duration-300",
             isOpen ? "bg-muted/50" : "hover:bg-muted/30",
             hasAnyNotes && !isOpen && "bg-emerald-500/10"
           )}>
-            <div className="flex items-center gap-5">
-              <div className={cn(
-                "w-14 h-14 rounded-[1.25rem] bg-emerald-600 flex items-center justify-center shadow-lg transition-transform duration-500",
-                isOpen ? "scale-110 -rotate-12" : ""
-              )}>
-                <Brain size={28} className="text-white" />
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center">
+                <Brain size={18} />
               </div>
               <div>
-                <h3 className="text-xl font-black text-foreground tracking-tight">Neurological Global</h3>
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Cerebellum & Proprioception</p>
+                <h3 className="text-base font-semibold text-foreground tracking-tight">Neurological Global</h3>
+                <p className="text-sm text-muted-foreground">Cerebellum & Proprioception</p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              {hasAnyNotes && (
-                <Badge className="bg-emerald-500 text-white border-none font-black text-[10px] uppercase tracking-widest px-4 py-1.5 rounded-full shadow-sm">
-                  Assessed
-                </Badge>
+            <div className="flex items-center gap-3">
+              {hasAnyNotes ? (
+                <span className="text-xs font-medium text-muted-foreground">Recorded</span>
+              ) : (
+                <span className="text-xs text-muted-foreground/50 font-medium">Not yet recorded</span>
               )}
-              <div className="w-10 h-10 rounded-full bg-card shadow-sm border border-border flex items-center justify-center text-muted-foreground">
-                <ChevronDown className={cn("h-5 w-5 transition-transform duration-500", isOpen && "rotate-180")} />
+              <div className="w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground">
+                <ChevronDown className={cn("h-4 w-4 transition-transform duration-300", isOpen && "rotate-180")} />
               </div>
             </div>
           </div>

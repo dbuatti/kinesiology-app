@@ -91,25 +91,25 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
       test.is_primary_priority ? "bg-indigo-50/40 border-indigo-300 ring-1 ring-indigo-100" : 
       test.is_priority ? "bg-amber-50/40 border-amber-200" : 
       !isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') ? "bg-emerald-50/10 border-emerald-100 opacity-80" :
-      "border-slate-100 bg-white"
+      "border-border bg-white"
     )}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1 min-w-0 space-y-1">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-bold text-slate-900 truncate">
+            <h2 className="text-sm font-medium text-foreground truncate">
               {reflex.name}
             </h2>
-            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest hidden sm:inline">
+            <span className="text-[8px] font-medium text-muted-foreground uppercase tracking-wider hidden sm:inline">
               {reflex.category} • {reflex.developmentalWindow}
             </span>
           </div>
           
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] leading-tight">
-            <div className="flex items-center gap-1 text-slate-500">
-              <Zap size={10} className="text-indigo-400 shrink-0" />
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <Zap size={10} className="text-chart-primary shrink-0" />
               <span className="font-medium">{reflex.stimulus}</span>
             </div>
-            <div className="flex items-center gap-1 text-rose-600/70 font-bold">
+            <div className="flex items-center gap-1 text-rose-600/70 font-medium">
               <Activity size={10} className="shrink-0" />
               <span className="">{reflex.inhibitionPattern}</span>
             </div>
@@ -118,19 +118,19 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
 
         <div className="hidden md:flex items-center gap-1.5 shrink-0">
           {images?.primary && (
-            <div className="h-8 w-12 rounded border border-slate-100 overflow-hidden bg-slate-50">
+            <div className="h-8 w-12 rounded border border-border overflow-hidden bg-muted">
               <img src={images.primary} alt="P" className="w-full h-full object-cover opacity-80" />
             </div>
           )}
           {images?.secondary && (
-            <div className="h-8 w-12 rounded border border-slate-100 overflow-hidden bg-slate-50">
+            <div className="h-8 w-12 rounded border border-border overflow-hidden bg-muted">
               <img src={images.secondary} alt="S" className="w-full h-full object-cover opacity-80" />
             </div>
           )}
         </div>
 
         <div className="flex items-center gap-3 shrink-0 print:hidden">
-          <div className="flex items-center gap-3 border-r border-slate-100 pr-3">
+          <div className="flex items-center gap-3 border-r border-border pr-3">
             {isLateralized ? (
               <>
                 <div className="flex items-center gap-1">
@@ -140,7 +140,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                     onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, 'L', reflex.name)}
                     className="h-3 w-3 border-slate-400 rounded-none"
                   />
-                  <label htmlFor={`inhib-l-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+                  <label htmlFor={`inhib-l-${reflex.id}`} className="text-[8px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
                     L
                   </label>
                 </div>
@@ -151,7 +151,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                     onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, 'R', reflex.name)}
                     className="h-3 w-3 border-slate-400 rounded-none"
                   />
-                  <label htmlFor={`inhib-r-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+                  <label htmlFor={`inhib-r-${reflex.id}`} className="text-[8px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
                     R
                   </label>
                 </div>
@@ -162,7 +162,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                     onCheckedChange={(checked) => handleBilateralToggle(!!checked)}
                     className="h-3 w-3 border-indigo-400 rounded-none data-[state=checked]:bg-indigo-600"
                   />
-                  <label htmlFor={`inhib-both-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-indigo-600">
+                  <label htmlFor={`inhib-both-${reflex.id}`} className="text-[8px] font-medium uppercase tracking-wider cursor-pointer text-chart-primary">
                     Both
                   </label>
                 </div>
@@ -175,7 +175,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                   onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, undefined, reflex.name)}
                   className="h-3 w-3 border-slate-400 rounded-none"
                 />
-                <label htmlFor={`inhib-mid-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+                <label htmlFor={`inhib-mid-${reflex.id}`} className="text-[8px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
                   Inhib
                 </label>
               </div>
@@ -189,7 +189,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
               onCheckedChange={(checked) => onUpdate(reflex.id, { is_priority: !!checked })}
               className="h-3 w-3 border-slate-400 rounded-none"
             />
-            <label htmlFor={`priority-reflex-${reflex.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+            <label htmlFor={`priority-reflex-${reflex.id}`} className="text-[8px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
               Prio
             </label>
           </div>
@@ -198,8 +198,8 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
             size="sm" 
             onClick={() => onUpdate(reflex.id, { is_primary_priority: !test.is_primary_priority })}
             className={cn(
-              "h-5 px-1.5 text-[7px] font-black uppercase tracking-widest transition-all rounded",
-              test.is_primary_priority ? "bg-slate-900 text-white" : "text-slate-400 hover:text-slate-900"
+              "h-5 px-1.5 text-[7px] font-medium uppercase tracking-wider transition-all rounded",
+              test.is_primary_priority ? "bg-slate-900 text-white" : "text-muted-foreground hover:text-foreground"
             )}
           >
             {test.is_primary_priority ? "Primary" : "Set 1°"}
@@ -208,19 +208,19 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
             variant="ghost" 
             size="sm" 
             onClick={handleClear}
-            className="h-5 px-1.5 text-[7px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 rounded"
+            className="h-5 px-1.5 text-[7px] font-medium uppercase tracking-wider text-emerald-600 hover:bg-emerald-50 rounded"
           >
             <CheckCircle2 size={10} className="mr-1" /> Clear
           </Button>
         </div>
       </div>
 
-      <div className="mt-1.5 pt-1.5 border-t border-slate-100/50 flex items-center gap-2">
-        <FileText size={10} className="text-slate-300 shrink-0" />
+      <div className="mt-1.5 pt-1.5 border-t border-border/50 flex items-center gap-2">
+        <FileText size={10} className="text-muted-foreground/60 shrink-0" />
         <input 
           value={localNotes}
           onChange={(e) => handleNotesChange(e.target.value)}
-          className="flex-1 bg-transparent border-none p-0 text-[10px] font-medium focus:ring-0 placeholder:text-slate-300"
+          className="flex-1 bg-transparent border-none p-0 text-[10px] font-medium focus:ring-0 placeholder:text-muted-foreground/60"
           placeholder="Add assessment findings..."
         />
       </div>
@@ -293,39 +293,39 @@ export function PrimitiveReflexAssessment({
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center p-12 gap-4">
-        <Loader2 className="animate-spin text-indigo-600" size={32} />
-        <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Loading Assessment...</p>
+        <Loader2 className="animate-spin text-chart-primary" size={32} />
+        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Loading Assessment...</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-1.5">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 bg-slate-50/50 p-2 rounded-xl border border-slate-100 shadow-inner print:hidden mb-2">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 bg-muted/50 p-2 rounded-xl border border-border shadow-inner print:hidden mb-2">
         <div className="flex items-center gap-3">
           <div className="relative w-full md:w-48">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
             <Input
               placeholder="Search..."
-              className="pl-8 h-7 rounded-lg border-slate-200 bg-white text-[10px]"
+              className="pl-8 h-7 rounded-lg border-border bg-white text-[10px]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="flex items-center space-x-2 px-3 border-l border-slate-200">
+          <div className="flex items-center space-x-2 px-3 border-l border-border">
             <Switch
               id="inhibited-filter-reflex"
               checked={showOnlyInhibited}
               onCheckedChange={setShowOnlyInhibited}
               className="data-[state=checked]:bg-rose-600 scale-[0.6]"
             />
-            <Label htmlFor="inhibited-filter-reflex" className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+            <Label htmlFor="inhibited-filter-reflex" className="text-[8px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
               Only Inhibited
             </Label>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="bg-white border-slate-200 font-black text-[7px] uppercase tracking-widest px-2 py-0.5 rounded-full">
+          <Badge variant="outline" className="bg-white border-border font-medium text-[7px] uppercase tracking-wider px-2 py-0.5 rounded-full">
             {tests.filter(t => t.is_inhibited).length} Active
           </Badge>
         </div>

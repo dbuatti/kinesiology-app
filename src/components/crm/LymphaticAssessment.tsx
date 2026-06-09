@@ -177,37 +177,36 @@ const LymphaticAssessment = ({
   const secondaryZones = zones.filter(z => RELEASE_INSTRUCTIONS[z].category === 'Secondary');
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full space-y-2">
-      <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
+      <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
         <CollapsibleTrigger asChild>
-          <CardHeader className="p-8 cursor-pointer hover:bg-muted/50 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-xl shadow-blue-100 dark:shadow-blue-900/20">
-                  <Droplets size={28} />
-                </div>
-                <div>
-                  <CardTitle className="text-2xl font-black text-foreground tracking-tight">Lymphatic System</CardTitle>
-                  <p className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em]">Drainage Precedes Supply</p>
-                </div>
+          <div className={cn(
+            "p-4 flex items-center justify-between cursor-pointer transition-all duration-300",
+            isOpen ? "bg-muted/50" : "hover:bg-muted/30",
+            !isOpen && priorityZones.length > 0 && "bg-chart-primary/10"
+          )}>
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center">
+                <Droplets size={18} />
               </div>
-              <div className="flex items-center gap-3">
-                {isVerified && (
-                  <Badge className="bg-emerald-500 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">
-                    Verified
-                  </Badge>
-                )}
-                {priorityZones.length > 0 && !isVerified && (
-                  <Badge className="bg-blue-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1 rounded-full">
-                    {priorityZones.length} Zones Selected
-                  </Badge>
-                )}
-                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
-                  {isOpen ? <ChevronDown className="h-6 w-6" /> : <ChevronRight className="h-6 w-6" />}
-                </div>
+              <div>
+                <h3 className="text-base font-semibold text-foreground tracking-tight">Lymphatic System</h3>
+                <p className="text-sm text-muted-foreground">Drainage Precedes Supply</p>
               </div>
             </div>
-          </CardHeader>
+            <div className="flex items-center gap-3">
+              {isVerified ? (
+                <span className="text-xs font-medium text-muted-foreground">Verified</span>
+              ) : priorityZones.length > 0 ? (
+                <span className="text-xs font-medium text-muted-foreground">{priorityZones.length} zones</span>
+              ) : (
+                <span className="text-xs text-muted-foreground/50 font-medium">Not yet recorded</span>
+              )}
+              <div className="w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground">
+                <ChevronDown className={cn("h-4 w-4 transition-transform duration-300", isOpen && "rotate-180")} />
+              </div>
+            </div>
+          </div>
         </CollapsibleTrigger>
         
         <CollapsibleContent>
@@ -217,22 +216,22 @@ const LymphaticAssessment = ({
                 {/* Step 1 & 2: Suture and Zone */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-4">
-                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] flex items-center gap-2">
-                      <Search size={14} className="text-blue-500" /> 1. Suture Side (Hologram)
+                    <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                      <Search size={14} className="text-chart-primary" /> 1. Suture Side (Hologram)
                     </label>
                     <ToggleGroup type="single" value={sutureSide || ""} onValueChange={handleSutureSideChange} className="justify-start gap-3">
-                      <ToggleGroupItem value="Left" className="rounded-2xl px-8 py-3 h-12 font-black text-xs uppercase tracking-widest data-[state=on]:bg-blue-600 data-[state=on]:text-white border-2 border-border">Left</ToggleGroupItem>
-                      <ToggleGroupItem value="Right" className="rounded-2xl px-8 py-3 h-12 font-black text-xs uppercase tracking-widest data-[state=on]:bg-blue-600 data-[state=on]:text-white border-2 border-border">Right</ToggleGroupItem>
+                      <ToggleGroupItem value="Left" className="rounded-xl px-8 py-3 h-12 font-medium text-xs uppercase tracking-wider data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-2 border-border">Left</ToggleGroupItem>
+                      <ToggleGroupItem value="Right" className="rounded-xl px-8 py-3 h-12 font-medium text-xs uppercase tracking-wider data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-2 border-border">Right</ToggleGroupItem>
                     </ToggleGroup>
                   </div>
 
                   <div className="space-y-4">
-                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] flex items-center gap-2">
+                    <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                       <Zap size={14} className="text-amber-500" /> 2. Priority Node Zones
                     </label>
                     <div className="space-y-4">
                       <div>
-                        <p className="text-[9px] font-black text-muted-foreground/50 uppercase mb-2">Primary (Drainage First)</p>
+                        <p className="text-[10px] font-medium text-muted-foreground/50 uppercase mb-2">Primary (Drainage First)</p>
                         <div className="flex flex-wrap gap-2">
                           {primaryZones.map(zone => (
                             <Button 
@@ -240,8 +239,8 @@ const LymphaticAssessment = ({
                               variant={priorityZones.includes(zone) ? "default" : "outline"}
                               onClick={() => togglePriorityZone(zone)}
                               className={cn(
-                                "rounded-xl px-3 py-1 h-8 text-[10px] font-black uppercase tracking-wider transition-all",
-                                priorityZones.includes(zone) ? "bg-blue-600 text-white shadow-lg" : "border-border hover:bg-blue-500/10 text-muted-foreground"
+                                "rounded-xl px-3 py-1 h-8 text-[10px] font-medium uppercase tracking-wider transition-all",
+                                priorityZones.includes(zone) ? "bg-primary text-primary-foreground shadow-sm" : "border-border hover:bg-muted text-muted-foreground"
                               )}
                             >
                               {zone}
@@ -250,7 +249,7 @@ const LymphaticAssessment = ({
                         </div>
                       </div>
                       <div>
-                        <p className="text-[9px] font-black text-muted-foreground/50 uppercase mb-2">Secondary</p>
+                        <p className="text-[10px] font-medium text-muted-foreground/50 uppercase mb-2">Secondary</p>
                         <div className="flex flex-wrap gap-2">
                           {secondaryZones.map(zone => (
                             <Button 
@@ -258,8 +257,8 @@ const LymphaticAssessment = ({
                               variant={priorityZones.includes(zone) ? "default" : "outline"}
                               onClick={() => togglePriorityZone(zone)}
                               className={cn(
-                                "rounded-xl px-3 py-1 h-8 text-[10px] font-black uppercase tracking-wider transition-all",
-                                priorityZones.includes(zone) ? "bg-blue-600 text-white shadow-lg" : "border-border hover:bg-blue-500/10 text-muted-foreground"
+                                "rounded-xl px-3 py-1 h-8 text-[10px] font-medium uppercase tracking-wider transition-all",
+                                priorityZones.includes(zone) ? "bg-primary text-primary-foreground shadow-sm" : "border-border hover:bg-muted text-muted-foreground"
                               )}
                             >
                               {zone}
@@ -275,14 +274,14 @@ const LymphaticAssessment = ({
                   <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
                     {/* Zone Focus Switcher */}
                     <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                      <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mr-2">Focus Instruction:</span>
+                      <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mr-2">Focus Instruction:</span>
                       {priorityZones.map(zone => (
                         <Badge 
                           key={zone}
                           onClick={() => setFocusedZone(zone)}
                           className={cn(
-                            "cursor-pointer transition-all px-3 py-1 border-none font-black text-[9px] uppercase tracking-widest",
-                            focusedZone === zone ? "bg-indigo-600 text-white shadow-md scale-105" : "bg-muted text-muted-foreground hover:bg-accent"
+                            "cursor-pointer transition-all px-3 py-1 border-none font-medium text-[10px] uppercase tracking-wider",
+                            focusedZone === zone ? "bg-primary text-primary-foreground shadow-sm scale-105" : "bg-muted text-muted-foreground hover:bg-accent"
                           )}
                         >
                           {zone}
@@ -291,14 +290,14 @@ const LymphaticAssessment = ({
                     </div>
 
                     {/* Tenderness Tracker */}
-                    <div className="p-6 bg-indigo-500/10 rounded-[2rem] border-2 border-indigo-500/20 space-y-6">
+                    <div className="p-6 bg-chart-primary/10 rounded-[2rem] border-2 border-chart-primary/20 space-y-6">
                       <div className="flex items-center justify-between">
-                        <label className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.3em] flex items-center gap-2">
+                        <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                           <Thermometer size={14} /> 3. Tenderness Reduction (Counterstrain)
                         </label>
                         <Badge className={cn(
-                          "font-black text-[10px] uppercase tracking-widest px-3 py-1",
-                          tenderness[0] <= 3 ? "bg-emerald-50 text-white" : "bg-amber-500 text-white"
+                          "font-medium text-[10px] uppercase tracking-wider px-3 py-1",
+                          tenderness[0] <= 3 ? "bg-chart-emerald/10 text-chart-emerald" : "bg-muted text-muted-foreground"
                         )}>
                           {100 - (tenderness[0] * 10)}% Reduction
                         </Badge>
@@ -311,9 +310,9 @@ const LymphaticAssessment = ({
                           min={0}
                           max={10} 
                           step={1} 
-                          className="[&>span:first-child]:h-2 [&>span:first-child]:bg-indigo-200 dark:[&>span:first-child]:bg-indigo-900 [&_[role=slider]]:h-6 [&_[role=slider]]:w-6 [&_[role=slider]]:border-4 [&_[role=slider]]:border-background [&_[role=slider]]:bg-indigo-600 [&_[role=slider]]:shadow-lg"
+                          className="[&>span:first-child]:h-2 [&>span:first-child]:bg-primary/20 dark:[&>span:first-child]:bg-primary/80 [&_[role=slider]]:h-6 [&_[role=slider]]:w-6 [&_[role=slider]]:border-4 [&_[role=slider]]:border-background [&_[role=slider]]:bg-primary [&_[role=slider]]:shadow-sm"
                         />
-                        <div className="flex justify-between mt-4 text-[10px] font-black text-indigo-400 uppercase tracking-widest">
+                        <div className="flex justify-between mt-4 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
                           <span>Position of Ease (0)</span>
                           <span>Initial Pain (10)</span>
                         </div>
@@ -322,26 +321,26 @@ const LymphaticAssessment = ({
 
                     {focusedZone && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-500">
-                        <div className="p-8 bg-blue-500/10 rounded-[2.5rem] border-2 border-blue-500/20 space-y-6 relative overflow-hidden">
+                        <div className="p-8 bg-chart-primary/10 rounded-xl border-2 border-chart-primary/20 space-y-6 relative overflow-hidden">
                           <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none"><Move size={120} /></div>
                           <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-xl">
+                            <div className="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
                               <Move size={24} />
                             </div>
                             <div>
-                              <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest">Release Position</p>
-                              <h4 className="text-xl font-black text-blue-900 dark:text-blue-100">{focusedZone}</h4>
+                              <p className="text-[10px] font-medium text-chart-primary uppercase tracking-wider">Release Position</p>
+                              <h4 className="text-xl font-semibold text-foreground">{focusedZone}</h4>
                             </div>
                           </div>
-                          <p className="text-sm font-bold text-blue-900 dark:text-blue-100 leading-relaxed bg-card/40 p-4 rounded-2xl border border-blue-500/20">
+                          <p className="text-sm font-medium text-foreground leading-relaxed bg-card/40 p-4 rounded-xl border border-chart-primary/20">
                             {RELEASE_INSTRUCTIONS[focusedZone].position}
                           </p>
                           {RELEASE_INSTRUCTIONS[focusedZone].pearl && (
-                            <div className="flex items-start gap-3 p-4 bg-indigo-600 text-white rounded-2xl shadow-lg">
+                            <div className="flex items-start gap-3 p-4 bg-primary text-primary-foreground rounded-xl shadow-sm">
                               <Brain size={20} className="shrink-0 mt-0.5" />
                               <div>
-                                <p className="text-[9px] font-black uppercase tracking-widest opacity-70 mb-1">Clinical Pearl</p>
-                                <p className="text-xs font-bold leading-relaxed">
+                                <p className="text-[10px] font-medium uppercase tracking-wider opacity-70 mb-1">Clinical Pearl</p>
+                                <p className="text-xs font-medium leading-relaxed">
                                   {RELEASE_INSTRUCTIONS[focusedZone].pearl}
                                 </p>
                               </div>
@@ -350,10 +349,10 @@ const LymphaticAssessment = ({
                         </div>
 
                         {RELEASE_INSTRUCTIONS[focusedZone].image && (
-                          <div className="bg-card rounded-[2.5rem] border-2 border-blue-500/20 p-4 overflow-hidden flex flex-col shadow-sm">
+                          <div className="bg-card rounded-xl border-2 border-chart-primary/20 p-4 overflow-hidden flex flex-col shadow-sm">
                             <div className="flex items-center gap-2 px-4 py-2 border-b border-border mb-4">
-                              <ImageIcon size={16} className="text-blue-500" />
-                              <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Visual Reference</span>
+                              <ImageIcon size={16} className="text-chart-primary" />
+                              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Visual Reference</span>
                             </div>
                             <div className="flex-1 flex items-center justify-center p-4 bg-muted rounded-3xl">
                               <img 
@@ -370,52 +369,52 @@ const LymphaticAssessment = ({
                 )}
 
                 {/* Timer Section */}
-                <div className="p-8 bg-slate-950 text-white rounded-[2.5rem] border border-slate-800 space-y-6 shadow-2xl relative overflow-hidden">
+                <div className="p-8 bg-card border border-border rounded-xl space-y-6 shadow-sm relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none"><Timer size={150} /></div>
                   <div className="flex items-center justify-between relative z-10">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center text-blue-400 border border-blue-500/30">
+                      <div className="w-12 h-12 rounded-xl bg-chart-primary/20 flex items-center justify-center text-chart-primary border border-chart-primary/30">
                         <Timer size={24} />
                       </div>
                       <div>
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Counterstrain Timer</span>
-                        <p className="text-xs font-bold text-slate-400">Hold position for 45-90 seconds</p>
+                        <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Counterstrain Timer</span>
+                        <p className="text-xs font-medium text-muted-foreground">Hold position for 45-90 seconds</p>
                       </div>
                     </div>
                     {timeLeft !== null && (
-                      <div className="text-6xl font-black text-blue-400 tabular-nums tracking-tighter">
+                      <div className="text-6xl font-semibold text-chart-primary tabular-nums tracking-tighter">
                         {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
                       </div>
                     )}
                   </div>
                   <div className="flex flex-wrap gap-3 relative z-10">
-                    <Button variant="outline" onClick={() => startTimer(45)} className="rounded-2xl font-black text-xs uppercase tracking-widest border-white/10 bg-white/5 hover:bg-white/10 text-white h-12 px-8">45s</Button>
-                    <Button variant="outline" onClick={() => startTimer(90)} className="rounded-2xl font-black text-xs uppercase tracking-widest border-white/10 bg-white/5 hover:bg-white/10 text-white h-12 px-8">90s</Button>
+                    <Button variant="outline" onClick={() => startTimer(45)} className="rounded-xl font-medium text-xs uppercase tracking-wider border-border bg-muted text-muted-foreground hover:bg-muted/80 h-12 px-8">45s</Button>
+                    <Button variant="outline" onClick={() => startTimer(90)} className="rounded-xl font-medium text-xs uppercase tracking-wider border-border bg-muted text-muted-foreground hover:bg-muted/80 h-12 px-8">90s</Button>
                     {timeLeft !== null && (
                       <div className="flex gap-2 ml-auto">
-                        <Button variant="ghost" size="icon" onClick={toggleTimer} className="rounded-2xl h-12 w-12 text-white hover:bg-white/10">{isActive ? <Pause size={24} /> : <Play size={24} />}</Button>
-                        <Button variant="ghost" size="icon" onClick={resetTimer} className="rounded-2xl h-12 w-12 text-white hover:bg-white/10"><RotateCcw size={24} /></Button>
+                        <Button variant="ghost" size="icon" onClick={toggleTimer} className="rounded-xl h-12 w-12 text-muted-foreground hover:bg-muted/80">{isActive ? <Pause size={24} /> : <Play size={24} />}</Button>
+                        <Button variant="ghost" size="icon" onClick={resetTimer} className="rounded-xl h-12 w-12 text-muted-foreground hover:bg-muted/80"><RotateCcw size={24} /></Button>
                       </div>
                     )}
                   </div>
                 </div>
 
                 {priorityZones.length > 0 && (
-                  <div className="p-6 bg-emerald-500/10 rounded-[2rem] border-2 border-emerald-500/20 flex items-center justify-between shadow-sm">
+                  <div className="p-6 bg-chart-emerald/10 rounded-[2rem] border-2 border-chart-emerald/20 flex items-center justify-between shadow-sm">
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                      <div className="w-10 h-10 rounded-xl bg-chart-emerald/20 flex items-center justify-center text-chart-emerald">
                         <RefreshCw size={20} />
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Verification</p>
-                        <span className="text-sm font-bold text-emerald-900 dark:text-emerald-100">Re-test suture glide & tenderness</span>
+                        <p className="text-[10px] font-medium text-chart-emerald uppercase tracking-wider">Verification</p>
+                        <span className="text-sm font-medium text-foreground">Re-test suture glide & tenderness</span>
                       </div>
                     </div>
                     <Button 
                       variant={isVerified ? "default" : "outline"}
                       size="sm"
                       onClick={() => setIsVerified(!isVerified)}
-                      className={cn("rounded-xl h-10 px-6 font-black text-[10px] uppercase tracking-widest transition-all", isVerified ? "bg-emerald-600 shadow-lg" : "border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50/10")}
+                      className={cn("rounded-xl h-10 px-6 font-medium text-[10px] uppercase tracking-wider transition-all", isVerified ? "bg-chart-emerald shadow-sm" : "border-chart-emerald/20 text-chart-emerald hover:bg-chart-emerald/10")}
                     >
                       {isVerified ? <CheckCircle2 size={16} className="mr-2" /> : null}
                       {isVerified ? "Verified" : "Mark Verified"}
@@ -427,18 +426,18 @@ const LymphaticAssessment = ({
               <div className="space-y-8">
                 <Card className="border-none shadow-inner bg-muted/50 rounded-[2rem] overflow-hidden">
                   <CardHeader className="pb-4 p-6">
-                    <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] flex items-center gap-2">
-                      <HelpCircle size={16} className="text-blue-500" /> Priority Check
+                    <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                      <HelpCircle size={16} className="text-chart-primary" /> Priority Check
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 pt-0 space-y-6">
-                    <div className="p-5 bg-card rounded-2xl border border-border shadow-sm">
-                      <p className="text-sm font-bold text-foreground leading-relaxed">
-                        Touch <span className="text-blue-600 dark:text-blue-400 font-black">Kidney 27</span> points while client touches the node.
+                    <div className="p-5 bg-card rounded-xl border border-border shadow-sm">
+                      <p className="text-sm font-medium text-foreground leading-relaxed">
+                        Touch <span className="text-chart-primary font-semibold">Kidney 27</span> points while client touches the node.
                       </p>
                       <p className="text-[10px] text-muted-foreground mt-3 font-medium italic">If the indicator muscle locks, you've found the priority.</p>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => setShowGuide(!showGuide)} className="w-full h-10 rounded-xl text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 border border-blue-500/20">
+                    <Button variant="ghost" size="sm" onClick={() => setShowGuide(!showGuide)} className="w-full h-10 rounded-xl text-[10px] font-medium uppercase tracking-wider text-chart-primary hover:bg-muted border border-chart-primary/20">
                       {showGuide ? "Hide Protocol" : "View Full Protocol"}
                     </Button>
                   </CardContent>
@@ -446,7 +445,7 @@ const LymphaticAssessment = ({
 
                 {showGuide && (
                   <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500 p-2">
-                    <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Step-by-Step</h4>
+                    <h4 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Step-by-Step</h4>
                     <div className="space-y-3">
                       {[
                         "Palpate suture (glide/tenderness)",
@@ -459,8 +458,8 @@ const LymphaticAssessment = ({
                         "Re-test suture for restored glide"
                       ].map((step, i) => (
                         <div key={i} className="flex gap-4 items-start">
-                          <span className="w-5 h-5 rounded-full bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center text-[10px] font-black shrink-0">{i + 1}</span>
-                          <p className="text-xs font-bold text-muted-foreground leading-tight">{step}</p>
+                          <span className="w-5 h-5 rounded-full bg-chart-primary/20 text-chart-primary flex items-center justify-center text-[10px] font-medium shrink-0">{i + 1}</span>
+                          <p className="text-xs font-medium text-muted-foreground leading-tight">{step}</p>
                         </div>
                       ))}
                     </div>
@@ -470,20 +469,20 @@ const LymphaticAssessment = ({
                 <div className="p-6 bg-amber-500/10 rounded-[2rem] border-2 border-amber-500/20 space-y-4">
                   <div className="flex items-center gap-3">
                     <Sparkles size={20} className="text-amber-600 dark:text-amber-400" />
-                    <p className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest">Re-Training</p>
+                    <p className="text-[10px] font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wider">Re-Training</p>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-amber-900 dark:text-amber-100">Prescribe Homework?</span>
+                    <span className="text-xs font-medium text-foreground">Prescribe Homework?</span>
                     <Button 
                       variant={prescribeHomework ? "default" : "outline"}
                       size="sm"
                       onClick={() => setPrescribeHomework(!prescribeHomework)}
-                      className={cn("rounded-xl h-8 px-4 font-black text-[10px] uppercase tracking-widest", prescribeHomework ? "bg-amber-600" : "border-amber-500/20 text-amber-600 dark:text-amber-400")}
+                      className={cn("rounded-xl h-8 px-4 font-medium text-[10px] uppercase tracking-wider", prescribeHomework ? "bg-amber-600" : "border-amber-500/20 text-amber-600 dark:text-amber-400")}
                     >
                       {prescribeHomework ? "Yes" : "No"}
                     </Button>
                   </div>
-                  <p className="text-[10px] text-amber-800 dark:text-amber-200 font-medium leading-relaxed italic">
+                  <p className="text-[10px] text-muted-foreground font-medium leading-relaxed italic">
                     If this keeps coming up, prescribe 5 mins/day of specific lymphatic movement.
                   </p>
                 </div>
@@ -492,12 +491,12 @@ const LymphaticAssessment = ({
 
             <div className="space-y-4 pt-8 border-t border-border">
               <div className="flex items-center justify-between">
-                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Assessment Notes</label>
+                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Assessment Notes</label>
                 <Button 
                   variant="ghost" 
                   size="sm" 
                   onClick={handleAutoPopulate}
-                  className="h-8 rounded-xl text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10"
+                  className="h-8 rounded-xl text-[10px] font-medium uppercase tracking-wider text-chart-primary hover:bg-muted"
                 >
                   <ClipboardCheck size={14} className="mr-2" /> Auto-Populate Summary
                 </Button>
@@ -507,7 +506,7 @@ const LymphaticAssessment = ({
                 onChange={(e) => setNotes(e.target.value)}
                 onBlur={() => onSaveField('lymphatic_notes', notes)}
                 placeholder="Document specific findings, tenderness levels, or client feedback..."
-                className="rounded-2xl border-border focus:ring-blue-500 min-h-[150px] p-8 text-base font-medium bg-muted/30 shadow-inner"
+                className="rounded-xl border-border focus:ring-chart-primary min-h-[150px] p-8 text-base font-medium bg-muted/30 shadow-inner"
               />
             </div>
           </CardContent>

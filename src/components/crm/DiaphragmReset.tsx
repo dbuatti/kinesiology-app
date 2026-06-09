@@ -84,17 +84,17 @@ const DiaphragmReset = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="border-none shadow-lg rounded-2xl bg-white overflow-hidden">
+      <Card className="border-none shadow-sm rounded-2xl bg-card overflow-hidden">
         <CollapsibleTrigger asChild>
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-50 border-b border-blue-100 cursor-pointer hover:from-blue-100 hover:to-cyan-100 transition-colors">
+          <CardHeader className="bg-muted/50 border-b border-border cursor-pointer hover:bg-muted transition-colors">
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
-                  <Wind size={24} className="text-white" />
+                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                  <Wind size={20} className="text-chart-emerald" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl font-bold text-slate-900">Manual Reset of the Diaphragm</CardTitle>
-                  <CardDescription className="text-slate-600">Phrenic Nerve integration</CardDescription>
+                  <CardTitle className="text-base font-semibold text-foreground">Manual Reset of the Diaphragm</CardTitle>
+                  <CardDescription className="text-muted-foreground">Phrenic Nerve integration</CardDescription>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -106,19 +106,21 @@ const DiaphragmReset = ({
                       handleReset();
                     }}
                     disabled={loading}
-                    className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3"
+                    className="border-border text-muted-foreground hover:bg-muted h-8 px-3"
                   >
                     <RotateCcw size={16} className="mr-1" />
                     Reset
                   </Button>
                 )}
-                {hasNotes && (
-                  <span className="text-xs font-bold text-blue-600 bg-blue-100 px-3 py-1 rounded-full">
+                {hasNotes ? (
+                  <span className="text-xs font-medium text-muted-foreground bg-muted px-3 py-1 rounded-full">
                     Notes Recorded
                   </span>
+                ) : (
+                  <span className="text-xs text-muted-foreground/50">Not yet recorded</span>
                 )}
                 <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <ChevronDown className={cn("h-5 w-5 transition-transform text-slate-600", isOpen && "rotate-180")} />
+                  <ChevronDown className={cn("h-5 w-5 transition-transform text-muted-foreground", isOpen && "rotate-180")} />
                 </Button>
               </div>
             </div>
@@ -127,9 +129,9 @@ const DiaphragmReset = ({
 
         <CollapsibleContent>
           <CardContent className="p-6 space-y-8">
-            <Alert className="bg-blue-50 border-blue-200">
-              <Info className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-sm text-blue-900">
+            <Alert className="bg-muted border-border">
+              <Info className="h-4 w-4 text-muted-foreground" />
+              <AlertDescription className="text-sm text-foreground">
                 <strong>Purpose:</strong> The Phrenic Nerve is the sole motor innervation to the diaphragm. This reset aims to clear neurological interference and restore optimal breathing mechanics.
               </AlertDescription>
             </Alert>
@@ -137,11 +139,11 @@ const DiaphragmReset = ({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <div className="space-y-3">
-                  <h4 className="font-bold text-blue-900 flex items-center gap-2">
-                    <ListChecks size={16} className="text-blue-600" />
+                  <h4 className="font-semibold text-foreground flex items-center gap-2">
+                    <ListChecks size={16} className="text-muted-foreground" />
                     Protocol Steps:
                   </h4>
-                  <ol className="space-y-3 text-sm text-blue-800 list-decimal list-inside ml-4">
+                  <ol className="space-y-3 text-sm text-muted-foreground list-decimal list-inside ml-4">
                     <li className="font-semibold">Challenge Tender Points either side of sternum and test IM.</li>
                     <li>If indicated, palpate tender point each side. One side will be more tender.</li>
                     <li>Palpate the muscle in the neck at C4 level (usually opposite to the sternum tender point).</li>
@@ -152,31 +154,30 @@ const DiaphragmReset = ({
 
               <div className="space-y-6">
                 {/* Timer Section */}
-                <div className="p-6 bg-slate-900 text-white rounded-3xl border border-slate-800 space-y-6 shadow-xl relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none"><Timer size={120} /></div>
-                  <div className="flex items-center justify-between relative z-10">
+                <div className="p-6 bg-card border border-border rounded-2xl space-y-6 relative overflow-hidden">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-400 border border-blue-500/30">
+                      <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
                         <Timer size={20} />
                       </div>
                       <div>
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Hold Timer</span>
-                        <p className="text-xs font-bold text-slate-400">45-90s duration</p>
+                        <span className="text-xs font-medium text-muted-foreground/70">Hold Timer</span>
+                        <p className="text-xs text-muted-foreground">45-90s duration</p>
                       </div>
                     </div>
                     {timeLeft !== null && (
-                      <div className="text-5xl font-black text-blue-400 tabular-nums tracking-tighter">
+                      <div className="text-5xl font-semibold text-foreground tabular-nums tracking-tighter">
                         {formatTime(timeLeft)}
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-wrap gap-2 relative z-10">
-                    <Button variant="outline" onClick={() => startTimer(45)} className="rounded-xl font-black text-[10px] uppercase tracking-widest border-white/10 bg-white/5 hover:bg-white/10 text-white h-10 px-6">45s</Button>
-                    <Button variant="outline" onClick={() => startTimer(90)} className="rounded-xl font-black text-[10px] uppercase tracking-widest border-white/10 bg-white/5 hover:bg-white/10 text-white h-10 px-6">90s</Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" onClick={() => startTimer(45)} className="rounded-xl text-xs font-medium text-muted-foreground h-10 px-6">45s</Button>
+                    <Button variant="outline" onClick={() => startTimer(90)} className="rounded-xl text-xs font-medium text-muted-foreground h-10 px-6">90s</Button>
                     {timeLeft !== null && (
                       <div className="flex gap-2 ml-auto">
-                        <Button variant="ghost" size="icon" onClick={toggleTimer} className="rounded-xl h-10 w-10 text-white hover:bg-white/10">{isActive ? <Pause size={20} /> : <Play size={20} />}</Button>
-                        <Button variant="ghost" size="icon" onClick={resetTimer} className="rounded-xl h-10 w-10 text-white hover:bg-white/10"><RotateCcw size={20} /></Button>
+                        <Button variant="ghost" size="icon" onClick={toggleTimer} className="rounded-xl h-10 w-10 text-muted-foreground hover:bg-muted">{isActive ? <Pause size={20} /> : <Play size={20} />}</Button>
+                        <Button variant="ghost" size="icon" onClick={resetTimer} className="rounded-xl h-10 w-10 text-muted-foreground hover:bg-muted"><RotateCcw size={20} /></Button>
                       </div>
                     )}
                   </div>

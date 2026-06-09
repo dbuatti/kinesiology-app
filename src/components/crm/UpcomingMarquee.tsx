@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { differenceInMinutes, isToday } from "date-fns";
-import { cn } from "@/lib/utils";
-import { Play, Clock } from "lucide-react";
+import { Play } from "lucide-react";
 
 const UpcomingMarquee = () => {
   const [upcoming, setUpcoming] = useState<any[]>([]);
@@ -39,6 +39,7 @@ const UpcomingMarquee = () => {
       const diff = differenceInMinutes(new Date(app.date), new Date());
       const timeLabel = diff <= 0 ? "NOW" : `${diff}m`;
       return {
+        id: app.id,
         name: app.clients.name,
         time: timeLabel
       };
@@ -48,28 +49,31 @@ const UpcomingMarquee = () => {
   if (loading || !nextSessions || nextSessions.length === 0) return null;
 
   return (
-    <div className="w-full bg-slate-900 dark:bg-black text-white h-10 flex items-center justify-center px-4 border-b border-slate-800 shadow-sm z-[100]">
-      <div className="flex items-center gap-3 bg-white/5 px-4 py-1 rounded-full border border-white/10">
-        <div className="flex items-center gap-2 text-rose-500">
-          <Play size={12} className="fill-current" />
-          <span className="text-[10px] font-black uppercase tracking-widest">Up Next</span>
+    <div className="w-full bg-foreground text-background h-10 flex items-center justify-center px-4 border-b border-border shadow-sm z-[100]">
+      <div className="flex items-center gap-3 bg-muted/50 px-4 py-1 rounded-full border border-border">
+              <div className="flex items-center gap-2 text-chart-destructive">
+                <Play size={12} className="fill-current" />
+          <span className="text-[10px] font-semibold uppercase tracking-wider">Up Next</span>
         </div>
         
-        <div className="h-3 w-px bg-white/10 mx-1" />
+        <div className="h-3 w-px bg-muted mx-1" />
         
         <div className="flex items-center gap-3">
           {nextSessions.map((session, idx) => (
             <React.Fragment key={idx}>
               <div className="flex items-center gap-1.5">
-                <span className="text-[11px] font-black tracking-tight text-white">
+                <Link
+                  to={`/appointments/${session.id}`}
+                  className="text-[11px] font-semibold tracking-tight text-background hover:text-background/70 transition-colors"
+                >
                   {session.name}
-                </span>
-                <span className="text-[11px] font-bold text-slate-400 tabular-nums">
+                </Link>
+                <span className="text-[11px] font-medium text-muted-foreground tabular-nums">
                   · {session.time}
                 </span>
               </div>
               {idx < nextSessions.length - 1 && (
-                <span className="text-slate-600 font-black text-xs">+</span>
+                <span className="text-muted-foreground font-semibold text-xs">+</span>
               )}
             </React.Fragment>
           ))}

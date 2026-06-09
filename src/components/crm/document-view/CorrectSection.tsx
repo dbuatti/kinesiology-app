@@ -299,18 +299,18 @@ Correction Method: ${method}`;
   };
 
   const ProtocolBlock = ({ title, icon: Icon, color, steps, desc, children }: { title: string, icon: any, color: string, steps: string[], desc?: string, children?: React.ReactNode }) => (
-    <div className="p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+    <div className="p-5 bg-muted border border-border rounded-xl space-y-3">
       <div className="flex items-center gap-2">
         <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-white", color)}>
           <Icon size={14} />
         </div>
-        <h5 className="text-xs font-black uppercase tracking-tight">{title}</h5>
+        <h5 className="text-xs font-semibold uppercase tracking-tight">{title}</h5>
       </div>
-      {desc && <p className="text-[11px] text-slate-500 italic leading-relaxed">"{desc}"</p>}
+      {desc && <p className="text-[11px] text-muted-foreground italic leading-relaxed">"{desc}"</p>}
       <div className="space-y-1.5">
         {steps.map((step, idx) => (
           <div key={idx} className="flex gap-2 items-start text-[11px] leading-relaxed text-slate-700">
-            <span className="font-black text-black shrink-0">{idx + 1}.</span>
+            <span className="font-semibold text-black shrink-0">{idx + 1}.</span>
             <p className="font-medium">{step}</p>
           </div>
         ))}
@@ -326,7 +326,7 @@ Correction Method: ${method}`;
         <div className="flex items-center justify-between border-b border-black pb-3">
           <div className="flex items-center gap-2">
             <Zap size={20} className="text-black" />
-            <h3 className="text-sm font-black uppercase tracking-widest">
+            <h3 className="text-sm font-semibold uppercase tracking-wider">
               {showLog ? "Calibration Log" : "Lofi Calibration Wizard"}
             </h3>
           </div>
@@ -335,7 +335,7 @@ Correction Method: ${method}`;
               variant="ghost"
               size="sm"
               onClick={() => setShowLog(!showLog)}
-              className="h-8 px-3 rounded-md border border-black hover:bg-black hover:text-white transition-all text-[10px] font-black uppercase tracking-widest gap-1.5"
+              className="h-8 px-3 rounded-md border border-black hover:bg-black hover:text-white transition-all text-[10px] font-semibold uppercase tracking-wider gap-1.5"
             >
               <History size={12} />
               {showLog ? "Show Wizard" : `View Log (${pastCorrections.length})`}
@@ -360,9 +360,9 @@ Correction Method: ${method}`;
             {pastCorrections.length > 0 ? (
               <div className="divide-y divide-slate-100 border border-black">
                 {pastCorrections.map((correction, idx) => (
-                  <div key={idx} className="p-4 flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors">
+                  <div key={idx} className="p-4 flex items-center justify-between gap-4 hover:bg-muted transition-colors">
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-mono font-bold text-slate-800 leading-relaxed break-words">
+                      <p className="text-xs font-mono font-medium text-slate-800 leading-relaxed break-words">
                         {correction.replace(/^[-*\s]+/, '')}
                       </p>
                     </div>
@@ -371,7 +371,7 @@ Correction Method: ${method}`;
                         variant="ghost"
                         size="sm"
                         onClick={() => handleLoadSingleLog(correction)}
-                        className="h-8 px-3 rounded-md border border-black hover:bg-black hover:text-white text-[9px] font-black uppercase tracking-widest"
+                        className="h-8 px-3 rounded-md border border-black hover:bg-black hover:text-white text-[10px] font-semibold uppercase tracking-wider"
                       >
                         Load
                       </Button>
@@ -379,16 +379,16 @@ Correction Method: ${method}`;
                         variant="ghost"
                         size="icon"
                         onClick={() => handleCopySingleLog(correction, idx)}
-                        className="h-8 w-8 rounded-md border border-slate-200 hover:bg-slate-100"
+                        className="h-8 w-8 rounded-md border border-border hover:bg-muted"
                         title="Copy this correction"
                       >
-                        {copiedIndex === idx ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
+                        {copiedIndex === idx ? <Check size={12} className="text-chart-emerald" /> : <Copy size={12} />}
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDeleteSingleLog(idx)}
-                        className="h-8 w-8 rounded-md border border-rose-100 text-rose-600 hover:bg-rose-50"
+                        className="h-8 w-8 rounded-md border border-rose-100 text-chart-destructive hover:bg-rose-50"
                         title="Delete this correction"
                       >
                         <Trash2 size={12} />
@@ -398,10 +398,10 @@ Correction Method: ${method}`;
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 border border-dashed border-slate-200">
-                <History className="mx-auto text-slate-300 mb-3" size={32} />
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">No corrections logged yet</p>
-                <p className="text-[10px] text-slate-400 mt-1">Use the wizard to calibrate and log your first finding.</p>
+              <div className="text-center py-12 border border-dashed border-border">
+                <History className="mx-auto text-muted-foreground/50 mb-3" size={32} />
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">No corrections logged yet</p>
+                <p className="text-[10px] text-muted-foreground mt-1">Use the wizard to calibrate and log your first finding.</p>
               </div>
             )}
           </div>
@@ -411,7 +411,7 @@ Correction Method: ${method}`;
             {/* Left Column: Target & Direction */}
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Target Finding</label>
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Target Finding</label>
                 <select 
                   value={showCustomInput ? "CUSTOM_INPUT" : (metadata.wizard_finding || "")}
                   onChange={(e) => {
@@ -425,15 +425,15 @@ Correction Method: ${method}`;
                       updateMetadataFields({ wizard_finding: val });
                     }
                   }}
-                  className="w-full bg-transparent border-b border-slate-200 py-1.5 text-sm font-bold focus:border-black outline-none transition-all"
+                  className="w-full bg-transparent border-b border-border py-1.5 text-sm font-medium focus:border-black outline-none transition-all"
                 >
-                  <option value="" className="text-slate-400">Select inhibited finding...</option>
+                  <option value="" className="text-muted-foreground">Select inhibited finding...</option>
                   {inhibitedFindings.map(finding => (
-                    <option key={finding} value={finding} className="text-black font-bold">
+                    <option key={finding} value={finding} className="text-black font-medium">
                       {finding}
                     </option>
                   ))}
-                  <option value="CUSTOM_INPUT" className="text-indigo-600 font-bold">+ Custom Entry...</option>
+                  <option value="CUSTOM_INPUT" className="text-chart-primary font-medium">+ Custom Entry...</option>
                 </select>
 
                 {showCustomInput && (
@@ -443,14 +443,14 @@ Correction Method: ${method}`;
                     onChange={handleFindingChange}
                     onFocus={() => setIsFindingFocused(true)}
                     onBlur={handleFindingBlur}
-                    className="w-full bg-transparent border-b border-slate-200 py-1.5 text-sm font-bold focus:border-black outline-none transition-all mt-2 animate-in slide-in-from-top-1"
+                    className="w-full bg-transparent border-b border-border py-1.5 text-sm font-medium focus:border-black outline-none transition-all mt-2 animate-in slide-in-from-top-1"
                     placeholder="Type custom finding..."
                   />
                 )}
               </div>
 
               <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Pathway Direction</label>
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Pathway Direction</label>
                 <div className="flex gap-6">
                   <div className="flex items-center gap-2">
                     <Checkbox 
@@ -464,7 +464,7 @@ Correction Method: ${method}`;
                       }}
                       className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
                     />
-                    <label htmlFor="dir-afferent" className="text-xs font-bold cursor-pointer">Afferent (Bottom-Up)</label>
+                    <label htmlFor="dir-afferent" className="text-xs font-medium cursor-pointer">Afferent (Bottom-Up)</label>
                   </div>
                   <div className="flex items-center gap-2">
                     <Checkbox 
@@ -478,13 +478,13 @@ Correction Method: ${method}`;
                       }}
                       className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
                     />
-                    <label htmlFor="dir-efferent" className="text-xs font-bold cursor-pointer">Efferent (Top-Down)</label>
+                    <label htmlFor="dir-efferent" className="text-xs font-medium cursor-pointer">Efferent (Top-Down)</label>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Specific System</label>
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Specific System</label>
                 {metadata.wizard_direction === 'Afferent' ? (
                   <div className="grid grid-cols-2 gap-2">
                     {['Mechanoreceptor', 'Vestibular/Ocular', 'Physiological', 'Nociceptive'].map(sys => (
@@ -495,7 +495,7 @@ Correction Method: ${method}`;
                           onCheckedChange={(checked) => updateMetadataFields({ wizard_system: checked ? sys : null })}
                           className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
                         />
-                        <label htmlFor={`sys-${sys}`} className="text-xs font-bold cursor-pointer">{sys}</label>
+                        <label htmlFor={`sys-${sys}`} className="text-xs font-medium cursor-pointer">{sys}</label>
                       </div>
                     ))}
                   </div>
@@ -509,12 +509,12 @@ Correction Method: ${method}`;
                           onCheckedChange={(checked) => updateMetadataFields({ wizard_system: checked ? sys : null })}
                           className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
                         />
-                        <label htmlFor={`sys-${sys}`} className="text-xs font-bold cursor-pointer">{sys}</label>
+                        <label htmlFor={`sys-${sys}`} className="text-xs font-medium cursor-pointer">{sys}</label>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-400 italic">Select a pathway direction first.</p>
+                  <p className="text-xs text-muted-foreground italic">Select a pathway direction first.</p>
                 )}
               </div>
             </div>
@@ -523,35 +523,35 @@ Correction Method: ${method}`;
             <div className="space-y-6">
               <div className="space-y-4 border-l-2 border-slate-100 pl-4">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-1">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Calibration Coordinates</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Calibration Coordinates</p>
                   <a 
                     href="/resources/brain-zones/print" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-[9px] font-black text-indigo-600 hover:text-indigo-800 hover:underline uppercase tracking-widest flex items-center gap-1 transition-colors"
+                    className="text-[10px] font-semibold text-chart-primary hover:text-indigo-800 hover:underline uppercase tracking-wider flex items-center gap-1 transition-colors"
                   >
                     <ExternalLink size={10} /> View Brain Zone Map
                   </a>
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-[8px] font-black uppercase text-slate-400">Coordinate 1 (Zone Name)</label>
+                  <label className="text-[10px] font-semibold uppercase text-muted-foreground">Coordinate 1 (Zone Name)</label>
                   <select 
                     value={metadata.wizard_coord1_name || ""}
                     onChange={(e) => updateMetadataFields({ wizard_coord1_name: e.target.value })}
-                    className="w-full bg-transparent border-b border-slate-200 py-1.5 text-xs font-bold focus:border-black outline-none transition-all"
+                    className="w-full bg-transparent border-b border-border py-1.5 text-xs font-medium focus:border-black outline-none transition-all"
                   >
-                    <option value="" className="text-slate-400">Select Zone...</option>
+                    <option value="" className="text-muted-foreground">Select Zone...</option>
                     <optgroup label="Cortical Brain Zones">
                       {corticalOptions.map(option => (
-                        <option key={`c1-${option.id}`} value={option.name} className="text-black font-bold">
+                        <option key={`c1-${option.id}`} value={option.name} className="text-black font-medium">
                           {option.name}
                         </option>
                       ))}
                     </optgroup>
                     <optgroup label="Subcortical Brain Zones">
                       {subcorticalOptions.map(option => (
-                        <option key={`c1-${option.id}`} value={option.name} className="text-black font-bold">
+                        <option key={`c1-${option.id}`} value={option.name} className="text-black font-medium">
                           {option.name}
                         </option>
                       ))}
@@ -566,30 +566,30 @@ Correction Method: ${method}`;
                           onCheckedChange={(checked) => updateMetadataFields({ wizard_coord1_side: checked ? side : null })}
                           className="h-3.5 w-3.5 border-black rounded-none data-[state=checked]:bg-black"
                         />
-                        <label htmlFor={`c1-side-${side}`} className="text-[10px] font-bold cursor-pointer">{side}</label>
+                        <label htmlFor={`c1-side-${side}`} className="text-[10px] font-medium cursor-pointer">{side}</label>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <div className="space-y-2 pt-2">
-                  <label className="text-[8px] font-black uppercase text-slate-400">Coordinate 2 (Zone Name)</label>
+                  <label className="text-[10px] font-semibold uppercase text-muted-foreground">Coordinate 2 (Zone Name)</label>
                   <select 
                     value={metadata.wizard_coord2_name || ""}
                     onChange={(e) => updateMetadataFields({ wizard_coord2_name: e.target.value })}
-                    className="w-full bg-transparent border-b border-slate-200 py-1.5 text-xs font-bold focus:border-black outline-none transition-all"
+                    className="w-full bg-transparent border-b border-border py-1.5 text-xs font-medium focus:border-black outline-none transition-all"
                   >
-                    <option value="" className="text-slate-400">Select Zone...</option>
+                    <option value="" className="text-muted-foreground">Select Zone...</option>
                     <optgroup label="Cortical Brain Zones">
                       {corticalOptions.map(option => (
-                        <option key={`c2-${option.id}`} value={option.name} className="text-black font-bold">
+                        <option key={`c2-${option.id}`} value={option.name} className="text-black font-medium">
                           {option.name}
                         </option>
                       ))}
                     </optgroup>
                     <optgroup label="Subcortical Brain Zones">
                       {subcorticalOptions.map(option => (
-                        <option key={`c2-${option.id}`} value={option.name} className="text-black font-bold">
+                        <option key={`c2-${option.id}`} value={option.name} className="text-black font-medium">
                           {option.name}
                         </option>
                       ))}
@@ -604,7 +604,7 @@ Correction Method: ${method}`;
                           onCheckedChange={(checked) => updateMetadataFields({ wizard_coord2_side: checked ? side : null })}
                           className="h-3.5 w-3.5 border-black rounded-none data-[state=checked]:bg-black"
                         />
-                        <label htmlFor={`c2-side-${side}`} className="text-[10px] font-bold cursor-pointer">{side}</label>
+                        <label htmlFor={`c2-side-${side}`} className="text-[10px] font-medium cursor-pointer">{side}</label>
                       </div>
                     ))}
                   </div>
@@ -618,7 +618,7 @@ Correction Method: ${method}`;
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-slate-100">
               <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Polarity</label>
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Polarity</label>
                 <div className="flex gap-6">
                   <div className="flex items-center gap-2">
                     <Checkbox 
@@ -627,7 +627,7 @@ Correction Method: ${method}`;
                       onCheckedChange={(checked) => updateMetadataFields({ wizard_polarity: checked ? 'IN' : null })}
                       className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
                     />
-                    <label htmlFor="pol-in" className="text-xs font-bold cursor-pointer">Energy IN (+)</label>
+                    <label htmlFor="pol-in" className="text-xs font-medium cursor-pointer">Energy IN (+)</label>
                   </div>
                   <div className="flex items-center gap-2">
                     <Checkbox 
@@ -636,13 +636,13 @@ Correction Method: ${method}`;
                       onCheckedChange={(checked) => updateMetadataFields({ wizard_polarity: checked ? 'OUT' : null })}
                       className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
                     />
-                    <label htmlFor="pol-out" className="text-xs font-bold cursor-pointer">Energy OUT (-)</label>
+                    <label htmlFor="pol-out" className="text-xs font-medium cursor-pointer">Energy OUT (-)</label>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Correction Method</label>
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Correction Method</label>
                 <div className="flex flex-wrap gap-4">
                   {['Tapping', 'Holding + Intention', 'Tuning Fork'].map(method => (
                     <div key={method} className="flex items-center gap-2">
@@ -652,7 +652,7 @@ Correction Method: ${method}`;
                         onCheckedChange={(checked) => updateMetadataFields({ wizard_method: checked ? method : null })}
                         className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
                       />
-                      <label htmlFor={`method-${method}`} className="text-xs font-bold cursor-pointer">{method}</label>
+                      <label htmlFor={`method-${method}`} className="text-xs font-medium cursor-pointer">{method}</label>
                     </div>
                   ))}
                 </div>
@@ -661,13 +661,13 @@ Correction Method: ${method}`;
 
             {/* Log Correction Button */}
             <div className="pt-6 border-t border-slate-100 flex justify-between items-center">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                 Ready to log this correction?
               </p>
               <Button
                 onClick={handleLogCorrection}
                 disabled={!metadata.wizard_finding}
-                className="bg-black text-white hover:bg-slate-800 rounded-none h-10 px-6 font-black text-[10px] uppercase tracking-widest shadow-lg"
+                className="bg-foreground text-background hover:bg-foreground/90 rounded-none h-10 px-6 font-semibold text-[10px] uppercase tracking-wider shadow-lg"
               >
                 <CheckCircle2 size={14} className="mr-2" /> Log Correction
               </Button>
@@ -680,7 +680,7 @@ Correction Method: ${method}`;
       <div id="c-afferent" className="space-y-6 scroll-mt-24">
         <div className="flex items-center gap-2 border-b border-black pb-2">
           <ArrowDownCircle size={16} className="text-blue-600" />
-          <h4 className="text-sm font-black uppercase tracking-widest text-blue-600">Afferent (Bottom-Up) Protocols</h4>
+          <h4 className="text-sm font-semibold uppercase tracking-wider text-blue-600">Afferent (Bottom-Up) Protocols</h4>
         </div>
 
         <div className="grid grid-cols-1 gap-4">
@@ -751,7 +751,7 @@ Correction Method: ${method}`;
       <div id="c-efferent" className="space-y-6 scroll-mt-24">
         <div className="flex items-center gap-2 border-b border-black pb-2">
           <ArrowUpCircle size={16} className="text-purple-600" />
-          <h4 className="text-sm font-black uppercase tracking-widest text-purple-600">Efferent (Top-Down) Protocols</h4>
+          <h4 className="text-sm font-semibold uppercase tracking-wider text-purple-600">Efferent (Top-Down) Protocols</h4>
         </div>
 
         <div className="grid grid-cols-1 gap-4">
@@ -803,10 +803,10 @@ Correction Method: ${method}`;
                 "Correction & Upload: Hold ESR + Pulse Point + Eye Position. Replay stress until shift (yawn, sigh, swallow, gurgle, deep breath), then upload positive state."
               ]}
             >
-              <div className="p-4 bg-white rounded-xl border border-slate-200 space-y-2 text-[11px] leading-relaxed text-slate-700">
+              <div className="p-4 bg-white rounded-xl border border-border space-y-2 text-[11px] leading-relaxed text-slate-700">
                 <div className="flex items-center gap-2 mb-1">
-                  <Info size={14} className="text-indigo-600" />
-                  <span className="font-black uppercase text-[9px] text-indigo-600">Clinical Mastery Note</span>
+                  <Info size={14} className="text-chart-primary" />
+                  <span className="font-semibold uppercase text-[10px] text-chart-primary">Clinical Mastery Note</span>
                 </div>
                 <p className="italic">
                   "The shift occurs when the client can distinguish between the 'me' (the observer) and the 'not-me' (the identity/emotion). Always wait for a clear parasympathetic response: Yawning, Sighing, Swallowing, Gurgling, or a spontaneous Deep Breath before proceeding to the Positive Upload."

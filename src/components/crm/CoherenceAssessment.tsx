@@ -123,7 +123,7 @@ const CoherenceAssessment = ({
   const hasSavedData = initialCoherenceScore !== null || initialHeartRate !== null || initialBreathRate !== null;
 
   return (
-    <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden transition-all hover:shadow-md">
+    <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden transition-all hover:shadow-md">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <div className={cn(
@@ -133,32 +133,23 @@ const CoherenceAssessment = ({
             appointmentId === "temp" && "hidden"
           )}>
             <div className="flex items-center gap-4">
-              <div className={cn(
-                "w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-transform",
-                isOpen ? "scale-105" : "",
-                isCoherent ? "bg-emerald-600" : "bg-rose-600"
-              )}>
-                <Activity size={20} className="text-white" />
+              <div className="w-10 h-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center">
+                <Activity size={18} />
               </div>
               <div>
-                <h3 className="text-base font-black text-foreground tracking-tight">Coherence</h3>
-                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">
+                <h3 className="text-base font-semibold text-foreground tracking-tight">Coherence</h3>
+                <p className="text-sm text-muted-foreground">
                   {calculatedScore !== null 
                     ? `Score: ${calculatedScore.toFixed(2)}` 
-                    : "Not yet recorded this session"}
+                    : "Not yet recorded"}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               {calculatedScore !== null && (
-                <Badge className={cn(
-                  "px-3 py-0.5 text-[10px] font-black uppercase tracking-widest rounded-full border-none shadow-sm",
-                  isCoherent ? "bg-emerald-500 text-white" : "bg-rose-500 text-white"
-                )}>
-                  {calculatedScore.toFixed(2)}
-                </Badge>
+                <span className="text-xs font-medium text-muted-foreground">{calculatedScore.toFixed(2)}</span>
               )}
-              <div className="w-8 h-8 rounded-full bg-card shadow-sm border border-border flex items-center justify-center text-muted-foreground">
+              <div className="w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground">
                 <ChevronDown className={cn("h-4 w-4 transition-transform duration-300", isOpen && "rotate-180")} />
               </div>
             </div>

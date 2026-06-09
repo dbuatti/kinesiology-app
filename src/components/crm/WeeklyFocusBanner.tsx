@@ -141,27 +141,23 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
   return (
     <div className="w-full mb-4 animate-in slide-in-from-top-4 duration-700 print:hidden">
       <div className={cn(
-        "bg-slate-900 text-white rounded-[2rem] p-4 shadow-lg border-2 border-slate-800 relative overflow-hidden group transition-all duration-700",
-        isAllPracticed && "bg-indigo-900 border-indigo-800 shadow-indigo-500/10"
+        "bg-card text-foreground rounded-2xl p-4 shadow-sm border border-border relative overflow-hidden group transition-all duration-700",
+        isAllPracticed && "bg-muted border-border"
       )}>
-        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700">
-          <Trophy size={80} />
-        </div>
-        
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className={cn(
-              "w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner transition-all duration-500",
-              celebratingItem ? "bg-emerald-400 border-emerald-200 scale-110 rotate-12" : ""
+              "w-10 h-10 rounded-xl bg-muted flex items-center justify-center border border-border transition-all duration-500",
+              celebratingItem ? "bg-muted border-border scale-110 rotate-12" : ""
             )}>
-              {celebratingItem ? <Sparkles size={20} className="text-white" /> : <Target size={20} className="text-indigo-400" />}
+              {celebratingItem ? <Sparkles size={20} className="text-muted-foreground" /> : <Target size={20} className="text-muted-foreground" />}
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-3">
-                <p className="text-[8px] font-black uppercase tracking-[0.4em] text-slate-500">Weekly Mastery Focus</p>
+                <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground/70">Weekly Mastery Focus</p>
                 {practicedCount === 0 && (
-                  <Badge variant="outline" className="bg-white/5 border-white/10 text-slate-400 text-[7px] font-black uppercase tracking-widest animate-pulse">
-                    <MousePointer2 size={8} className="mr-1" /> Tap to log today's focus
+                  <Badge variant="outline" className="text-muted-foreground text-[10px] font-medium animate-pulse">
+                    <MousePointer2 size={10} className="mr-1" /> Tap to log today's focus
                   </Badge>
                 )}
               </div>
@@ -173,10 +169,10 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
                   if (!isInteractive) return (
                     <React.Fragment key={item}>
                       <div className="flex items-center gap-1.5">
-                        {videoUrl && <PlayCircle size={12} className="text-indigo-400" />}
-                        <span className="text-sm font-black tracking-tight">{item}</span>
+                        {videoUrl && <PlayCircle size={12} className="text-muted-foreground" />}
+                        <span className="text-sm font-medium tracking-tight">{item}</span>
                       </div>
-                      {i < items.length - 1 && <span className="text-slate-700 font-black">•</span>}
+                      {i < items.length - 1 && <span className="text-muted-foreground/30 font-medium">•</span>}
                     </React.Fragment>
                   );
 
@@ -188,67 +184,67 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
                     >
                       <PopoverTrigger asChild>
                         <button className={cn(
-                          "flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all hover:scale-105 border-2 shadow-sm",
-                          status === 'Clear' ? "bg-emerald-500/20 border-emerald-400/50 text-white" :
-                          status === 'Inhibited' ? "bg-rose-500/20 border-rose-400/50 text-white" :
-                          status === 'Hypertonic' ? "bg-amber-500/20 border-amber-400/50 text-white" :
-                          status === 'Switching' ? "bg-purple-500/20 border-purple-400/50 text-white" :
-                          "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10"
+                          "flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all border shadow-sm",
+                          status === 'Clear' ? "bg-muted border-border text-foreground" :
+                          status === 'Inhibited' ? "bg-muted border-border text-foreground" :
+                          status === 'Hypertonic' ? "bg-muted border-border text-foreground" :
+                          status === 'Switching' ? "bg-muted border-border text-foreground" :
+                          "bg-background border-border text-muted-foreground hover:bg-muted"
                         )}>
-                          {status === 'Clear' ? <CheckCircle2 size={14} className="text-emerald-300" /> :
-                           status === 'Inhibited' ? <AlertCircle size={14} className="text-rose-300" /> :
-                           status === 'Hypertonic' ? <ChevronsUp size={14} className="text-amber-300" /> :
-                           status === 'Switching' ? <HelpCircle size={14} className="text-purple-300" /> :
-                           videoUrl ? <PlayCircle size={14} className="text-indigo-400" /> :
+                          {status === 'Clear' ? <CheckCircle2 size={14} className="text-muted-foreground" /> :
+                           status === 'Inhibited' ? <AlertCircle size={14} className="text-muted-foreground" /> :
+                           status === 'Hypertonic' ? <ChevronsUp size={14} className="text-muted-foreground" /> :
+                           status === 'Switching' ? <HelpCircle size={14} className="text-muted-foreground" /> :
+                           videoUrl ? <PlayCircle size={14} className="text-muted-foreground" /> :
                            <div className="w-3 h-3 rounded-full border-2 border-current opacity-30" />}
-                          <span className="text-xs font-black tracking-tight">{item}</span>
+                          <span className="text-xs font-medium tracking-tight">{item}</span>
                           <ChevronDown size={12} className="opacity-50" />
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-72 p-2 rounded-[2rem] border-none shadow-3xl bg-slate-900 text-white z-[100]">
+                      <PopoverContent className="w-72 p-2 rounded-2xl border-border bg-card text-foreground z-[100]">
                         <div className="space-y-1">
-                          <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 px-4 py-2">Quick Register</p>
+                          <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground/70 px-4 py-2">Quick Register</p>
                           
                           {[
-                            { id: 'Clear', label: 'Clear', icon: CheckCircle2, color: 'text-emerald-400' },
-                            { id: 'Inhibited', label: 'Inhibited', icon: AlertCircle, color: 'text-rose-400' },
-                            { id: 'Hypertonic', label: 'Hypertonic', icon: ChevronsUp, color: 'text-amber-400' },
-                            { id: 'Switching', label: 'Switching', icon: HelpCircle, color: 'text-purple-400' }
-                          ].map(status => (
-                            <div key={status.id} className="flex items-center gap-1 px-2">
+                            { id: 'Clear', label: 'Clear', icon: CheckCircle2 },
+                            { id: 'Inhibited', label: 'Inhibited', icon: AlertCircle },
+                            { id: 'Hypertonic', label: 'Hypertonic', icon: ChevronsUp },
+                            { id: 'Switching', label: 'Switching', icon: HelpCircle }
+                          ].map(st => (
+                            <div key={st.id} className="flex items-center gap-1 px-2">
                               <Button 
                                 variant="ghost" 
-                                className="flex-1 justify-start h-10 rounded-xl hover:bg-white/5 font-bold text-xs px-3"
-                                onClick={(e) => { e.stopPropagation(); handleSetStatus(item, status.id as any); }}
+                                className="flex-1 justify-start h-10 rounded-xl hover:bg-muted font-medium text-xs px-3"
+                                onClick={(e) => { e.stopPropagation(); handleSetStatus(item, st.id as any); }}
                               >
-                                <status.icon size={16} className={cn("mr-2", status.color)} />
-                                {status.label}
+                                <st.icon size={16} className="mr-2 text-muted-foreground" />
+                                {st.label}
                               </Button>
                               {isItemLateralized(item) && (
                                 <div className="flex gap-1">
                                   <Button 
                                     variant="ghost" 
                                     size="sm" 
-                                    className="h-8 w-8 rounded-lg bg-white/5 hover:bg-indigo-500 text-[10px] font-black"
-                                    onClick={(e) => { e.stopPropagation(); handleSetStatus(item, status.id as any, 'L'); }}
+                                    className="h-8 w-8 rounded-lg bg-muted hover:bg-primary hover:text-primary-foreground text-[10px] font-medium"
+                                    onClick={(e) => { e.stopPropagation(); handleSetStatus(item, st.id as any, 'L'); }}
                                   >L</Button>
                                   <Button 
                                     variant="ghost" 
                                     size="sm" 
-                                    className="h-8 w-8 rounded-lg bg-white/5 hover:bg-indigo-500 text-[10px] font-black"
-                                    onClick={(e) => { e.stopPropagation(); handleSetStatus(item, status.id as any, 'R'); }}
+                                    className="h-8 w-8 rounded-lg bg-muted hover:bg-primary hover:text-primary-foreground text-[10px] font-medium"
+                                    onClick={(e) => { e.stopPropagation(); handleSetStatus(item, st.id as any, 'R'); }}
                                   >R</Button>
                                 </div>
                               )}
                             </div>
                           ))}
 
-                          <div className="h-px bg-white/10 my-2 mx-2" />
+                          <div className="h-px bg-border my-2 mx-2" />
                           {videoUrl && (
                             <Button 
                               variant="ghost" 
                               asChild
-                              className="w-full justify-start h-11 rounded-xl hover:bg-indigo-500/20 hover:text-indigo-400 font-bold text-xs px-4"
+                              className="w-full justify-start h-11 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground font-medium text-xs px-4"
                             >
                               <a href={videoUrl} target="_blank" rel="noopener noreferrer">
                                 <PlayCircle size={18} className="mr-3" /> Watch Lesson
@@ -257,7 +253,7 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
                           )}
                           <Button 
                             variant="ghost" 
-                            className="w-full justify-start h-11 rounded-xl hover:bg-indigo-500/20 hover:text-indigo-400 font-bold text-xs px-4"
+                            className="w-full justify-start h-11 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground font-medium text-xs px-4"
                             onClick={(e) => { e.stopPropagation(); handleCalibrate(item); }}
                           >
                             <Zap size={18} className="mr-3" /> Calibrate Finding
@@ -273,12 +269,12 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
           
           <div className="flex items-center gap-4">
             <div className="flex flex-col items-end">
-              <p className="text-[8px] font-black uppercase tracking-widest text-slate-500 mb-1.5">Mastery Progress</p>
+              <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground/70 mb-1.5">Mastery Progress</p>
               <div className="flex items-center gap-3">
-                <div className="w-32 h-1.5 bg-white/5 rounded-full overflow-hidden shadow-inner">
-                  <div className="h-full bg-indigo-500 transition-all duration-1000 shadow-[0_0_10px_rgba(79,70,229,0.5)]" style={{ width: `${(practicedCount / items.length) * 100}%` }} />
+                <div className="w-32 h-1.5 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${(practicedCount / items.length) * 100}%` }} />
                 </div>
-                <span className="text-xs font-black tabular-nums text-slate-400">{practicedCount}/{items.length}</span>
+                <span className="text-xs font-medium tabular-nums text-muted-foreground">{practicedCount}/{items.length}</span>
               </div>
             </div>
           </div>

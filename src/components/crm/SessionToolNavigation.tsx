@@ -63,19 +63,19 @@ const SessionToolNavigation = ({
       variant="ghost"
       onClick={() => onViewChange(view)}
       className={cn(
-        "h-10 px-5 rounded-xl transition-all font-black text-[9px] uppercase tracking-widest shrink-0 gap-2.5",
+        "h-10 px-5 rounded-xl transition-all font-medium text-[10px] uppercase tracking-wider shrink-0 gap-2.5",
         activeView === view 
-          ? "bg-white text-indigo-600 shadow-md border border-slate-100" 
-          : "text-slate-500 hover:bg-white/50"
+          ? "bg-card text-foreground shadow-sm border border-border" 
+          : "text-muted-foreground hover:bg-muted/80"
       )}
     >
-      <Icon size={16} className={cn(activeView === view ? "text-indigo-600" : "text-slate-400")} />
+      <Icon size={16} className={cn(activeView === view ? "text-foreground" : "text-muted-foreground")} />
       {label}
     </Button>
   );
 
   return (
-    <div className="flex flex-col md:flex-row items-center justify-between bg-slate-100/50 dark:bg-slate-800/50 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 gap-4">
+    <div className="flex flex-col md:flex-row items-center justify-between bg-muted/30 p-2 rounded-xl border border-border gap-4">
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full md:w-auto px-1">
         <NavItem view="home" label="PHASES" Icon={LayoutGrid} />
         
@@ -83,12 +83,12 @@ const SessionToolNavigation = ({
           variant="ghost"
           asChild
           className={cn(
-            "h-10 px-5 rounded-xl transition-all font-black text-[9px] uppercase tracking-widest shrink-0 gap-2.5",
-            location.pathname.includes('/protocols') ? "bg-white text-purple-600 shadow-md border border-slate-100" : "text-slate-500 hover:bg-white/50"
+            "h-10 px-5 rounded-xl transition-all font-medium text-[10px] uppercase tracking-wider shrink-0 gap-2.5",
+            location.pathname.includes('/protocols') ? "bg-card text-foreground shadow-sm border border-border" : "text-muted-foreground hover:bg-muted/80"
           )}
         >
           <Link to={`/appointments/${appointmentId}/protocols`}>
-            <Brain size={16} className={cn(location.pathname.includes('/protocols') ? "text-purple-600" : "text-purple-400")} />
+            <Brain size={16} className={cn(location.pathname.includes('/protocols') ? "text-foreground" : "text-muted-foreground")} />
             Protocols
           </Link>
         </Button>
@@ -100,73 +100,73 @@ const SessionToolNavigation = ({
           <DropdownMenuTrigger asChild>
             <button
               className={cn(
-                "h-10 px-5 rounded-xl transition-all font-black text-[9px] uppercase tracking-widest shrink-0 flex items-center gap-2.5",
-                isToolActive ? "bg-white text-indigo-600 shadow-md border border-slate-100" : "text-slate-500 hover:bg-white/50"
+                "h-10 px-5 rounded-xl transition-all font-medium text-[10px] uppercase tracking-wider shrink-0 flex items-center gap-2.5",
+                isToolActive ? "bg-card text-foreground shadow-sm border border-border" : "text-muted-foreground hover:bg-muted/80"
               )}
             >
-              <Wrench size={16} className={cn(isToolActive ? "text-indigo-600" : "text-slate-400")} />
+              <Wrench size={16} className={cn(isToolActive ? "text-foreground" : "text-muted-foreground")} />
               Tools
               <ChevronDown size={12} className="opacity-50" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-72 md:w-80 p-2 rounded-2xl border-none shadow-3xl bg-white dark:bg-slate-900">
+          <DropdownMenuContent align="start" className="w-72 md:w-80 p-2 rounded-xl border border-border shadow-sm bg-card">
             <div className="px-4 py-2 mb-1">
-              <p className="text-[8px] font-black uppercase tracking-[0.3em] text-slate-400">Clinical Utilities</p>
+              <p className="text-[10px] font-medium text-muted-foreground">Clinical Utilities</p>
             </div>
             <DropdownMenuItem onClick={() => onViewChange('context')} className="rounded-xl py-3 px-4 cursor-pointer group">
-              <UserCircle size={18} className="mr-3 text-indigo-500" /> 
+              <UserCircle size={18} className="mr-3 text-muted-foreground" /> 
               <div className="flex flex-col">
-                <span className="font-bold text-xs">Client Context</span>
-                <span className="text-[9px] text-slate-400 font-medium">History & Background</span>
+                <span className="font-medium text-xs">Client Context</span>
+                <span className="text-[10px] text-muted-foreground">History & Background</span>
               </div>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onViewChange('journal')} className="rounded-xl py-3 px-4 cursor-pointer group">
-              <BookOpen size={18} className="mr-3 text-amber-500 group-hover:scale-110 transition-transform" /> 
+              <BookOpen size={18} className="mr-3 text-muted-foreground group-hover:scale-110 transition-transform" /> 
               <div className="flex flex-col">
-                <span className="font-bold text-xs">Session Journal</span>
-                <span className="text-[9px] text-slate-400 font-medium">Practitioner Reflections</span>
+                <span className="font-medium text-xs">Session Journal</span>
+                <span className="text-[10px] text-muted-foreground">Practitioner Reflections</span>
               </div>
             </DropdownMenuItem>
 
-            <DropdownMenuSeparator className="my-1 bg-slate-100 dark:bg-slate-800" />
+            <DropdownMenuSeparator className="my-1 bg-border" />
 
             <DropdownMenuItem onClick={() => onViewChange('kinesiology')} className="rounded-xl py-3 px-4 cursor-pointer group">
-              <Heart size={18} className="mr-3 text-rose-500 group-hover:scale-110 transition-transform" /> 
+              <Heart size={18} className="mr-3 text-muted-foreground group-hover:scale-110 transition-transform" /> 
               <div className="flex flex-col">
-                <span className="font-bold text-xs">Kinesiology Tools</span>
-                <span className="text-[9px] text-slate-400 font-medium">Luscher & Emotions</span>
+                <span className="font-medium text-xs">Kinesiology Tools</span>
+                <span className="text-[10px] text-muted-foreground">Luscher & Emotions</span>
               </div>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onViewChange('muscles')} className="rounded-xl py-3 px-4 cursor-pointer group">
-              <Dumbbell size={18} className="mr-3 text-indigo-500 group-hover:scale-110 transition-transform" /> 
+              <Dumbbell size={18} className="mr-3 text-muted-foreground group-hover:scale-110 transition-transform" /> 
               <div className="flex flex-col">
-                <span className="font-bold text-xs">Muscle Log</span>
-                <span className="text-[9px] text-slate-400 font-medium">Detailed Testing</span>
+                <span className="font-medium text-xs">Muscle Log</span>
+                <span className="text-[10px] text-muted-foreground">Detailed Testing</span>
               </div>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onViewChange('gait')} className="rounded-xl py-3 px-4 cursor-pointer group">
-              <Footprints size={18} className="mr-3 text-emerald-500 group-hover:scale-110 transition-transform" /> 
+              <Footprints size={18} className="mr-3 text-muted-foreground group-hover:scale-110 transition-transform" /> 
               <div className="flex flex-col">
-                <span className="font-bold text-xs">Gait Integration</span>
-                <span className="text-[9px] text-slate-400 font-medium">Movement Patterns</span>
+                <span className="font-medium text-xs">Gait Integration</span>
+                <span className="text-[10px] text-muted-foreground">Movement Patterns</span>
               </div>
             </DropdownMenuItem>
             
-            <DropdownMenuSeparator className="my-1 bg-slate-100 dark:bg-slate-800" />
+            <DropdownMenuSeparator className="my-1 bg-border" />
             
             <DropdownMenuItem onClick={() => onViewChange('audit')} className="rounded-xl py-3 px-4 cursor-pointer group">
-              <Clock size={18} className="mr-3 text-slate-400 group-hover:scale-110 transition-transform" /> 
+              <Clock size={18} className="mr-3 text-muted-foreground group-hover:scale-110 transition-transform" /> 
               <div className="flex flex-col">
-                <span className="font-bold text-xs">Session Audit Log</span>
-                <span className="text-[9px] text-slate-400 font-medium">Timestamped Findings</span>
+                <span className="font-medium text-xs">Session Audit Log</span>
+                <span className="text-[10px] text-muted-foreground">Timestamped Findings</span>
               </div>
             </DropdownMenuItem>
 
-            <DropdownMenuItem onClick={onOpenDocument} className="rounded-xl py-3 px-4 cursor-pointer group bg-indigo-50 text-indigo-600 hover:bg-indigo-100">
-              <FileText size={18} className="mr-3 group-hover:scale-110 transition-transform" /> 
+            <DropdownMenuItem onClick={onOpenDocument} className="rounded-xl py-3 px-4 cursor-pointer group hover:bg-muted">
+              <FileText size={18} className="mr-3 text-muted-foreground group-hover:scale-110 transition-transform" /> 
               <div className="flex flex-col">
-                <span className="font-bold text-xs">Document View</span>
-                <span className="text-[9px] text-indigo-400 font-medium">Full Session Report</span>
+                <span className="font-medium text-xs">Document View</span>
+                <span className="text-[10px] text-muted-foreground">Full Session Report</span>
               </div>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -179,7 +179,7 @@ const SessionToolNavigation = ({
           variant="ghost"
           size="sm"
           onClick={toggleDocumentView}
-          className="h-9 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest gap-1 md:gap-1.5"
+          className="h-9 px-3 rounded-xl text-[10px] font-medium tracking-wider gap-1 md:gap-1.5"
         >
           {isDocViewActive ? <LayoutGrid size={14} /> : <FileText size={14} />}
           {isDocViewActive ? "Standard View" : "Doc View"}

@@ -331,7 +331,7 @@ const FractalTool = () => {
 
   if (loading) return (
     <div className="flex justify-center py-20">
-      <Loader2 className="animate-spin text-indigo-600" size={48} />
+      <Loader2 className="animate-spin text-chart-primary" size={48} />
     </div>
   );
 
@@ -340,11 +340,11 @@ const FractalTool = () => {
   return (
     <div className="space-y-10 animate-in fade-in duration-700">
       {scanError && (
-        <Alert variant="destructive" className="bg-rose-50 border-rose-200 rounded-2xl animate-in slide-in-from-top-2">
-          <AlertCircle className="h-5 w-5 text-rose-600" />
-          <AlertDescription className="text-sm text-rose-900 font-bold flex items-center justify-between">
+        <Alert variant="destructive" className="bg-muted border-border rounded-xl animate-in slide-in-from-top-2">
+          <AlertCircle className="h-5 w-5 text-chart-destructive" />
+          <AlertDescription className="text-sm text-foreground font-medium flex items-center justify-between">
             {scanError}
-            <Button variant="outline" size="sm" onClick={handleScan} className="h-8 border-rose-200 text-rose-600 hover:bg-rose-100">
+            <Button variant="outline" size="sm" onClick={handleScan} className="h-8 border-border text-chart-destructive hover:bg-muted">
               Retry Scan
             </Button>
           </AlertDescription>
@@ -352,26 +352,26 @@ const FractalTool = () => {
       )}
 
       {proposedPrimary && proposedPrimaryContent && (
-        <Card className="border-none shadow-2xl bg-slate-900 text-white rounded-[3rem] overflow-hidden animate-in slide-in-from-top-4 duration-500">
+        <Card className="border-none shadow-sm bg-card text-card-foreground rounded-xl overflow-hidden animate-in slide-in-from-top-4 duration-500">
           <CardContent className="p-10 flex flex-col md:flex-row items-center gap-10 relative">
             <div className="absolute top-0 right-0 p-8 opacity-10"><Crown size={150} /></div>
-            <div className="w-24 h-24 rounded-[2rem] bg-amber-500 flex items-center justify-center shrink-0 shadow-2xl shadow-amber-500/40 relative z-10">
-              <Crown size={48} className="text-white" />
+            <div className="w-24 h-24 rounded-xl bg-muted flex items-center justify-center shrink-0 shadow-sm relative z-10">
+              <Crown size={48} className="text-muted-foreground" />
             </div>
             <div className="space-y-4 relative z-10 flex-1">
-              <Badge className="bg-amber-400 text-slate-900 border-none font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1">AI Root Discovery</Badge>
-              <h3 className="text-3xl font-black tracking-tight">Proposed Primary Primary</h3>
-              <p className="text-xl font-serif italic text-amber-100">
+              <Badge className="bg-muted text-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-4 py-1">AI Root Discovery</Badge>
+              <h3 className="text-3xl font-semibold tracking-tight">Proposed Primary Primary</h3>
+              <p className="text-xl font-serif italic text-muted-foreground">
                 "{proposedPrimaryContent}"
               </p>
-              <p className="text-sm text-slate-400 leading-relaxed max-w-2xl">
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
                 {proposedPrimary.reasoning}
               </p>
               <div className="flex gap-3 pt-2">
-                <Button onClick={handleAcceptPrimary} className="bg-white text-slate-900 hover:bg-amber-50 h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg">
+                <Button onClick={handleAcceptPrimary} className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-8 rounded-xl font-semibold text-xs uppercase tracking-wider shadow-sm">
                   Establish as Root
                 </Button>
-                <Button variant="ghost" onClick={() => { setProposedPrimary(null); updateCache(proposedRelationships, proposedMerges, null); }} className="text-slate-400 hover:text-white">
+                <Button variant="ghost" onClick={() => { setProposedPrimary(null); updateCache(proposedRelationships, proposedMerges, null); }} className="text-muted-foreground hover:text-foreground">
                   Dismiss
                 </Button>
               </div>
@@ -383,27 +383,27 @@ const FractalTool = () => {
       {proposedMerges.length > 0 && (
         <div className="space-y-6">
           <div className="flex items-center gap-3 px-2">
-            <Merge size={20} className="text-rose-500" />
-            <h3 className="text-xl font-black text-slate-900">Merge Suggestions</h3>
+            <Merge size={20} className="text-chart-destructive" />
+            <h3 className="text-xl font-semibold text-foreground">Merge Suggestions</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {proposedMerges.map((merge, idx) => (
-              <Card key={idx} className="border-none shadow-md bg-rose-50/50 border-2 border-rose-100 rounded-[2rem] overflow-hidden">
+              <Card key={idx} className="border-none shadow-sm bg-muted border-2 border-border rounded-xl overflow-hidden">
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
-                      <p className="text-[8px] font-black text-rose-400 uppercase tracking-widest">Duplicate Cluster</p>
-                      <h4 className="text-lg font-black text-rose-900">"{merge.suggested_content}"</h4>
+                      <p className="text-[10px] font-semibold text-chart-destructive uppercase tracking-wider">Duplicate Cluster</p>
+                      <h4 className="text-lg font-semibold text-foreground">"{merge.suggested_content}"</h4>
                     </div>
                     <Button 
                       onClick={() => handleAcceptMerge(merge)}
-                      className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl h-9 px-4 font-black text-[10px] uppercase tracking-widest shadow-lg"
+                      className="bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-xl h-9 px-4 font-semibold text-[10px] uppercase tracking-wider shadow-sm"
                     >
                       Merge Items
                     </Button>
                   </div>
-                  <div className="p-3 bg-white/60 rounded-xl border border-rose-100">
-                    <p className="text-[10px] text-rose-700 font-medium italic">"{merge.reasoning}"</p>
+                  <div className="p-3 bg-muted rounded-xl border border-border">
+                    <p className="text-[10px] text-chart-destructive font-medium italic">"{merge.reasoning}"</p>
                   </div>
                 </CardContent>
               </Card>
@@ -416,10 +416,10 @@ const FractalTool = () => {
         <div className="space-y-6">
           <div className="flex items-center justify-between px-2">
             <div className="flex items-center gap-3">
-              <Sparkles size={20} className="text-amber-500" />
-              <h3 className="text-xl font-black text-slate-900">Proposed Fractal Groups</h3>
+              <Sparkles size={20} className="text-muted-foreground" />
+              <h3 className="text-xl font-semibold text-foreground">Proposed Fractal Groups</h3>
             </div>
-            <Button variant="ghost" size="sm" onClick={clearSuggestions} className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-600">
+            <Button variant="ghost" size="sm" onClick={clearSuggestions} className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-chart-destructive">
               Clear All Suggestions
             </Button>
           </div>
@@ -430,21 +430,21 @@ const FractalTool = () => {
               if (!parent) return null;
 
               return (
-                <Card key={parentId} className="border-none shadow-xl bg-white rounded-[2.5rem] overflow-hidden border-2 border-indigo-100">
-                  <CardHeader className="bg-indigo-600 p-8 text-white">
+                <Card key={parentId} className="border-none shadow-sm bg-card rounded-xl overflow-hidden border-2 border-border">
+                  <CardHeader className="bg-primary p-8 text-primary-foreground">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shadow-inner">
+                        <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center shadow-inner">
                           <Layers size={24} />
                         </div>
                         <div>
-                          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-200">Parent Pattern</p>
-                          <h4 className="text-2xl font-black tracking-tight">"{parent.content}"</h4>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-primary-foreground/60">Parent Pattern</p>
+                          <h4 className="text-2xl font-semibold tracking-tight">"{parent.content}"</h4>
                         </div>
                       </div>
                       <Button 
                         onClick={() => handleAcceptAll(parentId, rels)}
-                        className="bg-white text-indigo-600 hover:bg-indigo-50 h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-8 rounded-xl font-semibold text-xs uppercase tracking-wider shadow-sm"
                       >
                         <CheckCircle2 size={18} className="mr-2" /> Accept All ({rels.length})
                       </Button>
@@ -457,11 +457,11 @@ const FractalTool = () => {
                         if (!child) return null;
 
                         return (
-                          <div key={idx} className="p-5 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-indigo-200 transition-all">
+                          <div key={idx} className="p-5 bg-muted rounded-3xl border border-border group hover:border-chart-primary transition-all">
                             <div className="flex items-start justify-between gap-4 mb-3">
                               <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="bg-white border-indigo-100 text-indigo-600 text-[8px] font-black uppercase px-2 py-0.5">Child</Badge>
-                                <p className="text-sm font-bold text-slate-900">"{child.content}"</p>
+                                <Badge variant="outline" className="bg-card border-border text-chart-primary text-[10px] font-semibold uppercase px-2 py-0.5">Child</Badge>
+                                <p className="text-sm font-medium text-foreground">"{child.content}"</p>
                               </div>
                               <button 
                                 onClick={() => {
@@ -469,12 +469,12 @@ const FractalTool = () => {
                                     setProposedRelationships(newRels);
                                     updateCache(newRels, proposedMerges, proposedPrimary);
                                 }}
-                                className="h-8 w-8 rounded-lg text-slate-300 hover:text-rose-600 flex items-center justify-center transition-colors"
+                                className="h-8 w-8 rounded-lg text-muted-foreground/60 hover:text-chart-destructive flex items-center justify-center transition-colors"
                               >
                                 <X size={16} />
                               </button>
                             </div>
-                            <p className="text-xs text-slate-500 font-medium italic leading-relaxed pl-1 border-l-2 border-indigo-200">
+                            <p className="text-xs text-muted-foreground font-medium italic leading-relaxed pl-1 border-l-2 border-chart-primary">
                               {rel.reasoning}
                             </p>
                             <div className="mt-4 flex justify-end">
@@ -482,7 +482,7 @@ const FractalTool = () => {
                                 variant="ghost" 
                                 size="sm" 
                                 onClick={() => handleAcceptRelationship(rel)}
-                                className="h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50"
+                                className="h-8 px-3 rounded-lg text-[10px] font-semibold uppercase tracking-wider text-chart-primary hover:bg-muted"
                               >
                                 Accept Single <ChevronRight size={14} className="ml-1" />
                               </Button>
@@ -501,22 +501,22 @@ const FractalTool = () => {
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
-          <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
-            <Layers size={24} className="text-indigo-600" /> Fractal Hierarchy
+          <h2 className="text-2xl font-semibold text-foreground flex items-center gap-3">
+            <Layers size={24} className="text-chart-primary" /> Fractal Hierarchy
           </h2>
-          <p className="text-sm text-slate-500 font-medium">Organize specific patterns under overarching motivators.</p>
+          <p className="text-sm text-muted-foreground font-medium">Organize specific patterns under overarching motivators.</p>
         </div>
         <div className="flex flex-col items-end gap-2">
           <Button 
             onClick={handleScan} 
             disabled={isScanning || backlog.length < 2}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-8 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-14 px-8 font-semibold text-xs uppercase tracking-wider shadow-sm"
           >
             {isScanning ? <Loader2 className="mr-2 animate-spin" /> : <Wand2 size={18} className="mr-2" />}
             Scan for Fractals
           </Button>
           {lastScanned && (
-            <div className="flex items-center gap-1.5 text-[8px] font-black text-slate-400 uppercase tracking-widest">
+            <div className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
               <Clock size={10} /> Last Analyzed {formatDistanceToNow(new Date(lastScanned), { addSuffix: true })}
             </div>
           )}
@@ -529,25 +529,25 @@ const FractalTool = () => {
             {renderTree(hierarchicalData)}
           </div>
         ) : (
-          <div className="text-center py-32 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
-            <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-              <Layers className="text-slate-300" size={40} />
+          <div className="text-center py-32 bg-muted rounded-xl border-2 border-dashed border-border">
+            <div className="w-20 h-20 bg-card rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+              <Layers className="text-muted-foreground/60" size={40} />
             </div>
-            <h3 className="text-xl font-black text-slate-900">No active identities</h3>
-            <p className="text-slate-500 mt-2">Add items to your backlog from the Sandbox or Journal to begin fractal analysis.</p>
+            <h3 className="text-xl font-semibold text-foreground">No active identities</h3>
+            <p className="text-muted-foreground mt-2">Add items to your backlog from the Sandbox or Journal to begin fractal analysis.</p>
           </div>
         )}
       </div>
 
-      <div className="p-8 bg-slate-900 text-white rounded-[3rem] shadow-2xl relative overflow-hidden">
+      <div className="p-8 bg-card text-card-foreground rounded-xl shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 p-12 opacity-10"><Sparkles size={150} /></div>
         <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
-          <div className="w-24 h-24 rounded-[2rem] bg-indigo-600 flex items-center justify-center shrink-0 shadow-2xl shadow-indigo-500/40">
-            <Info size={48} className="text-white" />
+          <div className="w-24 h-24 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm">
+            <Info size={48} className="text-primary-foreground" />
           </div>
           <div className="space-y-4">
-            <h4 className="text-2xl font-black">The Fractal Principle</h4>
-            <p className="text-indigo-200 font-medium text-lg leading-relaxed">
+            <h4 className="text-2xl font-semibold">The Fractal Principle</h4>
+            <p className="text-muted-foreground font-medium text-lg leading-relaxed">
               "The nervous system works in fractal patterns. A single overarching identity often 'runs' dozens of smaller beliefs. By identifying and shifting the parent pattern, you create a cascade of resolution across the entire system."
             </p>
           </div>

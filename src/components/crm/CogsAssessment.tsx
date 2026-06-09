@@ -161,7 +161,7 @@ const CogsAssessment = ({
   };
 
   return (
-    <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden transition-all hover:shadow-md">
+    <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden transition-all hover:shadow-md">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <div className={cn(
@@ -170,24 +170,21 @@ const CogsAssessment = ({
             hasSavedNotes && !isOpen && "bg-purple-500/10"
           )}>
             <div className="flex items-center gap-4">
-              <div className={cn(
-                "w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-transform",
-                isOpen ? "scale-105" : ""
-              )}>
-                <Move size={20} className="text-white bg-purple-600 rounded-xl p-1" />
+              <div className="w-10 h-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center">
+                <Move size={18} />
               </div>
               <div>
-                <h3 className="text-base font-black text-foreground tracking-tight">ROM (Cogs)</h3>
-                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">3-Plane Mobility</p>
+                <h3 className="text-base font-semibold text-foreground tracking-tight">ROM (Cogs)</h3>
+                <p className="text-sm text-muted-foreground">3-Plane Mobility</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              {hasSavedNotes && (
-                <Badge className="bg-purple-500 text-white border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
-                  Recorded
-                </Badge>
+              {hasSavedNotes ? (
+                <span className="text-xs font-medium text-muted-foreground">Recorded</span>
+              ) : (
+                <span className="text-xs text-muted-foreground/50 font-medium">Not yet recorded</span>
               )}
-              <div className="w-8 h-8 rounded-full bg-card shadow-sm border border-border flex items-center justify-center text-muted-foreground">
+              <div className="w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground">
                 <ChevronDown className={cn("h-4 w-4 transition-transform duration-300", isOpen && "rotate-180")} />
               </div>
             </div>

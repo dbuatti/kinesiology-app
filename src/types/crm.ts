@@ -134,6 +134,7 @@ export interface Client {
   target_rate?: number | null;
   rate_updated_at?: string | null;
   reengagement_tag?: 'warm' | 'cold' | 'lost' | null;
+  contact_log?: { timestamp: string; note: string }[];
 }
 
 export interface AppointmentWithClient extends Appointment {

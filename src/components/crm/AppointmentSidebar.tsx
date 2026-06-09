@@ -33,20 +33,20 @@ const AppointmentSidebar = ({
   return (
     <div className="xl:col-span-4 space-y-8 sticky top-24 print:hidden animate-in fade-in slide-in-from-right-4 duration-500">
       {/* BRAINSTEM TONE MAP */}
-      <Card className="border-none shadow-2xl shadow-indigo-500/5 rounded-[2.5rem] bg-white dark:bg-slate-900 overflow-hidden">
-        <CardHeader className="p-8 pb-4">
+      <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
+        <CardHeader className="p-6 pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center">
                 <Brain size={20} />
               </div>
-              <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-[0.2em]">Neural Landscape</h3>
+              <h3 className="text-sm font-semibold text-foreground">Neural Landscape</h3>
             </div>
             <Button
               variant="ghost"
               size="icon"
               onClick={onToggleSidebar}
-              className="h-10 w-10 rounded-xl text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all"
+              className="h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
             >
               <PanelRightClose size={20} />
             </Button>
@@ -63,40 +63,40 @@ const AppointmentSidebar = ({
 
       {/* REFLECTIONS */}
       {reflections.length > 0 && (
-        <Card className="border-none shadow-2xl shadow-amber-500/5 rounded-[2.5rem] bg-white dark:bg-slate-900 overflow-hidden">
-          <CardHeader className="p-8 pb-4">
+        <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
+          <CardHeader className="p-6 pb-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center">
                   <Activity size={20} />
                 </div>
-                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-[0.2em]">Reflections</h3>
+                <h3 className="text-sm font-semibold text-foreground">Reflections</h3>
               </div>
-              <Button variant="ghost" size="sm" asChild className="h-10 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50">
+              <Button variant="ghost" size="sm" asChild className="h-10 px-4 rounded-xl text-[10px] font-medium text-muted-foreground hover:bg-muted">
                 <Link to="/practice/journal" state={{ appointmentId: appointment.id }}>
                   + Add
                 </Link>
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="p-8 pt-0 space-y-4">
+          <CardContent className="p-6 pt-0 space-y-4">
             {reflections.slice(0, 3).map((ref) => (
-              <div key={ref.id} className="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-3 group hover:border-amber-200 transition-all">
+              <div key={ref.id} className="p-4 bg-muted rounded-xl border border-border space-y-3 group hover:border-muted-foreground/30 transition-all">
                 <div className="flex justify-between items-start">
-                  <Badge variant="outline" className="text-[8px] font-black uppercase border-none bg-amber-100 text-amber-700 px-2 py-0.5">
+                  <Badge variant="outline" className="text-[10px] font-medium border-none bg-muted text-muted-foreground px-2 py-0.5">
                     {ref.category}
                   </Badge>
-                  <span className="text-[8px] font-bold text-slate-400 uppercase">
+                  <span className="text-[10px] font-medium text-muted-foreground">
                     {format(new Date(ref.created_at), "MMM d")}
                   </span>
                 </div>
-                <p className="text-xs italic text-slate-600 dark:text-slate-400 line-clamp-3 leading-relaxed">
+                <p className="text-xs italic text-muted-foreground line-clamp-3 leading-relaxed">
                   "{ref.content}"
                 </p>
               </div>
             ))}
             {reflections.length > 3 && (
-              <Button variant="ghost" asChild className="w-full h-10 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600">
+              <Button variant="ghost" asChild className="w-full h-10 rounded-xl text-[10px] font-medium text-muted-foreground hover:text-foreground">
                 <Link to="/practice/journal" state={{ appointmentId: appointment.id }}>
                   View All {reflections.length} Reflections
                 </Link>

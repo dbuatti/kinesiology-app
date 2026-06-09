@@ -56,23 +56,28 @@ export default {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
         },
+        chart: {
+          primary: "hsl(var(--chart-primary))",
+          destructive: "hsl(var(--chart-destructive))",
+          emerald: "hsl(var(--chart-emerald))",
+        },
       },
       borderRadius: {
-        lg: "1rem", // 16px - Standard Containers
-        md: "0.75rem", // 12px - Components
-        sm: "0.5rem", // 8px - Small elements
-        xl: "1.5rem",
-        '2xl': "2rem",
-        '3xl': "2.5rem",
+        lg: "0.75rem",
+        md: "0.5rem",
+        sm: "0.375rem",
+        xl: "1rem",
+        '2xl': "1.25rem",
+        '3xl': "1.5rem",
       },
       boxShadow: {
-        'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-        'md': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
-        'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -2px rgba(0, 0, 0, 0.03)',
-        'xl': '0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03)',
-        '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.12)',
-        '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.15)',
-        'premium': '0 20px 40px -10px rgba(79, 70, 229, 0.08)',
+        'sm': '0 1px 3px 0 rgba(0, 0, 0, 0.04)',
+        'md': '0 4px 8px -2px rgba(0, 0, 0, 0.04), 0 2px 4px -2px rgba(0, 0, 0, 0.02)',
+        'lg': '0 8px 16px -4px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.02)',
+        'xl': '0 12px 24px -6px rgba(0, 0, 0, 0.06), 0 4px 8px -4px rgba(0, 0, 0, 0.02)',
+        '2xl': '0 20px 40px -8px rgba(0, 0, 0, 0.08)',
+        '3xl': '0 24px 48px -12px rgba(0, 0, 0, 0.10)',
+        'premium': '0 12px 24px -8px rgba(79, 70, 229, 0.06)',
         'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.02)',
       },
       animation: {

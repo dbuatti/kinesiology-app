@@ -68,7 +68,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
   const isOptimal = initialBoltScore !== null && initialBoltScore !== undefined && initialBoltScore >= 40;
 
   return (
-    <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden transition-all hover:shadow-md">
+    <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden transition-all hover:shadow-md">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <div className={cn(
@@ -77,36 +77,23 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate }: BoltTest
             initialBoltScore && !isOpen && (isOptimal ? "bg-emerald-500/10" : needsImprovement ? "bg-rose-500/10" : "bg-indigo-500/10")
           )}>
             <div className="flex items-center gap-4">
-              <div className={cn(
-                "w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-transform",
-                isOpen ? "scale-105" : "",
-                isOptimal ? "bg-emerald-600" : needsImprovement ? "bg-rose-600" : "bg-indigo-600"
-              )}>
-                <FlaskConical size={20} className="text-white" />
+              <div className="w-10 h-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center">
+                <FlaskConical size={18} />
               </div>
               <div>
-                <h3 className="text-base font-black text-foreground tracking-tight">BOLT Test</h3>
-                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">
+                <h3 className="text-base font-semibold text-foreground tracking-tight">BOLT Test</h3>
+                <p className="text-sm text-muted-foreground">
                   {initialBoltScore !== null && initialBoltScore !== undefined 
                     ? `Current: ${initialBoltScore}s` 
-                    : "Not yet recorded this session"}
+                    : "Not yet recorded"}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               {initialBoltScore !== null && initialBoltScore !== undefined && (
-                <div className="flex flex-col items-end">
-                  <Badge className={cn(
-                    "px-3 py-0.5 text-[10px] font-black uppercase tracking-widest rounded-full border-none shadow-sm",
-                    isOptimal ? "bg-emerald-500 text-white" :
-                    initialBoltScore >= 25 ? "bg-blue-500 text-white" :
-                    "bg-rose-500 text-white"
-                  )}>
-                    {initialBoltScore}s
-                  </Badge>
-                </div>
+                <span className="text-xs font-medium text-muted-foreground">{initialBoltScore}s</span>
               )}
-              <div className="w-8 h-8 rounded-full bg-card shadow-sm border border-border flex items-center justify-center text-muted-foreground">
+              <div className="w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground">
                 <ChevronDown className={cn("h-4 w-4 transition-transform duration-300", isOpen && "rotate-180")} />
               </div>
             </div>

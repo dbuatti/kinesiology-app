@@ -18,7 +18,7 @@ import {
   ChevronRight, Settings2, Sparkles, Globe, ExternalLink,
   PanelLeftClose, PanelLeftOpen, ClipboardCheck, MoreHorizontal, Printer,
   ArrowLeft, Calendar, Clock, Link as LinkIcon, Maximize2, Minimize2, Trash2,
-  ChevronDown, ChevronUp
+  ChevronDown, ChevronUp, AlertCircle, Plus, Droplets, CreditCard, ShieldAlert
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
@@ -31,9 +31,7 @@ import { Nuclei } from "@/utils/brainstem-logic";
 // Layouts
 import AppLayout from "@/components/crm/AppLayout";
 import Breadcrumbs from "@/components/shared/Breadcrumbs";
-import AppointmentHeader from "@/components/crm/AppointmentHeader";
 import WeeklyFocusBanner from "@/components/crm/WeeklyFocusBanner";
-import PreviousSessionInsightsBar from "@/components/crm/PreviousSessionInsightsBar";
 import SessionContentSwitcher from "@/components/crm/SessionContentSwitcher";
 import AppointmentSidebar from "@/components/crm/AppointmentSidebar";
 import SessionWorksheetTemplate from "@/components/crm/SessionWorksheetTemplate";
@@ -49,7 +47,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
+import { APPOINTMENT_STATUSES } from "@/data/appointment-data";
+import { calculateNeuralLoad } from "@/utils/brainstem-logic";
 import { generateSessionSummary, generateAICasePrompt } from "@/utils/summary-generator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 const AppointmentDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -76,6 +89,8 @@ const AppointmentDetailPage = () => {
   const [isFullScreen, setIsFullScreen] = useState(() => {
     return localStorage.getItem('antigravity_fullscreen') === 'true';
   });
+  const [medicalHistoryEditing, setMedicalHistoryEditing] = useState(false);
+  const [medicalHistoryValue, setMedicalHistoryValue] = useState("");
 
   useEffect(() => {
     const handleFullScreenChange = () => {
@@ -240,11 +255,25 @@ const AppointmentDetailPage = () => {
     setTimeout(() => setIsCopied(false), 2000);
   }, [appointment]);
 
+  const saveClientField = useCallback(async (field: string, value: any) => {
+    if (!appointment?.clients?.id) return;
+    try {
+      const { error } = await supabase
+        .from('clients')
+        .update({ [field]: value })
+        .eq('id', appointment.clients.id);
+      if (error) throw error;
+      refresh();
+    } catch (err: any) {
+      showError(err.message || "Failed to save");
+    }
+  }, [appointment, refresh]);
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-4">
-        <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Initializing Workspace</p>
+        <Loader2 className="h-12 w-12 animate-spin text-muted-foreground" />
+        <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Initializing Workspace</p>
       </div>
     </div>
   );
@@ -254,11 +283,11 @@ const AppointmentDetailPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center p-8 bg-background">
         <div className="flex flex-col items-center gap-6 max-w-md text-center">
-          <div className={cn("w-20 h-20 rounded-[2rem] flex items-center justify-center", isInvalidId ? "bg-red-50 dark:bg-red-950/20" : "bg-muted")}>
+          <div className={cn("w-20 h-20 rounded-xl flex items-center justify-center", isInvalidId ? "bg-muted" : "bg-muted")}>
             {isInvalidId ? (
-              <span className="text-3xl font-black text-red-400">?</span>
+              <span className="text-3xl font-semibold text-muted-foreground">?</span>
             ) : (
-              <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             )}
           </div>
           <div>
@@ -268,11 +297,11 @@ const AppointmentDetailPage = () => {
             </p>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" asChild className="rounded-xl font-bold text-xs">
+            <Button variant="outline" asChild className="rounded-xl font-medium text-xs">
               <Link to="/schedule?view=list"><ArrowLeft size={14} className="mr-2" /> Back to Schedule</Link>
             </Button>
             {isInvalidId && (
-              <Button asChild className="rounded-xl font-bold text-xs bg-indigo-600 hover:bg-indigo-700">
+              <Button asChild className="rounded-xl font-medium text-xs bg-primary text-primary-foreground hover:bg-primary/90">
                 <Link to="/appointments">View All Appointments</Link>
               </Button>
             )}
@@ -305,12 +334,12 @@ const AppointmentDetailPage = () => {
         <div className="max-w-[1600px] mx-auto space-y-6">
 
           {/* SESSION HEADER */}
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 bg-card p-5 md:p-7 rounded-[2rem] border border-border shadow-md">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5 bg-card p-5 md:p-7 rounded-xl border border-border shadow-sm">
             <div className="flex items-start sm:items-center gap-4 md:gap-6 w-full lg:w-auto">
               <Button
                 variant="ghost"
                 onClick={() => navigate('/schedule?view=list')}
-                className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-muted/50 border border-border text-muted-foreground hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-all shrink-0"
+                className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-muted/50 border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-all shrink-0"
               >
                 <ArrowLeft size={18} />
               </Button>
@@ -322,7 +351,7 @@ const AppointmentDetailPage = () => {
                     {appointment.clients.name}
                   </h1>
                   {isSessionToday && isOngoing && (
-                    <Badge className="bg-emerald-500 text-white border-none font-black text-[8px] uppercase tracking-[0.3em] px-3 py-1 rounded-full animate-pulse shadow-lg shadow-emerald-500/20 shrink-0">
+                    <Badge className="bg-chart-emerald/10 text-chart-emerald border-none font-medium text-[10px] uppercase tracking-wider px-3 py-1 rounded-full animate-pulse shrink-0">
                       ● LIVE
                     </Badge>
                   )}
@@ -334,23 +363,23 @@ const AppointmentDetailPage = () => {
                 </div>
 
                 {/* Meta row */}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground font-bold text-xs md:text-sm">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground font-medium text-xs md:text-sm">
                   <span className="flex items-center gap-1.5">
-                    <Calendar size={13} className="text-indigo-400 shrink-0" />
+                    <Calendar size={13} className="text-muted-foreground shrink-0" />
                     {format(appointment.date, "EEEE, MMMM d")}
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <Clock size={13} className="text-indigo-400 shrink-0" />
+                    <Clock size={13} className="text-muted-foreground shrink-0" />
                     {format(appointment.date, "h:mm a")}
                   </span>
-                  <Badge variant="outline" className="bg-muted/50 border-border text-muted-foreground font-black text-[8px] uppercase tracking-widest px-2 py-0.5 shrink-0">
+                  <Badge variant="outline" className="bg-muted/50 border-border text-muted-foreground font-medium text-[10px] uppercase tracking-wider px-2 py-0.5 shrink-0">
                     {appointment.tag}
                   </Badge>
-                  <span className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">
+                  <span className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">
                     Session #{sessionNumber}
                   </span>
                   {currentPeakMeridian && (
-                    <span className="flex items-center gap-1 text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest">
+                    <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground uppercase tracking-widest">
                       <Zap size={10} /> {currentPeakMeridian.name} peak
                     </span>
                   )}
@@ -362,16 +391,16 @@ const AppointmentDetailPage = () => {
             <div className="flex items-center gap-1.5 w-full lg:w-auto overflow-x-auto no-scrollbar pb-1">
               {appointment.notion_link && (
                 <Button asChild variant="outline" size="sm"
-                  className="shrink-0 h-10 md:h-12 px-3 md:px-6 gap-2 border-border bg-card rounded-xl font-black text-[9px] uppercase tracking-widest text-muted-foreground hover:bg-muted/50 hover:border-border transition-all shadow-sm">
+                  className="shrink-0 h-10 md:h-12 px-3 md:px-6 gap-2 border-border bg-card rounded-xl text-muted-foreground hover:bg-muted transition-all shadow-sm">
                   <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink size={14} className="text-emerald-600" />
+                    <ExternalLink size={14} />
                   </a>
                 </Button>
               )}
 
               <Button variant="outline" size="sm" onClick={() => setIsDocumentView(true)}
-                className="shrink-0 h-10 md:h-12 px-3 md:px-6 gap-2 border-border bg-card rounded-xl font-black text-[9px] uppercase tracking-widest text-muted-foreground hover:bg-indigo-50 dark:hover:bg-indigo-950/30 hover:border-indigo-300 hover:text-indigo-700 dark:hover:text-indigo-300 transition-all shadow-sm">
-                <FileText size={14} className="text-indigo-600" />
+                className="shrink-0 h-10 md:h-12 px-3 md:px-6 gap-2 border-border bg-card rounded-xl font-medium text-[10px] uppercase tracking-wider text-muted-foreground hover:bg-muted transition-all shadow-sm">
+                <FileText size={14} className="text-muted-foreground" />
                 <span className="hidden md:inline">Doc View</span>
               </Button>
 
@@ -380,10 +409,10 @@ const AppointmentDetailPage = () => {
                 size="sm"
                 onClick={() => setShowSidebar(!showSidebar)}
                 className={cn(
-                  "shrink-0 h-10 md:h-12 px-3 md:px-6 gap-2 border-border rounded-xl font-black text-[9px] uppercase tracking-widest transition-all shadow-sm",
+                  "shrink-0 h-10 md:h-12 px-3 md:px-6 gap-2 border-border rounded-xl font-medium text-[10px] uppercase tracking-wider transition-all shadow-sm",
                   showSidebar
-                    ? "bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700"
-                    : "bg-card text-muted-foreground hover:bg-muted/50"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-card text-muted-foreground hover:bg-muted"
                 )}
               >
                 {showSidebar ? <PanelLeftClose size={14} /> : <PanelLeftOpen size={14} />}
@@ -396,30 +425,30 @@ const AppointmentDetailPage = () => {
                     <MoreHorizontal size={18} />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-72 p-3 rounded-[1.5rem]">
+                <DropdownMenuContent align="end" className="w-72 p-3 rounded-xl">
                   <div className="px-3 py-2 mb-1">
-                    <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Session Management</p>
+                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Session Management</p>
                   </div>
                   <DropdownMenuItem onClick={toggleFullScreen} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
-                    {isFullScreen ? <Minimize2 size={16} className="text-indigo-500" /> : <Maximize2 size={16} className="text-indigo-500" />}
-                    <span className="font-bold text-xs">{isFullScreen ? "Exit Full Screen" : "Full Screen (Alt+F)"}</span>
+                    {isFullScreen ? <Minimize2 size={16} className="text-muted-foreground" /> : <Maximize2 size={16} className="text-muted-foreground" />}
+                    <span className="font-medium text-xs">{isFullScreen ? "Exit Full Screen" : "Full Screen (Alt+F)"}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleCopyOnboardingLink} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
-                    <LinkIcon size={16} className="text-indigo-500" />
-                    <span className="font-bold text-xs">Copy Onboarding Link</span>
+                    <LinkIcon size={16} className="text-muted-foreground" />
+                    <span className="font-medium text-xs">Copy Onboarding Link</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleSyncToNotion} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
-                    <RefreshCw size={16} className="text-emerald-500" />
-                    <span className="font-bold text-xs">Sync to Notion</span>
+                    <RefreshCw size={16} className="text-muted-foreground" />
+                    <span className="font-medium text-xs">Sync to Notion</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleCopyForAI} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
-                    <Sparkles size={16} className="text-amber-500" />
-                    <span className="font-bold text-xs">Copy AI Case Prompt</span>
+                    <Sparkles size={16} className="text-muted-foreground" />
+                    <span className="font-medium text-xs">Copy AI Case Prompt</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="my-2" />
                   <DropdownMenuItem onClick={() => window.print()} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
                     <Printer size={16} className="text-muted-foreground" />
-                    <span className="font-bold text-xs">Print Session Report</span>
+                    <span className="font-medium text-xs">Print Session Report</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="my-2" />
                   <DropdownMenuItem
@@ -427,14 +456,14 @@ const AppointmentDetailPage = () => {
                     onClick={handleDeleteAppointment}
                   >
                     <Trash2 size={16} />
-                    <span className="font-bold text-xs">Delete Appointment</span>
+                    <span className="font-medium text-xs">Delete Appointment</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
               {isSessionToday && appointment.status === 'Scheduled' && (
                 <Button onClick={handleStartSession}
-                  className="shrink-0 h-10 md:h-12 px-4 md:px-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-lg shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95 gap-2">
+                  className="shrink-0 h-10 md:h-12 px-4 md:px-8 bg-primary text-primary-foreground rounded-xl font-medium text-[10px] uppercase tracking-wider transition-all hover:scale-105 active:scale-95 gap-2">
                   <Zap size={14} className="md:hidden" />
                   <span className="hidden md:inline">Start Session</span>
                 </Button>
@@ -442,53 +471,151 @@ const AppointmentDetailPage = () => {
             </div>
           </div>
 
-          {/* Context strip */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-            <div className="lg:col-span-8">
-              <WeeklyFocusBanner appointmentId={appointment.id} priorityPattern={appointment.priority_pattern} onSaveField={saveField} />
+          {/* Unified session meta strip */}
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1">
+                <WeeklyFocusBanner appointmentId={appointment.id} priorityPattern={appointment.priority_pattern} onSaveField={saveField} />
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {appointment.clients.medical_history ? (
+                  <div className="group relative">
+                    <button
+                      onClick={() => { setMedicalHistoryValue(appointment.clients.medical_history || ""); setMedicalHistoryEditing(true); }}
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-chart-primary/20 bg-chart-primary/5 text-chart-primary text-xs font-medium hover:bg-chart-primary/10 transition-colors"
+                    >
+                      <Activity size={12} />
+                      <span className="truncate max-w-[200px]">{appointment.clients.medical_history}</span>
+                    </button>
+                    {medicalHistoryEditing && (
+                      <div className="absolute top-full right-0 mt-2 z-50 w-80 p-3 rounded-xl border border-border bg-card shadow-lg">
+                        <textarea
+                          value={medicalHistoryValue}
+                          onChange={(e) => setMedicalHistoryValue(e.target.value)}
+                          className="w-full min-h-[60px] rounded-lg border border-border bg-background p-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-ring mb-2"
+                          placeholder="e.g., Vasovagal syncope / autonomic dysfunction"
+                          autoFocus
+                        />
+                        <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="sm" onClick={() => setMedicalHistoryEditing(false)} className="h-7 text-xs rounded-lg">
+                            Cancel
+                          </Button>
+                          <Button size="sm" onClick={async () => {
+                            await saveClientField('medical_history', medicalHistoryValue || null);
+                            setMedicalHistoryEditing(false);
+                          }} className="h-7 text-xs rounded-lg">
+                            Save
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => { setMedicalHistoryValue(""); setMedicalHistoryEditing(true); }}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-dashed border-border text-muted-foreground/50 text-xs hover:text-muted-foreground hover:border-muted-foreground/30 transition-colors"
+                  >
+                    <Plus size={12} />
+                    Condition
+                  </button>
+                )}
+              </div>
             </div>
-            <div className="lg:col-span-4">
-              <PreviousSessionInsightsBar clientId={appointment.clients.id} currentAppointmentId={appointment.id} />
+
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Calendar size={13} />
+                {format(appointment.date, "MMM d, yyyy")}
+                <Clock size={13} className="ml-1" />
+                {format(appointment.date, "h:mm a")}
+              </div>
+              <span className="w-px h-3 bg-border" />
+              <Select value={appointment.status} onValueChange={(v) => saveField('status', v)}>
+                <SelectTrigger className="h-7 w-auto min-w-[100px] text-xs font-medium border-border bg-card rounded-lg px-2.5">
+                  <SelectValue placeholder={appointment.status} />
+                </SelectTrigger>
+                <SelectContent className="rounded-lg border-border bg-card p-1">
+                  {APPOINTMENT_STATUSES.map(s => (
+                    <SelectItem key={s} value={s} className="rounded-md text-xs py-1.5 px-3">{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span className="w-px h-3 bg-border" />
+              <button onClick={() => saveField('is_paid', !appointment.is_paid)}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border bg-muted text-muted-foreground text-xs font-medium hover:bg-muted/80 transition-colors"
+              >
+                <CreditCard size={12} />
+                {!appointment.is_paid ? "Free" : appointment.payment_received ? "Paid" : `$${appointment.price_amount || 50}`}
+              </button>
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border bg-muted text-muted-foreground text-xs font-medium">
+                <Droplets size={12} />
+                <Switch checked={appointment.hydrated || false} onCheckedChange={(c) => saveField('hydrated', c)}
+                  className="scale-[0.55] origin-right ml-0.5 data-[state=checked]:bg-muted-foreground data-[state=unchecked]:bg-muted-foreground/30" />
+              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border bg-muted text-muted-foreground text-xs font-medium">
+                      <ShieldAlert size={12} />{calculateNeuralLoad(appointment.priority_pattern || null)}%
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="rounded-lg p-2 bg-foreground text-background text-xs">Threat level based on brainstem nuclei inhibition</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <Badge variant="outline" className="text-[10px] font-mono text-muted-foreground/50 border-border rounded-md px-2 py-0">
+                {appointment.display_id || appointment.id.slice(0,8)}
+              </Badge>
             </div>
+
+            {/* Alerts */}
+            {(!appointment.hydrated || (appointment.bolt_score && appointment.bolt_score < 25)) && (
+              <div className="flex flex-wrap gap-2">
+                {!appointment.hydrated && (
+                  <div className="flex items-center gap-2 px-3 py-1 rounded-lg border border-chart-primary/20 bg-chart-primary/5 text-chart-primary text-xs">
+                    <Droplets size={14} /> Hydration Priority — Recommend water + electrolytes
+                  </div>
+                )}
+                {appointment.bolt_score && appointment.bolt_score < 25 && (
+                  <div className="flex items-center gap-2 px-3 py-1 rounded-lg border border-chart-destructive/20 bg-chart-destructive/5 text-chart-destructive text-xs">
+                    <AlertCircle size={14} /> Low CO₂ Tolerance — BOLT below functional threshold
+                  </div>
+                )}
+              </div>
+            )}
           </div>
+
+          <hr className="border-border" />
 
           {/* Main content grid */}
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
-            <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-6 transition-all duration-500")}>
-              {/* Clinical workspace card */}
-              <div className="bg-card rounded-[2rem] md:rounded-[3rem] border border-border shadow-lg overflow-hidden">
-                <div className="p-5 sm:p-8 md:p-12 space-y-10">
-                  <AppointmentHeader appointment={appointment} onSaveField={saveField} onUpdate={refresh} />
-                  <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-                  <SessionContentSwitcher
-                    appointment={appointment}
-                    onUpdate={refresh}
-                    saveField={saveField}
-                    updatePriorityPattern={updatePriorityPattern}
-                    history={history}
-                    nucleiFilter={nucleiFilter}
-                    showSidebar={showSidebar}
-                    onToggleSidebar={() => setShowSidebar(!showSidebar)}
-                    onClonePrevious={handleClonePrevious}
-                    onPrint={() => window.print()}
-                    onCopySummary={handleCopySummary}
-                    onDelete={handleDeleteAppointment}
-                    isCopied={isCopied}
-                    onOpenDocument={() => setIsDocumentView(true)}
-                    onTabChange={setActivePhaseId}
-                  />
-                </div>
-              </div>
+            <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-8 transition-all duration-500")}>
+              <SessionContentSwitcher
+                appointment={appointment}
+                onUpdate={refresh}
+                saveField={saveField}
+                updatePriorityPattern={updatePriorityPattern}
+                history={history}
+                nucleiFilter={nucleiFilter}
+                showSidebar={showSidebar}
+                onToggleSidebar={() => setShowSidebar(!showSidebar)}
+                onClonePrevious={handleClonePrevious}
+                onPrint={() => window.print()}
+                onCopySummary={handleCopySummary}
+                onDelete={handleDeleteAppointment}
+                isCopied={isCopied}
+                onOpenDocument={() => setIsDocumentView(true)}
+                onTabChange={setActivePhaseId}
+              />
 
               {/* Printable worksheet — collapsible */}
-              <div className="rounded-[2rem] border border-dashed border-border overflow-hidden">
+              <div className="rounded-xl border border-dashed border-border overflow-hidden">
                 <button
                   onClick={() => setShowWorksheet(v => !v)}
                   className="w-full flex items-center justify-between px-6 py-4 bg-muted/30 hover:bg-muted/50 transition-colors text-left"
                 >
                   <div className="flex items-center gap-3">
                     <Printer size={15} className="text-muted-foreground" />
-                    <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">Printable Session Worksheet</span>
+                    <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Printable Session Worksheet</span>
                   </div>
                   {showWorksheet
                     ? <ChevronUp size={16} className="text-muted-foreground" />
@@ -497,7 +624,7 @@ const AppointmentDetailPage = () => {
                 {showWorksheet && (
                   <div className="bg-muted/10 p-5 md:p-12 mb-8">
                     <div className="flex justify-end mb-4">
-                      <Button variant="outline" onClick={() => window.print()} className="rounded-xl font-bold text-xs">
+                      <Button variant="outline" onClick={() => window.print()} className="rounded-xl font-medium text-xs">
                         <Printer size={14} className="mr-2" /> Print Worksheet
                       </Button>
                     </div>

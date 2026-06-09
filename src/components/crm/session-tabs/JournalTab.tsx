@@ -134,8 +134,8 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
               <Sparkles size={20} />
             </div>
             <div>
-              <h2 className="text-xl font-black text-slate-900">Practitioner Reflection</h2>
-              <p className="text-xs text-slate-500 font-medium">Private insights for this session with {clientName}.</p>
+              <h2 className="text-xl font-medium text-foreground">Practitioner Reflection</h2>
+              <p className="text-xs text-muted-foreground font-medium">Private insights for this session with {clientName}.</p>
             </div>
           </div>
           <Button variant="outline" size="sm" asChild className="rounded-xl h-10 px-4 font-bold text-[10px] uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50">
@@ -145,22 +145,22 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
           </Button>
         </div>
 
-        <Card className="border-none shadow-lg rounded-[2rem] bg-white overflow-hidden">
+        <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
           <CardContent className="p-8 space-y-4">
             <Textarea 
               placeholder="What did you notice? Any doubts, breakthroughs, or patterns for the Sandbox?"
-              className="min-h-[150px] rounded-2xl border-2 border-slate-100 focus:border-indigo-500 p-6 text-lg font-medium leading-relaxed shadow-inner resize-none"
+              className="min-h-[150px] rounded-xl border-2 border-border focus:border-indigo-500 p-6 text-lg font-medium leading-relaxed shadow-inner resize-none"
               value={content}
               onChange={(e) => setContent(e.target.value)}
             />
             <div className="flex justify-between items-center">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                 <Brain size={14} className="text-indigo-400" /> AI will extract Sandbox items automatically
               </p>
               <Button 
                 onClick={handleSave} 
                 disabled={saving || !content.trim()}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-12 px-8 font-black text-xs uppercase tracking-widest shadow-lg"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-12 px-8 font-medium text-[10px] uppercase tracking-wider shadow-sm"
               >
                 {saving ? <Loader2 className="mr-2 animate-spin" /> : <Save size={18} className="mr-2" />}
                 Log Reflection
@@ -172,10 +172,10 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
 
       <div className="space-y-6">
         <div className="flex items-center justify-between px-2">
-          <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
+          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-[0.3em] flex items-center gap-2">
             <History size={16} /> Session Journal History
           </h3>
-          <Badge variant="secondary" className="bg-slate-100 text-slate-500 border-none font-bold">
+          <Badge variant="secondary" className="bg-slate-100 text-muted-foreground border-none font-bold">
             {reflections.length} Entries
           </Badge>
         </div>
@@ -185,11 +185,11 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
         ) : reflections.length > 0 ? (
           <div className="space-y-4">
             {reflections.map((ref) => (
-              <Card key={ref.id} className="border-none shadow-sm rounded-2xl bg-white group hover:shadow-md transition-all">
+              <Card key={ref.id} className="border-none shadow-sm rounded-xl bg-card group hover:shadow-md transition-all">
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">
+                      <span className="text-[10px] font-medium text-indigo-600 uppercase tracking-widest">
                         {format(new Date(ref.created_at), "MMM d, yyyy • h:mm a")}
                       </span>
                       {analyzingId === ref.id && (
@@ -209,10 +209,10 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
                     <div className="pt-4 border-t border-slate-50 flex flex-wrap gap-2">
                       {ref.ai_extractions.map((ext: any, i: number) => (
                         <Badge key={i} variant="outline" className={cn(
-                          "text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border-none",
+                          "text-[8px] font-medium uppercase tracking-widest px-2 py-0.5 rounded-md border-none",
                           ext.type === 'belief' ? "bg-rose-50 text-rose-600" :
                           ext.type === 'shifting' ? "bg-indigo-50 text-indigo-600" :
-                          ext.type === 'alignment' ? "bg-emerald-50 text-emerald-600" : "bg-slate-50 text-slate-500"
+                          ext.type === 'alignment' ? "bg-emerald-50 text-emerald-600" : "bg-muted text-muted-foreground"
                         )}>
                           {ext.type}: {ext.content}
                         </Badge>
@@ -224,8 +224,8 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
-            <p className="text-sm text-slate-400 font-medium">No reflections logged for this session yet.</p>
+          <div className="text-center py-12 bg-muted rounded-xl border-2 border-dashed border-border">
+            <p className="text-sm text-muted-foreground font-medium">No reflections logged for this session yet.</p>
           </div>
         )}
       </div>

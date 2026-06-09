@@ -349,7 +349,7 @@ Please provide the final output ready to be reviewed.`;
                         <CardDescription className="text-slate-400 text-xs">Copy and paste this into Claude/ChatGPT.</CardDescription>
                       </div>
                     </div>
-                    <Button onClick={handleCopy} className={cn("h-10 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all", copied ? "bg-emerald-50 text-white" : "bg-white text-slate-900")}>
+                    <Button onClick={handleCopy} className={cn("h-10 px-4 rounded-xl font-medium text-[10px] uppercase tracking-wider transition-all", copied ? "bg-chart-emerald/10 text-chart-emerald" : "bg-muted text-muted-foreground")}>
                       {copied ? <Check size={16} className="mr-2" /> : <Copy size={16} className="mr-2" />} {copied ? "Copied!" : "Copy Prompt"}
                     </Button>
                   </CardHeader>
@@ -377,7 +377,7 @@ Please provide the final output ready to be reviewed.`;
                         <CardDescription className="font-medium">The "Antigravity Clinical Standard" layout.</CardDescription>
                       </div>
                     </div>
-                    <Button onClick={handleCopyTemplate} className={cn("h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all", templateCopied ? "bg-emerald-50 text-white" : "bg-indigo-600 text-white")}>
+                    <Button onClick={handleCopyTemplate} className={cn("h-10 px-6 rounded-xl font-medium text-[10px] uppercase tracking-wider transition-all", templateCopied ? "bg-chart-emerald/10 text-chart-emerald" : "bg-primary text-primary-foreground")}>
                       {templateCopied ? <Check size={16} className="mr-2" /> : <Copy size={16} className="mr-2" />} Copy HTML
                     </Button>
                   </div>

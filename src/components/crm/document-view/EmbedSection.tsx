@@ -233,22 +233,22 @@ const EmbedSection = ({
 
       {/* 1. Clinical Verification */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between border-l-4 border-slate-200 pl-3">
-          <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
+        <div className="flex items-center justify-between border-l-4 border-border pl-3">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Clinical Verification
           </h3>
           {totalCount > 0 && (
-            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               {clearedCount}/{totalCount} cleared
             </span>
           )}
         </div>
-        <p className="text-xs text-slate-500 font-medium leading-relaxed">
+        <p className="text-xs text-muted-foreground font-medium leading-relaxed">
           Re-challenge all inhibited findings to confirm integration.
         </p>
 
         {loading ? (
-          <div className="py-6 flex justify-center"><Loader2 className="animate-spin text-slate-400" size={20} /></div>
+          <div className="py-6 flex justify-center"><Loader2 className="animate-spin text-muted-foreground" size={20} /></div>
         ) : inhibitedItems.length > 0 ? (
           <div className="space-y-2">
             {inhibitedItems.map((item) => {
@@ -268,31 +268,31 @@ const EmbedSection = ({
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={cn(
                       "w-7 h-7 rounded-md flex items-center justify-center shrink-0",
-                      item.isCleared ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+                      item.isCleared ? "bg-emerald-50 text-chart-emerald" : "bg-rose-50 text-chart-destructive"
                     )}>
                       <Icon size={14} />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className={cn(
-                          "font-bold text-xs",
-                          item.isCleared ? "text-slate-400 line-through" : "text-slate-900"
+                          "font-medium text-xs",
+                          item.isCleared ? "text-muted-foreground line-through" : "text-slate-900"
                         )}>
                           {item.name}
                         </span>
                         {item.side && (
-                          <span className="text-[8px] font-black uppercase px-1.5 py-0 border border-slate-200 text-slate-400">
+                          <span className="text-[10px] font-semibold uppercase px-1.5 py-0 border border-border text-muted-foreground">
                             {item.side}
                           </span>
                         )}
                         <span className={cn(
-                          "text-[8px] font-black uppercase tracking-widest",
-                          item.isCleared ? "text-emerald-600" : "text-rose-500"
+                          "text-[10px] font-semibold uppercase tracking-wider",
+                          item.isCleared ? "text-chart-emerald" : "text-rose-500"
                         )}>
                           {item.isCleared ? "✓ Cleared" : item.status}
                         </span>
                       </div>
-                      <p className="text-[9px] text-slate-400 font-medium mt-0.5 capitalize">
+                      <p className="text-[10px] text-muted-foreground font-medium mt-0.5 capitalize">
                         {item.category.replace(/([A-Z])/g, ' $1').trim()}
                       </p>
                     </div>
@@ -304,9 +304,9 @@ const EmbedSection = ({
                     onClick={() => handleClearItem(item)}
                     disabled={isClearing}
                     className={cn(
-                      "h-8 px-3 rounded-none border text-[9px] font-black uppercase tracking-widest transition-all shrink-0",
+                      "h-8 px-3 rounded-none border text-[10px] font-semibold uppercase tracking-wider transition-all shrink-0",
                       item.isCleared
-                        ? "border-slate-200 hover:bg-slate-100 text-slate-500"
+                        ? "border-border hover:bg-muted text-muted-foreground"
                         : "border-emerald-500 hover:bg-emerald-600 hover:text-white text-emerald-700"
                     )}
                   >
@@ -319,10 +319,10 @@ const EmbedSection = ({
             })}
           </div>
         ) : (
-          <div className="p-6 border border-dashed border-slate-200 text-center bg-slate-50/50">
+          <div className="p-6 border border-dashed border-border text-center bg-muted/50">
             <CheckCircle2 className="mx-auto text-emerald-500 mb-2" size={24} />
-            <p className="text-xs font-bold text-emerald-800">All Findings Integrated</p>
-            <p className="text-[10px] text-slate-400 mt-0.5">No active inhibitions detected. The system is balanced.</p>
+            <p className="text-xs font-medium text-emerald-800">All Findings Integrated</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">No active inhibitions detected. The system is balanced.</p>
           </div>
         )}
       </div>
@@ -330,10 +330,10 @@ const EmbedSection = ({
       {/* 2. Pathway Findings Review */}
       {allFindings.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 border-l-4 border-slate-200 pl-3">
+          <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground border-l-4 border-border pl-3">
             Pathway Findings
           </h3>
-          <p className="text-xs text-slate-500 font-medium leading-relaxed">
+          <p className="text-xs text-muted-foreground font-medium leading-relaxed">
             All findings recorded and their final status.
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -343,13 +343,13 @@ const EmbedSection = ({
                 <div
                   key={idx}
                   className={cn(
-                    "p-2.5 border text-[9px] font-bold flex items-center justify-between gap-1",
+                    "p-2.5 border text-[10px] font-medium flex items-center justify-between gap-1",
                     isClear ? "bg-emerald-50/30 border-emerald-100 text-emerald-800" : "bg-rose-50/30 border-rose-100 text-rose-800"
                   )}
                 >
                   <span className="truncate">{finding.name}</span>
                   <span className={cn(
-                    "text-[7px] font-black uppercase tracking-widest px-1.5 py-0.5 shrink-0",
+                    "text-[7px] font-semibold uppercase tracking-wider px-1.5 py-0.5 shrink-0",
                     isClear ? "bg-emerald-500 text-white" : "bg-rose-500 text-white"
                   )}>
                     {finding.status.replace('_Cleared', '✓')}
@@ -363,27 +363,27 @@ const EmbedSection = ({
 
       {/* 3. Corrections & Logic */}
       <div className="space-y-4">
-        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 border-l-4 border-slate-200 pl-3">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground border-l-4 border-border pl-3">
           Corrections & Logic
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Balances Applied</label>
-            <div className="p-4 bg-slate-50/50 border border-slate-200 min-h-[90px] text-xs font-mono leading-relaxed text-slate-700 whitespace-pre-wrap">
-              {appointment.modes_balances || <span className="italic text-slate-300">No corrections logged.</span>}
+            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Balances Applied</label>
+            <div className="p-4 bg-muted/50 border border-border min-h-[90px] text-xs font-mono leading-relaxed text-slate-700 whitespace-pre-wrap">
+              {appointment.modes_balances || <span className="italic text-muted-foreground/50">No corrections logged.</span>}
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Acupoints</label>
-            <div className="p-4 bg-slate-50/50 border border-slate-200 min-h-[90px] text-xs font-bold text-indigo-700">
-              {appointment.acupoints || <span className="italic font-normal text-slate-300">No acupoints recorded.</span>}
+            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Acupoints</label>
+            <div className="p-4 bg-muted/50 border border-border min-h-[90px] text-xs font-medium text-indigo-700">
+              {appointment.acupoints || <span className="italic font-normal text-muted-foreground/50">No acupoints recorded.</span>}
             </div>
           </div>
         </div>
       </div>
 
       {/* 4. Documentation */}
-      <div className="space-y-10 pt-6 border-t border-slate-200">
+      <div className="space-y-10 pt-6 border-t border-border">
         <DocInput
           label="Final Re-Assessment & Prescribed Homework"
           value={appointment.session_north_star}

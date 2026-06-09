@@ -86,10 +86,10 @@ const SpaceHeader = () => {
   };
 
   const getModeColor = (m: AppMode) => {
-    if (m === 'clinical') return 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30';
-    if (m === 'lab') return 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30';
-    if (m === 'business') return 'text-blue-600 bg-blue-50 dark:bg-blue-900/30';
-    return 'text-amber-600 bg-amber-50 dark:bg-amber-900/30';
+    if (m === 'clinical') return 'text-chart-primary bg-muted';
+    if (m === 'lab') return 'text-chart-emerald bg-muted';
+    if (m === 'business') return 'text-chart-primary bg-muted';
+    return 'text-muted-foreground bg-muted';
   };
 
   const getModeIcon = (m: AppMode) => {
@@ -104,11 +104,11 @@ const SpaceHeader = () => {
                     mode === 'clinical' ? 'Clinical Hub' :
                     mode === 'lab' ? 'Practice Lab' : 'Knowledge Hub';
 
-  const modeAccent = isVoiceMode ? 'text-rose-600 bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800' :
-                     mode === 'business' ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800' :
-                     mode === 'clinical' ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800' :
-                     mode === 'lab' ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800' :
-                     'text-amber-600 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800';
+  const modeAccent = isVoiceMode ? 'text-chart-destructive bg-muted border-border' :
+                     mode === 'business' ? 'text-chart-primary bg-muted border-border' :
+                     mode === 'clinical' ? 'text-chart-primary bg-muted border-border' :
+                     mode === 'lab' ? 'text-chart-emerald bg-muted border-border' :
+                     'text-muted-foreground bg-muted border-border';
 
   const modeIcon = isVoiceMode ? <Mic size={16} /> :
                    mode === 'business' ? <BarChart3 size={16} /> :
@@ -120,17 +120,17 @@ const SpaceHeader = () => {
     location.pathname === path || (path !== "/" && location.pathname.startsWith(path));
 
   return (
-    <header className="w-full bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 px-4 md:px-8 h-16 flex items-center justify-between">
+    <header className="w-full bg-white/80 backdrop-blur-xl border-b border-slate-200 px-4 md:px-8 h-16 flex items-center justify-between">
       {/* LEFT: LOGO & HUB SWITCHER */}
       <div className="flex items-center gap-4 md:gap-8">
-        <div className="flex items-center gap-1 p-0.5 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+        <div className="flex items-center gap-1 p-0.5 bg-muted rounded-xl border border-slate-200">
           <button
             onClick={() => { if (isVoiceMode) navigate('/'); }}
             className={cn(
-              "w-8 h-8 rounded-lg text-xs font-black transition-all tracking-tight",
+              "w-8 h-8 rounded-lg text-xs font-semibold transition-all tracking-tight",
               !isVoiceMode
-                ? "bg-white dark:bg-slate-950 text-slate-900 dark:text-white shadow-sm"
-                : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                ? "bg-white text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-muted-foreground"
             )}
           >
             K
@@ -138,25 +138,25 @@ const SpaceHeader = () => {
           <button
             onClick={() => { if (!isVoiceMode) navigate('/voice'); }}
             className={cn(
-              "w-8 h-8 rounded-lg text-xs font-black transition-all tracking-tight",
+              "w-8 h-8 rounded-lg text-xs font-semibold transition-all tracking-tight",
               isVoiceMode
-                ? "bg-rose-500 text-white shadow-sm"
-                : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                ? "bg-chart-destructive text-white shadow-sm"
+                : "text-muted-foreground hover:text-muted-foreground"
             )}
           >
             V
           </button>
         </div>
 
-        <div className="h-8 w-px bg-slate-200 dark:bg-slate-800 hidden md:block" />
+        <div className="h-8 w-px bg-slate-200 hidden md:block" />
 
         <HubSwitcher />
 
-        <div className="h-8 w-px bg-slate-200 dark:bg-slate-800 hidden md:block" />
+        <div className="h-8 w-px bg-slate-200 hidden md:block" />
       </div>
 
       {/* CENTER: CONTEXTUAL NAV */}
-      <nav className="hidden xl:flex items-center gap-1 bg-slate-100/50 dark:bg-slate-900/50 p-1 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 backdrop-blur-md">
+      <nav className="hidden xl:flex items-center gap-1 bg-muted/50 p-1 rounded-2xl border border-slate-200/50 backdrop-blur-md">
         {isVoiceMode ? (
           VOICE_NAV_ITEMS.filter(item => item.label !== "Dashboard").map((item) => {
             const isActive = isModeItemActive(item.path);
@@ -167,12 +167,12 @@ const SpaceHeader = () => {
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-500",
                   isActive
-                    ? "bg-rose-500 text-white shadow-md scale-[1.02]"
-                    : "text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50"
+                    ? "bg-chart-destructive text-white shadow-md scale-[1.02]"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
                 <item.icon size={14} className={cn("transition-colors duration-500", isActive && "text-white")} />
-                <span className="text-[10px] font-black uppercase tracking-[0.15em]">{item.label}</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">{item.label}</span>
               </Link>
             );
           })
@@ -186,18 +186,18 @@ const SpaceHeader = () => {
               className={cn(
                 "flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-500",
                 isActive
-                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-md scale-[1.02]"
-                  : "text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50"
+                  ? "bg-white text-foreground shadow-md scale-[1.02]"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}
             >
-              <item.icon size={14} className={cn("transition-colors duration-500", isActive && "text-slate-700 dark:text-slate-300")} />
-              <span className="text-[10px] font-black uppercase tracking-[0.15em]">{item.label}</span>
+              <item.icon size={14} className={cn("transition-colors duration-500", isActive && "text-foreground")} />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">{item.label}</span>
             </Link>
           );
         })}
         {modeNavItems.length > 0 && (
           <>
-            <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-1" />
+            <div className="w-px h-6 bg-slate-200 mx-1" />
             <div className="flex items-center">
               <button
                 onClick={() => navigate(
@@ -207,39 +207,39 @@ const SpaceHeader = () => {
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-500",
                   modeNavItems.some(item => isModeItemActive(item.path))
-                    ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-md scale-[1.02]"
-                    : "text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50"
+                    ? "bg-white text-foreground shadow-md scale-[1.02]"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
                 {modeIcon}
-                <span className="text-[10px] font-black uppercase tracking-[0.15em]">{modeLabel}</span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">{modeLabel}</span>
               </button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className={cn(
                     "p-1.5 rounded-xl transition-colors",
                     modeNavItems.some(item => isModeItemActive(item.path))
-                      ? "text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                      : "text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                      ? "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
                   )}>
                     <ChevronDown size={12} className="opacity-50" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-56 rounded-2xl p-2 shadow-3xl border-none bg-white dark:bg-slate-900">
+                <DropdownMenuContent align="start" className="w-56 rounded-2xl p-2 shadow-3xl border-none bg-white">
                   {modeNavItems.map((item) => {
                     const active = isModeItemActive(item.path);
-                    const accent = isVoiceMode ? 'text-rose-600' : mode === 'business' ? 'text-blue-600' : mode === 'clinical' ? 'text-indigo-600' : mode === 'lab' ? 'text-emerald-600' : 'text-amber-600';
+                    const accent = isVoiceMode ? 'text-chart-destructive' : mode === 'business' ? 'text-chart-primary' : mode === 'clinical' ? 'text-chart-primary' : mode === 'lab' ? 'text-chart-emerald' : 'text-muted-foreground';
                     return (
                       <DropdownMenuItem key={item.path} asChild className="rounded-xl p-0">
                         <Link
                           to={item.path}
                           className={cn(
                             "flex items-center gap-3 rounded-xl py-2.5 px-4 cursor-pointer",
-                            active ? `${accent} bg-slate-100 dark:bg-slate-800 font-black` : "text-slate-600 dark:text-slate-400 font-bold hover:text-slate-900 dark:hover:text-white"
+                            active ? `${accent} bg-muted font-semibold` : "text-muted-foreground font-medium hover:text-foreground"
                           )}
                         >
                           <item.icon size={16} className={active ? accent : "opacity-50"} />
-                          <span className="text-xs uppercase tracking-widest">{item.label}</span>
+                          <span className="text-xs uppercase tracking-wider">{item.label}</span>
                         </Link>
                       </DropdownMenuItem>
                     );
@@ -262,18 +262,18 @@ const SpaceHeader = () => {
           {mode === 'clinical' && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button size="icon" className="w-9 h-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20">
+                <Button size="icon" className="w-9 h-9 rounded-xl bg-primary hover:bg-primary/90 text-white shadow-sm">
                   <Plus size={18} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-3xl border-none bg-white dark:bg-slate-900">
+              <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-3xl border-none bg-white">
                 <DropdownMenuItem onClick={() => setClientDialogOpen(true)} className="rounded-xl py-2.5 px-4 cursor-pointer gap-3">
-                  <UserPlus size={16} className="text-indigo-600" />
-                  <span className="font-bold text-xs uppercase tracking-widest">New Client</span>
+                  <UserPlus size={16} className="text-chart-primary" />
+                  <span className="font-medium text-xs uppercase tracking-wider">New Client</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setAppDialogOpen(true)} className="rounded-xl py-2.5 px-4 cursor-pointer gap-3">
-                  <CalendarPlus size={16} className="text-indigo-600" />
-                  <span className="font-bold text-xs uppercase tracking-widest">Book Session</span>
+                  <CalendarPlus size={16} className="text-chart-primary" />
+                  <span className="font-medium text-xs uppercase tracking-wider">Book Session</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -281,41 +281,41 @@ const SpaceHeader = () => {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="w-9 h-9 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white">
+              <Button variant="ghost" size="icon" className="w-9 h-9 rounded-xl text-muted-foreground hover:text-foreground">
                 <Settings size={18} />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64 rounded-2xl p-2 shadow-3xl border-none bg-white dark:bg-slate-900">
-              <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 mb-2">
-                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2">Active Workspace</p>
+            <DropdownMenuContent align="end" className="w-64 rounded-2xl p-2 shadow-3xl border-none bg-white">
+              <div className="px-4 py-3 border-b border-slate-100 mb-2">
+                <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Active Workspace</p>
                 <div className={cn("flex items-center gap-3 p-2 rounded-xl", getModeColor(mode))}>
                   {getModeIcon(mode)}
-                  <span className="font-black text-[10px] uppercase tracking-widest">{mode}</span>
+                  <span className="font-semibold text-[10px] uppercase tracking-wider">{mode}</span>
                 </div>
               </div>
 
               <DropdownMenuItem onClick={togglePrivacy} className="rounded-xl py-2.5 px-4 cursor-pointer gap-3">
-                {isPrivate ? <EyeOff size={16} className="text-rose-500" /> : <Eye size={16} />}
-                <span className="font-bold text-xs uppercase tracking-widest">{isPrivate ? "Disable Privacy" : "Enable Privacy"}</span>
+                {isPrivate ? <EyeOff size={16} className="text-chart-destructive" /> : <Eye size={16} />}
+                <span className="font-medium text-xs uppercase tracking-wider">{isPrivate ? "Disable Privacy" : "Enable Privacy"}</span>
               </DropdownMenuItem>
               
               <DropdownMenuItem onClick={() => setHelpOpen(true)} className="rounded-xl py-2.5 px-4 cursor-pointer gap-3">
                 <HelpCircle size={16} />
-                <span className="font-bold text-xs uppercase tracking-widest">Help & Shortcuts</span>
+                <span className="font-medium text-xs uppercase tracking-wider">Help & Shortcuts</span>
               </DropdownMenuItem>
 
-              <DropdownMenuSeparator className="bg-slate-100 dark:bg-slate-800 my-2" />
+              <DropdownMenuSeparator className="bg-muted my-2" />
               
               <DropdownMenuItem asChild className="rounded-xl py-2.5 px-4 cursor-pointer gap-3">
                 <Link to="/settings">
                   <Settings size={16} />
-                  <span className="font-bold text-xs uppercase tracking-widest">System Settings</span>
+                  <span className="font-medium text-xs uppercase tracking-wider">System Settings</span>
                 </Link>
               </DropdownMenuItem>
 
-              <DropdownMenuItem onClick={handleSignOut} className="rounded-xl py-2.5 px-4 cursor-pointer gap-3 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20">
+              <DropdownMenuItem onClick={handleSignOut} className="rounded-xl py-2.5 px-4 cursor-pointer gap-3 text-chart-destructive hover:bg-muted">
                 <LogOut size={16} />
-                <span className="font-bold text-xs uppercase tracking-widest">Sign Out</span>
+                <span className="font-medium text-xs uppercase tracking-wider">Sign Out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -333,11 +333,11 @@ const SpaceHeader = () => {
 
       {/* MOBILE MENU OVERLAY */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 top-16 z-[90] bg-white dark:bg-slate-950 md:hidden animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="fixed inset-0 top-16 z-[90] bg-white md:hidden animate-in fade-in slide-in-from-top-4 duration-300">
           <div className="p-6 space-y-8">
             {isVoiceMode ? (
               <div className="space-y-4">
-                <p className="text-[8px] font-black text-rose-500 uppercase tracking-widest px-2">Voice Studio</p>
+                <p className="text-[8px] font-semibold text-chart-destructive uppercase tracking-wider px-2">Voice Studio</p>
                 <div className="grid grid-cols-1 gap-2">
                   {VOICE_NAV_ITEMS.filter(item => item.label !== "Dashboard").map((item) => {
                     const isActive = location.pathname.startsWith(item.path);
@@ -349,12 +349,12 @@ const SpaceHeader = () => {
                         className={cn(
                           "flex items-center gap-4 p-4 rounded-2xl border transition-all",
                           isActive
-                            ? "bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800 shadow-sm"
-                            : "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800"
+                            ? "bg-muted border-border shadow-sm"
+                            : "bg-muted border-slate-100"
                         )}
                       >
-                        <item.icon size={18} className={isActive ? "text-rose-500" : "text-slate-400"} />
-                        <span className={cn("font-bold text-sm uppercase tracking-widest", isActive ? "text-rose-600" : "text-slate-600 dark:text-slate-400")}>{item.label}</span>
+                        <item.icon size={18} className={isActive ? "text-chart-destructive" : "text-muted-foreground"} />
+                        <span className={cn("font-medium text-sm uppercase tracking-wider", isActive ? "text-chart-destructive" : "text-muted-foreground")}>{item.label}</span>
                       </Link>
                     );
                   })}
@@ -362,7 +362,7 @@ const SpaceHeader = () => {
               </div>
             ) : (<>
             <div className="space-y-4">
-              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-2">Navigation</p>
+              <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-wider px-2">Navigation</p>
               <div className="grid grid-cols-1 gap-2">
                 {FIXED_NAV_ITEMS.map((item) => {
                   const isActive = location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path));
@@ -374,12 +374,12 @@ const SpaceHeader = () => {
                       className={cn(
                         "flex items-center gap-4 p-4 rounded-2xl border transition-all",
                         isActive
-                          ? "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm"
-                          : "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800"
+                          ? "bg-muted border-slate-200 shadow-sm"
+                          : "bg-muted border-slate-100"
                       )}
                     >
-                      <item.icon size={18} className={isActive ? "text-slate-700 dark:text-slate-300" : "text-slate-400"} />
-                      <span className={cn("font-bold text-sm uppercase tracking-widest", isActive ? "text-slate-700 dark:text-slate-300" : "text-slate-600 dark:text-slate-400")}>{item.label}</span>
+                      <item.icon size={18} className={isActive ? "text-foreground" : "text-muted-foreground"} />
+                      <span className={cn("font-medium text-sm uppercase tracking-wider", isActive ? "text-foreground" : "text-muted-foreground")}>{item.label}</span>
                     </Link>
                   );
                 })}
@@ -389,13 +389,12 @@ const SpaceHeader = () => {
             <div className="space-y-3">
               <div className={cn("flex items-center gap-2 px-4 py-2.5 rounded-xl border", modeAccent)}>
                 {modeIcon}
-                <span className="font-black text-xs uppercase tracking-widest">{modeLabel}</span>
+                <span className="font-semibold text-xs uppercase tracking-wider">{modeLabel}</span>
               </div>
               <div className="grid grid-cols-1 gap-1.5">
                 {modeNavItems.map((item) => {
                   const active = isModeItemActive(item.path);
-                  const accent = isVoiceMode ? 'text-rose-600' : mode === 'business' ? 'text-blue-600' : mode === 'clinical' ? 'text-indigo-600' : mode === 'lab' ? 'text-emerald-600' : 'text-amber-600';
-                  const activeBg = isVoiceMode ? 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800' : mode === 'clinical' ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800' : mode === 'lab' ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800' : 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800';
+                  const accent = isVoiceMode ? 'text-chart-destructive' : mode === 'business' ? 'text-chart-primary' : mode === 'clinical' ? 'text-chart-primary' : mode === 'lab' ? 'text-chart-emerald' : 'text-muted-foreground';
                   return (
                     <Link
                       key={item.path}
@@ -403,11 +402,11 @@ const SpaceHeader = () => {
                       onClick={() => setMobileMenuOpen(false)}
                       className={cn(
                         "flex items-center gap-4 p-4 rounded-2xl border transition-all",
-                        active ? `${activeBg} shadow-sm` : "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800"
+                        active ? "bg-muted shadow-sm" : "bg-muted border-slate-100"
                       )}
                     >
-                      <item.icon size={18} className={active ? accent : "text-slate-400"} />
-                      <span className={cn("font-bold text-sm uppercase tracking-widest", active ? accent : "text-slate-600 dark:text-slate-400")}>{item.label}</span>
+                      <item.icon size={18} className={active ? accent : "text-muted-foreground"} />
+                      <span className={cn("font-medium text-sm uppercase tracking-wider", active ? accent : "text-muted-foreground")}>{item.label}</span>
                     </Link>
                   );
                 })}
@@ -415,7 +414,7 @@ const SpaceHeader = () => {
             </div>
 
             <div className="space-y-4">
-              <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-2">Switch Workspace</p>
+              <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-wider px-2">Switch Workspace</p>
               <div className="grid grid-cols-4 gap-2">
                 {(['clinical', 'lab', 'library', 'business'] as AppMode[]).map((m) => (
                   <button
@@ -423,15 +422,15 @@ const SpaceHeader = () => {
                     onClick={() => { setMode(m); setMobileMenuOpen(false); }}
                     className={cn(
                       "flex flex-col items-center justify-center py-4 rounded-2xl border transition-all",
-                      mode === m && m === 'clinical' ? "bg-white dark:bg-slate-800 border-indigo-500 shadow-lg text-indigo-600" :
-                      mode === m && m === 'lab' ? "bg-white dark:bg-slate-800 border-emerald-500 shadow-lg text-emerald-600" :
-                      mode === m && m === 'library' ? "bg-white dark:bg-slate-800 border-amber-500 shadow-lg text-amber-600" :
-                      mode === m && m === 'business' ? "bg-white dark:bg-slate-800 border-blue-500 shadow-lg text-blue-600" :
-                      "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-400"
+                      mode === m && m === 'clinical' ? "bg-white border-chart-primary shadow-sm text-chart-primary" :
+                      mode === m && m === 'lab' ? "bg-white border-chart-emerald shadow-sm text-chart-emerald" :
+                      mode === m && m === 'library' ? "bg-white border-border shadow-sm text-muted-foreground" :
+                      mode === m && m === 'business' ? "bg-white border-chart-primary shadow-sm text-chart-primary" :
+                      "bg-muted border-slate-100 text-muted-foreground"
                     )}
                   >
                     {getModeIcon(m)}
-                    <span className="text-[8px] font-black uppercase tracking-widest mt-2">{m}</span>
+                    <span className="text-[8px] font-semibold uppercase tracking-wider mt-2">{m}</span>
                   </button>
                 ))}
               </div>

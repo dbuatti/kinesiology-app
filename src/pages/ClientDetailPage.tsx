@@ -64,6 +64,9 @@ const ClientDetailPage = () => {
   const [syncingNotion, setSyncingNotion] = useState(false);
   const [generatingLink, setGeneratingLink] = useState<string | null>(null);
   const [assessmentModal, setAssessmentModal] = useState<{ open: boolean; type: 'bolt' | 'coherence' } | null>(null);
+  const [contactLogOpen, setContactLogOpen] = useState(false);
+  const [contactLogNote, setContactLogNote] = useState("");
+  const [savingContact, setSavingContact] = useState(false);
   const { addRecentClient } = useRecentClients();
 
   const fetchClientData = async () => {
@@ -202,6 +205,29 @@ const ClientDetailPage = () => {
     navigator.clipboard.writeText(url);
     showSuccess("Onboarding link copied to clipboard!");
     setTimeout(() => setLinkCopying(false), 2000);
+  };
+
+  const handleLogContact = async () => {
+    if (!client || !contactLogNote.trim()) return;
+    setSavingContact(true);
+    try {
+      const currentLog = (client as any).contact_log || [];
+      const entry = { timestamp: new Date().toISOString(), note: contactLogNote.trim() };
+      const updatedLog = [...currentLog, entry];
+      const { error } = await supabase
+        .from('clients')
+        .update({ contact_log: updatedLog })
+        .eq('id', client.id);
+      if (error) throw error;
+      setContactLogNote("");
+      setContactLogOpen(false);
+      showSuccess("Contact logged");
+      fetchClientData();
+    } catch (err: any) {
+      showError(err.message || "Failed to log contact");
+    } finally {
+      setSavingContact(false);
+    }
   };
 
   const handleSendOnboardingEmail = async () => {
@@ -712,9 +738,71 @@ const ClientDetailPage = () => {
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center pt-4">
-                  <h3 className="text-2xl font-black text-slate-900">Recent Activity</h3>
-                  <Button variant="ghost" size="sm" className="text-indigo-600 font-bold" onClick={() => setSearchParams({ tab: "appointments" })}>
+                <div className="border-t border-border pt-6 mt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <Phone size={14} className="text-muted-foreground" />
+                      Contact Log
+                    </h3>
+                    <Dialog open={contactLogOpen} onOpenChange={setContactLogOpen}>
+                      <DialogTrigger asChild>
+                        <Button size="sm" variant="outline" className="h-8 rounded-lg text-xs font-medium border-border">
+                          <Plus size={14} className="mr-1" /> Log Contact
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="rounded-2xl sm:max-w-md">
+                        <DialogHeader>
+                          <DialogTitle className="text-base font-semibold">Log Contact with {client?.name}</DialogTitle>
+                          <DialogDescription className="text-sm text-muted-foreground">
+                            Record a phone call, message, or other outreach.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <textarea
+                            value={contactLogNote}
+                            onChange={(e) => setContactLogNote(e.target.value)}
+                            placeholder="What was discussed? (e.g., Checked in re vasovagal syncope diagnosis)"
+                            className="w-full min-h-[100px] rounded-xl border border-border bg-background p-3 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-ring"
+                          />
+                          <div className="flex justify-end gap-2">
+                            <Button variant="outline" size="sm" onClick={() => setContactLogOpen(false)} className="rounded-lg text-xs border-border">
+                              Cancel
+                            </Button>
+                            <Button size="sm" onClick={handleLogContact} disabled={savingContact || !contactLogNote.trim()} className="rounded-lg text-xs">
+                              {savingContact ? <Loader2 size={14} className="animate-spin mr-1" /> : <Send size={14} className="mr-1" />}
+                              Log Contact
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                  {(!(client as any).contact_log || (client as any).contact_log.length === 0) ? (
+                    <div className="text-sm text-muted-foreground/70 py-6 text-center border border-dashed border-border rounded-2xl">
+                      No contact events logged yet.
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {(client as any).contact_log.slice().reverse().map((entry: any, i: number) => (
+                        <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-muted/30 border border-border">
+                          <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
+                            <Phone size={14} className="text-muted-foreground" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-foreground">{entry.note}</p>
+                            <p className="text-xs text-muted-foreground/60 mt-1">
+                              {format(new Date(entry.timestamp), "MMM d, yyyy h:mm a")}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-between items-center pt-6">
+                  <h3 className="text-lg font-semibold text-foreground">Recent Activity</h3>
+                  <Button variant="ghost" size="sm" className="text-muted-foreground font-medium text-xs" onClick={() => setSearchParams({ tab: "appointments" })}>
                     View All <ArrowRight size={14} className="ml-1" />
                   </Button>
                 </div>

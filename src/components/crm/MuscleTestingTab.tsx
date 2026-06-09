@@ -300,8 +300,8 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
   if (loading) {
     return (
       <div className="p-12 flex flex-col items-center justify-center gap-4">
-        <Loader2 className="animate-spin text-indigo-500" size={48} />
-        <p className="text-slate-400 font-black text-[10px] uppercase tracking-widest">Loading muscle log...</p>
+        <Loader2 className="animate-spin text-chart-primary" size={48} />
+        <p className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider">Loading muscle log...</p>
       </div>
     );
   }
@@ -309,21 +309,21 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
   return (
     <div className="space-y-10">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-indigo-600 rounded-[2rem] text-white shadow-xl shadow-indigo-100">
+        <div className="lg:col-span-2 flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-primary rounded-xl text-primary-foreground shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center"><Sparkles size={24} /></div>
+            <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center"><Sparkles size={24} /></div>
             <div>
-              <h3 className="text-xl font-black">14 Muscle Balance</h3>
-              <p className="text-indigo-100 text-xs font-medium">Quick-log the standard TFH primary balance.</p>
+              <h3 className="text-xl font-semibold">14 Muscle Balance</h3>
+              <p className="text-primary-foreground/80 text-xs font-medium">Quick-log the standard TFH primary balance.</p>
             </div>
           </div>
           <div className="flex gap-2">
-            <Button onClick={handleQuickLog14} disabled={saving} className="bg-white text-indigo-600 hover:bg-indigo-50 rounded-xl font-black text-xs uppercase tracking-widest h-12 px-8 shadow-lg">
+            <Button onClick={handleQuickLog14} disabled={saving} className="bg-white text-chart-primary hover:bg-muted rounded-xl font-semibold text-xs uppercase tracking-wider h-12 px-8 shadow-sm">
               {saving ? <Loader2 className="mr-2 animate-spin" /> : <Zap size={18} className="mr-2 fill-current" />}
               Log 14 Primary
             </Button>
             {testedCount > 0 && (
-              <Button variant="outline" onClick={handleClearAll} disabled={saving} className="bg-indigo-700/50 border-indigo-400 text-white hover:bg-indigo-700 rounded-xl h-12 px-4"><Trash2 size={18} /></Button>
+              <Button variant="outline" onClick={handleClearAll} disabled={saving} className="bg-primary/50 border-primary/50 text-primary-foreground hover:bg-primary/80 rounded-xl h-12 px-4"><Trash2 size={18} /></Button>
             )}
           </div>
         </div>
@@ -332,8 +332,8 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
 
       <div className="space-y-4">
         <div className="flex items-center justify-between px-2">
-          <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
-            <Filter size={14} className="text-indigo-500" /> Filters & Smart Suggestions
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+            <Filter size={14} className="text-chart-primary" /> Filters & Smart Suggestions
           </h3>
           {currentPeakMeridian && (
             <Button 
@@ -341,8 +341,8 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
               size="sm" 
               onClick={() => setMeridianFilter(currentPeakMeridian.name)}
               className={cn(
-                "rounded-xl h-9 px-4 font-black text-[10px] uppercase tracking-widest transition-all",
-                meridianFilter === currentPeakMeridian.name ? "bg-amber-500 text-white border-none shadow-lg" : "border-slate-200 bg-white hover:bg-slate-50"
+                "rounded-xl h-9 px-4 font-semibold text-[10px] uppercase tracking-wider transition-all",
+                meridianFilter === currentPeakMeridian.name ? "bg-primary text-primary-foreground border-none shadow-sm" : "border-border bg-white hover:bg-muted"
               )}
             >
               <Clock size={14} className="mr-2" /> Peak Now: {currentPeakMeridian.name}
@@ -378,10 +378,10 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
         ))}
 
         {Object.keys(filteredGroups).length === 0 && (
-          <div className="text-center py-20 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
-            <div className="mx-auto w-16 h-16 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-sm"><Filter className="text-slate-300" size={24} /></div>
-            <p className="text-slate-900 font-black text-xl">No muscles match your filters</p>
-            <Button variant="link" onClick={() => { setShowOnlyTested(false); setShowOnlyDysfunctional(false); setSearchTerm(""); setMeridianFilter("all"); }} className="mt-4 text-indigo-600 font-bold">Reset All Filters</Button>
+          <div className="text-center py-20 bg-muted rounded-xl border-2 border-dashed border-border">
+            <div className="mx-auto w-16 h-16 bg-white rounded-xl flex items-center justify-center mb-4 shadow-sm"><Filter className="text-muted-foreground" size={24} /></div>
+            <p className="text-foreground font-semibold text-xl">No muscles match your filters</p>
+            <Button variant="link" onClick={() => { setShowOnlyTested(false); setShowOnlyDysfunctional(false); setSearchTerm(""); setMeridianFilter("all"); }} className="mt-4 text-chart-primary font-medium">Reset All Filters</Button>
           </div>
         )}
       </div>

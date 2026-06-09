@@ -270,8 +270,8 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
 
     return (
       <div className={cn(
-        "flex-1 p-4 rounded-2xl border transition-all",
-        isTestedNow ? "bg-slate-50/50 border-slate-100" : "bg-white border-slate-200 shadow-sm",
+        "flex-1 p-4 rounded-xl border transition-all",
+        isTestedNow ? "bg-muted/50 border-border" : "bg-card border-border shadow-sm",
         isDysfunctionalNow && "border-rose-200 bg-rose-50/30"
       )}>
         <div className="flex items-center justify-between mb-3">
@@ -286,7 +286,7 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
                 }
               }}
               className={cn(
-                "text-[9px] font-black px-2 py-0.5 rounded-md border tracking-widest transition-all hover:scale-110 active:scale-95",
+                "text-[9px] font-medium px-2 py-0.5 rounded-md border tracking-widest transition-all hover:scale-110 active:scale-95",
                 sideLabel === 'LEFT' ? "bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100" : 
                 sideLabel === 'RIGHT' ? "bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100" :
                 "bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200"
@@ -303,8 +303,8 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
           </div>
           {isTestedNow && (
             <Badge className={cn(
-              "border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full",
-              isDysfunctionalNow ? "bg-rose-600 text-white" : "bg-emerald-600 text-white"
+              "border-none font-medium text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full",
+              isDysfunctionalNow ? "bg-destructive text-destructive-foreground" : "bg-primary text-primary-foreground"
             )}>
               {item.currentStatus}
             </Badge>
@@ -317,7 +317,7 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
               {isDysfunctionalNow && (
                 <Button 
                   onClick={() => handleCalibrate(item)}
-                  className="flex-1 bg-amber-500 hover:bg-amber-600 text-white rounded-xl h-9 font-black text-[9px] uppercase tracking-widest shadow-lg shadow-amber-100"
+                  className="flex-1 bg-muted text-muted-foreground hover:bg-muted/80 rounded-xl h-9 font-medium text-[10px] uppercase tracking-wider shadow-sm"
                 >
                   <Target size={14} className="mr-1.5" /> Calibrate
                 </Button>
@@ -336,7 +336,7 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
               <Button 
                 onClick={() => handleMarkClear(item)}
                 disabled={isProcessing}
-                className="flex-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white rounded-xl h-9 font-black text-[9px] uppercase tracking-widest transition-all border border-emerald-100"
+                className="flex-1 bg-muted text-muted-foreground hover:bg-muted/80 rounded-xl h-9 font-medium text-[10px] uppercase tracking-wider transition-all border border-emerald-100"
               >
                 {isProcessing ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} className="mr-1.5" />}
                 Clear
@@ -345,7 +345,7 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
                 onClick={() => handleMarkInhibited(item)}
                 disabled={isProcessing}
                 variant="outline"
-                className="flex-1 border-rose-100 text-rose-600 hover:bg-rose-50 rounded-xl h-9 font-black text-[9px] uppercase tracking-widest transition-all"
+                className="flex-1 border-rose-100 text-rose-600 hover:bg-rose-50 rounded-xl h-9 font-medium text-[10px] uppercase tracking-wider transition-all"
               >
                 Inhib
               </Button>
@@ -358,26 +358,26 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
 
   if (!previousSession) {
     return (
-      <div className="text-center py-20 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
+      <div className="text-center py-20 bg-muted rounded-[3rem] border-2 border-dashed border-border">
         <History className="mx-auto text-slate-300 mb-4" size={48} />
-        <h3 className="text-xl font-black text-slate-900">No Previous Session</h3>
-        <p className="text-slate-500 mt-2">This appears to be the client's first recorded session.</p>
+        <h3 className="text-xl font-medium text-foreground">No Previous Session</h3>
+        <p className="text-muted-foreground mt-2">This appears to be the client's first recorded session.</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="p-8 bg-indigo-900 text-white rounded-[2.5rem] shadow-xl relative overflow-hidden">
+      <div className="p-8 bg-primary text-primary-foreground rounded-xl shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-10"><History size={150} /></div>
         <div className="relative z-10 space-y-4">
           <div className="flex items-center gap-3">
-            <Badge className="bg-indigo-50 text-indigo-700 border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">Previous Session Context</Badge>
+            <Badge className="bg-indigo-50 text-indigo-700 border-none font-medium text-[10px] uppercase tracking-widest px-3 py-1">Previous Session Context</Badge>
             <span className="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
               <Calendar size={14} /> {format(new Date(previousSession.date), "EEEE, MMMM d, yyyy")}
             </span>
           </div>
-          <h2 className="text-3xl font-black tracking-tight">Recheck List</h2>
+          <h2 className="text-3xl font-medium tracking-tight">Recheck List</h2>
           <p className="text-indigo-200 font-medium text-lg leading-relaxed max-w-2xl">
             Verify findings that were inhibited last session or have a history of dysfunction. Items that have always been clear are hidden to keep your focus sharp.
           </p>
@@ -393,18 +393,18 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
             const isLateralized = !!(group.left || group.right);
 
             return (
-              <Card key={idx} className="border-none shadow-md rounded-[2.5rem] bg-white overflow-hidden group hover:shadow-lg transition-all">
+              <Card key={idx} className="border-none shadow-md rounded-xl bg-card overflow-hidden group hover:shadow-sm transition-all">
                 <CardContent className="p-6 space-y-6">
                   <div className="flex items-center gap-4">
                     <div className={cn(
                       "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-inner transition-transform group-hover:scale-110",
-                      group.category.includes('Reflex') ? "bg-indigo-50 text-indigo-600" : "bg-slate-50 text-slate-600"
+                      group.category.includes('Reflex') ? "bg-indigo-50 text-indigo-600" : "bg-muted text-slate-600"
                     )}>
                       <Icon size={24} />
                     </div>
                     <div>
-                      <h4 className="font-black text-xl text-slate-900">{group.name}</h4>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{group.category}</p>
+                      <h4 className="font-medium text-xl text-foreground">{group.name}</h4>
+                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">{group.category}</p>
                     </div>
                   </div>
 
@@ -424,25 +424,25 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
           })}
         </div>
       ) : (
-        <div className="text-center py-20 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
-          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+<div className="text-center py-20 bg-muted rounded-xl border-2 border-dashed border-border">
+          <div className="w-16 h-16 bg-card rounded-xl flex items-center justify-center mx-auto mb-4 shadow-sm">
             <CheckCircle2 size={32} className="text-emerald-500" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-xl font-black text-slate-900">No Items to Recheck</h3>
-            <p className="text-slate-500 font-medium max-w-md mx-auto">
+            <h3 className="text-xl font-medium text-foreground">No Items to Recheck</h3>
+            <p className="text-muted-foreground font-medium max-w-md mx-auto">
               Nothing flagged from last session ({format(new Date(previousSession.date), "MMM d")}). If you notice new inhibitions during today's session, they'll appear here next time.
             </p>
           </div>
         </div>
       )}
 
-      <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 flex items-start gap-6">
-        <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-indigo-600 shadow-sm shrink-0">
+      <div className="p-8 bg-muted rounded-xl border border-border flex items-start gap-6">
+        <div className="w-12 h-12 rounded-xl bg-card flex items-center justify-center text-indigo-600 shadow-sm shrink-0">
           <Info size={24} />
         </div>
         <div className="space-y-2">
-          <p className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em]">Clinical Strategy</p>
+          <p className="text-[10px] font-medium text-indigo-600 uppercase tracking-[0.3em]">Clinical Strategy</p>
           <p className="text-sm text-slate-600 font-medium leading-relaxed italic">
             "Rechecking previous findings is the only way to verify lasting neurological change. If a pattern consistently returns as inhibited across multiple sessions, it indicates a deeper fractal root or a missing physiological priority."
           </p>

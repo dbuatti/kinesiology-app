@@ -179,11 +179,7 @@ const DemoSessionPage = () => {
             onJumpToCalibrate={handleJumpToCalibrate}
           />
 
-          <PreviousSessionInsightsBar 
-            clientId="demo-client-id" 
-            currentAppointmentId={appointment.id} 
-            manualData={mockHistory[1]}
-          />
+          <PreviousSessionInsightsBar manualData={mockHistory[1]} />
 
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
             <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-8 transition-all duration-500")}>

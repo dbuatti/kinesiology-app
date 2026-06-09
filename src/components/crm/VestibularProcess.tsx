@@ -91,8 +91,8 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
 
   const StepHeader = ({ title, sub }: { title: string, sub: string }) => (
     <div className="space-y-2 mb-6">
-      <h3 className="text-xl font-black text-slate-900">{title}</h3>
-      <p className="text-sm text-slate-500 font-medium">{sub}</p>
+      <h3 className="text-xl font-semibold text-foreground">{title}</h3>
+      <p className="text-sm text-muted-foreground font-medium">{sub}</p>
     </div>
   );
 
@@ -102,8 +102,8 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
         <div className="space-y-6">
           <StepHeader title="1. Localize Canal / Position" sub="Which head position triggers the inhibition?" />
           
-          <div className="p-4 bg-cyan-50 border border-cyan-100 rounded-2xl text-xs text-cyan-800 space-y-2 mb-4">
-            <p className="font-black uppercase tracking-widest flex items-center gap-2">
+          <div className="p-4 bg-cyan-50 border border-cyan-100 rounded-xl text-xs text-cyan-800 space-y-2 mb-4">
+            <p className="font-semibold uppercase tracking-wider flex items-center gap-2">
               <Info size={14} /> Diagnostic Note:
             </p>
             <p className="font-medium">
@@ -117,35 +117,35 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
                 key={pos.id}
                 variant="outline" 
                 className={cn(
-                  "h-24 justify-start px-6 rounded-2xl border-2 transition-all",
-                  canal?.id === pos.id ? "border-cyan-500 bg-cyan-50" : "border-slate-100 hover:border-cyan-200"
+                  "h-24 justify-start px-6 rounded-xl border-2 transition-all",
+                  canal?.id === pos.id ? "border-cyan-500 bg-cyan-50" : "border-border hover:border-cyan-200"
                 )}
                 onClick={() => setCanal(pos)}
               >
                 <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0 mr-4">
-                  <pos.icon size={20} className={canal?.id === pos.id ? "text-cyan-600" : "text-slate-400"} />
+                  <pos.icon size={20} className={canal?.id === pos.id ? "text-cyan-600" : "text-muted-foreground"} />
                 </div>
                 <div className="text-left">
-                  <div className="font-black text-lg text-slate-900">{pos.label}</div>
-                  <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{pos.action}</div>
+                  <div className="font-semibold text-lg text-foreground">{pos.label}</div>
+                  <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{pos.action}</div>
                 </div>
               </Button>
             ))}
           </div>
 
           {canal && ['horizontal', 'utricle'].includes(canal.id) && (
-            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-3 animate-in fade-in zoom-in-95">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Specify Direction</label>
+            <div className="p-4 bg-muted rounded-xl border border-border space-y-3 animate-in fade-in zoom-in-95">
+              <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Specify Direction</label>
               <div className="flex gap-2">
                 <Button 
                   variant={direction === 'Left' ? 'default' : 'outline'}
                   onClick={() => setDirection('Left')}
-                  className={cn("flex-1 h-12 rounded-xl font-bold", direction === 'Left' ? "bg-cyan-600" : "")}
+                  className={cn("flex-1 h-12 rounded-xl font-medium", direction === 'Left' ? "bg-cyan-600" : "")}
                 >Left</Button>
                 <Button 
                   variant={direction === 'Right' ? 'default' : 'outline'}
                   onClick={() => setDirection('Right')}
-                  className={cn("flex-1 h-12 rounded-xl font-bold", direction === 'Right' ? "bg-cyan-600" : "")}
+                  className={cn("flex-1 h-12 rounded-xl font-medium", direction === 'Right' ? "bg-cyan-600" : "")}
                 >Right</Button>
               </div>
             </div>
@@ -156,7 +156,7 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
             <Button 
               disabled={!canal || (['horizontal', 'utricle'].includes(canal?.id || '') && !direction)} 
               onClick={() => goToStep('EYE_INTEGRATION')} 
-              className="flex-[2] h-12 rounded-xl bg-cyan-600 hover:bg-cyan-700 font-bold shadow-lg"
+              className="flex-[2] h-12 rounded-xl bg-cyan-600 hover:bg-cyan-700 font-medium shadow-sm"
             >
               Continue <ChevronRight size={18} className="ml-2" />
             </Button>
@@ -168,12 +168,12 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
         <div className="space-y-6">
           <StepHeader title="2. Visual Integration" sub="Identify the specific eye interaction causing threat." />
           
-          <div className="p-4 bg-cyan-50 rounded-2xl border border-cyan-100 flex items-center justify-between mb-4">
+          <div className="p-4 bg-cyan-50 rounded-xl border border-cyan-100 flex items-center justify-between mb-4">
             <div>
-              <p className="text-[10px] font-black text-cyan-600 uppercase tracking-widest">Selected Position</p>
-              <p className="text-lg font-black text-cyan-900">{canal.label} {direction ? `(${direction})` : ''}</p>
+              <p className="text-[10px] font-semibold text-cyan-600 uppercase tracking-wider">Selected Position</p>
+              <p className="text-lg font-semibold text-cyan-900">{canal.label} {direction ? `(${direction})` : ''}</p>
             </div>
-            <Badge className="bg-cyan-600 text-white border-none font-black text-[8px] uppercase tracking-widest">Afferent</Badge>
+            <Badge className="bg-cyan-600 text-white border-none font-semibold text-[10px] uppercase tracking-wider">Afferent</Badge>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -182,16 +182,16 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
                 key={eye.id}
                 variant="outline" 
                 className={cn(
-                  "h-auto py-4 flex-col items-start gap-1 px-6 rounded-2xl border-2 transition-all text-left",
-                  eyeIntegration?.id === eye.id ? "border-cyan-600 bg-cyan-50" : "border-slate-100 hover:border-cyan-200"
+                  "h-auto py-4 flex-col items-start gap-1 px-6 rounded-xl border-2 transition-all text-left",
+                  eyeIntegration?.id === eye.id ? "border-cyan-600 bg-cyan-50" : "border-border hover:border-cyan-200"
                 )}
                 onClick={() => setEyeIntegration(eye)}
               >
                 <div className="flex items-center justify-between w-full">
-                  <span className="font-black text-sm text-slate-900">{eye.label}</span>
-                  <Eye size={16} className={eyeIntegration?.id === eye.id ? "text-cyan-600" : "text-slate-300"} />
+                  <span className="font-semibold text-sm text-foreground">{eye.label}</span>
+                  <Eye size={16} className={eyeIntegration?.id === eye.id ? "text-cyan-600" : "text-muted-foreground"} />
                 </div>
-                <span className="text-[10px] text-slate-500 font-medium leading-tight">{eye.desc}</span>
+                <span className="text-[10px] text-muted-foreground font-medium leading-tight">{eye.desc}</span>
               </Button>
             ))}
           </div>
@@ -201,7 +201,7 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
             <Button 
               disabled={!eyeIntegration} 
               onClick={() => goToStep('CORRECTION')} 
-              className="flex-[2] h-12 rounded-xl bg-cyan-600 hover:bg-cyan-700 font-bold shadow-lg"
+              className="flex-[2] h-12 rounded-xl bg-cyan-600 hover:bg-cyan-700 font-medium shadow-sm"
             >
               Start Calibration <ChevronRight size={18} className="ml-2" />
             </Button>
@@ -211,19 +211,19 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
 
       {step === 'CORRECTION' && (
         <div className="space-y-6">
-          <div className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+          <div className="bg-primary text-primary-foreground p-8 rounded-xl shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none"><Activity size={150} /></div>
-            <h3 className="text-2xl font-black mb-6 flex items-center gap-3 text-cyan-400"><Target size={28} /> Calibration Phase</h3>
+            <h3 className="text-2xl font-semibold mb-6 flex items-center gap-3 text-cyan-400"><Target size={28} /> Calibration Phase</h3>
             
             <div className="space-y-6 relative z-10">
-              <div className="p-5 bg-white/10 rounded-2xl border border-white/10 backdrop-blur-sm space-y-4">
-                <p className="text-lg font-bold leading-tight">
+              <div className="p-5 bg-muted rounded-xl border border-border backdrop-blur-sm space-y-4">
+                <p className="text-lg font-medium leading-tight">
                   Place head into <span className="text-cyan-400">{canal.action} {direction ? `(${direction})` : ''}</span>.
                 </p>
                 <div className="p-4 bg-cyan-500/20 rounded-xl border border-cyan-500/30 flex items-start gap-3">
                   <Eye size={18} className="text-cyan-300 shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-[8px] font-black text-cyan-300 uppercase tracking-widest mb-1">Visual Task</p>
+                    <p className="text-[10px] font-semibold text-cyan-300 uppercase tracking-wider mb-1">Visual Task</p>
                     <p className="text-sm font-medium text-cyan-100 leading-relaxed italic">
                       "Maintain {eyeIntegration.label}: {eyeIntegration.desc}."
                     </p>
@@ -233,11 +233,11 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
               
               <div className="grid grid-cols-1 gap-4">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-cyan-600 text-white flex items-center justify-center shrink-0 shadow-lg"><Sparkles size={20} /></div>
+                  <div className="w-10 h-10 rounded-xl bg-cyan-600 text-white flex items-center justify-center shrink-0 shadow-sm"><Sparkles size={20} /></div>
                   <div>
-                    <p className="text-sm font-black uppercase tracking-tight">The Protocol</p>
-                    <p className="text-xs text-slate-300 leading-relaxed">
-                      Hold <span className="font-bold text-white">GV16 (Cerebellum)</span> while maintaining the head/eye position. Apply 128Hz tuning fork to cranium or tap for 5-10 seconds.
+                    <p className="text-sm font-semibold uppercase tracking-tight">The Protocol</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Hold <span className="font-medium text-white">GV16 (Cerebellum)</span> while maintaining the head/eye position. Apply 128Hz tuning fork to cranium or tap for 5-10 seconds.
                     </p>
                   </div>
                 </div>
@@ -250,21 +250,21 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
           </div>
           <div className="flex gap-3">
             <Button variant="ghost" onClick={goBack} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
-            <Button onClick={() => goToStep('REASSESS')} className="flex-[2] h-12 rounded-xl bg-cyan-600 hover:bg-cyan-700 font-bold">Correction Applied <ChevronRight size={18} className="ml-2" /></Button>
+            <Button onClick={() => goToStep('REASSESS')} className="flex-[2] h-12 rounded-xl bg-cyan-600 hover:bg-cyan-700 font-medium">Correction Applied <ChevronRight size={18} className="ml-2" /></Button>
           </div>
         </div>
       )}
 
       {step === 'REASSESS' && (
         <div className="space-y-6">
-          <div className="bg-emerald-50 p-8 rounded-[2.5rem] border-2 border-emerald-100 text-center">
-            <div className="w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-6"><RefreshCw size={48} className="text-emerald-500" /></div>
-            <h3 className="text-2xl font-black text-emerald-900 mb-2">Final Re-assessment</h3>
-            <p className="text-emerald-700 font-medium">Re-test the specific head position and visual tracking.</p>
+          <div className="bg-muted p-8 rounded-xl border-2 border-border text-center">
+            <div className="w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-6"><RefreshCw size={48} className="text-chart-emerald" /></div>
+            <h3 className="text-2xl font-semibold text-foreground mb-2">Final Re-assessment</h3>
+            <p className="text-foreground font-medium">Re-test the specific head position and visual tracking.</p>
           </div>
           <div className="grid grid-cols-1 gap-4">
-            <Button className="h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-xl font-black shadow-lg shadow-emerald-100" onClick={handleFinish}>Pathway is Clear <CheckCircle2 size={24} className="ml-2" /></Button>
-            <Button variant="outline" className="h-16 rounded-2xl border-2 border-cyan-200 text-cyan-700 hover:bg-cyan-50 font-bold text-lg" onClick={handleInhibited}>Still Inhibited - Add Layer</Button>
+            <Button className="h-16 rounded-xl bg-primary hover:bg-primary/90 text-xl font-semibold shadow-sm" onClick={handleFinish}>Pathway is Clear <CheckCircle2 size={24} className="ml-2" /></Button>
+            <Button variant="outline" className="h-16 rounded-xl border-2 border-cyan-200 text-cyan-700 hover:bg-cyan-50 font-medium text-lg" onClick={handleInhibited}>Still Inhibited - Add Layer</Button>
           </div>
           <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
         </div>

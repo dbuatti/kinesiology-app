@@ -5,6 +5,8 @@ import T1SympatheticReset from '../T1SympatheticReset';
 import DiaphragmReset from '../DiaphragmReset';
 import VagusNerveProcess from '../VagusNerveProcess';
 import EditableField from '@/components/shared/EditableField';
+import { Card, CardContent } from '@/components/ui/card';
+import { Sparkles } from 'lucide-react';
 import { AppointmentWithClient } from '@/types/crm';
 
 interface SympatheticTabProps {
@@ -40,15 +42,28 @@ const SympatheticTab = ({ appointment, onUpdate, saveField }: SympatheticTabProp
         onSaveField={saveField} 
         onUpdate={onUpdate} 
       />
-      <EditableField 
-        field="additional_notes" 
-        label="Other SNS Techniques" 
-        value={appointment.additional_notes} 
-        multiline 
-        placeholder="ESR, Vagus Nerve, etc..." 
-        onSave={saveField} 
-        className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm" 
-      />
+      <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+              <Sparkles size={20} className="text-muted-foreground" />
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-foreground">Other SNS Techniques</h3>
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">ESR, Vagus Nerve, etc.</p>
+            </div>
+          </div>
+          <EditableField 
+            field="additional_notes" 
+            label="" 
+            value={appointment.additional_notes} 
+            multiline 
+            placeholder="Document any additional SNS techniques used..." 
+            onSave={saveField} 
+            className="border border-border p-0 shadow-none bg-transparent rounded-2xl" 
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };

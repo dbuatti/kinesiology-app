@@ -217,7 +217,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
         <div className="space-y-6">
           <div className="p-6 border border-black space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="text-[11px] font-black uppercase tracking-widest">Harmonic Rocking</h4>
+              <h4 className="text-[11px] font-semibold uppercase tracking-wider">Harmonic Rocking</h4>
               <Checkbox 
                 checked={!!appointment.harmonic_rocking_notes}
                 className="border-black rounded-none data-[state=checked]:bg-black" 
@@ -234,7 +234,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
           
           <div className="p-6 border border-black space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="text-[11px] font-black uppercase tracking-widest">T1 Sympathetic Reset</h4>
+              <h4 className="text-[11px] font-semibold uppercase tracking-wider">T1 Sympathetic Reset</h4>
               <Checkbox 
                 checked={!!appointment.t1_reset_notes}
                 className="border-black rounded-none data-[state=checked]:bg-black" 
@@ -254,7 +254,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
         <div className="space-y-6">
           <div className="p-6 border border-black space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="text-[11px] font-black uppercase tracking-widest">Diaphragm Reset</h4>
+              <h4 className="text-[11px] font-semibold uppercase tracking-wider">Diaphragm Reset</h4>
               <Checkbox 
                 checked={!!appointment.diaphragm_reset_notes}
                 className="border-black rounded-none data-[state=checked]:bg-black" 
@@ -270,29 +270,29 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
           </div>
 
           {/* Interactive Vagus Nerve Process Box */}
-          <div className="p-6 border border-black space-y-6 bg-slate-50/50">
+          <div className="p-6 border border-black space-y-6 bg-muted/50">
             <div className="flex items-center justify-between border-b border-black/10 pb-2">
               <div className="flex items-center gap-2">
-                <h4 className="text-[11px] font-black uppercase tracking-widest">Vagus Nerve Process</h4>
+                <h4 className="text-[11px] font-semibold uppercase tracking-wider">Vagus Nerve Process</h4>
                 <div className="flex gap-1">
                   <button 
                     type="button"
                     onClick={() => setVagusMode('stimulation')}
-                    className={cn("text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-sm transition-all", vagusMode === 'stimulation' ? "bg-black text-white" : "bg-slate-200 text-slate-600")}
+                    className={cn("text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-sm transition-all", vagusMode === 'stimulation' ? "bg-foreground text-background" : "bg-slate-200 text-slate-600")}
                   >
                     Stim
                   </button>
                   <button 
                     type="button"
                     onClick={() => setVagusMode('screen')}
-                    className={cn("text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-sm transition-all", vagusMode === 'screen' ? "bg-black text-white" : "bg-slate-200 text-slate-600")}
+                    className={cn("text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-sm transition-all", vagusMode === 'screen' ? "bg-foreground text-background" : "bg-slate-200 text-slate-600")}
                   >
                     Screen
                   </button>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <button type="button" onClick={handleResetProtocol} className="text-[8px] font-black text-rose-600 uppercase tracking-widest hover:underline">
+                <button type="button" onClick={handleResetProtocol} className="text-[10px] font-semibold text-chart-destructive uppercase tracking-wider hover:underline">
                   Reset
                 </button>
                 <Checkbox 
@@ -305,32 +305,32 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
             {vagusMode === 'stimulation' ? (
               <div className="space-y-4 animate-in fade-in duration-300">
                 <div className="space-y-1.5">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Select Reset Type</label>
+                  <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Select Reset Type</label>
                   <select 
                     value={vagusBranch} 
                     onChange={(e) => setVagusBranch(e.target.value)}
-                    className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                    className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
                   >
                     {Object.entries(STIMULATION_METHODS).map(([key, method]) => (
                       <option key={key} value={key}>{method.label}</option>
                     ))}
                   </select>
-                  <p className="text-[10px] text-slate-500 italic leading-tight mt-1">
+                  <p className="text-[10px] text-muted-foreground italic leading-tight mt-1">
                     {STIMULATION_METHODS[vagusBranch]?.desc}
                   </p>
                 </div>
 
                 {/* Compact Timer */}
-                <div className="p-3 bg-white border border-slate-200 flex items-center justify-between">
+                <div className="p-3 bg-white border border-border flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Timer</span>
-                    <span className="text-lg font-black tabular-nums">{formatTime(vagusTimeLeft)}</span>
+                    <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Timer</span>
+                    <span className="text-lg font-semibold tabular-nums">{formatTime(vagusTimeLeft)}</span>
                   </div>
                   <div className="flex gap-1.5">
-                    <Button type="button" size="sm" onClick={toggleVagusTimer} className="h-7 px-3 bg-black text-white hover:bg-slate-800 rounded-none text-[9px] font-black uppercase">
+                    <Button type="button" size="sm" onClick={toggleVagusTimer} className="h-7 px-3 bg-foreground text-background hover:bg-foreground/90 rounded-none text-[10px] font-semibold uppercase">
                       {vagusTimerActive ? <Pause size={10} /> : <Play size={10} />}
                     </Button>
-                    <Button type="button" size="sm" onClick={resetVagusTimer} className="h-7 w-7 p-0 rounded-none border border-slate-200 bg-white text-slate-600">
+                    <Button type="button" size="sm" onClick={resetVagusTimer} className="h-7 w-7 p-0 rounded-none border border-border bg-white text-slate-600">
                       <RotateCcw size={10} />
                     </Button>
                   </div>
@@ -338,7 +338,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
 
                 {/* Signs of Shift */}
                 <div className="space-y-1.5">
-                  <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Signs of Shift</label>
+                  <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Signs of Shift</label>
                   <div className="flex flex-wrap gap-1">
                     {SHIFT_SIGNS.map((shift) => (
                       <button
@@ -346,8 +346,8 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
                         type="button"
                         onClick={() => toggleShift(shift.id)}
                         className={cn(
-                          "px-2 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-widest border transition-all",
-                          selectedShifts.includes(shift.id) ? "bg-black text-white border-black" : "bg-white text-slate-500 border-slate-200"
+                          "px-2 py-0.5 rounded-sm text-[10px] font-semibold uppercase tracking-wider border transition-all",
+                          selectedShifts.includes(shift.id) ? "bg-foreground text-background border-black" : "bg-white text-muted-foreground border-border"
                         )}
                       >
                         {shift.label}
@@ -360,15 +360,15 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
               <div className="space-y-4 animate-in fade-in duration-300 text-xs">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[8px] font-black uppercase text-slate-400">1. Side</label>
-                    <select value={vagusSide} onChange={(e) => setVagusSide(e.target.value as any)} className="w-full bg-transparent border-b border-slate-200 py-1 font-bold">
+                    <label className="text-[10px] font-semibold uppercase text-muted-foreground">1. Side</label>
+                    <select value={vagusSide} onChange={(e) => setVagusSide(e.target.value as any)} className="w-full bg-transparent border-b border-border py-1 font-medium">
                       <option value="Left">Left</option>
                       <option value="Right">Right</option>
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[8px] font-black uppercase text-slate-400">2. Reflex Point</label>
-                    <select value={reflexPoint} onChange={(e) => setReflexPoint(e.target.value)} className="w-full bg-transparent border-b border-slate-200 py-1 font-bold">
+                    <label className="text-[10px] font-semibold uppercase text-muted-foreground">2. Reflex Point</label>
+                    <select value={reflexPoint} onChange={(e) => setReflexPoint(e.target.value)} className="w-full bg-transparent border-b border-border py-1 font-medium">
                       <option value="Occiput">Occiput</option>
                       <option value="Auricular">Auricular</option>
                     </select>
@@ -376,41 +376,41 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[8px] font-black uppercase text-slate-400">3. Vagal Function</label>
-                  <select value={selectedFunction} onChange={(e) => setSelectedFunction(e.target.value)} className="w-full bg-transparent border-b border-slate-200 py-1 font-bold">
+                  <label className="text-[10px] font-semibold uppercase text-muted-foreground">3. Vagal Function</label>
+                  <select value={selectedFunction} onChange={(e) => setSelectedFunction(e.target.value)} className="w-full bg-transparent border-b border-border py-1 font-medium">
                     <option value="">Select function...</option>
                     {VAGAL_FUNCTIONS.map(f => <option key={f} value={f}>{f}</option>)}
                   </select>
                 </div>
 
-                <div className="p-3 bg-white border border-slate-200 space-y-3">
+                <div className="p-3 bg-white border border-border space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-[8px] font-black uppercase text-slate-400">4. Challenge Type</span>
+                    <span className="text-[10px] font-semibold uppercase text-muted-foreground">4. Challenge Type</span>
                     <div className="flex gap-1">
-                      <button type="button" onClick={() => setChallengeType('hand')} className={cn("text-[7px] font-black uppercase px-1.5 py-0.5 rounded-sm", challengeType === 'hand' ? "bg-black text-white" : "bg-slate-100")}>Hand</button>
-                      <button type="button" onClick={() => setChallengeType('gland')} className={cn("text-[7px] font-black uppercase px-1.5 py-0.5 rounded-sm", challengeType === 'gland' ? "bg-black text-white" : "bg-slate-100")}>Gland</button>
+                      <button type="button" onClick={() => setChallengeType('hand')} className={cn("text-[7px] font-semibold uppercase px-1.5 py-0.5 rounded-sm hover:bg-muted", challengeType === 'hand' ? "bg-foreground text-background" : "bg-muted")}>Hand</button>
+                      <button type="button" onClick={() => setChallengeType('gland')} className={cn("text-[7px] font-semibold uppercase px-1.5 py-0.5 rounded-sm hover:bg-muted", challengeType === 'gland' ? "bg-foreground text-background" : "bg-muted")}>Gland</button>
                     </div>
                   </div>
 
                   {challengeType === 'hand' ? (
                     <div className="space-y-2">
                       <div className="grid grid-cols-2 gap-2">
-                        <select value={pulseSide} onChange={(e) => setPulseSide(e.target.value as any)} className="bg-transparent border-b border-slate-200 py-0.5 font-bold text-[10px]">
+                        <select value={pulseSide} onChange={(e) => setPulseSide(e.target.value as any)} className="bg-transparent border-b border-border py-0.5 font-medium text-[10px]">
                           <option value="Left">Left Hand</option>
                           <option value="Right">Right Hand</option>
                         </select>
-                        <select value={pulseDepth} onChange={(e) => setPulseDepth(e.target.value as any)} className="bg-transparent border-b border-slate-200 py-0.5 font-bold text-[10px]">
+                        <select value={pulseDepth} onChange={(e) => setPulseDepth(e.target.value as any)} className="bg-transparent border-b border-border py-0.5 font-medium text-[10px]">
                           <option value="Light">Light</option>
                           <option value="Deep">Deep</option>
                         </select>
                       </div>
-                      <select value={selectedOrgan} onChange={(e) => { setSelectedOrgan(e.target.value); setSelectedGland(""); }} className="w-full bg-transparent border-b border-slate-200 py-1 font-bold text-[10px]">
+                      <select value={selectedOrgan} onChange={(e) => { setSelectedOrgan(e.target.value); setSelectedGland(""); }} className="w-full bg-transparent border-b border-border py-1 font-medium text-[10px]">
                         <option value="">Select Organ...</option>
                         {currentOrgans.map(org => <option key={org.name} value={org.name}>{org.name} ({org.position})</option>)}
                       </select>
                     </div>
                   ) : (
-                    <select value={selectedGland} onChange={(e) => { setSelectedGland(e.target.value); setSelectedOrgan(""); }} className="w-full bg-transparent border-b border-slate-200 py-1 font-bold text-[10px]">
+                    <select value={selectedGland} onChange={(e) => { setSelectedGland(e.target.value); setSelectedOrgan(""); }} className="w-full bg-transparent border-b border-border py-1 font-medium text-[10px]">
                       <option value="">Select Gland...</option>
                       {VAGAL_GLANDS.map(g => <option key={g.name} value={g.name}>{g.name} ({g.reflex})</option>)}
                     </select>
@@ -419,16 +419,16 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[8px] font-black uppercase text-slate-400">5. Polarity</label>
-                    <select value={polarity || ""} onChange={(e) => setPolarity(e.target.value as any || null)} className="w-full bg-transparent border-b border-slate-200 py-1 font-bold text-[10px]">
+                    <label className="text-[10px] font-semibold uppercase text-muted-foreground">5. Polarity</label>
+                    <select value={polarity || ""} onChange={(e) => setPolarity(e.target.value as any || null)} className="w-full bg-transparent border-b border-border py-1 font-medium text-[10px]">
                       <option value="">Select Polarity...</option>
                       <option value="Energy IN">Energy IN (+)</option>
                       <option value="Energy OUT">Energy OUT (-)</option>
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[8px] font-black uppercase text-slate-400">6. Spinal Segment</label>
-                    <select value={selectedAssociation} onChange={(e) => setSelectedAssociation(e.target.value)} className="w-full bg-transparent border-b border-slate-200 py-1 font-bold text-[10px]">
+                    <label className="text-[10px] font-semibold uppercase text-muted-foreground">6. Spinal Segment</label>
+                    <select value={selectedAssociation} onChange={(e) => setSelectedAssociation(e.target.value)} className="w-full bg-transparent border-b border-border py-1 font-medium text-[10px]">
                       <option value="">Select Segment...</option>
                       {filteredAssociations.map(a => (
                         <option key={a.spinalSegment} value={a.spinalSegment}>{a.spinalSegment}: {a.muscle}</option>
@@ -438,47 +438,47 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
                 </div>
 
                 {partnerInfo && (
-                  <div className="p-2.5 bg-slate-100 border border-slate-200 text-[9px] space-y-1">
+                  <div className="p-2.5 bg-muted border border-border text-[10px] space-y-1">
                     <p><strong>Muscle:</strong> {partnerInfo.currentMuscle} ({partnerInfo.currentOrgan})</p>
                     <p><strong>Lovett Partner:</strong> {partnerInfo.partnerSegment} - {partnerInfo.partnerMuscle} ({partnerInfo.partnerOrgan})</p>
                   </div>
                 )}
 
-                <div className="p-3 bg-slate-100 border border-slate-200 space-y-2">
+                <div className="p-3 bg-muted border border-border space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[8px] font-black uppercase text-slate-400">7. Correction</span>
-                    <span className="font-mono font-black text-[10px]">{formatTime(correctionTime)}</span>
+                    <span className="text-[10px] font-semibold uppercase text-muted-foreground">7. Correction</span>
+                    <span className="font-mono font-semibold text-[10px]">{formatTime(correctionTime)}</span>
                   </div>
-                  <select value={breathingPattern} onChange={(e) => setBreathingPattern(e.target.value)} className="w-full bg-transparent border-b border-slate-200 py-0.5 font-bold text-[10px]">
+                  <select value={breathingPattern} onChange={(e) => setBreathingPattern(e.target.value)} className="w-full bg-transparent border-b border-border py-0.5 font-medium text-[10px]">
                     <option value="">Select Breathing...</option>
                     <option value="Blocked Inhalation">Blocked Inhalation</option>
                     <option value="Forced Exhalation">Forced Exhalation</option>
                   </select>
                   <div className="flex gap-1.5">
-                    <Button type="button" size="sm" onClick={toggleCorrectionTimer} className="flex-1 h-7 bg-black text-white hover:bg-slate-800 rounded-none text-[8px] font-black uppercase">
+                    <Button type="button" size="sm" onClick={toggleCorrectionTimer} className="flex-1 h-7 bg-foreground text-background hover:bg-foreground/90 rounded-none text-[10px] font-semibold uppercase">
                       {isCorrectionActive ? "Pause" : "Start"}
                     </Button>
-                    <Button type="button" size="sm" onClick={resetCorrectionTimer} className="h-7 w-7 p-0 rounded-none border border-slate-200 bg-white text-slate-600">
+                    <Button type="button" size="sm" onClick={resetCorrectionTimer} className="h-7 w-7 p-0 rounded-none border border-border bg-white text-slate-600">
                       <RotateCcw size={10} />
                     </Button>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-200">
-                  <span className="text-[8px] font-black uppercase text-slate-400">8. Re-assess</span>
+                <div className="flex items-center justify-between pt-2 border-t border-border">
+                  <span className="text-[10px] font-semibold uppercase text-muted-foreground">8. Re-assess</span>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[9px] font-bold">Balanced?</span>
+                    <span className="text-[10px] font-medium">Balanced?</span>
                     <Checkbox checked={isCleared} onCheckedChange={(checked) => setIsCleared(!!checked)} className="border-black rounded-none data-[state=checked]:bg-black" />
                   </div>
                 </div>
               </div>
             )}
 
-            <div className="pt-2 border-t border-slate-200 flex justify-end">
+            <div className="pt-2 border-t border-border flex justify-end">
               <Button 
                 type="button"
                 onClick={handleAutoPopulate}
-                className="h-8 px-4 bg-black text-white hover:bg-slate-800 rounded-none text-[9px] font-black uppercase tracking-widest"
+                className="h-8 px-4 bg-foreground text-background hover:bg-foreground/90 rounded-none text-[10px] font-semibold uppercase tracking-wider"
               >
                 Log Vagus Reset
               </Button>

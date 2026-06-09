@@ -152,15 +152,15 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
 
   // Elegant Custom Toggle Component for Document View
   const DocToggle = ({ options, value, onChange }: { options: { label: string, value: string }[], value: string, onChange: (val: string) => void }) => (
-    <div className="flex gap-1 bg-slate-100 p-0.5 rounded-md border border-slate-200 w-fit">
+    <div className="flex gap-1 bg-muted p-0.5 rounded-md border border-border w-fit">
       {options.map(opt => (
         <button
           key={opt.value}
           type="button"
           onClick={() => onChange(opt.value)}
           className={cn(
-            "px-2 py-1 text-[9px] font-black uppercase rounded-sm transition-all",
-            value === opt.value ? "bg-black text-white" : "text-slate-500 hover:text-black"
+            "px-2 py-1 text-[10px] font-semibold uppercase rounded-sm transition-all",
+            value === opt.value ? "bg-foreground text-background" : "text-muted-foreground hover:text-black"
           )}
         >
           {opt.label}
@@ -191,10 +191,10 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
         </div>
 
         <div className="space-y-10">
-          <div className="flex items-center justify-between p-5 bg-slate-50 border border-slate-200">
+          <div className="flex items-center justify-between p-5 bg-muted border border-border">
             <div className="space-y-0.5">
-              <p className="text-[11px] font-black uppercase tracking-widest">Hydration Check</p>
-              <p className="text-[8px] font-bold text-slate-400 uppercase">Systemic Conductivity</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider">Hydration Check</p>
+              <p className="text-[10px] font-medium text-muted-foreground uppercase">Systemic Conductivity</p>
             </div>
             <Checkbox 
               checked={appointment.hydrated || false} 
@@ -218,11 +218,11 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
       <div className="space-y-4">
         {/* Horizontal BOLT Score Assessment */}
         <div className="space-y-3">
-          <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">BOLT Score Assessment</label>
+          <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">BOLT Score Assessment</label>
           <div className="border border-black p-6 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div className="space-y-2 flex-1">
-              <h4 className="text-sm font-black uppercase tracking-wider text-slate-900">Body Oxygen Level Test</h4>
-              <p className="text-xs text-slate-500 leading-relaxed max-w-md">
+              <h4 className="text-sm font-semibold uppercase tracking-wider text-slate-900">Body Oxygen Level Test</h4>
+              <p className="text-xs text-muted-foreground leading-relaxed max-w-md">
                 Measure comfortable breath-hold time after a normal exhalation to assess CO2 tolerance.
               </p>
               <div className="flex gap-2 pt-2">
@@ -230,7 +230,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                   <Button 
                     type="button"
                     onClick={stopBolt} 
-                    className="h-10 px-6 bg-rose-600 hover:bg-rose-700 text-white rounded-none text-xs font-black uppercase tracking-widest"
+                    className="h-10 px-6 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-xl text-xs font-semibold uppercase tracking-wider"
                   >
                     Stop
                   </Button>
@@ -238,7 +238,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                   <Button 
                     type="button"
                     onClick={startBolt} 
-                    className="h-10 px-6 bg-black text-white hover:bg-slate-800 rounded-none text-xs font-black uppercase tracking-widest"
+                    className="h-10 px-6 bg-foreground text-background hover:bg-foreground/90 rounded-xl text-xs font-semibold uppercase tracking-wider"
                   >
                     Start BOLT
                   </Button>
@@ -248,7 +248,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     type="button"
                     onClick={saveBolt} 
                     disabled={savingBolt}
-                    className="h-10 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none text-xs font-black uppercase tracking-widest"
+                    className="h-10 px-6 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-semibold uppercase tracking-wider"
                   >
                     {savingBolt ? <Loader2 className="animate-spin" /> : <Save size={14} className="mr-1.5" />}
                     Save Score
@@ -259,7 +259,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     type="button"
                     variant="outline" 
                     onClick={() => { setBoltTime(0); setBoltFinished(false); setBoltRunning(false); saveField('bolt_score', null); }}
-                    className="h-10 w-10 rounded-none border-slate-200"
+                    className="h-10 w-10 rounded-xl border-border"
                   >
                     <RotateCcw size={14} />
                   </Button>
@@ -269,16 +269,16 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
 
             <div className="flex items-center gap-6 shrink-0 border-l border-slate-100 pl-6">
               <div className="text-right">
-                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Score</p>
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Score</p>
                 <div className="flex items-baseline gap-0.5">
-                  <span className="text-5xl font-black tabular-nums">{boltTime}</span>
-                  <span className="text-sm font-bold text-slate-400">s</span>
+                  <span className="text-5xl font-semibold tabular-nums">{boltTime}</span>
+                  <span className="text-sm font-medium text-muted-foreground">s</span>
                 </div>
               </div>
               {appointment.bolt_score && (
                 <Badge className={cn(
-                  "border-none font-black text-[8px] uppercase tracking-widest px-2.5 py-1 rounded-sm",
-                  appointment.bolt_score >= 25 ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"
+                  "border-none font-semibold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-sm",
+                  appointment.bolt_score >= 25 ? "bg-primary text-primary-foreground" : "bg-destructive text-destructive-foreground"
                 )}>
                   {appointment.bolt_score >= 25 ? "Functional" : "Below Target"}
                 </Badge>
@@ -289,28 +289,28 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
 
         {/* Horizontal Heart Coherence Calculator */}
         <div className="space-y-3">
-          <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Heart Coherence Calculator</label>
+          <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Heart Coherence Calculator</label>
           <div className="border border-black p-6 bg-white flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-4 flex-1">
               <div className="grid grid-cols-2 gap-4 max-w-md">
                 <div className="space-y-1.5">
-                  <Label className="text-[8px] font-black uppercase text-slate-400">Heart (30s)</Label>
+                  <Label className="text-[10px] font-semibold uppercase text-muted-foreground">Heart (30s)</Label>
                   <Input 
                     type="number" 
                     placeholder="Count" 
                     value={heartRateRaw} 
                     onChange={e => setHeartRateRaw(e.target.value)}
-                    className="h-10 rounded-none border-slate-200 text-center text-sm font-bold"
+                    className="h-10 rounded-none border-border text-center text-sm font-medium"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[8px] font-black uppercase text-slate-400">Breath (30s)</Label>
+                  <Label className="text-[10px] font-semibold uppercase text-muted-foreground">Breath (30s)</Label>
                   <Input 
                     type="number" 
                     placeholder="Count" 
                     value={breathRateRaw} 
                     onChange={e => setBreathRateRaw(e.target.value)}
-                    className="h-10 rounded-none border-slate-200 text-center text-sm font-bold"
+                    className="h-10 rounded-none border-border text-center text-sm font-medium"
                   />
                 </div>
               </div>
@@ -319,7 +319,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                 <Button 
                   type="button"
                   onClick={calculateCoherence}
-                  className="h-10 px-6 bg-black text-white hover:bg-slate-800 rounded-none text-xs font-black uppercase tracking-widest"
+                  className="h-10 px-6 bg-foreground text-background hover:bg-foreground/90 rounded-xl text-xs font-semibold uppercase tracking-wider"
                 >
                   Calculate
                 </Button>
@@ -328,7 +328,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     type="button"
                     onClick={saveCoherence}
                     disabled={savingCoherence}
-                    className="h-10 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none text-xs font-black uppercase tracking-widest"
+                    className="h-10 px-6 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-semibold uppercase tracking-wider"
                   >
                     {savingCoherence ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} className="mr-1.5" />}
                     Save Coherence
@@ -339,7 +339,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     type="button"
                     variant="outline" 
                     onClick={() => { setHeartRateRaw(''); setBreathRateRaw(''); setCoherenceScore(null); saveField('coherence_score', null); }}
-                    className="h-10 w-10 rounded-none border-slate-200"
+                    className="h-10 w-10 rounded-xl border-border"
                   >
                     <RotateCcw size={14} />
                   </Button>
@@ -350,12 +350,12 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
             {coherenceScore !== null && (
               <div className="flex items-center gap-6 shrink-0 border-l border-slate-100 pl-6">
                 <div className="text-right">
-                  <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Coherence Ratio</p>
-                  <p className="text-5xl font-black tabular-nums">{coherenceScore.toFixed(2)}</p>
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Coherence Ratio</p>
+                  <p className="text-5xl font-semibold tabular-nums">{coherenceScore.toFixed(2)}</p>
                 </div>
                 <Badge className={cn(
-                  "border-none font-black text-[8px] uppercase tracking-widest px-2.5 py-1 rounded-sm",
-                  isCoherent ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"
+                  "border-none font-semibold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-sm",
+                  isCoherent ? "bg-primary text-primary-foreground" : "bg-destructive text-destructive-foreground"
                 )}>
                   {isCoherent ? "Coherent" : "Discordant"}
                 </Badge>
@@ -366,12 +366,12 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
       </div>
 
       {/* Neurological Global Assessments Section */}
-      <div className="space-y-6 pt-6 border-t border-slate-200">
+      <div className="space-y-6 pt-6 border-t border-border">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center">
             <Brain size={18} />
           </div>
-          <h3 className="text-sm font-black uppercase tracking-widest">Neurological Global Assessments</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-wider">Neurological Global Assessments</h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -379,8 +379,8 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
           <div className="p-6 border border-black space-y-4 bg-white">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <div className="flex items-center gap-2">
-                <Footprints size={16} className="text-emerald-600" />
-                <h4 className="text-xs font-black uppercase tracking-widest">Fukuda Step Test</h4>
+                <Footprints size={16} className="text-chart-emerald" />
+                <h4 className="text-xs font-semibold uppercase tracking-wider">Fukuda Step Test</h4>
               </div>
               <DocToggle 
                 options={[
@@ -395,7 +395,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
             
             <div className="grid grid-cols-3 gap-2">
               <div className="space-y-1">
-                <label className="text-[8px] font-black uppercase text-slate-400">Drift</label>
+                <label className="text-[10px] font-semibold uppercase text-muted-foreground">Drift</label>
                 <input 
                   type="text" 
                   placeholder="e.g. Left"
@@ -405,11 +405,11 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Drift Direction:[^\n]*\n?/g, "");
                     saveField('fakuda_notes', `${clean}- Drift Direction: ${e.target.value}\n`);
                   }}
-                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[8px] font-black uppercase text-slate-400">Angle</label>
+                <label className="text-[10px] font-semibold uppercase text-muted-foreground">Angle</label>
                 <input 
                   type="text" 
                   placeholder="e.g. 30°"
@@ -419,11 +419,11 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Angle of Rotation:[^\n]*\n?/g, "");
                     saveField('fakuda_notes', `${clean}- Angle of Rotation: ${e.target.value}°\n`);
                   }}
-                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[8px] font-black uppercase text-slate-400">Distance</label>
+                <label className="text-[10px] font-semibold uppercase text-muted-foreground">Distance</label>
                 <input 
                   type="text" 
                   placeholder="e.g. 50cm"
@@ -433,7 +433,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Distance Displaced:[^\n]*\n?/g, "");
                     saveField('fakuda_notes', `${clean}- Distance Displaced: ${e.target.value} cm\n`);
                   }}
-                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
                 />
               </div>
             </div>
@@ -453,7 +453,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <div className="flex items-center gap-2">
                 <Activity size={16} className="text-purple-600" />
-                <h4 className="text-xs font-black uppercase tracking-widest">Sharpened Romberg's</h4>
+                <h4 className="text-xs font-semibold uppercase tracking-wider">Sharpened Romberg's</h4>
               </div>
               <DocToggle 
                 options={[
@@ -468,7 +468,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
 
             <div className="grid grid-cols-3 gap-2">
               <div className="space-y-1">
-                <label className="text-[8px] font-black uppercase text-slate-400">Eyes Open</label>
+                <label className="text-[10px] font-semibold uppercase text-muted-foreground">Eyes Open</label>
                 <input 
                   type="text" 
                   placeholder="e.g. 30s"
@@ -478,11 +478,11 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Eyes Open Hold Time:[^\n]*\n?/g, "");
                     saveField('sharpened_rhombergs_notes', `${clean}- Eyes Open Hold Time: ${e.target.value}s\n`);
                   }}
-                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[8px] font-black uppercase text-slate-400">Eyes Closed</label>
+                <label className="text-[10px] font-semibold uppercase text-muted-foreground">Eyes Closed</label>
                 <input 
                   type="text" 
                   placeholder="e.g. 15s"
@@ -492,11 +492,11 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Eyes Closed Hold Time:[^\n]*\n?/g, "");
                     saveField('sharpened_rhombergs_notes', `${clean}- Eyes Closed Hold Time: ${e.target.value}s\n`);
                   }}
-                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[8px] font-black uppercase text-slate-400">Sway</label>
+                <label className="text-[10px] font-semibold uppercase text-muted-foreground">Sway</label>
                 <input 
                   type="text" 
                   placeholder="e.g. Left"
@@ -506,7 +506,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Sway Direction:[^\n]*\n?/g, "");
                     saveField('sharpened_rhombergs_notes', `${clean}- Sway Direction: ${e.target.value}\n`);
                   }}
-                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
                 />
               </div>
             </div>
@@ -525,8 +525,8 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
           <div className="p-6 border border-black space-y-4 bg-white">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <div className="flex items-center gap-2">
-                <Hand size={16} className="text-indigo-600" />
-                <h4 className="text-xs font-black uppercase tracking-widest">Frontal Lobe</h4>
+                <Hand size={16} className="text-chart-primary" />
+                <h4 className="text-xs font-semibold uppercase tracking-wider">Frontal Lobe</h4>
               </div>
               <DocToggle 
                 options={[
@@ -541,7 +541,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
 
             <div className="grid grid-cols-3 gap-2">
               <div className="space-y-1">
-                <label className="text-[8px] font-black uppercase text-slate-400">L Speed</label>
+                <label className="text-[10px] font-semibold uppercase text-muted-foreground">L Speed</label>
                 <input 
                   type="text" 
                   placeholder="e.g. 8/10"
@@ -551,11 +551,11 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Left Hand Speed:[^\n]*\n?/g, "");
                     saveField('frontal_lobe_notes', `${clean}- Left Hand Speed: ${e.target.value}\n`);
                   }}
-                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[8px] font-black uppercase text-slate-400">R Speed</label>
+                <label className="text-[10px] font-semibold uppercase text-muted-foreground">R Speed</label>
                 <input 
                   type="text" 
                   placeholder="e.g. 6/10"
@@ -565,11 +565,11 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Right Hand Speed:[^\n]*\n?/g, "");
                     saveField('frontal_lobe_notes', `${clean}- Right Hand Speed: ${e.target.value}\n`);
                   }}
-                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[8px] font-black uppercase text-slate-400">Asymmetry</label>
+                <label className="text-[10px] font-semibold uppercase text-muted-foreground">Asymmetry</label>
                 <input 
                   type="text" 
                   placeholder="e.g. Yes"
@@ -579,7 +579,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Asymmetry Detected:[^\n]*\n?/g, "");
                     saveField('frontal_lobe_notes', `${clean}- Asymmetry Detected: ${e.target.value}\n`);
                   }}
-                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
                 />
               </div>
             </div>
@@ -599,7 +599,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <div className="flex items-center gap-2">
                 <RefreshCw size={16} className="text-blue-600" />
-                <h4 className="text-xs font-black uppercase tracking-widest">Righting Reflexes</h4>
+                <h4 className="text-xs font-semibold uppercase tracking-wider">Righting Reflexes</h4>
               </div>
               <DocToggle 
                 options={[
@@ -614,7 +614,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
 
             <div className="grid grid-cols-3 gap-2">
               <div className="space-y-1">
-                <label className="text-[8px] font-black uppercase text-slate-400">Ocular</label>
+                <label className="text-[10px] font-semibold uppercase text-muted-foreground">Ocular</label>
                 <input 
                   type="text" 
                   placeholder="e.g. Pass"
@@ -624,11 +624,11 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Ocular Righting:[^\n]*\n?/g, "");
                     saveField('righting_reflex_notes', `${clean}- Ocular Righting: ${e.target.value}\n`);
                   }}
-                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[8px] font-black uppercase text-slate-400">Labyrinthine</label>
+                <label className="text-[10px] font-semibold uppercase text-muted-foreground">Labyrinthine</label>
                 <input 
                   type="text" 
                   placeholder="e.g. Fail"
@@ -638,11 +638,11 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Labyrinthine Righting:[^\n]*\n?/g, "");
                     saveField('righting_reflex_notes', `${clean}- Labyrinthine Righting: ${e.target.value}\n`);
                   }}
-                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[8px] font-black uppercase text-slate-400">Tilt Angle</label>
+                <label className="text-[10px] font-semibold uppercase text-muted-foreground">Tilt Angle</label>
                 <input 
                   type="text" 
                   placeholder="e.g. 15°"
@@ -652,7 +652,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Head Tilt Angle:[^\n]*\n?/g, "");
                     saveField('righting_reflex_notes', `${clean}- Head Tilt Angle: ${e.target.value}°\n`);
                   }}
-                  className="w-full bg-transparent border-b border-slate-200 py-1 text-xs font-bold focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
                 />
               </div>
             </div>

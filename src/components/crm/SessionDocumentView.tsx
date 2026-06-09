@@ -207,7 +207,7 @@ const SessionDocumentView = ({
                                 </div>
                                 <Badge className={cn(
                                   "border-none font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-md",
-                                  app.status === 'Completed' ? "bg-emerald-50 text-white" : "bg-indigo-600 text-white"
+                                  app.status === 'Completed' ? "bg-chart-emerald/10 text-chart-emerald" : "bg-primary text-primary-foreground"
                                 )}>
                                   {app.status}
                                 </Badge>

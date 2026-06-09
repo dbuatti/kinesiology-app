@@ -38,11 +38,11 @@ interface SessionTimerProps {
 }
 
 const SESSION_STAGES = [
-  { id: 'baseline', name: "PRELIMINARY", duration: 15, color: "bg-indigo-600", Icon: Target },
-  { id: 'sympathetic', name: "EASE", duration: 15, color: "bg-rose-600", Icon: Zap },
-  { id: 'pathway', name: "ALIGN", duration: 15, color: "bg-amber-600", Icon: CheckCircle2 },
-  { id: 'calibration', name: "CORRECT", duration: 10, color: "bg-emerald-600", Icon: AlertTriangle },
-  { id: 'reassessment', name: "EMBED", duration: 5, color: "bg-blue-600", Icon: Home },
+  { id: 'baseline', name: "PRELIMINARY", duration: 15, color: "bg-chart-primary", Icon: Target },
+  { id: 'sympathetic', name: "EASE", duration: 15, color: "bg-chart-destructive", Icon: Zap },
+  { id: 'pathway', name: "ALIGN", duration: 15, color: "bg-chart-primary", Icon: CheckCircle2 },
+  { id: 'calibration', name: "CORRECT", duration: 10, color: "bg-chart-emerald", Icon: AlertTriangle },
+  { id: 'reassessment', name: "EMBED", duration: 5, color: "bg-chart-primary", Icon: Home },
 ];
 const TOTAL_DURATION_MINUTES = SESSION_STAGES.reduce((sum, stage) => sum + stage.duration, 0);
 
@@ -167,60 +167,60 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
     <div className="w-full">
       <div className={cn(
         "transition-colors duration-1000 p-2 flex items-center justify-between px-4 md:px-6",
-        isOvertime && !isFinished ? "bg-rose-950 border-b border-rose-500/30" : "bg-slate-950 border-b border-white/10"
+        isOvertime && !isFinished ? "bg-chart-destructive/10 border-b border-chart-destructive/20" : "bg-foreground text-background border-b border-border"
       )}>
         <div className="flex items-center gap-2 md:gap-4 overflow-hidden min-w-0 flex-1">
           <div className="flex items-center gap-1.5 shrink-0">
             {isFinished ? (
-              <div className="flex items-center gap-1 text-emerald-500">
+              <div className="flex items-center gap-1 text-chart-emerald">
                 <CheckCircle2 size={12} />
-                <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] hidden sm:inline">Session Complete</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider hidden sm:inline">Session Complete</span>
               </div>
             ) : isOvertime ? (
-              <div className="flex items-center gap-1 text-rose-500">
+              <div className="flex items-center gap-1 text-chart-destructive">
                 <AlertCircle size={12} />
-                <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] hidden sm:inline">Time Elapsed</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider hidden sm:inline">Time Elapsed</span>
               </div>
             ) : isUpcoming ? (
-              <div className="flex items-center gap-1 text-indigo-400">
+              <div className="flex items-center gap-1 text-chart-primary">
                 <Clock size={12} />
-                <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] hidden sm:inline">Upcoming</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider hidden sm:inline">Upcoming</span>
               </div>
             ) : (
-              <div className="flex items-center gap-1 text-emerald-500">
+              <div className="flex items-center gap-1 text-chart-emerald">
                 <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-                <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] hidden sm:inline">Live</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider hidden sm:inline">Live</span>
               </div>
             )}
           </div>
 
-          <div className="h-4 w-px bg-white/10 shrink-0" />
+          <div className="h-4 w-px bg-muted shrink-0" />
 
           {!isFinished && (
             <div className={cn(
-              "text-[10px] md:text-xs font-black tabular-nums font-mono shrink-0",
-              isOvertime ? "text-rose-400" : "text-emerald-400"
+              "text-[10px] md:text-xs font-semibold tabular-nums font-mono shrink-0",
+              isOvertime ? "text-chart-destructive" : "text-chart-emerald"
             )}>
               {isOvertime ? `+${formatOvertime(overtimeSeconds)}` : timeRemainingInSession}
             </div>
           )}
 
-          <div className="h-4 w-px bg-white/10 shrink-0" />
+          <div className="h-4 w-px bg-muted shrink-0" />
 
           <div className="flex items-center gap-1.5 min-w-0 flex-1 sm:flex-none">
-            <span className="text-xs md:text-sm font-black text-white truncate privacy-mode-active:blur-sm">
+            <span className="text-xs md:text-sm font-semibold text-white truncate privacy-mode-active:blur-sm">
               {clientName}
             </span>
-            <span className="text-[8px] md:text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden md:inline">
+            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider hidden md:inline">
               {format(appointmentDate, "h:mm a")}
             </span>
           </div>
 
-          <div className="h-4 w-px bg-white/10 shrink-0 hidden sm:block" />
+          <div className="h-4 w-px bg-muted shrink-0 hidden sm:block" />
 
           {!isFinished && (
             <div className="hidden sm:flex items-center gap-2 shrink-0">
-              <Badge className={cn("border-none font-black text-[7px] md:text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-md", activePhase.color, "text-white")}>
+              <Badge className={cn("border-none font-semibold text-[7px] md:text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded-md", activePhase.color, "text-white")}>
                 {activePhase.name}
               </Badge>
             </div>
@@ -233,7 +233,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
             <Button
               size="sm"
               onClick={toggleDocumentView}
-              className="h-7 md:h-8 px-2 md:px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-black text-[8px] md:text-[9px] uppercase tracking-widest gap-1 md:gap-1.5"
+              className="h-7 md:h-8 px-2 md:px-3 rounded-xl bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-[10px] uppercase tracking-wider gap-1 md:gap-1.5"
               title="Toggle Document View (Option + D)"
             >
               {isDocViewActive ? <LayoutGrid size={12} /> : <FileText size={12} />}
@@ -241,11 +241,11 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
             </Button>
           )}
 
-          <div className="w-16 md:w-32 h-1 bg-white/5 rounded-full overflow-hidden hidden lg:block">
+          <div className="w-16 md:w-32 h-1 bg-muted/50 rounded-full overflow-hidden hidden lg:block">
             <div 
               className={cn(
                 "h-full transition-all duration-500",
-                isFinished ? "bg-emerald-500" : isOvertime ? "bg-amber-500" : "bg-indigo-500"
+                isFinished ? "bg-chart-emerald" : isOvertime ? "bg-muted" : "bg-chart-primary"
               )}
               style={{ width: isFinished ? '100%' : `${overallProgressPercent}%` }}
             />
@@ -256,28 +256,28 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
               <Button 
                 size="sm" 
                 className={cn(
-                  "border-none h-7 md:h-8 px-2.5 md:px-4 rounded-xl font-black text-[8px] md:text-[9px] uppercase tracking-widest transition-colors",
-                  isOvertime && !isFinished ? "bg-rose-600 hover:bg-rose-700 text-white" : "bg-white/10 hover:bg-white/20 text-white"
+                  "border-none h-7 md:h-8 px-2.5 md:px-4 rounded-xl font-semibold text-[10px] uppercase tracking-wider transition-colors",
+                  isOvertime && !isFinished ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : "bg-muted hover:bg-muted/80 text-muted-foreground"
                 )}
               >
                 <span className="hidden sm:inline">Actions</span> <ChevronDown size={10} className="sm:ml-2 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52 md:w-56 rounded-2xl p-2 shadow-3xl border-none bg-slate-900 text-white">
+            <DropdownMenuContent align="end" className="w-52 md:w-56 rounded-xl p-2 shadow-3xl border-none bg-foreground text-background">
               {!isFinished && (
                 <DropdownMenuItem 
                   onClick={handleComplete}
-                  className="rounded-xl py-2.5 md:py-3 px-4 cursor-pointer flex items-center gap-3 text-emerald-400 focus:text-emerald-400 focus:bg-emerald-500/10"
+                  className="rounded-xl py-2.5 md:py-3 px-4 cursor-pointer flex items-center gap-3 text-chart-emerald focus:text-chart-emerald focus:bg-chart-emerald/10"
                 >
                   <CheckCircle2 size={14} />
-                  <span className="font-bold text-xs uppercase tracking-widest">Complete Session</span>
+                  <span className="font-medium text-xs">Complete Session</span>
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem 
-                className="rounded-xl py-2.5 md:py-3 px-4 cursor-pointer flex items-center gap-3 text-rose-400 focus:text-rose-400 focus:bg-rose-500/10"
+                className="rounded-xl py-2.5 md:py-3 px-4 cursor-pointer flex items-center gap-3 text-chart-destructive focus:text-chart-destructive focus:bg-chart-destructive/10"
               >
                 <LogOut size={14} />
-                <span className="font-bold text-xs uppercase tracking-widest">Pause / Exit</span>
+                <span className="font-medium text-xs">Pause / Exit</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -285,7 +285,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
       </div>
       
       {!isFinished && (
-        <div className="h-0.5 bg-white/5 relative">
+        <div className="h-0.5 bg-muted/50 relative">
           <div 
             className={cn("h-full transition-all duration-500", activePhase.color)}
             style={{ width: `${stageProgressPercent}%` }}

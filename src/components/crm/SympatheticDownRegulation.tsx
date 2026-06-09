@@ -53,17 +53,17 @@ const SympatheticDownRegulation = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="border-none shadow-lg rounded-2xl bg-white overflow-hidden">
+      <Card className="border-none shadow-sm rounded-2xl bg-card overflow-hidden">
         <CollapsibleTrigger asChild>
-          <CardHeader className="bg-gradient-to-r from-red-50 to-orange-50 border-b border-red-100 cursor-pointer hover:from-red-100 hover:to-orange-100 transition-colors">
+          <CardHeader className="bg-muted/50 border-b border-border cursor-pointer hover:bg-muted transition-colors">
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-200">
-                  <Heart size={24} className="text-white" />
+                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                  <Heart size={20} className="text-chart-primary" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl font-bold text-slate-900">Harmonic Rocking Protocol</CardTitle>
-                  <CardDescription className="text-slate-600">Nervous system down-regulation</CardDescription>
+                  <CardTitle className="text-base font-semibold text-foreground">Harmonic Rocking Protocol</CardTitle>
+                  <CardDescription className="text-muted-foreground">Nervous system down-regulation</CardDescription>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -75,19 +75,21 @@ const SympatheticDownRegulation = ({
                       handleReset();
                     }}
                     disabled={loading}
-                    className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3"
+                    className="border-border text-muted-foreground hover:bg-muted h-8 px-3"
                   >
                     <RotateCcw size={16} className="mr-1" />
                     Reset
                   </Button>
                 )}
-                {hasNotes && (
-                  <span className="text-xs font-bold text-red-600 bg-red-100 px-3 py-1 rounded-full">
+                {hasNotes ? (
+                  <span className="text-xs font-medium text-muted-foreground bg-muted px-3 py-1 rounded-full">
                     Notes Recorded
                   </span>
+                ) : (
+                  <span className="text-xs text-muted-foreground/50">Not yet recorded</span>
                 )}
                 <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <ChevronDown className={cn("h-5 w-5 transition-transform text-slate-600", isOpen && "rotate-180")} />
+                  <ChevronDown className={cn("h-5 w-5 transition-transform text-muted-foreground", isOpen && "rotate-180")} />
                 </Button>
               </div>
             </div>
@@ -96,20 +98,20 @@ const SympatheticDownRegulation = ({
 
         <CollapsibleContent>
           <CardContent className="p-6 space-y-6">
-            <Alert className="bg-blue-50 border-blue-200">
-              <Info className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-sm text-blue-900">
+            <Alert className="bg-muted border-border">
+              <Info className="h-4 w-4 text-muted-foreground" />
+              <AlertDescription className="text-sm text-foreground">
                 <strong>Purpose:</strong> Shift the nervous system from a threatened (SNS/Dorsal Vagal) state back to a receptive (Socially Engaged) state.
               </AlertDescription>
             </Alert>
 
             <div className="space-y-4">
               <div className="space-y-3">
-                <h4 className="font-bold text-red-900 flex items-center gap-2">
-                  <Zap size={16} className="text-red-600" />
+                <h4 className="font-semibold text-foreground flex items-center gap-2">
+                  <Zap size={16} className="text-muted-foreground" />
                   Protocol Steps:
                 </h4>
-                <ol className="space-y-3 text-sm text-red-800 list-decimal list-inside ml-4">
+                <ol className="space-y-3 text-sm text-muted-foreground list-decimal list-inside ml-4">
                   <li className="font-semibold">State: Permission to correct</li>
                   <li>
                     If permission is denied: perform gentle rocking motion with one hand on the belly button and the other hands/fingers on Kidney 27 Acupoint.

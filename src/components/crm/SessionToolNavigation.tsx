@@ -29,7 +29,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
-export type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous' | 'context' | 'journal' | 'recheck' | 'audit';
+export type ActiveView = 'home' | 'kinesiology' | 'muscles' | 'gait' | 'previous' | 'context' | 'journal' | 'recheck' | 'audit' | 'psychology';
 
 interface SessionToolNavigationProps {
   appointmentId: string;
@@ -157,6 +157,16 @@ const SessionToolNavigation = ({
               <div className="flex flex-col">
                 <span className="font-medium text-xs">Session Audit Log</span>
                 <span className="text-[10px] text-muted-foreground">Timestamped Findings</span>
+              </div>
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator className="my-1 bg-border" />
+
+            <DropdownMenuItem onClick={() => onViewChange('psychology')} className="rounded-xl py-3 px-4 cursor-pointer group">
+              <Brain size={18} className="mr-3 text-muted-foreground group-hover:scale-110 transition-transform" /> 
+              <div className="flex flex-col">
+                <span className="font-medium text-xs">Psychology Tools</span>
+                <span className="text-[10px] text-muted-foreground">Identity, Beliefs & Alignment</span>
               </div>
             </DropdownMenuItem>
 

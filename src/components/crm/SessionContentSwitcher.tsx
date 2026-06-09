@@ -34,6 +34,7 @@ import EmotionAssessment from './EmotionAssessment';
 import PreviousSessionSummary from './PreviousSessionSummary';
 import GaitReflexAssessment from './GaitReflexAssessment';
 import NeurologicalHistoryTracker from './NeurologicalHistoryTracker';
+import PsychologyHub from './PsychologyHub';
 import { Nuclei } from '@/utils/brainstem-logic';
 import {
   DropdownMenu,
@@ -264,6 +265,10 @@ const SessionContentSwitcher = ({
                 clientId={appointment.clients.id}
               />
             </div>
+          )}
+
+          {activeView === 'psychology' && (
+            <PsychologyHub appointment={appointment} />
           )}
         </div>
 

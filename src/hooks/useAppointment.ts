@@ -28,7 +28,9 @@ export function useAppointment(id: string | undefined) {
             journal,
             email,
             phone,
-            is_practitioner
+            is_practitioner,
+            standard_rate,
+            medical_history
           )
         `)
         .eq('id', id)

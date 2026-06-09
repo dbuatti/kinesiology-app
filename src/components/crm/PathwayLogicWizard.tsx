@@ -42,7 +42,8 @@ type Step =
   | 'VESTIBULAR_PROCESS'
   | 'NOCICEPTIVE_PROCESS'
   | 'EFFERENT_PROCESS'
-  | 'EMOTIONS_PROCESS';
+  | 'EMOTIONS_PROCESS'
+  | 'COMPLETION';
 
 interface PathwayLogicWizardProps {
   onSave: (summary: string) => void;
@@ -214,7 +215,8 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
       }
     }
     onSave(summary);
-    resetWizard();
+    setStep('COMPLETION');
+    setHistory([]);
   };
 
   const handleInhibited = (summary: string) => {
@@ -536,6 +538,30 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
 
       case 'VESTIBULAR_PROCESS':
         return <VestibularProcess onSave={handleSave} onInhibited={handleInhibited} onCancel={goBack} />;
+
+      case 'COMPLETION':
+        return (
+          <div className="py-8 flex flex-col items-center justify-center text-center space-y-6 animate-in zoom-in-95 duration-300">
+            <div className="w-16 h-16 rounded-2xl bg-chart-emerald/10 text-chart-emerald flex items-center justify-center">
+              <CheckCircle2 size={36} />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-xl font-semibold text-foreground">Correction Complete</h3>
+              <p className="text-sm text-muted-foreground">
+                {effectiveItem || "Finding"} has been cleared.
+              </p>
+              <p className="text-xs text-muted-foreground/60">Additional layers can be added in future sessions.</p>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <Button variant="outline" onClick={resetWizard} className="rounded-xl h-10 px-5 text-sm font-medium">
+                <RefreshCw size={14} className="mr-2" /> Correct Another Finding
+              </Button>
+              <Button onClick={() => { setStep('SELECT_START'); setHistory([]); setSelectedFinding(''); setCustomText(''); }} className="rounded-xl h-10 px-5 text-sm font-medium">
+                <Zap size={14} className="mr-2" /> Done for Today
+              </Button>
+            </div>
+          </div>
+        );
 
       default:
         return null;

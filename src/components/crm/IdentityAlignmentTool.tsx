@@ -437,14 +437,16 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
           )}
         </div>
       </div>
-      <div className="pt-8 flex gap-4">
-        <Button variant="outline" onClick={() => saveProgress(false)} disabled={isSaving || !formData.goal} className="flex-1 rounded-xl h-14 font-semibold text-xs uppercase tracking-wider border-border">
+      {!singlePage && (
+      <div className="pt-6 flex gap-4">
+        <Button variant="outline" onClick={() => saveProgress(false)} disabled={isSaving || !formData.goal} className="flex-1 rounded-xl h-12 font-semibold text-xs uppercase tracking-wider border-border">
           <Save className="mr-2" size={18} /> Save Draft
         </Button>
-        <Button onClick={handleNext} disabled={!formData.goal || !formData.targetIdentity} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-14 font-semibold text-xs uppercase tracking-wider shadow-sm ">
+        <Button onClick={handleNext} disabled={!formData.goal || !formData.targetIdentity} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-semibold text-xs uppercase tracking-wider">
           Move to Somatic <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
+      )}
     </div>
   );
 
@@ -470,14 +472,16 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
           />
         </div>
       </div>
-      <div className="pt-8 flex gap-4">
-        <Button variant="outline" onClick={handleBack} className="flex-1 rounded-xl h-14 font-semibold text-xs uppercase tracking-wider border-border">
+      {!singlePage && (
+      <div className="pt-6 flex gap-4">
+        <Button variant="outline" onClick={handleBack} className="flex-1 rounded-xl h-12 font-semibold text-xs uppercase tracking-wider border-border">
           <ArrowLeft className="mr-2" size={18} /> Back
         </Button>
-        <Button onClick={handleNext} disabled={!formData.physicalSensation || !formData.emotionalState} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-14 font-semibold text-xs uppercase tracking-wider shadow-sm ">
+        <Button onClick={handleNext} disabled={!formData.physicalSensation || !formData.emotionalState} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-semibold text-xs uppercase tracking-wider">
           Begin Reconsolidation <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
+      )}
     </div>
   );
 

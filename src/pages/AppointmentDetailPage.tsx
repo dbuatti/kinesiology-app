@@ -356,7 +356,7 @@ const AppointmentDetailPage = () => {
                     </Badge>
                   )}
                   {appointment.status === 'Completed' && (
-                    <Badge className="bg-muted text-muted-foreground border-none font-black text-[8px] uppercase tracking-[0.3em] px-3 py-1 rounded-full shrink-0">
+                    <Badge className="bg-muted text-muted-foreground border-none font-medium text-[10px] uppercase tracking-wider px-3 py-1 rounded-full shrink-0">
                       Completed
                     </Badge>
                   )}
@@ -379,7 +379,7 @@ const AppointmentDetailPage = () => {
                     Session #{sessionNumber}
                   </span>
                   {currentPeakMeridian && (
-                    <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground uppercase tracking-widest">
+                    <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
                       <Zap size={10} /> {currentPeakMeridian.name} peak
                     </span>
                   )}

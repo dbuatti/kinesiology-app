@@ -26,13 +26,13 @@ const SHOW_IMAGES_KEY = "fnh_protocols_show_images";
 const REMEMBER_KEY = "fnh_protocols_remember_settings";
 
 const PROTOCOLS = [
-  { id: "cranial-nerves", label: "Nerves", icon: Zap, color: "text-rose-500", bg: "bg-rose-50" },
-  { id: "primitive-reflexes", label: "Reflexes", icon: RefreshCw, color: "text-indigo-500", bg: "bg-indigo-50" },
-  { id: "brain-zones", label: "Zones", icon: Brain, color: "text-purple-500", bg: "bg-purple-50" },
-  { id: "muscles", label: "Muscles", icon: Dumbbell, color: "text-emerald-500", bg: "bg-emerald-50" },
-  { id: "mechanoreceptive", label: "Mechano", icon: Activity, color: "text-blue-500", bg: "bg-blue-50" },
-  { id: "emotions", label: "Emotions", icon: Heart, color: "text-rose-600", bg: "bg-rose-50" },
-  { id: "heart-wall", label: "Heart Wall", icon: Shield, color: "text-slate-600", bg: "bg-slate-50" },
+  { id: "cranial-nerves", label: "Nerves", icon: Zap, color: "text-chart-destructive", bg: "bg-chart-destructive/10" },
+  { id: "primitive-reflexes", label: "Reflexes", icon: RefreshCw, color: "text-chart-primary", bg: "bg-chart-primary/10" },
+  { id: "brain-zones", label: "Zones", icon: Brain, color: "text-chart-primary", bg: "bg-chart-primary/10" },
+  { id: "muscles", label: "Muscles", icon: Dumbbell, color: "text-chart-emerald", bg: "bg-chart-emerald/10" },
+  { id: "mechanoreceptive", label: "Mechano", icon: Activity, color: "text-chart-primary", bg: "bg-chart-primary/10" },
+  { id: "emotions", label: "Emotions", icon: Heart, color: "text-chart-destructive", bg: "bg-chart-destructive/10" },
+  { id: "heart-wall", label: "Heart Wall", icon: Shield, color: "text-muted-foreground", bg: "bg-muted" },
 ];
 
 export default function ClinicalProtocolsPage() {
@@ -63,11 +63,11 @@ export default function ClinicalProtocolsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-slate-50">
-        <div className="w-16 h-16 bg-indigo-600 rounded-[2rem] flex items-center justify-center text-white font-black text-2xl shadow-2xl animate-bounce">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-muted">
+        <div className="w-16 h-16 bg-chart-primary rounded-xl flex items-center justify-center text-white font-semibold text-2xl shadow-sm animate-bounce">
           A
         </div>
-        <div className="flex items-center gap-2 text-muted-foreground font-black text-[10px] uppercase tracking-[0.3em]">
+        <div className="flex items-center gap-2 text-muted-foreground font-semibold text-[10px] uppercase tracking-wider">
           <Loader2 className="animate-spin" size={14} /> Loading Protocols
         </div>
       </div>
@@ -77,14 +77,14 @@ export default function ClinicalProtocolsPage() {
   if (!appointment) {
     return (
       <div className="container mx-auto p-12 text-center space-y-6">
-        <div className="w-20 h-20 bg-rose-50 rounded-[2rem] flex items-center justify-center mx-auto text-rose-500 shadow-xl">
+        <div className="w-20 h-20 bg-chart-destructive/10 rounded-xl flex items-center justify-center mx-auto text-chart-destructive shadow-sm">
           <Shield size={40} />
         </div>
         <div className="space-y-2">
-          <h1 className="text-3xl font-black text-slate-900">Appointment not found</h1>
-          <p className="text-slate-500 font-medium">The requested session could not be located in the database.</p>
+          <h1 className="text-3xl font-semibold text-foreground">Appointment not found</h1>
+          <p className="text-muted-foreground font-medium">The requested session could not be located in the database.</p>
         </div>
-        <Button onClick={() => navigate("/appointments")} className="bg-indigo-600 hover:bg-indigo-700 rounded-xl h-12 px-8 font-bold">
+        <Button onClick={() => navigate("/appointments")} className="bg-primary hover:bg-primary/90 rounded-xl h-12 px-8 font-medium">
           Back to Appointments
         </Button>
       </div>
@@ -96,12 +96,12 @@ export default function ClinicalProtocolsPage() {
   return (
     <div className="flex h-screen bg-white overflow-hidden">
       {/* 1. Slim Vertical Navigation Rail */}
-      <aside className="w-20 md:w-24 bg-slate-950 flex flex-col items-center py-8 gap-6 z-50 shrink-0 shadow-2xl">
+      <aside className="w-20 md:w-24 bg-foreground flex flex-col items-center py-8 gap-6 z-50 shrink-0 shadow-sm">
         <Button 
           variant="ghost" 
           size="icon" 
           onClick={() => navigate(`/appointments/${id}`)}
-          className="h-12 w-12 rounded-2xl bg-white/5 text-white hover:bg-white/10 mb-4 transition-all hover:scale-110"
+          className="h-12 w-12 rounded-xl bg-white/5 text-white hover:bg-white/10 mb-4 transition-all hover:scale-110"
         >
           <ChevronLeft size={24} />
         </Button>
@@ -114,17 +114,17 @@ export default function ClinicalProtocolsPage() {
                 key={p.id}
                 onClick={() => setActiveTab(p.id)}
                 className={cn(
-                  "flex flex-col items-center justify-center py-4 rounded-2xl transition-all duration-500 group relative",
+                  "flex flex-col items-center justify-center py-4 rounded-xl transition-all duration-500 group relative",
                   isActive 
-                    ? "bg-indigo-600 text-white shadow-xl scale-105" 
-                    : "text-slate-500 hover:text-white hover:bg-white/5"
+                    ? "bg-chart-primary text-white shadow-sm scale-105" 
+                    : "text-muted-foreground hover:text-white hover:bg-white/5"
                 )}
               >
                 {isActive && (
                   <div className="absolute left-0 w-1 h-8 bg-white rounded-r-full" />
                 )}
                 <p.icon size={22} className={cn("transition-transform duration-500", isActive ? "scale-110" : "group-hover:scale-110", !isActive && p.color)} />
-                <span className="text-[8px] font-black uppercase tracking-widest mt-2 text-center px-1">
+                <span className="text-[10px] font-semibold uppercase tracking-wider mt-2 text-center px-1">
                   {p.label}
                 </span>
               </button>
@@ -133,40 +133,40 @@ export default function ClinicalProtocolsPage() {
         </div>
 
         <div className="mt-auto flex flex-col gap-6 items-center">
-          <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-500 hover:text-white transition-colors cursor-pointer">
+          <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-muted-foreground hover:text-white transition-colors cursor-pointer">
             <Settings2 size={20} />
           </div>
-          <Badge variant="outline" className="border-white/10 text-slate-500 font-black text-[7px] uppercase tracking-widest px-2 py-0.5 rounded-none rotate-90 mb-6">
+          <Badge variant="outline" className="border-white/10 text-muted-foreground font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-none rotate-90 mb-6">
             Clinical Rail
           </Badge>
         </div>
       </aside>
 
       {/* 2. Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50/30">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-muted/30">
         {/* Top Settings Header */}
-        <header className="h-20 border-b border-slate-100 flex items-center justify-between px-10 bg-white shrink-0 shadow-sm z-40">
+        <header className="h-20 border-b border-border flex items-center justify-between px-10 bg-white shrink-0 shadow-sm z-40">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-4">
               <div className={cn(
-                "w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg",
-                activeProtocol?.bg.replace('bg-', 'bg-').replace('-50', '-600') || "bg-indigo-600"
+                "w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-sm",
+                activeProtocol?.bg.replace(/\/\d+$/, '') || "bg-chart-primary"
               )}>
                 {React.createElement(activeProtocol?.icon || Brain, { size: 24 })}
               </div>
               <div>
-                <h2 className="text-2xl font-serif font-bold text-slate-900 tracking-tight leading-none">
+                <h2 className="text-2xl font-serif font-medium text-foreground tracking-tight leading-none">
                   {activeProtocol?.label}
                 </h2>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1.5">Protocol v2.4 • Clinical Standard</p>
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-1.5">Protocol v2.4 • Clinical Standard</p>
               </div>
             </div>
-            <div className="h-8 w-px bg-slate-100 mx-2" />
+            <div className="h-8 w-px bg-border mx-2" />
             <Button 
               asChild
               variant="ghost" 
               size="sm" 
-              className="h-10 px-4 rounded-xl text-indigo-600 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest"
+              className="h-10 px-4 rounded-xl text-chart-primary hover:bg-chart-primary/10 font-semibold text-[10px] uppercase tracking-wider"
             >
               <a href="https://fnhrefapp-ggs6ojfk.manus.space/brain-zones" target="_blank" rel="noopener noreferrer">
                 <Globe size={16} className="mr-2" /> Official App <ExternalLink size={12} className="ml-1.5 opacity-50" />
@@ -181,23 +181,23 @@ export default function ClinicalProtocolsPage() {
                   id="show-images-global" 
                   checked={showImages} 
                   onCheckedChange={setShowImages}
-                  className="data-[state=checked]:bg-indigo-600"
+                  className="data-[state=checked]:bg-chart-primary"
                 />
-                <Label htmlFor="show-images-global" className="text-[10px] font-black uppercase tracking-widest text-slate-500 cursor-pointer flex items-center gap-2">
-                  {showImages ? <Eye size={16} className="text-indigo-600" /> : <EyeOff size={16} />}
+                <Label htmlFor="show-images-global" className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer flex items-center gap-2">
+                  {showImages ? <Eye size={16} className="text-chart-primary" /> : <EyeOff size={16} />}
                   Images
                 </Label>
               </div>
             </div>
 
-            <div className="h-10 w-px bg-slate-100" />
+            <div className="h-10 w-px bg-border" />
 
             <div className="flex items-center gap-4">
               <div className="text-right hidden sm:block">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Active Client</p>
-                <p className="text-sm font-bold text-slate-900">{appointment.clients.name}</p>
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Active Client</p>
+                <p className="text-sm font-medium text-foreground">{appointment.clients.name}</p>
               </div>
-              <div className="w-11 h-11 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-black text-lg shadow-inner border border-indigo-100">
+              <div className="w-11 h-11 rounded-xl bg-chart-primary/10 text-chart-primary flex items-center justify-center font-semibold text-lg shadow-inner border border-chart-primary/20">
                 {appointment.clients.name.charAt(0)}
               </div>
             </div>
@@ -258,27 +258,27 @@ export default function ClinicalProtocolsPage() {
             </div>
 
             {/* Persistent Summary Area */}
-            <div className="mt-24 pt-16 border-t border-slate-200">
+            <div className="mt-24 pt-16 border-t border-border">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-5">
-                  <div className="w-14 h-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-xl">
+                  <div className="w-14 h-14 rounded-xl bg-foreground text-white flex items-center justify-center shadow-sm">
                     <ClipboardCheck size={28} />
                   </div>
                   <div>
-                    <h3 className="text-2xl font-serif font-bold text-slate-900 tracking-tight">Integration Summary</h3>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">Session Notes & Homework</p>
+                    <h3 className="text-2xl font-serif font-medium text-foreground tracking-tight">Integration Summary</h3>
+                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-1">Session Notes & Homework</p>
                   </div>
                 </div>
-                <Button variant="ghost" size="sm" className="h-11 px-6 rounded-xl text-indigo-600 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest border border-indigo-100">
+                <Button variant="ghost" size="sm" className="h-11 px-6 rounded-xl text-chart-primary hover:bg-chart-primary/10 font-semibold text-[10px] uppercase tracking-wider border border-chart-primary/20">
                   <Sparkles size={16} className="mr-2" /> AI Clinical Assist
                 </Button>
               </div>
               <textarea 
-                className="w-full min-h-[250px] bg-white border-2 border-slate-100 rounded-[2.5rem] p-10 text-lg font-medium leading-relaxed focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-inner placeholder:text-slate-200"
+                className="w-full min-h-[250px] bg-white border-2 border-border rounded-xl p-10 text-lg font-medium leading-relaxed focus:ring-4 focus:ring-chart-primary/10 focus:border-chart-primary transition-all shadow-inner placeholder:text-muted-foreground/30"
                 placeholder="Document the primary correction and prescribed homework here..."
               />
               <div className="mt-6 flex justify-end">
-                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-12 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100">
+                <Button className="bg-primary hover:bg-primary/90 text-white rounded-xl h-14 px-12 font-semibold text-xs uppercase tracking-wider shadow-sm">
                   <Save size={18} className="mr-2" /> Save Integration
                 </Button>
               </div>

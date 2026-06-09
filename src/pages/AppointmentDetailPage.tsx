@@ -504,7 +504,7 @@ const AppointmentDetailPage = () => {
               <button onClick={() => saveField('is_paid', !appointment.is_paid)}
                 className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
                 <CreditCard size={12} />
-                {!appointment.is_paid ? "Free" : appointment.payment_received ? "Paid" : `$${appointment.price_amount || appointment.clients.standard_rate || 50}`}
+                {!appointment.is_paid ? "Free" : appointment.payment_received ? "Paid" : `$${appointment.clients.standard_rate || appointment.price_amount || 50}`}
               </button>
               <span className="text-muted-foreground/30">·</span>
               <div className="flex items-center gap-1">

@@ -58,7 +58,11 @@ interface FormData {
   integrationAction: string;
 }
 
-const LimitingBeliefsTool = () => {
+interface LimitingBeliefsToolProps {
+  singlePage?: boolean;
+}
+
+const LimitingBeliefsTool = ({ singlePage = false }: LimitingBeliefsToolProps = {}) => {
   const location = useLocation();
   const navigate = useNavigate();
   const prefillData = location.state?.prefill;
@@ -741,47 +745,87 @@ const LimitingBeliefsTool = () => {
 
   return (
     <div className="w-full">
-      <div className="mb-12 space-y-6">
-        <div className="flex justify-between items-end">
-          <div className="space-y-1">
-            <h2 className="text-[10px] font-semibold uppercase tracking-[0.4em] text-chart-primary">Step {step} of 5</h2>
-            <p className="text-2xl font-semibold text-foreground">
-              {step === 1 && "Problem & Feeling"}
-              {step === 2 && "Belief Extraction"}
-              {step === 3 && "Dissolving Loop"}
-              {step === 4 && "Verification"}
-              {step === 5 && "Integration"}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            {reflectionId && (
-              <JournalRefresher reflectionId={reflectionId} />
-            )}
-            <Button variant="ghost" size="sm" onClick={handleLeave} className="rounded-full h-10 px-5 text-[10px] font-semibold uppercase tracking-wider gap-2 text-muted-foreground hover:bg-muted">
-              <ArrowLeft size={16} /> Leave for now
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setShowHistory(!showHistory)} className="rounded-full h-10 px-5 text-[10px] font-semibold uppercase tracking-wider gap-2 text-muted-foreground hover:bg-muted">
-              <History size={16} /> {showHistory ? "Back to Tool" : "History"}
-            </Button>
-            {formData.id && !showHistory && (
-              <Button variant="ghost" size="sm" onClick={() => saveProgress(false)} disabled={isSaving} className="rounded-full h-10 px-5 text-[10px] font-semibold uppercase tracking-wider gap-2 text-chart-primary hover:bg-muted">
-                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save
+      {!singlePage && (
+        <div className="mb-12 space-y-6">
+          <div className="flex justify-between items-end">
+            <div className="space-y-1">
+              <h2 className="text-[10px] font-semibold uppercase tracking-[0.4em] text-chart-primary">Step {step} of 5</h2>
+              <p className="text-2xl font-semibold text-foreground">
+                {step === 1 && "Problem &amp; Feeling"}
+                {step === 2 && "Belief Extraction"}
+                {step === 3 && "Dissolving Loop"}
+                {step === 4 && "Verification"}
+                {step === 5 && "Integration"}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              {reflectionId && <JournalRefresher reflectionId={reflectionId} />}
+              <Button variant="ghost" size="sm" onClick={handleLeave} className="rounded-full h-10 px-5 text-[10px] font-semibold uppercase tracking-wider gap-2 text-muted-foreground hover:bg-muted">
+                <ArrowLeft size={16} /> Leave for now
               </Button>
-            )}
+              <Button variant="ghost" size="sm" onClick={() => setShowHistory(!showHistory)} className="rounded-full h-10 px-5 text-[10px] font-semibold uppercase tracking-wider gap-2 text-muted-foreground hover:bg-muted">
+                <History size={16} /> {showHistory ? "Back to Tool" : "History"}
+              </Button>
+              {formData.id && !showHistory && (
+                <Button variant="ghost" size="sm" onClick={() => saveProgress(false)} disabled={isSaving} className="rounded-full h-10 px-5 text-[10px] font-semibold uppercase tracking-wider gap-2 text-chart-primary hover:bg-muted">
+                  {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save
+                </Button>
+              )}
+            </div>
           </div>
+          {!showHistory && <Progress value={progress} className="h-1.5 bg-muted [&>div]:bg-primary" />}
         </div>
-        {!showHistory && <Progress value={progress} className="h-1.5 bg-muted [&>div]:bg-primary" />}
-      </div>
+      )}
 
-      <div className="min-h-[500px]">
+      <div className={singlePage ? "space-y-12" : "min-h-[500px]"}>
         {showHistory ? renderHistory() : (
-          <>
-            {step === 1 && renderStep1()}
-            {step === 2 && renderStep2()}
-            {step === 3 && renderStep3()}
-            {step === 4 && renderStep4()}
-            {step === 5 && renderStep5()}
-          </>
+          singlePage ? (
+            <div className="space-y-12">
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-7 h-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-semibold">1</span>
+                  <h3 className="text-base font-semibold text-foreground">Problem &amp; Feeling</h3>
+                </div>
+                {renderStep1()}
+              </section>
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-7 h-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-semibold">2</span>
+                  <h3 className="text-base font-semibold text-foreground">Belief Extraction</h3>
+                </div>
+                {renderStep2()}
+              </section>
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-7 h-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-semibold">3</span>
+                  <h3 className="text-base font-semibold text-foreground">Dissolving Loop</h3>
+                </div>
+                {renderStep3()}
+              </section>
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-7 h-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-semibold">4</span>
+                  <h3 className="text-base font-semibold text-foreground">Verification</h3>
+                </div>
+                {renderStep4()}
+              </section>
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-7 h-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-semibold">5</span>
+                  <h3 className="text-base font-semibold text-foreground">Integration</h3>
+                </div>
+                {renderStep5()}
+              </section>
+            </div>
+          ) : (
+            <>
+              {step === 1 && renderStep1()}
+              {step === 2 && renderStep2()}
+              {step === 3 && renderStep3()}
+              {step === 4 && renderStep4()}
+              {step === 5 && renderStep5()}
+            </>
+          )
         )}
       </div>
     </div>

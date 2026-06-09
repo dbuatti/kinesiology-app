@@ -55,7 +55,11 @@ interface FormData {
   no1Thing: string;
 }
 
-const IdentityShiftingTool = () => {
+interface IdentityShiftingToolProps {
+  singlePage?: boolean;
+}
+
+const IdentityShiftingTool = ({ singlePage = false }: IdentityShiftingToolProps = {}) => {
   const location = useLocation();
   const navigate = useNavigate();
   const prefillData = location.state?.prefill;
@@ -768,47 +772,87 @@ const IdentityShiftingTool = () => {
 
   return (
     <div className="w-full">
-      <div className="mb-12 space-y-6">
-        <div className="flex justify-between items-end">
-          <div className="space-y-1">
-            <h2 className="text-[10px] font-semibold uppercase tracking-[0.4em] text-chart-primary">Phase {phase} of 5</h2>
-            <p className="text-2xl font-semibold text-foreground">
-              {phase === 1 && "Isolating the Identity"}
-              {phase === 2 && "Dissolving the Construct"}
-              {phase === 3 && "Checking Stability"}
-              {phase === 4 && "Re-assessing Problem"}
-              {phase === 5 && "Conscious Integration"}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            {reflectionId && (
-              <JournalRefresher reflectionId={reflectionId} />
-            )}
-            <Button variant="ghost" size="sm" onClick={handleLeave} className="rounded-full h-10 px-5 text-[10px] font-semibold uppercase tracking-wider gap-2 text-muted-foreground hover:bg-muted">
-              <ArrowLeft size={16} /> Leave for now
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setShowHistory(!showHistory)} className="rounded-full h-10 px-5 text-[10px] font-semibold uppercase tracking-wider gap-2 text-muted-foreground hover:bg-muted">
-              <History size={16} /> {showHistory ? "Back to Tool" : "History"}
-            </Button>
-            {formData.id && !showHistory && (
-              <Button variant="ghost" size="sm" onClick={() => saveProgress(false)} disabled={isSaving} className="rounded-full h-10 px-5 text-[10px] font-semibold uppercase tracking-wider gap-2 text-chart-primary hover:bg-muted">
-                {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save
+      {!singlePage && (
+        <div className="mb-12 space-y-6">
+          <div className="flex justify-between items-end">
+            <div className="space-y-1">
+              <h2 className="text-[10px] font-semibold uppercase tracking-[0.4em] text-chart-primary">Phase {phase} of 5</h2>
+              <p className="text-2xl font-semibold text-foreground">
+                {phase === 1 && "Isolating the Identity"}
+                {phase === 2 && "Dissolving the Construct"}
+                {phase === 3 && "Checking Stability"}
+                {phase === 4 && "Re-assessing Problem"}
+                {phase === 5 && "Conscious Integration"}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              {reflectionId && <JournalRefresher reflectionId={reflectionId} />}
+              <Button variant="ghost" size="sm" onClick={handleLeave} className="rounded-full h-10 px-5 text-[10px] font-semibold uppercase tracking-wider gap-2 text-muted-foreground hover:bg-muted">
+                <ArrowLeft size={16} /> Leave for now
               </Button>
-            )}
+              <Button variant="ghost" size="sm" onClick={() => setShowHistory(!showHistory)} className="rounded-full h-10 px-5 text-[10px] font-semibold uppercase tracking-wider gap-2 text-muted-foreground hover:bg-muted">
+                <History size={16} /> {showHistory ? "Back to Tool" : "History"}
+              </Button>
+              {formData.id && !showHistory && (
+                <Button variant="ghost" size="sm" onClick={() => saveProgress(false)} disabled={isSaving} className="rounded-full h-10 px-5 text-[10px] font-semibold uppercase tracking-wider gap-2 text-chart-primary hover:bg-muted">
+                  {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} Save
+                </Button>
+              )}
+            </div>
           </div>
+          {!showHistory && <Progress value={progress} className="h-1.5 bg-muted [&>div]:bg-primary" />}
         </div>
-        {!showHistory && <Progress value={progress} className="h-1.5 bg-muted [&>div]:bg-primary" />}
-      </div>
+      )}
 
-      <div className="min-h-[500px]">
+      <div className={singlePage ? "space-y-12" : "min-h-[500px]"}>
         {showHistory ? renderHistory() : (
-          <>
-            {phase === 1 && renderPhase1()}
-            {phase === 2 && renderPhase2()}
-            {phase === 3 && renderPhase3()}
-            {phase === 4 && renderPhase4()}
-            {phase === 5 && renderPhase5()}
-          </>
+          singlePage ? (
+            <div className="space-y-12">
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-7 h-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-semibold">1</span>
+                  <h3 className="text-base font-semibold text-foreground">Isolating the Identity</h3>
+                </div>
+                {renderPhase1()}
+              </section>
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-7 h-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-semibold">2</span>
+                  <h3 className="text-base font-semibold text-foreground">Dissolving the Construct</h3>
+                </div>
+                {renderPhase2()}
+              </section>
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-7 h-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-semibold">3</span>
+                  <h3 className="text-base font-semibold text-foreground">Checking Stability</h3>
+                </div>
+                {renderPhase3()}
+              </section>
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-7 h-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-semibold">4</span>
+                  <h3 className="text-base font-semibold text-foreground">Re-assessing Problem</h3>
+                </div>
+                {renderPhase4()}
+              </section>
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="w-7 h-7 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-xs font-semibold">5</span>
+                  <h3 className="text-base font-semibold text-foreground">Conscious Integration</h3>
+                </div>
+                {renderPhase5()}
+              </section>
+            </div>
+          ) : (
+            <>
+              {phase === 1 && renderPhase1()}
+              {phase === 2 && renderPhase2()}
+              {phase === 3 && renderPhase3()}
+              {phase === 4 && renderPhase4()}
+              {phase === 5 && renderPhase5()}
+            </>
+          )
         )}
       </div>
     </div>

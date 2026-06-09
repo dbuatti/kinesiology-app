@@ -49,35 +49,31 @@ const UpcomingMarquee = () => {
   if (loading || !nextSessions || nextSessions.length === 0) return null;
 
   return (
-    <div className="w-full bg-foreground text-background h-10 flex items-center justify-center px-4 border-b border-border shadow-sm z-[100]">
-      <div className="flex items-center gap-3 bg-muted/50 px-4 py-1 rounded-full border border-border">
-              <div className="flex items-center gap-2 text-chart-destructive">
-                <Play size={12} className="fill-current" />
-          <span className="text-[10px] font-semibold uppercase tracking-wider">Up Next</span>
+    <div className="w-full bg-muted h-9 flex items-center justify-center px-4 border-b border-border z-[100]">
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 text-chart-destructive">
+          <Play size={10} className="fill-current" />
+          <span className="text-[10px] font-medium tracking-wider">Up Next</span>
         </div>
-        
-        <div className="h-3 w-px bg-muted mx-1" />
-        
-        <div className="flex items-center gap-3">
-          {nextSessions.map((session, idx) => (
-            <React.Fragment key={idx}>
-              <div className="flex items-center gap-1.5">
-                <Link
-                  to={`/appointments/${session.id}`}
-                  className="text-[11px] font-semibold tracking-tight text-background hover:text-background/70 transition-colors"
-                >
-                  {session.name}
-                </Link>
-                <span className="text-[11px] font-medium text-muted-foreground tabular-nums">
-                  · {session.time}
-                </span>
-              </div>
-              {idx < nextSessions.length - 1 && (
-                <span className="text-muted-foreground font-semibold text-xs">+</span>
-              )}
-            </React.Fragment>
-          ))}
-        </div>
+        <span className="text-muted-foreground/30 mx-1">·</span>
+        {nextSessions.map((session, idx) => (
+          <React.Fragment key={idx}>
+            <div className="flex items-center gap-1.5">
+              <Link
+                to={`/appointments/${session.id}`}
+                className="text-xs font-medium text-foreground hover:text-muted-foreground transition-colors"
+              >
+                {session.name}
+              </Link>
+              <span className="text-[11px] text-muted-foreground/60 tabular-nums">
+                {session.time}
+              </span>
+            </div>
+            {idx < nextSessions.length - 1 && (
+              <span className="text-muted-foreground/30 text-xs mx-0.5">·</span>
+            )}
+          </React.Fragment>
+        ))}
       </div>
     </div>
   );

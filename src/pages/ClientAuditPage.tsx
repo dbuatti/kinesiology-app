@@ -1168,48 +1168,48 @@ export default function ClientAuditPage() {
           title="Client Payment & Audit"
           subtitle="Review client rates, track appointment recency, identify follow-up needs, and perform financial audits with AI-driven pricing suggestions."
           icon={FileText}
-          iconClassName="bg-amber-600"
+          iconClassName="bg-muted"
           breadcrumbs={[{ label: "Business", path: "/business" }, { label: "Client Audit" }]}
         />
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 space-y-4">
-            <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-muted-foreground font-bold uppercase tracking-widest">Loading Audit Data...</p>
+            <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm text-muted-foreground font-medium uppercase tracking-wider">Loading Audit Data...</p>
           </div>
         ) : (
           <div className="space-y-8">
           {/* ── Persistent summary strip ── */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: "Active Clients", value: totalActiveClients.toString(), sub: "seen last 90 days", colour: "text-indigo-600 dark:text-indigo-400" },
-              { label: "Avg Session Rate", value: `$${averageSessionRate.toFixed(0)}`, sub: `target $150`, colour: "text-amber-600 dark:text-amber-400" },
-              { label: "This Week", value: `$${thisWeekRevenue.toLocaleString()}`, sub: `${thisWeekSessions} sessions · $${weeklyTarget} target`, colour: thisWeekRevenue >= weeklyTarget ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400" },
+              { label: "Active Clients", value: totalActiveClients.toString(), sub: "seen last 90 days", colour: "text-chart-primary" },
+              { label: "Avg Session Rate", value: `$${averageSessionRate.toFixed(0)}`, sub: `target $150`, colour: "text-muted-foreground" },
+              { label: "This Week", value: `$${thisWeekRevenue.toLocaleString()}`, sub: `${thisWeekSessions} sessions · $${weeklyTarget} target`, colour: thisWeekRevenue >= weeklyTarget ? "text-chart-emerald" : "text-chart-destructive" },
               { label: "Proj. Monthly", value: `$${Math.round(projectedMonthlyRevenue).toLocaleString()}`, sub: "FNH only · current rates", colour: "text-primary" },
             ].map(({ label, value, sub, colour }) => (
-              <div key={label} className="bg-card rounded-2xl border border-border px-5 py-4 space-y-1">
-                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{label}</p>
-                <p className={`text-xl font-black ${colour}`}>{value}</p>
+              <div key={label} className="bg-card rounded-xl border border-border px-5 py-4 space-y-1">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+                <p className={`text-xl font-semibold ${colour}`}>{value}</p>
                 <p className="text-[10px] text-muted-foreground font-medium">{sub}</p>
               </div>
             ))}
           </div>
 
           <Tabs defaultValue="rates" className="space-y-8">
-            <TabsList className="bg-muted/50 p-1 rounded-2xl border border-border/50 w-full max-w-3xl grid grid-cols-5">
-              <TabsTrigger value="rates" className="rounded-xl font-bold text-xs py-2.5">
+            <TabsList className="bg-muted/50 p-1 rounded-xl border border-border/50 w-full max-w-3xl grid grid-cols-5">
+              <TabsTrigger value="rates" className="rounded-xl font-medium text-xs py-2.5">
                 Rates
               </TabsTrigger>
-              <TabsTrigger value="timetable" className="rounded-xl font-bold text-xs py-2.5">
+              <TabsTrigger value="timetable" className="rounded-xl font-medium text-xs py-2.5">
                 Timetable
               </TabsTrigger>
-              <TabsTrigger value="salary" className="rounded-xl font-bold text-xs py-2.5">
+              <TabsTrigger value="salary" className="rounded-xl font-medium text-xs py-2.5">
                 Salary Sim
               </TabsTrigger>
-              <TabsTrigger value="audit" className="rounded-xl font-bold text-xs py-2.5">
+              <TabsTrigger value="audit" className="rounded-xl font-medium text-xs py-2.5">
                 Financials
               </TabsTrigger>
-              <TabsTrigger value="suggestions" className="rounded-xl font-bold text-xs py-2.5">
+              <TabsTrigger value="suggestions" className="rounded-xl font-medium text-xs py-2.5">
                 AI Roadmap
               </TabsTrigger>
             </TabsList>
@@ -1217,19 +1217,19 @@ export default function ClientAuditPage() {
             {/* TAB 1: RATES & RECENCY */}
             <TabsContent value="rates" className="space-y-6">
               {/* WEEKLY BOOKING SIMULATOR CARD */}
-              <Card className="border-none shadow-lg rounded-[2.5rem] bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 text-white overflow-hidden relative group">
+              <Card className="border-none shadow-sm rounded-xl bg-card border border-border text-foreground overflow-hidden relative group">
                 <div className="absolute inset-0 bg-grid-white/[0.02] pointer-events-none" />
                 <CardContent className="p-8 space-y-6 relative z-10">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="space-y-1">
-                      <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30 font-black text-[9px] uppercase tracking-widest px-3 py-0.5">
+                      <Badge className="bg-primary/20 text-chart-primary border-primary/30 font-semibold text-[10px] uppercase tracking-wider px-3 py-0.5">
                         Interactive Tool
                       </Badge>
-                      <h3 className="text-2xl font-black tracking-tight flex items-center gap-2">
-                        <CalendarCheck className="text-indigo-400" size={24} />
+                      <h3 className="text-2xl font-semibold tracking-tight flex items-center gap-2">
+                        <CalendarCheck className="text-chart-primary" size={24} />
                         Weekly Booking Simulator
                       </h3>
-                      <p className="text-xs text-slate-300 font-medium">
+                      <p className="text-xs text-muted-foreground/60 font-medium">
                         Select clients from the lists below to simulate this week's bookings and see the direct impact of your rate ladder.
                       </p>
                     </div>
@@ -1238,7 +1238,7 @@ export default function ClientAuditPage() {
                         <Button
                           variant="ghost"
                           onClick={handleClearWeeklyClients}
-                          className="text-slate-300 hover:text-white hover:bg-white/10 rounded-xl text-xs font-bold"
+                          className="text-muted-foreground/60 hover:text-foreground hover:bg-muted rounded-xl text-xs font-medium"
                         >
                           <Trash2 size={14} className="mr-2" /> Clear Simulator
                         </Button>
@@ -1247,15 +1247,15 @@ export default function ClientAuditPage() {
                   </div>
 
                   {/* Quick Select Buttons */}
-                  <div className="flex flex-wrap gap-2 p-3 bg-slate-900/70 dark:bg-slate-900/60 rounded-2xl border border-slate-800/80">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 self-center px-2">
+                  <div className="flex flex-wrap gap-2 p-3 bg-muted rounded-xl border border-border">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 self-center px-2">
                       Quick Select:
                     </span>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={handleSelectAllActive}
-                      className="bg-slate-950/40 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl text-xs font-bold h-8"
+                      className="bg-muted border-border text-muted-foreground/60 hover:text-foreground hover:bg-muted rounded-xl text-xs font-medium h-8"
                     >
                       Active (Last 30 Days)
                     </Button>
@@ -1263,7 +1263,7 @@ export default function ClientAuditPage() {
                       variant="outline"
                       size="sm"
                       onClick={handleSelectAllOneToThreeMonths}
-                      className="bg-slate-950/40 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl text-xs font-bold h-8"
+                      className="bg-muted border-border text-muted-foreground/60 hover:text-foreground hover:bg-muted rounded-xl text-xs font-medium h-8"
                     >
                       1-3 Months Ago
                     </Button>
@@ -1271,16 +1271,16 @@ export default function ClientAuditPage() {
                       variant="outline"
                       size="sm"
                       onClick={handleSelectAllNeedsFollowUp}
-                      className="bg-slate-950/40 border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 rounded-xl text-xs font-bold h-8"
+                      className="bg-muted border-border text-muted-foreground/60 hover:text-foreground hover:bg-muted rounded-xl text-xs font-medium h-8"
                     >
                       Needs Follow-up
                     </Button>
                   </div>
 
                   {weeklySimulatorMetrics.count === 0 ? (
-                    <div className="p-6 rounded-2xl border border-dashed border-slate-800 bg-slate-950/40 text-center space-y-2">
-                      <p className="text-sm font-bold text-slate-400">No clients selected for this week.</p>
-                      <p className="text-xs text-slate-500">
+                    <div className="p-6 rounded-xl border border-dashed border-border bg-muted text-center space-y-2">
+                      <p className="text-sm font-medium text-muted-foreground/60">No clients selected for this week.</p>
+                      <p className="text-xs text-muted-foreground">
                         Check the box next to any client's name in the lists below to add them to this week's schedule.
                       </p>
                     </div>
@@ -1288,7 +1288,7 @@ export default function ClientAuditPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
                       {/* Selected Badges */}
                       <div className="lg:col-span-6 space-y-3">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 block">
                           This Week's Schedule ({weeklySimulatorMetrics.count})
                         </span>
                         <ScrollArea className="h-[100px] pr-2">
@@ -1296,13 +1296,13 @@ export default function ClientAuditPage() {
                             {weeklySimulatorMetrics.details.map(c => (
                               <Badge
                                 key={c.id}
-                                className="bg-slate-800/80 hover:bg-slate-800 text-slate-200 border-slate-700/50 pl-3 pr-1.5 py-1 rounded-xl flex items-center gap-1.5 text-xs font-bold"
+                                className="bg-muted hover:bg-muted text-muted-foreground/60 border-border pl-3 pr-1.5 py-1 rounded-xl flex items-center gap-1.5 text-xs font-medium"
                               >
                                 {c.name}
-                                <span className="text-indigo-400 font-black">${c.currentRate}</span>
+                                <span className="text-chart-primary font-semibold">${c.currentRate}</span>
                                 <button
                                   onClick={() => handleToggleWeeklyClient(c.id)}
-                                  className="w-4 h-4 rounded-full bg-slate-700 hover:bg-rose-50/20 hover:text-rose-400 flex items-center justify-center transition-colors"
+                                  className="w-4 h-4 rounded-full bg-muted hover:bg-muted/20 hover:text-chart-destructive flex items-center justify-center transition-colors"
                                 >
                                   <X size={10} />
                                 </button>
@@ -1313,23 +1313,23 @@ export default function ClientAuditPage() {
                       </div>
 
                       {/* Projections */}
-                      <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-950/50 p-5 rounded-3xl border border-slate-800/60">
+                      <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-3 gap-4 bg-muted p-5 rounded-xl border border-border">
                         <div className="space-y-1">
-                          <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 block">Current Earnings</span>
-                          <h4 className="text-2xl font-black text-white">${weeklySimulatorMetrics.currentTotal}</h4>
-                          <span className="text-[10px] text-slate-500 font-medium block">at current rates</span>
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 block">Current Earnings</span>
+                          <h4 className="text-2xl font-semibold text-foreground">${weeklySimulatorMetrics.currentTotal}</h4>
+                          <span className="text-[10px] text-muted-foreground font-medium block">at current rates</span>
                         </div>
-                        <div className="space-y-1 border-t sm:border-t-0 sm:border-l border-slate-800/80 pt-3 sm:pt-0 sm:pl-4">
-                          <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400 block">Target Earnings</span>
-                          <h4 className="text-2xl font-black text-indigo-400">${weeklySimulatorMetrics.targetTotal}</h4>
-                          <span className="text-[10px] text-slate-500 font-medium block">at target rates</span>
+                        <div className="space-y-1 border-t sm:border-t-0 sm:border-l border-border pt-3 sm:pt-0 sm:pl-4">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-chart-primary block">Target Earnings</span>
+                          <h4 className="text-2xl font-semibold text-chart-primary">${weeklySimulatorMetrics.targetTotal}</h4>
+                          <span className="text-[10px] text-muted-foreground font-medium block">at target rates</span>
                         </div>
-                        <div className="space-y-1 border-t sm:border-t-0 sm:border-l border-slate-800/80 pt-3 sm:pt-0 sm:pl-4">
-                          <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400 block">Weekly Increase</span>
-                          <h4 className="text-2xl font-black text-emerald-400">
+                        <div className="space-y-1 border-t sm:border-t-0 sm:border-l border-border pt-3 sm:pt-0 sm:pl-4">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-chart-emerald block">Weekly Increase</span>
+                          <h4 className="text-2xl font-semibold text-chart-emerald">
                             +${weeklySimulatorMetrics.increase}
                           </h4>
-                          <span className="text-[10px] text-slate-500 font-medium block">
+                          <span className="text-[10px] text-muted-foreground font-medium block">
                             +${weeklySimulatorMetrics.annualizedImpact.toLocaleString()}/yr
                           </span>
                         </div>
@@ -1340,7 +1340,7 @@ export default function ClientAuditPage() {
               </Card>
 
               {/* Controls Card */}
-              <Card className="border-none shadow-md rounded-[2rem] bg-card">
+              <Card className="border-none shadow-sm rounded-xl bg-card">
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
                     {/* Search & Filter Indicator */}
@@ -1351,7 +1351,7 @@ export default function ClientAuditPage() {
                           placeholder="Search clients..."
                           value={searchQuery}
                           onChange={(e) => setSearchQuery(e.target.value)}
-                          className="pl-10 rounded-xl border-border/60 bg-muted/30 focus-visible:ring-indigo-500"
+                          className="pl-10 rounded-xl border-border/60 bg-muted/30 focus-visible:ring-primary"
                         />
                       </div>
                       {isFilterActive && (
@@ -1361,7 +1361,7 @@ export default function ClientAuditPage() {
                             variant="ghost"
                             size="sm"
                             onClick={handleResetFilters}
-                            className="h-7 px-2 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-lg text-[10px] font-black uppercase tracking-wider"
+                            className="h-7 px-2 text-chart-primary hover:bg-muted rounded-lg text-[10px] font-semibold uppercase tracking-wider"
                           >
                             Reset
                           </Button>
@@ -1378,7 +1378,7 @@ export default function ClientAuditPage() {
                           <SelectTrigger className="w-[130px] rounded-xl border-border/60 bg-muted/30">
                             <SelectValue placeholder="Rate Tier" />
                           </SelectTrigger>
-                          <SelectContent className="rounded-xl shadow-xl">
+                          <SelectContent className="rounded-xl shadow-sm">
                             <SelectItem value="all">All Rates</SelectItem>
                             <SelectItem value="free">Free</SelectItem>
                             <SelectItem value="30">$30</SelectItem>
@@ -1399,7 +1399,7 @@ export default function ClientAuditPage() {
                         <SelectTrigger className="w-[150px] rounded-xl border-border/60 bg-muted/30">
                           <SelectValue placeholder="Follow-up" />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl shadow-xl">
+                        <SelectContent className="rounded-xl shadow-sm">
                           <SelectItem value="all">All Statuses</SelectItem>
                           <SelectItem value="Booked">Booked</SelectItem>
                           <SelectItem value="Needs Follow-up">Needs Follow-up</SelectItem>
@@ -1412,7 +1412,7 @@ export default function ClientAuditPage() {
                         <SelectTrigger className="w-[130px] rounded-xl border-border/60 bg-muted/30">
                           <SelectValue placeholder="Sort By" />
                         </SelectTrigger>
-                        <SelectContent className="rounded-xl shadow-xl">
+                        <SelectContent className="rounded-xl shadow-sm">
                           <SelectItem value="name">Name</SelectItem>
                           <SelectItem value="lastSeen">Last Seen</SelectItem>
                           <SelectItem value="rate">Standard Rate</SelectItem>
@@ -1437,20 +1437,20 @@ export default function ClientAuditPage() {
               {/* Grouped Collapsible Sections */}
               <div className="space-y-4">
                 {/* Section 1: Last Month */}
-                <Card className="border-none shadow-sm rounded-[2rem] overflow-hidden bg-card">
+                <Card className="border-none shadow-sm rounded-xl overflow-hidden bg-card">
                   <div className="w-full p-6 flex flex-col sm:flex-row sm:items-center justify-between bg-muted/20 hover:bg-muted/30 transition-colors text-left gap-4">
                     <button
                       onClick={() => toggleSection("lastMonth")}
                       className="flex items-center gap-3 flex-1"
                     >
-                      <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-lg bg-muted text-chart-emerald flex items-center justify-center">
                         <CheckCircle2 size={18} />
                       </div>
                       <div>
-                        <h3 className="font-black text-foreground text-base">Active & Upcoming</h3>
+                        <h3 className="font-semibold text-foreground text-base">Active & Upcoming</h3>
                         <p className="text-xs text-muted-foreground font-medium">Seen in the last 30 days OR booked in the future</p>
                       </div>
-                      <Badge variant="secondary" className="ml-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-none font-bold">
+                      <Badge variant="secondary" className="ml-2 bg-chart-emerald/10 text-chart-emerald border-none font-medium">
                         {groups.lastMonth.length} {groups.lastMonth.length === 1 ? "client" : "clients"}
                       </Badge>
                     </button>
@@ -1461,7 +1461,7 @@ export default function ClientAuditPage() {
                           variant="outline"
                           size="sm"
                           onClick={handleToggleAllLastMonth}
-                          className="h-8 rounded-xl text-xs font-bold border-border/60 bg-background hover:bg-muted"
+                          className="h-8 rounded-xl text-xs font-medium border-border/60 bg-background hover:bg-muted"
                         >
                           {isAllLastMonthSelected ? "Deselect All" : "Select All for Sim"}
                         </Button>
@@ -1482,7 +1482,7 @@ export default function ClientAuditPage() {
                         <div className="overflow-x-auto">
                           <table className="w-full text-left border-collapse">
                             <thead>
-                              <tr className="border-b border-border/40 bg-muted/10 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                              <tr className="border-b border-border/40 bg-muted/10 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                                 <th className="p-4 pl-6 w-12">Sim</th>
                                 <th className="p-4">Client</th>
                                 <th className="p-4">Last Seen / Next Booked</th>
@@ -1520,20 +1520,20 @@ export default function ClientAuditPage() {
                 </Card>
 
                 {/* Section 2: 1-3 Months */}
-                <Card className="border-none shadow-sm rounded-[2rem] overflow-hidden bg-card">
+                <Card className="border-none shadow-sm rounded-xl overflow-hidden bg-card">
                   <div className="w-full p-6 flex flex-col sm:flex-row sm:items-center justify-between bg-muted/20 hover:bg-muted/30 transition-colors text-left gap-4">
                     <button
                       onClick={() => toggleSection("oneToThreeMonths")}
                       className="flex items-center gap-3 flex-1"
                     >
-                      <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/30 text-amber-600 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center">
                         <Clock size={18} />
                       </div>
                       <div>
-                        <h3 className="font-black text-foreground text-base">1-3 Months</h3>
+                        <h3 className="font-semibold text-foreground text-base">1-3 Months</h3>
                         <p className="text-xs text-muted-foreground font-medium">Seen 30 to 90 days ago</p>
                       </div>
-                      <Badge variant="secondary" className="ml-2 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-none font-bold">
+                      <Badge variant="secondary" className="ml-2 bg-muted text-muted-foreground border-none font-medium">
                         {groups.oneToThreeMonths.length} {groups.oneToThreeMonths.length === 1 ? "client" : "clients"}
                       </Badge>
                     </button>
@@ -1544,7 +1544,7 @@ export default function ClientAuditPage() {
                           variant="outline"
                           size="sm"
                           onClick={handleToggleAllOneToThreeMonths}
-                          className="h-8 rounded-xl text-xs font-bold border-border/60 bg-background hover:bg-muted"
+                          className="h-8 rounded-xl text-xs font-medium border-border/60 bg-background hover:bg-muted"
                         >
                           {isAllOneToThreeMonthsSelected ? "Deselect All" : "Select All for Sim"}
                         </Button>
@@ -1565,7 +1565,7 @@ export default function ClientAuditPage() {
                         <div className="overflow-x-auto">
                           <table className="w-full text-left border-collapse">
                             <thead>
-                              <tr className="border-b border-border/40 bg-muted/10 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                              <tr className="border-b border-border/40 bg-muted/10 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                                 <th className="p-4 pl-6 w-12">Sim</th>
                                 <th className="p-4">Client</th>
                                 <th className="p-4">Last Seen / Next Booked</th>
@@ -1603,20 +1603,20 @@ export default function ClientAuditPage() {
                 </Card>
 
                 {/* Section 3: 3+ Months (Lapsed Clients with Re-engagement Priority) */}
-                <Card className="border-none shadow-sm rounded-[2rem] overflow-hidden bg-card">
+                <Card className="border-none shadow-sm rounded-xl overflow-hidden bg-card">
                   <div className="w-full p-6 flex flex-col sm:flex-row sm:items-center justify-between bg-muted/20 hover:bg-muted/30 transition-colors text-left gap-4">
                     <button
                       onClick={() => toggleSection("threePlusMonths")}
                       className="flex items-center gap-3 flex-1"
                     >
-                      <div className="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-950/30 text-rose-600 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-lg bg-muted text-chart-destructive flex items-center justify-center">
                         <AlertCircle size={18} />
                       </div>
                       <div>
-                        <h3 className="font-black text-foreground text-base">3+ Months (Re-engagement Goldmine)</h3>
+                        <h3 className="font-semibold text-foreground text-base">3+ Months (Re-engagement Goldmine)</h3>
                         <p className="text-xs text-muted-foreground font-medium">Seen more than 90 days ago, or never seen</p>
                       </div>
-                      <Badge variant="secondary" className="ml-2 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border-none font-bold">
+                      <Badge variant="secondary" className="ml-2 bg-chart-destructive/10 text-chart-destructive border-none font-medium">
                         {groups.threePlusMonths.length} {groups.threePlusMonths.length === 1 ? "client" : "clients"}
                       </Badge>
                     </button>
@@ -1627,7 +1627,7 @@ export default function ClientAuditPage() {
                           variant="outline"
                           size="sm"
                           onClick={handleToggleAllThreePlusMonths}
-                          className="h-8 rounded-xl text-xs font-bold border-border/60 bg-background hover:bg-muted"
+                          className="h-8 rounded-xl text-xs font-medium border-border/60 bg-background hover:bg-muted"
                         >
                           {isAllThreePlusMonthsSelected ? "Deselect All" : "Select All for Sim"}
                         </Button>
@@ -1648,7 +1648,7 @@ export default function ClientAuditPage() {
                         <div className="overflow-x-auto">
                           <table className="w-full text-left border-collapse">
                             <thead>
-                              <tr className="border-b border-border/40 bg-muted/10 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                              <tr className="border-b border-border/40 bg-muted/10 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                                 <th className="p-4 pl-6 w-12">Sim</th>
                                 <th className="p-4">Client</th>
                                 <th className="p-4">Last Seen</th>
@@ -1706,26 +1706,26 @@ export default function ClientAuditPage() {
                 const pct = Math.min(100, weeklyTarget > 0 ? Math.round((thisWeekRevenue / weeklyTarget) * 100) : 0);
                 const onTarget = thisWeekRevenue >= weeklyTarget;
                 return (
-                  <Card className="border-none shadow-xl rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white overflow-hidden relative">
+                  <Card className="border-none shadow-sm rounded-xl bg-card border border-border text-foreground overflow-hidden relative">
                     <div className="absolute top-0 right-0 p-10 opacity-[0.06] pointer-events-none"><Zap size={160} /></div>
                     <CardContent className="p-8 relative z-10 space-y-6">
 
                       {/* Header + target */}
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                         <div className="space-y-1">
-                          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400">Weekly Calculator</p>
-                          <h3 className="text-2xl font-black">What do I need this week?</h3>
-                          <p className="text-xs text-slate-400 font-medium">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-chart-primary">Weekly Calculator</p>
+                          <h3 className="text-2xl font-semibold">What do I need this week?</h3>
+                          <p className="text-xs text-muted-foreground/60 font-medium">
                             Mon–Sun · {thisWeekSessions} session{thisWeekSessions !== 1 ? 's' : ''} so far
                             {daysLeftInWeek > 0 ? ` · ${daysLeftInWeek} day${daysLeftInWeek !== 1 ? 's' : ''} remaining` : ' · Last day of working week'}
                           </p>
                         </div>
                         {/* Editable weekly target */}
-                        <div className="flex items-center gap-2 bg-white/5 rounded-2xl px-4 py-3 border border-white/10 self-start shrink-0">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Target</span>
+                        <div className="flex items-center gap-2 bg-muted/50 rounded-xl px-4 py-3 border border-border self-start shrink-0">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Target</span>
                           {editingWeeklyTarget ? (
                             <input autoFocus
-                              className="w-20 bg-transparent text-white font-black text-sm text-right outline-none border-b border-indigo-400 pb-0.5"
+                              className="w-20 bg-transparent text-foreground font-semibold text-sm text-right outline-none border-b border-primary pb-0.5"
                               value={weeklyTargetInput}
                               onChange={e => setWeeklyTargetInput(e.target.value)}
                               onBlur={() => {
@@ -1737,7 +1737,7 @@ export default function ClientAuditPage() {
                             />
                           ) : (
                             <button onClick={() => { setWeeklyTargetInput(String(weeklyTarget)); setEditingWeeklyTarget(true); }}
-                              className="flex items-center gap-1.5 font-black text-sm text-white hover:text-indigo-300 transition-colors">
+                              className="flex items-center gap-1.5 font-semibold text-sm text-foreground hover:text-chart-primary transition-colors">
                               ${weeklyTarget.toLocaleString()}<Edit3 size={11} className="opacity-40" />
                             </button>
                           )}
@@ -1746,47 +1746,47 @@ export default function ClientAuditPage() {
 
                       {/* This week vs this month side by side */}
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
-                          <p className="text-[9px] font-black uppercase tracking-widest text-indigo-400">This week</p>
-                          <p className="text-2xl font-black text-white">${thisWeekRevenue.toLocaleString()}</p>
-                          <p className="text-[10px] text-slate-400">{thisWeekSessions} session{thisWeekSessions !== 1 ? 's' : ''} · {pct}% of target</p>
+                        <div className="p-4 bg-muted/50 rounded-xl border border-border space-y-1">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-chart-primary">This week</p>
+                          <p className="text-2xl font-semibold text-foreground">${thisWeekRevenue.toLocaleString()}</p>
+                          <p className="text-[10px] text-muted-foreground/60">{thisWeekSessions} session{thisWeekSessions !== 1 ? 's' : ''} · {pct}% of target</p>
                         </div>
-                        <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
-                          <p className="text-[9px] font-black uppercase tracking-widest text-purple-400">This month</p>
-                          <p className="text-2xl font-black text-white">${thisMonthRevenue.toLocaleString()}</p>
-                          <p className="text-[10px] text-slate-400">{thisMonthSessions} session{thisMonthSessions !== 1 ? 's' : ''} total</p>
+                        <div className="p-4 bg-muted/50 rounded-xl border border-border space-y-1">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">This month</p>
+                          <p className="text-2xl font-semibold text-foreground">${thisMonthRevenue.toLocaleString()}</p>
+                          <p className="text-[10px] text-muted-foreground/60">{thisMonthSessions} session{thisMonthSessions !== 1 ? 's' : ''} total</p>
                         </div>
                       </div>
 
                       {/* Progress bar */}
                       <div className="space-y-1.5">
-                        <div className="h-2.5 bg-white/10 rounded-full overflow-hidden">
-                          <div className={cn("h-full rounded-full transition-all duration-700", onTarget ? "bg-emerald-400" : "bg-indigo-400")}
+                        <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+                          <div className={cn("h-full rounded-full transition-all duration-700", onTarget ? "bg-chart-emerald" : "bg-primary")}
                             style={{ width: `${pct}%` }} />
                         </div>
                       </div>
 
                       {onTarget ? (
-                        <div className="flex items-center gap-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
-                          <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
-                          <p className="text-sm font-bold text-emerald-300">Weekly target hit — great work!</p>
+                        <div className="flex items-center gap-3 p-4 bg-chart-emerald/10 border border-chart-emerald/20 rounded-xl">
+                          <CheckCircle2 size={20} className="text-chart-emerald shrink-0" />
+                          <p className="text-sm font-medium text-chart-emerald">Weekly target hit — great work!</p>
                         </div>
                       ) : (
                         <div className="space-y-3">
-                          <p className="text-xs text-slate-400 font-medium">
-                            Still needed: <span className="text-white font-black text-base">${gap.toLocaleString()}</span>
-                            {daysLeftInWeek > 0 && <span className="text-slate-500"> · ~${Math.ceil(gap / daysLeftInWeek).toLocaleString()}/day</span>}
+                          <p className="text-xs text-muted-foreground/60 font-medium">
+                            Still needed: <span className="text-foreground font-semibold text-base">${gap.toLocaleString()}</span>
+                            {daysLeftInWeek > 0 && <span className="text-muted-foreground"> · ~${Math.ceil(gap / daysLeftInWeek).toLocaleString()}/day</span>}
                           </p>
                           <div className="grid grid-cols-2 gap-3">
-                            <div className="p-3.5 bg-white/5 border border-white/10 rounded-2xl space-y-0.5">
-                              <p className="text-[9px] font-black uppercase tracking-widest text-indigo-400">FNH sessions</p>
-                              <p className="text-xl font-black text-white">{sessionsNeeded}</p>
-                              <p className="text-[10px] text-slate-400">at ${fhnRate} avg</p>
+                            <div className="p-3.5 bg-muted/50 border border-border rounded-xl space-y-0.5">
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-chart-primary">FNH sessions</p>
+                              <p className="text-xl font-semibold text-foreground">{sessionsNeeded}</p>
+                              <p className="text-[10px] text-muted-foreground/60">at ${fhnRate} avg</p>
                             </div>
-                            <div className="p-3.5 bg-white/5 border border-white/10 rounded-2xl space-y-0.5">
-                              <p className="text-[9px] font-black uppercase tracking-widest text-purple-400">Corporate gig</p>
-                              <p className="text-xl font-black text-white">{corpGigsNeeded}</p>
-                              <p className="text-[10px] text-slate-400">at ${corpRate}/gig</p>
+                            <div className="p-3.5 bg-muted/50 border border-border rounded-xl space-y-0.5">
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Corporate gig</p>
+                              <p className="text-xl font-semibold text-foreground">{corpGigsNeeded}</p>
+                              <p className="text-[10px] text-muted-foreground/60">at ${corpRate}/gig</p>
                             </div>
                           </div>
                         </div>
@@ -1797,18 +1797,18 @@ export default function ClientAuditPage() {
               })()}
 
               {/* ── INCOME STREAMS ── */}
-              <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+              <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
                 <CardHeader className="p-8 pb-4 border-b border-border bg-muted/20">
                   <div className="flex items-center justify-between gap-4">
                     <div className="space-y-1">
-                      <CardTitle className="text-xl font-black flex items-center gap-3">
-                        <DollarSign size={22} className="text-emerald-600" /> Income Streams
+                      <CardTitle className="text-xl font-semibold flex items-center gap-3">
+                        <DollarSign size={22} className="text-chart-emerald" /> Income Streams
                       </CardTitle>
                       <CardDescription className="font-medium">All five streams combined — adjust rates and frequency per stream.</CardDescription>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Combined Monthly</p>
-                      <p className="text-2xl font-black text-foreground">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Combined Monthly</p>
+                      <p className="text-2xl font-semibold text-foreground">
                         ${Math.round(salaryMetrics.current.monthly + extraStreamsMonthly).toLocaleString()}
                       </p>
                       <p className="text-[10px] text-muted-foreground font-medium">
@@ -1827,19 +1827,19 @@ export default function ClientAuditPage() {
                       const fnh_rate    = Math.round(src.avgRate) || Math.round(averageSessionRate) || 70;
                       const fnh_sessions = fnh_rate > 0 ? Math.round(fnh_monthly / fnh_rate) : 0;
                       return (
-                        <div className="flex items-center gap-4 px-8 py-4 bg-indigo-50/30 dark:bg-indigo-950/10">
-                          <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-950/40 text-indigo-600 flex items-center justify-center shrink-0">
+                        <div className="flex items-center gap-4 px-8 py-4 bg-muted">
+                          <div className="w-8 h-8 rounded-lg bg-muted text-chart-primary flex items-center justify-center shrink-0">
                             <Brain size={16} />
                           </div>
                           <div className="flex-1 min-w-0 space-y-1">
-                            <p className="text-sm font-black text-foreground">FNH Sessions</p>
+                            <p className="text-sm font-semibold text-foreground">FNH Sessions</p>
                             <p className="text-[10px] text-muted-foreground font-medium">
                               ~{fnh_sessions} sessions/mo · ${fnh_rate}/session avg
                               {isSandboxActive ? ' · Sandbox' : ' · Live'}
                             </p>
                           </div>
                           <div className="text-right shrink-0">
-                            <p className="text-sm font-black text-foreground">${fnh_monthly.toLocaleString()}<span className="text-[10px] text-muted-foreground font-medium">/mo</span></p>
+                            <p className="text-sm font-semibold text-foreground">${fnh_monthly.toLocaleString()}<span className="text-[10px] text-muted-foreground font-medium">/mo</span></p>
                             <p className="text-[10px] text-muted-foreground">${fnh_annual.toLocaleString()}/yr</p>
                           </div>
                         </div>
@@ -1861,24 +1861,24 @@ export default function ClientAuditPage() {
                               <Switch
                                 checked={stream.enabled}
                                 onCheckedChange={v => updateStream(stream.id, 'enabled', v)}
-                                className="scale-75 data-[state=checked]:bg-emerald-500"
+                                className="scale-75 data-[state=checked]:bg-chart-emerald"
                               />
-                              <p className="text-sm font-black text-foreground">{stream.name}</p>
+                              <p className="text-sm font-semibold text-foreground">{stream.name}</p>
                             </div>
                             {stream.enabled && (
                               <div className="grid grid-cols-2 gap-4 pr-4 animate-in fade-in duration-200">
                                 <div className="space-y-1">
-                                  <div className="flex justify-between text-[9px] font-bold text-muted-foreground">
+                                  <div className="flex justify-between text-[10px] font-medium text-muted-foreground">
                                     <span>Rate / {(stream as any).unitLabel ?? 'unit'}</span>
-                                    <span className="text-foreground font-black">${stream.ratePerUnit}</span>
+                                    <span className="text-foreground font-semibold">${stream.ratePerUnit}</span>
                                   </div>
                                   <Slider value={[stream.ratePerUnit]} onValueChange={([v]) => updateStream(stream.id, 'ratePerUnit', v)}
                                     min={20} max={600} step={5} className="py-1" />
                                 </div>
                                 <div className="space-y-1">
-                                  <div className="flex justify-between text-[9px] font-bold text-muted-foreground">
+                                  <div className="flex justify-between text-[10px] font-medium text-muted-foreground">
                                     <span>{(stream as any).unitLabel ?? 'units'} / month</span>
-                                    <span className="text-foreground font-black">{stream.unitsPerMonth}</span>
+                                    <span className="text-foreground font-semibold">{stream.unitsPerMonth}</span>
                                   </div>
                                   <Slider value={[stream.unitsPerMonth]} onValueChange={([v]) => updateStream(stream.id, 'unitsPerMonth', v)}
                                     min={0} max={20} step={0.5} className="py-1" />
@@ -1887,7 +1887,7 @@ export default function ClientAuditPage() {
                             )}
                           </div>
                           <div className="text-right shrink-0 min-w-[80px]">
-                            <p className="text-sm font-black text-foreground">${monthly.toLocaleString()}<span className="text-[10px] text-muted-foreground font-medium">/mo</span></p>
+                            <p className="text-sm font-semibold text-foreground">${monthly.toLocaleString()}<span className="text-[10px] text-muted-foreground font-medium">/mo</span></p>
                             <p className="text-[10px] text-muted-foreground">${annual.toLocaleString()}/yr</p>
                           </div>
                         </div>
@@ -1895,17 +1895,17 @@ export default function ClientAuditPage() {
                     })}
 
                     {/* Total row */}
-                    <div className="flex items-center gap-4 px-8 py-5 bg-emerald-50/40 dark:bg-emerald-950/10">
+                    <div className="flex items-center gap-4 px-8 py-5 bg-muted">
                       <div className="flex-1">
-                        <p className="text-sm font-black text-foreground uppercase tracking-wider">Total Combined</p>
+                        <p className="text-sm font-semibold text-foreground uppercase tracking-wider">Total Combined</p>
                         <p className="text-[10px] text-muted-foreground font-medium">All enabled streams · {isSandboxActive ? 'Sandbox' : 'Current'} FNH</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-xl font-black text-emerald-700 dark:text-emerald-400">
+                        <p className="text-xl font-semibold text-chart-emerald">
                           ${Math.round(salaryMetrics.current.monthly + extraStreamsMonthly).toLocaleString()}
                           <span className="text-sm text-muted-foreground font-medium">/mo</span>
                         </p>
-                        <p className="text-sm font-black text-emerald-600 dark:text-emerald-500">
+                        <p className="text-sm font-semibold text-chart-emerald">
                           ${Math.round((salaryMetrics.current.monthly + extraStreamsMonthly) * 12).toLocaleString()}/yr
                         </p>
                       </div>
@@ -1915,25 +1915,25 @@ export default function ClientAuditPage() {
               </Card>
 
               {/* How-to guide */}
-              <Card className="border-none shadow-sm rounded-[2rem] bg-muted/30 border border-border">
+              <Card className="border-none shadow-sm rounded-xl bg-muted/30 border border-border">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
-                    <div className="w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-950/40 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="w-9 h-9 rounded-xl bg-muted text-chart-primary flex items-center justify-center shrink-0 mt-0.5">
                       <Info size={18} />
                     </div>
                     <div className="space-y-3 min-w-0">
-                      <h4 className="font-black text-foreground text-sm">How to use the Salary Simulator</h4>
+                      <h4 className="font-semibold text-foreground text-sm">How to use the Salary Simulator</h4>
                       <ol className="space-y-2 text-xs text-muted-foreground font-medium list-none">
                         <li className="flex items-start gap-2.5">
-                          <span className="w-5 h-5 rounded-full bg-indigo-600 text-white text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">1</span>
+                          <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5">1</span>
                           <span><strong className="text-foreground">Check your current baseline</strong> — the left column shows what you're earning now, based on clients seen in the last 30 days and their actual session frequencies.</span>
                         </li>
                         <li className="flex items-start gap-2.5">
-                          <span className="w-5 h-5 rounded-full bg-indigo-600 text-white text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">2</span>
+                          <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5">2</span>
                           <span><strong className="text-foreground">Toggle Sandbox Mode on</strong> — use the global sliders or client-by-client controls on the right to test a new rate or frequency scenario. The right column instantly reflects the impact.</span>
                         </li>
                         <li className="flex items-start gap-2.5">
-                          <span className="w-5 h-5 rounded-full bg-indigo-600 text-white text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">3</span>
+                          <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5">3</span>
                           <span><strong className="text-foreground">Try a Preset</strong> — Conservative (+10%), Moderate (+25%), or Target ($150) are quick-start scenarios. Hit Reset Sandbox any time to return to your actual numbers.</span>
                         </li>
                       </ol>
@@ -1945,24 +1945,24 @@ export default function ClientAuditPage() {
               {/* Top Row: Progress to $150/session & Active Client Base */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Progress to $150/session */}
-                <Card className="border-none shadow-md rounded-[2rem] bg-card overflow-hidden relative group">
+                <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
                   <CardContent className="p-8 space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Progress to $150/Session</span>
-                      <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 flex items-center justify-center">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Progress to $150/Session</span>
+                      <div className="w-8 h-8 rounded-lg bg-muted text-chart-primary flex items-center justify-center">
                         <Target size={16} />
                       </div>
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-baseline gap-2">
-                        <h3 className="text-4xl font-black text-foreground">
+                        <h3 className="text-4xl font-semibold text-foreground">
                           ${isSandboxActive ? salaryMetrics.simulated.avgRate.toFixed(0) : salaryMetrics.current.avgRate.toFixed(0)}
                         </h3>
-                        <span className="text-muted-foreground text-sm font-bold">/ $150 target</span>
+                        <span className="text-muted-foreground text-sm font-medium">/ $150 target</span>
                       </div>
                       <Progress 
                         value={((isSandboxActive ? salaryMetrics.simulated.avgRate : salaryMetrics.current.avgRate) / 150) * 100} 
-                        className="h-2 bg-muted [&>div]:bg-indigo-600" 
+                        className="h-2 bg-muted [&>div]:bg-primary" 
                       />
                       <p className="text-xs text-muted-foreground font-medium">
                         {isSandboxActive ? "Sandbox" : "Current"} average rate of clients seen in the last 30 days.
@@ -1972,18 +1972,18 @@ export default function ClientAuditPage() {
                 </Card>
 
                 {/* Active Client Base */}
-                <Card className="border-none shadow-md rounded-[2rem] bg-card overflow-hidden relative group">
+                <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
                   <CardContent className="p-8 space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Active Client Base</span>
-                      <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 flex items-center justify-center">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Active Client Base</span>
+                      <div className="w-8 h-8 rounded-lg bg-muted text-chart-emerald flex items-center justify-center">
                         <Users size={16} />
                       </div>
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-baseline gap-2">
-                        <h3 className="text-4xl font-black text-foreground">{salaryMetrics.clientsCount}</h3>
-                        <span className="text-muted-foreground text-sm font-bold">clients seen in last 30 days</span>
+                        <h3 className="text-4xl font-semibold text-foreground">{salaryMetrics.clientsCount}</h3>
+                        <span className="text-muted-foreground text-sm font-medium">clients seen in last 30 days</span>
                       </div>
                       <p className="text-xs text-muted-foreground font-medium leading-relaxed">
                         These clients represent your active recurring practice.
@@ -1994,11 +1994,11 @@ export default function ClientAuditPage() {
               </div>
 
               {/* Sandbox Presets Card */}
-              <Card className="border-none shadow-md rounded-[2rem] bg-card overflow-hidden">
+              <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-center gap-2">
-                    <Sliders className="text-indigo-600" size={18} />
-                    <h4 className="text-sm font-black uppercase tracking-wider text-foreground">Sandbox Presets</h4>
+                    <Sliders className="text-chart-primary" size={18} />
+                    <h4 className="text-sm font-semibold uppercase tracking-wider text-foreground">Sandbox Presets</h4>
                   </div>
                   <p className="text-xs text-muted-foreground font-medium">
                     Quickly apply pre-configured pricing scenarios to see their immediate impact on your practice financials.
@@ -2007,28 +2007,28 @@ export default function ClientAuditPage() {
                     <Button
                       variant="outline"
                       onClick={() => handleApplyPreset('conservative')}
-                      className="rounded-xl text-xs font-bold border-indigo-100 dark:border-indigo-950/50 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400"
+                      className="rounded-xl text-xs font-medium border-border hover:bg-muted text-chart-primary"
                     >
                       Conservative (+10% Rate)
                     </Button>
                     <Button
                       variant="outline"
                       onClick={() => handleApplyPreset('moderate')}
-                      className="rounded-xl text-xs font-bold border-emerald-100 dark:border-emerald-950/50 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400"
+                      className="rounded-xl text-xs font-medium border-border hover:bg-muted text-chart-emerald"
                     >
                       Moderate (+25% Rate)
                     </Button>
                     <Button
                       variant="outline"
                       onClick={() => handleApplyPreset('target')}
-                      className="rounded-xl text-xs font-bold border-purple-100 dark:border-purple-950/50 hover:bg-purple-50 dark:hover:bg-purple-950/30 text-purple-600 dark:text-purple-400"
+                      className="rounded-xl text-xs font-medium border-border hover:bg-muted text-muted-foreground"
                     >
                       Target ($150 Standard Rate)
                     </Button>
                     <Button
                       variant="ghost"
                       onClick={() => handleApplyPreset('reset')}
-                      className="rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                      className="rounded-xl text-xs font-medium text-chart-destructive hover:bg-muted"
                     >
                       <RotateCcw size={14} className="mr-1.5" /> Reset Sandbox
                     </Button>
@@ -2040,12 +2040,12 @@ export default function ClientAuditPage() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Left Column: Projections */}
                 <div className="lg:col-span-7 space-y-6">
-                  <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+                  <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
                     <CardHeader className="p-8 pb-4 border-b border-border bg-muted/30">
                       <div className="flex items-center justify-between">
                         <div className="space-y-1">
-                          <CardTitle className="text-xl font-black flex items-center gap-3">
-                            <TrendingUp size={22} className="text-indigo-600" /> Salary Projections
+                          <CardTitle className="text-xl font-semibold flex items-center gap-3">
+                            <TrendingUp size={22} className="text-chart-primary" /> Salary Projections
                           </CardTitle>
                           <CardDescription className="font-medium">Based on active clients seen in the last 30 days.</CardDescription>
                         </div>
@@ -2054,9 +2054,9 @@ export default function ClientAuditPage() {
                             id="sandbox-mode-toggle"
                             checked={isSandboxActive}
                             onCheckedChange={setIsSandboxActive}
-                            className="data-[state=checked]:bg-indigo-600"
+                            className="data-[state=checked]:bg-primary"
                           />
-                          <Label htmlFor="sandbox-mode-toggle" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground cursor-pointer">
+                          <Label htmlFor="sandbox-mode-toggle" className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer">
                             Sandbox Mode
                           </Label>
                         </div>
@@ -2064,11 +2064,11 @@ export default function ClientAuditPage() {
                     </CardHeader>
                     <CardContent className="p-8 space-y-8">
                       {/* Projections Table */}
-                      <div className="border border-border rounded-2xl overflow-hidden">
-                        <div className="grid grid-cols-3 bg-muted/40 border-b border-border text-[10px] font-black uppercase tracking-widest text-muted-foreground p-4">
+                      <div className="border border-border rounded-xl overflow-hidden">
+                        <div className="grid grid-cols-3 bg-muted/40 border-b border-border text-[10px] font-semibold uppercase tracking-wider text-muted-foreground p-4">
                           <div>Frequency</div>
                           <div>Current</div>
-                          <div className="text-indigo-600 dark:text-indigo-400">Sandbox</div>
+                          <div className="text-chart-primary">Sandbox</div>
                         </div>
                         <div className="divide-y divide-border">
                           {[
@@ -2079,11 +2079,11 @@ export default function ClientAuditPage() {
                           ].map((row) => (
                             <div key={row.label} className={cn(
                               "grid grid-cols-3 p-4 items-center text-sm",
-                              row.highlight ? "bg-indigo-50/30 dark:bg-indigo-950/10 font-bold" : ""
+                              row.highlight ? "bg-muted font-medium" : ""
                             )}>
-                              <div className="font-bold text-foreground">{row.label}</div>
+                              <div className="font-medium text-foreground">{row.label}</div>
                               <div className="text-muted-foreground">${Math.round(row.current).toLocaleString()}</div>
-                              <div className={cn("font-black", isSandboxActive ? "text-indigo-600 dark:text-indigo-400" : "text-muted-foreground/40")}>
+                              <div className={cn("font-semibold", isSandboxActive ? "text-chart-primary" : "text-muted-foreground/40")}>
                                 ${Math.round(row.sim).toLocaleString()}
                               </div>
                             </div>
@@ -2093,18 +2093,18 @@ export default function ClientAuditPage() {
 
                       {/* Global Sandbox Controls */}
                       {isSandboxActive && (
-                        <div className="space-y-6 p-6 bg-muted/30 rounded-2xl border border-border animate-in slide-in-from-top-2 duration-300">
-                          <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                            <Sparkles size={14} className="text-indigo-500 dark:text-indigo-400" /> Global Sandbox Controls
+                        <div className="space-y-6 p-6 bg-muted/30 rounded-xl border border-border animate-in slide-in-from-top-2 duration-300">
+                          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                            <Sparkles size={14} className="text-chart-primary" /> Global Sandbox Controls
                           </h4>
 
                           {/* Global Rate Slider */}
                           <div className="space-y-2">
                             <div className="flex justify-between items-center">
-                              <label className="text-xs font-bold text-muted-foreground">
+                              <label className="text-xs font-medium text-muted-foreground">
                                 Global Simulated Rate
                               </label>
-                              <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">${globalSimRate}/session</span>
+                              <span className="text-sm font-semibold text-chart-primary">${globalSimRate}/session</span>
                             </div>
                             <Slider
                               value={[globalSimRate]}
@@ -2118,10 +2118,10 @@ export default function ClientAuditPage() {
                           {/* Global Frequency Slider */}
                           <div className="space-y-2">
                             <div className="flex justify-between items-center">
-                              <label className="text-xs font-bold text-muted-foreground">
+                              <label className="text-xs font-medium text-muted-foreground">
                                 Global Simulated Frequency
                               </label>
-                              <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">{globalSimFrequency} sessions/mo</span>
+                              <span className="text-sm font-semibold text-chart-primary">{globalSimFrequency} sessions/mo</span>
                             </div>
                             <Slider
                               value={[globalSimFrequency]}
@@ -2139,10 +2139,10 @@ export default function ClientAuditPage() {
 
                 {/* Right Column: Client-by-Client Sandbox */}
                 <div className="lg:col-span-5 space-y-6">
-                  <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+                  <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
                     <CardHeader className="p-8 pb-4 border-b border-border bg-muted/30">
-                      <CardTitle className="text-lg font-bold flex items-center gap-2">
-                        <Users size={20} className="text-indigo-600" /> Client Sandbox
+                      <CardTitle className="text-lg font-medium flex items-center gap-2">
+                        <Users size={20} className="text-chart-primary" /> Client Sandbox
                       </CardTitle>
                       <CardDescription>Customize individual client rates and frequencies.</CardDescription>
                     </CardHeader>
@@ -2157,7 +2157,7 @@ export default function ClientAuditPage() {
 
                             return (
                               <div key={client.id} className={cn(
-                                "p-4 rounded-2xl border transition-all space-y-3",
+                                "p-4 rounded-xl border transition-all space-y-3",
                                 isActive ? "bg-card border-border shadow-sm" : "bg-muted/20 border-border/40 opacity-50"
                               )}>
                                 <div className="flex items-center justify-between">
@@ -2165,16 +2165,16 @@ export default function ClientAuditPage() {
                                     <Switch 
                                       checked={isActive}
                                       onCheckedChange={(checked) => handleClientOverrideChange(client.id, 'active', checked)}
-                                      className="data-[state=checked]:bg-emerald-500 scale-75"
+                                      className="data-[state=checked]:bg-chart-emerald scale-75"
                                     />
                                     <Link 
                                       to={`/clients/${client.id}`}
-                                      className="font-bold text-sm text-foreground hover:underline hover:text-indigo-600 transition-colors"
+                                      className="font-medium text-sm text-foreground hover:underline hover:text-chart-primary transition-colors"
                                     >
                                       {client.name}
                                     </Link>
                                   </div>
-                                  <Badge variant="outline" className="text-[8px] font-black uppercase">
+                                  <Badge variant="outline" className="text-[10px] font-semibold uppercase">
                                     ${Math.round(client.currentWeeklyRev * 52).toLocaleString()}/yr
                                   </Badge>
                                 </div>
@@ -2183,9 +2183,9 @@ export default function ClientAuditPage() {
                                   <div className="space-y-3 pt-2 border-t border-border/60 animate-in fade-in duration-300">
                                     {/* Individual Rate Slider */}
                                     <div className="space-y-1">
-                                      <div className="flex justify-between text-[9px] font-bold text-muted-foreground">
+                                      <div className="flex justify-between text-[10px] font-medium text-muted-foreground">
                                         <span>Simulated Rate</span>
-                                        <span className="text-indigo-600 dark:text-indigo-400 font-black">${rate}</span>
+                                        <span className="text-chart-primary font-semibold">${rate}</span>
                                       </div>
                                       <Slider
                                         value={[rate]}
@@ -2198,9 +2198,9 @@ export default function ClientAuditPage() {
 
                                     {/* Individual Frequency Slider */}
                                     <div className="space-y-1">
-                                      <div className="flex justify-between text-[9px] font-bold text-muted-foreground">
+                                      <div className="flex justify-between text-[10px] font-medium text-muted-foreground">
                                         <span>Sessions/Mo</span>
-                                        <span className="text-indigo-600 dark:text-indigo-400 font-black">{freq.toFixed(1)}</span>
+                                        <span className="text-chart-primary font-semibold">{freq.toFixed(1)}</span>
                                       </div>
                                       <Slider
                                         value={[freq]}
@@ -2228,64 +2228,64 @@ export default function ClientAuditPage() {
               {/* Key Metrics Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                 {/* Metric 1: Total Active Clients */}
-                <Card className="border-none shadow-md rounded-[2rem] bg-card overflow-hidden relative group">
+                <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
                   <CardContent className="p-6 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Active Clients</span>
-                      <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 flex items-center justify-center">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Active Clients</span>
+                      <div className="w-8 h-8 rounded-lg bg-muted text-chart-primary flex items-center justify-center">
                         <Users size={16} />
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <h3 className="text-3xl font-black text-foreground">{totalActiveClients}</h3>
+                      <h3 className="text-3xl font-semibold text-foreground">{totalActiveClients}</h3>
                       <p className="text-xs text-muted-foreground font-medium">Seen in the last 90 days</p>
                     </div>
                   </CardContent>
                 </Card>
 
                 {/* Metric 2: Average Session Rate */}
-                <Card className="border-none shadow-md rounded-[2rem] bg-card overflow-hidden relative group">
+                <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
                   <CardContent className="p-6 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Avg Session Rate</span>
-                      <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 flex items-center justify-center">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Avg Session Rate</span>
+                      <div className="w-8 h-8 rounded-lg bg-muted text-chart-emerald flex items-center justify-center">
                         <DollarSign size={16} />
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <h3 className="text-3xl font-black text-foreground">${averageSessionRate.toFixed(0)}</h3>
+                      <h3 className="text-3xl font-semibold text-foreground">${averageSessionRate.toFixed(0)}</h3>
                       <p className="text-xs text-muted-foreground font-medium">Across all clients</p>
                     </div>
                   </CardContent>
                 </Card>
 
                 {/* Metric 3: Total Revenue */}
-                <Card className="border-none shadow-md rounded-[2rem] bg-card overflow-hidden relative group">
+                <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
                   <CardContent className="p-6 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Total Revenue</span>
-                      <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/30 text-amber-600 flex items-center justify-center">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total Revenue</span>
+                      <div className="w-8 h-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center">
                         <TrendingUp size={16} />
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <h3 className="text-3xl font-black text-foreground">${totalRevenue.toLocaleString()}</h3>
+                      <h3 className="text-3xl font-semibold text-foreground">${totalRevenue.toLocaleString()}</h3>
                       <p className="text-xs text-muted-foreground font-medium">Sum of paid appointments</p>
                     </div>
                   </CardContent>
                 </Card>
 
                 {/* Metric 4: Free Session Ratio */}
-                <Card className="border-none shadow-md rounded-[2rem] bg-card overflow-hidden relative group">
+                <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
                   <CardContent className="p-6 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Free Session Ratio</span>
-                      <div className="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Free Session Ratio</span>
+                      <div className="w-8 h-8 rounded-lg bg-muted text-chart-destructive flex items-center justify-center">
                         <Percent size={16} />
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <h3 className={cn("text-3xl font-black", freeSessionRatio > 30 ? "text-rose-600 dark:text-rose-400" : "text-foreground")}>
+                      <h3 className={cn("text-3xl font-semibold", freeSessionRatio > 30 ? "text-chart-destructive" : "text-foreground")}>
                         {freeSessionRatio.toFixed(1)}%
                       </h3>
                       <p className="text-xs text-muted-foreground font-medium">{freeSessions} of {totalSessions} sessions unpaid</p>
@@ -2294,26 +2294,26 @@ export default function ClientAuditPage() {
                 </Card>
 
                 {/* Metric 5: Projected Monthly Revenue */}
-                <Card className="border-none shadow-sm rounded-[2.5rem] bg-indigo-600 text-white overflow-hidden relative group">
+                <Card className="border-none shadow-sm rounded-xl bg-primary text-primary-foreground overflow-hidden relative group">
                   <CardContent className="p-6 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-indigo-200">Projected Monthly</span>
-                      <div className="w-8 h-8 rounded-lg bg-white/10 text-white flex items-center justify-center">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Projected Monthly</span>
+                      <div className="w-8 h-8 rounded-lg bg-muted text-foreground flex items-center justify-center">
                         <Sparkles size={16} />
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <h3 className="text-3xl font-black">${Math.round(projectedMonthlyRevenue).toLocaleString()}</h3>
-                      <p className="text-xs text-indigo-200 font-medium">Based on standard rates</p>
+                      <h3 className="text-3xl font-semibold">${Math.round(projectedMonthlyRevenue).toLocaleString()}</h3>
+                      <p className="text-xs text-muted-foreground/60 font-medium">Based on standard rates</p>
                     </div>
                   </CardContent>
                 </Card>
               </div>
 
               {/* Rate Distribution Chart */}
-              <Card className="border-none shadow-md rounded-[2.5rem] bg-card">
+              <Card className="border-none shadow-sm rounded-xl bg-card">
                 <CardHeader className="p-8 pb-4">
-                  <CardTitle className="text-xl font-black text-foreground">Rate Distribution</CardTitle>
+                  <CardTitle className="text-xl font-semibold text-foreground">Rate Distribution</CardTitle>
                   <CardDescription className="text-sm text-muted-foreground font-medium">
                     Visual breakdown of clients across standard payment tiers.
                   </CardDescription>
@@ -2340,9 +2340,9 @@ export default function ClientAuditPage() {
                         return (
                           <div key={tier.label} className="flex flex-col items-center justify-end space-y-3 group">
                             {/* Bar Container */}
-                            <div className="w-full bg-muted/30 rounded-2xl h-[180px] flex items-end p-2 relative overflow-hidden">
+                            <div className="w-full bg-muted/30 rounded-xl h-[180px] flex items-end p-2 relative overflow-hidden">
                               {/* Tooltip */}
-                              <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-bold px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap">
+                              <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-card text-foreground text-[10px] font-medium px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap">
                                 {tier.count} {tier.count === 1 ? "client" : "clients"} ({percentage.toFixed(1)}%)
                               </div>
                               
@@ -2355,8 +2355,8 @@ export default function ClientAuditPage() {
                             
                             {/* Labels */}
                             <div className="text-center space-y-0.5">
-                              <span className="text-xs font-black text-foreground block">{tier.label}</span>
-                              <span className="text-[10px] font-bold text-muted-foreground block">
+                              <span className="text-xs font-semibold text-foreground block">{tier.label}</span>
+                              <span className="text-[10px] font-medium text-muted-foreground block">
                                 {tier.count} {tier.count === 1 ? "client" : "clients"}
                               </span>
                             </div>
@@ -2372,20 +2372,20 @@ export default function ClientAuditPage() {
             {/* TAB 4: AI SUGGESTIONS */}
             <TabsContent value="suggestions" className="space-y-8">
               {/* Goal Banner */}
-              <Card className="border-none shadow-xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-amber-900/30 via-slate-950 to-indigo-900/30" />
+              <Card className="border-none shadow-sm rounded-xl bg-card border border-border text-foreground">
+                <div className="absolute inset-0 bg-gradient-to-br from-muted/30 via-background to-muted/30" />
                 <CardContent className="p-8 md:p-10 relative z-10">
                   <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                     <div className="space-y-3 max-w-2xl">
-                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-400">Rate Increase Roadmap</p>
-                      <h2 className="text-3xl font-black tracking-tight leading-tight text-white">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Rate Increase Roadmap</p>
+                      <h2 className="text-3xl font-semibold tracking-tight leading-tight text-foreground">
                         $150/session by end of 2027
                       </h2>
-                      <p className="text-sm text-slate-300 font-medium leading-relaxed">
+                      <p className="text-sm text-muted-foreground/60 font-medium leading-relaxed">
                         {aiSuggestions?.summary || "A four-phase plan to move every client to $150. Each phase targets a specific rate tier — use the Rates tab to action contact emails and confirm upgrades as you go."}
                       </p>
                       {lastAnalyzed && (
-                        <p className="text-[10px] text-slate-500 font-medium flex items-center gap-1.5">
+                        <p className="text-[10px] text-muted-foreground font-medium flex items-center gap-1.5">
                           <Clock size={12} />
                           AI analysis updated {formatDistanceToNow(new Date(lastAnalyzed), { addSuffix: true })}
                         </p>
@@ -2394,7 +2394,7 @@ export default function ClientAuditPage() {
                     <Button
                       onClick={handleGenerateSuggestions}
                       disabled={isAnalyzing}
-                      className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-[10px] uppercase tracking-widest h-10 px-6 rounded-xl shadow-lg shrink-0 self-start"
+                      className="bg-muted hover:bg-muted/80 text-foreground font-semibold text-[10px] uppercase tracking-wider h-10 px-6 rounded-xl shadow-sm shrink-0 self-start"
                     >
                       {isAnalyzing ? (
                         <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Analysing...</>
@@ -2412,10 +2412,10 @@ export default function ClientAuditPage() {
               {/* Transition Roadmap & Value-Add Strategies */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Transition Roadmap */}
-                <Card className="border-none shadow-md rounded-[2.5rem] bg-card">
+                <Card className="border-none shadow-sm rounded-xl bg-card">
                   <CardHeader className="p-8 pb-4">
-                    <CardTitle className="text-xl font-black text-foreground flex items-center gap-2">
-                      <TrendingUp className="text-indigo-600" size={22} />
+                    <CardTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
+                      <TrendingUp className="text-chart-primary" size={22} />
                       Transition Roadmap
                     </CardTitle>
                     <CardDescription className="text-sm text-muted-foreground font-medium">
@@ -2423,17 +2423,17 @@ export default function ClientAuditPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-8 pt-4 space-y-6">
-                    <div className="relative border-l-2 border-indigo-100 dark:border-indigo-950/50 pl-6 ml-4 space-y-8">
+                    <div className="relative border-l-2 border-border pl-6 ml-4 space-y-8">
                       {activeRoadmap.map((step, idx) => (
                         <div key={idx} className="relative">
-                          <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-indigo-600 border-4 border-white dark:border-slate-900" />
+                          <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full bg-primary border-4 border-background" />
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                              <Badge className="bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border-none font-bold text-[10px] uppercase tracking-wider">
+                              <Badge className="bg-chart-primary/10 text-chart-primary border-none font-medium text-[10px] uppercase tracking-wider">
                                 {step.phase}
                               </Badge>
                             </div>
-                            <h4 className="font-black text-foreground text-base">{step.title}</h4>
+                            <h4 className="font-semibold text-foreground text-base">{step.title}</h4>
                             <p className="text-sm text-muted-foreground font-medium leading-relaxed">
                               {step.description}
                             </p>
@@ -2445,10 +2445,10 @@ export default function ClientAuditPage() {
                 </Card>
 
                 {/* Value-Add Strategies */}
-                <Card className="border-none shadow-md rounded-[2.5rem] bg-card">
+                <Card className="border-none shadow-sm rounded-xl bg-card">
                   <CardHeader className="p-8 pb-4">
-                    <CardTitle className="text-xl font-black text-foreground flex items-center gap-2">
-                      <Sparkles className="text-amber-500" size={22} />
+                    <CardTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
+                      <Sparkles className="text-muted-foreground" size={22} />
                       Value-Add Strategies
                     </CardTitle>
                     <CardDescription className="text-sm text-muted-foreground font-medium">
@@ -2458,9 +2458,9 @@ export default function ClientAuditPage() {
                   <CardContent className="p-8 pt-4 space-y-6">
                     <div className="grid grid-cols-1 gap-4">
                       {activeStrategies.map((strategy, idx) => (
-                        <div key={idx} className="p-5 rounded-2xl bg-muted/30 border border-border/40 space-y-2">
-                          <h4 className="font-black text-foreground text-sm flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-indigo-600" />
+                        <div key={idx} className="p-5 rounded-xl bg-muted/30 border border-border/40 space-y-2">
+                          <h4 className="font-semibold text-foreground text-sm flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-primary" />
                             {strategy.title}
                           </h4>
                           <p className="text-xs text-muted-foreground font-medium leading-relaxed">
@@ -2474,10 +2474,10 @@ export default function ClientAuditPage() {
               </div>
 
               {/* Revenue Projection Simulator */}
-              <Card className="border-none shadow-md rounded-[2.5rem] bg-card">
+              <Card className="border-none shadow-sm rounded-xl bg-card">
                 <CardHeader className="p-8 pb-4">
-                  <CardTitle className="text-xl font-black text-foreground flex items-center gap-2">
-                    <TrendingUp className="text-emerald-600" size={22} />
+                  <CardTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
+                    <TrendingUp className="text-chart-emerald" size={22} />
                     Revenue Projection Simulator
                   </CardTitle>
                   <CardDescription className="text-sm text-muted-foreground font-medium">
@@ -2491,10 +2491,10 @@ export default function ClientAuditPage() {
                       {/* Slider 1: Target Average Session Rate */}
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <label className="text-xs font-black uppercase tracking-wider text-muted-foreground">
+                          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                             Target Average Session Rate
                           </label>
-                          <span className="text-sm font-black text-indigo-600">${targetRate}</span>
+                          <span className="text-sm font-semibold text-chart-primary">${targetRate}</span>
                         </div>
                         <Slider
                           value={[targetRate]}
@@ -2504,7 +2504,7 @@ export default function ClientAuditPage() {
                           step={5}
                           className="py-4"
                         />
-                        <div className="flex justify-between text-[10px] font-bold text-muted-foreground">
+                        <div className="flex justify-between text-[10px] font-medium text-muted-foreground">
                           <span>$30</span>
                           <span>$90</span>
                           <span>$150</span>
@@ -2514,10 +2514,10 @@ export default function ClientAuditPage() {
                       {/* Slider 2: Active Client Count */}
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <label className="text-xs font-black uppercase tracking-wider text-muted-foreground">
+                          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                             Active Client Count
                           </label>
-                          <span className="text-sm font-black text-indigo-600">{simulatorClients} clients</span>
+                          <span className="text-sm font-semibold text-chart-primary">{simulatorClients} clients</span>
                         </div>
                         <Slider
                           value={[simulatorClients]}
@@ -2527,7 +2527,7 @@ export default function ClientAuditPage() {
                           step={1}
                           className="py-4"
                         />
-                        <div className="flex justify-between text-[10px] font-bold text-muted-foreground">
+                        <div className="flex justify-between text-[10px] font-medium text-muted-foreground">
                           <span>5 clients</span>
                           <span>50 clients</span>
                           <span>100 clients</span>
@@ -2537,10 +2537,10 @@ export default function ClientAuditPage() {
                       {/* Slider 3: Average Sessions per Client per Month */}
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <label className="text-xs font-black uppercase tracking-wider text-muted-foreground">
+                          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                             Avg Sessions per Client / Month
                           </label>
-                          <span className="text-sm font-black text-indigo-600">{simulatorFrequency} sessions</span>
+                          <span className="text-sm font-semibold text-chart-primary">{simulatorFrequency} sessions</span>
                         </div>
                         <Slider
                           value={[simulatorFrequency]}
@@ -2550,7 +2550,7 @@ export default function ClientAuditPage() {
                           step={0.1}
                           className="py-4"
                         />
-                        <div className="flex justify-between text-[10px] font-bold text-muted-foreground">
+                        <div className="flex justify-between text-[10px] font-medium text-muted-foreground">
                           <span>0.5 sessions</span>
                           <span>2.0 sessions</span>
                           <span>4.0 sessions</span>
@@ -2559,22 +2559,22 @@ export default function ClientAuditPage() {
                     </div>
 
                     {/* Results Card */}
-                    <div className="p-6 rounded-3xl bg-muted/30 border border-border/40 flex flex-col justify-between space-y-6">
+                    <div className="p-6 rounded-xl bg-muted/30 border border-border/40 flex flex-col justify-between space-y-6">
                       <div className="space-y-4">
-                        <h4 className="font-black text-foreground text-sm uppercase tracking-wider">
+                        <h4 className="font-semibold text-foreground text-sm uppercase tracking-wider">
                           Projected Revenue Impact
                         </h4>
                         
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1">
-                            <span className="text-[10px] font-bold text-muted-foreground block">Current Projected</span>
-                            <span className="text-xl font-black text-muted-foreground">
+                            <span className="text-[10px] font-medium text-muted-foreground block">Current Projected</span>
+                            <span className="text-xl font-semibold text-muted-foreground">
                               ${Math.round(currentProjectedRevenue).toLocaleString()}/mo
                             </span>
                           </div>
                           <div className="space-y-1">
-                            <span className="text-[10px] font-bold text-indigo-600 block">Target Projected</span>
-                            <span className="text-xl font-black text-indigo-600">
+                            <span className="text-[10px] font-medium text-chart-primary block">Target Projected</span>
+                            <span className="text-xl font-semibold text-chart-primary">
                               ${Math.round(targetProjectedRevenue).toLocaleString()}/mo
                             </span>
                           </div>
@@ -2582,16 +2582,16 @@ export default function ClientAuditPage() {
                       </div>
 
                       {/* Revenue Increase Callout */}
-                      <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 flex items-center justify-between">
+                      <div className="p-4 rounded-xl bg-muted border border-border flex items-center justify-between">
                         <div className="space-y-0.5">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-chart-emerald">
                             Monthly Revenue Increase
                           </span>
-                          <h3 className="text-2xl font-black text-emerald-800 dark:text-emerald-300">
+                          <h3 className="text-2xl font-semibold text-chart-emerald">
                             +${Math.round(revenueIncrease).toLocaleString()}
                           </h3>
                         </div>
-                        <Badge className="bg-emerald-500 text-white border-none font-black text-xs px-3 py-1 rounded-full">
+                        <Badge className="bg-chart-emerald/10 text-chart-emerald border-none font-semibold text-xs px-3 py-1 rounded-full">
                           +{percentageIncrease.toFixed(0)}%
                         </Badge>
                       </div>
@@ -2599,7 +2599,7 @@ export default function ClientAuditPage() {
                       {/* Annual Impact */}
                       <div className="text-xs text-muted-foreground font-medium text-center">
                         Annualized practice revenue increase of{" "}
-                        <strong className="text-foreground font-black">
+                        <strong className="text-foreground font-semibold">
                           +${Math.round(revenueIncrease * 12).toLocaleString()}
                         </strong>{" "}
                         per year.
@@ -2616,23 +2616,23 @@ export default function ClientAuditPage() {
 
       {/* Preferred Time Override Modal */}
       <Dialog open={isOverrideModalOpen} onOpenChange={setIsOverrideModalOpen}>
-        <DialogContent className="rounded-3xl max-w-md">
+        <DialogContent className="rounded-xl max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-black text-foreground">Set Preferred Time Override</DialogTitle>
+            <DialogTitle className="text-xl font-semibold text-foreground">Set Preferred Time Override</DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground font-medium">
               Set a manual preferred appointment time for {selectedClient?.name}. This will override the auto-analyzed time.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div className="space-y-2">
-              <label className="text-xs font-black tracking-wider text-muted-foreground">
+              <label className="text-xs font-semibold tracking-wider text-muted-foreground">
                 Preferred Appointment Time
               </label>
               <Input
                 placeholder="e.g., Tuesdays at 10:00 AM"
                 value={overrideTimeValue}
                 onChange={(e) => setOverrideTimeValue(e.target.value)}
-                className="rounded-xl border-border/60 focus-visible:ring-indigo-500"
+                className="rounded-xl border-border/60 focus-visible:ring-primary"
               />
               <p className="text-[10px] text-muted-foreground font-medium">
                 Leave blank to clear override and use auto-analyzed time.
@@ -2643,7 +2643,7 @@ export default function ClientAuditPage() {
             <Button variant="outline" onClick={() => setIsOverrideModalOpen(false)} className="rounded-xl">
               Cancel
             </Button>
-            <Button onClick={handleSaveOverride} className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white">
+            <Button onClick={handleSaveOverride} className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground">
               Save Override
             </Button>
           </DialogFooter>
@@ -2652,16 +2652,16 @@ export default function ClientAuditPage() {
 
       {/* Custom Rate Modal */}
       <Dialog open={isCustomRateModalOpen} onOpenChange={setIsCustomRateModalOpen}>
-        <DialogContent className="rounded-3xl max-w-md">
+        <DialogContent className="rounded-xl max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-black text-foreground">Set Custom Standard Rate</DialogTitle>
+            <DialogTitle className="text-xl font-semibold text-foreground">Set Custom Standard Rate</DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground font-medium">
               Enter a custom standard session rate ($) for {selectedClient?.name}.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div className="space-y-2">
-              <label className="text-xs font-black tracking-wider text-muted-foreground">
+              <label className="text-xs font-semibold tracking-wider text-muted-foreground">
                 Standard Rate ($)
               </label>
               <Input
@@ -2669,7 +2669,7 @@ export default function ClientAuditPage() {
                 placeholder="e.g., 75"
                 value={customRateValue}
                 onChange={(e) => setCustomRateValue(e.target.value)}
-                className="rounded-xl border-border/60 focus-visible:ring-indigo-500"
+                className="rounded-xl border-border/60 focus-visible:ring-primary"
               />
             </div>
           </div>
@@ -2677,7 +2677,7 @@ export default function ClientAuditPage() {
             <Button variant="outline" onClick={() => setIsCustomRateModalOpen(false)} className="rounded-xl">
               Cancel
             </Button>
-            <Button onClick={handleSaveCustomRate} className="rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white">
+            <Button onClick={handleSaveCustomRate} className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground">
               Save Rate
             </Button>
           </DialogFooter>
@@ -2698,26 +2698,26 @@ export default function ClientAuditPage() {
       {/* STICKY BULK ACTIONS BAR */}
       {selectedWeeklyClients.length > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-3xl px-4 animate-in slide-in-from-bottom-10 duration-500">
-          <div className="bg-slate-950/95 text-white rounded-[2rem] p-4 shadow-2xl border border-slate-800/80 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="bg-card/95 text-foreground rounded-xl p-4 shadow-sm border border-border backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-xs">
+              <div className="w-8 h-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-semibold text-xs">
                 {selectedWeeklyClients.length}
               </div>
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-slate-400">Bulk Actions</p>
-                <p className="text-[10px] text-slate-500 font-bold uppercase">Apply changes to selected clients</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60">Bulk Actions</p>
+                <p className="text-[10px] text-muted-foreground font-medium uppercase">Apply changes to selected clients</p>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
               {/* Bulk Target Rate */}
               <Select onValueChange={(val) => handleBulkSetTargetRate(parseInt(val))} disabled={bulkActionLoading}>
-                <SelectTrigger className="w-[120px] h-9 rounded-xl bg-slate-900 border-slate-800 text-[10px] font-black uppercase tracking-widest text-indigo-400">
+                <SelectTrigger className="w-[120px] h-9 rounded-xl bg-muted border-border text-[10px] font-semibold uppercase tracking-wider text-chart-primary">
                   <SelectValue placeholder="Set Target" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl bg-slate-900 text-white border-slate-800">
+                <SelectContent className="rounded-xl bg-card text-foreground border-border">
                   {RATE_OPTIONS.filter(opt => opt.value !== -1).map(opt => (
-                    <SelectItem key={opt.value} value={opt.value.toString()} className="text-xs font-bold">
+                    <SelectItem key={opt.value} value={opt.value.toString()} className="text-xs font-medium">
                       {opt.label}
                     </SelectItem>
                   ))}
@@ -2726,14 +2726,14 @@ export default function ClientAuditPage() {
 
               {/* Bulk Re-engagement Tag */}
               <Select onValueChange={(val: any) => handleBulkSetReengagementTag(val === "neutral" ? null : val)} disabled={bulkActionLoading}>
-                <SelectTrigger className="w-[120px] h-9 rounded-xl bg-slate-900 border-slate-800 text-[10px] font-black uppercase tracking-widest text-rose-400">
+                <SelectTrigger className="w-[120px] h-9 rounded-xl bg-muted border-border text-[10px] font-semibold uppercase tracking-wider text-chart-destructive">
                   <SelectValue placeholder="Set Status" />
                 </SelectTrigger>
-                <SelectContent className="rounded-xl bg-slate-900 text-white border-slate-800">
-                  <SelectItem value="neutral" className="text-xs font-bold">Neutral</SelectItem>
-                  <SelectItem value="warm" className="text-xs font-bold text-emerald-400">Warm</SelectItem>
-                  <SelectItem value="cold" className="text-xs font-bold text-blue-400">Cold</SelectItem>
-                  <SelectItem value="lost" className="text-xs font-bold text-slate-500">Lost</SelectItem>
+                <SelectContent className="rounded-xl bg-card text-foreground border-border">
+                  <SelectItem value="neutral" className="text-xs font-medium">Neutral</SelectItem>
+                  <SelectItem value="warm" className="text-xs font-medium text-chart-emerald">Warm</SelectItem>
+                  <SelectItem value="cold" className="text-xs font-medium text-chart-primary">Cold</SelectItem>
+                  <SelectItem value="lost" className="text-xs font-medium text-muted-foreground">Lost</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -2742,7 +2742,7 @@ export default function ClientAuditPage() {
                 size="sm"
                 onClick={handleBulkSendOnboarding}
                 disabled={bulkActionLoading}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-9 px-4 font-black text-[10px] uppercase tracking-widest"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-9 px-4 font-semibold text-[10px] uppercase tracking-wider"
               >
                 {bulkActionLoading ? <Loader2 className="animate-spin" size={12} /> : <Send size={12} className="mr-1.5" />}
                 Onboard
@@ -2752,7 +2752,7 @@ export default function ClientAuditPage() {
                 variant="ghost"
                 size="sm"
                 onClick={handleClearWeeklyClients}
-                className="text-slate-400 hover:text-white rounded-xl h-9 px-3 font-black text-[10px] uppercase tracking-widest"
+                className="text-muted-foreground/60 hover:text-foreground rounded-xl h-9 px-3 font-semibold text-[10px] uppercase tracking-wider"
               >
                 Clear
               </Button>

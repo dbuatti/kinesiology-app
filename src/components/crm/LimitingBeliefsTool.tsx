@@ -368,7 +368,7 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
   };
 
   const renderStep1 = () => (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {backlogItem && (
         <div className="p-8 bg-muted dark:bg-rose-950/10 rounded-xl border-2 border-rose-200 dark:border-rose-900/30 space-y-6 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none"><Quote size={120} /></div>
@@ -430,19 +430,21 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
           />
         </div>
       </div>
-      <div className="pt-8 flex gap-4">
-        <Button variant="outline" onClick={() => saveProgress(false)} disabled={isSaving || !formData.problem} className="flex-1 rounded-xl h-14 font-semibold text-xs uppercase tracking-wider border-border">
+      {!singlePage && (
+      <div className="pt-6 flex gap-4">
+        <Button variant="outline" onClick={() => saveProgress(false)} disabled={isSaving || !formData.problem} className="flex-1 rounded-xl h-12 font-semibold text-xs uppercase tracking-wider border-border">
           <Save className="mr-2" size={18} /> Save Draft
         </Button>
-        <Button onClick={handleNext} disabled={!formData.problem || !formData.feltSense} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-14 font-semibold text-xs uppercase tracking-wider shadow-sm shadow-indigo-100">
+        <Button onClick={handleNext} disabled={!formData.problem || !formData.feltSense} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-semibold text-xs uppercase tracking-wider shadow-sm shadow-indigo-100">
           Next: Extract Beliefs <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
+      )}
     </div>
   );
 
   const renderStep2 = () => (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-4">
           <div className="flex items-center justify-between px-1">
@@ -496,14 +498,16 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
           )}
         </div>
       </div>
-      <div className="pt-8 flex gap-4">
-        <Button variant="outline" onClick={handleBack} className="flex-1 rounded-xl h-14 font-semibold text-xs uppercase tracking-wider border-border">
+      {!singlePage && (
+      <div className="pt-6 flex gap-4">
+        <Button variant="outline" onClick={handleBack} className="flex-1 rounded-xl h-12 font-semibold text-xs uppercase tracking-wider border-border">
           <ArrowLeft className="mr-2" size={18} /> Back
         </Button>
-        <Button onClick={handleNext} disabled={!formData.limitingBelief || !formData.positiveBelief} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-14 font-semibold text-xs uppercase tracking-wider shadow-sm shadow-indigo-100">
+        <Button onClick={handleNext} disabled={!formData.limitingBelief || !formData.positiveBelief} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-semibold text-xs uppercase tracking-wider shadow-sm shadow-indigo-100">
           Begin Dissolving Loop <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
+      )}
     </div>
   );
 
@@ -545,7 +549,7 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
         </div>
 
         <div className="space-y-8 w-full max-w-3xl">
-          <h2 className="text-3xl md:text-5xl font-serif font-medium leading-tight text-foreground">
+          <h2 className="text-2xl md:text-2xl font-serif font-medium leading-tight text-foreground">
             {question}
           </h2>
 
@@ -563,9 +567,11 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
         </div>
 
         <div className="flex gap-8 items-center">
+          {!singlePage && (
           <Button variant="ghost" onClick={handleBack} className="text-muted-foreground uppercase tracking-wider text-[10px] font-semibold hover:text-chart-primary hover:bg-transparent">
             <ArrowLeft className="mr-2" size={14} /> Back
           </Button>
+          )}
           <div className="flex gap-4">
             <Button 
               onClick={handleLoopNext} 
@@ -577,8 +583,8 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
             >
               {loopSubStep === 3 ? "Complete Part" : "Continue"} <ArrowRight className="ml-2" size={18} />
             </Button>
-            {formData.dissolveLog.length >= 2 && loopSubStep === 1 && (
-              <Button onClick={handleNext} variant="outline" className="rounded-full px-8 h-16 border-chart-primary text-chart-primary font-semibold uppercase tracking-wider text-xs">
+            {!singlePage && formData.dissolveLog.length >= 2 && loopSubStep === 1 && (
+              <Button onClick={handleNext} variant="outline" className="rounded-full px-8 h-12 border-chart-primary text-chart-primary font-semibold uppercase tracking-wider text-xs">
                 Shift Occurred
               </Button>
             )}
@@ -589,12 +595,12 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
   };
 
   const renderStep4 = () => (
-    <div className="space-y-12 animate-in fade-in slide-in-from-right-4 duration-500 text-center py-12">
+    <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 text-center py-12">
       <div className="space-y-4">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-muted rounded-xl text-chart-primary mb-2 shadow-inner">
+        <div className="inline-flex items-center justify-center w-12 h-12 bg-muted rounded-xl text-chart-primary mb-2 shadow-inner">
           <ShieldCheck size={32} />
         </div>
-        <h3 className="text-3xl md:text-4xl font-serif font-medium">Verification</h3>
+        <h3 className="text-2xl md:text-2xl font-serif font-medium">Verification</h3>
         <p className="text-lg text-muted-foreground">Testing the stability of the shift.</p>
       </div>
 
@@ -616,21 +622,23 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
         </div>
       </div>
 
-      <div className="flex justify-center pt-8">
-        <Button onClick={handleNext} className="bg-primary hover:bg-primary/90 text-white rounded-xl h-16 px-16 font-semibold text-xs uppercase tracking-wider shadow-sm shadow-indigo-100">
+      {!singlePage && (
+      <div className="flex justify-center pt-6">
+        <Button onClick={handleNext} className="bg-primary hover:bg-primary/90 text-white rounded-xl h-12 px-16 font-semibold text-xs uppercase tracking-wider shadow-sm shadow-indigo-100">
           Move to Integration <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
+      )}
     </div>
   );
 
   const renderStep5 = () => (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700 py-8">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 py-4">
       <div className="text-center space-y-4">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-muted rounded-xl text-chart-emerald mb-2 shadow-inner">
+        <div className="inline-flex items-center justify-center w-12 h-12 bg-muted rounded-xl text-chart-emerald mb-2 shadow-inner">
           <Sparkles size={32} />
         </div>
-        <h3 className="text-3xl md:text-4xl font-serif font-medium">Integration</h3>
+        <h3 className="text-2xl md:text-2xl font-serif font-medium">Integration</h3>
         <p className="text-lg text-muted-foreground">Final reflections to ground the shift.</p>
       </div>
 
@@ -652,19 +660,19 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 pt-12">
+      <div className="flex flex-col sm:flex-row gap-4 pt-6">
         <Button 
           onClick={handleDeepScan} 
           disabled={isAnalyzing || !formData.integrationAwareness}
           variant="outline"
-          className="flex-1 h-16 rounded-xl border-indigo-200 text-chart-primary font-semibold text-xs uppercase tracking-wider hover:bg-muted"
+          className="flex-1 h-12 rounded-xl border-indigo-200 text-chart-primary font-semibold text-xs uppercase tracking-wider hover:bg-muted"
         >
           {isAnalyzing ? <Loader2 className="mr-2 animate-spin" /> : <Wand2 className="mr-2" />} Scan for Deeper Patterns
         </Button>
-        <Button onClick={() => saveProgress(true)} disabled={isSaving || !formData.integrationAwareness} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-16 font-semibold text-xs uppercase tracking-wider shadow-sm shadow-indigo-100">
+        <Button onClick={() => saveProgress(true)} disabled={isSaving || !formData.integrationAwareness} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-12 font-semibold text-xs uppercase tracking-wider shadow-sm shadow-indigo-100">
           {isSaving ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 className="mr-2" />} Complete & Save Session
         </Button>
-        <Button onClick={reset} variant="ghost" className="flex-1 text-muted-foreground rounded-xl h-16 font-medium hover:bg-muted">
+        <Button onClick={reset} variant="ghost" className="flex-1 text-muted-foreground rounded-xl h-12 font-medium hover:bg-muted">
           Start Fresh
         </Button>
       </div>
@@ -676,7 +684,7 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
     const completedSessions = pastSessions.filter(s => s.is_complete);
 
     return (
-      <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex items-center justify-between">
           <h3 className="text-2xl font-serif font-medium">Session History</h3>
           <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)} className="rounded-xl font-medium text-xs uppercase tracking-wider">Close</Button>
@@ -709,7 +717,7 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
         <div className="space-y-6">
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.3em] px-2">Completed Sessions</p>
           {completedSessions.length === 0 ? (
-            <div className="text-center py-20 text-muted-foreground bg-muted rounded-xl border-2 border-dashed border-border">
+            <div className="text-center py-8 text-muted-foreground bg-muted rounded-xl border-2 border-dashed border-border">
               <History className="mx-auto mb-4 opacity-20" size={64} />
               <p className="font-medium">No completed sessions yet.</p>
             </div>

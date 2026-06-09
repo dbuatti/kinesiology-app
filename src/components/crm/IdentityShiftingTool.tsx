@@ -463,7 +463,7 @@ const IdentityShiftingTool = () => {
             <Label className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">4. Stuck Identity</Label>
             <div className="flex items-center gap-2">
               <BacklogSelector type="shifting" onSelect={handleBacklogSelect} currentValue={formData.identity} />
-              <Button variant="ghost" size="sm" onClick={handleGenerateIdentity} disabled={isGenerating || !formData.problem} className="h-10 text-chart-primary hover:bg-muted gap-1.5 font-semibold text-[10px] uppercase tracking-wider rounded-xl border border-indigo-100">
+              <Button variant="ghost" size="sm" onClick={handleGenerateIdentity} disabled={isGenerating} className="h-10 text-chart-primary hover:bg-muted gap-1.5 font-semibold text-[10px] uppercase tracking-wider rounded-xl border border-indigo-100">
                 {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
                 Suggest
               </Button>
@@ -488,10 +488,10 @@ const IdentityShiftingTool = () => {
       </div>
 
       <div className="pt-8 flex gap-4">
-        <Button variant="outline" onClick={() => saveProgress(false)} disabled={isSaving || !formData.problem} className="flex-1 rounded-xl h-14 font-semibold text-xs uppercase tracking-wider border-border">
+        <Button variant="outline" onClick={() => saveProgress(false)} disabled={isSaving} className="flex-1 rounded-xl h-14 font-semibold text-xs uppercase tracking-wider border-border">
           <Save className="mr-2" size={18} /> Save Draft
         </Button>
-        <Button onClick={handleNext} disabled={!formData.problem || !formData.identity} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-14 font-semibold text-xs uppercase tracking-wider shadow-sm shadow-indigo-100">
+        <Button onClick={handleNext} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-14 font-semibold text-xs uppercase tracking-wider shadow-sm shadow-indigo-100">
           Begin Dissolving <ArrowRight className="ml-2" size={18} />
         </Button>
       </div>
@@ -555,7 +555,7 @@ const IdentityShiftingTool = () => {
           </Button>
           <Button 
             onClick={handleLoopNext} 
-            disabled={!currentLoopResponse.trim()}
+            disabled={isGenerating}
             className="bg-primary hover:bg-primary/90 text-white rounded-full px-12 h-16 font-semibold uppercase tracking-wider text-xs shadow-sm shadow-indigo-200 transition-all hover:scale-105"
           >
             Continue <ArrowRight className="ml-2" size={18} />
@@ -674,13 +674,13 @@ const IdentityShiftingTool = () => {
       <div className="flex flex-col sm:flex-row gap-4 pt-12">
         <Button 
           onClick={handleDeepScan} 
-          disabled={isAnalyzing || !formData.newIntention}
+          disabled={isAnalyzing}
           variant="outline"
           className="flex-1 h-16 rounded-xl border-indigo-200 text-chart-primary font-semibold text-xs uppercase tracking-wider hover:bg-muted"
         >
           {isAnalyzing ? <Loader2 className="mr-2 animate-spin" /> : <Wand2 className="mr-2" />} Scan for Deeper Patterns
         </Button>
-        <Button onClick={() => saveProgress(true)} disabled={isSaving || !formData.newIntention} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-16 font-semibold text-xs uppercase tracking-wider shadow-sm shadow-indigo-100">
+        <Button onClick={() => saveProgress(true)} disabled={isSaving} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-xl h-16 font-semibold text-xs uppercase tracking-wider shadow-sm shadow-indigo-100">
           {isSaving ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 className="mr-2" />} Complete & Save Session
         </Button>
         <Button onClick={reset} variant="ghost" className="flex-1 text-muted-foreground rounded-xl h-16 font-medium hover:bg-muted">

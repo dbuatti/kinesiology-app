@@ -12,9 +12,9 @@ import { RotateCcw, Printer, ChevronDown, ChevronUp, Loader2, RefreshCw, Activit
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
+ Collapsible,
+ CollapsibleContent,
+ CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
 // Docs Components
@@ -28,715 +28,715 @@ const TEXT_STORAGE_KEY = "practice_notes_text_data";
 const COLLAPSED_STORAGE_KEY = "practice_notes_collapsed_sections";
 
 interface ReflexImages {
-  primary?: string;
-  secondary?: string;
-  tertiary?: string;
+ primary?: string;
+ secondary?: string;
+ tertiary?: string;
 }
 
 const OUTLINE_ITEMS = [
-  { id: "peace-process", label: "I. The PEACE Process" },
-  { id: "clinical-hierarchy", label: "II. Clinical Hierarchy" },
-  { id: "sns-resets", label: "III. Preliminary & SNS Resets" },
-  { id: "nei", label: "IV. Neuro-Emotional Integration" },
-  { id: "primitive-reflexes", label: "V. Primitive Reflexes" },
-  { id: "cranial-nerves", label: "VI. Cranial Nerves" },
-  { id: "brain-zones", label: "VII. Brain Zones" },
-  { id: "lovett-brother", label: "VIII. Lovett-Brother Partners" },
-  { id: "key-muscles", label: "IX. Key Muscles" },
-  { id: "observations", label: "Clinical Observations" },
+ { id: "peace-process", label: "I. The PEACE Process" },
+ { id: "clinical-hierarchy", label: "II. Clinical Hierarchy" },
+ { id: "sns-resets", label: "III. Preliminary & SNS Resets" },
+ { id: "nei", label: "IV. Neuro-Emotional Integration" },
+ { id: "primitive-reflexes", label: "V. Primitive Reflexes" },
+ { id: "cranial-nerves", label: "VI. Cranial Nerves" },
+ { id: "brain-zones", label: "VII. Brain Zones" },
+ { id: "lovett-brother", label: "VIII. Lovett-Brother Partners" },
+ { id: "key-muscles", label: "IX. Key Muscles" },
+ { id: "observations", label: "Clinical Observations" },
 ];
 
 const PracticeNotes = () => {
-  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
-  const [textData, setTextData] = useState<Record<string, string>>({});
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
-  const [customImages, setCustomImages] = useState<Record<string, ReflexImages>>({});
-  const [loading, setLoading] = useState(true);
+ const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
+ const [textData, setTextData] = useState<Record<string, string>>({});
+ const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+ const [customImages, setCustomImages] = useState<Record<string, ReflexImages>>({});
+ const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const savedChecked = localStorage.getItem(CHECKED_STORAGE_KEY);
-    const savedText = localStorage.getItem(TEXT_STORAGE_KEY);
-    const savedCollapsed = localStorage.getItem(COLLAPSED_STORAGE_KEY);
-    
-    if (savedChecked) {
-      try { setCheckedItems(JSON.parse(savedChecked)); } catch (e) { console.error(e); }
-    }
-    if (savedText) {
-      try { setTextData(JSON.parse(savedText)); } catch (e) { console.error(e); }
-    }
-    if (savedCollapsed) {
-      try { setCollapsedSections(JSON.parse(savedCollapsed)); } catch (e) { console.error(e); }
-    }
+ useEffect(() => {
+ const savedChecked = localStorage.getItem(CHECKED_STORAGE_KEY);
+ const savedText = localStorage.getItem(TEXT_STORAGE_KEY);
+ const savedCollapsed = localStorage.getItem(COLLAPSED_STORAGE_KEY);
+ 
+ if (savedChecked) {
+ try { setCheckedItems(JSON.parse(savedChecked)); } catch (e) { console.error(e); }
+ }
+ if (savedText) {
+ try { setTextData(JSON.parse(savedText)); } catch (e) { console.error(e); }
+ }
+ if (savedCollapsed) {
+ try { setCollapsedSections(JSON.parse(savedCollapsed)); } catch (e) { console.error(e); }
+ }
 
-    const fetchImages = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          setLoading(false);
-          return;
-        }
+ const fetchImages = async () => {
+ try {
+ const { data: { user } } = await supabase.auth.getUser();
+ if (!user) {
+ setLoading(false);
+ return;
+ }
 
-        const [brainRes, reflexRes] = await Promise.all([
-          supabase.from('brain_reflex_customizations').select('reflex_id, image_url, secondary_image_url, tertiary_image_url').eq('user_id', user.id),
-          supabase.from('primitive_reflex_customizations').select('reflex_id, image_url').eq('user_id', user.id)
-        ]);
+ const [brainRes, reflexRes] = await Promise.all([
+ supabase.from('brain_reflex_customizations').select('reflex_id, image_url, secondary_image_url, tertiary_image_url').eq('user_id', user.id),
+ supabase.from('primitive_reflex_customizations').select('reflex_id, image_url').eq('user_id', user.id)
+ ]);
 
-        const mapping: Record<string, ReflexImages> = {};
-        const timestamp = Date.now();
-        
-        brainRes.data?.forEach(item => {
-          mapping[item.reflex_id] = {
-            primary: item.image_url ? `${item.image_url}?t=${timestamp}` : undefined,
-            secondary: item.secondary_image_url ? `${item.secondary_image_url}?t=${timestamp}` : undefined,
-            tertiary: item.tertiary_image_url ? `${item.tertiary_image_url}?t=${timestamp}` : undefined
-          };
-        });
+ const mapping: Record<string, ReflexImages> = {};
+ const timestamp = Date.now();
+ 
+ brainRes.data?.forEach(item => {
+ mapping[item.reflex_id] = {
+ primary: item.image_url ? `${item.image_url}?t=${timestamp}` : undefined,
+ secondary: item.secondary_image_url ? `${item.secondary_image_url}?t=${timestamp}` : undefined,
+ tertiary: item.tertiary_image_url ? `${item.tertiary_image_url}?t=${timestamp}` : undefined
+ };
+ });
 
-        reflexRes.data?.forEach(item => {
-          if (!mapping[item.reflex_id]) mapping[item.reflex_id] = {};
-          mapping[item.reflex_id].primary = item.image_url ? `${item.image_url}?t=${timestamp}` : undefined;
-        });
+ reflexRes.data?.forEach(item => {
+ if (!mapping[item.reflex_id]) mapping[item.reflex_id] = {};
+ mapping[item.reflex_id].primary = item.image_url ? `${item.image_url}?t=${timestamp}` : undefined;
+ });
 
-        setCustomImages(mapping);
-      } catch (err) {
-        console.error("Failed to fetch images:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+ setCustomImages(mapping);
+ } catch (err) {
+ console.error("Failed to fetch images:", err);
+ } finally {
+ setLoading(false);
+ }
+ };
 
-    fetchImages();
-  }, []);
+ fetchImages();
+ }, []);
 
-  useEffect(() => {
-    localStorage.setItem(CHECKED_STORAGE_KEY, JSON.stringify(checkedItems));
-  }, [checkedItems]);
+ useEffect(() => {
+ localStorage.setItem(CHECKED_STORAGE_KEY, JSON.stringify(checkedItems));
+ }, [checkedItems]);
 
-  useEffect(() => {
-    localStorage.setItem(TEXT_STORAGE_KEY, JSON.stringify(textData));
-  }, [textData]);
+ useEffect(() => {
+ localStorage.setItem(TEXT_STORAGE_KEY, JSON.stringify(textData));
+ }, [textData]);
 
-  useEffect(() => {
-    localStorage.setItem(COLLAPSED_STORAGE_KEY, JSON.stringify(collapsedSections));
-  }, [collapsedSections]);
+ useEffect(() => {
+ localStorage.setItem(COLLAPSED_STORAGE_KEY, JSON.stringify(collapsedSections));
+ }, [collapsedSections]);
 
-  const toggleItem = (id: string) => {
-    setCheckedItems((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
+ const toggleItem = (id: string) => {
+ setCheckedItems((prev) => ({ ...prev, [id]: !prev[id] }));
+ };
 
-  const handleTextChange = (id: string, value: string) => {
-    setTextData((prev) => ({ ...prev, [id]: value }));
-  };
+ const handleTextChange = (id: string, value: string) => {
+ setTextData((prev) => ({ ...prev, [id]: value }));
+ };
 
-  const toggleSection = (id: string) => {
-    setCollapsedSections((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
+ const toggleSection = (id: string) => {
+ setCollapsedSections((prev) => ({ ...prev, [id]: !prev[id] }));
+ };
 
-  const resetDocument = () => {
-    if (window.confirm("Are you sure you want to clear all notes and checkboxes?")) {
-      setCheckedItems({});
-      setTextData({});
-      setCollapsedSections({});
-      localStorage.removeItem(CHECKED_STORAGE_KEY);
-      localStorage.removeItem(TEXT_STORAGE_KEY);
-      localStorage.removeItem(COLLAPSED_STORAGE_KEY);
-    }
-  };
+ const resetDocument = () => {
+ if (window.confirm("Are you sure you want to clear all notes and checkboxes?")) {
+ setCheckedItems({});
+ setTextData({});
+ setCollapsedSections({});
+ localStorage.removeItem(CHECKED_STORAGE_KEY);
+ localStorage.removeItem(TEXT_STORAGE_KEY);
+ localStorage.removeItem(COLLAPSED_STORAGE_KEY);
+ }
+ };
 
-  const handlePrint = () => {
-    window.print();
-  };
+ const handlePrint = () => {
+ window.print();
+ };
 
-  const Section = ({ id, title, children }: { id: string; title: string; children: React.ReactNode }) => {
-    const isCollapsed = !!collapsedSections[id];
-    return (
-      <Collapsible 
-        id={id} 
-        open={!isCollapsed} 
-        onOpenChange={() => toggleSection(id)}
-        className="mb-10 break-inside-avoid scroll-mt-32"
-      >
-        <CollapsibleTrigger asChild>
-          <div className="flex items-center justify-between border-b border-black pb-1 mb-4 cursor-pointer group">
-            <h2 className="text-xl font-serif font-bold text-black uppercase">
-              {title}
-            </h2>
-            <div className="flex items-center gap-2 text-gray-400 group-hover:text-black transition-colors print:hidden">
-              {isCollapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
-            </div>
-          </div>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
-          {children}
-        </CollapsibleContent>
-      </Collapsible>
-    );
-  };
+ const Section = ({ id, title, children }: { id: string; title: string; children: React.ReactNode }) => {
+ const isCollapsed = !!collapsedSections[id];
+ return (
+ <Collapsible 
+ id={id} 
+ open={!isCollapsed} 
+ onOpenChange={() => toggleSection(id)}
+ className="mb-10 break-inside-avoid scroll-mt-32"
+ >
+ <CollapsibleTrigger asChild>
+ <div className="flex items-center justify-between border-b border-black pb-1 mb-4 cursor-pointer group">
+ <h2 className="text-xl font-serif font-medium text-black uppercase">
+ {title}
+ </h2>
+ <div className="flex items-center gap-2 text-gray-400 group-hover:text-black transition-colors print:hidden">
+ {isCollapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
+ </div>
+ </div>
+ </CollapsibleTrigger>
+ <CollapsibleContent className="space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
+ {children}
+ </CollapsibleContent>
+ </Collapsible>
+ );
+ };
 
-  const Item = ({ id, label, subtext, bold = false, hasInput = false }: { id: string; label: string; subtext?: string; bold?: boolean; hasInput?: boolean }) => (
-    <div className="flex items-start gap-3">
-      <Checkbox 
-        id={id} 
-        checked={!!checkedItems[id]} 
-        onCheckedChange={() => toggleItem(id)}
-        className="mt-1 h-4 w-4 border-black rounded-none"
-      />
-      <div className="grid gap-0.5 flex-1">
-        <div className="flex items-center gap-2">
-          <label
-            htmlFor={id}
-            className={cn(
-              "text-sm cursor-pointer select-none shrink-0",
-              bold ? "font-bold" : "font-normal",
-              checkedItems[id] && "line-through text-gray-400"
-            )}
-          >
-            {label}
-          </label>
-          {hasInput && (
-            <input 
-              type="text"
-              value={textData[id] || ""}
-              onChange={(e) => handleTextChange(id, e.target.value)}
-              className="flex-1 border-b border-black bg-transparent outline-none text-sm px-1 min-w-[60px] focus:border-blue-500 transition-colors"
-              placeholder="________________"
-            />
-          )}
-        </div>
-        {subtext && (
-          <p className={cn("text-xs text-gray-600 leading-relaxed", checkedItems[id] && "text-gray-300")}>
-            {subtext}
-          </p>
-        )}
-      </div>
-    </div>
-  );
+ const Item = ({ id, label, subtext, bold = false, hasInput = false }: { id: string; label: string; subtext?: string; bold?: boolean; hasInput?: boolean }) => (
+ <div className="flex items-start gap-3">
+ <Checkbox 
+ id={id} 
+ checked={!!checkedItems[id]} 
+ onCheckedChange={() => toggleItem(id)}
+ className="mt-1 h-4 w-4 border-black rounded-none"
+ />
+ <div className="grid gap-0.5 flex-1">
+ <div className="flex items-center gap-2">
+ <label
+ htmlFor={id}
+ className={cn(
+ "text-sm cursor-pointer select-none shrink-0",
+ bold ? "font-medium" : "font-normal",
+ checkedItems[id] && "line-through text-gray-400"
+ )}
+ >
+ {label}
+ </label>
+ {hasInput && (
+ <input 
+ type="text"
+ value={textData[id] || ""}
+ onChange={(e) => handleTextChange(id, e.target.value)}
+ className="flex-1 border-b border-black bg-transparent outline-none text-sm px-1 min-w-[60px] focus:border-blue-500 transition-colors"
+ placeholder="________________"
+ />
+ )}
+ </div>
+ {subtext && (
+ <p className={cn("text-xs text-gray-600 leading-relaxed", checkedItems[id] && "text-gray-300")}>
+ {subtext}
+ </p>
+ )}
+ </div>
+ </div>
+ );
 
-  const ImageRow = ({ images }: { images?: ReflexImages }) => {
-    if (!images || (!images.primary && !images.secondary && !images.tertiary)) return null;
-    return (
-      <div className="grid grid-cols-3 gap-4 mt-4">
-        {images.primary && (
-          <div className="aspect-video border border-gray-300 p-0.5 rounded-sm overflow-hidden bg-slate-50">
-            <img src={images.primary} alt="Primary" className="w-full h-full object-cover" />
-          </div>
-        )}
-        {images.secondary && (
-          <div className="aspect-video border border-gray-300 p-0.5 rounded-sm overflow-hidden bg-slate-50">
-            <img src={images.secondary} alt="Secondary" className="w-full h-full object-cover" />
-          </div>
-        )}
-        {images.tertiary && (
-          <div className="aspect-video border border-gray-300 p-0.5 rounded-sm overflow-hidden bg-slate-50">
-            <img src={images.tertiary} alt="Tertiary" className="w-full h-full object-cover" />
-          </div>
-        )}
-      </div>
-    );
-  };
+ const ImageRow = ({ images }: { images?: ReflexImages }) => {
+ if (!images || (!images.primary && !images.secondary && !images.tertiary)) return null;
+ return (
+ <div className="grid grid-cols-3 gap-4 mt-4">
+ {images.primary && (
+ <div className="aspect-video border border-gray-300 p-0.5 rounded-sm overflow-hidden bg-muted">
+ <img src={images.primary} alt="Primary" className="w-full h-full object-cover" />
+ </div>
+ )}
+ {images.secondary && (
+ <div className="aspect-video border border-gray-300 p-0.5 rounded-sm overflow-hidden bg-muted">
+ <img src={images.secondary} alt="Secondary" className="w-full h-full object-cover" />
+ </div>
+ )}
+ {images.tertiary && (
+ <div className="aspect-video border border-gray-300 p-0.5 rounded-sm overflow-hidden bg-muted">
+ <img src={images.tertiary} alt="Tertiary" className="w-full h-full object-cover" />
+ </div>
+ )}
+ </div>
+ );
+ };
 
-  const ReflexCard = ({ reflex }: { reflex: any }) => {
-    const images = customImages[reflex.id];
-    const id = `reflex-${reflex.id}`;
-    return (
-      <div className="p-4 border border-black mb-4 break-inside-avoid">
-        <div className="flex justify-between items-start mb-2">
-          <div className="flex items-center gap-3 flex-1">
-            <Checkbox 
-              id={id} 
-              checked={!!checkedItems[id]} 
-              onCheckedChange={() => toggleItem(id)}
-              className="h-4 w-4 border-black rounded-none"
-            />
-            <h3 className={cn("font-bold text-base shrink-0", checkedItems[id] && "line-through text-gray-400")}>
-              {reflex.name}
-            </h3>
-            <input 
-              type="text"
-              value={textData[`${id}-note`] || ""}
-              onChange={(e) => handleTextChange(`${id}-note`, e.target.value)}
-              className="flex-1 border-b border-black/20 bg-transparent outline-none text-xs px-2 focus:border-blue-500 transition-colors"
-              placeholder="Add assessment note..."
-            />
-          </div>
-        </div>
-        
-        <div className="space-y-2 text-xs">
-          <p><strong>Stimulus:</strong> {reflex.stimulus}</p>
-          <p><strong>Inhibition Pattern:</strong> {reflex.inhibitionPattern}</p>
-        </div>
-        
-        <ImageRow images={images} />
-      </div>
-    );
-  };
+ const ReflexCard = ({ reflex }: { reflex: any }) => {
+ const images = customImages[reflex.id];
+ const id = `reflex-${reflex.id}`;
+ return (
+ <div className="p-4 border border-black mb-4 break-inside-avoid">
+ <div className="flex justify-between items-start mb-2">
+ <div className="flex items-center gap-3 flex-1">
+ <Checkbox 
+ id={id} 
+ checked={!!checkedItems[id]} 
+ onCheckedChange={() => toggleItem(id)}
+ className="h-4 w-4 border-black rounded-none"
+ />
+ <h3 className={cn("font-medium text-base shrink-0", checkedItems[id] && "line-through text-gray-400")}>
+ {reflex.name}
+ </h3>
+ <input 
+ type="text"
+ value={textData[`${id}-note`] || ""}
+ onChange={(e) => handleTextChange(`${id}-note`, e.target.value)}
+ className="flex-1 border-b border-black/20 bg-transparent outline-none text-xs px-2 focus:border-blue-500 transition-colors"
+ placeholder="Add assessment note..."
+ />
+ </div>
+ </div>
+ 
+ <div className="space-y-2 text-xs">
+ <p><strong>Stimulus:</strong> {reflex.stimulus}</p>
+ <p><strong>Inhibition Pattern:</strong> {reflex.inhibitionPattern}</p>
+ </div>
+ 
+ <ImageRow images={images} />
+ </div>
+ );
+ };
 
-  const NerveCard = ({ nerve }: { nerve: any }) => {
-    const images = customImages[`cn${nerve.id}`];
-    const id = `cn-${nerve.id}`;
-    return (
-      <div className="p-4 border border-black mb-4 break-inside-avoid">
-        <div className="flex justify-between items-start mb-2">
-          <div className="flex items-center gap-3 flex-1">
-            <Checkbox 
-              id={id} 
-              checked={!!checkedItems[id]} 
-              onCheckedChange={() => toggleItem(id)}
-              className="h-4 w-4 border-black rounded-none"
-            />
-            <h3 className={cn("font-bold text-base shrink-0", checkedItems[id] && "line-through text-gray-400")}>
-              {nerve.name}: {nerve.latinName}
-            </h3>
-            <input 
-              type="text"
-              value={textData[`${id}-note`] || ""}
-              onChange={(e) => handleTextChange(`${id}-note`, e.target.value)}
-              className="flex-1 border-b border-black/20 bg-transparent outline-none text-xs px-2 focus:border-blue-500 transition-colors"
-              placeholder="Add nerve note..."
-            />
-          </div>
-        </div>
-        
-        <div className="space-y-2 text-xs">
-          <p><strong>Reflex Point:</strong> {nerve.reflexPoint}</p>
-          <p><strong>Stimulus:</strong> {nerve.stimulus}</p>
-        </div>
-        
-        <ImageRow images={images} />
-      </div>
-    );
-  };
+ const NerveCard = ({ nerve }: { nerve: any }) => {
+ const images = customImages[`cn${nerve.id}`];
+ const id = `cn-${nerve.id}`;
+ return (
+ <div className="p-4 border border-black mb-4 break-inside-avoid">
+ <div className="flex justify-between items-start mb-2">
+ <div className="flex items-center gap-3 flex-1">
+ <Checkbox 
+ id={id} 
+ checked={!!checkedItems[id]} 
+ onCheckedChange={() => toggleItem(id)}
+ className="h-4 w-4 border-black rounded-none"
+ />
+ <h3 className={cn("font-medium text-base shrink-0", checkedItems[id] && "line-through text-gray-400")}>
+ {nerve.name}: {nerve.latinName}
+ </h3>
+ <input 
+ type="text"
+ value={textData[`${id}-note`] || ""}
+ onChange={(e) => handleTextChange(`${id}-note`, e.target.value)}
+ className="flex-1 border-b border-black/20 bg-transparent outline-none text-xs px-2 focus:border-blue-500 transition-colors"
+ placeholder="Add nerve note..."
+ />
+ </div>
+ </div>
+ 
+ <div className="space-y-2 text-xs">
+ <p><strong>Reflex Point:</strong> {nerve.reflexPoint}</p>
+ <p><strong>Stimulus:</strong> {nerve.stimulus}</p>
+ </div>
+ 
+ <ImageRow images={images} />
+ </div>
+ );
+ };
 
-  const BrainZoneCard = ({ point }: { point: any }) => {
-    const images = customImages[point.id];
-    const id = `brain-${point.id}`;
-    return (
-      <div className="p-4 border border-black mb-4 break-inside-avoid">
-        <div className="flex justify-between items-start mb-2">
-          <div className="flex items-center gap-3 flex-1">
-            <Checkbox 
-              id={id} 
-              checked={!!checkedItems[id]} 
-              onCheckedChange={() => toggleItem(id)}
-              className="h-4 w-4 border-black rounded-none"
-            />
-            <h3 className={cn("font-bold text-base shrink-0", checkedItems[id] && "line-through text-gray-400")}>
-              {point.name}
-            </h3>
-            <input 
-              type="text"
-              value={textData[`${id}-note`] || ""}
-              onChange={(e) => handleTextChange(`${id}-note`, e.target.value)}
-              className="flex-1 border-b border-black/20 bg-transparent outline-none text-xs px-2 focus:border-blue-500 transition-colors"
-              placeholder="Add zone note..."
-            />
-          </div>
-        </div>
-        
-        <div className="space-y-2 text-xs">
-          <p><strong>Location:</strong> {point.location}</p>
-          <p><strong>Stimulus:</strong> {point.stimulus || point.technique || "Standard challenge."}</p>
-        </div>
-        
-        <ImageRow images={images} />
-      </div>
-    );
-  };
+ const BrainZoneCard = ({ point }: { point: any }) => {
+ const images = customImages[point.id];
+ const id = `brain-${point.id}`;
+ return (
+ <div className="p-4 border border-black mb-4 break-inside-avoid">
+ <div className="flex justify-between items-start mb-2">
+ <div className="flex items-center gap-3 flex-1">
+ <Checkbox 
+ id={id} 
+ checked={!!checkedItems[id]} 
+ onCheckedChange={() => toggleItem(id)}
+ className="h-4 w-4 border-black rounded-none"
+ />
+ <h3 className={cn("font-medium text-base shrink-0", checkedItems[id] && "line-through text-gray-400")}>
+ {point.name}
+ </h3>
+ <input 
+ type="text"
+ value={textData[`${id}-note`] || ""}
+ onChange={(e) => handleTextChange(`${id}-note`, e.target.value)}
+ className="flex-1 border-b border-black/20 bg-transparent outline-none text-xs px-2 focus:border-blue-500 transition-colors"
+ placeholder="Add zone note..."
+ />
+ </div>
+ </div>
+ 
+ <div className="space-y-2 text-xs">
+ <p><strong>Location:</strong> {point.location}</p>
+ <p><strong>Stimulus:</strong> {point.stimulus || point.technique || "Standard challenge."}</p>
+ </div>
+ 
+ <ImageRow images={images} />
+ </div>
+ );
+ };
 
-  return (
-    <div className="min-h-screen bg-white md:bg-[hsl(var(--docs-surface))] flex flex-col">
-      <DocsHeader />
-      <DocsToolbar />
-      <DocsRuler />
+ return (
+ <div className="min-h-screen bg-white md:bg-[hsl(var(--docs-surface))] flex flex-col">
+ <DocsHeader />
+ <DocsToolbar />
+ <DocsRuler />
 
-      <div className="flex-1 overflow-auto p-0 md:p-12 flex justify-center print:p-0 print:bg-white">
-        {/* Outline Sidebar */}
-        <DocsOutline items={OUTLINE_ITEMS} />
+ <div className="flex-1 overflow-auto p-0 md:p-12 flex justify-center print:p-0 print:bg-white">
+ {/* Outline Sidebar */}
+ <DocsOutline items={OUTLINE_ITEMS} />
 
-        {/* Document Container */}
-        <div className="w-full max-w-[1000px] bg-white border-none md:border md:border-slate-200 md:shadow-sm p-6 sm:p-10 md:p-20 min-h-[1056px] print:border-none print:p-0 text-black font-sans relative">
-          
-          {loading && (
-            <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-4">
-              <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Loading Clinical Data...</p>
-            </div>
-          )}
+ {/* Document Container */}
+ <div className="w-full max-w-[1000px] bg-white border-none md:border md:border-border md:shadow-sm p-6 sm:p-10 md:p-20 min-h-[1056px] print:border-none print:p-0 text-black font-sans relative">
+ 
+ {loading && (
+ <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-4">
+ <Loader2 className="w-10 h-10 text-chart-primary animate-spin" />
+ <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Loading Clinical Data...</p>
+ </div>
+ )}
 
-          {/* Document Header */}
-          <header className="mb-16 text-center">
-            <h1 className="text-4xl font-serif font-bold mb-2 tracking-tight">Clinical Practice Notes</h1>
-            <div className="mt-10 grid grid-cols-3 gap-8 text-xs font-bold border-y border-black py-6">
-              <div className="flex items-center gap-2">
-                <span>Date:</span>
-                <input 
-                  type="text" 
-                  value={textData.header_date || ""} 
-                  onChange={(e) => handleTextChange('header_date', e.target.value)}
-                  className="flex-1 border-b border-black bg-transparent outline-none px-1 focus:border-blue-500 transition-colors"
-                  placeholder="________________"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span>Practitioner:</span>
-                <input 
-                  type="text" 
-                  value={textData.header_practitioner || ""} 
-                  onChange={(e) => handleTextChange('header_practitioner', e.target.value)}
-                  className="flex-1 border-b border-black bg-transparent outline-none px-1 focus:border-blue-500 transition-colors"
-                  placeholder="________________"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span>Client ID:</span>
-                <input 
-                  type="text" 
-                  value={textData.header_clientid || ""} 
-                  onChange={(e) => handleTextChange('header_clientid', e.target.value)}
-                  className="flex-1 border-b border-black bg-transparent outline-none px-1 focus:border-blue-500 transition-colors"
-                  placeholder="________________"
-                />
-              </div>
-            </div>
-          </header>
+ {/* Document Header */}
+ <header className="mb-16 text-center">
+ <h1 className="text-4xl font-serif font-medium mb-2 tracking-tight">Clinical Practice Notes</h1>
+ <div className="mt-10 grid grid-cols-3 gap-8 text-xs font-medium border-y border-black py-6">
+ <div className="flex items-center gap-2">
+ <span>Date:</span>
+ <input 
+ type="text" 
+ value={textData.header_date || ""} 
+ onChange={(e) => handleTextChange('header_date', e.target.value)}
+ className="flex-1 border-b border-black bg-transparent outline-none px-1 focus:border-blue-500 transition-colors"
+ placeholder="________________"
+ />
+ </div>
+ <div className="flex items-center gap-2">
+ <span>Practitioner:</span>
+ <input 
+ type="text" 
+ value={textData.header_practitioner || ""} 
+ onChange={(e) => handleTextChange('header_practitioner', e.target.value)}
+ className="flex-1 border-b border-black bg-transparent outline-none px-1 focus:border-blue-500 transition-colors"
+ placeholder="________________"
+ />
+ </div>
+ <div className="flex items-center gap-2">
+ <span>Client ID:</span>
+ <input 
+ type="text" 
+ value={textData.header_clientid || ""} 
+ onChange={(e) => handleTextChange('header_clientid', e.target.value)}
+ className="flex-1 border-b border-black bg-transparent outline-none px-1 focus:border-blue-500 transition-colors"
+ placeholder="________________"
+ />
+ </div>
+ </div>
+ </header>
 
-          {/* 1. PEACE Process */}
-          <Section id="peace-process" title="I. The PEACE Process">
-            <div className="space-y-4">
-              <Item id="p-step" label="P - Preliminary Assessment" subtext="Gather the story, run the baseline (BOLT/Coherence), and identify how the system is currently organised." bold />
-              <Item id="e1-step" label="E - Ease the System" subtext="Create safety before change. Address SNS dominance (Harmonic Rocking, T1, Diaphragm). Ease must come before correction." bold />
-              <Item id="a-step" label="A - Align the Hierarchy" subtext="Find the keystone — the true priority that the nervous system wants to address first (Reflexes, Nerves, Muscles)." bold />
-              <Item id="c-step" label="C - Correct" subtext="Facilitate the primary change. Use Afferent (Bottom-Up) or Efferent (Top-Down) logic to reset the circuit." bold />
-              <Item id="e2-step" label="E - Embed" subtext="Stabilise and integrate so change becomes lasting transformation. Prescribe specific neurological homework." bold />
-            </div>
-          </Section>
+ {/* 1. PEACE Process */}
+ <Section id="peace-process" title="I. The PEACE Process">
+ <div className="space-y-4">
+ <Item id="p-step" label="P - Preliminary Assessment" subtext="Gather the story, run the baseline (BOLT/Coherence), and identify how the system is currently organised." bold />
+ <Item id="e1-step" label="E - Ease the System" subtext="Create safety before change. Address SNS dominance (Harmonic Rocking, T1, Diaphragm). Ease must come before correction." bold />
+ <Item id="a-step" label="A - Align the Hierarchy" subtext="Find the keystone — the true priority that the nervous system wants to address first (Reflexes, Nerves, Muscles)." bold />
+ <Item id="c-step" label="C - Correct" subtext="Facilitate the primary change. Use Afferent (Bottom-Up) or Efferent (Top-Down) logic to reset the circuit." bold />
+ <Item id="e2-step" label="E - Embed" subtext="Stabilise and integrate so change becomes lasting transformation. Prescribe specific neurological homework." bold />
+ </div>
+ </Section>
 
-          {/* 2. Clinical Hierarchy */}
-          <Section id="clinical-hierarchy" title="II. Clinical Hierarchy">
-            <div className="grid grid-cols-2 gap-x-12 gap-y-6">
-              <div className="space-y-3">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Asterisk Tier</h3>
-                <Item id="h-emotional" label="Emotional Charge" />
-                <Item id="h-assemblage" label="Assemblage Point" />
-                <Item id="h-hara" label="Hara Line" />
-                <Item id="h-heartwall" label="Heart Wall" />
-              </div>
-              <div className="space-y-3">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">1. Primary Tier</h3>
-                <Item id="h-primitive" label="Primitive Reflexes" />
-                <Item id="h-nociception" label="Nociception" />
-                <Item id="h-cranial" label="Cranial Nerves" />
-                <Item id="h-eyes" label="Eye Systems" />
-              </div>
-              <div className="space-y-3">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">2. Secondary Tier</h3>
-                <Item id="h-immune" label="Immune Vials (TH1/2/17/9)" />
-                <Item id="h-infections" label="Infections" />
-                <Item id="h-krebs" label="Krebs Cycle" />
-                <Item id="h-organ" label="Organ/Gland Balance" />
-              </div>
-              <div className="space-y-3">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">3. Tertiary Tier</h3>
-                <Item id="h-icv" label="Ileocecal Valve (ICV)" />
-                <Item id="h-cranialbones" label="Cranial Bones" />
-                <Item id="h-musculo" label="Musculoskeletal" />
-              </div>
-            </div>
-          </Section>
+ {/* 2. Clinical Hierarchy */}
+ <Section id="clinical-hierarchy" title="II. Clinical Hierarchy">
+ <div className="grid grid-cols-2 gap-x-12 gap-y-6">
+ <div className="space-y-3">
+ <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Asterisk Tier</h3>
+ <Item id="h-emotional" label="Emotional Charge" />
+ <Item id="h-assemblage" label="Assemblage Point" />
+ <Item id="h-hara" label="Hara Line" />
+ <Item id="h-heartwall" label="Heart Wall" />
+ </div>
+ <div className="space-y-3">
+ <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">1. Primary Tier</h3>
+ <Item id="h-primitive" label="Primitive Reflexes" />
+ <Item id="h-nociception" label="Nociception" />
+ <Item id="h-cranial" label="Cranial Nerves" />
+ <Item id="h-eyes" label="Eye Systems" />
+ </div>
+ <div className="space-y-3">
+ <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">2. Secondary Tier</h3>
+ <Item id="h-immune" label="Immune Vials (TH1/2/17/9)" />
+ <Item id="h-infections" label="Infections" />
+ <Item id="h-krebs" label="Krebs Cycle" />
+ <Item id="h-organ" label="Organ/Gland Balance" />
+ </div>
+ <div className="space-y-3">
+ <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">3. Tertiary Tier</h3>
+ <Item id="h-icv" label="Ileocecal Valve (ICV)" />
+ <Item id="h-cranialbones" label="Cranial Bones" />
+ <Item id="h-musculo" label="Musculoskeletal" />
+ </div>
+ </div>
+ </Section>
 
-          {/* 3. Preliminary & SNS Resets */}
-          <Section id="sns-resets" title="III. Preliminary & SNS Resets">
-            <div className="space-y-8">
-              <div className="grid grid-cols-2 gap-x-12">
-                <div className="space-y-3">
-                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Preliminary Vitals</h3>
-                  <Item id="v-bolt" label="BOLT Score" subtext="Measure CO2 tolerance. Target: 25s+ (Functional), 40s+ (Optimal)." hasInput />
-                  <Item id="v-coherence" label="Heart Coherence" subtext="Autonomic sync. HR/BR ratio. Check for coherence vs discordance." hasInput />
-                </div>
-                <div className="p-4 border border-black italic text-xs leading-relaxed">
-                  "If the client's BOLT score is below 25s, the system is in a state of chronic threat. Deep work will not stick until CO2 tolerance is improved."
-                </div>
-              </div>
+ {/* 3. Preliminary & SNS Resets */}
+ <Section id="sns-resets" title="III. Preliminary & SNS Resets">
+ <div className="space-y-8">
+ <div className="grid grid-cols-2 gap-x-12">
+ <div className="space-y-3">
+ <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Preliminary Vitals</h3>
+ <Item id="v-bolt" label="BOLT Score" subtext="Measure CO2 tolerance. Target: 25s+ (Functional), 40s+ (Optimal)." hasInput />
+ <Item id="v-coherence" label="Heart Coherence" subtext="Autonomic sync. HR/BR ratio. Check for coherence vs discordance." hasInput />
+ </div>
+ <div className="p-4 border border-black italic text-xs leading-relaxed">
+ "If the client's BOLT score is below 25s, the system is in a state of chronic threat. Deep work will not stick until CO2 tolerance is improved."
+ </div>
+ </div>
 
-              <div className="space-y-6">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">SNS Down-Regulation Procedures</h3>
-                
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="p-4 border border-black">
-                    <Item id="sns-t1-main" label="T1 Sympathetic Reset" bold />
-                    <div className="mt-2 grid grid-cols-2 gap-4 pl-7 text-[10px] text-gray-700">
-                      <p>1. Palpate bilateral anterior T1 to find restricted side.</p>
-                      <p>2. Test contralateral Psoas (should be inhibited).</p>
-                      <p>3. Move ipsilateral shoulder into external rotation.</p>
-                      <p>4. Hold 45-90s until tenderness dissolves. Re-assess.</p>
-                    </div>
-                  </div>
+ <div className="space-y-6">
+ <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">SNS Down-Regulation Procedures</h3>
+ 
+ <div className="grid grid-cols-1 gap-4">
+ <div className="p-4 border border-black">
+ <Item id="sns-t1-main" label="T1 Sympathetic Reset" bold />
+ <div className="mt-2 grid grid-cols-2 gap-4 pl-7 text-[10px] text-gray-700">
+ <p>1. Palpate bilateral anterior T1 to find restricted side.</p>
+ <p>2. Test contralateral Psoas (should be inhibited).</p>
+ <p>3. Move ipsilateral shoulder into external rotation.</p>
+ <p>4. Hold 45-90s until tenderness dissolves. Re-assess.</p>
+ </div>
+ </div>
 
-                  <div className="p-4 border border-black">
-                    <Item id="sns-diaphragm-main" label="Diaphragm Reset" bold />
-                    <div className="mt-2 grid grid-cols-2 gap-4 pl-7 text-[10px] text-gray-700">
-                      <p>1. Challenge tender points either side of sternum.</p>
-                      <p>2. Palpate neck at C4 level (opposite to tender point).</p>
-                      <p>3. Move ribcage superiorly towards neck. Hold 45-90s.</p>
-                      <p>4. Release very slowly. Observe for deep sigh or yawn.</p>
-                    </div>
-                  </div>
+ <div className="p-4 border border-black">
+ <Item id="sns-diaphragm-main" label="Diaphragm Reset" bold />
+ <div className="mt-2 grid grid-cols-2 gap-4 pl-7 text-[10px] text-gray-700">
+ <p>1. Challenge tender points either side of sternum.</p>
+ <p>2. Palpate neck at C4 level (opposite to tender point).</p>
+ <p>3. Move ribcage superiorly towards neck. Hold 45-90s.</p>
+ <p>4. Release very slowly. Observe for deep sigh or yawn.</p>
+ </div>
+ </div>
 
-                  <div className="p-4 border border-black">
-                    <div className="flex items-center justify-between mb-2">
-                      <Item id="sns-vagus-main" label="Vagus Nerve Process" bold />
-                      <input 
-                        type="text"
-                        value={textData['sns-vagus-note'] || ""}
-                        onChange={(e) => handleTextChange('sns-vagus-note', e.target.value)}
-                        className="flex-1 border-b border-black/20 bg-transparent outline-none text-xs px-2 ml-4 focus:border-blue-500 transition-colors"
-                        placeholder="Add vagus note..."
-                      />
-                    </div>
-                    <div className="mt-2 grid grid-cols-2 gap-6 pl-7 text-[10px] text-gray-700">
-                      <div className="space-y-2">
-                        <p className="font-bold uppercase text-[8px] text-indigo-600">1. Stimulation Protocol</p>
-                        <p>• Select Branch: Auricular, Cervical, or Abdominal.</p>
-                        <p>• Apply gentle stimulation for 60s.</p>
-                        <p>• Monitor for Shift: Sigh, yawn, gurgle, salivation.</p>
-                      </div>
-                      <div className="space-y-2">
-                        <p className="font-bold uppercase text-[8px] text-rose-600">2. Screen & Reset Protocol</p>
-                        <p>• Functional Check: Test Humming/Swallowing vs IM.</p>
-                        <p>• Challenge: Identify Organ/Gland + Polarity + Spinal Match.</p>
-                        <p>• Correction: Medulla Breathing (Blocked Inhale/Forced Exhale) 30s.</p>
-                        <p>• Verify: Re-test function and IM.</p>
-                      </div>
-                    </div>
-                  </div>
+ <div className="p-4 border border-black">
+ <div className="flex items-center justify-between mb-2">
+ <Item id="sns-vagus-main" label="Vagus Nerve Process" bold />
+ <input 
+ type="text"
+ value={textData['sns-vagus-note'] || ""}
+ onChange={(e) => handleTextChange('sns-vagus-note', e.target.value)}
+ className="flex-1 border-b border-black/20 bg-transparent outline-none text-xs px-2 ml-4 focus:border-blue-500 transition-colors"
+ placeholder="Add vagus note..."
+ />
+ </div>
+ <div className="mt-2 grid grid-cols-2 gap-6 pl-7 text-[10px] text-gray-700">
+ <div className="space-y-2">
+ <p className="font-medium uppercase text-[10px] text-chart-primary">1. Stimulation Protocol</p>
+ <p>• Select Branch: Auricular, Cervical, or Abdominal.</p>
+ <p>• Apply gentle stimulation for 60s.</p>
+ <p>• Monitor for Shift: Sigh, yawn, gurgle, salivation.</p>
+ </div>
+ <div className="space-y-2">
+ <p className="font-medium uppercase text-[10px] text-chart-destructive">2. Screen & Reset Protocol</p>
+ <p>• Functional Check: Test Humming/Swallowing vs IM.</p>
+ <p>• Challenge: Identify Organ/Gland + Polarity + Spinal Match.</p>
+ <p>• Correction: Medulla Breathing (Blocked Inhale/Forced Exhale) 30s.</p>
+ <p>• Verify: Re-test function and IM.</p>
+ </div>
+ </div>
+ </div>
 
-                  <div className="p-4 border border-black">
-                    <div className="flex items-center justify-between mb-2">
-                      <Item id="sns-lymphatic-main" label="Lymphatic System Assessment" bold />
-                      <input 
-                        type="text"
-                        value={textData['sns-lymphatic-note'] || ""}
-                        onChange={(e) => handleTextChange('sns-lymphatic-note', e.target.value)}
-                        className="flex-1 border-b border-black/20 bg-transparent outline-none text-xs px-2 ml-4 focus:border-blue-500 transition-colors"
-                        placeholder="Add lymphatic findings..."
-                      />
-                    </div>
-                    <div className="mt-2 grid grid-cols-2 gap-6 pl-7 text-[10px] text-gray-700">
-                      <div className="space-y-1">
-                        <p className="font-bold uppercase text-[8px] text-blue-600">Diagnosis</p>
-                        <p>• Palpate Suture (Glide/Tenderness).</p>
-                        <p>• Work neck down to find priority node.</p>
-                        <p>• Confirm with K27 Priority Check.</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="font-bold uppercase text-[8px] text-emerald-600">Correction</p>
-                        <p>• Move tissue into 'Position of Ease'.</p>
-                        <p>• Hold for 45-90s (Counterstrain).</p>
-                        <p>• Re-test suture glide & tenderness.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Section>
+ <div className="p-4 border border-black">
+ <div className="flex items-center justify-between mb-2">
+ <Item id="sns-lymphatic-main" label="Lymphatic System Assessment" bold />
+ <input 
+ type="text"
+ value={textData['sns-lymphatic-note'] || ""}
+ onChange={(e) => handleTextChange('sns-lymphatic-note', e.target.value)}
+ className="flex-1 border-b border-black/20 bg-transparent outline-none text-xs px-2 ml-4 focus:border-blue-500 transition-colors"
+ placeholder="Add lymphatic findings..."
+ />
+ </div>
+ <div className="mt-2 grid grid-cols-2 gap-6 pl-7 text-[10px] text-gray-700">
+ <div className="space-y-1">
+ <p className="font-medium uppercase text-[10px] text-chart-primary">Diagnosis</p>
+ <p>• Palpate Suture (Glide/Tenderness).</p>
+ <p>• Work neck down to find priority node.</p>
+ <p>• Confirm with K27 Priority Check.</p>
+ </div>
+ <div className="space-y-1">
+ <p className="font-medium uppercase text-[10px] text-chart-emerald">Correction</p>
+ <p>• Move tissue into 'Position of Ease'.</p>
+ <p>• Hold for 45-90s (Counterstrain).</p>
+ <p>• Re-test suture glide & tenderness.</p>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </Section>
 
-          {/* 4. Neuro-Emotional Integration */}
-          <Section id="nei" title="IV. Neuro-Emotional Integration">
-            <div className="space-y-8">
-              {/* The 9-Step Hierarchy */}
-              <div className="p-6 border border-black">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">The 9-Step Integration Hierarchy</h3>
-                <div className="space-y-2 text-xs">
-                  <p>1. <strong>Indicator Change:</strong> Hold Frontal Lobe (ESR) points to see if system is ready.</p>
-                  <p>2. <strong>Current or Historic:</strong> Determine if the stress is happening now or in the past.</p>
-                  <p>3. <strong>Find Age (if historic):</strong> Narrow down the specific age of origin.</p>
-                  <p>4. <strong>Find Primary Emotion:</strong> Identify core feeling (Hurt, Worry, Sadness, Fear, Anger).</p>
-                  <p>5. <strong>Find Priority Organ:</strong> Identify the organ related to the emotion.</p>
-                  <p>6. <strong>Eye Position:</strong> Identify the sensory access point (Visual, Auditory, Kinesthetic).</p>
-                  <p>7. <strong>Correction:</strong> Hold Frontal Lobe + Occipital Lobe + Organ Reflex (Energy in or Out). Visualise/Hear/Feel stress and related pathway.</p>
-                  <p>8. <strong>Wait for Parasympathetic Response:</strong> Monitor for sigh, yawn, or gurgle.</p>
-                  <p>9. <strong>Re-assess:</strong> Re-test the indicator muscle and original stimulus.</p>
-                </div>
-              </div>
+ {/* 4. Neuro-Emotional Integration */}
+ <Section id="nei" title="IV. Neuro-Emotional Integration">
+ <div className="space-y-8">
+ {/* The 9-Step Hierarchy */}
+ <div className="p-6 border border-black">
+ <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-4">The 9-Step Integration Hierarchy</h3>
+ <div className="space-y-2 text-xs">
+ <p>1. <strong>Indicator Change:</strong> Hold Frontal Lobe (ESR) points to see if system is ready.</p>
+ <p>2. <strong>Current or Historic:</strong> Determine if the stress is happening now or in the past.</p>
+ <p>3. <strong>Find Age (if historic):</strong> Narrow down the specific age of origin.</p>
+ <p>4. <strong>Find Primary Emotion:</strong> Identify core feeling (Hurt, Worry, Sadness, Fear, Anger).</p>
+ <p>5. <strong>Find Priority Organ:</strong> Identify the organ related to the emotion.</p>
+ <p>6. <strong>Eye Position:</strong> Identify the sensory access point (Visual, Auditory, Kinesthetic).</p>
+ <p>7. <strong>Correction:</strong> Hold Frontal Lobe + Occipital Lobe + Organ Reflex (Energy in or Out). Visualise/Hear/Feel stress and related pathway.</p>
+ <p>8. <strong>Wait for Parasympathetic Response:</strong> Monitor for sigh, yawn, or gurgle.</p>
+ <p>9. <strong>Re-assess:</strong> Re-test the indicator muscle and original stimulus.</p>
+ </div>
+ </div>
 
-              {/* Emotion-Organ Mapping */}
-              <div className="space-y-4">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Primary Emotion & Organ Mapping</h3>
-                <div className="grid grid-cols-1 gap-1 text-xs">
-                  {PRIMARY_EMOTIONS.map(e => (
-                    <div key={e.id} className="flex gap-2">
-                      <span className="font-bold w-20">{e.label}:</span>
-                      <span className="text-gray-600">{e.organs.join(', ')} ({e.element})</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+ {/* Emotion-Organ Mapping */}
+ <div className="space-y-4">
+ <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Primary Emotion & Organ Mapping</h3>
+ <div className="grid grid-cols-1 gap-1 text-xs">
+ {PRIMARY_EMOTIONS.map(e => (
+ <div key={e.id} className="flex gap-2">
+ <span className="font-medium w-20">{e.label}:</span>
+ <span className="text-gray-600">{e.organs.join(', ')} ({e.element})</span>
+ </div>
+ ))}
+ </div>
+ </div>
 
-              <div className="grid grid-cols-2 gap-12">
-                {/* Pulse Points Diagram */}
-                <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Organ Pulse Points</h3>
-                  <div className="border border-black p-1">
-                    <img 
-                      src="/images/pulse-points.png" 
-                      alt="Organ Pulse Points Reference" 
-                      className="w-full h-auto"
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                    />
-                  </div>
-                </div>
+ <div className="grid grid-cols-2 gap-12">
+ {/* Pulse Points Diagram */}
+ <div className="space-y-4">
+ <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Organ Pulse Points</h3>
+ <div className="border border-black p-1">
+ <img 
+ src="/images/pulse-points.png" 
+ alt="Organ Pulse Points Reference" 
+ className="w-full h-auto"
+ onError={(e) => { e.currentTarget.style.display = 'none'; }}
+ />
+ </div>
+ </div>
 
-                {/* Eye Accessing Cues Diagram */}
-                <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Eye Accessing Cues (NLP)</h3>
-                  <div className="border border-black p-1">
-                    <img 
-                      src="/images/eye-modes.png" 
-                      alt="Eye Accessing Cues Reference" 
-                      className="w-full h-auto"
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                    />
-                  </div>
-                </div>
-              </div>
+ {/* Eye Accessing Cues Diagram */}
+ <div className="space-y-4">
+ <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Eye Accessing Cues (NLP)</h3>
+ <div className="border border-black p-1">
+ <img 
+ src="/images/eye-modes.png" 
+ alt="Eye Accessing Cues Reference" 
+ className="w-full h-auto"
+ onError={(e) => { e.currentTarget.style.display = 'none'; }}
+ />
+ </div>
+ </div>
+ </div>
 
-              {/* Signs of Shift */}
-              <div className="p-6 border border-black">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Signs of Neurological Shift</h3>
-                <ul className="list-none space-y-1 text-xs font-medium">
-                  {SIGNS_OF_SHIFT.map(s => (
-                    <li key={s}>• {s}</li>
-                  ))}
-                </ul>
-                <p className="text-[10px] text-gray-500 mt-4 italic">"Wait for a parasympathetic response before proceeding to the Positive Upload phase."</p>
-              </div>
+ {/* Signs of Shift */}
+ <div className="p-6 border border-black">
+ <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-4">Signs of Neurological Shift</h3>
+ <ul className="list-none space-y-1 text-xs font-medium">
+ {SIGNS_OF_SHIFT.map(s => (
+ <li key={s}>• {s}</li>
+ ))}
+ </ul>
+ <p className="text-[10px] text-gray-500 mt-4 italic">"Wait for a parasympathetic response before proceeding to the Positive Upload phase."</p>
+ </div>
 
-              <div className="p-4 border border-black">
-                <Item id="nei-positive" label="Positive Upload Phase" subtext="Once the negative charge is cleared, identify the opposite state and anchor it using the same eye position and pulse point." bold />
-              </div>
-            </div>
-          </Section>
+ <div className="p-4 border border-black">
+ <Item id="nei-positive" label="Positive Upload Phase" subtext="Once the negative charge is cleared, identify the opposite state and anchor it using the same eye position and pulse point." bold />
+ </div>
+ </div>
+ </Section>
 
-          {/* 5. Primitive Reflexes */}
-          <Section id="primitive-reflexes" title="V. Primitive Reflexes (Foundational OS)">
-            <div className="grid grid-cols-1 gap-2">
-              {PRIMITIVE_REFLEXES.map(reflex => (
-                <ReflexCard key={reflex.id} reflex={reflex} />
-              ))}
-            </div>
-          </Section>
+ {/* 5. Primitive Reflexes */}
+ <Section id="primitive-reflexes" title="V. Primitive Reflexes (Foundational OS)">
+ <div className="grid grid-cols-1 gap-2">
+ {PRIMITIVE_REFLEXES.map(reflex => (
+ <ReflexCard key={reflex.id} reflex={reflex} />
+ ))}
+ </div>
+ </Section>
 
-          {/* 6. Cranial Nerves */}
-          <Section id="cranial-nerves" title="VI. Cranial Nerves (Brainstem Pathways)">
-            <div className="grid grid-cols-1 gap-2">
-              {CRANIAL_NERVES.map(cn => (
-                <NerveCard key={cn.id} nerve={cn} />
-              ))}
-            </div>
-          </Section>
+ {/* 6. Cranial Nerves */}
+ <Section id="cranial-nerves" title="VI. Cranial Nerves (Brainstem Pathways)">
+ <div className="grid grid-cols-1 gap-2">
+ {CRANIAL_NERVES.map(cn => (
+ <NerveCard key={cn.id} nerve={cn} />
+ ))}
+ </div>
+ </Section>
 
-          {/* 7. Brain Zones */}
-          <Section id="brain-zones" title="VII. Brain Zones (Cortical & Subcortical)">
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Cortical Zones</h3>
-                <div className="grid grid-cols-1 gap-2">
-                  {BRAIN_REFLEX_POINTS.filter(p => p.category === 'Cortical').map(point => (
-                    <BrainZoneCard key={point.id} point={point} />
-                  ))}
-                </div>
-              </div>
+ {/* 7. Brain Zones */}
+ <Section id="brain-zones" title="VII. Brain Zones (Cortical & Subcortical)">
+ <div className="space-y-8">
+ <div className="space-y-4">
+ <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Cortical Zones</h3>
+ <div className="grid grid-cols-1 gap-2">
+ {BRAIN_REFLEX_POINTS.filter(p => p.category === 'Cortical').map(point => (
+ <BrainZoneCard key={point.id} point={point} />
+ ))}
+ </div>
+ </div>
 
-              <div className="space-y-4">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Subcortical Zones</h3>
-                <div className="grid grid-cols-1 gap-2">
-                  {BRAIN_REFLEX_POINTS.filter(p => p.category === 'Subcortical').map(point => (
-                    <BrainZoneCard key={point.id} point={point} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </Section>
+ <div className="space-y-4">
+ <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Subcortical Zones</h3>
+ <div className="grid grid-cols-1 gap-2">
+ {BRAIN_REFLEX_POINTS.filter(p => p.category === 'Subcortical').map(point => (
+ <BrainZoneCard key={point.id} point={point} />
+ ))}
+ </div>
+ </div>
+ </div>
+ </Section>
 
-          {/* 8. Lovett-Brother Partners */}
-          <Section id="lovett-brother" title="VIII. Lovett-Brother Partners (Spinal Reciprocation)">
-            <div className="space-y-6">
-              <div className="p-4 bg-rose-50 border border-rose-100 rounded-sm italic text-xs leading-relaxed">
-                "Spinal segments work in pairs. Tension or fixation at one end of the spine (e.g. C1) often creates a compensatory dysfunction at the reciprocating partner (e.g. L5)."
-              </div>
-              
-              <div className="overflow-hidden border border-black">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50 border-b border-black">
-                      <th className="p-3 font-bold text-[10px] uppercase tracking-widest border-r border-black">Segment</th>
-                      <th className="p-3 font-bold text-[10px] uppercase tracking-widest border-r border-black">Partner</th>
-                      <th className="p-3 font-bold text-[10px] uppercase tracking-widest border-r border-black">Associated Muscle</th>
-                      <th className="p-3 font-bold text-[10px] uppercase tracking-widest">Organ / Gland</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-black/10 text-[11px]">
-                    {VAGUS_ASSOCIATIONS.map((assoc) => (
-                      <tr key={assoc.spinalSegment} className="hover:bg-slate-50 transition-colors">
-                        <td className="p-3 font-black border-r border-black/10">{assoc.spinalSegment}</td>
-                        <td className="p-3 font-black text-rose-600 border-r border-black/10">{assoc.reciprocatingSegment}</td>
-                        <td className="p-3 font-medium border-r border-black/10">{assoc.muscle}</td>
-                        <td className="p-3 text-gray-600">{assoc.organ}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </Section>
+ {/* 8. Lovett-Brother Partners */}
+ <Section id="lovett-brother" title="VIII. Lovett-Brother Partners (Spinal Reciprocation)">
+ <div className="space-y-6">
+ <div className="p-4 bg-chart-destructive/10 border border-border rounded-sm italic text-xs leading-relaxed">
+ "Spinal segments work in pairs. Tension or fixation at one end of the spine (e.g. C1) often creates a compensatory dysfunction at the reciprocating partner (e.g. L5)."
+ </div>
+ 
+ <div className="overflow-hidden border border-black">
+ <table className="w-full text-left border-collapse">
+ <thead>
+ <tr className="bg-muted border-b border-black">
+ <th className="p-3 font-medium text-[10px] uppercase tracking-wider border-r border-black">Segment</th>
+ <th className="p-3 font-medium text-[10px] uppercase tracking-wider border-r border-black">Partner</th>
+ <th className="p-3 font-medium text-[10px] uppercase tracking-wider border-r border-black">Associated Muscle</th>
+ <th className="p-3 font-medium text-[10px] uppercase tracking-wider">Organ / Gland</th>
+ </tr>
+ </thead>
+ <tbody className="divide-y divide-black/10 text-[11px]">
+ {VAGUS_ASSOCIATIONS.map((assoc) => (
+ <tr key={assoc.spinalSegment} className="hover:bg-muted transition-colors">
+ <td className="p-3 font-semibold border-r border-black/10">{assoc.spinalSegment}</td>
+ <td className="p-3 font-semibold text-chart-destructive border-r border-black/10">{assoc.reciprocatingSegment}</td>
+ <td className="p-3 font-medium border-r border-black/10">{assoc.muscle}</td>
+ <td className="p-3 text-gray-600">{assoc.organ}</td>
+ </tr>
+ ))}
+ </tbody>
+ </table>
+ </div>
+ </div>
+ </Section>
 
-          {/* 9. Key Muscles */}
-          <Section id="key-muscles" title="IX. Key Muscles (Clinical Indicators)">
-            <div className="grid grid-cols-3 gap-x-8 gap-y-4">
-              {Object.values(MUSCLE_INFO_DETAILS).filter(m => m.videoUrl).map(muscle => (
-                <div key={muscle.name} className="flex items-center gap-2">
-                  <Checkbox id={`muscle-${muscle.name}`} onCheckedChange={() => toggleItem(`muscle-${muscle.name}`)} checked={!!checkedItems[`muscle-${muscle.name}`]} className="h-3 w-3 border-black rounded-none" />
-                  <div className="leading-tight">
-                    <p className={cn("text-xs font-bold", checkedItems[`muscle-${muscle.name}`] && "line-through text-gray-400")}>{muscle.name}</p>
-                    <p className="text-[9px] font-gray-500 italic">{muscle.meridian} Meridian</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Section>
+ {/* 9. Key Muscles */}
+ <Section id="key-muscles" title="IX. Key Muscles (Clinical Indicators)">
+ <div className="grid grid-cols-3 gap-x-8 gap-y-4">
+ {Object.values(MUSCLE_INFO_DETAILS).filter(m => m.videoUrl).map(muscle => (
+ <div key={muscle.name} className="flex items-center gap-2">
+ <Checkbox id={`muscle-${muscle.name}`} onCheckedChange={() => toggleItem(`muscle-${muscle.name}`)} checked={!!checkedItems[`muscle-${muscle.name}`]} className="h-3 w-3 border-black rounded-none" />
+ <div className="leading-tight">
+ <p className={cn("text-xs font-medium", checkedItems[`muscle-${muscle.name}`] && "line-through text-gray-400")}>{muscle.name}</p>
+ <p className="text-[10px] font-gray-500 italic">{muscle.meridian} Meridian</p>
+ </div>
+ </div>
+ ))}
+ </div>
+ </Section>
 
-          {/* Footer Notes */}
-          <div id="observations" className="mt-16 pt-8 border-t border-black scroll-mt-32">
-            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-6">Clinical Observations & Integration Notes</h3>
-            <div className="relative">
-              <textarea 
-                value={textData.observations || ""}
-                onChange={(e) => handleTextChange('observations', e.target.value)}
-                className="w-full min-h-[300px] bg-transparent border-none outline-none resize-none text-sm leading-[32px] font-medium"
-                style={{
-                  backgroundImage: 'linear-gradient(to bottom, transparent 31px, hsl(var(--border)) 31px)',
-                  backgroundSize: '100% 32px',
-                  backgroundAttachment: 'local'
-                }}
-                placeholder="Type your clinical observations here..."
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+ {/* Footer Notes */}
+ <div id="observations" className="mt-16 pt-8 border-t border-black scroll-mt-32">
+ <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-6">Clinical Observations & Integration Notes</h3>
+ <div className="relative">
+ <textarea 
+ value={textData.observations || ""}
+ onChange={(e) => handleTextChange('observations', e.target.value)}
+ className="w-full min-h-[300px] bg-transparent border-none outline-none resize-none text-sm leading-[32px] font-medium"
+ style={{
+ backgroundImage: 'linear-gradient(to bottom, transparent 31px, hsl(var(--border)) 31px)',
+ backgroundSize: '100% 32px',
+ backgroundAttachment: 'local'
+ }}
+ placeholder="Type your clinical observations here..."
+ />
+ </div>
+ </div>
+ </div>
+ </div>
 
-      {/* Floating Action Buttons for Docs feel */}
-      <div className="fixed bottom-8 right-8 flex flex-col gap-3 print:hidden">
-        <Button variant="outline" size="icon" onClick={resetDocument} className="h-12 w-12 rounded-full shadow-xl bg-white border-slate-200 text-slate-500 hover:text-rose-600">
-          <RotateCcw size={20} />
-        </Button>
-        <Button onClick={handlePrint} className="h-14 w-14 rounded-full shadow-2xl bg-blue-600 hover:bg-blue-700 text-white">
-          <Printer size={24} />
-        </Button>
-      </div>
-    </div>
-  );
+ {/* Floating Action Buttons for Docs feel */}
+ <div className="fixed bottom-8 right-8 flex flex-col gap-3 print:hidden">
+ <Button variant="outline" size="icon" onClick={resetDocument} className="h-12 w-12 rounded-full shadow-sm bg-white border-border text-muted-foreground hover:text-chart-destructive">
+ <RotateCcw size={20} />
+ </Button>
+ <Button onClick={handlePrint} className="h-14 w-14 rounded-full shadow-sm bg-primary hover:bg-blue-700 text-white">
+ <Printer size={24} />
+ </Button>
+ </div>
+ </div>
+ );
 };
 
 export default PracticeNotes;

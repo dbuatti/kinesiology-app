@@ -64,38 +64,38 @@ const TOOLS = [
     desc: "Dissolve problematic constructs and return to the neutral observer.",
     icon: Fingerprint,
     path: "/sandbox/identity-shifting",
-    color: "text-indigo-600",
-    bgColor: "bg-indigo-50 dark:bg-indigo-900/20",
-    category: "Dissolving"
-  },
-  {
-    id: "alignment",
-    label: "Identity Alignment",
-    desc: "Reconsolidate neural pathways to align with your target identity.",
-    icon: Target,
-    path: "/sandbox/identity-alignment",
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
-    category: "Integration"
-  },
-  {
-    id: "beliefs",
-    label: "Limiting Beliefs",
-    desc: "Extract and dissolve the core beliefs holding patterns in place.",
-    icon: ShieldAlert,
-    path: "/sandbox/limiting-beliefs",
-    color: "text-rose-600",
-    bgColor: "bg-rose-50 dark:bg-rose-900/20",
-    category: "Extraction"
-  },
-  {
-    id: "fractals",
-    label: "Fractal Analysis",
-    desc: "Map the hierarchical structure of your internal constructs.",
-    icon: Layers,
-    path: "/sandbox/fractals",
-    color: "text-indigo-600",
-    bgColor: "bg-indigo-50 dark:bg-indigo-900/20",
+     color: "text-chart-primary",
+      bgColor: "bg-muted",
+      category: "Dissolving"
+    },
+    {
+      id: "alignment",
+      label: "Identity Alignment",
+      desc: "Reconsolidate neural pathways to align with your target identity.",
+      icon: Target,
+      path: "/sandbox/identity-alignment",
+      color: "text-chart-emerald",
+      bgColor: "bg-muted",
+      category: "Integration"
+    },
+    {
+      id: "beliefs",
+      label: "Limiting Beliefs",
+      desc: "Extract and dissolve the core beliefs holding patterns in place.",
+      icon: ShieldAlert,
+      path: "/sandbox/limiting-beliefs",
+      color: "text-chart-destructive",
+      bgColor: "bg-muted",
+      category: "Extraction"
+    },
+    {
+      id: "fractals",
+      label: "Fractal Analysis",
+      desc: "Map the hierarchical structure of your internal constructs.",
+      icon: Layers,
+      path: "/sandbox/fractals",
+      color: "text-chart-primary",
+      bgColor: "bg-muted",
     category: "Analysis"
   }
 ];
@@ -313,12 +313,12 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
 
   const getRecommendation = (item: any) => {
     if (item.type === 'alignment') {
-      return { tool: 'Identity Alignment', path: '/sandbox/identity-alignment', icon: Target, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20' };
+      return { tool: 'Identity Alignment', path: '/sandbox/identity-alignment', icon: Target, color: 'text-chart-emerald', bg: 'bg-muted' };
     }
     if (item.type === 'belief') {
-      return { tool: 'Limiting Beliefs', path: '/sandbox/limiting-beliefs', icon: ShieldAlert, color: 'text-rose-600', bg: 'bg-rose-50 dark:bg-rose-900/20' };
+      return { tool: 'Limiting Beliefs', path: '/sandbox/limiting-beliefs', icon: ShieldAlert, color: 'text-chart-destructive', bg: 'bg-muted' };
     }
-    return { tool: 'Identity Shifting', path: '/sandbox/identity-shifting', icon: Fingerprint, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/20' };
+    return { tool: 'Identity Shifting', path: '/sandbox/identity-shifting', icon: Fingerprint, color: 'text-chart-primary', bg: 'bg-muted' };
   };
 
   const IdentityCard = ({ item }: { item: any }) => {
@@ -334,20 +334,20 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
 
     return (
       <div className={cn(
-        "flex flex-col md:flex-row md:items-center justify-between p-6 bg-card rounded-[2rem] border transition-all gap-6 group",
+        "flex flex-col md:flex-row md:items-center justify-between p-6 bg-card rounded-xl border transition-all gap-6 group",
         item.priority_score > 80 ? "border-indigo-200 shadow-md" : "border-border",
-        isWIP && "border-amber-200 bg-amber-50/5",
-        isSuggested && "border-dashed border-indigo-300 bg-indigo-50/10",
+        isWIP && "border-border bg-muted/5",
+        isSuggested && "border-dashed border-border bg-muted/10",
         isScanning && "opacity-70 grayscale"
       )}>
         <div className="flex items-center gap-6 flex-1 min-w-0">
           <div className="relative shrink-0">
             <div className={cn(
-              "w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-110",
-              isIntegrated ? "bg-emerald-500 text-white" :
-              isSuggested ? "bg-indigo-100 text-indigo-600" :
-              rec.tool === 'Limiting Beliefs' ? "bg-rose-50 text-rose-600" :
-              rec.tool === 'Identity Alignment' ? "bg-emerald-50 text-emerald-600" : "bg-indigo-50 text-indigo-600"
+              "w-14 h-14 rounded-xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-110",
+              isIntegrated ? "bg-primary text-primary-foreground" :
+              isSuggested ? "bg-chart-primary/10 text-chart-primary" :
+              rec.tool === 'Limiting Beliefs' ? "bg-muted text-chart-destructive" :
+              rec.tool === 'Identity Alignment' ? "bg-muted text-chart-emerald" : "bg-muted text-chart-primary"
             )}>
               {isScanning ? <Loader2 size={28} className="animate-spin" /> :
                isIntegrated ? <CheckCircle size={28} /> :
@@ -356,7 +356,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
                rec.tool === 'Identity Alignment' ? <Target size={28} /> : <Fingerprint size={28} />}
             </div>
             {!isIntegrated && !isSuggested && item.priority_score > 0 && (
-              <div className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-black border-2 border-background shadow-lg">
+              <div className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-semibold border-2 border-background shadow-sm">
                 {item.priority_score}
               </div>
             )}
@@ -364,26 +364,26 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
 
           <div className="min-w-0 flex-1 space-y-3">
             <div className="flex items-center gap-3">
-              <p className={cn("font-black text-xl text-foreground truncate", isIntegrated && "text-slate-400")}>"{item.content}"</p>
-              {isWIP && <Badge className="bg-amber-500 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full animate-pulse">Work in Progress</Badge>}
-              {isSuggested && <Badge className="bg-indigo-600 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full">AI Insight</Badge>}
+              <p className={cn("font-semibold text-xl text-foreground truncate", isIntegrated && "text-muted-foreground")}>"{item.content}"</p>
+              {isWIP && <Badge className="bg-muted text-muted-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full animate-pulse">Work in Progress</Badge>}
+              {isSuggested && <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">AI Insight</Badge>}
             </div>
             
             {isSuggested ? (
-              <p className="text-sm text-slate-500 font-medium italic leading-relaxed">
+              <p className="text-sm text-muted-foreground font-medium italic leading-relaxed">
                 {item.priority_reasoning || "AI suggested this based on your recent session patterns."}
               </p>
             ) : (
               <div className="flex items-center gap-6">
                 <div className="flex-1 max-w-[150px] space-y-1.5">
-                  <div className="flex justify-between text-[8px] font-black uppercase tracking-widest text-muted-foreground">
+                  <div className="flex justify-between text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                     <span>{progressLabel}</span>
                     <span>{count} Sessions</span>
                   </div>
-                  <Progress value={progressValue} className={cn("h-1.5 bg-muted", isIntegrated ? "[&>div]:bg-emerald-500" : "[&>div]:bg-indigo-500")} />
+                  <Progress value={progressValue} className={cn("h-1.5 bg-muted", isIntegrated ? "[&>div]:bg-chart-emerald" : "[&>div]:bg-chart-primary")} />
                 </div>
                 <div className="h-6 w-px bg-border" />
-                <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1.5">
+                <span className="text-[10px] font-medium text-muted-foreground uppercase flex items-center gap-1.5">
                   <Calendar size={12} /> {format(new Date(item.created_at), "MMM d, yyyy")}
                 </span>
               </div>
@@ -392,15 +392,15 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
             {!isIntegrated && (item.priority_reasoning || item.polarity_insight) && (
               <div className="space-y-3 pt-2">
                 {item.priority_reasoning && (
-                  <p className="text-xs text-slate-500 font-medium italic leading-relaxed">
+                  <p className="text-xs text-muted-foreground font-medium italic leading-relaxed">
                     {item.priority_reasoning}
                   </p>
                 )}
                 {item.polarity_insight && (
-                  <div className="flex items-start gap-3 p-3 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-xl border border-indigo-100/50 dark:border-indigo-900/20">
-                    <ArrowRightLeft size={14} className="text-indigo-400 shrink-0 mt-0.5" />
-                    <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 leading-tight">
-                      <span className="uppercase text-[9px] font-black opacity-60 mr-2">Polarity:</span>
+                  <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-xl border border-border/50">
+                    <ArrowRightLeft size={14} className="text-muted-foreground shrink-0 mt-0.5" />
+                    <p className="text-xs font-medium text-muted-foreground leading-tight">
+                      <span className="uppercase text-[10px] font-semibold opacity-60 mr-2">Polarity:</span>
                       {item.polarity_insight}
                     </p>
                   </div>
@@ -417,13 +417,13 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
                 variant="ghost" 
                 size="sm" 
                 onClick={() => handleDelete(item.id)}
-                className="h-11 px-5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 font-bold text-[10px] uppercase tracking-widest"
+                className="h-11 px-5 rounded-xl text-muted-foreground/60 hover:text-chart-destructive hover:bg-muted font-medium text-[10px] uppercase tracking-wider"
               >
                 <X size={18} className="mr-2" /> Dismiss
               </Button>
               <Button 
                 onClick={() => handleAcceptSuggestion(item.id)}
-                className="h-11 px-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest shadow-lg"
+                className="h-11 px-8 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-[10px] uppercase tracking-wider shadow-sm"
               >
                 <Check size={18} className="mr-2" /> Accept & Add
               </Button>
@@ -433,7 +433,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
               {!isIntegrated && (
                 <div className={cn("hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl border border-transparent", rec.bg)}>
                   <rec.icon size={14} className={rec.color} />
-                  <span className={cn("text-[10px] font-black uppercase tracking-widest", rec.color)}>{rec.tool}</span>
+                  <span className={cn("text-[10px] font-semibold uppercase tracking-wider", rec.color)}>{rec.tool}</span>
                 </div>
               )}
               
@@ -444,17 +444,17 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
                       <MoreHorizontal size={22} />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-3xl border-none bg-card">
+                  <DropdownMenuContent align="end" className="w-56 rounded-xl p-2 shadow-3xl border-none bg-card">
                     {isIntegrated ? (
                       <DropdownMenuItem onClick={() => handleReactivate(item.id)} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4">
-                        <RefreshCw size={18} className="text-indigo-500" /> Reactivate
+                        <RefreshCw size={18} className="text-chart-primary" /> Reactivate
                       </DropdownMenuItem>
                     ) : (
                       <>
                         <DropdownMenuItem onClick={() => handleRescanItem(item)} disabled={isScanning} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4">
-                          <Wand2 size={18} className="text-indigo-500" /> Rescan with AI
+                          <Wand2 size={18} className="text-chart-primary" /> Rescan with AI
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleMarkIntegrated(item.id)} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4 text-emerald-600 font-bold">
+                        <DropdownMenuItem onClick={() => handleMarkIntegrated(item.id)} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4 text-chart-emerald font-medium">
                           <CheckCircle2 size={18} /> Mark Integrated
                         </DropdownMenuItem>
                       </>
@@ -468,8 +468,8 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
                 {!isIntegrated && (
                   <Button
                     className={cn(
-                      "h-11 px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-lg transition-all",
-                      isWIP ? "bg-amber-500 hover:bg-amber-600 text-white" : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                      "h-11 px-8 rounded-xl font-medium text-[10px] uppercase tracking-wider shadow-sm transition-all",
+                      isWIP ? "bg-muted text-muted-foreground" : "bg-primary hover:bg-primary/90 text-primary-foreground"
                     )}
                     asChild
                   >
@@ -497,7 +497,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
             subtitle="Track the evolution and integration of your internal constructs."
             icon={Sparkles}
             actions={
-              <Button onClick={handlePrioritize} disabled={isPrioritizing || backlog.length === 0} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-10 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100">
+              <Button onClick={handlePrioritize} disabled={isPrioritizing || backlog.length === 0} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-14 px-10 font-semibold text-xs uppercase tracking-wider shadow-sm">
                 {isPrioritizing ? <Loader2 className="mr-2 animate-spin" /> : <Wand2 size={20} className="mr-2" />}
                 AI Prioritize
               </Button>
@@ -509,21 +509,21 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {TOOLS.map((tool) => (
           <Link key={tool.id} to={tool.path} className="block group">
-            <Card className="border-none shadow-md rounded-[2.5rem] bg-card hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full overflow-hidden">
+            <Card className="border-none shadow-md rounded-xl bg-card hover:shadow-sm hover:-translate-y-1 transition-all duration-300 h-full overflow-hidden">
               <CardContent className="p-8 space-y-6">
                 <div className="flex items-start justify-between">
-                  <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm", tool.bgColor, tool.color)}>
+                  <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm", tool.bgColor, tool.color)}>
                     <tool.icon size={28} />
                   </div>
-                  <Badge variant="secondary" className="bg-muted text-muted-foreground border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">{tool.category}</Badge>
+                  <Badge variant="secondary" className="bg-muted text-muted-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full">{tool.category}</Badge>
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-xl font-black text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{tool.label}</h3>
+                  <h3 className="text-xl font-semibold text-foreground group-hover:text-chart-primary transition-colors">{tool.label}</h3>
                   <p className="text-sm text-muted-foreground font-medium leading-relaxed">{tool.desc}</p>
                 </div>
                 <div className="pt-4 flex items-center justify-between border-t border-border">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-indigo-600 transition-colors">Launch Tool</span>
-                  <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-indigo-600 group-hover:text-white transition-all"><ArrowRight size={18} /></div>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground group-hover:text-chart-primary transition-colors">Launch Tool</span>
+                  <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all"><ArrowRight size={18} /></div>
                 </div>
               </CardContent>
             </Card>
@@ -534,23 +534,23 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
       <div className="space-y-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 px-2">
-            <TabsList className="bg-slate-200/50 p-1.5 rounded-2xl h-14 border border-slate-200">
-              <TabsTrigger value="active" className="rounded-xl px-8 h-11 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"><Zap className="mr-2" size={16} /> Active Map</TabsTrigger>
-              <TabsTrigger value="suggested" className="rounded-xl px-8 h-11 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest">
+            <TabsList className="bg-muted/50 p-1.5 rounded-xl h-14 border border-border">
+              <TabsTrigger value="active" className="rounded-xl px-8 h-11 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm transition-all font-medium text-xs uppercase tracking-wider"><Zap className="mr-2" size={16} /> Active Map</TabsTrigger>
+              <TabsTrigger value="suggested" className="rounded-xl px-8 h-11 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm transition-all font-medium text-xs uppercase tracking-wider">
                 <Sparkles className="mr-2" size={16} /> Suggested
                 {backlog.filter(i => i.status === 'suggested').length > 0 && (
-                  <span className="ml-2 w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                  <span className="ml-2 w-2 h-2 rounded-full bg-chart-destructive animate-pulse" />
                 )}
               </TabsTrigger>
-              <TabsTrigger value="archive" className="rounded-xl px-8 h-11 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"><Archive className="mr-2" size={16} /> Integrated</TabsTrigger>
-              <TabsTrigger value="history" className="rounded-xl px-8 h-11 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"><History className="mr-2" size={16} /> Session History</TabsTrigger>
+              <TabsTrigger value="archive" className="rounded-xl px-8 h-11 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm transition-all font-medium text-xs uppercase tracking-wider"><Archive className="mr-2" size={16} /> Integrated</TabsTrigger>
+              <TabsTrigger value="history" className="rounded-xl px-8 h-11 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm transition-all font-medium text-xs uppercase tracking-wider"><History className="mr-2" size={16} /> Session History</TabsTrigger>
             </TabsList>
 
             {activeTab === 'suggested' && sortedBacklog.length > 0 && (
               <Button 
                 onClick={handleAcceptAllSuggestions}
                 disabled={isAcceptingAll}
-                className="h-12 px-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-widest shadow-lg"
+                className="h-12 px-8 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-[10px] uppercase tracking-wider shadow-sm"
               >
                 {isAcceptingAll ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 size={18} className="mr-2" />}
                 Accept All Suggestions
@@ -564,22 +564,22 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
                   size="sm" 
                   onClick={handlePrioritize}
                   disabled={isPrioritizing || sortedBacklog.length === 0}
-                  className="h-11 px-5 rounded-xl text-indigo-600 hover:bg-indigo-50 font-bold text-[10px] uppercase tracking-widest"
+                  className="h-11 px-5 rounded-xl text-chart-primary hover:bg-muted font-medium text-[10px] uppercase tracking-wider"
                 >
                   {isPrioritizing ? <Loader2 size={16} className="mr-2 animate-spin" /> : <Wand2 size={16} className="mr-2" />}
                   Reanalyze Map
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="rounded-xl h-11 px-5 border-border font-bold text-[10px] uppercase tracking-widest">
+                    <Button variant="outline" size="sm" className="rounded-xl h-11 px-5 border-border font-medium text-[10px] uppercase tracking-wider">
                       <ArrowDownWideNarrow size={16} className="mr-2" /> Sort: {sortBy.charAt(0).toUpperCase() + sortBy.slice(1)}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-3xl border-none bg-card">
-                    <DropdownMenuItem onClick={() => setSortBy('priority')} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4"><TrendingUp size={18} className="text-indigo-500" /> AI Priority</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSortBy('progress')} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4"><Activity size={18} className="text-emerald-500" /> Most Worked</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSortBy('newest')} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4"><Calendar size={18} className="text-indigo-500" /> Newest First</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setSortBy('type')} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4"><Layers size={18} className="text-purple-500" /> By Tool Type</DropdownMenuItem>
+                  <DropdownMenuContent align="end" className="w-56 rounded-xl p-2 shadow-3xl border-none bg-card">
+                    <DropdownMenuItem onClick={() => setSortBy('priority')} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4"><TrendingUp size={18} className="text-chart-primary" /> AI Priority</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortBy('progress')} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4"><Activity size={18} className="text-chart-emerald" /> Most Worked</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortBy('newest')} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4"><Calendar size={18} className="text-chart-primary" /> Newest First</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setSortBy('type')} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4"><Layers size={18} className="text-muted-foreground" /> By Tool Type</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -587,14 +587,14 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
           </div>
 
           <TabsContent value="active" className="mt-0 focus-visible:ring-0">
-            {loading ? <div className="flex justify-center py-20"><Loader2 className="animate-spin text-indigo-600" size={48} /></div> : sortedBacklog.length > 0 ? (
+            {loading ? <div className="flex justify-center py-20"><Loader2 className="animate-spin text-chart-primary" size={48} /></div> : sortedBacklog.length > 0 ? (
               <div className="space-y-4">
                 {sortedBacklog.map((item) => <IdentityCard key={item.id} item={item} />)}
               </div>
             ) : (
-              <div className="text-center py-32 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
-                <div className="w-20 h-20 bg-card rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl"><Zap className="text-muted-foreground" size={40} /></div>
-                <p className="text-foreground font-black text-2xl">Your map is clear</p>
+              <div className="text-center py-32 bg-muted/30 rounded-xl border-2 border-dashed border-border">
+                <div className="w-20 h-20 bg-card rounded-xl flex items-center justify-center mx-auto mb-6 shadow-sm"><Zap className="text-muted-foreground" size={40} /></div>
+                <p className="text-foreground font-semibold text-2xl">Your map is clear</p>
                 <p className="text-muted-foreground mt-2 font-medium">Add identities or beliefs from the dashboard to track them here.</p>
               </div>
             )}
@@ -603,18 +603,18 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
           <TabsContent value="suggested" className="mt-0 focus-visible:ring-0">
             {sortedBacklog.length > 0 ? (
               <div className="space-y-4">
-                <Alert className="bg-indigo-50 border-indigo-100 rounded-[2rem] mb-8 p-6">
-                  <Info className="h-5 w-5 text-indigo-600" />
-                  <AlertDescription className="text-base text-indigo-900 font-medium">
+                <Alert className="bg-muted border-border rounded-xl mb-8 p-6">
+                  <Info className="h-5 w-5 text-chart-primary" />
+                  <AlertDescription className="text-base text-foreground font-medium">
                     These insights were extracted by AI from your recent sessions. Review them and add the ones that resonate to your active map.
                   </AlertDescription>
                 </Alert>
                 {sortedBacklog.map((item) => <IdentityCard key={item.id} item={item} />)}
               </div>
             ) : (
-              <div className="text-center py-32 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
-                <div className="w-20 h-20 bg-card rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl"><Sparkles className="text-muted-foreground" size={40} /></div>
-                <p className="text-foreground font-black text-2xl">No suggestions yet</p>
+              <div className="text-center py-32 bg-muted/30 rounded-xl border-2 border-dashed border-border">
+                <div className="w-20 h-20 bg-card rounded-xl flex items-center justify-center mx-auto mb-6 shadow-sm"><Sparkles className="text-muted-foreground" size={40} /></div>
+                <p className="text-foreground font-semibold text-2xl">No suggestions yet</p>
                 <p className="text-muted-foreground mt-2 font-medium">Complete a session and run a "Deep Scan" to see AI insights here.</p>
               </div>
             )}
@@ -626,9 +626,9 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
                 {sortedBacklog.map((item) => <IdentityCard key={item.id} item={item} />)}
               </div>
             ) : (
-              <div className="text-center py-32 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
-                <div className="w-20 h-20 bg-card rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl"><Archive className="text-muted-foreground" size={40} /></div>
-                <p className="text-foreground font-black text-2xl">No integrated identities yet</p>
+              <div className="text-center py-32 bg-muted/30 rounded-xl border-2 border-dashed border-border">
+                <div className="w-20 h-20 bg-card rounded-xl flex items-center justify-center mx-auto mb-6 shadow-sm"><Archive className="text-muted-foreground" size={40} /></div>
+                <p className="text-foreground font-semibold text-2xl">No integrated identities yet</p>
                 <p className="text-muted-foreground mt-2 font-medium">Mark an active identity as "Integrated" to move it here.</p>
               </div>
             )}
@@ -640,13 +640,13 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
         </Tabs>
       </div>
 
-      <Card className="border-none shadow-2xl rounded-[3.5rem] bg-slate-900 text-white overflow-hidden relative">
+      <Card className="border border-border shadow-sm rounded-xl bg-card text-foreground overflow-hidden relative">
         <div className="absolute top-0 right-0 p-12 opacity-10"><Brain size={200} /></div>
         <CardContent className="p-12 md:p-16 flex flex-col md:flex-row items-center gap-12 relative z-10">
-          <div className="w-28 h-28 rounded-[2rem] bg-indigo-600 flex items-center justify-center shrink-0 shadow-2xl shadow-indigo-500/40"><Zap size={56} className="text-white" /></div>
+          <div className="w-28 h-28 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm"><Zap size={56} className="text-primary-foreground" /></div>
           <div className="space-y-4">
-            <h4 className="text-3xl font-black tracking-tight">The Identity Lab</h4>
-            <p className="text-slate-400 font-medium text-xl leading-relaxed max-w-3xl">"The self is not a fixed entity, but a collection of constructs. In the Sandbox, we treat these constructs as hypotheses to be tested, dissolved, and aligned with our highest intentions."</p>
+            <h4 className="text-3xl font-semibold tracking-tight">The Identity Lab</h4>
+            <p className="text-muted-foreground font-medium text-xl leading-relaxed max-w-3xl">"The self is not a fixed entity, but a collection of constructs. In the Sandbox, we treat these constructs as hypotheses to be tested, dissolved, and aligned with our highest intentions."</p>
           </div>
         </CardContent>
       </Card>

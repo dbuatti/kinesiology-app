@@ -58,10 +58,10 @@ import PageHeader from "@/components/shared/PageHeader";
 import { cn } from "@/lib/utils";
 
 const CATEGORIES = [
-  { id: 'General', icon: Lock, color: 'text-slate-500', bg: 'bg-slate-50' },
-  { id: 'Meetup Question', icon: HelpCircle, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-  { id: 'Doubt', icon: Brain, color: 'text-rose-600', bg: 'bg-rose-50' },
-  { id: 'Reflection', icon: Sparkles, color: 'text-amber-600', bg: 'bg-amber-50' },
+  { id: 'General', icon: Lock, color: 'text-muted-foreground', bg: 'bg-muted' },
+  { id: 'Meetup Question', icon: HelpCircle, color: 'text-chart-primary', bg: 'bg-muted' },
+  { id: 'Doubt', icon: Brain, color: 'text-chart-destructive', bg: 'bg-muted' },
+  { id: 'Reflection', icon: Sparkles, color: 'text-muted-foreground', bg: 'bg-muted' },
 ];
 
 const JournalPage = () => {
@@ -403,10 +403,10 @@ const JournalPage = () => {
 
   const getToolRecommendation = (type: string) => {
     switch (type) {
-      case 'belief': return { label: 'Limiting Beliefs', icon: ShieldAlert, color: 'text-rose-600', bg: 'bg-rose-50' };
-      case 'shifting': return { label: 'Identity Shifting', icon: Fingerprint, color: 'text-indigo-600', bg: 'bg-indigo-50' };
-      case 'alignment': return { label: 'Identity Alignment', icon: Target, color: 'text-emerald-600', bg: 'bg-emerald-50' };
-      case 'felt_sense': return { label: 'Somatic Tracking', icon: Wind, color: 'text-blue-600', bg: 'bg-blue-50' };
+      case 'belief': return { label: 'Limiting Beliefs', icon: ShieldAlert, color: 'text-chart-destructive', bg: 'bg-muted' };
+      case 'shifting': return { label: 'Identity Shifting', icon: Fingerprint, color: 'text-chart-primary', bg: 'bg-muted' };
+      case 'alignment': return { label: 'Identity Alignment', icon: Target, color: 'text-chart-emerald', bg: 'bg-muted' };
+      case 'felt_sense': return { label: 'Somatic Tracking', icon: Wind, color: 'text-chart-primary', bg: 'bg-muted' };
       default: return null;
     }
   };
@@ -425,7 +425,7 @@ const JournalPage = () => {
                 variant="outline" 
                 onClick={handleScanAll}
                 disabled={isScanning || reflections.length === 0}
-                className="rounded-xl h-12 px-6 font-bold text-xs uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50"
+                className="rounded-xl h-12 px-6 font-medium text-xs uppercase tracking-wider border-indigo-100 text-chart-primary hover:bg-muted"
               >
                 {isScanning ? <Loader2 className="animate-spin mr-2" /> : <Wand2 size={18} className="mr-2" />}
                 Scan All
@@ -434,7 +434,7 @@ const JournalPage = () => {
                 variant="outline" 
                 onClick={() => handleAddAllToBacklog()}
                 disabled={isAddingAll || reflections.length === 0}
-                className="rounded-xl h-12 px-6 font-bold text-xs uppercase tracking-widest border-emerald-100 text-emerald-600 hover:bg-emerald-50"
+                className="rounded-xl h-12 px-6 font-medium text-xs uppercase tracking-wider border-border text-chart-emerald hover:bg-muted"
               >
                 {isAddingAll ? <Loader2 className="animate-spin mr-2" /> : <Layers size={18} className="mr-2" />}
                 Add All to Backlog
@@ -444,34 +444,34 @@ const JournalPage = () => {
         />
 
         {loading ? (
-          <div className="p-24 flex flex-col items-center justify-center gap-6 bg-slate-50 rounded-[3rem]">
-            <Loader2 className="animate-spin text-indigo-500" size={48} />
-            <p className="text-indigo-600 font-black text-xs uppercase tracking-widest">Loading journal...</p>
+          <div className="p-24 flex flex-col items-center justify-center gap-6 bg-muted rounded-xl">
+            <Loader2 className="animate-spin text-chart-primary" size={48} />
+            <p className="text-chart-primary font-semibold text-xs uppercase tracking-wider">Loading journal...</p>
           </div>
         ) : error ? (
-          <div className="p-24 flex flex-col items-center justify-center gap-6 bg-red-50 rounded-[3rem]">
-            <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
-              <span className="text-2xl font-black text-red-500">!</span>
+          <div className="p-24 flex flex-col items-center justify-center gap-6 bg-muted rounded-xl">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+              <span className="text-2xl font-semibold text-chart-destructive">!</span>
             </div>
-            <p className="text-red-600 font-black text-xs uppercase tracking-widest text-center">Failed to load journal</p>
-            <p className="text-red-400 text-xs text-center max-w-md">{error}</p>
-            <Button onClick={fetchData} className="bg-red-500 hover:bg-red-600 rounded-xl font-bold text-xs">
+            <p className="text-chart-destructive font-semibold text-xs uppercase tracking-wider text-center">Failed to load journal</p>
+            <p className="text-muted-foreground text-xs text-center max-w-md">{error}</p>
+            <Button onClick={fetchData} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-xl font-medium text-xs">
               <RotateCcw size={14} className="mr-2" /> Retry
             </Button>
           </div>
         ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-14 bg-slate-200/50 p-1.5 rounded-2xl mb-8">
-            <TabsTrigger value="log" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
+          <TabsList className="grid w-full grid-cols-2 h-14 bg-muted/50 p-1.5 rounded-xl mb-8">
+            <TabsTrigger value="log" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
               <BookOpen size={14} /> Journal Log
             </TabsTrigger>
-            <TabsTrigger value="meetup" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
+            <TabsTrigger value="meetup" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
               <GraduationCap size={14} /> Meetup Questions
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="log" className="space-y-10 mt-0">
-            <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+            <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
               <CardContent className="p-8 space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex flex-wrap gap-2">
@@ -480,10 +480,10 @@ const JournalPage = () => {
                         key={cat.id}
                         onClick={() => setCategory(cat.id)}
                         className={cn(
-                          "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border-2",
+                          "px-4 py-2 rounded-xl text-[10px] font-semibold uppercase tracking-wider transition-all flex items-center gap-2 border-2",
                           category === cat.id 
-                            ? "bg-slate-900 border-slate-900 text-white shadow-lg" 
-                            : "bg-white border-slate-100 text-slate-400 hover:border-indigo-200 hover:text-indigo-600"
+                            ? "bg-primary border-primary text-primary-foreground shadow-sm" 
+                            : "bg-card border-border text-muted-foreground hover:border-border hover:text-foreground"
                         )}
                       >
                         <cat.icon size={14} />
@@ -497,13 +497,13 @@ const JournalPage = () => {
                       value={selectedAppointmentId || "none"} 
                       onValueChange={(v) => setSelectedAppointmentId(v === "none" ? null : v)}
                     >
-                      <SelectTrigger className="h-10 rounded-xl border-slate-200 bg-slate-50 font-bold text-[10px] uppercase tracking-widest">
+                      <SelectTrigger className="h-10 rounded-xl border-border bg-muted font-medium text-[10px] uppercase tracking-wider">
                         <div className="flex items-center gap-2">
-                          <LinkIcon size={14} className="text-indigo-50" />
+                          <LinkIcon size={14} className="text-muted-foreground/40" />
                           <SelectValue placeholder="Link to Session" />
                         </div>
                       </SelectTrigger>
-                      <SelectContent className="rounded-2xl border-none shadow-2xl p-2">
+                      <SelectContent className="rounded-xl border-none shadow-sm p-2">
                         <SelectItem value="none" className="rounded-xl">Private (No Session)</SelectItem>
                         {appointments.map(app => (
                           <SelectItem key={app.id} value={app.id} className="rounded-xl">
@@ -517,7 +517,7 @@ const JournalPage = () => {
 
                 <Textarea 
                   placeholder="Write your thoughts here. AI will automatically extract beliefs, identities, and goals for your Sandbox..."
-                  className="min-h-[200px] rounded-[2rem] border-2 border-slate-100 focus:border-indigo-500 bg-white p-8 text-xl font-medium leading-relaxed shadow-inner resize-none transition-all"
+                  className="min-h-[200px] rounded-xl border-2 border-border focus:border-primary bg-card p-8 text-xl font-medium leading-relaxed shadow-inner resize-none transition-all"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                 />
@@ -526,7 +526,7 @@ const JournalPage = () => {
                   <Button 
                     onClick={handleSave} 
                     disabled={saving || !content.trim()}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 px-10 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-14 px-10 font-semibold text-xs uppercase tracking-wider shadow-sm"
                   >
                     {saving ? <Loader2 className="mr-2 animate-spin" /> : <Save size={18} className="mr-2" />}
                     Save & Analyze
@@ -537,12 +537,12 @@ const JournalPage = () => {
 
             <div className="grid grid-cols-1 gap-6">
               {reflections.length === 0 ? (
-                <div className="text-center py-24 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
-                  <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-sm">
-                    <BookOpen size={28} className="text-slate-400" />
+                <div className="text-center py-24 bg-muted rounded-xl border-2 border-dashed border-border">
+                  <div className="w-16 h-16 bg-card rounded-xl flex items-center justify-center mx-auto mb-5 shadow-sm">
+                    <BookOpen size={28} className="text-muted-foreground" />
                   </div>
-                  <h3 className="text-lg font-black text-slate-900">No journal entries yet</h3>
-                  <p className="text-sm text-slate-500 mt-1 max-w-xs mx-auto">
+                  <h3 className="text-lg font-semibold text-foreground">No journal entries yet</h3>
+                  <p className="text-sm text-muted-foreground mt-1 max-w-xs mx-auto">
                     Write your first reflection above, or link it to a session for clinical tracking.
                   </p>
                 </div>
@@ -553,7 +553,7 @@ const JournalPage = () => {
                 const pendingExtractions = extractions.filter((e: any) => e.type !== 'question' && e.status !== 'added');
 
                 return (
-                  <Card key={ref.id} className="border-none shadow-md rounded-[2rem] bg-white group hover:shadow-xl transition-all duration-500 overflow-hidden">
+                  <Card key={ref.id} className="border-none shadow-md rounded-xl bg-card group hover:shadow-sm transition-all duration-500 overflow-hidden">
                     <CardContent className="p-8 space-y-6">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
@@ -562,53 +562,53 @@ const JournalPage = () => {
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <Badge variant="outline" className="border-none font-black text-[8px] uppercase tracking-widest p-0 text-slate-400">
+                              <Badge variant="outline" className="border-none font-semibold text-[10px] uppercase tracking-wider p-0 text-muted-foreground">
                                 {ref.category}
                               </Badge>
                               {ref.appointments ? (
                                 <Link to={`/appointments/${ref.appointments.id}`}>
-                                  <Badge className="bg-indigo-600 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5">
+                                  <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5">
                                     <Zap size={10} className="fill-current" />
                                     Session: {ref.appointments.clients?.name}
                                   </Badge>
                                 </Link>
                               ) : (
-                                <Badge className="bg-slate-100 text-slate-500 border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full">
+                                <Badge className="bg-muted text-muted-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
                                   Private Entry
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-[10px] font-bold text-slate-400 flex items-center gap-1 mt-1">
+                            <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1 mt-1">
                               <Calendar size={10} /> {format(new Date(ref.created_at), "MMMM d, yyyy")}
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           {isAnalyzing ? (
-                            <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-xl font-black text-[10px] uppercase tracking-widest">
+                            <div className="flex items-center gap-2 px-4 py-2 bg-muted text-chart-primary rounded-xl font-semibold text-[10px] uppercase tracking-wider">
                               <Loader2 size={14} className="animate-spin" /> Analyzing...
                             </div>
                           ) : (
                             extractions.length === 0 && (
-                              <Button variant="ghost" size="sm" onClick={() => handleAnalyze(ref)} className="h-9 px-4 rounded-xl text-indigo-600 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest">
+                              <Button variant="ghost" size="sm" onClick={() => handleAnalyze(ref)} className="h-9 px-4 rounded-xl text-chart-primary hover:bg-muted font-semibold text-[10px] uppercase tracking-wider">
                                 <Wand2 size={14} className="mr-2" /> Extract Insights
                               </Button>
                             )
                           )}
-                          <Button variant="ghost" size="icon" className="rounded-xl text-slate-200 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all" onClick={() => handleDelete(ref.id)}>
+                          <Button variant="ghost" size="icon" className="rounded-xl text-muted-foreground hover:text-chart-destructive opacity-0 group-hover:opacity-100 transition-all" onClick={() => handleDelete(ref.id)}>
                             <Trash2 size={18} />
                           </Button>
                         </div>
                       </div>
                       
-                      <p className="text-lg font-medium text-slate-700 leading-relaxed whitespace-pre-wrap">{ref.content}</p>
+                      <p className="text-lg font-medium text-foreground leading-relaxed whitespace-pre-wrap">{ref.content}</p>
 
                       {extractions.length > 0 && (
-                        <div className="pt-6 border-t border-slate-100 space-y-4">
+                        <div className="pt-6 border-t border-border space-y-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <Sparkles size={14} className="text-amber-500" />
-                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Extracted Sandbox Insights</p>
+                              <Sparkles size={14} className="text-muted-foreground" />
+                              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Extracted Sandbox Insights</p>
                             </div>
                             {pendingExtractions.length > 1 && (
                               <Button 
@@ -616,7 +616,7 @@ const JournalPage = () => {
                                 size="sm" 
                                 onClick={() => handleAddAllToBacklog(ref.id)}
                                 disabled={addingToBacklog === `all-${ref.id}`}
-                                className="h-7 px-3 rounded-lg border-indigo-200 text-indigo-600 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest"
+                                className="h-7 px-3 rounded-lg border-border text-chart-primary hover:bg-muted font-semibold text-[10px] uppercase tracking-wider"
                               >
                                 {addingToBacklog === `all-${ref.id}` ? <Loader2 size={10} className="animate-spin mr-1.5" /> : <Layers size={10} className="mr-1.5" />}
                                 Add All to Backlog
@@ -629,14 +629,14 @@ const JournalPage = () => {
                               const isAddingThis = addingToBacklog === `${ref.id}-${i}`;
 
                               return (
-                                <div key={i} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100 group/item hover:border-indigo-200 transition-all">
+                                <div key={i} className="flex items-center justify-between p-4 bg-muted rounded-xl border border-border group/item hover:border-border transition-all">
                                   <div className="flex items-center gap-4 min-w-0">
                                     <div className={cn(
                                       "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
-                                      item.type === 'question' ? "bg-indigo-50 text-indigo-700" :
-                                      item.type === 'belief' ? "bg-rose-50 text-rose-700" : 
-                                      item.type === 'alignment' ? "bg-emerald-50 text-emerald-600" : 
-                                      item.type === 'felt_sense' ? "bg-blue-50 text-blue-600" : "bg-slate-100 text-slate-600"
+                                      item.type === 'question' ? "bg-chart-primary/10 text-chart-primary" :
+                                      item.type === 'belief' ? "bg-chart-destructive/10 text-chart-destructive" : 
+                                      item.type === 'alignment' ? "bg-muted text-chart-emerald" : 
+                                      item.type === 'felt_sense' ? "bg-muted text-chart-primary" : "bg-muted text-muted-foreground"
                                     )}>
                                       {item.type === 'question' ? <HelpCircle size={18} /> : 
                                        item.type === 'belief' ? <ShieldAlert size={18} /> : 
@@ -645,14 +645,14 @@ const JournalPage = () => {
                                     </div>
                                     <div className="min-w-0">
                                       <p className={cn(
-                                        "text-sm font-bold truncate",
-                                        item.status === 'added' ? "text-slate-400 line-through" : "text-slate-900"
+                                        "text-sm font-medium truncate",
+                                        item.status === 'added' ? "text-muted-foreground line-through" : "text-foreground"
                                       )}>
                                         {item.content}
                                       </p>
                                       {tool && item.status !== 'added' && (
                                         <div className="flex items-center gap-1.5 mt-1">
-                                          <span className={cn("text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md", tool.bg, tool.color)}>
+                                          <span className={cn("text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md", tool.bg, tool.color)}>
                                             For {tool.label}
                                           </span>
                                         </div>
@@ -665,14 +665,14 @@ const JournalPage = () => {
                                       size="sm" 
                                       onClick={() => handleAddToBacklog(ref.id, item, i)}
                                       disabled={isAddingThis}
-                                      className="h-9 px-3 rounded-xl text-indigo-600 hover:bg-indigo-100 font-black text-[9px] uppercase tracking-widest"
+                                      className="h-9 px-3 rounded-xl text-chart-primary hover:bg-muted font-semibold text-[10px] uppercase tracking-wider"
                                     >
                                       {isAddingThis ? <Loader2 size={12} className="animate-spin mr-1.5" /> : <PlusCircle size={14} className="mr-1.5" />}
                                       Add
                                     </Button>
                                   )}
                                   {item.status === 'added' && (
-                                    <Badge className="bg-emerald-500 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full">
+                                    <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
                                       <CheckCircle2 size={10} className="mr-1" /> Added
                                     </Badge>
                                   )}
@@ -692,28 +692,28 @@ const JournalPage = () => {
           <TabsContent value="meetup" className="space-y-8 mt-0">
             <div className="grid grid-cols-1 gap-4">
               {pendingQuestions.map((q) => (
-                <Card key={q.id} className="border-none shadow-md rounded-[2rem] bg-white hover:shadow-xl transition-all duration-500 overflow-hidden group">
+                <Card key={q.id} className="border-none shadow-md rounded-xl bg-card hover:shadow-sm transition-all duration-500 overflow-hidden group">
                   <CardContent className="p-8 space-y-6">
                     <div className="flex items-start justify-between gap-8">
                       <div className="flex items-start gap-6 flex-1 min-w-0">
-                        <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-all">
+                        <div className="w-12 h-12 rounded-xl bg-muted text-chart-primary flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-all">
                           <HelpCircle size={24} />
                         </div>
                         <div className="space-y-2 min-w-0">
                           <div className="flex items-center gap-3">
-                            <Badge variant="outline" className="border-none font-black text-[8px] uppercase tracking-widest p-0 text-slate-400">
+                            <Badge variant="outline" className="border-none font-semibold text-[10px] uppercase tracking-wider p-0 text-muted-foreground">
                               {q.source}
                             </Badge>
                             {q.clientName && (
-                              <Badge className="bg-slate-100 text-slate-500 border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5 rounded-full">
+                              <Badge className="bg-muted text-muted-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full">
                                 Client: {q.clientName}
                               </Badge>
                             )}
                           </div>
-                          <p className="text-xl font-bold leading-tight text-slate-900">
+                          <p className="text-xl font-medium leading-tight text-foreground">
                             {q.content}
                           </p>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
                             Logged {format(new Date(q.date), "MMM d, yyyy")}
                           </p>
                         </div>
@@ -724,7 +724,7 @@ const JournalPage = () => {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleDeleteQuestion(q)}
-                          className="h-11 w-11 rounded-xl text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-all"
+                          className="h-11 w-11 rounded-xl text-muted-foreground hover:text-chart-destructive hover:bg-muted transition-all"
                         >
                           <Trash2 size={20} />
                         </Button>
@@ -733,7 +733,7 @@ const JournalPage = () => {
                             setRespondingToId(q.id);
                             setTempResponse("");
                           }}
-                          className="rounded-xl h-11 px-6 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-100 font-black text-[10px] uppercase tracking-widest"
+                          className="rounded-xl h-11 px-6 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm font-semibold text-[10px] uppercase tracking-wider"
                         >
                           <MessageCircle size={14} className="mr-2" /> Add Response
                         </Button>
@@ -741,23 +741,23 @@ const JournalPage = () => {
                     </div>
 
                     {respondingToId === q.id && (
-                      <div className="pt-6 border-t border-slate-100 space-y-4 animate-in slide-in-from-top-2 duration-300">
+                      <div className="pt-6 border-t border-border space-y-4 animate-in slide-in-from-top-2 duration-300">
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-black uppercase tracking-widest text-indigo-600 ml-1">Teacher's Response</Label>
+                          <Label className="text-[10px] font-semibold uppercase tracking-wider text-chart-primary ml-1">Teacher's Response</Label>
                           <Textarea 
                             placeholder="Type the answer or insight from the teacher here..."
-                            className="min-h-[120px] rounded-2xl border-2 border-indigo-100 focus:border-indigo-500 bg-indigo-50/30 p-6 text-base font-medium leading-relaxed"
+                            className="min-h-[120px] rounded-xl border-2 border-border focus:border-primary bg-muted/30 p-6 text-base font-medium leading-relaxed"
                             value={tempResponse}
                             onChange={(e) => setTempResponse(e.target.value)}
                             autoFocus
                           />
                         </div>
                         <div className="flex justify-end gap-3">
-                          <Button variant="ghost" onClick={() => setRespondingToId(null)} className="rounded-xl h-10 px-4 font-bold text-xs">Cancel</Button>
+                          <Button variant="ghost" onClick={() => setRespondingToId(null)} className="rounded-xl h-10 px-4 font-medium text-xs">Cancel</Button>
                           <Button 
                             onClick={() => handleSaveResponse(q)}
                             disabled={!tempResponse.trim()}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-10 px-6 font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-100"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-10 px-6 font-semibold text-[10px] uppercase tracking-wider shadow-sm"
                           >
                             Save & Archive
                           </Button>
@@ -769,12 +769,12 @@ const JournalPage = () => {
               ))}
 
               {pendingQuestions.length === 0 && (
-                <div className="text-center py-32 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
-                  <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
-                    <CheckCircle2 size={40} className="text-emerald-500" />
+                <div className="text-center py-32 bg-muted rounded-xl border-2 border-dashed border-border">
+                  <div className="w-20 h-20 bg-card rounded-xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                    <CheckCircle2 size={40} className="text-chart-emerald" />
                   </div>
-                  <h3 className="text-xl font-black text-slate-900">All questions answered!</h3>
-                  <p className="text-slate-500 mt-2">You're fully prepped for your next meetup.</p>
+                  <h3 className="text-xl font-semibold text-foreground">All questions answered!</h3>
+                  <p className="text-muted-foreground mt-2">You're fully prepped for your next meetup.</p>
                 </div>
               )}
             </div>

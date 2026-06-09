@@ -305,7 +305,7 @@ const ClientDetailPage = () => {
 
   if (loading) return (
     <div className="flex min-h-screen items-center justify-center">
-      <Loader2 className="animate-spin text-indigo-500" size={48} />
+      <Loader2 className="animate-spin text-chart-primary" size={48} />
     </div>
   );
 
@@ -329,7 +329,7 @@ const ClientDetailPage = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-black text-[10px] uppercase tracking-widest h-10 px-4"
+                className="bg-muted border-border text-chart-primary hover:bg-muted rounded-xl font-semibold text-[10px] uppercase tracking-wider h-10 px-4"
                 onClick={() => setAssessmentModal({ open: true, type: 'bolt' })}
               >
                 <FlaskConical size={14} className="mr-2" /> Log BOLT
@@ -337,7 +337,7 @@ const ClientDetailPage = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-rose-50 border-rose-100 text-rose-600 hover:bg-rose-100 rounded-xl font-black text-[10px] uppercase tracking-widest h-10 px-4"
+                className="bg-muted border-border text-chart-destructive hover:bg-muted rounded-xl font-semibold text-[10px] uppercase tracking-wider h-10 px-4"
                 onClick={() => setAssessmentModal({ open: true, type: 'coherence' })}
               >
                 <Activity size={14} className="mr-2" /> Log COH
@@ -345,7 +345,7 @@ const ClientDetailPage = () => {
               <Button
                 variant="outline"
                 size="sm"
-                className="bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-bold h-10"
+                className="bg-muted border-border text-chart-primary hover:bg-muted rounded-xl font-medium h-10"
                 onClick={handleSendOnboardingEmail}
                 disabled={sendingEmail || !client.email}
               >
@@ -356,7 +356,7 @@ const ClientDetailPage = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="bg-purple-50 border-purple-100 text-purple-600 hover:bg-purple-100 rounded-xl font-black text-[10px] uppercase tracking-widest h-10 px-4"
+                  className="bg-muted border-border text-chart-primary hover:bg-muted rounded-xl font-semibold text-[10px] uppercase tracking-wider h-10 px-4"
                   onClick={() => window.open(client.notion_link, '_blank')}
                 >
                   <ExternalLink size={14} className="mr-2" /> Open in Notion
@@ -364,14 +364,14 @@ const ClientDetailPage = () => {
               )}
               <Dialog open={editOpen} onOpenChange={setEditOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="bg-white rounded-xl border-slate-200 h-10">
+                  <Button variant="outline" size="sm" className="bg-card rounded-xl border-border h-10">
                     <Edit3 size={16} className="mr-2" /> Edit Profile
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-[2rem] p-0">
+                <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-xl p-0">
                   <div className="p-8">
                     <DialogHeader className="mb-6">
-                      <DialogTitle className="text-2xl font-black">Edit Client Profile</DialogTitle>
+                      <DialogTitle className="text-2xl font-semibold">Edit Client Profile</DialogTitle>
                       <DialogDescription className="font-medium">Update the personal and clinical details for this client.</DialogDescription>
                     </DialogHeader>
                     <ClientForm 
@@ -391,12 +391,12 @@ const ClientDetailPage = () => {
                           <MoreHorizontal size={20} />
                       </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-2xl border-none bg-card">
+                  <DropdownMenuContent align="end" className="rounded-xl p-2 shadow-sm border-none bg-card">
                       <DropdownMenuItem onClick={handleCopyOnboardingLink} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
-                        <LinkIcon size={16} className="text-indigo-500" /> Copy Onboarding Link
+                        <LinkIcon size={16} className="text-chart-primary" /> Copy Onboarding Link
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleCopyForAI} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
-                        <Sparkles size={16} className="text-indigo-500" /> Copy AI Case Prompt
+                        <Sparkles size={16} className="text-chart-primary" /> Copy AI Case Prompt
                       </DropdownMenuItem>
                       <DropdownMenuSeparator className="my-2" />
                       <DropdownMenuItem 
@@ -412,14 +412,14 @@ const ClientDetailPage = () => {
         />
 
         <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 h-14 bg-slate-200/50 p-1.5 rounded-2xl mb-8">
-            <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
+          <TabsList className="grid w-full grid-cols-3 h-14 bg-muted p-1.5 rounded-xl mb-8">
+            <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
               <LayoutDashboard size={14} /> Overview
             </TabsTrigger>
-            <TabsTrigger value="appointments" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
+            <TabsTrigger value="appointments" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
               <History size={14} /> Appointments
             </TabsTrigger>
-            <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-11 font-black uppercase tracking-wider text-[10px]">
+            <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
               <TrendingUp size={14} /> Progress & Protocols
             </TabsTrigger>
           </TabsList>
@@ -430,26 +430,26 @@ const ClientDetailPage = () => {
               <div className="lg:col-span-4 space-y-6">
                 <ClientProfileCard client={client} />
 
-                <Card className="border-none shadow-sm bg-white rounded-2xl overflow-hidden">
-                  <CardHeader className="pb-3 bg-slate-50/50 border-b border-slate-100">
-                    <CardTitle className="text-sm font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                      <Zap size={16} className="text-indigo-500" /> Automation Status
+                <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+                  <CardHeader className="pb-3 bg-muted/50 border-b border-border">
+                    <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                      <Zap size={16} className="text-chart-primary" /> Automation Status
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-chart-primary">
                           <Mail size={16} />
                         </div>
-                        <span className="text-xs font-bold text-slate-700">Kit Sync</span>
+                        <span className="text-xs font-medium text-foreground">Kit Sync</span>
                       </div>
                       <Button 
                         variant="ghost" 
                         size="sm" 
                         onClick={handleManualKitSync}
                         disabled={syncingKit}
-                        className="h-8 text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50"
+                        className="h-8 text-[10px] font-semibold uppercase tracking-wider text-chart-primary hover:bg-muted"
                       >
                         {syncingKit ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
                         Sync Now
@@ -457,17 +457,17 @@ const ClientDetailPage = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-chart-primary">
                           <CreditCard size={16} />
                         </div>
-                        <span className="text-xs font-bold text-slate-700">Stripe Sync</span>
+                        <span className="text-xs font-medium text-foreground">Stripe Sync</span>
                       </div>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={handleSyncToStripe}
                         disabled={syncingStripe}
-                        className="h-8 text-[10px] font-black uppercase tracking-widest text-blue-600 hover:bg-blue-50"
+                        className="h-8 text-[10px] font-semibold uppercase tracking-wider text-chart-primary hover:bg-muted"
                       >
                         {syncingStripe ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
                         {(client as any).stripe_customer_id ? 'Update' : 'Sync'}
@@ -475,10 +475,10 @@ const ClientDetailPage = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
+                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-chart-primary">
                           <ExternalLink size={16} />
                         </div>
-                        <span className="text-xs font-bold text-slate-700">Notion Sync</span>
+                        <span className="text-xs font-medium text-foreground">Notion Sync</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         {client.notion_link && (
@@ -486,7 +486,7 @@ const ClientDetailPage = () => {
                             variant="ghost"
                             size="icon"
                             onClick={() => window.open(client.notion_link, '_blank')}
-                            className="h-8 w-8 text-purple-600 hover:bg-purple-50 rounded-lg"
+                            className="h-8 w-8 text-chart-primary hover:bg-muted rounded-lg"
                             title="Open in Notion"
                           >
                             <ExternalLink size={14} />
@@ -497,7 +497,7 @@ const ClientDetailPage = () => {
                           size="sm"
                           onClick={handleSyncToNotion}
                           disabled={syncingNotion}
-                          className="h-8 text-[10px] font-black uppercase tracking-widest text-purple-600 hover:bg-purple-50"
+                          className="h-8 text-[10px] font-semibold uppercase tracking-wider text-chart-primary hover:bg-muted"
                         >
                           {syncingNotion ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
                           {client.notion_link ? 'Update' : 'Sync'}
@@ -506,79 +506,79 @@ const ClientDetailPage = () => {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-chart-emerald">
                           <ShieldCheck size={16} />
                         </div>
-                        <span className="text-xs font-bold text-slate-700">Onboarding</span>
+                        <span className="text-xs font-medium text-foreground">Onboarding</span>
                       </div>
-                      <Badge className="bg-emerald-500 text-white border-none font-black text-[8px] uppercase tracking-widest">
+                      <Badge className="bg-chart-emerald/10 text-chart-emerald border-none font-semibold text-[10px] uppercase tracking-wider">
                         Complete
                       </Badge>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-sm bg-white rounded-2xl">
+                <Card className="border-none shadow-sm bg-card rounded-xl">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg font-bold text-slate-900">Contact & Background</CardTitle>
+                    <CardTitle className="text-lg font-medium text-foreground">Contact & Background</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {client.occupation && (
-                      <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                      <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-muted transition-colors">
+                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
                           <Briefcase size={16} />
                         </div>
-                        <span className="text-slate-700 font-medium">{client.occupation}</span>
+                        <span className="text-foreground font-medium">{client.occupation}</span>
                       </div>
                     )}
                     {client.marital_status && (
-                      <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                      <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-muted transition-colors">
+                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
                           <Heart size={16} />
                         </div>
-                        <span className="text-slate-700 font-medium">{client.marital_status}</span>
+                        <span className="text-foreground font-medium">{client.marital_status}</span>
                       </div>
                     )}
                     {client.children && (
-                      <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                      <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-muted transition-colors">
+                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
                           <Baby size={16} />
                         </div>
-                        <span className="text-slate-700 font-medium">Children: {client.children}</span>
+                        <span className="text-foreground font-medium">Children: {client.children}</span>
                       </div>
                     )}
-                    <hr className="border-slate-100" />
-                    <div className="flex items-center justify-between group/contact p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                    <hr className="border-border" />
+                    <div className="flex items-center justify-between group/contact p-2 rounded-lg hover:bg-muted transition-colors">
                       <div className="flex items-center gap-3 text-sm">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
                             <Mail size={16} />
                         </div>
-                        <span className="text-slate-700 font-medium">{client.email || 'No email'}</span>
+                        <span className="text-foreground font-medium">{client.email || 'No email'}</span>
                       </div>
                       {client.email && (
                         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity" onClick={() => handleCopy(client.email!, 'email')}>
-                          {copiedField === 'email' ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} className="text-slate-400" />}
+                          {copiedField === 'email' ? <Check size={14} className="text-chart-emerald" /> : <Copy size={14} className="text-muted-foreground/60" />}
                         </Button>
                       )}
                     </div>
-                    <div className="flex items-center justify-between group/contact p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center justify-between group/contact p-2 rounded-lg hover:bg-muted transition-colors">
                       <div className="flex items-center gap-3 text-sm">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
                             <Phone size={16} />
                         </div>
-                        <span className="text-slate-700 font-medium">{client.phone || 'No phone'}</span>
+                        <span className="text-foreground font-medium">{client.phone || 'No phone'}</span>
                       </div>
                       {client.phone && (
                         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity" onClick={() => handleCopy(client.phone!, 'phone')}>
-                          {copiedField === 'phone' ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} className="text-slate-400" />}
+                          {copiedField === 'phone' ? <Check size={14} className="text-chart-emerald" /> : <Copy size={14} className="text-muted-foreground/60" />}
                         </Button>
                       )}
                     </div>
-                    <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-slate-50 transition-colors">
-                      <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                    <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-muted transition-colors">
+                      <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
                           <MapPin size={16} />
                       </div>
-                      <div className="flex gap-1 flex-wrap text-slate-700 font-medium">
+                      <div className="flex gap-1 flex-wrap text-foreground font-medium">
                         {client.suburbs.length > 0 ? client.suburbs.map(s => <span key={s} className="mr-1">{s}</span>) : 'No suburb'}
                       </div>
                     </div>
@@ -589,46 +589,46 @@ const ClientDetailPage = () => {
               {/* Right Column: Clinical Profile & History */}
               <div className="lg:col-span-8 space-y-8">
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
-                  <Card className="border-none shadow-sm rounded-2xl bg-white border-t-4 border-indigo-500">
+                  <Card className="border-none shadow-sm rounded-xl bg-card border-t-4 border-chart-primary">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
-                        <Activity size={16} className="text-indigo-500" /> Total Sessions
+                      <CardTitle className="text-sm flex items-center gap-2 text-foreground">
+                        <Activity size={16} className="text-chart-primary" /> Total Sessions
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-3xl font-extrabold text-slate-900">{rollups.totalSessions}</p>
-                      <p className="text-xs text-slate-400 mt-1">Last: {rollups.lastAppointment}</p>
+                      <p className="text-3xl font-extrabold text-foreground">{rollups.totalSessions}</p>
+                      <p className="text-xs text-muted-foreground/60 mt-1">Last: {rollups.lastAppointment}</p>
                     </CardContent>
                   </Card>
                   
-                  <Card className="border-none shadow-sm rounded-2xl bg-white border-t-4 border-emerald-500">
+                  <Card className="border-none shadow-sm rounded-xl bg-card border-t-4 border-chart-emerald">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
-                        <FlaskConical size={16} className="text-emerald-500" /> Latest BOLT
+                      <CardTitle className="text-sm flex items-center gap-2 text-foreground">
+                        <FlaskConical size={16} className="text-chart-emerald" /> Latest BOLT
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className={cn(
                         "text-3xl font-extrabold",
-                        appointments.find(a => a.bolt_score)?.bolt_score ? (appointments.find(a => a.bolt_score)!.bolt_score! >= 25 ? "text-emerald-600" : "text-rose-600") : "text-slate-300"
+                        appointments.find(a => a.bolt_score)?.bolt_score ? (appointments.find(a => a.bolt_score)!.bolt_score! >= 25 ? "text-chart-emerald" : "text-chart-destructive") : "text-muted-foreground/60"
                       )}>
                         {appointments.find(a => a.bolt_score)?.bolt_score ? `${appointments.find(a => a.bolt_score)!.bolt_score}s` : "N/A"}
                       </p>
-                      <p className="text-xs text-slate-400 mt-1">Target: 40s</p>
+                      <p className="text-xs text-muted-foreground/60 mt-1">Target: 40s</p>
                     </CardContent>
                   </Card>
 
-                  <Card className="border-none shadow-sm rounded-2xl bg-white border-t-4 border-rose-500">
+                  <Card className="border-none shadow-sm rounded-xl bg-card border-t-4 border-chart-destructive">
                     <CardHeader className="pb-2">
-                      <CardTitle className="text-sm flex items-center gap-2 text-slate-700">
-                        <Brain size={16} className="text-rose-500" /> Latest Coherence
+                      <CardTitle className="text-sm flex items-center gap-2 text-foreground">
+                        <Brain size={16} className="text-chart-destructive" /> Latest Coherence
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-3xl font-extrabold text-rose-600">
+                      <p className="text-3xl font-extrabold text-chart-destructive">
                         {appointments.find(a => a.coherence_score)?.coherence_score?.toFixed(2) || "N/A"}
                       </p>
-                      <p className="text-xs text-slate-400 mt-1">Autonomic sync ratio</p>
+                      <p className="text-xs text-muted-foreground/60 mt-1">Autonomic sync ratio</p>
                     </CardContent>
                   </Card>
                 </div>
@@ -636,75 +636,75 @@ const ClientDetailPage = () => {
                 {/* Comprehensive Clinical Profile Section */}
                 <div className="space-y-6">
                   <div className="flex items-center gap-3 px-2">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+                    <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
                       <ShieldAlert size={20} />
                     </div>
-                    <h2 className="text-2xl font-black text-foreground tracking-tight">Clinical Profile</h2>
+                    <h2 className="text-2xl font-semibold text-foreground tracking-tight">Clinical Profile</h2>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card className="border-none shadow-sm bg-white rounded-[2rem] overflow-hidden">
-                      <CardHeader className="bg-rose-50/50 border-b border-rose-100">
-                        <CardTitle className="text-xs font-black uppercase tracking-widest text-rose-600 flex items-center gap-2">
+                    <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+                      <CardHeader className="bg-muted/50 border-b border-border">
+                        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-chart-destructive flex items-center gap-2">
                           <Activity size={14} /> Medical History & Injuries
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="p-6">
-                        <p className="text-sm font-medium text-slate-700 leading-relaxed whitespace-pre-wrap">
+                        <p className="text-sm font-medium text-foreground leading-relaxed whitespace-pre-wrap">
                           {client.medical_history || "No medical history recorded."}
                         </p>
                       </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-sm bg-white rounded-[2rem] overflow-hidden">
-                      <CardHeader className="bg-amber-50/50 border-b border-amber-100">
-                        <CardTitle className="text-xs font-black uppercase tracking-widest text-amber-600 flex items-center gap-2">
+                    <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+                      <CardHeader className="bg-muted/50 border-b border-border">
+                        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                           <Zap size={14} /> Medications & Supplements
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="p-6">
-                        <p className="text-sm font-medium text-slate-700 leading-relaxed whitespace-pre-wrap">
+                        <p className="text-sm font-medium text-foreground leading-relaxed whitespace-pre-wrap">
                           {client.medications_supplements || "No medications recorded."}
                         </p>
                       </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-sm bg-white rounded-[2rem] overflow-hidden">
-                      <CardHeader className="bg-indigo-50/50 border-b border-indigo-100">
-                        <CardTitle className="text-xs font-black uppercase tracking-widest text-indigo-600 flex items-center gap-2">
+                    <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+                      <CardHeader className="bg-muted/50 border-b border-border">
+                        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-chart-primary flex items-center gap-2">
                           <ShieldAlert size={14} /> Emergency Contact
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="p-6 space-y-3">
                         <div>
-                          <p className="text-[10px] font-black text-slate-400 uppercase">Contact Name</p>
-                          <p className="text-sm font-bold text-slate-900">{client.emergency_contact_name || "Not provided"}</p>
+                          <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase">Contact Name</p>
+                          <p className="text-sm font-medium text-foreground">{client.emergency_contact_name || "Not provided"}</p>
                         </div>
                         <div>
-                          <p className="text-[10px] font-black text-slate-400 uppercase">Contact Phone</p>
-                          <p className="text-sm font-bold text-slate-900">{client.emergency_contact_phone || "Not provided"}</p>
+                          <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase">Contact Phone</p>
+                          <p className="text-sm font-medium text-foreground">{client.emergency_contact_phone || "Not provided"}</p>
                         </div>
                       </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-sm bg-white rounded-[2rem] overflow-hidden">
-                      <CardHeader className="bg-emerald-50/50 border-b border-emerald-100">
-                        <CardTitle className="text-xs font-black uppercase tracking-widest text-emerald-600 flex items-center gap-2">
+                    <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+                      <CardHeader className="bg-muted/50 border-b border-border">
+                        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-chart-emerald flex items-center gap-2">
                           <TrendingUp size={14} /> Baseline Health Vitals
                         </CardTitle>
                       </CardHeader>                      <CardContent className="p-6">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase">Stress Level</p>
-                            <p className="text-lg font-black text-indigo-600">{client.current_stress_level || "—"} / 10</p>
+                            <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase">Stress Level</p>
+                            <p className="text-lg font-semibold text-chart-primary">{client.current_stress_level || "—"} / 10</p>
                           </div>
                           <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase">Sleep Quality</p>
-                            <p className="text-sm font-bold text-slate-900">{client.sleep_quality || "Not set"}</p>
+                            <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase">Sleep Quality</p>
+                            <p className="text-sm font-medium text-foreground">{client.sleep_quality || "Not set"}</p>
                           </div>
                           <div className="col-span-2">
-                            <p className="text-[10px] font-black text-slate-400 uppercase">Digestive Health</p>
-                            <p className="text-sm font-bold text-slate-900">{client.digestive_health || "Not set"}</p>
+                            <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase">Digestive Health</p>
+                            <p className="text-sm font-medium text-foreground">{client.digestive_health || "Not set"}</p>
                           </div>
                         </div>
                       </CardContent>
@@ -712,25 +712,25 @@ const ClientDetailPage = () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card className="bg-slate-50 border-slate-100 shadow-none rounded-2xl">
+                    <Card className="bg-muted border-border shadow-none rounded-xl">
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                           <Info size={14} /> Referral Source
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-sm font-bold text-slate-700">{client.referral_source || "Not recorded"}</p>
+                        <p className="text-sm font-medium text-foreground">{client.referral_source || "Not recorded"}</p>
                       </CardContent>
                     </Card>
 
-                    <Card className="bg-amber-50/50 border-amber-100 shadow-none rounded-2xl">
+                    <Card className="bg-muted/50 border-border shadow-none rounded-xl">
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-black uppercase tracking-widest text-amber-600 flex items-center gap-2">
+                        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                           <History size={14} /> Practitioner Journal
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-sm text-amber-900/80 whitespace-pre-wrap leading-relaxed font-medium">
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed font-medium">
                           {parseClientJournal(client.journal).notes || "No personal reflections recorded."}
                         </p>
                       </CardContent>
@@ -750,7 +750,7 @@ const ClientDetailPage = () => {
                           <Plus size={14} className="mr-1" /> Log Contact
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="rounded-2xl sm:max-w-md">
+                      <DialogContent className="rounded-xl sm:max-w-md">
                         <DialogHeader>
                           <DialogTitle className="text-base font-semibold">Log Contact with {client?.name}</DialogTitle>
                           <DialogDescription className="text-sm text-muted-foreground">
@@ -778,7 +778,7 @@ const ClientDetailPage = () => {
                     </Dialog>
                   </div>
                   {(!(client as any).contact_log || (client as any).contact_log.length === 0) ? (
-                    <div className="text-sm text-muted-foreground/70 py-6 text-center border border-dashed border-border rounded-2xl">
+                    <div className="text-sm text-muted-foreground/70 py-6 text-center border border-dashed border-border rounded-xl">
                       No contact events logged yet.
                     </div>
                   ) : (
@@ -811,24 +811,24 @@ const ClientDetailPage = () => {
                   {appointments.slice(0, 3).map(app => (
                     <div key={app.id} className="relative group">
                       <Link to={`/appointments/${app.id}`}>
-                        <Card className="hover:shadow-md transition-all border-slate-200 bg-white group rounded-2xl overflow-hidden cursor-pointer">
+                        <Card className="hover:shadow-md transition-all border-border bg-card group rounded-xl overflow-hidden cursor-pointer">
                           <CardContent className="p-6">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                               <div className="space-y-3 flex-1">
                                 <div className="flex items-center gap-3">
-                                  <Badge variant="secondary" className="font-bold bg-slate-100 text-slate-600">{(app as any).display_id || app.id.slice(0,8)}</Badge>
-                                  <span className="font-bold text-lg text-slate-900 group-hover:text-indigo-600 transition-colors">{app.name || format(app.date, "MMM d, yyyy")}</span>
+                                  <Badge variant="secondary" className="font-medium bg-muted text-muted-foreground">{(app as any).display_id || app.id.slice(0,8)}</Badge>
+                                  <span className="font-medium text-lg text-foreground group-hover:text-chart-primary transition-colors">{app.name || format(app.date, "MMM d, yyyy")}</span>
                                 </div>
-                                <div className="flex items-center gap-4 text-sm text-slate-500 font-medium">
-                                  <span className="flex items-center gap-1.5"><Calendar size={14} className="text-indigo-400" /> {format(app.date, "MMM d")}</span>
+                                <div className="flex items-center gap-4 text-sm text-muted-foreground font-medium">
+                                  <span className="flex items-center gap-1.5"><Calendar size={14} className="text-chart-primary" /> {format(app.date, "MMM d")}</span>
                                   <span className={cn(
-                                      "px-2 py-0.5 rounded-full text-xs font-bold",
-                                      app.status === 'Completed' ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-600"
+                                      "px-2 py-0.5 rounded-full text-xs font-medium",
+                                      app.status === 'Completed' ? "bg-muted text-chart-emerald" : "bg-muted text-muted-foreground"
                                   )}>
                                     {app.status}
                                   </span>
                                   {app.is_paid && !app.payment_received && (
-                                    <Badge className="bg-amber-100 text-amber-700 border-none font-black text-[8px] uppercase tracking-widest">Payment Due</Badge>
+                                    <Badge className="bg-muted text-muted-foreground border-none font-semibold text-[10px] uppercase tracking-wider">Payment Due</Badge>
                                   )}
                                 </div>
                               </div>
@@ -837,7 +837,7 @@ const ClientDetailPage = () => {
                                 {app.is_paid && !app.payment_received && (
                                   <Button 
                                     size="sm" 
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-9 px-4 font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100"
+                                    className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-9 px-4 font-semibold text-[10px] uppercase tracking-wider shadow-sm"
                                     onClick={(e) => handleGeneratePaymentLink(e, app)}
                                     disabled={generatingLink === app.id}
                                   >
@@ -845,7 +845,7 @@ const ClientDetailPage = () => {
                                     Generate Link
                                   </Button>
                                 )}
-                                <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground/60 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                                   <ArrowRight size={16} />
                                 </div>
                               </div>
@@ -856,7 +856,7 @@ const ClientDetailPage = () => {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="absolute top-4 right-4 h-8 w-8 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
+                        className="absolute top-4 right-4 h-8 w-8 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground/60 hover:text-chart-primary hover:bg-muted"
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleCopyFullSummary(app); }}
                       >
                         <Copy size={14} />
@@ -870,14 +870,14 @@ const ClientDetailPage = () => {
 
           <TabsContent value="appointments" className="space-y-6">
             <div className="flex justify-between items-center">
-              <h3 className="text-2xl font-black text-slate-900">Session History</h3>
+              <h3 className="text-2xl font-semibold text-foreground">Session History</h3>
               <Dialog open={appOpen} onOpenChange={setAppOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 rounded-xl h-10 px-4">
+                  <Button size="sm" className="bg-primary hover:bg-primary/90 shadow-sm rounded-xl h-10 px-4">
                     <Plus size={16} className="mr-2" /> Book Session
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto rounded-[2rem]">
+                <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto rounded-xl">
                   <DialogHeader>
                     <DialogTitle>Schedule New Appointment</DialogTitle>
                     <DialogDescription>Book a new session for this client.</DialogDescription>
@@ -897,26 +897,26 @@ const ClientDetailPage = () => {
               {appointments.map(app => (
                 <div key={app.id} className="relative group">
                   <Link to={`/appointments/${app.id}`}>
-                    <Card className="hover:shadow-md transition-all border-slate-200 bg-white group rounded-2xl overflow-hidden cursor-pointer">
+                    <Card className="hover:shadow-md transition-all border-border bg-card group rounded-xl overflow-hidden cursor-pointer">
                       <CardContent className="p-6">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                           <div className="space-y-3 flex-1">
                             <div className="flex items-center gap-3">
-                              <Badge variant="secondary" className="font-bold bg-slate-100 text-slate-600">{(app as any).display_id || app.id.slice(0,8)}</Badge>
-                              <span className="font-bold text-lg text-slate-900 group-hover:text-indigo-600 transition-colors">{app.name || format(app.date, "MMM d, yyyy")}</span>
-                              <Badge className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-none">{app.tag}</Badge>
+                              <Badge variant="secondary" className="font-medium bg-muted text-muted-foreground">{(app as any).display_id || app.id.slice(0,8)}</Badge>
+                              <span className="font-medium text-lg text-foreground group-hover:text-chart-primary transition-colors">{app.name || format(app.date, "MMM d, yyyy")}</span>
+                              <Badge className="bg-muted text-chart-primary hover:bg-muted border-none">{app.tag}</Badge>
                             </div>
-                            <div className="flex items-center gap-4 text-sm text-slate-500 font-medium">
-                              <span className="flex items-center gap-1.5"><Calendar size={14} className="text-indigo-400" /> {format(app.date, "EEEE, MMM d")}</span>
-                              <span className="flex items-center gap-1.5"><Clock size={14} className="text-indigo-500" /> {format(app.date, "h:mm a")}</span>
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground font-medium">
+                              <span className="flex items-center gap-1.5"><Calendar size={14} className="text-chart-primary" /> {format(app.date, "EEEE, MMM d")}</span>
+                              <span className="flex items-center gap-1.5"><Clock size={14} className="text-chart-primary" /> {format(app.date, "h:mm a")}</span>
                               <span className={cn(
-                                  "px-2 py-0.5 rounded-full text-xs font-bold",
-                                  app.status === 'Completed' ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-600"
+                                  "px-2 py-0.5 rounded-full text-xs font-medium",
+                                  app.status === 'Completed' ? "bg-muted text-chart-emerald" : "bg-muted text-muted-foreground"
                               )}>
                                 {app.status}
                               </span>
                               {app.is_paid && !app.payment_received && (
-                                <Badge className="bg-amber-100 text-amber-700 border-none font-black text-[8px] uppercase tracking-widest">Payment Due</Badge>
+                                <Badge className="bg-muted text-muted-foreground border-none font-semibold text-[10px] uppercase tracking-wider">Payment Due</Badge>
                               )}
                             </div>
                           </div>
@@ -925,7 +925,7 @@ const ClientDetailPage = () => {
                             {app.is_paid && !app.payment_received && (
                               <Button 
                                 size="sm" 
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-9 px-4 font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100"
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-9 px-4 font-semibold text-[10px] uppercase tracking-wider shadow-sm"
                                 onClick={(e) => handleGeneratePaymentLink(e, app)}
                                 disabled={generatingLink === app.id}
                               >
@@ -933,7 +933,7 @@ const ClientDetailPage = () => {
                                 Generate Link
                               </Button>
                             )}
-                            <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                            <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground/60 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                               <ArrowRight size={16} />
                             </div>
                           </div>
@@ -944,7 +944,7 @@ const ClientDetailPage = () => {
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="absolute top-4 right-4 h-8 w-8 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
+                    className="absolute top-4 right-4 h-8 w-8 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground/60 hover:text-chart-primary hover:bg-muted"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleCopyFullSummary(app); }}
                   >
                     <Copy size={14} />

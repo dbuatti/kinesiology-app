@@ -1,8 +1,8 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Scale, Info, Save, Loader2, RotateCcw, ImageOff, CheckCircle2, Zap, RefreshCw, ArrowRightLeft } from "lucide-react";
+import { Scale, Info, Save, Loader2, RotateCcw, ImageOff, CheckCircle2, Zap, RefreshCw, ArrowRightLeft, Timer, Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -33,6 +33,24 @@ const SharpenedRhombergsTest = ({
   const [eyesOpenTime, setEyesOpenTime] = useState<string>("");
   const [eyesClosedTime, setEyesClosedTime] = useState<string>("");
   const [swayDirection, setSwayDirection] = useState<string>("");
+
+  // Timer
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (timerRunning) {
+      timerRef.current = setInterval(() => setTimerSeconds(prev => prev + 1), 1000);
+    } else if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [timerRunning]);
+
+  const startTimer = () => { setTimerSeconds(0); setTimerRunning(true); };
+  const pauseTimer = () => { setTimerRunning(false); };
+  const resetTimer = () => { setTimerSeconds(0); setTimerRunning(false); };
 
   const imagePath = "/images/sharpened-rhombergs-test.png";
 
@@ -241,7 +259,7 @@ const SharpenedRhombergsTest = ({
                 </div>
               )}
             </div>
-            <ol className="space-y-2 text-sm text-purple-900 list-decimal list-inside">
+            <ol className="space-y-2 text-sm text-purple-900 list-decimal list-inside mb-4">
               <li>Client places feet together with toes pointing forward (heel-to-toe stance).</li>
               <li>Instruct client to lengthen through the spine.</li>
               <li>Fixate on a target with the eyes.</li>
@@ -249,6 +267,38 @@ const SharpenedRhombergsTest = ({
               <li>Close the eyes.</li>
               <li>Maintain posture for a minimum of 20 seconds.</li>
             </ol>
+            <div className="pt-3 border-t border-purple-100">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Timer size={14} className="text-muted-foreground" />
+                  <span className="text-xs font-medium text-muted-foreground">Hold timer</span>
+                  <span className="text-sm font-semibold tabular-nums text-foreground">{timerSeconds}s</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  {!timerRunning ? (
+                    <Button variant="ghost" size="sm" onClick={startTimer} className="h-7 w-7 rounded-lg">
+                      <Play size={14} />
+                    </Button>
+                  ) : (
+                    <Button variant="ghost" size="sm" onClick={pauseTimer} className="h-7 w-7 rounded-lg">
+                      <Pause size={14} />
+                    </Button>
+                  )}
+                  <Button variant="ghost" size="sm" onClick={resetTimer} className="h-7 w-7 rounded-lg text-muted-foreground">
+                    <RotateCcw size={14} />
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => { setEyesOpenTime(timerSeconds.toString()); generateNotes(timerSeconds.toString(), eyesClosedTime, swayDirection); resetTimer(); }} className="h-7 rounded-lg text-[10px] text-chart-primary hover:bg-muted px-2">
+                    Eyes Open
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => { setEyesClosedTime(timerSeconds.toString()); generateNotes(eyesOpenTime, timerSeconds.toString(), swayDirection); resetTimer(); }} className="h-7 rounded-lg text-[10px] text-chart-destructive hover:bg-muted px-2">
+                    Eyes Closed
+                  </Button>
+                </div>
+              </div>
+              <div className="mt-2 w-full h-1 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-chart-primary transition-all duration-1000" style={{ width: `${Math.min(100, (timerSeconds / 30) * 100)}%` }} />
+              </div>
+            </div>
           </div>
 
           {/* Structured Clinical Fields */}

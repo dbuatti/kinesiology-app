@@ -58,7 +58,7 @@ const BusinessOverviewPage = () => {
  if (!user) throw new Error("Not authenticated");
 
  const [apptsRes, voicesRes, upcomingApptsRes, upcomingVoicesRes] = await Promise.all([
- supabase.from("appointments").select("id, client_id, date, price_amount, payment_received, clients(name, email)").order("date", { ascending: false }),
+  supabase.from("appointments").select("id, client_id, date, price_amount, payment_received, status, clients(name, email)").order("date", { ascending: false }),
  supabase.from("voice_bookings").select("id, student_name, student_email, lesson_date, cost, status").order("lesson_date", { ascending: false }),
  supabase.from("appointments").select("id, date").gte("date", new Date().toISOString().split("T")[0]).limit(1),
  supabase.from("voice_bookings").select("id, lesson_date, status").gte("lesson_date", new Date().toISOString().split("T")[0]).eq("status", "scheduled"),
@@ -70,7 +70,7 @@ const BusinessOverviewPage = () => {
  setUpcomingAppts(upcomingApptsRes.data?.length || 0);
  setUpcomingLessons(upcomingVoicesRes.data?.length || 0);
 
- const paid = (apptsRes.data || []).filter(a => a.payment_received && a.price_amount);
+  const paid = (apptsRes.data || []).filter(a => a.payment_received && a.price_amount && a.status !== 'Cancelled' && a.status !== 'No Show');
  const cmap = new Map<string, KineClientSpend>();
  for (const a of paid) {
  if (!a.client_id) continue;

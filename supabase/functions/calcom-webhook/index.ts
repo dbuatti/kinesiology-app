@@ -42,7 +42,28 @@ serve(async (req) => {
 
     if (triggerEvent === 'BOOKING_CANCELLED') {
       console.log(`[${functionName}] Deleting cancelled booking: ${calcomId}`);
-      await supabase.from('appointments').delete().eq('calcom_booking_id', calcomId);
+      const { error } = await supabase.from('appointments').delete().eq('calcom_booking_id', calcomId);
+      
+      // Also try to match by time window if calcom_booking_id didn't match
+      if (!error) {
+        const attendee = (payload.attendees && payload.attendees[0]) || 
+                         (payload.responses && { name: payload.responses.name, email: payload.responses.email });
+        const startTime = payload.startTime || payload.start;
+        
+        if (attendee?.email && startTime) {
+          const email = String(attendee.email).toLowerCase().trim();
+          const { data: client } = await supabase.from('clients').select('id').eq('email', email).maybeSingle();
+          if (client) {
+            const startDate = new Date(startTime);
+            const wStart = new Date(startDate.getTime() - 300000).toISOString();
+            const wEnd = new Date(startDate.getTime() + 300000).toISOString();
+            await supabase.from('appointments').delete()
+              .eq('client_id', client.id)
+              .gte('date', wStart)
+              .lte('date', wEnd);
+          }
+        }
+      }
       return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
     }
 

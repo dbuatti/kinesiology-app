@@ -8,7 +8,8 @@ import {
   ChevronRight,
   ExternalLink,
   Zap,
-  ChevronUp
+  ChevronUp,
+  MessageCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppointmentWithClient } from '@/types/crm';
@@ -170,6 +171,13 @@ const SessionDocumentView = ({
             </div>
             
             <div className="flex items-center gap-2">
+              {appointment.clients.phone && (
+                <Button variant="outline" size="sm"
+                  onClick={() => window.open(`imessage:${appointment.clients.phone}`, '_blank')}
+                  className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
+                  <MessageCircle size={12} className="mr-1" /> Message
+                </Button>
+              )}
               {appointment.notion_link && (
                 <Button asChild variant="outline" size="sm" className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
                   <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">

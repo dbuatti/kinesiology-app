@@ -18,7 +18,7 @@ import {
   ChevronRight, Settings2, Sparkles, Globe, ExternalLink,
   PanelLeftClose, PanelLeftOpen, ClipboardCheck, MoreHorizontal, Printer,
   ArrowLeft, Calendar, Clock, Link as LinkIcon, Maximize2, Minimize2, Trash2,
-  ChevronDown, ChevronUp, AlertCircle, Plus, Droplets, CreditCard, ShieldAlert
+  ChevronDown, ChevronUp, AlertCircle, Plus, Droplets, CreditCard, ShieldAlert, MessageCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
@@ -393,6 +393,15 @@ const AppointmentDetailPage = () => {
                   <FileText size={13} />
                   <span className="hidden md:inline">Doc View</span>
                 </Button>
+                {appointment.clients.phone && (
+                  <Button variant="outline" size="sm"
+                    onClick={() => window.open(`imessage:${appointment.clients.phone}`, '_blank')}
+                    className="h-8 px-2.5 gap-1.5 border-border bg-card rounded-lg text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
+                    title={`Message ${appointment.clients.name}`}>
+                    <MessageCircle size={13} />
+                    <span className="hidden md:inline">Message</span>
+                  </Button>
+                )}
                 <Button variant="outline" size="sm"
                   onClick={() => setShowSidebar(!showSidebar)}
                   className={cn(

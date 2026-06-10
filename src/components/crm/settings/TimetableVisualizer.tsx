@@ -623,12 +623,12 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  localStorage.setItem('timetable_locked', String(next));
  return next;
  })}
- className={cn(
- "rounded-xl text-xs font-medium h-9 px-4",
- isLocked
- ? "bg-muted hover:bg-muted/80 text-white border-none"
- : "border-border/60"
- )}
+  className={cn(
+  "rounded-xl text-xs font-medium h-9 px-4",
+  isLocked
+  ? "bg-muted hover:bg-muted/80 text-foreground border-none"
+  : "border-border/60"
+  )}
  >
  {isLocked
  ? <><Lock size={13} className="mr-1.5" /> Locked</>
@@ -651,12 +651,12 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
 
  {!isLocked && scheduledData.conflictsList.length > 0 && (
  <Button onClick={() => setIsOptimized(!isOptimized)} size="sm"
- className={cn(
- "rounded-xl h-9 px-5 font-semibold text-[10px] uppercase tracking-wider",
- isOptimized
- ? "bg-chart-emerald hover:bg-chart-emerald/90 text-white "
- : "bg-muted hover:bg-muted/80 text-white "
- )}>
+  className={cn(
+  "rounded-xl h-9 px-5 font-semibold text-[10px] uppercase tracking-wider",
+  isOptimized
+  ? "bg-chart-emerald hover:bg-chart-emerald/90 text-white "
+  : "bg-muted hover:bg-muted/80 text-foreground "
+  )}>
  {isOptimized
  ? <><CheckCircle2 size={13} className="mr-1.5" /> View Original</>
  : <><RefreshCw size={13} className="mr-1.5" /> Auto-Resolve ({scheduledData.conflictsList.length})</>}

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface SearchResult {
   type: "client" | "appointment" | "procedure" | "action" | "channel" | "page" | "mode";
@@ -34,7 +35,7 @@ interface SearchResult {
 
 const RECENT_SEARCHES_KEY = "antigravity_recent_searches";
 
-const SearchBar = () => {
+const SearchBar = ({ compact = false }: { compact?: boolean }) => {
   const [open, setOpen] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [recentSearches, setRecentSearches] = useState<SearchResult[]>([]);
@@ -260,16 +261,22 @@ const SearchBar = () => {
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="flex items-center justify-center lg:justify-start gap-3 px-3 lg:px-4 py-2.5 text-sm text-slate-500 bg-slate-100/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl hover:bg-white dark:hover:bg-slate-800 hover:shadow-md transition-all w-full group"
-      >
-        <Search size={16} className="group-hover:text-indigo-600 transition-colors shrink-0" />
-        <span className="font-medium hidden lg:inline">Command Center...</span>
-        <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded-lg border bg-white dark:bg-slate-950 px-2 font-mono text-[10px] font-black text-slate-400 shadow-sm hidden lg:inline-flex">
-          <span className="text-xs">⌘</span>K
-        </kbd>
-      </button>
+      {compact ? (
+        <Button variant="ghost" size="icon" onClick={() => setOpen(true)} className="w-9 h-9 rounded-xl text-muted-foreground hover:text-foreground" title="Search (⌘K)">
+          <Search size={18} />
+        </Button>
+      ) : (
+        <button
+          onClick={() => setOpen(true)}
+          className="flex items-center justify-center lg:justify-start gap-3 px-3 lg:px-4 py-2.5 text-sm text-slate-500 bg-slate-100/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl hover:bg-white dark:hover:bg-slate-800 hover:shadow-md transition-all w-full group"
+        >
+          <Search size={16} className="group-hover:text-indigo-600 transition-colors shrink-0" />
+          <span className="font-medium hidden lg:inline">Command Center...</span>
+          <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded-lg border bg-white dark:bg-slate-950 px-2 font-mono text-[10px] font-black text-slate-400 shadow-sm hidden lg:inline-flex">
+            <span className="text-xs">⌘</span>K
+          </kbd>
+        </button>
+      )}
 
       <CommandDialog open={open} onOpenChange={setOpen}>
         <div className="flex items-center border-b px-3">

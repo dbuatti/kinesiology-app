@@ -379,12 +379,12 @@ const AppointmentDetailPage = () => {
 
               <div className="flex items-center gap-1.5 shrink-0">
                 <Select value={appointment.status} onValueChange={(v) => saveField('status', v)}>
-                  <SelectTrigger className="h-8 w-auto min-w-[100px] text-xs font-medium border-border bg-card rounded-lg px-2.5">
+                  <SelectTrigger className="h-8 w-auto min-w-[100px] text-xs font-medium border-border bg-card text-foreground rounded-lg px-2.5">
                     <SelectValue placeholder={appointment.status} />
                   </SelectTrigger>
                   <SelectContent className="rounded-lg border-border bg-card p-1">
                     {APPOINTMENT_STATUSES.map(s => (
-                      <SelectItem key={s} value={s} className="rounded-md text-xs py-1.5 px-3">{s}</SelectItem>
+                      <SelectItem key={s} value={s} className="rounded-md text-xs text-foreground py-1.5 px-3">{s}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

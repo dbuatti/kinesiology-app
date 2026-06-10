@@ -251,9 +251,7 @@ const SpaceHeader = () => {
 
       {/* RIGHT: ACTIONS & PROFILE */}
       <div className="flex items-center gap-2 md:gap-4">
-        <div className="block w-auto lg:w-48">
-          <SearchBar />
-        </div>
+        <SearchBar compact />
 
         <div className="flex items-center gap-1">
           {mode === 'clinical' && (

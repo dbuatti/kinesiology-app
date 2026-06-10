@@ -115,12 +115,13 @@ const UnifiedCalendarPage = () => {
  });
 
   (kinesiologyAppts || []).forEach((a) => {
+  const appDate = new Date(a.date);
   items.push({
   id: `k-${a.id}`,
   source: "kinesiology",
-  date: format(new Date(a.date), 'yyyy-MM-dd'),
-  time: null,
- title: a.clientName || "Appointment",
+  date: format(appDate, 'yyyy-MM-dd'),
+  time: format(appDate, 'h:mm a'),
+  title: a.clientName || "Appointment",
  subtitle: null,
  url: `/appointments/${a.id}`,
  tag: a.tag || a.status || "Kinesiology",
@@ -311,25 +312,27 @@ const UnifiedCalendarPage = () => {
  ) : (
  <User size={9} className="shrink-0 opacity-60" />
  )}
- <span className="truncate">{item.title}</span>
- </div>
- </a>
- ) : (
- <div
- className={cn(
- "block p-1.5 rounded-lg text-[10px] font-medium truncate transition-all hover:scale-[1.02] border",
- item.source === "voice"
- ? "bg-chart-destructive/10 text-chart-destructive border-border "
- : "bg-chart-primary/10 text-chart-primary border-border "
- )}
- >
- <div className="flex items-center gap-1">
- {item.source === "voice" ? (
- <Mic size={9} className="shrink-0 opacity-60" />
- ) : (
- <User size={9} className="shrink-0 opacity-60" />
- )}
- <span className="truncate">{item.title}</span>
+  <span className="truncate">{item.title}</span>
+  {item.time && <span className="text-[9px] opacity-60 shrink-0 ml-0.5">{item.time}</span>}
+  </div>
+  </a>
+  ) : (
+  <div
+  className={cn(
+  "block p-1.5 rounded-lg text-[10px] font-medium truncate border",
+  item.source === "voice"
+  ? "bg-chart-destructive/10 text-chart-destructive border-border "
+  : "bg-chart-primary/10 text-chart-primary border-border "
+  )}
+  >
+  <div className="flex items-center gap-1">
+  {item.source === "voice" ? (
+  <Mic size={9} className="shrink-0 opacity-60" />
+  ) : (
+  <User size={9} className="shrink-0 opacity-60" />
+  )}
+  <span className="truncate">{item.title}</span>
+  {item.time && <span className="text-[9px] opacity-60 shrink-0 ml-0.5">{item.time}</span>}
  </div>
  </div>
  )}

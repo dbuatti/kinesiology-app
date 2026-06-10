@@ -8,7 +8,7 @@ const corsHeaders = {
 }
 
 // Only process these specific clinical event types
-const ALLOWED_EVENT_IDS = [4279898, 5302336];
+const ALLOWED_EVENT_IDS = [4279898, 5302336, 5927215];
 
 serve(async (req) => {
   const functionName = "sync-calcom-bookings";

@@ -274,16 +274,16 @@ const AppointmentsPage = () => {
  fetchAppointments(PAGE_SIZE);
  }, [statusFilter]);
 
- const filteredAppointments = useMemo(() => {
- return appointments.filter(app => {
- const clientName = app.clients?.name || "";
- const matchesSearch = clientName.toLowerCase().includes(search.toLowerCase()) ||
- app.tag.toLowerCase().includes(search.toLowerCase()) ||
- (app.name || "").toLowerCase().includes(search.toLowerCase());
- 
- return matchesSearch;
- });
- }, [appointments, search]);
+  const filteredAppointments = useMemo(() => {
+  return appointments.filter(app => {
+  const clientName = app.clients?.name || "";
+  const matchesSearch = clientName.toLowerCase().includes(search.toLowerCase()) ||
+  (app.tag || "").toLowerCase().includes(search.toLowerCase()) ||
+  (app.name || "").toLowerCase().includes(search.toLowerCase());
+  
+  return matchesSearch;
+  });
+  }, [appointments, search]);
 
  const todaySessions = useMemo(() => 
  filteredAppointments
@@ -305,44 +305,44 @@ const AppointmentsPage = () => {
  const isHighRisk = app.clients?.latest_bolt !== null && app.clients?.latest_bolt! < 25;
 
  return (
- <Card 
- className={cn(
- "border-none transition-all duration-300 group overflow-hidden relative rounded-xl md:rounded-xl shadow-sm",
- isTodaySession 
- ? "bg-card text-white shadow-sm ring-4 ring-indigo-500/10" 
- : "bg-card hover:shadow-md border border-border",
- isHighRisk && !isCompleted && !isTodaySession && "bg-chart-destructive/10/50 border-border "
- )}
+  <Card 
+  className={cn(
+  "border-none transition-all duration-300 group overflow-hidden relative rounded-xl md:rounded-xl shadow-sm",
+  isTodaySession 
+  ? "bg-indigo-600 text-white shadow-sm ring-4 ring-indigo-500/10" 
+  : "bg-card hover:shadow-md border border-border",
+  isHighRisk && !isCompleted && !isTodaySession && "bg-chart-destructive/10/50 border-border "
+  )}
  >
  <CardContent className="p-0">
  <div className="flex flex-col md:flex-row md:items-center">
- {/* Time & Status Column */}
- <div className={cn(
- "p-6 md:p-8 md:w-48 flex flex-col justify-center items-center text-center border-b md:border-b-0 md:border-r border-border/10",
- isTodaySession ? "bg-white/5" : "bg-muted/30"
- )}>
- <div className={cn(
- "w-12 h-12 rounded-xl flex items-center justify-center mb-3 shadow-sm transition-transform group-hover:scale-110",
- isTodaySession ? "bg-white text-chart-primary" : "bg-primary text-white"
- )}>
- <Clock size={24} />
- </div>
- <p className={cn(
- "text-lg font-semibold tabular-nums",
- isTodaySession ? "text-white" : "text-foreground"
- )}>
- {format(app.date, "h:mm a")}
- </p>
- <p className={cn(
- "text-[10px] font-semibold uppercase tracking-wider mt-1",
- isTodaySession ? "text-primary/50" : "text-muted-foreground"
- )}>
+  {/* Time & Status Column */}
+  <div className={cn(
+  "p-4 md:p-5 md:w-36 flex flex-col justify-center items-center text-center border-b md:border-b-0 md:border-r border-border/10",
+  isTodaySession ? "bg-white/5" : "bg-muted/30"
+  )}>
+  <div className={cn(
+  "w-9 h-9 rounded-lg flex items-center justify-center mb-2 shadow-sm transition-transform group-hover:scale-110",
+  isTodaySession ? "bg-white text-chart-primary" : "bg-primary text-white"
+  )}>
+  <Clock size={18} />
+  </div>
+  <p className={cn(
+  "text-sm font-semibold tabular-nums",
+  isTodaySession ? "text-white" : "text-foreground"
+  )}>
+  {format(app.date, "h:mm a")}
+  </p>
+  <p className={cn(
+  "text-[10px] font-semibold uppercase tracking-wider mt-0.5",
+  isTodaySession ? "text-primary/50" : "text-muted-foreground"
+  )}>
  {isTodaySession ? "Today" : format(app.date, "EEE, MMM d")}
  </p>
  </div>
 
  {/* Main Info Column */}
- <div className="flex-1 p-6 md:p-8 space-y-4">
+  <div className="flex-1 p-4 md:p-5 space-y-3">
  <div className="flex items-start justify-between gap-4">
  <div className="space-y-1 min-w-0">
  <div className="flex items-center gap-3">
@@ -470,31 +470,31 @@ const AppointmentsPage = () => {
  };
 
  return (
- <div className="space-y-10">
- {/* Stats Bar */}
- <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
- {[
- { label: "Today", value: stats.today, icon: Zap, color: "text-chart-destructive", bg: "bg-chart-destructive/10 " },
- { label: "This Month", value: stats.month, icon: CalendarIcon, color: "text-chart-primary", bg: "bg-chart-primary/10 " },
- { label: "Scheduled", value: stats.pending, icon: CircleDashed, color: "text-muted-foreground", bg: "bg-muted " },
- { label: "Completed", value: stats.completed, icon: CheckCircle2, color: "text-chart-emerald", bg: "bg-chart-emerald/10 " },
- ].map((stat, i) => (
- <Card key={i} className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
- <CardContent className="p-5 flex items-center gap-4">
- <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", stat.bg, stat.color)}>
- <stat.icon size={20} />
- </div>
- <div>
- <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{stat.label}</p>
- <p className="text-2xl font-semibold text-foreground">{stat.value}</p>
- </div>
- </CardContent>
- </Card>
- ))}
- </div>
+  <div className="space-y-5">
+  {/* Stats Bar */}
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+  {[
+  { label: "Today", value: stats.today, icon: Zap, color: "text-chart-destructive", bg: "bg-chart-destructive/10 " },
+  { label: "This Month", value: stats.month, icon: CalendarIcon, color: "text-chart-primary", bg: "bg-chart-primary/10 " },
+  { label: "Scheduled", value: stats.pending, icon: CircleDashed, color: "text-muted-foreground", bg: "bg-muted " },
+  { label: "Completed", value: stats.completed, icon: CheckCircle2, color: "text-chart-emerald", bg: "bg-chart-emerald/10 " },
+  ].map((stat, i) => (
+  <Card key={i} className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+  <CardContent className="p-3 flex items-center gap-3">
+  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", stat.bg, stat.color)}>
+  <stat.icon size={16} />
+  </div>
+  <div>
+  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{stat.label}</p>
+  <p className="text-lg font-semibold text-foreground">{stat.value}</p>
+  </div>
+  </CardContent>
+  </Card>
+  ))}
+  </div>
 
- {/* Controls Bar */}
- <div className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-card p-4 rounded-xl border border-border shadow-sm">
+  {/* Controls Bar */}
+  <div className="flex flex-col lg:flex-row gap-3 items-center justify-between bg-card p-3 rounded-xl border border-border shadow-sm">
  <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
  <div className="relative w-full sm:w-64">
  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
@@ -557,32 +557,32 @@ const AppointmentsPage = () => {
  <p className="text-muted-foreground font-medium uppercase tracking-wider text-xs">Loading your schedule...</p>
  </div>
  ) : (
- <div className="space-y-16">
- {todaySessions.length > 0 && (
- <div className="space-y-6">
- <div className="flex items-center gap-4 px-2">
- <div className="w-12 h-12 rounded-xl bg-chart-destructive/10 flex items-center justify-center text-chart-destructive flex-shrink-0 shadow-sm">
- <Zap size={24} className="fill-current" />
+  <div className="space-y-8">
+  {todaySessions.length > 0 && (
+  <div className="space-y-3">
+  <div className="flex items-center gap-4 px-2">
+  <div className="w-9 h-9 rounded-lg bg-chart-destructive/10 flex items-center justify-center text-chart-destructive flex-shrink-0 shadow-sm">
+  <Zap size={18} className="fill-current" />
  </div>
- <h2 className="text-2xl font-semibold text-foreground tracking-tight">Today's Sessions</h2>
- <div className="flex-1 h-[2px] bg-chart-destructive/10 rounded-full opacity-50" />
- </div>
- <div className="grid gap-4">
+  <h2 className="text-lg font-semibold text-foreground tracking-tight">Today's Sessions</h2>
+  <div className="flex-1 h-[2px] bg-chart-destructive/10 rounded-full opacity-50" />
+  </div>
+  <div className="grid gap-3">
  {todaySessions.map(app => <AppointmentCard key={app.id} app={app} />)}
  </div>
  </div>
  )}
 
  {grouped.map(([month, apps]) => (
- <div key={month} className="space-y-6">
- <div className="flex items-center gap-4 px-2">
- <div className="w-12 h-12 rounded-xl bg-chart-primary/10 flex items-center justify-center text-chart-primary flex-shrink-0 shadow-sm">
- <CalendarIcon size={24} />
- </div>
- <h2 className="text-2xl font-semibold text-foreground tracking-tight">{month}</h2>
- <div className="flex-1 h-[2px] bg-border rounded-full opacity-50" />
- </div>
- <div className="grid gap-4">
+  <div key={month} className="space-y-3">
+  <div className="flex items-center gap-4 px-2">
+  <div className="w-9 h-9 rounded-lg bg-chart-primary/10 flex items-center justify-center text-chart-primary flex-shrink-0 shadow-sm">
+  <CalendarIcon size={18} />
+  </div>
+  <h2 className="text-lg font-semibold text-foreground tracking-tight">{month}</h2>
+  <div className="flex-1 h-[2px] bg-muted rounded-full" />
+  </div>
+  <div className="grid gap-3">
  {apps.map(app => <AppointmentCard key={app.id} app={app} />)}
  </div>
  </div>
@@ -599,7 +599,7 @@ const AppointmentsPage = () => {
  )}
 
  {appointments.length < totalCount && (
- <div className="flex justify-center pt-8">
+  <div className="flex justify-center pt-5">
  <Button 
  onClick={handleLoadMore} 
  disabled={loadingMore}

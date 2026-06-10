@@ -14,7 +14,7 @@ const SchedulePage = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-8">
+      <div className="space-y-5">
         <PageHeader 
           title="Clinical Schedule"
           subtitle="Manage your upcoming sessions and live Cal.com availability."
@@ -23,20 +23,20 @@ const SchedulePage = () => {
         />
         
         <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ view: v })} className="w-full">
-          <div className="flex justify-center mb-8">
-            <TabsList className="bg-slate-200/50 p-1 rounded-2xl h-14 border border-slate-200">
+          <div className="flex justify-center mb-5">
+            <TabsList className="bg-slate-200/50 p-1 rounded-xl h-11 border border-slate-200">
               <TabsTrigger 
                 value="list" 
-                className="rounded-xl px-8 h-12 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"
+                className="rounded-lg px-5 h-9 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest"
               >
-                <List className="mr-2" size={16} />
+                <List className="mr-1.5" size={14} />
                 Session List
               </TabsTrigger>
               <TabsTrigger 
                 value="availability" 
-                className="rounded-xl px-8 h-12 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-xs uppercase tracking-widest"
+                className="rounded-lg px-5 h-9 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest"
               >
-                <CalendarDays className="mr-2" size={16} />
+                <CalendarDays className="mr-1.5" size={14} />
                 Live Availability
               </TabsTrigger>
             </TabsList>

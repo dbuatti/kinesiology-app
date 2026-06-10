@@ -138,6 +138,29 @@ const SessionDocumentView = ({
             <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60 shrink-0">Clinical Record</span>
             <span className="text-xs font-semibold text-foreground truncate">{appointment.clients.name}</span>
             <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60 shrink-0">{appointment.status}</span>
+            <button
+              onClick={async () => {
+                if (!appointment.is_paid) {
+                  await saveField('is_paid', true);
+                } else if (!appointment.payment_received) {
+                  await saveField('payment_received', true);
+                } else {
+                  await saveField('is_paid', false);
+                  await saveField('payment_received', false);
+                }
+              }}
+              className={cn(
+                "text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border transition-colors shrink-0",
+                !appointment.is_paid
+                  ? "text-slate-500 border-slate-200 hover:bg-slate-50"
+                  : appointment.payment_received
+                    ? "text-emerald-600 border-emerald-200 bg-emerald-50 hover:bg-emerald-100"
+                    : "text-rose-600 border-rose-200 bg-rose-50 hover:bg-rose-100"
+              )}
+              title="Click to cycle: Free → Due → Paid"
+            >
+              {!appointment.is_paid ? 'Free' : appointment.payment_received ? 'Paid' : `Due $${appointment.price_amount || 50}`}
+            </button>
           </div>
 
           <div className="flex items-center gap-3 shrink-0">

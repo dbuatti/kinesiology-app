@@ -6,7 +6,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { 
   History, ChevronDown, ChevronUp, Calendar, Target, 
   CheckCircle2, AlertCircle, RefreshCw, Info, Zap, Baby, Brain, Dumbbell,
-  Clock, ArrowRight, Sparkles, HelpCircle
+  Clock, ArrowRight, Sparkles, HelpCircle, ExternalLink, FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -94,6 +94,28 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                       {session.bolt_score && (
                         <p className="text-[10px] font-medium text-chart-primary mt-0.5">BOLT: {session.bolt_score}s</p>
                       )}
+                      <div className="flex items-center gap-1.5 mt-2">
+                        {session.notion_link && (
+                          <a
+                            href={session.notion_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[9px] font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-1.5 py-0.5 rounded transition-colors"
+                            title="Open in Notion"
+                          >
+                            <ExternalLink size={10} /> Notion
+                          </a>
+                        )}
+                        <a
+                          href={`/appointments/${session.id}?view=document`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[9px] font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded transition-colors"
+                          title="Open session document"
+                        >
+                          <FileText size={10} /> Doc
+                        </a>
+                      </div>
                     </div>
                   </div>
                 ))}

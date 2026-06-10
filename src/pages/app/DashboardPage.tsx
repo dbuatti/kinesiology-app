@@ -80,7 +80,7 @@ const Index = () => {
       ] = await Promise.all([
         supabase.from('clients').select('*', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null'),
         supabase.from('appointments').select('*, clients!inner(is_practitioner)', { count: 'exact', head: true }).or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' }),
-        supabase.from('appointments').select('*, clients!inner(name, is_practitioner)').or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' }).order('date', { ascending: true }),
+        supabase.from('appointments').select('id, date, status, bolt_score, client_id, name, tag, goal, issue, is_paid, payment_received, price_amount, clients!inner(name, is_practitioner)').or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' }).order('date', { ascending: true }),
         supabase.from('clients').select('id, name, created_at, appointments(bolt_score, date)').or('is_practitioner.eq.false,is_practitioner.is.null'),
         supabase.from('practitioner_reflections').select('created_at').order('created_at', { ascending: false }).limit(1).maybeSingle()
       ]);

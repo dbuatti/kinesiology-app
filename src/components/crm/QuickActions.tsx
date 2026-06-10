@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -42,6 +42,61 @@ const QuickActions = () => {
       setAppointmentDialogOpen(true);
     }
   };
+
+  // Global keyboard shortcuts (advertised in HelpModal)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey)) return;
+      // Don't hijack typing inside inputs except for safe combos
+      const target = e.target as HTMLElement;
+      const isTyping = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
+
+      switch (e.key) {
+        case "n":
+          if (isTyping) return;
+          e.preventDefault();
+          setClientDialogOpen(true);
+          break;
+        case "b":
+          if (isTyping) return;
+          e.preventDefault();
+          setAppointmentDialogOpen(true);
+          break;
+        case "d":
+          if (isTyping) return;
+          e.preventDefault();
+          navigate("/");
+          break;
+        case "1":
+          if (isTyping) return;
+          e.preventDefault();
+          navigate("/clients");
+          break;
+        case "2":
+          if (isTyping) return;
+          e.preventDefault();
+          navigate("/schedule");
+          break;
+        case "p":
+          if (isTyping) return;
+          e.preventDefault();
+          navigate("/practice/procedures");
+          break;
+        case "q":
+          if (isTyping) return;
+          e.preventDefault();
+          navigate("/practice/calibrate");
+          break;
+        case "/":
+          e.preventDefault();
+          setHelpOpen(true);
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [navigate]);
 
   return (
     <>

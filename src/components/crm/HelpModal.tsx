@@ -25,6 +25,10 @@ const HelpModal = ({ open, onOpenChange }: HelpModalProps) => {
     { key: "⌘ + 1", desc: "Go to Clients List" },
     { key: "⌘ + 2", desc: "Go to Appointments List" },
     { key: "⌘ + P", desc: "Go to Procedure Tracker" },
+    { key: "⌘ + Q", desc: "Quick Calibrate" },
+    { key: "⌘ + /", desc: "Help & Shortcuts" },
+    { key: "Alt + F", desc: "Toggle Full Screen (in session)" },
+    { key: "Alt + D", desc: "Toggle Document View (in session)" },
   ];
 
   const stages = [

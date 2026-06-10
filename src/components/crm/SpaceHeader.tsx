@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Activity, 
@@ -58,6 +58,11 @@ const SpaceHeader = () => {
   const [prefilledClientId, setPrefilledClientId] = useState<string | undefined>();
   const [helpOpen, setHelpOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Close mobile menu whenever the route changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const handleClientSuccess = (newClientId?: string) => {
     setClientDialogOpen(false);
@@ -257,7 +262,7 @@ const SpaceHeader = () => {
           {mode === 'clinical' && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button size="icon" className="w-8 h-8 rounded-lg bg-primary hover:bg-primary/90 text-white shadow-sm">
+                <Button size="icon" aria-label="Quick add" className="w-8 h-8 rounded-lg bg-primary hover:bg-primary/90 text-white shadow-sm">
                   <Plus size={16} />
                 </Button>
               </DropdownMenuTrigger>
@@ -276,7 +281,7 @@ const SpaceHeader = () => {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" size="icon" aria-label="Settings menu" className="w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground">
                 <Settings size={16} />
               </Button>
             </DropdownMenuTrigger>
@@ -315,9 +320,10 @@ const SpaceHeader = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             className="md:hidden w-8 h-8 rounded-lg"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >

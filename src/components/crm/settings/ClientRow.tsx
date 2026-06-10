@@ -682,12 +682,30 @@ Warmly,
 Daniele`;
  }, [client.name, ongoingRate]);
 
- const handleCopyEmail = () => {
- navigator.clipboard.writeText(emailTemplate);
- setCopiedEmail(true);
- showSuccess("Email template copied to clipboard!");
- setTimeout(() => setCopiedEmail(false), 2000);
- };
+  const handleCopyEmail = () => {
+  navigator.clipboard.writeText(emailTemplate);
+  setCopiedEmail(true);
+  showSuccess("Email template copied to clipboard!");
+  setTimeout(() => setCopiedEmail(false), 2000);
+  };
+
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const handleSendEmail = async () => {
+    if (!client.email) { showError("No email on file for this client."); return; }
+    setSendingEmail(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-rate-increase-email', {
+        body: { clientName: client.name, clientEmail: client.email, currentRate: currentRateNum, targetRate, effectiveMonth: nextMonthName }
+      });
+      if (error) throw error;
+      showSuccess(`Rate increase email sent to ${client.name}!`);
+      setIsEmailModalOpen(false);
+    } catch (e: any) {
+      showError(e.message || "Failed to send email.");
+    } finally {
+      setSendingEmail(false);
+    }
+  };
 
  const handleCopyReengagementEmail = () => {
  navigator.clipboard.writeText(reengagementEmailTemplate);
@@ -1340,19 +1358,27 @@ Daniele`;
  </div>
  </div>
 
- <DialogFooter className="gap-2">
- <Button variant="outline" onClick={() => setIsEmailModalOpen(false)} className="rounded-xl">
- Cancel
- </Button>
- <Button 
- onClick={handleMarkContacted} 
- disabled={updatingStatus}
- className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs uppercase tracking-wider px-6"
- >
- {updatingStatus ? <Loader2 className="animate-spin mr-2" /> : <CheckCircle2 size={16} className="mr-2" />}
- Mark as Contacted
- </Button>
- </DialogFooter>
+  <DialogFooter className="gap-2">
+  <Button variant="outline" onClick={() => setIsEmailModalOpen(false)} className="rounded-xl">
+  Cancel
+  </Button>
+  <Button 
+    onClick={handleSendEmail} 
+    disabled={sendingEmail || !client.email}
+    className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs uppercase tracking-wider px-6"
+  >
+    {sendingEmail ? <Loader2 className="animate-spin mr-2" size={14} /> : <Send size={14} className="mr-2" />}
+    Send Email
+  </Button>
+  <Button 
+  onClick={handleMarkContacted} 
+  disabled={updatingStatus}
+  className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs uppercase tracking-wider px-6"
+  >
+  {updatingStatus ? <Loader2 className="animate-spin mr-2" /> : <CheckCircle2 size={16} className="mr-2" />}
+  Mark as Contacted
+  </Button>
+  </DialogFooter>
  </DialogContent>
  </Dialog>
  </tr>

@@ -50,6 +50,7 @@ const BusinessModelWorksheetPage = lazy(() => import("./pages/BusinessModelWorks
 // --- Knowledge & Reference ---
 const ResourcesPage = lazy(() => import("./pages/ResourcesPage"));
 const PEACEFrameworkPage = lazy(() => import("./pages/PEACEFrameworkPage"));
+const CogsLearningPage = lazy(() => import("./pages/CogsLearningPage"));
 const ProceduresPage = lazy(() => import("./pages/ProceduresPage"));
 const QuizPage = lazy(() => import("./pages/QuizPage"));
 const QuickCalibratePage = lazy(() => import("./pages/QuickCalibratePage"));
@@ -64,8 +65,18 @@ const HeartWallPrintPage = lazy(() => import("./pages/HeartWallPrintPage"));
 const BrainZonePrintPage = lazy(() => import("./pages/BrainZonePrintPage"));
 const JointActionPrintPage = lazy(() => import("./pages/JointActionPrintPage"));
 
+// --- Voice Studio ---
+const VoiceDashboardPage = lazy(() => import("./pages/VoiceDashboardPage"));
+const VoiceNewClientPage = lazy(() => import("./pages/VoiceNewClientPage"));
+const VoiceClientsPage = lazy(() => import("./pages/VoiceClientsPage"));
+const VoiceBookLessonPage = lazy(() => import("./pages/VoiceBookLessonPage"));
+const VoiceCalendarPage = lazy(() => import("./pages/VoiceCalendarPage"));
+const VoiceOnboardingPage = lazy(() => import("./pages/public/VoiceOnboardingPage"));
+const UnifiedCalendarPage = lazy(() => import("./pages/UnifiedCalendarPage"));
+
 // --- Business & System ---
-const BusinessHubPage = lazy(() => import("./pages/BusinessHubPage"));
+const BusinessOverviewPage = lazy(() => import("./pages/BusinessOverviewPage"));
+const BusinessDashboardPage = lazy(() => import("./pages/BusinessDashboardPage"));
 const ClientAuditPage = lazy(() => import("./pages/ClientAuditPage"));
 const MarketingEnginePage = lazy(() => import("./pages/MarketingEnginePage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
@@ -104,6 +115,9 @@ const AppRoutes = () => {
           <Route path="/onboarding/:id" element={<OnboardingPage />} />
         </Route>
 
+        {/* Public Voice Onboarding (no auth required) */}
+        <Route path="/voice-onboarding/:email" element={<VoiceOnboardingPage />} />
+
         {/* Protected App Routes */}
         <Route path="/notes-doc" element={session ? <PracticeNotes /> : <Navigate to="/login" replace />} />
         <Route path="/resources/cranial-nerves/print" element={session ? <CranialNervePrintPage /> : <Navigate to="/login" replace />} />
@@ -126,6 +140,7 @@ const AppRoutes = () => {
           <Route path="/appointments/:id" element={<AppointmentDetailPage />} />
           <Route path="/appointments/:id/protocols" element={<ClinicalProtocolsPage />} />
           <Route path="/oversight" element={<ClinicalOversightPage />} />
+          <Route path="/calendar" element={<UnifiedCalendarPage />} />
 
           {/* Practice Lab */}
           <Route path="/lab" element={<LabPage />} />
@@ -139,6 +154,7 @@ const AppRoutes = () => {
 
           {/* Knowledge Base */}
           <Route path="/resources" element={<ResourcesPage />} />
+          <Route path="/resources/cogs" element={<CogsLearningPage />} />
           <Route path="/peace-framework" element={<PEACEFrameworkPage />} />
           <Route path="/practice/procedures" element={<ProceduresPage />} />
           <Route path="/practice/quiz" element={<QuizPage />} />
@@ -152,8 +168,17 @@ const AppRoutes = () => {
           <Route path="/resources/worksheets/anger-flow" element={<AngerFlowWorksheetPage />} />
           <Route path="/resources/worksheets/business-model" element={<BusinessModelWorksheetPage />} />
 
+          {/* Voice Studio */}
+          <Route path="/voice" element={<VoiceDashboardPage />} />
+          <Route path="/voice/clients" element={<VoiceClientsPage />} />
+          <Route path="/voice/clients/new" element={<VoiceNewClientPage />} />
+          <Route path="/voice/book" element={<VoiceBookLessonPage />} />
+          <Route path="/voice/calendar" element={<VoiceCalendarPage />} />
+
           {/* Business Tools */}
-          <Route path="/business" element={<BusinessHubPage />} />
+          <Route path="/business" element={<Navigate to="/business/dashboard" replace />} />
+          <Route path="/business/dashboard" element={<BusinessDashboardPage />} />
+          <Route path="/business/overview" element={<BusinessOverviewPage />} />
           <Route path="/business/marketing-engine" element={<MarketingEnginePage />} />
           <Route path="/business/client-audit" element={<ClientAuditPage />} />
 
@@ -184,7 +209,7 @@ const App = () => (
         <AuthProvider>
           <ModeProvider>
             <Toaster />
-            <Sonner />
+            <Sonner position="top-center" />
             <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
               <ScrollToTop />
               <AppRoutes />

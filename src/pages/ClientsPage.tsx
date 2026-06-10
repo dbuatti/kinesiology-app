@@ -169,13 +169,24 @@ const ClientsPage = () => {
               onQuickBook={handleQuickBook} 
             />
           )
+        ) : clients.length === 0 ? (
+          <div className="text-center py-32 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
+            <div className="mx-auto w-20 h-20 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-xl">
+               <Users className="text-muted-foreground" size={32} />
+            </div>
+            <p className="text-foreground font-black text-xl">No clients yet</p>
+            <p className="text-muted-foreground mt-2 mb-8 font-medium">Add your first client to start building your clinical database.</p>
+            <Button className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 rounded-2xl font-bold text-white" onClick={() => setOpen(true)}>
+              <Plus size={18} className="mr-2" /> Add First Client
+            </Button>
+          </div>
         ) : (
           <div className="text-center py-32 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
             <div className="mx-auto w-20 h-20 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-xl">
                <Search className="text-muted-foreground" size={32} />
             </div>
-            <p className="text-foreground font-black text-xl">No clients found</p>
-            <p className="text-muted-foreground mt-2 mb-8 font-medium">Try adjusting your search or add a new client.</p>
+            <p className="text-foreground font-black text-xl">No clients match "{search}"</p>
+            <p className="text-muted-foreground mt-2 mb-8 font-medium">Try a different name, email, or suburb.</p>
             <Button variant="outline" className="h-12 px-8 border-border hover:bg-card rounded-2xl font-bold" onClick={() => { setSearch(""); }}>Clear Search</Button>
           </div>
         )}

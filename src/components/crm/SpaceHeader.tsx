@@ -34,6 +34,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { CLINICAL_NAV_ITEMS, LAB_NAV_ITEMS, LIBRARY_NAV_ITEMS, VOICE_NAV_ITEMS, BUSINESS_NAV_ITEMS } from "@/config/navigation";
+import { prefetchRoute } from "@/utils/route-prefetch";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
 import SearchBar from "./SearchBar";
@@ -169,6 +170,7 @@ const SpaceHeader = () => {
               <Link
                 key={item.path}
                 to={item.path}
+                onMouseEnter={() => prefetchRoute(item.path)}
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-500",
                   isActive
@@ -188,6 +190,7 @@ const SpaceHeader = () => {
             <Link
               key={item.path}
               to={item.path}
+              onMouseEnter={() => prefetchRoute(item.path)}
                 className={cn(
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-500",
                   isActive
@@ -235,6 +238,7 @@ const SpaceHeader = () => {
                       <DropdownMenuItem key={item.path} asChild className="rounded-xl p-0">
                         <Link
                           to={item.path}
+                          onMouseEnter={() => prefetchRoute(item.path)}
                           className={cn(
                             "flex items-center gap-3 rounded-xl py-2.5 px-4 cursor-pointer",
                             active ? `${accent} bg-muted font-semibold` : "text-muted-foreground font-medium hover:text-foreground"

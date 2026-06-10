@@ -10,8 +10,7 @@ import {
   ArrowRight, 
   Zap, 
   BookOpen,
-  Sparkles,
-  Loader2
+  Sparkles
 } from "lucide-react";
 import { format, isToday, differenceInMinutes, subDays, startOfWeek } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -151,9 +150,25 @@ const Index = () => {
   }, []);
 
   if (loading) return (
-    <div className="flex min-h-screen items-center justify-center">
-      <Loader2 className="animate-spin text-primary" size={48} />
-    </div>
+    <AppLayout>
+      <div className="space-y-8 animate-in fade-in duration-300">
+        <div className="space-y-3">
+          <Skeleton className="h-4 w-32 rounded-lg" />
+          <Skeleton className="h-10 w-72 rounded-xl" />
+          <Skeleton className="h-4 w-96 max-w-full rounded-lg" />
+        </div>
+        <Skeleton className="h-40 w-full rounded-[2.5rem]" />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <Skeleton className="lg:col-span-8 h-64 rounded-[2rem]" />
+          <Skeleton className="lg:col-span-4 h-64 rounded-[2rem]" />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-28 rounded-[2rem]" />
+          ))}
+        </div>
+      </div>
+    </AppLayout>
   );
 
   const handleEnterMode = (newMode: 'clinical' | 'lab' | 'library') => {

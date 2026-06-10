@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Footprints, Info, Save, Loader2, RotateCcw, Plus, Target, Upload, X, ImageIcon, CheckCircle2, Zap, RefreshCw, ArrowRightLeft, Move } from "lucide-react";
+import { Footprints, Info, Save, Loader2, RotateCcw, Plus, Target, Upload, X, ImageIcon, CheckCircle2, Zap, RefreshCw, ArrowRightLeft, Move, Play, Pause, Timer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { Textarea } from "@/components/ui/textarea";
@@ -160,6 +160,33 @@ const FakudaStepTest = ({
   const [driftDirection, setDriftDirection] = useState<string>("");
   const [angleRotation, setAngleRotation] = useState<string>("");
   const [distanceDisplaced, setDistanceDisplaced] = useState<string>("");
+
+  // Timer
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const [timerDuration, setTimerDuration] = useState(60);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (timerRunning) {
+      timerRef.current = setInterval(() => {
+        setTimerSeconds(prev => {
+          if (prev >= timerDuration) {
+            setTimerRunning(false);
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, 1000);
+    } else if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [timerRunning, timerDuration]);
+
+  const startTimer = () => { setTimerRunning(true); };
+  const pauseTimer = () => { setTimerRunning(false); };
+  const resetTimer = () => { setTimerSeconds(0); setTimerRunning(false); };
 
   useEffect(() => {
     const fetchInitialState = async () => {
@@ -383,6 +410,35 @@ const FakudaStepTest = ({
                 <li>Instruct the client to march on the spot for 30-60 seconds.</li>
                 <li>Observe final position relative to start position.</li>
               </ol>
+              <div className="mt-3 pt-3 border-t border-green-100">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Timer size={14} className="text-muted-foreground" />
+                    <span className="text-xs font-medium text-muted-foreground">March timer</span>
+                    <span className="text-sm font-semibold tabular-nums text-foreground">{timerSeconds}s / {timerDuration}s</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => setTimerDuration(d => d === 30 ? 60 : d === 60 ? 90 : 30)} className="text-[10px] text-muted-foreground hover:text-foreground px-2 py-1 rounded border border-border">
+                      {timerDuration}s
+                    </button>
+                    {!timerRunning ? (
+                      <Button variant="ghost" size="sm" onClick={startTimer} className="h-7 w-7 rounded-lg" disabled={timerSeconds >= timerDuration}>
+                        <Play size={14} />
+                      </Button>
+                    ) : (
+                      <Button variant="ghost" size="sm" onClick={pauseTimer} className="h-7 w-7 rounded-lg">
+                        <Pause size={14} />
+                      </Button>
+                    )}
+                    <Button variant="ghost" size="sm" onClick={resetTimer} className="h-7 w-7 rounded-lg text-muted-foreground">
+                      <RotateCcw size={14} />
+                    </Button>
+                  </div>
+                </div>
+                <div className="mt-2 w-full h-1 bg-muted rounded-full overflow-hidden">
+                  <div className="h-full bg-chart-primary transition-all duration-1000" style={{ width: `${Math.min(100, (timerSeconds / timerDuration) * 100)}%` }} />
+                </div>
+              </div>
             </div>
           </div>
 

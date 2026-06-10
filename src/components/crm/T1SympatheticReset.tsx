@@ -127,7 +127,7 @@ const T1SympatheticReset = ({
           </CardHeader>
         </CollapsibleTrigger>
 
-        <CollapsibleContent>
+        <CollapsibleContent forceMount>
           <CardContent className="p-6 space-y-8">
             <Alert className="bg-muted border-border">
               <Info className="h-4 w-4 text-muted-foreground" />

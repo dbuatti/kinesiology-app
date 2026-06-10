@@ -331,10 +331,10 @@ const AppointmentDetailPage = () => {
   return (
     <ErrorBoundary>
       <AppLayout className="pb-0">
-        <div className="max-w-[1600px] mx-auto space-y-6">
+        <div className="max-w-[1600px] mx-auto space-y-4">
 
           {/* SESSION HEADER */}
-          <div className="bg-card rounded-xl border border-border shadow-sm p-5 md:p-6 space-y-4">
+          <div className="bg-card rounded-xl border border-border shadow-sm p-4 md:p-5 space-y-3">
             {/* Row 1: Back + Client name + Actions */}
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3 min-w-0 flex-1">

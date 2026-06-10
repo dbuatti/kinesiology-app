@@ -49,7 +49,7 @@ const UpcomingMarquee = () => {
   if (loading || !nextSessions || nextSessions.length === 0) return null;
 
   return (
-    <div className="w-full bg-muted h-9 flex items-center justify-center px-4 border-b border-border z-[100]">
+    <div className="w-full bg-muted h-7 flex items-center justify-center px-4 border-b border-border z-[100]">
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1.5 text-chart-destructive">
           <Play size={10} className="fill-current" />

@@ -171,10 +171,10 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
   return (
     <div className="w-full">
       <div className={cn(
-        "transition-colors duration-1000 p-2 flex items-center justify-between px-4 md:px-6",
+        "transition-colors duration-1000 py-1 px-3 md:px-4 flex items-center justify-between",
         isOvertime && !isFinished ? "bg-chart-destructive/10 border-b border-chart-destructive/20" : "bg-card border-b border-border"
       )}>
-        <div className="flex items-center gap-2 md:gap-4 overflow-hidden min-w-0 flex-1">
+        <div className="flex items-center gap-2 md:gap-3 overflow-hidden min-w-0 flex-1">
           <div className="flex items-center gap-1.5 shrink-0">
             {isFinished ? (
               <div className="flex items-center gap-1 text-chart-emerald">
@@ -213,7 +213,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
           <div className="h-4 w-px bg-muted shrink-0" />
 
           <div className="flex items-center gap-1.5 min-w-0 flex-1 sm:flex-none">
-            <span className="text-xs md:text-sm font-semibold text-foreground truncate privacy-mode-active:blur-sm">
+            <span className="text-xs font-semibold text-foreground truncate privacy-mode-active:blur-sm">
               {clientName}
             </span>
             <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider hidden md:inline">

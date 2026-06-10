@@ -120,14 +120,14 @@ const SpaceHeader = () => {
     location.pathname === path || (path !== "/" && location.pathname.startsWith(path));
 
   return (
-    <header className="w-full bg-card/80 backdrop-blur-xl border-b border-border px-4 md:px-8 h-16 flex items-center justify-between">
+    <header className="w-full bg-card/80 backdrop-blur-xl border-b border-border px-3 md:px-6 h-12 flex items-center justify-between">
       {/* LEFT: LOGO & HUB SWITCHER */}
-      <div className="flex items-center gap-4 md:gap-8">
-        <div className="flex items-center gap-1 p-0.5 bg-muted rounded-xl border border-border">
+      <div className="flex items-center gap-3 md:gap-5">
+        <div className="flex items-center gap-1 p-0.5 bg-muted rounded-lg border border-border">
           <button
             onClick={() => { if (isVoiceMode) navigate('/'); }}
             className={cn(
-              "w-8 h-8 rounded-lg text-xs font-semibold transition-all tracking-tight",
+              "w-7 h-7 rounded-md text-[10px] font-semibold transition-all tracking-tight",
               !isVoiceMode
                 ? "bg-card text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-muted-foreground"
@@ -138,7 +138,7 @@ const SpaceHeader = () => {
           <button
             onClick={() => { if (!isVoiceMode) navigate('/voice'); }}
             className={cn(
-              "w-8 h-8 rounded-lg text-xs font-semibold transition-all tracking-tight",
+              "w-7 h-7 rounded-md text-[10px] font-semibold transition-all tracking-tight",
               isVoiceMode
                 ? "bg-chart-destructive text-white shadow-sm"
                 : "text-muted-foreground hover:text-muted-foreground"
@@ -148,15 +148,15 @@ const SpaceHeader = () => {
           </button>
         </div>
 
-        <div className="h-8 w-px bg-border hidden md:block" />
+        <div className="h-6 w-px bg-border hidden md:block" />
 
         <HubSwitcher />
 
-        <div className="h-8 w-px bg-border hidden md:block" />
+        <div className="h-6 w-px bg-border hidden md:block" />
       </div>
 
       {/* CENTER: CONTEXTUAL NAV */}
-      <nav className="hidden xl:flex items-center gap-1 bg-muted/50 p-1 rounded-xl border border-border/50 backdrop-blur-md">
+      <nav className="hidden xl:flex items-center gap-0.5 bg-muted/50 p-0.5 rounded-lg border border-border/50 backdrop-blur-md">
         {isVoiceMode ? (
           VOICE_NAV_ITEMS.filter(item => item.label !== "Dashboard").map((item) => {
             const isActive = isModeItemActive(item.path);
@@ -165,13 +165,13 @@ const SpaceHeader = () => {
                 key={item.path}
                 to={item.path}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-500",
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-500",
                   isActive
                     ? "bg-chart-destructive text-white shadow-md scale-[1.02]"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
-                <item.icon size={14} className={cn("transition-colors duration-500", isActive && "text-white")} />
+                <item.icon size={12} className={cn("transition-colors duration-500", isActive && "text-white")} />
                 <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">{item.label}</span>
               </Link>
             );
@@ -183,15 +183,15 @@ const SpaceHeader = () => {
             <Link
               key={item.path}
               to={item.path}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-500",
-                isActive
-                  ? "bg-card text-foreground shadow-sm scale-[1.02]"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              )}
-            >
-              <item.icon size={14} className={cn("transition-colors duration-500", isActive && "text-foreground")} />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">{item.label}</span>
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-500",
+                  isActive
+                    ? "bg-card text-foreground shadow-sm scale-[1.02]"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                <item.icon size={12} className={cn("transition-colors duration-500", isActive && "text-foreground")} />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">{item.label}</span>
             </Link>
           );
         })}
@@ -202,7 +202,7 @@ const SpaceHeader = () => {
               <Link
                 to={isVoiceMode ? '/voice' : mode === 'business' ? '/business/dashboard' : '/'}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-500 no-underline",
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-500 no-underline",
                   modeNavItems.some(item => isModeItemActive(item.path))
                     ? "bg-card text-foreground shadow-sm scale-[1.02]"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -250,15 +250,15 @@ const SpaceHeader = () => {
       </nav>
 
       {/* RIGHT: ACTIONS & PROFILE */}
-      <div className="flex items-center gap-2 md:gap-4">
+      <div className="flex items-center gap-1 md:gap-2">
         <SearchBar compact />
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           {mode === 'clinical' && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button size="icon" className="w-9 h-9 rounded-xl bg-primary hover:bg-primary/90 text-white shadow-sm">
-                  <Plus size={18} />
+                <Button size="icon" className="w-8 h-8 rounded-lg bg-primary hover:bg-primary/90 text-white shadow-sm">
+                  <Plus size={16} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 rounded-xl p-2 shadow-sm border-none bg-card">
@@ -276,8 +276,8 @@ const SpaceHeader = () => {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="w-9 h-9 rounded-xl text-muted-foreground hover:text-foreground">
-                <Settings size={18} />
+              <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground">
+                <Settings size={16} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64 rounded-xl p-2 shadow-sm border-none bg-card">
@@ -318,7 +318,7 @@ const SpaceHeader = () => {
           <Button 
             variant="ghost" 
             size="icon" 
-            className="md:hidden w-9 h-9 rounded-xl"
+            className="md:hidden w-8 h-8 rounded-lg"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}

@@ -114,12 +114,12 @@ const UnifiedCalendarPage = () => {
  });
  });
 
- (kinesiologyAppts || []).forEach((a) => {
- items.push({
- id: `k-${a.id}`,
- source: "kinesiology",
- date: a.date.split("T")[0],
- time: null,
+  (kinesiologyAppts || []).forEach((a) => {
+  items.push({
+  id: `k-${a.id}`,
+  source: "kinesiology",
+  date: format(new Date(a.date), 'yyyy-MM-dd'),
+  time: null,
  title: a.clientName || "Appointment",
  subtitle: null,
  url: `/appointments/${a.id}`,

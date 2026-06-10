@@ -91,7 +91,7 @@ const MainLayout = () => {
         {/* UNIFIED STICKY HEADER STACK */}
         <div className="shrink-0 w-full shadow-sm z-[100] pt-[env(safe-area-inset-top,0px)] bg-white dark:bg-slate-950">
           {!shouldHideHeader && <UpcomingMarquee />}
-          {activeSession && (
+          {activeSession && !isDocView && (
             <SessionTimer 
               sessionId={activeSession.id}
               appointmentDate={activeSession.date}

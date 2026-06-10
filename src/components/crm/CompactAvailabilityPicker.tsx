@@ -7,7 +7,8 @@ import {
   startOfToday, 
   endOfDay, 
   isSameDay,
-  parseISO
+  parseISO,
+  eachDayOfInterval
 } from "date-fns";
 import { 
   Clock, 
@@ -79,13 +80,20 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
     fetchSlots();
   }, [targetEventTypeId]);
 
-  // Only show days that have slots
-  const availableDates = useMemo(() => {
-    return Object.keys(slots)
-      .filter(dateKey => slots[dateKey].length > 0)
-      .map(dateKey => parseISO(dateKey))
-      .sort((a, b) => a.getTime() - b.getTime());
+  // Generate all 30 days, marking which have slots
+  const allDays = useMemo(() => {
+    const today = startOfToday();
+    const days = eachDayOfInterval({ start: today, end: addDays(today, 29) });
+    return days.map(date => {
+      const dateKey = format(date, 'yyyy-MM-dd');
+      const hasSlots = (slots[dateKey] || []).length > 0;
+      return { date, dateKey, hasSlots };
+    });
   }, [slots]);
+
+  const availableDates = useMemo(() => {
+    return allDays.filter(d => d.hasSlots);
+  }, [allDays]);
 
   const currentDaySlots = useMemo(() => {
     if (!selectedDate) return [];
@@ -134,37 +142,48 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
           </Badge>
         </div>
 
-        {availableDates.length > 0 ? (
-          <ScrollArea className="w-full whitespace-nowrap">
-            <div className="flex gap-2.5 pb-2">
-              {availableDates.map((date) => {
-                const isActive = selectedDate && isSameDay(date, selectedDate);
-                return (
-                  <button
-                    key={date.toISOString()}
-                    onClick={() => setSelectedDate(date)}
-                    className={cn(
-                      "flex flex-col items-center justify-center min-w-[72px] h-20 rounded-2xl border-2 transition-all duration-200 shrink-0",
-                      isActive
-                        ? "bg-indigo-600 border-indigo-600 text-white shadow-lg scale-105"
-                        : "bg-card border-border hover:border-indigo-300 dark:hover:border-indigo-700 text-foreground"
-                    )}
-                  >
-                    <span className="text-[9px] font-black uppercase tracking-wider opacity-60">
-                      {format(date, "EEE")}
-                    </span>
-                    <span className="text-xl font-black leading-tight">
-                      {format(date, "d")}
-                    </span>
-                    <span className="text-[8px] font-bold opacity-40 uppercase">
-                      {format(date, "MMM")}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
+        {allDays.length > 0 ? (
+          <>
+            {availableDates.length === 0 && (
+              <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-xl text-center">
+                <p className="text-xs font-semibold text-amber-700">No available slots in the next 30 days</p>
+                <p className="text-[10px] text-amber-600 mt-0.5">Check your availability settings in Cal.com</p>
+              </div>
+            )}
+            <ScrollArea className="w-full whitespace-nowrap">
+              <div className="flex gap-2.5 pb-2">
+                {allDays.map(({ date, dateKey, hasSlots }) => {
+                  const isActive = selectedDate && isSameDay(date, selectedDate);
+                  return (
+                    <button
+                      key={dateKey}
+                      onClick={() => hasSlots && setSelectedDate(date)}
+                      disabled={!hasSlots}
+                      className={cn(
+                        "flex flex-col items-center justify-center min-w-[72px] h-20 rounded-2xl border-2 transition-all duration-200 shrink-0",
+                        isActive
+                          ? "bg-indigo-600 border-indigo-600 text-white shadow-lg scale-105"
+                          : hasSlots
+                            ? "bg-card border-border hover:border-indigo-300 dark:hover:border-indigo-700 text-foreground"
+                            : "bg-muted/30 border-dashed border-muted-foreground/20 text-muted-foreground/40 cursor-not-allowed"
+                      )}
+                    >
+                      <span className="text-[9px] font-black uppercase tracking-wider opacity-60">
+                        {format(date, "EEE")}
+                      </span>
+                      <span className="text-xl font-black leading-tight">
+                        {format(date, "d")}
+                      </span>
+                      <span className="text-[8px] font-bold opacity-40 uppercase">
+                        {format(date, "MMM")}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+          </>
         ) : (
           <div className="py-10 bg-muted/30 rounded-2xl border-2 border-dashed border-border text-center px-6">
             <CalendarDays className="mx-auto text-muted-foreground/30 mb-3" size={36} />

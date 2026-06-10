@@ -32,8 +32,13 @@ serve(async (req) => {
     slotsUrl.searchParams.set('eventTypeId', targetEventTypeId)
     if (timeZone) slotsUrl.searchParams.set('timeZone', timeZone)
 
+    console.log("[get-calcom-slots] Fetching slots:", { start, end, eventTypeId: targetEventTypeId, timeZone });
+
     const slotsResponse = await fetch(slotsUrl.toString(), { method: 'GET', headers })
     const slotsData = await slotsResponse.json()
+    
+    const slotDates = Object.keys(slotsData?.data?.slots || {});
+    console.log(`[get-calcom-slots] Got ${slotDates.length} available dates with slots`);
     
     // 2. Fetch Out-of-Office Blocks
     const oooResponse = await fetch('https://api.cal.com/v2/me/ooo', { method: 'GET', headers })
@@ -92,7 +97,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       status: 'success',
-      data: slotsData.data.slots,
+      data: slotsData?.data?.slots || {},
       blockedDates: blockedDates,
       bookings: bookingsByDate
     }), { 

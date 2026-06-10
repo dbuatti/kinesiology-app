@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { format } from "date-fns";
 
 interface CoherenceAssessmentProps {
   appointmentId: string;
@@ -21,6 +22,7 @@ interface CoherenceAssessmentProps {
   initialCoherenceScore: number | null | undefined;
   onUpdate: () => void;
   onSave?: (data: { heart_rate: number; breath_rate: number; coherence_score: number }) => Promise<void>;
+  history?: any[];
 }
 
 const CoherenceAssessment = ({ 
@@ -29,7 +31,8 @@ const CoherenceAssessment = ({
   initialBreathRate, 
   initialCoherenceScore,
   onUpdate,
-  onSave
+  onSave,
+  history = []
 }: CoherenceAssessmentProps) => {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -48,6 +51,16 @@ const CoherenceAssessment = ({
   const [breathTimerRunning, setBreathTimerRunning] = useState(false);
   const heartIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const breathIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const pastRates = history
+    .filter((a: any) => a.heart_rate != null || a.breath_rate != null || a.coherence_score != null)
+    .slice(0, 5)
+    .map((a: any) => ({
+      date: new Date(a.date),
+      heart: a.heart_rate,
+      breath: a.breath_rate,
+      coherence: a.coherence_score,
+    }));
 
   useEffect(() => {
     if (heartTimerRunning && heartTimer > 0) {
@@ -195,6 +208,34 @@ const CoherenceAssessment = ({
             </div>
 
             <div className="flex flex-col items-center gap-4">
+              {pastRates.length > 0 && (
+                <div className="w-full space-y-2">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Activity size={12} />
+                    <span>Previous Sessions</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {pastRates.map((entry: any, i: number) => (
+                      <div key={i} className="p-2 rounded-lg bg-muted/50 border border-border text-center">
+                        <div className="text-[10px] text-muted-foreground">{format(entry.date, 'M/d')}</div>
+                        {entry.coherence != null ? (
+                          <div className="text-sm font-semibold text-foreground">{entry.coherence.toFixed(2)}</div>
+                        ) : (
+                          <div className="text-xs text-muted-foreground/50">{entry.heart && entry.breath ? `${entry.heart}/${entry.breath}` : '—'}</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="w-full p-3 rounded-lg bg-muted/20 border border-border text-xs text-muted-foreground space-y-1">
+                <p><strong className="text-foreground">How to measure:</strong></p>
+                <p>1. Press "Start" for Heart — count beats you feel in 30 seconds. Multiply by 2 for BPM.</p>
+                <p>2. Press "Start" for Breath — count full breath cycles in 30 seconds. Multiply by 2.</p>
+                <p>3. Click "Calculate" to get the coherence ratio (HR / BR). Ideal: <strong className="text-chart-emerald">4.5–5.5</strong></p>
+              </div>
+
               {calculatedScore !== null && (
                 <div className="text-center animate-in zoom-in-95 duration-300">
                   <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1">Ratio</p>

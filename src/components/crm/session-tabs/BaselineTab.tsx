@@ -98,7 +98,8 @@ const BaselineTab = ({ appointment, history = [], onUpdate, saveField }: Baselin
             initialHeartRate={appointment.heart_rate} 
             initialBreathRate={appointment.breath_rate} 
             initialCoherenceScore={appointment.coherence_score} 
-            onUpdate={onUpdate} 
+            onUpdate={onUpdate}
+            history={history}
           />
         </div>
       </div>

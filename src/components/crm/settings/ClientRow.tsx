@@ -692,6 +692,7 @@ Daniele`;
   const [sendingEmail, setSendingEmail] = useState(false);
   const handleSendEmail = async () => {
     if (!client.email) { showError("No email on file for this client."); return; }
+    if (!currentRateNum || !targetRate) { showError(`Rates not set (current: $${currentRateNum ?? 0}, target: $${targetRate ?? 0}). Set a rate first.`); return; }
     setSendingEmail(true);
     try {
       const { error } = await supabase.functions.invoke('send-rate-increase-email', {

@@ -55,9 +55,17 @@ serve(async (req) => {
       throw new Error("Missing Gmail credentials in Supabase Secrets.");
     }
 
-    const { clientName, clientEmail, currentRate, targetRate, effectiveMonth } = await req.json();
-    if (!clientName || !clientEmail || !currentRate || !targetRate) {
-      throw new Error("Missing fields: clientName, clientEmail, currentRate, targetRate");
+    const payload = await req.json().catch(() => ({}));
+    const { clientName, clientEmail, currentRate, targetRate, effectiveMonth } = payload;
+
+    const missing: string[] = [];
+    if (!clientName) missing.push("clientName");
+    if (!clientEmail) missing.push("clientEmail");
+    if (currentRate === undefined || currentRate === null || currentRate === "") missing.push("currentRate");
+    if (targetRate === undefined || targetRate === null || targetRate === "") missing.push("targetRate");
+    if (missing.length > 0) {
+      console.error("Received payload:", JSON.stringify(payload));
+      throw new Error(`Missing fields: ${missing.join(", ")}`);
     }
 
     const firstName = clientName.split(' ')[0];

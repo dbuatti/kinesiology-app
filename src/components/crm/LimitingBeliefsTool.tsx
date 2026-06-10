@@ -88,9 +88,9 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
 
   const getPrompt = (step: string, beliefText: string) => {
     let prompt = STEP_PROMPTS[step]
-      .replace('(BELIEF)', beliefText)
-      .replace('(LAST RESPONSE)', lastResponse)
-      .replace('(DESIRED FEELING)', responses["C"] || "...");
+      .replace(/\(BELIEF\)/g, beliefText)
+      .replace(/\(LAST RESPONSE\)/g, lastResponse)
+      .replace(/\(DESIRED FEELING\)/g, responses["C"] || "...");
     return prompt;
   };
 
@@ -340,8 +340,8 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
           <div className="space-y-3">
             {CHECK_QUESTIONS.map((q, i) => {
               const prompt = q
-                .replace('(BELIEF)', belief)
-                .replace('(OPPOSITE OF BELIEF)', oppositeBelief || "...");
+                .replace(/\(BELIEF\)/g, belief)
+                .replace(/\(OPPOSITE OF BELIEF\)/g, oppositeBelief || "...");
               const result = checkResults[i];
               return (
                 <Card key={i} className={cn(

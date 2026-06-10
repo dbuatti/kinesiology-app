@@ -5,37 +5,15 @@ import {
   FileText,
   Printer,
   ArrowLeft,
-  Loader2,
-  Clock,
   ChevronRight,
   ExternalLink,
   Zap,
-  ChevronDown,
-  ChevronUp,
-  Calendar,
-  Maximize2,
-  Minimize2,
-  LayoutGrid
+  ChevronUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppointmentWithClient } from '@/types/crm';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useSessionDocumentState } from '@/hooks/useSessionDocumentState';
-import { useNavigate } from 'react-router-dom';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 // Modular Sub-components
 import DocumentSidebar, { OUTLINE_ITEMS } from './document-view/DocumentSidebar';
@@ -95,22 +73,17 @@ const SessionDocumentView = ({
   onClose,
   history = []
 }: SessionDocumentViewProps) => {
-  const navigate = useNavigate();
   const {
     lastSaved,
     openGuides,
     activeSection,
     loadingMuscles,
     currentTime,
-    isFullScreen,
     activeTimerDuration,
     timeLeft,
-    loadingAppointments,
-    toggleFullScreen,
     startQuickTimer,
     stopQuickTimer,
     formatCountdown,
-    overallProgressPercent,
     metadata,
     updateMetadataFields,
     scrollTo,
@@ -119,8 +92,7 @@ const SessionDocumentView = ({
     currentMuscleTests,
     unifiedPattern,
     inhibitedFindings,
-    handleTogglePatternItem,
-    groupedAppointments
+    handleTogglePatternItem
   } = useSessionDocumentState({
     appointment,
     onUpdate,
@@ -138,10 +110,6 @@ const SessionDocumentView = ({
     media.addEventListener("change", listener);
     return () => media.removeEventListener("change", listener);
   }, []);
-
-  const handleSwitchAppointment = (newId: string) => {
-    navigate(`/appointments/${newId}?view=document`);
-  };
 
   // Extract all currently and historically inhibited findings from the unified pattern
   const activeInhibitedFindings = useMemo(() => {
@@ -162,135 +130,19 @@ const SessionDocumentView = ({
     <div className="bg-white min-h-screen text-black font-sans pb-40 print:p-0 print:m-0">
       {/* Document Controls */}
       <div className="sticky top-0 z-50 bg-card/95 backdrop-blur-md print:hidden border-b border-border">
-        <div className="px-4 md:px-6 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          {/* Left Side: Exit, Client Switcher, Status */}
-          <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
-            <div className="flex items-center gap-3 min-w-0">
-              <Button variant="ghost" size="sm" onClick={onClose} className="rounded-none h-9 px-3 font-medium text-[10px] uppercase tracking-wider border border-black hover:bg-black hover:text-white transition-all shrink-0">
-                <ArrowLeft size={14} className="mr-1" /> Exit
-              </Button>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">Clinical Record</span>
-                
-                {/* Live Client Switcher Dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-1 hover:bg-muted px-1.5 py-0.5 -ml-1.5 rounded-lg transition-colors text-left group min-w-0">
-                      <span className="text-xs font-semibold text-foreground truncate">{appointment.clients.name}</span>
-                      <ChevronDown size={12} className="text-muted-foreground/60 group-hover:text-foreground transition-colors shrink-0" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-72 md:w-80 max-h-[450px] overflow-y-auto rounded-xl p-2 shadow-sm border-none bg-card z-[100]">
-                    {loadingAppointments ? (
-                      <div className="py-6 flex justify-center"><Loader2 className="animate-spin text-chart-primary" size={20} /></div>
-                    ) : (
-                      <>
-                        {groupedAppointments.today.length > 0 && (
-                          <div className="space-y-1">
-                            <div className="px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider text-chart-destructive flex items-center gap-1.5">
-                              <div className="w-1.5 h-1.5 rounded-full bg-chart-destructive animate-pulse" /> Today's Schedule
-                            </div>
-                            {groupedAppointments.today.map(app => (
-                              <DropdownMenuItem 
-                                key={app.id} 
-                                onClick={() => handleSwitchAppointment(app.id)}
-                                className={cn(
-                                  "rounded-xl py-2.5 px-4 cursor-pointer flex items-center justify-between",
-                                  app.id === appointment.id ? "bg-muted text-foreground font-semibold" : "hover:bg-muted"
-                                )}
-                              >
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-xs font-semibold truncate">{app.clients?.name}</p>
-                                  <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider mt-0.5">
-                                    {format(new Date(app.date), "h:mm a")} • {app.tag}
-                                  </p>
-                                </div>
-                                <Badge className={cn(
-                                  "border-none font-medium text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-md",
-                                  app.status === 'Completed' ? "bg-chart-emerald/10 text-chart-emerald" : "bg-primary text-primary-foreground"
-                                )}>
-                                  {app.status}
-                                </Badge>
-                              </DropdownMenuItem>
-                            ))}
-                          </div>
-                        )}
-
-                        {groupedAppointments.upcoming.length > 0 && (
-                          <div className="space-y-1 mt-3">
-                            <div className="px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60 flex items-center gap-1.5">
-                              <Calendar size={10} /> Upcoming Sessions
-                            </div>
-                            {groupedAppointments.upcoming.slice(0, 10).map(app => (
-                              <DropdownMenuItem 
-                                key={app.id} 
-                                onClick={() => handleSwitchAppointment(app.id)}
-                                className={cn(
-                                  "rounded-xl py-2.5 px-4 cursor-pointer flex items-center justify-between",
-                                  app.id === appointment.id ? "bg-muted text-foreground font-semibold" : "hover:bg-muted"
-                                )}
-                              >
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-xs font-semibold truncate">{app.clients?.name}</p>
-                                  <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider mt-0.5">
-                                    {format(new Date(app.date), "MMM d, h:mm a")} • {app.tag}
-                                  </p>
-                                </div>
-                              </DropdownMenuItem>
-                            ))}
-                          </div>
-                        )}
-
-                        {groupedAppointments.past.length > 0 && (
-                          <div className="space-y-1 mt-3">
-                            <div className="px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60 flex items-center gap-1.5">
-                              <Clock size={10} /> Recent Past Sessions
-                            </div>
-                            {groupedAppointments.past.map(app => (
-                              <DropdownMenuItem 
-                                key={app.id} 
-                                onClick={() => handleSwitchAppointment(app.id)}
-                                className={cn(
-                                  "rounded-xl py-2.5 px-4 cursor-pointer flex items-center justify-between",
-                                  app.id === appointment.id ? "bg-muted text-foreground font-semibold" : "hover:bg-muted"
-                                )}
-                              >
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-xs font-semibold truncate">{app.clients?.name}</p>
-                                  <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider mt-0.5">
-                                    {format(new Date(app.date), "MMM d, yyyy")} • {app.tag}
-                                  </p>
-                                </div>
-                              </DropdownMenuItem>
-                            ))}
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-
-            {/* Editable Status Dropdown */}
-            <Select value={appointment.status} onValueChange={(newStatus) => saveField('status', newStatus)}>
-              <SelectTrigger className="h-8 w-auto min-w-[90px] text-[10px] font-medium uppercase tracking-wider border border-black rounded-none bg-white px-2 py-0.5 focus:ring-0 focus:ring-offset-0 shrink-0">
-                <SelectValue placeholder={appointment.status} />
-              </SelectTrigger>
-              <SelectContent className="rounded-none border border-black shadow-sm bg-white">
-                {["Scheduled", "Completed", "Cancelled", "No Show"].map(status => (
-                  <SelectItem key={status} value={status} className="rounded-none text-[10px] font-medium uppercase tracking-wider py-2 px-4 cursor-pointer">
-                    {status}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <div className="px-4 md:px-6 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-4 min-w-0">
+            <Button variant="ghost" size="sm" onClick={onClose} className="rounded-none h-9 px-3 font-medium text-[10px] uppercase tracking-wider border border-black hover:bg-black hover:text-white transition-all shrink-0">
+              <ArrowLeft size={14} className="mr-1" /> Exit
+            </Button>
+            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60 shrink-0">Clinical Record</span>
+            <span className="text-xs font-semibold text-foreground truncate">{appointment.clients.name}</span>
+            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60 shrink-0">{appointment.status}</span>
           </div>
 
-          {/* Right Side: Sync, Notion, Full Screen */}
-          <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto border-t border-border pt-2 sm:pt-0 sm:border-t-0">
-            <div className="flex items-center gap-2 text-right">
-              <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">Last Sync</p>
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center gap-2">
+              <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider hidden sm:inline">Last Sync</p>
               <p className="text-[10px] font-medium tabular-nums">{format(lastSaved, "HH:mm:ss")}</p>
             </div>
             
@@ -302,28 +154,11 @@ const SessionDocumentView = ({
                   </a>
                 </Button>
               )}
-              <Button variant="outline" size="sm" onClick={() => window.print()} className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted hidden sm:inline-flex">
+              <Button variant="outline" size="sm" onClick={() => window.print()} className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
                 <Printer size={12} className="mr-1" /> Print
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={toggleFullScreen}
-                className="h-8 w-8 rounded-none border-black text-black hover:bg-muted shrink-0"
-                title="Toggle Full Screen"
-              >
-                {isFullScreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
               </Button>
             </div>
           </div>
-        </div>
-
-        {/* Rainbow Progress Bar */}
-        <div className="h-[3px] w-full bg-muted relative overflow-hidden">
-          <div 
-            className="h-full bg-gradient-to-r from-chart-primary via-chart-destructive to-chart-emerald transition-all duration-1000 ease-linear"
-            style={{ width: `${overallProgressPercent}%` }}
-          />
         </div>
       </div>
 

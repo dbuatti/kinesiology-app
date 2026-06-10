@@ -64,7 +64,8 @@ const MainLayout = () => {
   }, [location.pathname, location.search, isFullScreen, navigate]);
 
   const isInSession = location.pathname.startsWith('/appointments/');
-  const shouldHideHeader = isFullScreen && isInSession;
+  const isDocView = location.search.includes('view=document');
+  const shouldHideHeader = (isFullScreen && isInSession) || isDocView;
 
   return (
     <div className={cn(

@@ -297,21 +297,23 @@ const AppointmentsPage = () => {
  const monthSortOrder = (statusFilter === 'Scheduled' || statusFilter === 'today') ? 'asc' : 'desc';
  const grouped = groupAppointmentsByMonth(otherSessions, monthSortOrder);
 
- const AppointmentCard = ({ app }: { app: AppointmentWithClient }) => {
- const hasBolt = app.bolt_score !== null && app.bolt_score !== undefined;
- const hasCoherence = app.coherence_score !== null && app.coherence_score !== undefined;
- const isCompleted = app.status === 'Completed';
- const isTodaySession = isToday(app.date);
- const isHighRisk = app.clients?.latest_bolt !== null && app.clients?.latest_bolt! < 25;
+  const AppointmentCard = ({ app }: { app: AppointmentWithClient }) => {
+  const hasBolt = app.bolt_score !== null && app.bolt_score !== undefined;
+  const hasCoherence = app.coherence_score !== null && app.coherence_score !== undefined;
+  const isCompleted = app.status === 'Completed';
+  const isClosed = app.status === 'Cancelled' || app.status === 'No Show' || isCompleted;
+  const isTodaySession = !isClosed && isToday(app.date);
+  const isHighRisk = app.clients?.latest_bolt !== null && app.clients?.latest_bolt! < 25;
 
  return (
   <Card 
   className={cn(
   "border-none transition-all duration-300 group overflow-hidden relative rounded-xl md:rounded-xl shadow-sm",
+  isClosed ? "bg-muted/50 border border-border opacity-50" :
   isTodaySession 
   ? "bg-indigo-600 text-white shadow-sm ring-4 ring-indigo-500/10" 
   : "bg-card hover:shadow-md border border-border",
-  isHighRisk && !isCompleted && !isTodaySession && "bg-chart-destructive/10/50 border-border "
+  isHighRisk && !isClosed && !isTodaySession && "bg-chart-destructive/10/50 border-border "
   )}
  >
  <CardContent className="p-0">

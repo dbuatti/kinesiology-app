@@ -19,7 +19,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import AppLayout from "@/components/crm/AppLayout";
-import Breadcrumbs from "@/components/shared/Breadcrumbs";
+
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/shared/PageHeader";
@@ -97,12 +97,7 @@ const WorksheetsHubPage = ({ isNested = false }: WorksheetsHubPageProps) => {
  <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
  {!isNested && (
  <>
- <Breadcrumbs 
- items={[
- { label: "Resources", path: "/resources" },
- { label: "Worksheets" }
- ]} 
- />
+
 
  <PageHeader 
  title="Worksheets & Reflections"
@@ -117,10 +112,10 @@ const WorksheetsHubPage = ({ isNested = false }: WorksheetsHubPageProps) => {
  <div key={ws.id} className="flex flex-col h-full">
  <Link to={ws.path} className="block group flex-1">
  <Card className="border-none shadow-md rounded-xl bg-card hover:shadow-sm hover:-translate-y-1 transition-all duration-300 h-full overflow-hidden">
- <CardContent className="p-8 space-y-6">
+  <CardContent className="p-5 space-y-4">
  <div className="flex items-start justify-between">
  <div className={cn(
- "w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm",
+  "w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm",
  ws.bgColor, ws.color
  )}>
  <ws.icon size={28} />

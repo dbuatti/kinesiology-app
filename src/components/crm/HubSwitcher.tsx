@@ -1,5 +1,5 @@
 import React from "react";
-import { Activity, Zap, BookOpen, BarChart3, ChevronDown, Sparkles } from "lucide-react";
+import { Activity, Zap, BookOpen, BarChart3, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppMode, AppMode } from "@/components/ModeProvider";
 import {
@@ -51,55 +51,36 @@ const HubSwitcher = () => {
   const activeMode = modes.find(m => m.id === mode) || modes[0];
 
   return (
-    <div className="flex items-center">
-      <Link
-        to={activeMode.path}
-        onClick={(e) => { if (!e.metaKey && !e.ctrlKey) setMode(activeMode.id); }}
-        className={cn(
-          "flex items-center gap-2 sm:gap-3 px-2.5 py-2 sm:px-4 rounded-2xl border transition-all duration-500 hover:shadow-lg group cursor-pointer no-underline",
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className={cn(
+          "flex items-center gap-1.5 sm:gap-2 pl-2 pr-1 py-1 sm:pl-3 sm:pr-1.5 rounded-lg border transition-all duration-500 hover:shadow-md group cursor-pointer",
           activeMode.color
-        )}
-      >
-        <div className="relative">
-          <activeMode.icon size={18} className="animate-in fade-in zoom-in duration-500" />
-          <div className="absolute -top-1 -right-1 w-2 h-2 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center">
-            <div className="w-1 h-1 bg-current rounded-full animate-pulse" />
-          </div>
-        </div>
-        <div className="hidden sm:flex flex-col items-start">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] leading-none mb-0.5">Active Focus</span>
-          <span className="text-xs font-bold tracking-tight">{activeMode.label}</span>
-        </div>
-      </Link>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button className={cn(
-            "ml-0.5 p-2 rounded-xl transition-colors hover:bg-slate-100 dark:hover:bg-slate-800",
-            activeMode.color.split(' ')[0]
-          )}>
-            <ChevronDown size={14} />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-72 p-2 rounded-[2rem] border-none shadow-3xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl z-[110]">
-          <div className="px-4 py-3 mb-2">
-            <div className="flex items-center gap-2 text-indigo-600 mb-1">
-              <Sparkles size={14} className="animate-pulse" />
-              <span className="text-[9px] font-black uppercase tracking-[0.3em]">Switch Workspace</span>
+        )}>
+          <div className="relative">
+            <activeMode.icon size={14} className="animate-in fade-in zoom-in duration-500" />
+            <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center">
+              <div className="w-1 h-1 bg-current rounded-full animate-pulse" />
             </div>
-            <p className="text-xs text-slate-500 font-medium">Select your focus for this session.</p>
           </div>
-          
-          <div className="space-y-1">
-            {modes.map((m) => (
-              <DropdownMenuItem key={m.id} asChild>
-                <Link
-                  to={m.path}
-                  onClick={(e) => { if (!e.metaKey && !e.ctrlKey) setMode(m.id); }}
-                  className={cn(
-                    "rounded-2xl p-3 cursor-pointer transition-all duration-300 flex items-start gap-4 no-underline",
-                    mode === m.id ? "bg-slate-100 dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-700" : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
-                  )}
-                >
+          <div className="hidden sm:flex items-center">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">{activeMode.label}</span>
+          </div>
+          <ChevronDown size={12} className="ml-0.5 opacity-50" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-72 p-2 rounded-[2rem] border-none shadow-3xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl z-[110]">
+        <div className="space-y-1">
+          {modes.map((m) => (
+            <DropdownMenuItem key={m.id} asChild>
+              <Link
+                to={m.path}
+                onClick={(e) => { if (!e.metaKey && !e.ctrlKey) setMode(m.id); }}
+                className={cn(
+                  "rounded-2xl p-3 cursor-pointer transition-all duration-300 flex items-start gap-4 no-underline",
+                  mode === m.id ? "bg-slate-100 dark:bg-slate-700 ring-1 ring-slate-200 dark:ring-slate-500" : "hover:bg-slate-50 dark:hover:bg-slate-700"
+                )}
+              >
                 <div className={cn(
                   "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
                   m.color,
@@ -108,20 +89,19 @@ const HubSwitcher = () => {
                   <m.icon size={20} />
                 </div>
                 <div className="flex flex-col">
-                  <span className={cn("font-bold text-sm", mode === m.id ? "text-slate-900 dark:text-white" : "text-slate-600 dark:text-slate-400")}>
+                  <span className={cn("font-bold text-sm", mode === m.id ? "text-slate-900 dark:text-white" : "text-slate-600 dark:text-slate-200")}>
                     {m.label}
                   </span>
-                  <span className="text-[10px] text-slate-400 font-medium leading-tight mt-0.5">
+                  <span className="text-[10px] text-slate-400 dark:text-slate-300 font-medium leading-tight mt-0.5">
                     {m.description}
                   </span>
                 </div>
-                </Link>
-              </DropdownMenuItem>
-            ))}
-          </div>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+              </Link>
+            </DropdownMenuItem>
+          ))}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 

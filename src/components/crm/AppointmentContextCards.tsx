@@ -114,10 +114,10 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
   const billingDefault = (appointment.clients as any).billing_default || 'Paid';
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
       {/* Session Strategy Card */}
       <Card className="border-none shadow-sm shadow-slate-900/5 rounded-xl bg-slate-900 text-white overflow-hidden">
-        <CardHeader className="p-8 pb-4">
+        <CardHeader className="p-5 pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-3">
               <Clock size={16} /> Session Strategy (60m)
@@ -127,7 +127,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="p-8 pt-0 space-y-4">
+        <CardContent className="p-5 pt-0 space-y-4">
           <div className="grid grid-cols-1 gap-2">
             {SESSION_STAGES.map((stage) => {
               const isActive = activeStageId === stage.id;
@@ -190,7 +190,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                 <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-125 group-hover:rotate-12 transition-all duration-1000">
                   <Zap size={120} />
                 </div>
-                <CardContent className="p-8 space-y-4 relative z-10">
+                <CardContent className="p-5 space-y-4 relative z-10">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
@@ -223,7 +223,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
           appointment.is_paid ? "bg-white border-2 border-emerald-100" : "bg-muted border border-slate-200"
         )}>
           <CollapsibleTrigger asChild>
-            <CardHeader className="p-8 cursor-pointer hover:bg-muted/50 transition-colors">
+            <CardHeader className="p-5 cursor-pointer hover:bg-muted/50 transition-colors">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className={cn(
@@ -244,7 +244,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
             </CardHeader>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="p-8 pt-0 space-y-8 animate-in fade-in slide-in-from-top-2 duration-500">
+            <CardContent className="p-5 pt-0 space-y-5 animate-in fade-in slide-in-from-top-2 duration-500">
               <div className="flex items-center justify-between p-5 bg-white dark:bg-slate-900 rounded-xl border border-border dark:border-slate-800 shadow-sm">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -291,7 +291,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                       </Button>
                     </div>
                   ) : (
-                    <div className="p-8 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800 flex flex-col items-center justify-center gap-4 text-emerald-700">
+                    <div className="p-5 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800 flex flex-col items-center justify-center gap-4 text-emerald-700">
                       <div className="w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-sm shadow-emerald-500/30">
                         <CheckCircle2 size={32} />
                       </div>
@@ -340,7 +340,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
       <Collapsible open={contextOpen} onOpenChange={setContextOpen}>
         <Card className="border-none shadow-sm shadow-slate-900/5 rounded-xl bg-slate-900 text-white overflow-hidden">
           <CollapsibleTrigger asChild>
-            <CardHeader className="p-8 cursor-pointer hover:bg-white/5 transition-colors">
+            <CardHeader className="p-5 cursor-pointer hover:bg-white/5 transition-colors">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
@@ -353,7 +353,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
             </CardHeader>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <CardContent className="p-8 pt-0 space-y-8 animate-in fade-in slide-in-from-top-2 duration-500">
+            <CardContent className="p-5 pt-0 space-y-5 animate-in fade-in slide-in-from-top-2 duration-500">
               <div className="space-y-6">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 px-2">
@@ -422,12 +422,12 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
 
       {/* Quick Reference */}
       <Card className="border-none shadow-sm shadow-indigo-500/5 rounded-xl bg-muted dark:bg-indigo-900/20 border-2 border-indigo-100 dark:border-indigo-800 overflow-hidden group">
-        <CardHeader className="p-8 pb-4">
+        <CardHeader className="p-5 pb-3">
           <CardTitle className="text-[10px] font-semibold uppercase tracking-[0.3em] text-chart-primary flex items-center gap-3">
             <Lightbulb size={16} className="group-hover:scale-110 transition-transform" /> Quick Reference
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-8 pt-0">
+        <CardContent className="p-5 pt-0">
           <div className="p-5 bg-white dark:bg-slate-900 rounded-xl border border-indigo-200 dark:border-indigo-800 shadow-sm">
             <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider mb-2">Instant Cramp Hack</p>
             <p className="text-xs font-medium text-slate-700 dark:text-slate-300 leading-relaxed">

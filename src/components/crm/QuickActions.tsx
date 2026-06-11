@@ -115,11 +115,11 @@ const QuickActions = () => {
                   <Button
                     size="lg"
                     className={cn(
-                      "h-12 w-12 md:h-16 md:w-16 rounded-xl shadow-3xl bg-primary hover:bg-primary/90 transition-all duration-700",
+                      "h-10 w-10 md:h-12 md:w-12 rounded-xl shadow-3xl bg-primary hover:bg-primary/90 transition-all duration-700",
                       isOpen ? "rotate-45 scale-110" : "hover:scale-110 hover:rotate-90"
                     )}
                   >
-                    <Plus size={24} className="md:w-8 md:h-8" strokeWidth={3} />
+                    <Plus size={20} className="md:w-6 md:h-6" strokeWidth={3} />
                   </Button>
                 </div>
               </DropdownMenuTrigger>

@@ -5,15 +5,13 @@ import SpaceHeader from '@/components/crm/SpaceHeader';
 import QuickActions from '@/components/crm/QuickActions';
 import BackToTop from '@/components/shared/BackToTop';
 import UpcomingMarquee from '@/components/crm/UpcomingMarquee';
-import SessionTimer from '@/components/crm/SessionTimer';
+import FooterLinks from '@/components/crm/FooterLinks';
 import { useAppMode } from '@/components/ModeProvider';
-import { useActiveSession } from '@/hooks/useActiveSession';
 import { cn } from '@/lib/utils';
 import { showSuccess } from '@/utils/toast';
 
 const MainLayout = () => {
   const { mode } = useAppMode();
-  const activeSession = useActiveSession();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -90,15 +88,7 @@ const MainLayout = () => {
       <div className="relative z-10 flex flex-col h-screen overflow-hidden">
         {/* UNIFIED STICKY HEADER STACK */}
         <div className="shrink-0 w-full shadow-sm z-[100] pt-[env(safe-area-inset-top,0px)] bg-white dark:bg-slate-950">
-          {!shouldHideHeader && <UpcomingMarquee />}
-          {activeSession && !isDocView && (
-            <SessionTimer 
-              sessionId={activeSession.id}
-              appointmentDate={activeSession.date}
-              status={activeSession.status}
-              clientName={activeSession.clientName}
-            />
-          )}
+          {!shouldHideHeader && !isInSession && <UpcomingMarquee />}
           {!shouldHideHeader && <SpaceHeader />}
         </div>
         
@@ -107,6 +97,7 @@ const MainLayout = () => {
             <div className="flex-1 p-0">
               <Outlet />
             </div>
+            {!shouldHideHeader && <FooterLinks />}
           </main>
         </div>
       </div>

@@ -107,10 +107,8 @@ const VoiceDashboardPage = () => {
  title="Voice Studio"
  subtitle="Your studio at a glance — students, lessons, and actions."
  icon={Mic}
- iconClassName="bg-destructive text-white "
- breadcrumbs={[{ label: "Voice Studio" }, { label: "Dashboard" }]}
- badge="Voice Studio"
- />
+   iconClassName="bg-destructive text-white "
+  />
 
  {/* KPI Cards */}
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">

@@ -30,7 +30,7 @@ import {
  DropdownMenuItem,
  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import Breadcrumbs from "@/components/shared/Breadcrumbs";
+
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { generateSessionSummary } from "@/utils/summary-generator";
@@ -154,7 +154,8 @@ const DemoSessionPage = () => {
  </Alert>
 
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
- <Breadcrumbs items={[{ label: "Dashboard", path: "/" }, { label: "Demo Session" }]} className="mb-0" />
+
+
  <div className="flex items-center gap-2">
  <Button 
  variant="outline" 

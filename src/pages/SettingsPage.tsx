@@ -16,14 +16,13 @@ import AppearanceSettings from "../components/crm/settings/AppearanceSettings";
 
 const SettingsPage = () => {
   return (
-    <AppLayout>
+    <AppLayout variant="workspace">
       <div className="space-y-8 animate-in fade-in duration-500 pb-20">
         <PageHeader
           title="Settings"
           subtitle="Manage your account, appearance, and integrations."
           icon={Settings}
           iconClassName="bg-slate-700"
-          breadcrumbs={[{ label: "Settings" }]}
         />
 
         <Tabs defaultValue="account" className="space-y-8">

@@ -30,7 +30,7 @@ import { Nuclei } from "@/utils/brainstem-logic";
 
 // Layouts
 import AppLayout from "@/components/crm/AppLayout";
-import Breadcrumbs from "@/components/shared/Breadcrumbs";
+
 import WeeklyFocusBanner from "@/components/crm/WeeklyFocusBanner";
 import SessionContentSwitcher from "@/components/crm/SessionContentSwitcher";
 import AppointmentSidebar from "@/components/crm/AppointmentSidebar";
@@ -330,7 +330,7 @@ const AppointmentDetailPage = () => {
 
   return (
     <ErrorBoundary>
-      <AppLayout className="pb-0">
+      <AppLayout variant="workspace" className="pb-0">
         <div className="max-w-[1600px] mx-auto space-y-4">
 
           {/* SESSION HEADER */}
@@ -347,8 +347,10 @@ const AppointmentDetailPage = () => {
                 </Button>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h1 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-foreground tracking-tight truncate leading-tight privacy-mode-active:blur-sm">
-                      {appointment.clients.name}
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold tracking-tight truncate leading-tight privacy-mode-active:blur-sm">
+                      <Link to={`/clients/${appointment.clients.id}`} className="text-foreground hover:text-primary transition-colors no-underline">
+                        {appointment.clients.name}
+                      </Link>
                     </h1>
                     {isSessionToday && isOngoing && (
                       <Badge className="bg-chart-emerald/10 text-chart-emerald border-none font-medium text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full animate-pulse shrink-0">
@@ -388,15 +390,15 @@ const AppointmentDetailPage = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                <Button variant="outline" size="sm" onClick={() => setIsDocumentView(true)}
-                  className="h-8 px-3 gap-1.5 border-border bg-card rounded-lg text-xs font-medium text-muted-foreground hover:bg-muted transition-colors">
+                <Link to="?view=document"
+                  className="h-8 px-3 gap-1.5 border-border bg-card rounded-lg text-xs font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors inline-flex items-center border no-underline">
                   <FileText size={13} />
-                  <span className="hidden md:inline">Doc View</span>
-                </Button>
+                  <span className="hidden md:inline ml-1.5">Doc View</span>
+                </Link>
                 {appointment.clients.phone && (
                   <Button variant="outline" size="sm"
                     onClick={() => window.open(`imessage:${appointment.clients.phone}`, '_blank')}
-                    className="h-8 px-2.5 gap-1.5 border-border bg-card rounded-lg text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
+                    className="h-8 px-2.5 gap-1.5 border-border bg-card rounded-lg text-xs font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                     title={`Message ${appointment.clients.name}`}>
                     <MessageCircle size={13} />
                     <span className="hidden md:inline">Message</span>
@@ -406,14 +408,14 @@ const AppointmentDetailPage = () => {
                   onClick={() => setShowSidebar(!showSidebar)}
                   className={cn(
                     "h-8 px-2.5 gap-1.5 border-border rounded-lg text-xs font-medium transition-colors",
-                    showSidebar ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground hover:bg-muted"
+                    showSidebar ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                   )}>
                   {showSidebar ? <PanelLeftClose size={13} /> : <PanelLeftOpen size={13} />}
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm"
-                      className="h-8 w-8 rounded-lg border-border bg-card text-muted-foreground hover:bg-muted transition-colors shrink-0">
+                      className="h-8 w-8 rounded-lg border-border bg-card text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors shrink-0">
                       <MoreHorizontal size={15} />
                     </Button>
                   </DropdownMenuTrigger>

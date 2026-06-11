@@ -52,7 +52,7 @@ const BusinessDashboardPage = () => {
   supabase.from("appointments").select("id, client_id, date, price_amount, payment_received, status, clients(id, name, email)").order("date", { ascending: false }),
  supabase.from("voice_bookings").select("id, student_name, student_email, lesson_date, cost, status").order("lesson_date", { ascending: false }),
  supabase.from("voice_onboarding").select("name, email"),
- supabase.from("appointments").select("id, date, price_amount, clients(id, name)").gte("date", new Date().toISOString().split("T")[0]).order("date", { ascending: true }).limit(5),
+  supabase.from("appointments").select("id, date, price_amount, clients(id, name, rate)").gte("date", new Date().toISOString().split("T")[0]).order("date", { ascending: true }).limit(5),
  supabase.from("voice_bookings").select("id, student_name, lesson_date, cost, status").gte("lesson_date", new Date().toISOString().split("T")[0]).order("lesson_date", { ascending: true }).limit(5),
  ]);
 
@@ -147,7 +147,7 @@ const BusinessDashboardPage = () => {
  }, [viewMode, totals, runRate]);
 
  if (error) return (
- <AppLayout><div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
+ <AppLayout variant="workspace"><div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
  <div className="w-20 h-20 rounded-xl bg-destructive/10 flex items-center justify-center"><TrendingUp className="h-8 w-8 text-destructive/70" /></div>
  <div className="text-center"><h2 className="text-2xl font-semibold text-foreground">Failed to load</h2><p className="text-sm text-muted-foreground mt-1">{error}</p></div>
  <Button onClick={fetchData} variant="outline" className="rounded-xl font-medium text-xs"><RefreshCw size={14} className="mr-2" /> Retry</Button>
@@ -189,7 +189,7 @@ const BusinessDashboardPage = () => {
  const filteredVoiceLessons = viewMode === "fnh" ? 0 : totals.voiceLessons;
 
  return (
- <AppLayout>
+ <AppLayout variant="workspace">
  <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-16">
  <PageHeader
  title="Business Hub"
@@ -267,7 +267,7 @@ const BusinessDashboardPage = () => {
  <p className="font-medium text-sm text-foreground truncate group-hover:text-chart-primary transition-colors">{(a.clients as any)?.name || "Unknown"}</p>
  <p className="text-[10px] font-medium text-muted-foreground">{format(parseISO(a.date), "EEE, MMM d · h:mm a")}</p>
  </div>
- {a.price_amount && <span className="text-xs font-semibold text-foreground shrink-0 ml-3">{fmt(Number(a.price_amount))}</span>}
+  {a.price_amount || (a.clients as any)?.rate ? <span className="text-xs font-semibold text-foreground shrink-0 ml-3">{fmt(Number(a.price_amount || (a.clients as any)?.rate))}</span> : null}
  </Link>
  ))}
  </div>

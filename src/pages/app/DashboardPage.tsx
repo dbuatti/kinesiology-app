@@ -179,7 +179,7 @@ const Index = () => {
 
   if (view === 'hub') {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4 relative overflow-hidden bg-card">
+      <div className="min-h-screen flex flex-col items-center justify-center py-6 px-4 relative overflow-hidden bg-card">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-[-10%] left-[-5%] w-[50%] h-[50%] bg-primary/5 blur-[120px] rounded-full" />
           <div className="absolute bottom-[-10%] right-[-5%] w-[50%] h-[50%] bg-chart-emerald/5 blur-[120px] rounded-full" />
@@ -196,7 +196,7 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 px-4">
             {/* CLINICAL HUB */}
             <button onClick={() => handleEnterMode('clinical')} className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-              <div className={cn("relative h-full border border-border rounded-xl overflow-hidden transition-all duration-700 group-hover:border-primary/30 group-hover:shadow-sm p-12 flex flex-col bg-card")}>
+              <div className={cn("relative h-full border border-border rounded-xl overflow-hidden transition-all duration-700 group-hover:border-primary/30 group-hover:shadow-sm p-8 flex flex-col bg-card")}>
                 <div className="w-16 h-16 rounded-xl bg-muted text-foreground flex items-center justify-center mb-12 transition-all duration-700 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110 group-hover:rotate-3">
                   <Activity size={32} />
                 </div>
@@ -215,7 +215,7 @@ const Index = () => {
 
             {/* PRACTICE LAB */}
             <button onClick={() => handleEnterMode('lab')} className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
-              <div className={cn("relative h-full border border-border rounded-xl overflow-hidden transition-all duration-700 group-hover:border-chart-emerald/30 group-hover:shadow-sm p-12 flex flex-col bg-card")}>
+              <div className={cn("relative h-full border border-border rounded-xl overflow-hidden transition-all duration-700 group-hover:border-chart-emerald/30 group-hover:shadow-sm p-8 flex flex-col bg-card")}>
                 <div className="w-16 h-16 rounded-xl bg-muted text-foreground flex items-center justify-center mb-12 transition-all duration-700 group-hover:bg-chart-emerald group-hover:text-primary-foreground group-hover:scale-110 group-hover:rotate-3">
                   <Zap size={32} />
                 </div>
@@ -234,7 +234,7 @@ const Index = () => {
 
             {/* KNOWLEDGE HUB */}
             <button onClick={() => handleEnterMode('library')} className="group relative flex flex-col text-left h-full animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-400">
-              <div className={cn("relative h-full border border-border rounded-xl overflow-hidden transition-all duration-700 group-hover:border-primary/30 group-hover:shadow-sm p-12 flex flex-col bg-card")}>
+              <div className={cn("relative h-full border border-border rounded-xl overflow-hidden transition-all duration-700 group-hover:border-primary/30 group-hover:shadow-sm p-8 flex flex-col bg-card")}>
                 <div className="w-16 h-16 rounded-xl bg-muted text-foreground flex items-center justify-center mb-12 transition-all duration-700 group-hover:bg-primary group-hover:text-primary-foreground group-hover:scale-110 group-hover:rotate-3">
                   <BookOpen size={32} />
                 </div>
@@ -258,7 +258,7 @@ const Index = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-6 md:space-y-12">
+      <div className="space-y-6 md:space-y-8">
         <PageHeader
           title={`${mode.charAt(0).toUpperCase() + mode.slice(1)} Dashboard`}
           subtitle={
@@ -267,8 +267,6 @@ const Index = () => {
             "Deepen your clinical knowledge and master the FNH protocols."
           }
           icon={LayoutDashboard}
-          breadcrumbs={[{ label: "Dashboard" }]}
-          badge={mode === 'clinical' ? "Clinical Command" : mode === 'lab' ? "Practice Lab" : "Knowledge Hub"}
           actions={
             <div className="flex items-center gap-3">
               <Button

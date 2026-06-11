@@ -1162,14 +1162,14 @@ export default function ClientAuditPage() {
   const activeStrategies = aiSuggestions?.strategies || STATIC_STRATEGIES;
 
   return (
-    <AppLayout>
+    <AppLayout variant="wide">
       <div className="space-y-8 animate-in fade-in duration-700 pb-20">
         <PageHeader
           title="Client Payment & Audit"
           subtitle="Review client rates, track appointment recency, identify follow-up needs, and perform financial audits with AI-driven pricing suggestions."
           icon={FileText}
           iconClassName="bg-muted"
-          breadcrumbs={[{ label: "Business", path: "/business" }, { label: "Client Audit" }]}
+
         />
 
         {loading ? (

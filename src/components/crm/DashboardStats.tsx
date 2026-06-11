@@ -18,7 +18,7 @@ interface DashboardStatsProps {
 
 const DashboardStats = ({ stats }: DashboardStatsProps) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {[
         { label: "Total Clients", value: stats.clients, sub: `+${stats.newClients30d} new`, icon: Users },
         { label: "Weekly Sessions", value: stats.sessionsThisWeek, sub: `${stats.sessions30d} in 30d`, icon: Calendar },
@@ -26,7 +26,7 @@ const DashboardStats = ({ stats }: DashboardStatsProps) => {
         { label: "Clinical Alerts", value: stats.imperativeAlerts, sub: "Case focus", icon: AlertCircle, alert: stats.imperativeAlerts > 0 },
       ].map((stat, i) => (
         <div key={i} className={cn(
-          "p-6 rounded-[2rem] border bg-white dark:bg-slate-900 shadow-sm transition-all duration-500 hover:shadow-md",
+          "p-4 rounded-xl border bg-white dark:bg-slate-900 shadow-sm transition-all duration-500 hover:shadow-md",
           stat.alert ? "border-rose-200 bg-rose-50/30 dark:border-rose-900/30" : "border-slate-100 dark:border-slate-800"
         )}>
           <div className="flex items-center gap-3 mb-4">
@@ -39,7 +39,7 @@ const DashboardStats = ({ stats }: DashboardStatsProps) => {
             <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{stat.label}</p>
           </div>
           <div className="flex items-baseline gap-2">
-            <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{stat.value}</p>
+            <p className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{stat.value}</p>
             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{stat.sub}</span>
           </div>
         </div>

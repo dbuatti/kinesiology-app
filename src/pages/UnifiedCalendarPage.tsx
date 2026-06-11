@@ -140,14 +140,13 @@ const UnifiedCalendarPage = () => {
 
  if (hasError) {
  return (
- <AppLayout>
+<AppLayout variant="workspace">
  <div className="space-y-8 max-w-7xl mx-auto">
  <PageHeader
  title="Calendar"
  subtitle="Kinesiology appointments and voice lessons at a glance."
- icon={CalendarIcon}
- breadcrumbs={[{ label: "Home", path: "/" }, { label: "Calendar" }]}
- />
+           icon={CalendarIcon}
+           />
  <div className="p-24 flex flex-col items-center justify-center gap-6 bg-destructive/10 rounded-xl">
  <div className="w-16 h-16 rounded-full bg-destructive/20 flex items-center justify-center">
  <span className="text-2xl font-semibold text-destructive">!</span>
@@ -166,18 +165,14 @@ const UnifiedCalendarPage = () => {
  }
 
  return (
- <AppLayout>
+ <AppLayout variant="workspace">
  <div className="space-y-8 max-w-7xl mx-auto">
  <PageHeader
  title="Calendar"
  subtitle="Kinesiology appointments and voice lessons at a glance."
- icon={CalendarIcon}
- iconClassName="bg-primary text-white "
- breadcrumbs={[
- { label: "Home", path: "/" },
- { label: "Calendar" },
- ]}
- actions={
+  icon={CalendarIcon}
+  iconClassName="bg-primary text-white "
+  actions={
  <div className="flex gap-2">
  <Button
  variant="outline"

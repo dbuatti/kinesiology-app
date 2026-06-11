@@ -366,7 +366,7 @@ export function CranialNerveAssessment({
         </div>
       </div>
 
-      <div className="space-y-10">
+      <div className="space-y-5">
         {NERVE_CLUSTERS.map(cluster => {
           const clusterNerves = filteredNerves.filter(n => cluster.ids.includes(n.id));
           if (clusterNerves.length === 0) return null;

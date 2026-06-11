@@ -115,10 +115,6 @@
 }
 
 @layer components {
-  .premium-card {
-    @apply rounded-xl border border-border bg-card shadow-sm transition-all duration-500 p-8;
-  }
-
   .glass-panel {
     @apply bg-white/70 backdrop-blur-xl border border-white/20 dark:bg-slate-950/70 dark:border-slate-800/50;
   }

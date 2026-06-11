@@ -6,13 +6,13 @@ import {
  Activity, FlaskConical, Brain, AlertCircle, 
  CheckCircle2, ArrowRight, Search, Loader2, 
  TrendingUp, Users, Zap, Wind, ShieldCheck,
- CalendarClock
+  CalendarClock, MessageSquare
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import Breadcrumbs from "@/components/shared/Breadcrumbs";
+
 import { cn } from "@/lib/utils";
 import DataIntegrityCheck from "@/components/crm/DataIntegrityCheck";
 import FollowUpTracker from "@/components/crm/FollowUpTracker";
@@ -92,9 +92,9 @@ const ClinicalOversightPage = () => {
  <PageHeader 
  title="Clinical Oversight"
  subtitle="Practice-wide health monitoring, data integrity, and case management."
- icon={TrendingUp}
- breadcrumbs={[{ label: "Clinical" }, { label: "Oversight" }]}
- actions={
+  icon={TrendingUp}
+  actions={
+ <div className="flex items-center gap-3">
  <div className="relative w-full md:w-72">
  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
  <Input 
@@ -104,7 +104,13 @@ const ClinicalOversightPage = () => {
  onChange={(e) => setSearch(e.target.value)}
  />
  </div>
- }
+   <Button asChild variant="outline" size="sm" className="rounded-xl h-10 px-4 gap-2 shrink-0">
+     <Link to="/oversight/follow-up" className="no-underline">
+       <MessageSquare size={14} /> Follow Up
+     </Link>
+   </Button>
+ </div>
+  }
  />
 
  {/* Practice Management Tools */}

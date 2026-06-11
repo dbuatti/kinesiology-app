@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import AppLayout from '@/components/crm/AppLayout';
-import Breadcrumbs from '@/components/shared/Breadcrumbs';
+
 import PractitionerGrounding from '@/components/crm/PractitionerGrounding';
 import HeartMathBreathing from '@/components/crm/HeartMathBreathing';
 import PractitionerVitals from '@/components/crm/PractitionerVitals';
@@ -102,13 +102,13 @@ const MorningProgramPage = () => {
 
   return (
     <AppLayout>
-      <div className="max-w-5xl mx-auto py-12 px-4 sm:px-6 lg:px-8 animate-in fade-in duration-700 space-y-12">
-        <Breadcrumbs items={[{ label: "Practice Lab", path: "/lab" }, { label: "Morning Program" }]} />
+      <div className="max-w-5xl mx-auto py-6 animate-in fade-in duration-700 space-y-6">
+
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-          <div className="flex items-center gap-6">
-            <div className="w-20 h-20 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
-              <Sun size={40} className="fill-current" />
+          <div className="flex items-center gap-5">
+            <div className="w-14 h-14 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
+              <Sun size={28} className="fill-current" />
             </div>
             <div>
               <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-foreground">Morning Ritual</h1>

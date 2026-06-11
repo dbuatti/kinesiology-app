@@ -30,7 +30,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { fetchMasteryStats, MasteryStat, MasteryCategory } from "@/utils/mastery-stats";
 import { setWeeklyFocus } from "@/utils/weekly-focus";
 import MasteryItemCard from "@/components/crm/MasteryItemCard";
-import Breadcrumbs from "@/components/shared/Breadcrumbs";
+
 import AppLayout from "@/components/crm/AppLayout";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
@@ -187,12 +187,11 @@ const ProceduresPage = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-10">
+      <div className="space-y-6">
         <PageHeader 
           title="Practice Health"
           subtitle="Clinical mastery tracking, protocol proficiency, and interactive reference."
           icon={Trophy}
-          breadcrumbs={[{ label: "Clinical" }, { label: "Practice Health" }]}
           actions={
             <Button onClick={loadStats} variant="outline" className="rounded-xl h-12 px-6 font-medium border-chart-primary/20 text-chart-primary hover:bg-chart-primary/10">
               <RefreshCw size={18} className="mr-2" /> Refresh Data
@@ -201,8 +200,8 @@ const ProceduresPage = () => {
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="flex justify-center mb-8">
-            <TabsList className="grid w-full grid-cols-2 h-14 bg-muted p-1.5 rounded-xl mb-8">
+          <div className="flex justify-center mb-4">
+            <TabsList className="grid w-full grid-cols-2 h-14 bg-muted p-1.5 rounded-xl">
               <TabsTrigger value="mastery" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
                 <TrendingUp size={14} /> Clinical Mastery
               </TabsTrigger>
@@ -212,11 +211,11 @@ const ProceduresPage = () => {
             </TabsList>
           </div>
 
-          <TabsContent value="mastery" className="space-y-10 mt-0 animate-in fade-in duration-500">
+          <TabsContent value="mastery" className="space-y-6 mt-0 animate-in fade-in duration-500">
             {/* Practice Priority Suggestion */}
             {summary.priorities.length > 0 && (
               <Card className="border-none shadow-sm rounded-xl bg-chart-primary/10 border-2 border-chart-primary/20 overflow-hidden">
-                <CardHeader className="p-8 pb-4">
+                <CardHeader className="p-5 pb-3">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-1">
                       <div className="flex items-center gap-3">
@@ -241,7 +240,7 @@ const ProceduresPage = () => {
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="p-8 pt-0">
+                <CardContent className="p-5 pt-0">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {summary.priorities.map((item) => (
                       <div 
@@ -380,8 +379,8 @@ const ProceduresPage = () => {
           </TabsContent>
 
           <TabsContent value="reference" className="mt-0 animate-in fade-in duration-500">
-            <div className="bg-card rounded-xl border border-border shadow-sm p-8 md:p-12">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+            <div className="bg-card rounded-xl border border-border shadow-sm p-5 md:p-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-5">
                 <div className="space-y-1">
                   <h2 className="text-3xl font-semibold text-foreground tracking-tight">Protocol Sandbox</h2>
                   <p className="text-muted-foreground font-medium">Interactive reference for clinical assessments. (Sandbox Mode: No data is saved to a client).</p>
@@ -392,55 +391,55 @@ const ProceduresPage = () => {
               </div>
 
               <Tabs value={protocolTab} onValueChange={setProtocolTab} className="w-full">
-                <div className="flex justify-center mb-10 overflow-x-auto no-scrollbar">
-                  <TabsList className="inline-flex h-14 items-center justify-center rounded-xl bg-muted p-1 text-muted-foreground border border-border w-max">
+                <div className="mb-5 overflow-x-auto">
+                  <TabsList className="inline-flex h-12 items-center rounded-xl bg-muted p-1 text-muted-foreground border border-border">
                     <TabsTrigger 
                       value="cranial-nerves" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
-                      <Brain className="h-4 w-4 mr-2" />
-                      Cranial Nerves
+                      <Brain className="h-4 w-4 mr-1.5" />
+                      Nerves
                     </TabsTrigger>
                     <TabsTrigger 
                       value="primitive-reflexes" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
-                      <Zap className="h-4 w-4 mr-2" />
-                      Primitive Reflexes
+                      <Zap className="h-4 w-4 mr-1.5" />
+                      Reflexes
                     </TabsTrigger>
                     <TabsTrigger 
                       value="brain-zones" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
-                      <Activity className="h-4 w-4 mr-2" />
+                      <Activity className="h-4 w-4 mr-1.5" />
                       Brain Zones
                     </TabsTrigger>
                     <TabsTrigger 
                       value="muscles" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
-                      <Dumbbell className="h-4 w-4 mr-2" />
+                      <Dumbbell className="h-4 w-4 mr-1.5" />
                       Muscles
                     </TabsTrigger>
                     <TabsTrigger 
                       value="mechanoreceptive" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
-                      <Activity className="h-4 w-4 mr-2" />
-                      Mechanoreceptive
+                      <Activity className="h-4 w-4 mr-1.5" />
+                      Mechano
                     </TabsTrigger>
                     <TabsTrigger 
                       value="emotions" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
-                      <Heart className="h-4 w-4 mr-2" />
+                      <Heart className="h-4 w-4 mr-1.5" />
                       Emotions
                     </TabsTrigger>
                     <TabsTrigger 
                       value="heart-wall" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-8 py-3 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
-                      <Shield className="h-4 w-4 mr-2" />
+                      <Shield className="h-4 w-4 mr-1.5" />
                       Heart Wall
                     </TabsTrigger>
                   </TabsList>

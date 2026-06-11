@@ -16,7 +16,7 @@ import {
  EyeOff, Volume2, Heart, Quote
 } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
-import Breadcrumbs from "@/components/shared/Breadcrumbs";
+
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { format } from "date-fns";
@@ -138,7 +138,8 @@ Please provide the final output ready to be reviewed.`;
  subtitle="Transform clinical wins and raw thoughts into distribution-ready assets for your Kit newsletter."
  icon={Mic}
  iconClassName="bg-primary"
- breadcrumbs={[{ label: "Business", path: "/business" }, { label: "Marketing Engine" }]}
+
+
  actions={
  <div className="flex flex-wrap gap-3 shrink-0">
  <Button asChild className="bg-card text-foreground hover:bg-muted h-12 px-6 rounded-xl font-semibold text-[10px] uppercase tracking-wider shadow-md border border-border">
@@ -168,7 +169,7 @@ Please provide the final output ready to be reviewed.`;
  </TabsTrigger>
  </TabsList>
 
- <TabsContent value="guide" className="space-y-12 mt-0">
+  <TabsContent value="guide" className="space-y-6 mt-0">
  <Card className="border-none shadow-sm rounded-xl bg-muted border-2 border-border overflow-hidden">
  <CardHeader className="p-8 pb-4">
  <CardTitle className="text-2xl font-semibold flex items-center gap-3 text-foreground">

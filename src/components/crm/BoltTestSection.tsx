@@ -107,7 +107,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
           </div>
         </CollapsibleTrigger>
 
-        <CollapsibleContent forceMount>
+        <CollapsibleContent>
           <div className="p-6 border-t border-border space-y-6 animate-in fade-in slide-in-from-top-1 duration-300">
             {showExercise ? (
               <div className="space-y-4 animate-in zoom-in-95 duration-300">

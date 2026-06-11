@@ -238,7 +238,7 @@ const DebugAppointmentPage = () => {
  <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
  <div className="flex items-center justify-between">
  <div>
- <h1 className="text-3xl font-medium tracking-tight text-foreground">🔧 Debug & Admin</h1>
+ <h1 className="text-3xl font-medium tracking-tight text-foreground">Debug &amp; Admin</h1>
  <p className="text-muted-foreground mt-2">System maintenance and testing tools.</p>
  </div>
  </div>

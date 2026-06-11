@@ -15,10 +15,10 @@ interface DailyBriefingProps {
 
 const DailyBriefing = ({ todaySessions, activeSession }: DailyBriefingProps) => {
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
         <div className="space-y-1">
-          <h2 className="text-3xl font-serif font-bold text-slate-900 dark:text-white flex items-center gap-4">
+          <h2 className="text-2xl font-serif font-bold text-slate-900 dark:text-white flex items-center gap-4">
             <Zap size={28} className="text-amber-500 fill-amber-400" /> Daily Briefing
           </h2>
           <p className="text-slate-500 font-medium text-base">
@@ -36,12 +36,12 @@ const DailyBriefing = ({ todaySessions, activeSession }: DailyBriefingProps) => 
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {todaySessions.length > 0 ? (
           todaySessions.map(session => (
             <Link key={session.id} to={`/appointments/${session.id}`}>
               <div className={cn(
-                "p-8 rounded-[2.5rem] border transition-all duration-500 flex flex-col gap-6 group relative overflow-hidden",
+                "p-5 rounded-2xl border transition-all duration-500 flex flex-col gap-6 group relative overflow-hidden",
                 activeSession?.id === session.id 
                   ? "bg-slate-900 text-white border-slate-800 shadow-2xl" 
                   : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 hover:border-indigo-300 shadow-sm hover:shadow-xl"
@@ -57,7 +57,7 @@ const DailyBriefing = ({ todaySessions, activeSession }: DailyBriefingProps) => 
                         {activeSession?.id === session.id ? "ONGOING" : format(session.date, "h:mm a")}
                       </p>
                     </div>
-                    <p className="font-serif font-bold text-2xl truncate tracking-tight">{session.clients?.name}</p>
+                    <p className="font-serif font-bold text-xl truncate tracking-tight">{session.clients?.name}</p>
                   </div>
                   <div className={cn(
                     "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm",
@@ -80,7 +80,7 @@ const DailyBriefing = ({ todaySessions, activeSession }: DailyBriefingProps) => 
             </Link>
           ))
         ) : (
-          <div className="md:col-span-2 flex flex-col items-center justify-center gap-6 p-16 bg-slate-50 dark:bg-slate-900/50 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800 text-center">
+          <div className="md:col-span-2 flex flex-col items-center justify-center gap-4 p-10 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 text-center">
             <div className="w-20 h-20 rounded-[1.5rem] bg-white dark:bg-slate-800 flex items-center justify-center text-slate-300 shadow-sm">
               <Coffee size={40} />
             </div>

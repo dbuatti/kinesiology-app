@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { format } from 'date-fns';
+import { Link } from 'react-router-dom';
 import {
   FileText,
   Printer,
@@ -9,7 +10,8 @@ import {
   ExternalLink,
   Zap,
   ChevronUp,
-  MessageCircle
+  MessageCircle,
+  CalendarPlus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppointmentWithClient } from '@/types/crm';
@@ -188,6 +190,11 @@ const SessionDocumentView = ({
               <Button variant="outline" size="sm" onClick={() => window.print()} className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
                 <Printer size={12} className="mr-1" /> Print
               </Button>
+              <Link to={`/schedule?view=list&clientId=${appointment.clients.id}`} className="no-underline">
+                <Button variant="outline" size="sm" className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
+                  <CalendarPlus size={12} className="mr-1" /> Book Next
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -207,7 +214,7 @@ const SessionDocumentView = ({
         )}
 
         {/* Center: The Document */}
-        <div className="flex-1 w-full max-w-[850px] mx-auto bg-white border-none md:border md:border-slate-200 md:shadow-sm p-4 sm:p-10 md:p-16 min-h-[1056px] print:border-none print:p-0">
+        <div className="flex-1 w-full max-w-[850px] mx-auto bg-white border-none md:border md:border-slate-200 md:shadow-sm p-3 sm:p-6 md:p-8 min-h-[900px] print:border-none print:p-0">
           {/* Header */}
           <DocumentHeader 
             clientName={appointment.clients.name} 

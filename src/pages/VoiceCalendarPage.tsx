@@ -360,13 +360,8 @@ const VoiceCalendarPage = () => {
  title="Studio Calendar"
  subtitle="Your weekly voice and piano lesson schedule at a glance."
  icon={CalendarIcon}
- iconClassName="bg-destructive text-white "
- breadcrumbs={[
- { label: "Voice Studio", path: "/" },
- { label: "Calendar" },
- ]}
- badge="Voice Studio"
- actions={
+  iconClassName="bg-destructive text-white "
+  actions={
  <div className="flex gap-2">
  <Button
  variant="outline"

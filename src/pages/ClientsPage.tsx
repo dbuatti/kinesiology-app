@@ -98,7 +98,6 @@ const ClientsPage = () => {
           title="Client Database"
           subtitle="Manage your kinesiology client profiles, history, and clinical data."
           icon={Users}
-          breadcrumbs={[{ label: "Clinical" }, { label: "Clients" }]}
           actions={
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>

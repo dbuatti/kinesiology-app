@@ -2,14 +2,14 @@
 import React from 'react';
 import { BookOpen, Move, ArrowUpDown, RotateCw, Brain, Eye, Link as LinkIcon } from 'lucide-react';
 import AppLayout from '@/components/crm/AppLayout';
-import Breadcrumbs from '@/components/shared/Breadcrumbs';
+
 
 const CogsLearningPage = () => {
   return (
     <AppLayout>
       <div className="container mx-auto p-4 lg:p-8 max-w-4xl space-y-10">
         <div>
-          <Breadcrumbs items={[{ label: "Knowledge Hub", path: "/resources" }, { label: "COGS Assessment" }]} />
+
           <h1 className="text-3xl font-serif font-bold text-foreground tracking-tight mt-4 flex items-center gap-4">
             <div className="w-10 h-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center">
               <Move size={22} />

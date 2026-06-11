@@ -96,7 +96,7 @@ const SympatheticDownRegulation = ({
           </CardHeader>
         </CollapsibleTrigger>
 
-        <CollapsibleContent forceMount>
+        <CollapsibleContent>
           <CardContent className="p-6 space-y-6">
             <Alert className="bg-muted border-border">
               <Info className="h-4 w-4 text-muted-foreground" />

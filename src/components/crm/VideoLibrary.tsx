@@ -1,7 +1,7 @@
 
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Youtube, ExternalLink, PlayCircle, Clock, User, Sparkles, GraduationCap } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Youtube, ExternalLink, PlayCircle, User, Sparkles, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 const CURATED_VIDEOS = [
   {
     title: "My Study Videos",
-    description: "Personal collection of kinesiology study materials and technique reviews for regular reference.",
+    description: "Personal collection of kinesiology study materials and technique reviews.",
     url: "https://kin-videos.vercel.app/",
     type: "Study Portal",
     author: "Daniele",
@@ -18,7 +18,7 @@ const CURATED_VIDEOS = [
   },
   {
     title: "Nick Moss - Kinesiology Resources",
-    description: "A curated collection of kinesiology techniques, demonstrations, and clinical insights shared by Nick Moss.",
+    description: "Curated kinesiology techniques, demonstrations, and clinical insights by Nick Moss.",
     url: "https://www.youtube.com/playlist?list=PL8gqJUYXI3EBvIhQ1fDVwtx8BnjlYu9K2_",
     type: "Playlist",
     author: "Nick Moss",
@@ -28,77 +28,71 @@ const CURATED_VIDEOS = [
 
 const VideoLibrary = () => {
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {CURATED_VIDEOS.map((video) => (
           <Card key={video.url} className={cn(
-            "border-none shadow-lg rounded-[2.5rem] bg-white hover:shadow-2xl transition-all group overflow-hidden",
-            video.isPrimary && "ring-2 ring-indigo-500 shadow-indigo-100"
+            "border border-border shadow-sm rounded-xl bg-card hover:shadow-md transition-all group overflow-hidden",
+            video.isPrimary && "ring-1 ring-primary/20"
           )}>
-            <div className="aspect-video bg-slate-900 relative flex items-center justify-center group-hover:bg-slate-800 transition-colors">
-              {video.isPrimary ? (
-                <GraduationCap size={64} className="text-indigo-400 opacity-80 group-hover:scale-110 group-hover:opacity-100 transition-all duration-500" />
-              ) : (
-                <Youtube size={64} className="text-rose-600 opacity-80 group-hover:scale-110 group-hover:opacity-100 transition-all duration-500" />
-              )}
-              <div className="absolute top-4 right-4">
-                <Badge className="bg-white/20 backdrop-blur-md text-white border-none font-black text-[10px] uppercase tracking-widest">
-                  {video.type}
-                </Badge>
-              </div>
-            </div>
-            <CardHeader className="p-8 pb-4">
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1">
-                  <CardTitle className="text-2xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
-                    {video.title}
-                  </CardTitle>
-                  <div className="flex items-center gap-2 text-slate-500 text-sm font-medium">
-                    <User size={14} className="text-indigo-400" />
-                    <span>{video.isPrimary ? "Your Collection" : `Shared by ${video.author}`}</span>
+            <CardHeader className="p-5 pb-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+                    video.isPrimary ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                  )}>
+                    {video.isPrimary ? <GraduationCap size={20} /> : <Youtube size={20} />}
+                  </div>
+                  <div>
+                    <CardTitle className="text-base font-semibold text-foreground">{video.title}</CardTitle>
+                    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mt-0.5">
+                      <User size={10} />
+                      <span>{video.isPrimary ? "Your Collection" : video.author}</span>
+                      <span className="opacity-40">·</span>
+                      <Badge className="text-[8px] font-semibold bg-muted text-muted-foreground border-none px-1.5 py-0 rounded">
+                        {video.type}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-8 pt-0 space-y-6">
-              <p className="text-slate-600 leading-relaxed font-medium">
-                {video.description}
-              </p>
-              
-              <div className="flex flex-wrap gap-2">
+            <CardContent className="p-5 pt-0 space-y-3">
+              <p className="text-xs text-muted-foreground leading-relaxed">{video.description}</p>
+              <div className="flex flex-wrap gap-1.5">
                 {video.tags.map(tag => (
-                  <Badge key={tag} variant="secondary" className="bg-slate-100 text-slate-600 border-none text-[10px] font-bold px-3 py-1 rounded-lg">
+                  <Badge key={tag} variant="secondary" className="bg-muted text-muted-foreground border-none text-[9px] font-medium px-2 py-0.5 rounded-md">
                     {tag}
                   </Badge>
                 ))}
               </div>
-
-              <div className="pt-4">
-                <Button 
-                  asChild
-                  className={cn(
-                    "w-full h-14 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl transition-all duration-500",
-                    video.isPrimary ? "bg-indigo-600 hover:bg-indigo-700" : "bg-slate-900 hover:bg-indigo-600"
-                  )}
-                >
-                  <a href={video.url} target="_blank" rel="noopener noreferrer">
-                    <PlayCircle size={18} className="mr-2" />
-                    Open Portal
-                    <ExternalLink size={14} className="ml-2 opacity-50" />
-                  </a>
-                </Button>
-              </div>
+              <Button 
+                asChild
+                size="sm"
+                className={cn(
+                  "w-full h-9 rounded-lg font-medium text-[10px] uppercase tracking-wider",
+                  video.isPrimary ? "bg-primary hover:bg-primary/90" : "bg-foreground hover:bg-foreground/90"
+                )}
+              >
+                <a href={video.url} target="_blank" rel="noopener noreferrer">
+                  <PlayCircle size={14} className="mr-1.5" />
+                  Open
+                  <ExternalLink size={10} className="ml-1.5 opacity-50" />
+                </a>
+              </Button>
             </CardContent>
           </Card>
         ))}
 
-        {/* Placeholder for adding more */}
-        <Card className="border-2 border-dashed border-slate-200 shadow-none rounded-[2.5rem] bg-slate-50/50 flex flex-col items-center justify-center p-12 text-center group hover:border-indigo-300 hover:bg-indigo-50/30 transition-all duration-500">
-          <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-300 group-hover:text-indigo-400 group-hover:scale-110 transition-all duration-500 mb-4">
-            <Sparkles size={32} />
+        <Card className="border-2 border-dashed border-border shadow-none rounded-xl bg-muted/30 flex flex-col items-center justify-center p-8 text-center hover:border-primary/30 hover:bg-primary/5 transition-all duration-500">
+          <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground mb-3">
+            <Sparkles size={20} />
           </div>
-          <h3 className="text-lg font-black text-slate-400 group-hover:text-indigo-900 transition-colors">Add More Resources</h3>
-          <p className="text-sm text-slate-400 mt-2 max-w-[200px]">Keep track of other playlists or educational videos here.</p>
+          <p className="text-sm font-medium text-muted-foreground">Add More Resources</p>
+          <p className="text-[10px] text-muted-foreground/60 mt-1 max-w-[200px]">
+            Keep track of other playlists or educational videos here.
+          </p>
         </Card>
       </div>
     </div>

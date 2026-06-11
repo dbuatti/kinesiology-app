@@ -152,20 +152,17 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
             )}
             <ScrollArea className="w-full whitespace-nowrap">
               <div className="flex gap-2.5 pb-2">
-                {allDays.map(({ date, dateKey, hasSlots }) => {
+                {allDays.filter(d => d.hasSlots).map(({ date, dateKey }) => {
                   const isActive = selectedDate && isSameDay(date, selectedDate);
                   return (
                     <button
                       key={dateKey}
-                      onClick={() => hasSlots && setSelectedDate(date)}
-                      disabled={!hasSlots}
+                      onClick={() => setSelectedDate(date)}
                       className={cn(
                         "flex flex-col items-center justify-center min-w-[72px] h-20 rounded-2xl border-2 transition-all duration-200 shrink-0",
                         isActive
-                          ? "bg-indigo-600 border-indigo-600 text-white shadow-lg scale-105"
-                          : hasSlots
-                            ? "bg-card border-border hover:border-indigo-300 dark:hover:border-indigo-700 text-foreground"
-                            : "bg-muted/30 border-dashed border-muted-foreground/20 text-muted-foreground/40 cursor-not-allowed"
+                          ? "bg-primary border-primary text-white shadow-lg scale-105"
+                          : "bg-card border-border hover:border-primary/30 text-foreground"
                       )}
                     >
                       <span className="text-[9px] font-black uppercase tracking-wider opacity-60">

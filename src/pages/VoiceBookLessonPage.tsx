@@ -27,11 +27,6 @@ const VoiceBookLessonPage = () => {
           subtitle="Schedule a voice or piano coaching session."
           icon={Mic}
           iconClassName="bg-rose-500 text-white dark:bg-rose-500 dark:text-white"
-          breadcrumbs={[
-            { label: "Voice Studio", path: "/" },
-            { label: "Book a Lesson" },
-          ]}
-          badge="Voice Studio"
           actions={
             <div className="flex gap-2">
               <Button

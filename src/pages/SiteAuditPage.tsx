@@ -58,7 +58,7 @@ const SiteAuditPage = () => {
           title="Site Audit & Breakdown"
           subtitle="A complete architectural map of the Resonance application and its content."
           icon={FileText}
-          breadcrumbs={[{ label: "Settings", path: "/settings" }, { label: "Site Audit" }]}
+
           actions={
             <div className="flex gap-3 print:hidden">
               <Button variant="outline" onClick={handleCopyMarkdown} className="rounded-xl h-12 px-6 font-bold border-indigo-100 text-indigo-600">

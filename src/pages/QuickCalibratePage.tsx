@@ -1,7 +1,7 @@
 
 import React from "react";
 import AppLayout from "@/components/crm/AppLayout";
-import Breadcrumbs from "@/components/shared/Breadcrumbs";
+
 import PathwayLogicWizard from "@/components/crm/PathwayLogicWizard";
 import { Zap, ShieldCheck, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -10,19 +10,14 @@ const QuickCalibratePage = () => {
   return (
     <AppLayout>
       <div className="space-y-8 w-full">
-        <Breadcrumbs 
-          items={[
-            { label: "Quick Tools" },
-            { label: "Calibration Wizard" }
-          ]} 
-        />
-        
+
+
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-amber-500 rounded-lg flex items-center justify-center text-white shadow-md">
+            <div className="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center text-white shadow-md">
               <Zap size={28} className="fill-current" />
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-foreground">Quick Calibrate</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Quick Calibrate</h1>
           </div>
           <p className="text-muted-foreground font-medium">
             Standalone pathway logic for quick clinical checks and self-correction.

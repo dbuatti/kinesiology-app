@@ -286,10 +286,8 @@ const VoiceClientsPage = () => {
  title="Voice Clients"
  subtitle="Student engagement audit — grouped by recency and booking status."
  icon={Mic}
- iconClassName="bg-destructive text-white "
- breadcrumbs={[{ label: "Voice Studio" }, { label: "Clients" }]}
- badge="Voice Studio"
- actions={
+   iconClassName="bg-destructive text-white "
+  actions={
  <div className="flex gap-2">
  <Dialog open={onboardOpen} onOpenChange={setOnboardOpen}>
  <Button

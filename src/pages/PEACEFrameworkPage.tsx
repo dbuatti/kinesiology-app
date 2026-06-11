@@ -16,19 +16,20 @@ import {
  Lightbulb
 } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
-import Breadcrumbs from "@/components/shared/Breadcrumbs";
+
 import { cn } from "@/lib/utils";
 
 const PEACEFrameworkPage = () => {
  return (
  <AppLayout>
- <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
- <Breadcrumbs items={[{ label: "Resources", path: "/resources" }, { label: "The PEACE Framework" }]} />
+  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+
+
 
  {/* Hero Section */}
- <div className="relative rounded-xl overflow-hidden bg-card border border-border text-white p-12 shadow-sm group border border-border">
+  <div className="relative rounded-xl overflow-hidden bg-card border border-border text-white p-8 shadow-sm group border border-border">
  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-card to-muted/40" />
- <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-700">
+  <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
  <BookOpen size={200} />
  </div>
  

@@ -169,7 +169,7 @@ const CoherenceAssessment = ({
           </div>
         </CollapsibleTrigger>
 
-        <CollapsibleContent forceMount>
+        <CollapsibleContent>
           <div className="p-6 border-t border-border space-y-6 animate-in fade-in slide-in-from-top-1 duration-300">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Heart Rate */}

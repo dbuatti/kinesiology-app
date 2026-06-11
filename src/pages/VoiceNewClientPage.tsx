@@ -16,11 +16,6 @@ const VoiceNewClientPage = () => {
           subtitle="Add a new voice student to the Voice Studio client database."
           icon={Mic}
           iconClassName="bg-rose-500 text-white dark:bg-rose-500 dark:text-white"
-          breadcrumbs={[
-            { label: "Voice Studio", path: "/" },
-            { label: "New Student" },
-          ]}
-          badge="Voice Studio"
           actions={
             <Button
               variant="outline"

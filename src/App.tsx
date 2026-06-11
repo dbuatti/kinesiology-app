@@ -28,6 +28,7 @@ const SchedulePage = lazy(() => import("./pages/SchedulePage"));
 const AppointmentDetailPage = lazy(() => import("./pages/AppointmentDetailPage"));
 const ClinicalProtocolsPage = lazy(() => import("./pages/ClinicalProtocolsPage"));
 const ClinicalOversightPage = lazy(() => import("./pages/ClinicalOversightPage"));
+const FollowUpPage = lazy(() => import("./pages/FollowUpPage"));
 
 // --- Practice Lab Pages ---
 const LabPage = lazy(() => import("./pages/LabPage"));
@@ -140,6 +141,7 @@ const AppRoutes = () => {
           <Route path="/appointments/:id" element={<AppointmentDetailPage />} />
           <Route path="/appointments/:id/protocols" element={<ClinicalProtocolsPage />} />
           <Route path="/oversight" element={<ClinicalOversightPage />} />
+          <Route path="/oversight/follow-up" element={<FollowUpPage />} />
           <Route path="/calendar" element={<UnifiedCalendarPage />} />
 
           {/* Practice Lab */}

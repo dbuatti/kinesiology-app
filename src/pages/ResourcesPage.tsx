@@ -136,14 +136,13 @@ const ResourcesPage = () => {
  };
 
  return (
- <AppLayout>
+ <AppLayout variant="workspace">
  <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
  <PageHeader 
- title="Clinical Bible"
+  title="Clinical Reference"
  subtitle="The definitive knowledge base for FNH protocols, anatomy, and TCM references."
- icon={BookOpen}
- breadcrumbs={[{ label: "Library" }, { label: "Clinical Bible" }]}
- actions={
+  icon={BookOpen}
+  actions={
  <div className="flex items-center gap-3">
  <Button asChild variant="outline" className="rounded-xl h-12 px-6 font-medium text-xs uppercase tracking-wider border-border text-chart-primary hover:bg-muted">
  <Link to="/resources/print">

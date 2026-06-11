@@ -1,26 +1,24 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Activity, 
   Zap, 
   BookOpen, 
-  Plus, 
   Settings, 
   LogOut, 
   Eye, 
   EyeOff,
   HelpCircle,
   ChevronDown,
-  UserPlus,
-  CalendarPlus,
   Menu,
   X,
-  Sparkles,
   Mic,
   LayoutDashboard,
   CalendarDays,
   BarChart3,
+  Timer,
+  AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppMode, AppMode } from "@/components/ModeProvider";
@@ -38,11 +36,17 @@ import { prefetchRoute } from "@/utils/route-prefetch";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess } from "@/utils/toast";
 import SearchBar from "./SearchBar";
-import HubSwitcher from "./HubSwitcher";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import ClientForm from "./ClientForm";
-import AppointmentForm from "./AppointmentForm";
 import HelpModal from "./HelpModal";
+import { useActiveSession } from "@/hooks/useActiveSession";
+import { format, differenceInSeconds } from "date-fns";
+
+const WORKSPACES: { id: AppMode | 'voice'; label: string; path: string }[] = [
+  { id: 'clinical', label: 'Clinical', path: '/' },
+  { id: 'lab', label: 'Practice Lab', path: '/' },
+  { id: 'library', label: 'Knowledge', path: '/' },
+  { id: 'business', label: 'Business', path: '/business/dashboard' },
+  { id: 'voice', label: 'Voice Studio', path: '/voice' },
+];
 
 const FIXED_NAV_ITEMS = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/" },
@@ -54,24 +58,46 @@ const SpaceHeader = () => {
   const navigate = useNavigate();
   const { mode, setMode } = useAppMode();
   const { isPrivate, togglePrivacy } = usePrivacyMode();
-  const [clientDialogOpen, setClientDialogOpen] = useState(false);
-  const [appDialogOpen, setAppDialogOpen] = useState(false);
-  const [prefilledClientId, setPrefilledClientId] = useState<string | undefined>();
   const [helpOpen, setHelpOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const activeSession = useActiveSession();
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const sessionTimer = useMemo(() => {
+    if (!activeSession) return null;
+    const elapsed = differenceInSeconds(currentTime, activeSession.date);
+    const total = 60 * 60;
+    const remaining = Math.max(0, total - elapsed);
+    const overtime = Math.max(0, elapsed - total);
+    const mins = Math.floor(overtime > 0 ? overtime : remaining) / 60;
+    const secs = (overtime > 0 ? overtime : remaining) % 60;
+    const progress = Math.min(100, (elapsed / total) * 100);
+    return {
+      display: overtime > 0 ? `+${Math.floor(mins)}m ${secs.toString().padStart(2, '0')}s` : `${Math.floor(mins)}m ${secs.toString().padStart(2, '0')}s`,
+      clientName: activeSession.clientName,
+      stage: activeSession.stage,
+      progress,
+      isOvertime: overtime > 0,
+      isFinished: activeSession.status === 'Completed',
+    };
+  }, [activeSession, currentTime]);
 
   // Close mobile menu whenever the route changes
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
-  const handleClientSuccess = (newClientId?: string) => {
-    setClientDialogOpen(false);
-    if (newClientId) {
-      setPrefilledClientId(newClientId);
-      setAppDialogOpen(true);
+  // Always default to clinical on session pages
+  useEffect(() => {
+    if (location.pathname.startsWith('/appointments/') && mode !== 'clinical') {
+      setMode('clinical');
     }
-  };
+  }, [location.pathname]);
 
   const isVoiceMode = location.pathname.startsWith('/voice');
 
@@ -126,163 +152,113 @@ const SpaceHeader = () => {
     location.pathname === path || (path !== "/" && location.pathname.startsWith(path));
 
   return (
-    <header className="w-full bg-card/80 backdrop-blur-xl border-b border-border px-3 md:px-6 h-12 flex items-center justify-between">
-      {/* LEFT: LOGO & HUB SWITCHER */}
+    <header className="relative w-full bg-card/80 backdrop-blur-xl border-b border-border px-3 md:px-6 h-12 flex items-center justify-between">
+      {/* LEFT: LOGO */}
       <div className="flex items-center gap-3 md:gap-5">
-        <div className="flex items-center gap-1 p-0.5 bg-muted rounded-lg border border-border">
-          <button
-            onClick={() => { if (isVoiceMode) navigate('/'); }}
-            className={cn(
-              "w-7 h-7 rounded-md text-[10px] font-semibold transition-all tracking-tight",
-              !isVoiceMode
-                ? "bg-card text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-muted-foreground"
-            )}
-          >
+        <button
+          onClick={() => { isVoiceMode ? navigate('/') : navigate('/voice'); }}
+          className="relative flex items-center p-px bg-muted rounded-full border border-border hover:shadow-sm transition-shadow"
+        >
+          <span className={cn(
+            "absolute top-px h-[22px] w-[24px] rounded-full shadow-sm transition-transform duration-300 ease-out",
+            isVoiceMode ? "translate-x-[24px] bg-chart-destructive" : "translate-x-0 bg-card"
+          )} />
+          <span className="relative z-10 w-6 h-6 rounded-full text-[10px] font-bold transition-colors duration-300 flex items-center justify-center">
             K
-          </button>
-          <button
-            onClick={() => { if (!isVoiceMode) navigate('/voice'); }}
-            className={cn(
-              "w-7 h-7 rounded-md text-[10px] font-semibold transition-all tracking-tight",
-              isVoiceMode
-                ? "bg-chart-destructive text-white shadow-sm"
-                : "text-muted-foreground hover:text-muted-foreground"
-            )}
-          >
+          </span>
+          <span className="relative z-10 w-6 h-6 rounded-full text-[10px] font-bold transition-colors duration-300 flex items-center justify-center">
             V
-          </button>
-        </div>
-
-        <div className="h-6 w-px bg-border hidden md:block" />
-
-        <HubSwitcher />
-
-        <div className="h-6 w-px bg-border hidden md:block" />
+          </span>
+        </button>
       </div>
 
-      {/* CENTER: CONTEXTUAL NAV */}
-      <nav className="hidden xl:flex items-center gap-0.5 bg-muted/50 p-0.5 rounded-lg border border-border/50 backdrop-blur-md">
+      {/* CENTER: FLAT NAV */}
+      <nav className="hidden lg:flex items-center gap-0.5 bg-muted/50 p-0.5 rounded-lg border border-border/50 backdrop-blur-md absolute left-1/2 -translate-x-1/2">
         {isVoiceMode ? (
-          VOICE_NAV_ITEMS.filter(item => item.label !== "Dashboard").map((item) => {
-            const isActive = isModeItemActive(item.path);
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                onMouseEnter={() => prefetchRoute(item.path)}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-500",
-                  isActive
-                    ? "bg-chart-destructive text-white shadow-md scale-[1.02]"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
-              >
-                <item.icon size={12} className={cn("transition-colors duration-500", isActive && "text-white")} />
-                <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">{item.label}</span>
-              </Link>
-            );
-          })
-        ) : (<>
-          {FIXED_NAV_ITEMS.map((item) => {
-          const isActive = isModeItemActive(item.path);
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              onMouseEnter={() => prefetchRoute(item.path)}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-500",
-                  isActive
-                    ? "bg-card text-foreground shadow-sm scale-[1.02]"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
-              >
-                <item.icon size={12} className={cn("transition-colors duration-500", isActive && "text-foreground")} />
-                <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">{item.label}</span>
-            </Link>
-          );
-        })}
-        {modeNavItems.length > 0 && (
           <>
-            <div className="w-px h-6 bg-border mx-1" />
-            <div className="flex items-center">
-              <Link
-                to={isVoiceMode ? '/voice' : mode === 'business' ? '/business/dashboard' : '/'}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-500 no-underline",
-                  modeNavItems.some(item => isModeItemActive(item.path))
-                    ? "bg-card text-foreground shadow-sm scale-[1.02]"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
-              >
-                {modeIcon}
-                <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">{modeLabel}</span>
-              </Link>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className={cn(
-                    "p-1.5 rounded-xl transition-colors",
-                    modeNavItems.some(item => isModeItemActive(item.path))
-                      ? "text-muted-foreground hover:text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}>
-                    <ChevronDown size={12} className="opacity-50" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-56 rounded-xl p-2 shadow-sm border-none bg-card">
-                  {modeNavItems.map((item) => {
-                    const active = isModeItemActive(item.path);
-                    const accent = isVoiceMode ? 'text-chart-destructive' : mode === 'business' ? 'text-chart-primary' : mode === 'clinical' ? 'text-chart-primary' : mode === 'lab' ? 'text-chart-emerald' : 'text-muted-foreground';
-                    return (
-                      <DropdownMenuItem key={item.path} asChild className="rounded-xl p-0">
-                        <Link
-                          to={item.path}
-                          onMouseEnter={() => prefetchRoute(item.path)}
-                          className={cn(
-                            "flex items-center gap-3 rounded-xl py-2.5 px-4 cursor-pointer",
-                            active ? `${accent} bg-muted font-semibold` : "text-muted-foreground font-medium hover:text-foreground"
-                          )}
-                        >
-                          <item.icon size={16} className={active ? accent : "opacity-50"} />
-                          <span className="text-xs uppercase tracking-wider">{item.label}</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    );
-                  })}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            <Link to="/voice" className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-chart-destructive text-[10px] font-semibold uppercase tracking-[0.15em] hover:bg-chart-destructive/10 transition-colors no-underline">
+              Voice
+            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="p-1 -ml-1 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
+                  <ChevronDown size={10} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48 rounded-xl p-1.5 border-none bg-card shadow-xl">
+                {WORKSPACES.map((w) => (
+                  <DropdownMenuItem key={w.id} onClick={() => { if (w.id !== 'voice') setMode(w.id as AppMode); navigate(w.path); }}>
+                    <div className={cn("flex items-center gap-2.5 px-2 py-1.5 rounded-lg w-full", mode === w.id && "bg-muted")}>
+                      <span className={cn("text-[10px] font-semibold uppercase tracking-[0.15em]", mode === w.id ? "text-foreground" : "text-muted-foreground")}>{w.label}</span>
+                    </div>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {VOICE_NAV_ITEMS.filter(i => i.label !== "Dashboard").map((item) => {
+              const isActive = isModeItemActive(item.path);
+              return (
+                <Link key={item.path} to={item.path} onMouseEnter={() => prefetchRoute(item.path)} className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-300", isActive ? "bg-chart-destructive text-white shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted")}>
+                  <item.icon size={12} className={cn(isActive && "text-white")} />
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">{item.label}</span>
+                </Link>
+              );
+            })}
+          </>
+        ) : (
+          <>
+            <Link to={mode === 'business' ? '/business/dashboard' : '/'} className="flex items-center px-3 py-1.5 rounded-lg text-foreground text-[10px] font-semibold uppercase tracking-[0.15em] hover:bg-muted transition-colors no-underline">
+              {modeLabel}
+            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="p-1 -ml-1 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
+                  <ChevronDown size={10} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-48 rounded-xl p-1.5 border-none bg-card shadow-xl">
+                {WORKSPACES.map((w) => (
+                  <DropdownMenuItem key={w.id} onClick={() => { if (w.id !== 'voice') setMode(w.id as AppMode); navigate(w.path); }}>
+                    <div className={cn("flex items-center gap-2.5 px-2 py-1.5 rounded-lg w-full", mode === w.id && "bg-muted")}>
+                      <span className={cn("text-[10px] font-semibold uppercase tracking-[0.15em]", mode === w.id ? "text-foreground" : "text-muted-foreground")}>{w.label}</span>
+                    </div>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {allNavItems.filter(i => i.label !== "Dashboard").map((item) => {
+              const isActive = isModeItemActive(item.path);
+              return (
+                <Link key={item.path} to={item.path} onMouseEnter={() => prefetchRoute(item.path)} className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all duration-300", isActive ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted")}>
+                  <item.icon size={12} className={cn(isActive && "text-foreground")} />
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">{item.label}</span>
+                </Link>
+              );
+            })}
           </>
         )}
-        </>)}
       </nav>
 
       {/* RIGHT: ACTIONS & PROFILE */}
-      <div className="flex items-center gap-1 md:gap-2">
+      <div className="flex items-center gap-1 md:gap-2 justify-self-end">
+        {sessionTimer && (
+          <Link
+            to={`/appointments/${activeSession!.id}`}
+            className={cn(
+              "hidden sm:flex items-center gap-2 px-2 rounded-lg h-8 no-underline",
+              sessionTimer.isOvertime ? "bg-chart-destructive/10 text-chart-destructive" : "bg-chart-emerald/10 text-chart-emerald"
+            )}
+          >
+            <Timer size={12} />
+            <span className="text-[10px] font-semibold tabular-nums font-mono">{sessionTimer.display}</span>
+            <span className="w-px h-3 bg-current opacity-20" />
+            <span className="text-[10px] font-medium truncate max-w-[120px]">{sessionTimer.clientName}</span>
+            <span className="text-[8px] font-semibold uppercase tracking-wider bg-white/10 px-1 py-0.5 rounded">{sessionTimer.stage}</span>
+          </Link>
+        )}
         <SearchBar compact />
 
         <div className="flex items-center gap-0.5">
-          {mode === 'clinical' && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button size="icon" aria-label="Quick add" className="w-8 h-8 rounded-lg bg-primary hover:bg-primary/90 text-white shadow-sm">
-                  <Plus size={16} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 rounded-xl p-2 shadow-sm border-none bg-card">
-                <DropdownMenuItem onClick={() => setClientDialogOpen(true)} className="rounded-xl py-2.5 px-4 cursor-pointer gap-3">
-                  <UserPlus size={16} className="text-chart-primary" />
-                  <span className="font-medium text-xs uppercase tracking-wider">New Client</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setAppDialogOpen(true)} className="rounded-xl py-2.5 px-4 cursor-pointer gap-3">
-                  <CalendarPlus size={16} className="text-chart-primary" />
-                  <span className="font-medium text-xs uppercase tracking-wider">Book Session</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" aria-label="Settings menu" className="w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground">
@@ -338,7 +314,7 @@ const SpaceHeader = () => {
 
       {/* MOBILE MENU OVERLAY */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 top-16 z-[90] bg-card md:hidden animate-in fade-in slide-in-from-top-4 duration-300">
+        <div className="fixed inset-0 top-12 z-[90] bg-card md:hidden animate-in fade-in slide-in-from-top-4 duration-300">
           <div className="p-6 space-y-8">
             {isVoiceMode ? (
               <div className="space-y-4">
@@ -445,25 +421,12 @@ const SpaceHeader = () => {
         </div>
       )}
 
-      <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] rounded-xl p-8">
-          <DialogHeader className="mb-6">
-            <DialogTitle className="text-2xl font-serif font-medium tracking-tight">Add New Client</DialogTitle>
-          </DialogHeader>
-          <ClientForm onSuccess={handleClientSuccess} />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={appDialogOpen} onOpenChange={(open) => { setAppDialogOpen(open); if (!open) setPrefilledClientId(undefined); }}>
-        <DialogContent className="sm:max-w-[550px] rounded-xl p-8">
-          <DialogHeader className="mb-6">
-            <DialogTitle className="text-2xl font-serif font-medium tracking-tight">Schedule New Session</DialogTitle>
-          </DialogHeader>
-          <AppointmentForm initialClientId={prefilledClientId} onSuccess={() => { setAppDialogOpen(false); setPrefilledClientId(undefined); }} />
-        </DialogContent>
-      </Dialog>
-
       <HelpModal open={helpOpen} onOpenChange={setHelpOpen} />
+      {sessionTimer && !sessionTimer.isFinished && (
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-muted/30">
+          <div className={cn("h-full transition-all duration-500", sessionTimer.isOvertime ? "bg-chart-destructive" : "bg-chart-primary")} style={{ width: `${sessionTimer.progress}%` }} />
+        </div>
+      )}
     </header>
   );
 };

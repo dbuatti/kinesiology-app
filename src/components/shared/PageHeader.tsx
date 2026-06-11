@@ -1,7 +1,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import Breadcrumbs from "./Breadcrumbs";
+
 import { Badge } from "@/components/ui/badge";
 
 interface PageHeaderProps {
@@ -9,7 +9,7 @@ interface PageHeaderProps {
   subtitle?: string;
   icon?: React.ElementType;
   iconClassName?: string;
-  breadcrumbs?: { label: string; path?: string }[];
+
   badge?: string;
   actions?: React.ReactNode;
   className?: string;
@@ -20,15 +20,15 @@ const PageHeader = ({
   subtitle,
   icon: Icon,
   iconClassName,
-  breadcrumbs,
+
   badge,
   actions,
   className,
 }: PageHeaderProps) => {
   return (
-    <div className={cn("space-y-4 md:space-y-8 mb-6 md:mb-16", className)}>
-      {breadcrumbs && <Breadcrumbs items={breadcrumbs} className="mb-0 opacity-40 hover:opacity-100 transition-opacity duration-300" />}
-      
+    <div className={cn("space-y-3 md:space-y-5 mb-4 md:mb-8", className)}>
+
+
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-10">
         <div className="space-y-3 md:space-y-4 flex-1">
           {badge && (
@@ -39,18 +39,18 @@ const PageHeader = ({
           <div className="flex items-center gap-4 md:gap-6">
             {Icon && (
               <div className={cn(
-                "w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-[1.25rem] bg-slate-900 text-white flex items-center justify-center shrink-0 dark:bg-white dark:text-slate-900 shadow-xl transition-transform hover:scale-105 duration-500",
+                "w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-[1rem] bg-slate-900 text-white flex items-center justify-center shrink-0 dark:bg-white dark:text-slate-900 shadow-xl transition-transform hover:scale-105 duration-500",
                 iconClassName
               )}>
-                <Icon size={24} className="md:w-7 md:h-7" />
+                <Icon size={20} className="md:w-6 md:h-6" />
               </div>
             )}
-            <h1 className="text-3xl md:text-6xl font-serif font-bold text-slate-900 dark:text-white leading-none">
+            <h1 className="text-2xl md:text-4xl font-serif font-bold text-slate-900 dark:text-white leading-none">
               {title}
             </h1>
           </div>
           {subtitle && (
-            <p className="text-base md:text-xl text-slate-500 dark:text-slate-400 font-medium max-w-3xl leading-relaxed">
+            <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 font-medium max-w-3xl leading-relaxed">
               {subtitle}
             </p>
           )}

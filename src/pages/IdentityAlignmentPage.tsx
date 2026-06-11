@@ -5,22 +5,16 @@ import { BookOpen, PlayCircle, Info, Target } from "lucide-react";
 import IdentityAlignmentBackground from '@/components/crm/IdentityAlignmentBackground';
 import IdentityAlignmentTool from '@/components/crm/IdentityAlignmentTool';
 import AppLayout from '@/components/crm/AppLayout';
-import PageTransition from '@/components/shared/PageTransition';
-import Breadcrumbs from '@/components/shared/Breadcrumbs';
+
 
 const IdentityAlignmentPage = () => {
  return (
  <AppLayout>
- <PageTransition>
- <div className="container mx-auto p-4 lg:p-8 max-w-5xl space-y-12">
+  <div className="max-w-5xl mx-auto space-y-6">
  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
  <div>
- <Breadcrumbs
- items={[
- { label: "Sandbox", path: "/sandbox/identity-alignment" },
- { label: "Identity Alignment" }
- ]}
- />
+
+
  <h1 className="text-4xl md:text-5xl font-serif font-medium tracking-tight mt-4 flex items-center gap-4">
  <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center shadow-sm ">
  <Target size={28} />
@@ -32,18 +26,18 @@ const IdentityAlignmentPage = () => {
  </div>
 
  <Tabs defaultValue="practice" className="w-full">
- <div className="flex justify-center mb-12">
- <TabsList className="bg-muted p-1 rounded-xl h-14 border border-border ">
+ <div className="flex justify-center mb-6">
+ <TabsList className="bg-muted p-1.5 rounded-xl h-14">
  <TabsTrigger 
  value="learn" 
- className="rounded-xl px-8 h-12 data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-medium text-xs uppercase tracking-wider"
+ className="rounded-xl px-8 h-12 data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all font-medium text-xs uppercase tracking-wider"
  >
  <BookOpen className="mr-2" size={16} />
  Learn
  </TabsTrigger>
  <TabsTrigger 
  value="practice" 
- className="rounded-xl px-8 h-12 data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-medium text-xs uppercase tracking-wider"
+ className="rounded-xl px-8 h-12 data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all font-medium text-xs uppercase tracking-wider"
  >
  <PlayCircle className="mr-2" size={16} />
  Practice
@@ -77,7 +71,6 @@ const IdentityAlignmentPage = () => {
  </div>
  </div>
  </div>
- </PageTransition>
  </AppLayout>
  );
 };

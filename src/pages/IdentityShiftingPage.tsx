@@ -4,23 +4,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, PlayCircle, Fingerprint, Info } from "lucide-react";
 import IdentityShiftingBackground from "@/components/crm/IdentityShiftingBackground";
 import IdentityShiftingTool from "@/components/crm/IdentityShiftingTool";
-import PageTransition from "@/components/shared/PageTransition";
-import Breadcrumbs from "@/components/shared/Breadcrumbs";
+
 import AppLayout from '@/components/crm/AppLayout';
 
 const IdentityShiftingPage = () => {
  return (
  <AppLayout>
- <PageTransition>
- <div className="container mx-auto p-4 lg:p-8 max-w-5xl space-y-12">
+  <div className="max-w-5xl mx-auto space-y-6">
  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
  <div>
- <Breadcrumbs
- items={[
- { label: "Sandbox", path: "/sandbox/identity-shifting" },
- { label: "Identity Shifting" }
- ]}
- />
+
+
  <h1 className="text-4xl md:text-5xl font-serif font-medium tracking-tight mt-4 flex items-center gap-4">
  <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center shadow-sm ">
  <Fingerprint size={28} />
@@ -32,18 +26,18 @@ const IdentityShiftingPage = () => {
  </div>
 
  <Tabs defaultValue="practice" className="w-full">
- <div className="flex justify-center mb-12">
- <TabsList className="bg-muted p-1 rounded-xl h-14 border border-border ">
+ <div className="flex justify-center mb-6">
+ <TabsList className="bg-muted p-1.5 rounded-xl h-14">
  <TabsTrigger 
  value="learn" 
- className="rounded-xl px-8 h-12 data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-medium text-xs uppercase tracking-wider"
+ className="rounded-xl px-8 h-12 data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all font-medium text-xs uppercase tracking-wider"
  >
  <BookOpen className="mr-2" size={16} />
  Learn
  </TabsTrigger>
  <TabsTrigger 
  value="practice" 
- className="rounded-xl px-8 h-12 data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all font-medium text-xs uppercase tracking-wider"
+ className="rounded-xl px-8 h-12 data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all font-medium text-xs uppercase tracking-wider"
  >
  <PlayCircle className="mr-2" size={16} />
  Practice
@@ -77,7 +71,6 @@ const IdentityShiftingPage = () => {
  </div>
  </div>
  </div>
- </PageTransition>
  </AppLayout>
  );
 };

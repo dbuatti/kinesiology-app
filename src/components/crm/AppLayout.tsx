@@ -15,7 +15,7 @@ const AppLayout = ({
   children,
   hasFixedHeader = false,
   className,
-  variant = "full",
+  variant = "standard",
 }: AppLayoutProps) => {
   const location = useLocation();
 
@@ -30,7 +30,7 @@ const AppLayout = ({
     <div
       className={cn(
         "w-full min-h-screen mx-auto px-4 md:px-8 transition-all duration-500",
-        hasFixedHeader ? "pt-20 md:pt-24 pb-12 md:pb-16" : "pt-4 md:pt-8 pb-12 md:pb-16",
+        hasFixedHeader ? "pt-16 md:pt-20 pb-8 md:pb-10" : "pt-3 md:pt-5 pb-8 md:pb-10",
         maxWidthClass,
         className
       )}

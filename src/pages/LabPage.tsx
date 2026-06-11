@@ -2,7 +2,7 @@
 import React from "react";
 import { useSearchParams } from "react-router-dom";
 import AppLayout from "@/components/crm/AppLayout";
-import Breadcrumbs from "@/components/shared/Breadcrumbs";
+
 import SandboxPage from "./SandboxPage";
 import WorksheetsHubPage from "./WorksheetsHubPage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,17 +16,15 @@ const LabPage = () => {
 
   return (
     <AppLayout>
-      <div className="space-y-10">
+      <div className="space-y-6">
         <PageHeader 
           title="Practice Lab"
           subtitle="Focus on your personal integration, practitioner state, and identity work."
           icon={Compass}
-          breadcrumbs={[{ label: "Practice Lab" }, { label: "The Lab" }]}
-          badge="Internal Integration"
         />
         
           <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
-          <div className="flex justify-center mb-12">
+            <div className="flex justify-center mb-6">
             <TabsList className="bg-muted p-1.5 rounded-xl h-14 border border-border">
               <TabsTrigger 
                 value="map" 
@@ -55,9 +53,9 @@ const LabPage = () => {
         </Tabs>
 
         {/* Lab Philosophy Card */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-12 border-t border-border">
-          <div className="p-8 bg-indigo-50 dark:bg-indigo-950/20 rounded-[2.5rem] border-2 border-indigo-100 dark:border-indigo-900/30 flex items-start gap-6">
-            <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xl shrink-0">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-8 border-t border-border">
+          <div className="p-5 bg-indigo-50 dark:bg-indigo-950/20 rounded-2xl border-2 border-indigo-100 dark:border-indigo-900/30 flex items-start gap-5">
+            <div className="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xl shrink-0">
               <Target size={32} />
             </div>
             <div className="space-y-2">
@@ -68,8 +66,8 @@ const LabPage = () => {
             </div>
           </div>
 
-          <div className="p-8 bg-amber-50 dark:bg-amber-950/20 rounded-[2.5rem] border-2 border-amber-100 dark:border-amber-900/30 flex items-start gap-6">
-            <div className="w-14 h-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-xl shrink-0">
+          <div className="p-5 bg-amber-50 dark:bg-amber-950/20 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 flex items-start gap-5">
+            <div className="w-12 h-12 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-xl shrink-0">
               <Zap size={32} />
             </div>
             <div className="space-y-2">

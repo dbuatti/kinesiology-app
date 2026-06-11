@@ -40,7 +40,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AppLayout from "@/components/crm/AppLayout";
-import Breadcrumbs from "@/components/shared/Breadcrumbs";
+
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -487,10 +487,10 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
   };
 
   const content = (
-    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {!isNested && (
         <>
-          <Breadcrumbs items={[{ label: "Identity Map" }]} />
+
 
           <PageHeader 
             title="Identity Map"
@@ -510,9 +510,9 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
         {TOOLS.map((tool) => (
           <Link key={tool.id} to={tool.path} className="block group">
             <Card className="border-none shadow-md rounded-xl bg-card hover:shadow-sm hover:-translate-y-1 transition-all duration-300 h-full overflow-hidden">
-              <CardContent className="p-8 space-y-6">
+              <CardContent className="p-5 space-y-4">
                 <div className="flex items-start justify-between">
-                  <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm", tool.bgColor, tool.color)}>
+                  <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm", tool.bgColor, tool.color)}>
                     <tool.icon size={28} />
                   </div>
                   <Badge variant="secondary" className="bg-muted text-muted-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full">{tool.category}</Badge>

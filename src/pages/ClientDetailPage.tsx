@@ -34,7 +34,7 @@ import AppointmentForm from "@/components/crm/AppointmentForm";
 import ClientForm from "@/components/crm/ClientForm";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
-import Breadcrumbs from "@/components/shared/Breadcrumbs";
+
 import { useRecentClients } from "@/hooks/use-recent-clients";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientProgressTab from "@/components/crm/ClientProgressTab";
@@ -314,16 +314,13 @@ const ClientDetailPage = () => {
   const rollups = getClientRollups(appointments);
 
   return (
-    <AppLayout>
+    <AppLayout variant="workspace">
       <div className="space-y-6">
         <PageHeader 
           title={client.name}
           subtitle="Comprehensive client profile, clinical history, and progress tracking."
           icon={User}
-          breadcrumbs={[
-            { label: "Clients", path: "/clients" },
-            { label: client.name }
-          ]}
+
           actions={
             <div className="flex flex-wrap gap-2">
               <Button 

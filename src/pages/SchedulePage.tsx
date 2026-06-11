@@ -13,13 +13,12 @@ const SchedulePage = () => {
   const activeTab = searchParams.get("view") || "list";
 
   return (
-    <AppLayout>
+    <AppLayout variant="workspace">
       <div className="space-y-5">
         <PageHeader 
           title="Clinical Schedule"
           subtitle="Manage your upcoming sessions and live Cal.com availability."
           icon={CalendarClock}
-          breadcrumbs={[{ label: "Clinical" }, { label: "Schedule" }]}
         />
         
         <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ view: v })} className="w-full">

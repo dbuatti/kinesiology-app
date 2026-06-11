@@ -88,16 +88,16 @@ const RecentActivity = () => {
 
   if (loading) {
     return (
-      <div className="p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 flex items-center justify-center">
+      <div className="p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center justify-center">
         <Loader2 className="animate-spin text-indigo-600" size={24} />
       </div>
     );
   }
 
   return (
-    <div className="p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm">
-      <div className="flex items-center justify-between mb-8">
-        <h3 className="text-2xl font-serif font-bold flex items-center gap-4 text-slate-900 dark:text-white">
+    <div className="p-5 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-xl font-serif font-bold flex items-center gap-4 text-slate-900 dark:text-white">
           <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm">
             <Clock size={20} />
           </div>
@@ -157,7 +157,7 @@ const RecentActivity = () => {
         )}
       </div>
       
-      <Link to="/appointments" className="mt-8 block">
+      <Link to="/appointments" className="mt-5 block">
         <Button variant="ghost" className="w-full rounded-xl h-12 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 group transition-all">
           View All Activity <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
         </Button>

@@ -14,7 +14,7 @@ import { format, isToday, startOfToday, differenceInDays } from "date-fns";
 import { Link, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
-import Breadcrumbs from "@/components/shared/Breadcrumbs";
+
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer } from 'recharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientProgressTab from "@/components/crm/ClientProgressTab";
@@ -191,12 +191,12 @@ const SelfPracticePage = () => {
 
  return (
  <AppLayout>
- <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
- <Breadcrumbs items={[{ label: "Self Practice" }]} />
+ <div className="space-y-6">
+
 
  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
  <div className="flex items-center gap-4">
- <div className="w-16 h-16 bg-destructive rounded-xl flex items-center justify-center text-white shadow-sm">
+ <div className="w-12 h-12 bg-destructive rounded-xl flex items-center justify-center text-white shadow-sm">
  <Heart size={32} className="fill-current" />
  </div>
  <div>

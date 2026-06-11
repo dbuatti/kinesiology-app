@@ -58,7 +58,7 @@ const BusinessOverviewPage = () => {
  if (!user) throw new Error("Not authenticated");
 
  const [apptsRes, voicesRes, upcomingApptsRes, upcomingVoicesRes] = await Promise.all([
-  supabase.from("appointments").select("id, client_id, date, price_amount, payment_received, status, clients(name, email)").order("date", { ascending: false }),
+  supabase.from("appointments").select("id, client_id, date, price_amount, payment_received, status, clients(name, email, rate)").order("date", { ascending: false }),
  supabase.from("voice_bookings").select("id, student_name, student_email, lesson_date, cost, status").order("lesson_date", { ascending: false }),
  supabase.from("appointments").select("id, date").gte("date", new Date().toISOString().split("T")[0]).limit(1),
  supabase.from("voice_bookings").select("id, lesson_date, status").gte("lesson_date", new Date().toISOString().split("T")[0]).eq("status", "scheduled"),
@@ -74,7 +74,7 @@ const BusinessOverviewPage = () => {
  const cmap = new Map<string, KineClientSpend>();
  for (const a of paid) {
  if (!a.client_id) continue;
- const e = cmap.get(a.client_id) || { id: a.client_id, name: (a.clients as any)?.name || "Unknown", email: (a.clients as any)?.email, totalSpent: 0, sessionCount: 0, lastSession: null as string | null, avgRate: 0 };
+  const e = cmap.get(a.client_id) || { id: a.client_id, name: (a.clients as any)?.name || "Unknown", email: (a.clients as any)?.email, totalSpent: 0, sessionCount: 0, lastSession: null as string | null, avgRate: 0, standardRate: (a.clients as any)?.rate || undefined };
  e.totalSpent += Number(a.price_amount); e.sessionCount += 1;
  if (!e.lastSession || a.date > e.lastSession) e.lastSession = a.date;
  e.avgRate = e.totalSpent / e.sessionCount;
@@ -220,7 +220,7 @@ const BusinessOverviewPage = () => {
  ].filter(d => d.value > 0);
 
  if (error) return (
- <AppLayout><div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
+ <AppLayout variant="workspace"><div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
  <div className="w-20 h-20 rounded-xl bg-destructive/10 flex items-center justify-center"><TrendingUp className="h-8 w-8 text-destructive/70" /></div>
  <div className="text-center"><h2 className="text-2xl font-semibold text-foreground">Failed to load</h2><p className="text-sm text-muted-foreground mt-1">{error}</p></div>
  <Button onClick={fetchData} variant="outline" className="rounded-xl font-medium text-xs"><RefreshCw size={14} className="mr-2" /> Retry</Button>
@@ -249,7 +249,7 @@ const BusinessOverviewPage = () => {
  );
 
  return (
- <AppLayout>
+ <AppLayout variant="workspace">
  <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-16">
  <PageHeader
  title="Business Overview"
@@ -425,7 +425,7 @@ const BusinessOverviewPage = () => {
  <div key={c.id} className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-border hover:bg-card hover:shadow-md transition-all group">
  <div className="min-w-0 flex-1">
  <p className="font-medium text-sm text-foreground truncate">{isPrivate ? "••••••" : c.name}</p>
- <p className="text-[10px] font-medium text-muted-foreground">{c.sessionCount} sessions · avg {fmt(Math.round(c.avgRate))}</p>
+          <p className="text-[10px] font-medium text-muted-foreground">{c.sessionCount} sessions · avg {fmt(Math.round(c.avgRate))}{c.standardRate ? ` · rate ${fmt(c.standardRate)}` : ""}</p>
  </div>
  <p className="font-semibold text-base text-foreground shrink-0 ml-4 group-hover:text-chart-primary transition-colors">{fmt(Math.round(c.totalSpent))}</p>
  </div>

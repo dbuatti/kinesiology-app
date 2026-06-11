@@ -43,7 +43,7 @@ import {
 import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";
 import AppLayout from "@/components/crm/AppLayout";
-import Breadcrumbs from "@/components/shared/Breadcrumbs";
+
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -418,7 +418,7 @@ const JournalPage = () => {
           title="Practitioner Journal"
           subtitle="Private reflections and session-linked insights for clinical growth."
           icon={MessageSquare}
-          breadcrumbs={[{ label: "Practice Lab", path: "/lab" }, { label: "Journal" }]}
+
           actions={
             <div className="flex items-center gap-3">
               <Button 

@@ -262,9 +262,14 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
   return (
     <>
       {compact ? (
-        <Button variant="ghost" size="icon" onClick={() => setOpen(true)} className="w-9 h-9 rounded-xl text-muted-foreground hover:text-foreground" title="Search (⌘K)">
-          <Search size={18} />
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="icon" onClick={() => setOpen(true)} className="w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground" title="Search (⌘K)">
+            <Search size={16} />
+          </Button>
+          <kbd className="hidden md:inline-flex h-4 select-none items-center gap-0.5 rounded border bg-muted px-1 font-mono text-[9px] font-bold text-muted-foreground pointer-events-none">
+            ⌘K
+          </kbd>
+        </div>
       ) : (
         <button
           onClick={() => setOpen(true)}

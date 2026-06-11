@@ -37,6 +37,11 @@ const FooterLinks = () => {
                   The PEACE Method
                 </Link>
               </li>
+              <li>
+                <Link to="/resources/ai-prompt" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  AI Session Prompt
+                </Link>
+              </li>
             </ul>
           </div>
 

@@ -197,7 +197,7 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
         <div className="space-y-3 animate-in fade-in duration-300">
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
-              Times for {format(selectedDate, "EEEE, MMMM do")}
+              Pick a start time &mdash; sessions run ~60m
             </p>
             <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
               {currentDaySlots.length} slots

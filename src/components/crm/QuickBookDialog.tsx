@@ -228,7 +228,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess }: QuickBookD
                 <div className="space-y-3 animate-in fade-in duration-300 mt-6">
                   <div className="flex items-center justify-between">
                     <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
-                      Times for {format(selectedDate, "EEEE, MMMM do")}
+                      Pick a start time &mdash; sessions run ~60m
                     </p>
                     <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/30 px-2 py-0.5 rounded-full">
                       {currentSlots.length} slot{currentSlots.length !== 1 ? "s" : ""}

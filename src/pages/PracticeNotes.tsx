@@ -493,21 +493,13 @@ const PracticeNotes = () => {
  placeholder="Add vagus note..."
  />
  </div>
- <div className="mt-2 grid grid-cols-2 gap-6 pl-7 text-[10px] text-gray-700">
- <div className="space-y-2">
- <p className="font-medium uppercase text-[10px] text-chart-primary">1. Stimulation Protocol</p>
- <p>• Select Branch: Auricular, Cervical, or Abdominal.</p>
- <p>• Apply gentle stimulation for 60s.</p>
- <p>• Monitor for Shift: Sigh, yawn, gurgle, salivation.</p>
- </div>
- <div className="space-y-2">
- <p className="font-medium uppercase text-[10px] text-chart-destructive">2. Screen & Reset Protocol</p>
- <p>• Functional Check: Test Humming/Swallowing vs IM.</p>
- <p>• Challenge: Identify Organ/Gland + Polarity + Spinal Match.</p>
- <p>• Correction: Medulla Breathing (Blocked Inhale/Forced Exhale) 30s.</p>
- <p>• Verify: Re-test function and IM.</p>
- </div>
- </div>
+  <div className="mt-2 space-y-2 pl-7 text-[10px] text-gray-700">
+  <p className="font-medium uppercase text-[10px] text-chart-destructive">Screen & Reset Protocol</p>
+  <p>• Functional Check: Test Humming/Swallowing vs IM.</p>
+  <p>• Challenge: Identify Organ/Gland + Polarity + Spinal Match.</p>
+  <p>• Correction: Medulla Breathing (Blocked Inhale/Forced Exhale) 30s.</p>
+  <p>• Verify: Re-test function and IM.</p>
+  </div>
  </div>
 
  <div className="p-4 border border-black">

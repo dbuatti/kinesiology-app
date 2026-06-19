@@ -13,6 +13,7 @@ import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { formatVoiceTime } from "@/utils/availability";
 
 interface VoiceStudent {
  id: string;
@@ -174,10 +175,10 @@ const VoiceDashboardPage = () => {
  </div>
  <div className="flex-1 min-w-0">
  <p className="font-medium text-xs truncate">{lesson.studentName || lesson.name || "Voice Lesson"}</p>
- <p className="text-[10px] text-muted-foreground">
- {lesson.date && format(new Date(lesson.date), "EEE, MMM d")}
- {lesson.time && ` · ${lesson.time}`}
- </p>
+                  <p className="text-[10px] text-muted-foreground">
+                  {lesson.date && format(new Date(lesson.date), "EEE, MMM d")}
+                  {lesson.date && lesson.time && ` · ${formatVoiceTime(lesson.date, lesson.time)}`}
+                  </p>
  </div>
  {lesson.paymentStatus && (
  <Badge className={cn(
@@ -286,10 +287,10 @@ const VoiceDashboardPage = () => {
  </Badge>
  )}
  </div>
- <p className="text-[10px] text-muted-foreground">
- {lesson.date && format(new Date(lesson.date), "MMM d, yyyy")}
- {lesson.time && ` · ${lesson.time}`}
- </p>
+                  <p className="text-[10px] text-muted-foreground">
+                  {lesson.date && format(new Date(lesson.date), "MMM d, yyyy")}
+                  {lesson.date && lesson.time && ` · ${formatVoiceTime(lesson.date, lesson.time)}`}
+                  </p>
  </div>
  </div>
  ))}

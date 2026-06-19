@@ -7,9 +7,10 @@ import {
  XCircle, Search, ChevronDown
 } from "lucide-react";
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, 
- startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, 
- eachDayOfInterval, isToday, parseISO, addWeeks, parse, getISOWeek } from "date-fns";
-import { formatDateLine } from "@/utils/availability";
+  startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, 
+  eachDayOfInterval, isToday, parseISO, addWeeks, subWeeks, parse, getISOWeek } from "date-fns";
+import WeeklyTimeGrid from "@/components/crm/WeeklyTimeGrid";
+import { formatDateLine, formatVoiceTime } from "@/utils/availability";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -77,17 +78,19 @@ const EVENT_TYPES = [
 ];
 
 const VoiceCalendarPage = () => {
- const navigate = useNavigate();
- const queryClient = useQueryClient();
- const [currentMonth, setCurrentMonth] = useState(new Date());
- const [payDialogLesson, setPayDialogLesson] = useState<VoiceLesson | null>(null);
- const [payAmount, setPayAmount] = useState("");
- const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
- const [cancelLesson, setCancelLesson] = useState<{ lesson: VoiceLesson; booking: VoiceBooking } | null>(null);
- const [cancelling, setCancelling] = useState(false);
- const [rescheduleLesson, setRescheduleLesson] = useState<{ lesson: VoiceLesson; booking: VoiceBooking } | null>(null);
- const [rescheduleSlot, setRescheduleSlot] = useState<string | null>(null);
- const [copyingWeeks, setCopyingWeeks] = useState<number | null>(null);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [viewMode, setViewMode] = useState<"month" | "week">("month");
+  const [weekStart, setWeekStart] = useState(startOfWeek(new Date()));
+  const [payDialogLesson, setPayDialogLesson] = useState<VoiceLesson | null>(null);
+  const [payAmount, setPayAmount] = useState("");
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const [cancelLesson, setCancelLesson] = useState<{ lesson: VoiceLesson; booking: VoiceBooking } | null>(null);
+  const [cancelling, setCancelling] = useState(false);
+  const [rescheduleLesson, setRescheduleLesson] = useState<{ lesson: VoiceLesson; booking: VoiceBooking } | null>(null);
+  const [rescheduleSlot, setRescheduleSlot] = useState<string | null>(null);
+  const [copyingWeeks, setCopyingWeeks] = useState<number | null>(null);
 
  const { data: lessonsData, isLoading, refetch, isRefetching } = useQuery({
  queryKey: ["voice-lessons"],
@@ -325,8 +328,11 @@ const VoiceCalendarPage = () => {
  setCopyingWeeks(null);
  }, []);
 
- const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
- const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
+  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+  const nextWeek = () => setWeekStart(addWeeks(weekStart, 1));
+  const prevWeek = () => setWeekStart(subWeeks(weekStart, 1));
+  const goToToday = () => setWeekStart(startOfWeek(new Date()));
 
  const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
 
@@ -399,12 +405,18 @@ const VoiceCalendarPage = () => {
  {/* Calendar Header */}
  <div className="p-8 border-b border-border flex items-center justify-between bg-muted/30">
  <div>
- <h2 className="text-3xl font-semibold text-foreground tracking-tight">
- {format(currentMonth, "MMMM yyyy")}
- </h2>
- <p className="text-muted-foreground font-medium text-sm mt-1">
- {lessons.length} lesson{lessons.length !== 1 ? "s" : ""} scheduled
- </p>
+          <h2 className="text-3xl font-semibold text-foreground tracking-tight">
+          {viewMode === "month"
+            ? format(currentMonth, "MMMM yyyy")
+            : `${format(weekStart, "MMM d")} – ${format(endOfWeek(weekStart), "MMM d, yyyy")}`
+          }
+          </h2>
+          <p className="text-muted-foreground font-medium text-sm mt-1">
+          {viewMode === "month"
+            ? `${lessons.length} lesson${lessons.length !== 1 ? "s" : ""} scheduled`
+            : `${lessons.filter((l) => l.date && new Date(l.date) >= weekStart && new Date(l.date) <= endOfWeek(weekStart)).length} lesson${lessons.filter((l) => l.date && new Date(l.date) >= weekStart && new Date(l.date) <= endOfWeek(weekStart)).length !== 1 ? "s" : ""} this week`
+          }
+          </p>
  {availabilityData && (
  <div className="flex items-center gap-4 mt-2">
  <span className="flex items-center gap-1.5 text-[10px] font-medium text-chart-emerald uppercase tracking-wider">
@@ -416,226 +428,277 @@ const VoiceCalendarPage = () => {
  </div>
  )}
  </div>
- <div className="flex gap-2 items-center">
- <DropdownMenu>
- <DropdownMenuTrigger asChild>
- <Button
- variant="outline"
- className="rounded-xl h-12 gap-2 font-medium text-xs"
- disabled={copyingWeeks !== null}
- >
- {copyingWeeks !== null ? (
- <Loader2 size={14} className="animate-spin" />
- ) : (
- <Copy size={14} />
- )}
- {copyingWeeks !== null ? "Fetching..." : "Get Slots"}
- </Button>
- </DropdownMenuTrigger>
- <DropdownMenuContent align="end" className="rounded-xl min-w-[220px]">
- {(["upcoming", "near", "future"] as SlotRange[]).map((key) => (
- <DropdownMenuItem
- key={key}
- onClick={() => handleCopySlots(key)}
- className="font-medium text-sm py-3"
- disabled={copyingWeeks !== null}
- >
- <Copy size={14} className="mr-2" />
- {rangeConfig[key].label}
- </DropdownMenuItem>
- ))}
- </DropdownMenuContent>
- </DropdownMenu>
- <Button variant="outline" size="icon" onClick={prevMonth} className="rounded-xl h-12 w-12">
- <ChevronLeft size={24} />
- </Button>
- <Button variant="outline" size="icon" onClick={nextMonth} className="rounded-xl h-12 w-12">
- <ChevronRight size={24} />
- </Button>
- </div>
- </div>
-
- {/* Days of Week */}
- <div className="grid grid-cols-7 border-b border-border">
- {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
- <div
- key={day}
- className="py-4 text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
- >
- {day}
- </div>
- ))}
- </div>
-
- {/* Calendar Grid */}
- <div className="grid grid-cols-7">
- {calendarDays.map((day) => {
- const dayLessons = getLessonsForDay(day);
- const isCurrent = isSameMonth(day, monthStart);
- const isCurrentDay = isToday(day);
- const dayKey = format(day, "yyyy-MM-dd");
- const today = new Date();
- today.setHours(0, 0, 0, 0);
- const isPast = day.getTime() < today.getTime();
- const dayHasAvailability = isCurrent && !isPast && datesWithSlots.has(dayKey);
- const dayNoAvailability = isCurrent && !isPast && !datesWithSlots.has(dayKey) && !!availabilityData;
-
- return (
- <div
- key={day.toString()}
- className={cn(
- "min-h-[130px] p-3 border-r border-b border-border/50 transition-colors",
- !isCurrent && "bg-muted/20 opacity-40",
- isCurrentDay && "bg-chart-destructive/10/40 ",
- dayHasAvailability && "bg-chart-emerald/10 border-l-[3px] border-emerald-400 ",
- dayNoAvailability && "bg-gray-100/50 border-l-[3px] border-gray-200 "
- )}
- >
- <div className="flex justify-between items-start mb-2">
- <div className="flex items-center gap-1.5">
- <span
- className={cn(
- "w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold",
- isCurrentDay
- ? "bg-destructive text-white shadow-sm "
- : "text-muted-foreground"
- )}
- >
- {format(day, "d")}
- </span>
- {dayHasAvailability && (
- <div className="w-2 h-2 rounded-full bg-chart-emerald shadow-sm" />
- )}
- {dayNoAvailability && (
- <div className="w-2 h-2 rounded-full bg-gray-300 " />
- )}
- </div>
- {dayLessons.length > 0 && (
- <Badge
- variant="secondary"
- className="bg-chart-destructive/10 text-chart-destructive border-none text-[10px] font-semibold"
- >
- {dayLessons.length}
- </Badge>
- )}
+          <div className="flex gap-2 items-center">
+            <div className="flex bg-muted rounded-xl p-0.5 border border-border">
+              <button
+                onClick={() => setViewMode("month")}
+                className={cn(
+                  "px-4 py-2 rounded-[10px] text-xs font-semibold transition-all",
+                  viewMode === "month"
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Month
+              </button>
+              <button
+                onClick={() => setViewMode("week")}
+                className={cn(
+                  "px-4 py-2 rounded-[10px] text-xs font-semibold transition-all",
+                  viewMode === "week"
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                Week
+              </button>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="rounded-xl h-12 gap-2 font-medium text-xs"
+                  disabled={copyingWeeks !== null}
+                >
+                  {copyingWeeks !== null ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Copy size={14} />
+                  )}
+                  {copyingWeeks !== null ? "Fetching..." : "Get Slots"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="rounded-xl min-w-[220px]">
+                {(["upcoming", "near", "future"] as SlotRange[]).map((key) => (
+                  <DropdownMenuItem
+                    key={key}
+                    onClick={() => handleCopySlots(key)}
+                    className="font-medium text-sm py-3"
+                    disabled={copyingWeeks !== null}
+                  >
+                    <Copy size={14} className="mr-2" />
+                    {rangeConfig[key].label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {viewMode === "month" ? (
+              <>
+                <Button variant="outline" size="icon" onClick={prevMonth} className="rounded-xl h-12 w-12">
+                  <ChevronLeft size={24} />
+                </Button>
+                <Button variant="outline" size="icon" onClick={nextMonth} className="rounded-xl h-12 w-12">
+                  <ChevronRight size={24} />
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" size="icon" onClick={prevWeek} className="rounded-xl h-12 w-12">
+                  <ChevronLeft size={24} />
+                </Button>
+                <Button variant="outline" size="icon" onClick={nextWeek} className="rounded-xl h-12 w-12">
+                  <ChevronRight size={24} />
+                </Button>
+              </>
+            )}
+          </div>
  </div>
 
- <div className="space-y-1">
- {dayLessons.slice(0, 2).map((lesson) => {
- const booking = findBooking(lesson);
- return (
- <Tooltip key={lesson.id}>
- <TooltipTrigger asChild>
- <a
- href={lesson.notionUrl || "#"}
- target="_blank"
- rel="noopener noreferrer"
- className="block p-1.5 rounded-lg text-[10px] font-medium truncate transition-all hover:scale-[1.02] bg-chart-destructive/10 text-chart-destructive border border-border "
- >
- <div className="flex items-center gap-1">
- <Clock size={9} className="shrink-0 opacity-60" />
- <span className="truncate">{lesson.name || "Lesson"}</span>
- </div>
- </a>
- </TooltipTrigger>
- <TooltipContent className="rounded-xl p-3 shadow-sm border-none w-72 bg-popover">
- <div className="space-y-2">
- <p className="font-semibold text-foreground">{lesson.name || "Voice Lesson"}</p>
- {lesson.time && (
- <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
- <Clock size={10} /> {lesson.time}
- </div>
- )}
- {lesson.studentName && (
- <div className="text-[10px] text-muted-foreground font-medium">
- <span className="font-medium">Student:</span> {lesson.studentName}
- </div>
- )}
- {lesson.studentEmail && (
- <div className="text-[10px] text-muted-foreground">
- <span className="font-medium">Email:</span> {lesson.studentEmail}
- </div>
- )}
- {lesson.paymentStatus && (
- <div className="flex items-center gap-1.5">
- <Badge className={cn("text-[10px] font-semibold border-none", paymentBadge(lesson.paymentStatus))}>
- {lesson.paymentStatus}
- </Badge>
- </div>
- )}
- <div className="flex flex-wrap gap-1 pt-1">
- {lesson.notionUrl && (
- <a
- href={lesson.notionUrl}
- target="_blank"
- rel="noopener noreferrer"
- className="flex items-center gap-1 text-[10px] text-destructive hover:underline"
- >
- <ExternalLink size={10} /> Notion
- </a>
- )}
- <button
- onClick={() => openPayDialog(lesson)}
- className="flex items-center gap-1 text-[10px] font-medium text-chart-emerald hover:text-chart-emerald ml-auto"
- >
- <CreditCard size={10} /> Payment Link
- </button>
- {booking ? (
- <>
- <button
- onClick={(e) => {
- e.preventDefault();
- setCancelLesson({ lesson, booking });
- }}
- className="flex items-center gap-1 text-[10px] font-medium text-destructive hover:text-destructive/70"
- >
- <XCircle size={10} /> Cancel
- </button>
- <button
- onClick={(e) => {
- e.preventDefault();
- setRescheduleLesson({ lesson, booking });
- setRescheduleSlot(null);
- }}
- className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-muted-foreground"
- >
- <CalendarSync size={10} /> Reschedule
- </button>
- </>
- ) : lesson.date && lesson.studentEmail && (
- <button
- onClick={(e) => {
- e.preventDefault();
- resolveBooking.mutate(lesson);
- }}
- disabled={resolveBooking.isPending}
- className="flex items-center gap-1 text-[10px] font-medium text-primary hover:text-primary/70"
- >
- {resolveBooking.isPending ? (
- <Loader2 size={10} className="animate-spin" />
- ) : (
- <Search size={10} />
- )}
- {resolveBooking.isPending ? "Linking..." : "Link Cal.com"}
- </button>
- )}
- </div>
- </div>
- </TooltipContent>
- </Tooltip>
- );
- })}
- {dayLessons.length > 2 && (
- <p className="text-[10px] font-semibold text-muted-foreground text-center pt-0.5">
- + {dayLessons.length - 2} more
- </p>
- )}
- </div>
- </div>
- );
- })}
- </div>
- </div>
+  {viewMode === "month" ? (
+  <>
+    {/* Days of Week */}
+    <div className="grid grid-cols-7 border-b border-border">
+    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+    <div
+    key={day}
+    className="py-4 text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+    >
+    {day}
+    </div>
+    ))}
+    </div>
+
+    {/* Calendar Grid */}
+    <div className="grid grid-cols-7">
+    {calendarDays.map((day) => {
+    const dayLessons = getLessonsForDay(day);
+    const isCurrent = isSameMonth(day, monthStart);
+    const isCurrentDay = isToday(day);
+    const dayKey = format(day, "yyyy-MM-dd");
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const isPast = day.getTime() < today.getTime();
+    const dayHasAvailability = isCurrent && !isPast && datesWithSlots.has(dayKey);
+    const dayNoAvailability = isCurrent && !isPast && !datesWithSlots.has(dayKey) && !!availabilityData;
+
+    return (
+    <div
+    key={day.toString()}
+    className={cn(
+    "min-h-[130px] p-3 border-r border-b border-border/50 transition-colors",
+    !isCurrent && "bg-muted/20 opacity-40",
+    isCurrentDay && "bg-chart-destructive/10/40 ",
+    dayHasAvailability && "bg-chart-emerald/10 border-l-[3px] border-emerald-400 ",
+    dayNoAvailability && "bg-gray-100/50 border-l-[3px] border-gray-200 "
+    )}
+    >
+    <div className="flex justify-between items-start mb-2">
+    <div className="flex items-center gap-1.5">
+    <span
+    className={cn(
+    "w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold",
+    isCurrentDay
+    ? "bg-destructive text-white shadow-sm "
+    : "text-muted-foreground"
+    )}
+    >
+    {format(day, "d")}
+    </span>
+    {dayHasAvailability && (
+    <div className="w-2 h-2 rounded-full bg-chart-emerald shadow-sm" />
+    )}
+    {dayNoAvailability && (
+    <div className="w-2 h-2 rounded-full bg-gray-300 " />
+    )}
+    </div>
+    {dayLessons.length > 0 && (
+    <Badge
+    variant="secondary"
+    className="bg-chart-destructive/10 text-chart-destructive border-none text-[10px] font-semibold"
+    >
+    {dayLessons.length}
+    </Badge>
+    )}
+    </div>
+
+    <div className="space-y-1">
+    {dayLessons.slice(0, 2).map((lesson) => {
+    const booking = findBooking(lesson);
+    return (
+    <Tooltip key={lesson.id}>
+    <TooltipTrigger asChild>
+    <a
+    href={lesson.notionUrl || "#"}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="block p-1.5 rounded-lg text-[10px] font-medium truncate transition-all hover:scale-[1.02] bg-chart-destructive/10 text-chart-destructive border border-border "
+    >
+    <div className="flex items-center gap-1">
+    <Clock size={9} className="shrink-0 opacity-60" />
+    <span className="truncate">{lesson.name || "Lesson"}</span>
+    </div>
+    </a>
+    </TooltipTrigger>
+    <TooltipContent className="rounded-xl p-3 shadow-sm border-none w-72 bg-popover">
+    <div className="space-y-2">
+    <p className="font-semibold text-foreground">{lesson.name || "Voice Lesson"}</p>
+    {lesson.date && lesson.time && (
+    <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+    <Clock size={10} /> {formatVoiceTime(lesson.date, lesson.time)}
+    </div>
+    )}
+    {lesson.studentName && (
+    <div className="text-[10px] text-muted-foreground font-medium">
+    <span className="font-medium">Student:</span> {lesson.studentName}
+    </div>
+    )}
+    {lesson.studentEmail && (
+    <div className="text-[10px] text-muted-foreground">
+    <span className="font-medium">Email:</span> {lesson.studentEmail}
+    </div>
+    )}
+    {lesson.paymentStatus && (
+    <div className="flex items-center gap-1.5">
+    <Badge className={cn("text-[10px] font-semibold border-none", paymentBadge(lesson.paymentStatus))}>
+    {lesson.paymentStatus}
+    </Badge>
+    </div>
+    )}
+    <div className="flex flex-wrap gap-1 pt-1">
+    {lesson.notionUrl && (
+    <a
+    href={lesson.notionUrl}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="flex items-center gap-1 text-[10px] text-destructive hover:underline"
+    >
+    <ExternalLink size={10} /> Notion
+    </a>
+    )}
+    <button
+    onClick={() => openPayDialog(lesson)}
+    className="flex items-center gap-1 text-[10px] font-medium text-chart-emerald hover:text-chart-emerald ml-auto"
+    >
+    <CreditCard size={10} /> Payment Link
+    </button>
+    {booking ? (
+    <>
+    <button
+    onClick={(e) => {
+    e.preventDefault();
+    setCancelLesson({ lesson, booking });
+    }}
+    className="flex items-center gap-1 text-[10px] font-medium text-destructive hover:text-destructive/70"
+    >
+    <XCircle size={10} /> Cancel
+    </button>
+    <button
+    onClick={(e) => {
+    e.preventDefault();
+    setRescheduleLesson({ lesson, booking });
+    setRescheduleSlot(null);
+    }}
+    className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-muted-foreground"
+    >
+    <CalendarSync size={10} /> Reschedule
+    </button>
+    </>
+    ) : lesson.date && lesson.studentEmail && (
+    <button
+    onClick={(e) => {
+    e.preventDefault();
+    resolveBooking.mutate(lesson);
+    }}
+    disabled={resolveBooking.isPending}
+    className="flex items-center gap-1 text-[10px] font-medium text-primary hover:text-primary/70"
+    >
+    {resolveBooking.isPending ? (
+    <Loader2 size={10} className="animate-spin" />
+    ) : (
+    <Search size={10} />
+    )}
+    {resolveBooking.isPending ? "Linking..." : "Link Cal.com"}
+    </button>
+    )}
+    </div>
+    </div>
+    </TooltipContent>
+    </Tooltip>
+    );
+    })}
+    {dayLessons.length > 2 && (
+    <p className="text-[10px] font-semibold text-muted-foreground text-center pt-0.5">
+    + {dayLessons.length - 2} more
+    </p>
+    )}
+    </div>
+    </div>
+    );
+    })}
+    </div>
+  </>
+  ) : (
+          <WeeklyTimeGrid
+            lessons={lessons}
+            weekStart={weekStart}
+            onPrevWeek={prevWeek}
+            onNextWeek={nextWeek}
+            onToday={goToToday}
+            minHour={9}
+            maxHour={17}
+          />
+  )}
+  </div>
  </>
  )}
  </div>
@@ -653,7 +716,11 @@ const VoiceCalendarPage = () => {
  <div className="bg-chart-destructive/10 rounded-xl p-4 space-y-1">
  <p className="font-semibold text-sm">{cancelLesson.lesson.name || "Voice Lesson"}</p>
  {cancelLesson.lesson.date && (
- <p className="text-xs text-muted-foreground">{cancelLesson.lesson.date} at {cancelLesson.lesson.time}</p>
+  <p className="text-xs text-muted-foreground">{cancelLesson.lesson.date}
+    {cancelLesson.lesson.date && cancelLesson.lesson.time
+      ? ` at ${formatVoiceTime(cancelLesson.lesson.date, cancelLesson.lesson.time)}`
+      : cancelLesson.lesson.time ? ` at ${cancelLesson.lesson.time}` : ""}
+  </p>
  )}
  <p className="text-xs text-muted-foreground">Student: {cancelLesson.lesson.studentName}</p>
  </div>

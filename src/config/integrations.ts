@@ -9,7 +9,8 @@ export const CALCOM_CONFIG = {
   // Your primary availability schedule
   DEFAULT_SCHEDULE_ID: "1387833",
   // The public booking URL
-  BOOKING_URL: "https://cal.com/danielebuatti/fnh-neuro-75",
+  BOOKING_URL: "https://cal.com/danielebuatti/fnh-neuro",
+  COMMUNITY_FREE_URL: "https://cal.com/danielebuatti/fnh-neuro-health-assessment-community-free",
   
   // Voice Studio coaching URLs
   VOICE_COACHING_URL: "https://cal.com/danielebuatti/voice-and-piano-coaching-60",

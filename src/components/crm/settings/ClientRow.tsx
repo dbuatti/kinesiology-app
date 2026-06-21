@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
+import { CALCOM_CONFIG } from "../../../config/integrations";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import { Client, Appointment } from "@/types/crm";
@@ -156,9 +157,9 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
  const lines = dates.slice(0, 5).map(dateKey =>
  formatDateLine(dateKey, slotsByDate[dateKey].map(s => s.time || s.start).filter(Boolean) as string[])
  );
- return `Hi ${firstName}, I've got some availability coming up — here are my open times:\n\n${lines.join('\n')}\n\nWould any of these work? Or book directly: https://cal.com/daniele-buatti/30min 😊`;
- }
- return `Hi ${firstName}, I've got lots of availability coming up. Best to pick a time that works for you: https://cal.com/daniele-buatti/30min 😊`;
+  return `Hi ${firstName}, I've got some availability coming up — here are my open times:\n\n${lines.join('\n')}\n\nWould any of these work? Or book directly: ${CALCOM_CONFIG.BOOKING_URL} 😊`;
+  }
+  return `Hi ${firstName}, I've got lots of availability coming up. Best to pick a time that works for you: ${CALCOM_CONFIG.BOOKING_URL} 😊`;
  }, [slotsByDate, firstName]);
 
  const TEMPLATES = [
@@ -207,38 +208,52 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
  preview: `Checking in on how you're going since your last session`,
  disabled: false,
  },
- {
- id: 'booking_nudge',
- label: 'Booking Nudge',
- icon: MessageCircle,
- color: 'text-muted-foreground',
- bg: 'hover:bg-muted',
- body: `Hi ${firstName}, I have some availability coming up and wanted to reach out — would you like to book in for a session soon? 😊`,
- preview: `Letting you know I have availability coming up`,
- disabled: false,
- },
+  {
+  id: 'booking_nudge',
+  label: 'Re-engagement Nudge',
+  icon: MessageCircle,
+  color: 'text-muted-foreground',
+  bg: 'hover:bg-muted',
+  body: `Hi {firstName}, it's Daniele — it's been a while since your last FNH session! I've got a couple of spots open {slots} if you'd like to come back in. Let me know and I'll lock it in 🙂`,
+  preview: `Nudge for lapsed clients to rebook`,
+  disabled: false,
+  },
  ];
 
- const handleSend = async (templateId: string, body: string) => {
- setSaving(true);
- window.location.href = `sms:${client.phone}?body=${encodeURIComponent(body)}`;
- setOpen(false);
- try {
- const now = new Date().toISOString();
- const updatedJournal = stringifyClientJournal({
- ...journalData,
- last_sms_at: now,
- last_sms_template: templateId,
- last_contacted_at: now,
- });
- await supabase.from('clients').update({ journal: updatedJournal }).eq('id', client.id);
- onRefresh();
- } catch {
- // Non-critical
- } finally {
- setSaving(false);
- }
- };
+  const handleSend = async (templateId: string, body: string) => {
+  setSaving(true);
+  let finalBody = body;
+  if (templateId === 'booking_nudge' && slotsByDate) {
+  const dates = Object.keys(slotsByDate).sort().filter(d => slotsByDate[d]?.length > 0);
+  const shuffled = [...dates].sort(() => Math.random() - 0.5);
+  const pick = shuffled.slice(0, 2).map(d => {
+  const slots = slotsByDate[d];
+  const randomSlot = slots[Math.floor(Math.random() * slots.length)];
+  const t = randomSlot?.time || randomSlot?.start;
+  return t ? format(parseISO(t), "EEE d MMM 'at' h:mm a") : "";
+  }).filter(Boolean);
+  const slotsText = pick.length > 0 ? pick.join(" / ") : CALCOM_CONFIG.BOOKING_URL;
+  finalBody = body.replace('{firstName}', client.name.split(' ')[0]).replace('{slots}', slotsText);
+  }
+  window.location.href = `sms:${client.phone}?body=${encodeURIComponent(finalBody)}`;
+  setOpen(false);
+  try {
+  const now = new Date().toISOString();
+  const updatedJournal = stringifyClientJournal({
+  ...journalData,
+  last_sms_at: now,
+  last_sms_template: templateId,
+  last_contacted_at: now,
+  ...(templateId === 'booking_nudge' ? { reengagement_status: 'sent' as const } : {}),
+  });
+  await supabase.from('clients').update({ journal: updatedJournal }).eq('id', client.id);
+  onRefresh();
+  } catch {
+  // Non-critical
+  } finally {
+  setSaving(false);
+  }
+  };
 
  return (
  <Popover open={open} onOpenChange={setOpen}>
@@ -387,7 +402,7 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
 
 // ── Availability popover shared by SmsTemplateButton ──
 
-const calLink = "https://cal.com/daniele-buatti/30min";
+const calLink = CALCOM_CONFIG.BOOKING_URL;
 
 function formatAvailabilityLines(
  type: "share" | "days",
@@ -980,32 +995,59 @@ Daniele`;
  </div>
  </div>
 
- {/* Re-engagement Tag */}
- <div className="space-y-0.5">
- <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">Status</span>
- <Select
- value={reengagementTag || "neutral"}
- onValueChange={(val: any) => onSetReengagementTag(client.id, val === "neutral" ? null : val)}
- >
- <SelectTrigger className={cn(
- "w-[90px] h-8 rounded-xl text-xs font-medium border-none",
- reengagementTag === 'warm' ? "bg-muted text-chart-emerald" :
- reengagementTag === 'cold' ? "bg-muted text-muted-foreground" :
- reengagementTag === 'lost' ? "bg-muted text-muted-foreground" :
- "bg-muted/40 text-muted-foreground"
- )}>
- <SelectValue placeholder="Select" />
- </SelectTrigger>
- <SelectContent className="rounded-xl bg-card border border-border shadow-sm">
- <SelectItem value="neutral" className="text-xs font-medium">Neutral</SelectItem>
- <SelectItem value="warm" className="text-xs font-medium text-chart-emerald">Warm</SelectItem>
- <SelectItem value="cold" className="text-xs font-medium text-chart-primary">Cold</SelectItem>
- <SelectItem value="lost" className="text-xs font-medium text-muted-foreground">Lost</SelectItem>
- </SelectContent>
- </Select>
- </div>
- </div>
- </div>
+  {/* Re-engagement Tag */}
+  <div className="space-y-0.5">
+  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">Status</span>
+  <Select
+  value={reengagementTag || "neutral"}
+  onValueChange={(val: any) => onSetReengagementTag(client.id, val === "neutral" ? null : val)}
+  >
+  <SelectTrigger className={cn(
+  "w-[90px] h-8 rounded-xl text-xs font-medium border-none",
+  reengagementTag === 'warm' ? "bg-muted text-chart-emerald" :
+  reengagementTag === 'cold' ? "bg-muted text-muted-foreground" :
+  reengagementTag === 'lost' ? "bg-muted text-muted-foreground" :
+  "bg-muted/40 text-muted-foreground"
+  )}>
+  <SelectValue placeholder="Select" />
+  </SelectTrigger>
+  <SelectContent className="rounded-xl bg-card border border-border shadow-sm">
+  <SelectItem value="neutral" className="text-xs font-medium">Neutral</SelectItem>
+  <SelectItem value="warm" className="text-xs font-medium text-chart-emerald">Warm</SelectItem>
+  <SelectItem value="cold" className="text-xs font-medium text-chart-primary">Cold</SelectItem>
+  <SelectItem value="lost" className="text-xs font-medium text-muted-foreground">Lost</SelectItem>
+  </SelectContent>
+  </Select>
+  </div>
+
+  {/* Re-engagement Nudge Tracking */}
+  <div className="space-y-0.5">
+  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">Nudge</span>
+  <div className="flex items-center gap-1">
+  {(['sent', 'booked', 'no_reply'] as const).map(status => {
+  const isActive = journalData.reengagement_status === status;
+  const colorMap = { sent: 'text-chart-primary', booked: 'text-chart-emerald', no_reply: 'text-muted-foreground' };
+  return (
+  <button
+  key={status}
+  onClick={async () => {
+  const updatedJournal = stringifyClientJournal({ ...journalData, reengagement_status: isActive ? undefined : status });
+  await supabase.from('clients').update({ journal: updatedJournal }).eq('id', client.id);
+  onRefresh();
+  }}
+  className={cn(
+  "text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-lg border border-border transition-all",
+  isActive ? `${colorMap[status]} bg-muted border-transparent` : "text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted"
+  )}
+  >
+  {status === 'no_reply' ? 'No Reply' : status}
+  </button>
+  );
+  })}
+  </div>
+  </div>
+  </div>
+  </div>
  ) : (
  <div className="flex items-center gap-2 group">
  <div className="space-y-0.5">

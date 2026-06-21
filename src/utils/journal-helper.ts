@@ -12,6 +12,7 @@ export interface ClientJournalData {
   last_contacted_at?: string | null;
   last_sms_at?: string | null;
   last_sms_template?: string | null;
+  reengagement_status?: 'sent' | 'booked' | 'no_reply';
   contact_log?: ContactLogEntry[];
 }
 
@@ -28,6 +29,7 @@ export function parseClientJournal(raw: string | null | undefined): ClientJourna
         last_contacted_at: parsed.last_contacted_at || null,
         last_sms_at: parsed.last_sms_at || null,
         last_sms_template: parsed.last_sms_template || null,
+        reengagement_status: parsed.reengagement_status || undefined,
         contact_log: parsed.contact_log || [],
       };
     }

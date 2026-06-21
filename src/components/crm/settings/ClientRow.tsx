@@ -223,7 +223,9 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
   const handleSend = async (templateId: string, body: string) => {
   setSaving(true);
   let finalBody = body;
-  if (templateId === 'booking_nudge' && slotsByDate) {
+  if (templateId === 'booking_nudge') {
+  let slotsText = CALCOM_CONFIG.BOOKING_URL;
+  if (slotsByDate) {
   const dates = Object.keys(slotsByDate).sort().filter(d => slotsByDate[d]?.length > 0);
   const shuffled = [...dates].sort(() => Math.random() - 0.5);
   const pick = shuffled.slice(0, 2).map(d => {
@@ -232,7 +234,8 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
   const t = randomSlot?.time || randomSlot?.start;
   return t ? format(parseISO(t), "EEE d MMM 'at' h:mm a") : "";
   }).filter(Boolean);
-  const slotsText = pick.length > 0 ? pick.join(" / ") : CALCOM_CONFIG.BOOKING_URL;
+  if (pick.length > 0) slotsText = pick.join(" / ");
+  }
   finalBody = body.replace('{firstName}', client.name.split(' ')[0]).replace('{slots}', slotsText);
   }
   window.location.href = `sms:${client.phone}?body=${encodeURIComponent(finalBody)}`;

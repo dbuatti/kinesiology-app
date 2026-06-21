@@ -214,7 +214,7 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
   icon: MessageCircle,
   color: 'text-muted-foreground',
   bg: 'hover:bg-muted',
-  body: `Hi {firstName}, it's Daniele — it's been a while since your last FNH session! I've got a couple of spots open {slots} if you'd like to come back in. Let me know and I'll lock it in 🙂`,
+  body: `Hi {firstName}, it's Daniele — it's been a while since your last FNH session! I've got a couple of spots open {slots} if you'd like to come back in — and I have other times too if neither of those work. Let me know and I'll lock it in 🙂`,
   preview: `Nudge for lapsed clients to rebook`,
   disabled: false,
   },

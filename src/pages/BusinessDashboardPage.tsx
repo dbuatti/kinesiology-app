@@ -52,7 +52,7 @@ const BusinessDashboardPage = () => {
   supabase.from("appointments").select("id, client_id, date, price_amount, payment_received, status, clients(id, name, email)").order("date", { ascending: false }),
  supabase.from("voice_bookings").select("id, student_name, student_email, lesson_date, cost, status").order("lesson_date", { ascending: false }),
  supabase.from("voice_onboarding").select("name, email"),
-  supabase.from("appointments").select("id, date, price_amount, clients(id, name, rate)").gte("date", new Date().toISOString().split("T")[0]).order("date", { ascending: true }).limit(5),
+  supabase.from("appointments").select("id, date, price_amount, clients(id, name, standard_rate)").gte("date", new Date().toISOString().split("T")[0]).order("date", { ascending: true }).limit(5),
  supabase.from("voice_bookings").select("id, student_name, lesson_date, cost, status").gte("lesson_date", new Date().toISOString().split("T")[0]).order("lesson_date", { ascending: true }).limit(5),
  ]);
 
@@ -267,7 +267,7 @@ const BusinessDashboardPage = () => {
  <p className="font-medium text-sm text-foreground truncate group-hover:text-chart-primary transition-colors">{(a.clients as any)?.name || "Unknown"}</p>
  <p className="text-[10px] font-medium text-muted-foreground">{format(parseISO(a.date), "EEE, MMM d · h:mm a")}</p>
  </div>
-  {a.price_amount || (a.clients as any)?.rate ? <span className="text-xs font-semibold text-foreground shrink-0 ml-3">{fmt(Number(a.price_amount || (a.clients as any)?.rate))}</span> : null}
+  {a.price_amount || (a.clients as any)?.standard_rate ? <span className="text-xs font-semibold text-foreground shrink-0 ml-3">{fmt(Number(a.price_amount || (a.clients as any)?.standard_rate))}</span> : null}
  </Link>
  ))}
  </div>

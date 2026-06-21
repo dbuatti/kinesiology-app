@@ -80,15 +80,11 @@ export function formatSlotRanges(slotTimes: string[]): string {
 
   return ranges
     .map((r) => {
-      const startAMPM = r.start.getHours() < 12 ? "AM" : "PM";
-      const endAMPM = r.end.getHours() < 12 ? "AM" : "PM";
-      if (r.start.getTime() === r.end.getTime()) {
-        return `${formatClock(r.start)} ${startAMPM}`;
-      }
-      if (startAMPM === endAMPM) {
-        return `${formatClock(r.start)}–${formatClock(r.end)} ${startAMPM}`;
-      }
-      return `${formatClock(r.start)} ${startAMPM}–${formatClock(r.end)} ${endAMPM}`;
+      const ampm = r.end.getHours() < 12 ? "am" : "pm";
+      let h = r.end.getHours() % 12;
+      if (h === 0) h = 12;
+      const m = r.end.getMinutes() === 0 ? "" : `:${r.end.getMinutes().toString().padStart(2, "0")}`;
+      return `${h}${m}${ampm}`;
     })
     .join(", ");
 }

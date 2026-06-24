@@ -5,7 +5,7 @@ import { usePrimitiveReflexTests } from "@/hooks/usePrimitiveReflexTests";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
+import {
   Zap, 
   ImageIcon, 
   Loader2, 
@@ -15,6 +15,7 @@ import {
   Search,
   CheckCircle2
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -90,7 +91,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
       "p-2 px-3 rounded-xl border transition-all",
       test.is_primary_priority ? "bg-indigo-50/40 border-indigo-300 ring-1 ring-indigo-100" : 
       test.is_priority ? "bg-amber-50/40 border-amber-200" : 
-      !isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') ? "bg-emerald-50/10 border-emerald-100 opacity-80" :
+      !isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') ? "bg-emerald-50/30 border-emerald-200" :
       "border-border bg-white"
     )}>
       <div className="flex items-center justify-between gap-4">
@@ -102,6 +103,11 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
             <span className="text-[8px] font-medium text-muted-foreground uppercase tracking-wider hidden sm:inline">
               {reflex.category} • {reflex.developmentalWindow}
             </span>
+            {!isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') && (
+              <Badge className="bg-emerald-100 text-emerald-700 border-none font-semibold text-[7px] uppercase tracking-wider px-1.5 py-0 rounded-none">
+                <CheckCircle2 size={8} className="mr-0.5" /> Clear
+              </Badge>
+            )}
           </div>
           
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] leading-tight">

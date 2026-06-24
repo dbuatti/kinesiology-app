@@ -85,7 +85,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
       "space-y-2 p-4 rounded-xl border transition-all",
       test.is_primary_priority ? "bg-muted/30 border-indigo-200 ring-1 ring-indigo-100" : 
       test.is_priority ? "bg-muted/30 border-amber-200" : 
-      !isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') ? "bg-muted/10 border-emerald-100 opacity-80" :
+      !isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') ? "bg-emerald-50/30 border-emerald-200" :
       "border-border bg-white"
     )}>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-border/50 pb-2">
@@ -102,6 +102,11 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
           <Badge variant="outline" className="border-border text-muted-foreground font-medium text-[7px] uppercase tracking-wider px-1.5 py-0 rounded-none">
             {nerve.nuclei} • {nerve.toneEffect}
           </Badge>
+          {!isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') && (
+            <Badge className="bg-emerald-100 text-emerald-700 border-none font-semibold text-[7px] uppercase tracking-wider px-1.5 py-0 rounded-none">
+              <CheckCircle2 size={8} className="mr-0.5" /> Clear
+            </Badge>
+          )}
         </div>
 
         <div className="flex items-center gap-4 print:hidden">

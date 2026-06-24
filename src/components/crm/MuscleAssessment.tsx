@@ -40,13 +40,17 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
   
   const isInhibited = statusL === 'Inhibited' || statusR === 'Inhibited' || statusMidline === 'Inhibited';
   const isHypertonic = statusL === 'Hypertonic' || statusR === 'Hypertonic' || statusMidline === 'Hypertonic';
-  const isAnyDysfunctional = isInhibited || isHypertonic;
+  const isClear = !isInhibited && !isHypertonic && (
+    (isLateralized && (statusL === 'Clear' || statusR === 'Clear')) ||
+    (!isLateralized && statusMidline === 'Clear')
+  );
 
   return (
     <section className={cn(
       "p-2 px-3 rounded-xl border transition-all",
       isInhibited ? "bg-rose-50 border-rose-200" : 
       isHypertonic ? "bg-amber-50 border-amber-200" :
+      isClear ? "bg-emerald-50/50 border-emerald-200" :
       "border-slate-100 bg-white"
     )}>
       <div className="flex items-center justify-between gap-4">
@@ -58,6 +62,11 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
             <Badge variant="outline" className="border-slate-200 text-slate-400 font-black text-[7px] uppercase tracking-widest px-1.5 py-0 rounded-none">
               {info.meridian}
             </Badge>
+            {isClear && !isInhibited && !isHypertonic && (
+              <Badge className="bg-emerald-100 text-emerald-700 border-none font-black text-[7px] uppercase tracking-widest px-1.5 py-0 rounded-none">
+                <CheckCircle2 size={8} className="mr-0.5" /> Clear
+              </Badge>
+            )}
           </div>
           
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] leading-tight">

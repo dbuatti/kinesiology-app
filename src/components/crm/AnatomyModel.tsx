@@ -23,8 +23,8 @@ const AnatomyModel = ({ selectedAnatomyJoint, selectedStructure, onSelectStructu
           {/* Quadriceps Tendon */}
           <path 
             d="M90,40 L110,40 L110,90 L90,90 Z" 
-            fill={selectedStructure === 'quadriceps' ? '#4f46e5' : '#CBD5E1'} 
-            stroke={selectedStructure === 'quadriceps' ? '#4f46e5' : '#94A3B8'} 
+            fill={selectedStructure === 'quadriceps' ? 'hsl(var(--chart-primary))' : '#CBD5E1'} 
+            stroke={selectedStructure === 'quadriceps' ? 'hsl(var(--chart-primary))' : '#94A3B8'} 
             strokeWidth="2" 
             className="cursor-pointer transition-all hover:opacity-90 hover:fill-indigo-500"
             onClick={() => onSelectStructure('quadriceps')}
@@ -41,8 +41,8 @@ const AnatomyModel = ({ selectedAnatomyJoint, selectedStructure, onSelectStructu
           {/* Patellar Tendon */}
           <path 
             d="M92,120 L108,120 L105,155 L95,155 Z" 
-            fill={selectedStructure === 'patellar' ? '#4f46e5' : '#CBD5E1'} 
-            stroke={selectedStructure === 'patellar' ? '#4f46e5' : '#94A3B8'} 
+            fill={selectedStructure === 'patellar' ? 'hsl(var(--chart-primary))' : '#CBD5E1'} 
+            stroke={selectedStructure === 'patellar' ? 'hsl(var(--chart-primary))' : '#94A3B8'} 
             strokeWidth="2" 
             className="cursor-pointer transition-all hover:opacity-90 hover:fill-indigo-500"
             onClick={() => onSelectStructure('patellar')}
@@ -52,7 +52,7 @@ const AnatomyModel = ({ selectedAnatomyJoint, selectedStructure, onSelectStructu
           <path 
             d="M125,95 C128,110 128,130 125,145" 
             fill="none" 
-            stroke={selectedStructure === 'mcl' ? '#4f46e5' : '#94A3B8'} 
+            stroke={selectedStructure === 'mcl' ? 'hsl(var(--chart-primary))' : '#94A3B8'} 
             strokeWidth="8" 
             strokeLinecap="round"
             className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
@@ -63,7 +63,7 @@ const AnatomyModel = ({ selectedAnatomyJoint, selectedStructure, onSelectStructu
           <path 
             d="M70,95 C67,110 62,130 65,145" 
             fill="none" 
-            stroke={selectedStructure === 'lcl' ? '#4f46e5' : '#94A3B8'} 
+            stroke={selectedStructure === 'lcl' ? 'hsl(var(--chart-primary))' : '#94A3B8'} 
             strokeWidth="6" 
             strokeLinecap="round"
             className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
@@ -89,8 +89,8 @@ const AnatomyModel = ({ selectedAnatomyJoint, selectedStructure, onSelectStructu
           {/* Achilles Tendon */}
           <path 
             d="M110,40 L120,40 L115,150 L105,150 Z" 
-            fill={selectedStructure === 'achilles' ? '#4f46e5' : '#CBD5E1'} 
-            stroke={selectedStructure === 'achilles' ? '#4f46e5' : '#94A3B8'} 
+            fill={selectedStructure === 'achilles' ? 'hsl(var(--chart-primary))' : '#CBD5E1'} 
+            stroke={selectedStructure === 'achilles' ? 'hsl(var(--chart-primary))' : '#94A3B8'} 
             strokeWidth="2" 
             className="cursor-pointer transition-all hover:opacity-90 hover:fill-indigo-500"
             onClick={() => onSelectStructure('achilles')}
@@ -100,7 +100,7 @@ const AnatomyModel = ({ selectedAnatomyJoint, selectedStructure, onSelectStructu
           <path 
             d="M65,115 L90,135" 
             fill="none" 
-            stroke={selectedStructure === 'atfl' ? '#4f46e5' : '#94A3B8'} 
+            stroke={selectedStructure === 'atfl' ? 'hsl(var(--chart-primary))' : '#94A3B8'} 
             strokeWidth="6" 
             strokeLinecap="round"
             className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
@@ -111,7 +111,7 @@ const AnatomyModel = ({ selectedAnatomyJoint, selectedStructure, onSelectStructu
           <path 
             d="M60,125 L75,165" 
             fill="none" 
-            stroke={selectedStructure === 'cfl' ? '#4f46e5' : '#94A3B8'} 
+            stroke={selectedStructure === 'cfl' ? 'hsl(var(--chart-primary))' : '#94A3B8'} 
             strokeWidth="6" 
             strokeLinecap="round"
             className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
@@ -139,7 +139,7 @@ const AnatomyModel = ({ selectedAnatomyJoint, selectedStructure, onSelectStructu
           <path 
             d="M75,55 C90,55 100,65 110,72" 
             fill="none" 
-            stroke={selectedStructure === 'supraspinatus' ? '#4f46e5' : '#CBD5E1'} 
+            stroke={selectedStructure === 'supraspinatus' ? 'hsl(var(--chart-primary))' : '#CBD5E1'} 
             strokeWidth="6" 
             strokeLinecap="round"
             className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
@@ -150,7 +150,7 @@ const AnatomyModel = ({ selectedAnatomyJoint, selectedStructure, onSelectStructu
           <path 
             d="M98,80 C98,90 105,95 110,100" 
             fill="none" 
-            stroke={selectedStructure === 'ghl' ? '#4f46e5' : '#94A3B8'} 
+            stroke={selectedStructure === 'ghl' ? 'hsl(var(--chart-primary))' : '#94A3B8'} 
             strokeWidth="6" 
             strokeLinecap="round"
             className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
@@ -161,7 +161,7 @@ const AnatomyModel = ({ selectedAnatomyJoint, selectedStructure, onSelectStructu
           <path 
             d="M110,72 L110,150" 
             fill="none" 
-            stroke={selectedStructure === 'biceps' ? '#4f46e5' : '#CBD5E1'} 
+            stroke={selectedStructure === 'biceps' ? 'hsl(var(--chart-primary))' : '#CBD5E1'} 
             strokeWidth="4" 
             strokeLinecap="round"
             className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
@@ -172,7 +172,7 @@ const AnatomyModel = ({ selectedAnatomyJoint, selectedStructure, onSelectStructu
           <path 
             d="M125,40 L135,55" 
             fill="none" 
-            stroke={selectedStructure === 'ac' ? '#4f46e5' : '#94A3B8'} 
+            stroke={selectedStructure === 'ac' ? 'hsl(var(--chart-primary))' : '#94A3B8'} 
             strokeWidth="6" 
             strokeLinecap="round"
             className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
@@ -198,7 +198,7 @@ const AnatomyModel = ({ selectedAnatomyJoint, selectedStructure, onSelectStructu
           <path 
             d="M100,115 L85,150 M100,115 L115,150" 
             fill="none" 
-            stroke={selectedStructure === 'iliofemoral' ? '#4f46e5' : '#94A3B8'} 
+            stroke={selectedStructure === 'iliofemoral' ? 'hsl(var(--chart-primary))' : '#94A3B8'} 
             strokeWidth="6" 
             strokeLinecap="round"
             className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
@@ -209,7 +209,7 @@ const AnatomyModel = ({ selectedAnatomyJoint, selectedStructure, onSelectStructu
           <path 
             d="M70,100 C70,120 75,135 78,145" 
             fill="none" 
-            stroke={selectedStructure === 'gluteus_med' ? '#4f46e5' : '#CBD5E1'} 
+            stroke={selectedStructure === 'gluteus_med' ? 'hsl(var(--chart-primary))' : '#CBD5E1'} 
             strokeWidth="6" 
             strokeLinecap="round"
             className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"
@@ -220,7 +220,7 @@ const AnatomyModel = ({ selectedAnatomyJoint, selectedStructure, onSelectStructu
           <path 
             d="M115,120 L105,180" 
             fill="none" 
-            stroke={selectedStructure === 'hamstring' ? '#4f46e5' : '#CBD5E1'} 
+            stroke={selectedStructure === 'hamstring' ? 'hsl(var(--chart-primary))' : '#CBD5E1'} 
             strokeWidth="5" 
             strokeLinecap="round"
             className="cursor-pointer transition-all hover:opacity-90 hover:stroke-indigo-500"

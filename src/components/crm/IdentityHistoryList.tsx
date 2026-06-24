@@ -166,7 +166,7 @@ const IdentityHistoryList = () => {
             <History className="text-muted-foreground" size={32} />
           </div>
           <p className="text-foreground font-black text-xl">No history found</p>
-          <p className="text-muted-foreground mt-1 font-medium">Complete a session in the Sandbox to see it here.</p>
+          <p className="text-muted-foreground mt-1 font-medium">Complete a session in Identity Map to see it here.</p>
         </div>
       )}
     </div>

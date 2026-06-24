@@ -148,14 +148,14 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
         <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
           <CardContent className="p-8 space-y-4">
             <Textarea 
-              placeholder="What did you notice? Any doubts, breakthroughs, or patterns for the Sandbox?"
+              placeholder="What did you notice? Any doubts, breakthroughs, or patterns for Identity Work?"
               className="min-h-[150px] rounded-xl border-2 border-border focus:border-indigo-500 p-6 text-lg font-medium leading-relaxed shadow-inner resize-none"
               value={content}
               onChange={(e) => setContent(e.target.value)}
             />
             <div className="flex justify-between items-center">
               <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                <Brain size={14} className="text-indigo-400" /> AI will extract Sandbox items automatically
+                <Brain size={14} className="text-indigo-400" /> AI will extract identity insights automatically
               </p>
               <Button 
                 onClick={handleSave} 

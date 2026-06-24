@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { supabase } from "@/integrations/supabase/client";
 
-const STORAGE_KEY = "antigravity_north_star_data";
+const STORAGE_KEY = "rk_north_star_data";
 
 const STEPS = [
   {

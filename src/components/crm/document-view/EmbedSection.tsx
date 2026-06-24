@@ -404,7 +404,7 @@ const EmbedSection = ({
           label="Practitioner Reflection (Private)"
           value={appointment.journal}
           field="journal"
-          placeholder="Personal insights for the Sandbox..."
+          placeholder="Personal insights for Identity Work..."
           multiline
           onChange={handleFieldChange}
         />

@@ -135,6 +135,45 @@ export const MUSCLE_GROUPS: Record<string, string[]> = {
   ],
 };
 
+// Muscles tested in the Preliminary Assessment (P in PEACE) - Direct Muscle Tests
+export const PRELIMINARY_MUSCLES: Record<string, string[]> = {
+  'Intrinsic Stabilisation': [
+    'Transverse Abdominals',
+    'Diaphragm',
+    'Pelvic Floor (Anterior)',
+    'Pelvic Floor (Posterior)',
+    'Multifidi',
+    'Sacrospinalis',
+  ],
+  'Quadriceps & Hamstrings': [
+    'Quadriceps Group',
+    'Hamstrings',
+  ],
+  'Gluteals & TFL': [
+    'Gluteus Medius',
+    'Gluteus Maximus',
+    'Tensor Fasciae Latae (TFL)',
+  ],
+  'Shoulder Girdle': [
+    'Deltoids (Anterior)',
+    'Deltoids (Middle)',
+    'Deltoids (Posterior)',
+    'Middle Trapezius',
+    'Lower Trapezius',
+    'Pectoralis Major (Clavicular)',
+    'Pectoralis Major (Sternal)',
+    'Serratus Anterior',
+  ],
+  'Arms': [
+    'Biceps',
+    'Triceps',
+  ],
+  'Head & Neck': [
+    'Upper Trapezius',
+    'Sternocleidomastoid (SCM)',
+  ],
+};
+
 export const MUSCLE_TEST_ASSISTANCE = {
   title: "What to do if an indicator muscle doesn't unlock...",
   steps: [

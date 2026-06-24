@@ -63,7 +63,7 @@ const TOOLS = [
     label: "Identity Shifting",
     desc: "Dissolve problematic constructs and return to the neutral observer.",
     icon: Fingerprint,
-    path: "/sandbox/identity-shifting",
+    path: "/identity-shifting",
      color: "text-chart-primary",
       bgColor: "bg-muted",
       category: "Dissolving"
@@ -73,7 +73,7 @@ const TOOLS = [
       label: "Identity Alignment",
       desc: "Reconsolidate neural pathways to align with your target identity.",
       icon: Target,
-      path: "/sandbox/identity-alignment",
+      path: "/identity-alignment",
       color: "text-chart-emerald",
       bgColor: "bg-muted",
       category: "Integration"
@@ -83,7 +83,7 @@ const TOOLS = [
       label: "Limiting Beliefs",
       desc: "Extract and dissolve the core beliefs holding patterns in place.",
       icon: ShieldAlert,
-      path: "/sandbox/limiting-beliefs",
+      path: "/limiting-beliefs",
       color: "text-chart-destructive",
       bgColor: "bg-muted",
       category: "Extraction"
@@ -93,7 +93,7 @@ const TOOLS = [
       label: "Fractal Analysis",
       desc: "Map the hierarchical structure of your internal constructs.",
       icon: Layers,
-      path: "/sandbox/fractals",
+      path: "/fractals",
       color: "text-chart-primary",
       bgColor: "bg-muted",
     category: "Analysis"
@@ -313,12 +313,12 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
 
   const getRecommendation = (item: any) => {
     if (item.type === 'alignment') {
-      return { tool: 'Identity Alignment', path: '/sandbox/identity-alignment', icon: Target, color: 'text-chart-emerald', bg: 'bg-muted' };
+      return { tool: 'Identity Alignment', path: '/identity-alignment', icon: Target, color: 'text-chart-emerald', bg: 'bg-muted' };
     }
     if (item.type === 'belief') {
-      return { tool: 'Limiting Beliefs', path: '/sandbox/limiting-beliefs', icon: ShieldAlert, color: 'text-chart-destructive', bg: 'bg-muted' };
+      return { tool: 'Limiting Beliefs', path: '/limiting-beliefs', icon: ShieldAlert, color: 'text-chart-destructive', bg: 'bg-muted' };
     }
-    return { tool: 'Identity Shifting', path: '/sandbox/identity-shifting', icon: Fingerprint, color: 'text-chart-primary', bg: 'bg-muted' };
+    return { tool: 'Identity Shifting', path: '/identity-shifting', icon: Fingerprint, color: 'text-chart-primary', bg: 'bg-muted' };
   };
 
   const IdentityCard = ({ item }: { item: any }) => {
@@ -645,8 +645,8 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
         <CardContent className="p-12 md:p-16 flex flex-col md:flex-row items-center gap-12 relative z-10">
           <div className="w-28 h-28 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm"><Zap size={56} className="text-primary-foreground" /></div>
           <div className="space-y-4">
-            <h4 className="text-3xl font-semibold tracking-tight">The Identity Lab</h4>
-            <p className="text-muted-foreground font-medium text-xl leading-relaxed max-w-3xl">"The self is not a fixed entity, but a collection of constructs. In the Sandbox, we treat these constructs as hypotheses to be tested, dissolved, and aligned with our highest intentions."</p>
+            <h4 className="text-3xl font-semibold tracking-tight">Identity Map</h4>
+            <p className="text-muted-foreground font-medium text-xl leading-relaxed max-w-3xl">"The self is not a fixed entity, but a collection of constructs. In Identity Work, we treat these constructs as hypotheses to be tested, dissolved, and aligned with our highest intentions."</p>
           </div>
         </CardContent>
       </Card>

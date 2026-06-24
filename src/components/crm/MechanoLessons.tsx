@@ -60,7 +60,7 @@ const BUCKET_NAME = 'ligament-images';
 const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
   const [currentLessonId, setCurrentLessonId] = useState<string | null>(null);
   const [lessonProgress, setLessonProgress] = useState<Record<string, boolean>>(() => {
-    const saved = localStorage.getItem('antigravity_mechano_lessons_progress');
+    const saved = localStorage.getItem('rk_mechano_lessons_progress');
     return saved ? JSON.parse(saved) : {
       '1': false,
       '2': false,
@@ -262,7 +262,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
   const handleCompleteLesson = (id: string) => {
     const nextProgress = { ...lessonProgress, [id]: true };
     setLessonProgress(nextProgress);
-    localStorage.setItem('antigravity_mechano_lessons_progress', JSON.stringify(nextProgress));
+    localStorage.setItem('rk_mechano_lessons_progress', JSON.stringify(nextProgress));
     setCurrentLessonId(null);
     setSelectedQuizAnswer(null);
     setQuizSubmitted(false);
@@ -327,7 +327,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
       setSandboxAction('Flexion');
     }
 
-    showSuccess(`Loaded ${currentStructure.name} into the Sandbox!`);
+    showSuccess(`Loaded ${currentStructure.name} into Protocol Practice!`);
   };
 
   // Interactive Simulator Handlers
@@ -728,7 +728,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                       onClick={handleSendToSandbox}
                       className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-12 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg"
                     >
-                      <Compass size={16} className="mr-2" /> Send to Sandbox
+                      <Compass size={16} className="mr-2" /> Practice with Selection
                     </Button>
                   </CardContent>
                 </Card>
@@ -748,7 +748,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
       {activeSubTab === 'sandbox' && (
         <div className="space-y-6">
           <div className="space-y-1">
-            <h3 className="text-xl font-bold text-slate-900">Protocol Sandbox</h3>
+            <h3 className="text-xl font-bold text-slate-900">Protocol Practice</h3>
             <p className="text-slate-500 text-sm">Select a joint and tissue type to generate a step-by-step confidence protocol.</p>
           </div>
 

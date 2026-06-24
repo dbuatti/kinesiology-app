@@ -72,15 +72,22 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
 
   useEffect(() => {
     fetchPastSessions();
-  }, []);
+  }, [clientId]);
 
   const fetchPastSessions = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const { data } = await supabase
+
+    let query = supabase
       .from('limiting_belief_sessions')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', user.id);
+
+    if (clientId) {
+      query = query.eq('client_id', clientId);
+    }
+
+    const { data } = await query
       .order('created_at', { ascending: false })
       .limit(10);
     if (data) setPastSessions(data);

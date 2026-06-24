@@ -158,7 +158,7 @@ const FractalNode = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-3xl border-none bg-card">
               <DropdownMenuItem onClick={() => onProcess(item)} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
-                <Zap size={16} className="text-indigo-500" /> Process in Sandbox
+                <Zap size={16} className="text-indigo-500" /> Process in Identity Map
               </DropdownMenuItem>
               
               <div className="px-4 py-2 text-[8px] font-black uppercase tracking-widest text-slate-400">Move Hierarchy</div>

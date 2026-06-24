@@ -17,7 +17,7 @@ import { format } from 'date-fns';
 import { MUSCLE_GROUPS } from '@/data/muscle-data';
 import { getMuscleInfo } from '@/data/muscle-info-data';
 
-const STORAGE_KEY = "antigravity_muscle_of_the_day";
+const STORAGE_KEY = "rk_muscle_of_the_day";
 
 interface MuscleOfTheDayProps {
   onViewDetails: (name: string) => void;

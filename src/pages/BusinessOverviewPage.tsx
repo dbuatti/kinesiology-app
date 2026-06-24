@@ -58,7 +58,7 @@ const BusinessOverviewPage = () => {
  if (!user) throw new Error("Not authenticated");
 
  const [apptsRes, voicesRes, upcomingApptsRes, upcomingVoicesRes] = await Promise.all([
-  supabase.from("appointments").select("id, client_id, date, price_amount, payment_received, status, clients(name, email, rate)").order("date", { ascending: false }),
+  supabase.from("appointments").select("id, client_id, date, price_amount, payment_received, status, clients(name, email, standard_rate)").order("date", { ascending: false }),
  supabase.from("voice_bookings").select("id, student_name, student_email, lesson_date, cost, status").order("lesson_date", { ascending: false }),
  supabase.from("appointments").select("id, date").gte("date", new Date().toISOString().split("T")[0]).limit(1),
  supabase.from("voice_bookings").select("id, lesson_date, status").gte("lesson_date", new Date().toISOString().split("T")[0]).eq("status", "scheduled"),
@@ -74,7 +74,7 @@ const BusinessOverviewPage = () => {
  const cmap = new Map<string, KineClientSpend>();
  for (const a of paid) {
  if (!a.client_id) continue;
-  const e = cmap.get(a.client_id) || { id: a.client_id, name: (a.clients as any)?.name || "Unknown", email: (a.clients as any)?.email, totalSpent: 0, sessionCount: 0, lastSession: null as string | null, avgRate: 0, standardRate: (a.clients as any)?.rate || undefined };
+  const e = cmap.get(a.client_id) || { id: a.client_id, name: (a.clients as any)?.name || "Unknown", email: (a.clients as any)?.email, totalSpent: 0, sessionCount: 0, lastSession: null as string | null, avgRate: 0, standardRate: (a.clients as any)?.standard_rate || undefined };
  e.totalSpent += Number(a.price_amount); e.sessionCount += 1;
  if (!e.lastSession || a.date > e.lastSession) e.lastSession = a.date;
  e.avgRate = e.totalSpent / e.sessionCount;
@@ -271,15 +271,15 @@ const BusinessOverviewPage = () => {
  <Tabs value={viewMode} onValueChange={(v: any) => setViewMode(v)} className="w-full">
  <div className="flex items-center justify-between mb-8">
  <TabsList className="rounded-xl p-1.5 bg-muted border border-border shadow-sm">
- <TabsTrigger value="fnh" className="rounded-xl text-[11px] font-semibold uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-white px-6 py-2.5">
- FNH
- </TabsTrigger>
+  <TabsTrigger value="fnh" className="rounded-xl text-[11px] font-semibold uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-white px-6 py-2.5">
+  Kinesiology
+  </TabsTrigger>
  <TabsTrigger value="voice" className="rounded-xl text-[11px] font-semibold uppercase tracking-wider data-[state=active]:bg-destructive data-[state=active]:text-white px-6 py-2.5">
  Voice
  </TabsTrigger>
- <TabsTrigger value="combined" className="rounded-xl text-[11px] font-semibold uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-white px-6 py-2.5">
- FNH + Voice
- </TabsTrigger>
+  <TabsTrigger value="combined" className="rounded-xl text-[11px] font-semibold uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-white px-6 py-2.5">
+  All Practices
+  </TabsTrigger>
  </TabsList>
  </div>
  </Tabs>

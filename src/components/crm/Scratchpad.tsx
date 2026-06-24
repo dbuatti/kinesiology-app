@@ -4,8 +4,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { StickyNote, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
 
-const SCRATCHPAD_KEY = "antigravity_practitioner_scratchpad";
-const SCRATCHPAD_TIME_KEY = "antigravity_practitioner_scratchpad_time";
+const SCRATCHPAD_KEY = "rk_practitioner_scratchpad";
+const SCRATCHPAD_TIME_KEY = "rk_practitioner_scratchpad_time";
 
 const Scratchpad = () => {
   const [scratchpad, setScratchpad] = useState("");

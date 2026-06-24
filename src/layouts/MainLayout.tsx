@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import SpaceHeader from '@/components/crm/SpaceHeader';
+import Sidebar from '@/components/crm/Sidebar';
 import QuickActions from '@/components/crm/QuickActions';
 import BackToTop from '@/components/shared/BackToTop';
 import UpcomingMarquee from '@/components/crm/UpcomingMarquee';
@@ -11,24 +11,35 @@ import { cn } from '@/lib/utils';
 import { showSuccess } from '@/utils/toast';
 
 const MainLayout = () => {
-  const { mode } = useAppMode();
+  const { mode, setMode } = useAppMode();
   const location = useLocation();
   const navigate = useNavigate();
 
   const [isFullScreen, setIsFullScreen] = useState(() => {
-    return localStorage.getItem('antigravity_fullscreen') === 'true';
+    return localStorage.getItem('rk_fullscreen') === 'true';
   });
 
   useEffect(() => {
     const handleFullScreenChange = () => {
-      setIsFullScreen(localStorage.getItem('antigravity_fullscreen') === 'true');
+      setIsFullScreen(localStorage.getItem('rk_fullscreen') === 'true');
     };
 
-    window.addEventListener('antigravity_fullscreen_change', handleFullScreenChange);
+    window.addEventListener('rk_fullscreen_change', handleFullScreenChange);
     return () => {
-      window.removeEventListener('antigravity_fullscreen_change', handleFullScreenChange);
+      window.removeEventListener('rk_fullscreen_change', handleFullScreenChange);
     };
   }, []);
+
+  // Auto-set mode based on current page context
+  useEffect(() => {
+    if (location.pathname.startsWith('/voice')) {
+      setMode('voice');
+    } else if (location.pathname.startsWith('/business')) {
+      setMode('business');
+    } else {
+      setMode('clinical');
+    }
+  }, [location.pathname]);
 
   // Global Keyboard Shortcuts (macOS & Windows Robust)
   useEffect(() => {
@@ -40,8 +51,8 @@ const MainLayout = () => {
       if (e.altKey && e.code === 'KeyF') {
         e.preventDefault();
         const nextState = !isFullScreen;
-        localStorage.setItem('antigravity_fullscreen', String(nextState));
-        window.dispatchEvent(new Event('antigravity_fullscreen_change'));
+        localStorage.setItem('rk_fullscreen', String(nextState));
+        window.dispatchEvent(new Event('rk_fullscreen_change'));
         showSuccess(nextState ? "Full Screen Enabled" : "Full Screen Disabled");
       }
 
@@ -64,43 +75,46 @@ const MainLayout = () => {
   const isInSession = location.pathname.startsWith('/appointments/');
   const isDocView = location.search.includes('view=document');
   const shouldHideHeader = (isFullScreen && isInSession) || isDocView;
+  const shouldHideSidebar = shouldHideHeader || isDocView;
 
   return (
     <div className={cn(
-      "flex flex-col h-screen transition-all duration-1000 relative overflow-hidden",
-      mode === 'clinical' ? "bg-white dark:bg-slate-950" :
-      mode === 'lab' ? "bg-slate-50/50 dark:bg-slate-950" :
-      "bg-slate-50/50 dark:bg-slate-950"
+      "flex h-screen transition-all duration-1000 relative overflow-hidden",
+      mode === 'clinical' ? "bg-white dark:bg-slate-950" : "bg-slate-50/50 dark:bg-slate-950"
     )}>
       {/* SOPHISTICATED BACKGROUND ORBS */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className={cn(
           "absolute top-[-10%] left-[-10%] w-[60%] h-[60%] blur-[160px] rounded-full transition-all duration-1000 opacity-20 dark:opacity-10",
-          mode === 'clinical' ? "bg-indigo-300" : mode === 'lab' ? "bg-emerald-300" : "bg-amber-300"
+          mode === 'clinical' ? "bg-indigo-300" : mode === 'business' ? "bg-emerald-300" : "bg-amber-300"
         )} />
         <div className={cn(
           "absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] blur-[140px] rounded-full transition-all duration-1000 opacity-20 dark:opacity-10 delay-500",
-          mode === 'clinical' ? "bg-blue-200" : mode === 'lab' ? "bg-teal-200" : "bg-orange-200"
+          mode === 'clinical' ? "bg-blue-200" : mode === 'business' ? "bg-teal-200" : "bg-orange-200"
         )} />
         <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-purple-200/10 blur-[120px] rounded-full animate-pulse-soft" />
       </div>
 
-      <div className="relative z-10 flex flex-col h-screen overflow-hidden">
-        {/* UNIFIED STICKY HEADER STACK */}
-        <div className="shrink-0 w-full shadow-sm z-[100] pt-[env(safe-area-inset-top,0px)] bg-white dark:bg-slate-950">
+      <div className="relative z-10 flex h-full w-full">
+        {/* Sidebar */}
+        {!shouldHideSidebar && <Sidebar />}
+
+        {/* Main Content Area */}
+        <div className="flex flex-col flex-1 min-w-0 h-full">
           {!shouldHideHeader && !isInSession && <UpcomingMarquee />}
-          {!shouldHideHeader && <SpaceHeader />}
-        </div>
-        
-        <div className="flex flex-col flex-1 overflow-hidden">
-          <main id="main-scroll-container" className="flex-1 flex flex-col overflow-auto relative">
-            <div className="flex-1 p-0">
-              <Outlet />
-            </div>
-            {!shouldHideHeader && <FooterLinks />}
-          </main>
+
+          {/* Content */}
+          <div className="flex flex-col flex-1 overflow-hidden">
+            <main id="main-scroll-container" className="flex-1 flex flex-col overflow-auto relative">
+              <div className="flex-1 p-0">
+                <Outlet />
+              </div>
+              {!shouldHideHeader && <FooterLinks />}
+            </main>
+          </div>
         </div>
       </div>
+
       {!shouldHideHeader && <QuickActions />}
       <BackToTop />
     </div>

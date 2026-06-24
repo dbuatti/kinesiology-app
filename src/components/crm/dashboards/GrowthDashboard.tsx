@@ -11,16 +11,16 @@ import { formatDistanceToNow } from "date-fns";
 import IdentitySmartTool from "../IdentitySmartTool";
 import Scratchpad from "../Scratchpad";
 
-interface LabDashboardProps {
+interface GrowthDashboardProps {
   morningProgress: number;
   lastJournalDate: string | null;
 }
 
-const LabDashboard = ({ morningProgress, lastJournalDate }: LabDashboardProps) => {
+const GrowthDashboard = ({ morningProgress, lastJournalDate }: GrowthDashboardProps) => {
   const missions = [
     { label: "Morning Program", status: morningProgress === 100 ? 'done' : 'pending', icon: Sun, path: "/morning-program" },
     { label: "Journal Entry", status: 'pending', icon: MessageSquare, path: "/practice/journal" },
-    { label: "Identity Work", status: 'pending', icon: Fingerprint, path: "/lab" },
+    { label: "Identity Work", status: 'pending', icon: Fingerprint, path: "/identity-map" },
   ];
 
   return (
@@ -120,15 +120,15 @@ const LabDashboard = ({ morningProgress, lastJournalDate }: LabDashboardProps) =
           <Card className="border border-slate-200 dark:border-slate-800 shadow-sm rounded-[2rem] bg-white dark:bg-slate-900 overflow-hidden">
             <CardHeader className="p-6 pb-2">
               <CardTitle className="text-lg font-bold flex items-center gap-2 text-slate-900 dark:text-white">
-                <Layers size={20} className="text-indigo-600" /> The Lab (Sandbox)
+                <Layers size={20} className="text-indigo-600" /> Identity Map
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 pt-0 space-y-4">
               <div className="grid grid-cols-1 gap-1">
                 {[
-                  { label: "Identity Shifting", path: "/sandbox/identity-shifting", icon: Fingerprint },
-                  { label: "Identity Alignment", path: "/sandbox/identity-alignment", icon: Target },
-                  { label: "Limiting Beliefs", path: "/sandbox/limiting-beliefs", icon: ShieldAlert }
+                  { label: "Identity Shifting", path: "/identity-shifting", icon: Fingerprint },
+                  { label: "Identity Alignment", path: "/identity-alignment", icon: Target },
+                  { label: "Limiting Beliefs", path: "/limiting-beliefs", icon: ShieldAlert }
                 ].map(tool => (
                   <Link key={tool.path} to={tool.path} className="flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-all group">
                     <div className="flex items-center gap-3">
@@ -147,4 +147,4 @@ const LabDashboard = ({ morningProgress, lastJournalDate }: LabDashboardProps) =
   );
 };
 
-export default LabDashboard;
+export default GrowthDashboard;

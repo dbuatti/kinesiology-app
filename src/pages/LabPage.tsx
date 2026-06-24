@@ -1,67 +1,33 @@
 
 import React from "react";
-import { useSearchParams } from "react-router-dom";
 import AppLayout from "@/components/crm/AppLayout";
 
 import SandboxPage from "./SandboxPage";
-import WorksheetsHubPage from "./WorksheetsHubPage";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Compass, FileText, Sparkles, LayoutGrid, Target, Zap } from "lucide-react";
+import { Compass, Target, Zap } from "lucide-react";
 import PageHeader from "@/components/shared/PageHeader";
-import { cn } from "@/lib/utils";
 
 const LabPage = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = searchParams.get("tab") || "map";
-
   return (
     <AppLayout>
       <div className="space-y-6">
         <PageHeader 
-          title="Practice Lab"
-          subtitle="Focus on your personal integration, practitioner state, and identity work."
+          title="Identity Map"
+          subtitle="Process your own identities, beliefs, and patterns to become a clearer mirror for your clients."
           icon={Compass}
         />
         
-          <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
-            <div className="flex justify-center mb-6">
-            <TabsList className="bg-muted p-1.5 rounded-xl h-14 border border-border">
-              <TabsTrigger 
-                value="map" 
-                className="rounded-lg px-10 h-11 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all font-medium text-xs tracking-wider"
-              >
-                <Compass className="mr-2" size={18} />
-                Identity Map
-              </TabsTrigger>
-              <TabsTrigger 
-                value="worksheets" 
-                className="rounded-lg px-10 h-11 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all font-medium text-xs tracking-wider"
-              >
-                <FileText className="mr-2" size={18} />
-                Worksheets
-              </TabsTrigger>
-            </TabsList>
-          </div>
+        <SandboxPage isNested={true} />
 
-          <TabsContent value="map" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-500">
-            <SandboxPage isNested={true} />
-          </TabsContent>
-
-          <TabsContent value="worksheets" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-500">
-            <WorksheetsHubPage isNested={true} />
-          </TabsContent>
-        </Tabs>
-
-        {/* Lab Philosophy Card */}
+        {/* Philosophy Card */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-8 border-t border-border">
           <div className="p-5 bg-indigo-50 dark:bg-indigo-950/20 rounded-2xl border-2 border-indigo-100 dark:border-indigo-900/30 flex items-start gap-5">
             <div className="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xl shrink-0">
               <Target size={32} />
             </div>
             <div className="space-y-2">
-              <h4 className="text-xl font-black text-indigo-900 dark:text-indigo-100">The Goal of the Lab</h4>
+              <h4 className="text-xl font-black text-indigo-900 dark:text-indigo-100">The Goal of Identity Work</h4>
               <p className="text-indigo-700 dark:text-indigo-300 font-medium leading-relaxed italic">
-                "The Lab is where you become your own No.1 client. By processing your own identities and beliefs, you clear the static in your own system, allowing you to be a more precise mirror for your clients."
+                "Identity Work is where you become your own No.1 client. By processing your own identities and beliefs, you clear the static in your own system, allowing you to be a more precise mirror for your clients."
               </p>
             </div>
           </div>
@@ -73,7 +39,7 @@ const LabPage = () => {
             <div className="space-y-2">
               <h4 className="text-xl font-black text-amber-900 dark:text-amber-100">Active Integration</h4>
               <p className="text-amber-800 dark:text-amber-300 font-medium leading-relaxed">
-                Use the worksheets to ground your theoretical knowledge into personal experience. Every insight extracted from your journal moves you closer to clinical mastery.
+                Every insight extracted from your journal moves you closer to clinical mastery.
               </p>
             </div>
           </div>

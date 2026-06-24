@@ -16,7 +16,7 @@ const LibraryDashboard = ({ morningProgress }: LibraryDashboardProps) => {
   const [quizCompletedToday, setQuizCompletedToday] = useState(false);
 
   useEffect(() => {
-    const lastQuizDate = localStorage.getItem('antigravity_last_quiz_date');
+    const lastQuizDate = localStorage.getItem('rk_last_quiz_date');
     if (lastQuizDate === new Date().toDateString()) {
       setQuizCompletedToday(true);
     }

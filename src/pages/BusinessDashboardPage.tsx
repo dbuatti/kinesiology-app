@@ -192,7 +192,7 @@ const BusinessDashboardPage = () => {
  <AppLayout variant="workspace">
  <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-16">
  <PageHeader
- title="Business Hub"
+  title="Business"
  subtitle="Combined financial intelligence for kinesiology and voice."
  icon={BarChart3}
  actions={
@@ -217,15 +217,15 @@ const BusinessDashboardPage = () => {
  <Tabs value={viewMode} onValueChange={(v: any) => setViewMode(v)} className="w-full">
  <div className="flex items-center justify-between mb-8">
  <TabsList className="rounded-xl p-1.5 bg-muted border border-border shadow-sm">
- <TabsTrigger value="fnh" className="rounded-xl text-[11px] font-semibold uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-white px-6 py-2.5">
- FNH
- </TabsTrigger>
+  <TabsTrigger value="fnh" className="rounded-xl text-[11px] font-semibold uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-white px-6 py-2.5">
+  Kinesiology
+  </TabsTrigger>
  <TabsTrigger value="voice" className="rounded-xl text-[11px] font-semibold uppercase tracking-wider data-[state=active]:bg-destructive data-[state=active]:text-white px-6 py-2.5">
  Voice
  </TabsTrigger>
- <TabsTrigger value="combined" className="rounded-xl text-[11px] font-semibold uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-white px-6 py-2.5">
- FNH + Voice
- </TabsTrigger>
+  <TabsTrigger value="combined" className="rounded-xl text-[11px] font-semibold uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-white px-6 py-2.5">
+  All Practices
+  </TabsTrigger>
  </TabsList>
  </div>
  </Tabs>
@@ -256,7 +256,7 @@ const BusinessDashboardPage = () => {
  {loading ? (
  <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-12 rounded-xl" />)}</div>
  ) : viewMode === "voice" ? (
- <p className="text-center py-6 text-sm font-medium text-muted-foreground">Switch to FNH or Combined view.</p>
+  <p className="text-center py-6 text-sm font-medium text-muted-foreground">Switch to Kinesiology or All Practices view.</p>
  ) : upcomingAppts.length === 0 ? (
  <p className="text-center py-6 text-sm font-medium text-muted-foreground">No upcoming appointments.</p>
  ) : (

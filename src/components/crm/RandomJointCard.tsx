@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { JOINT_ACTION_LIBRARY, JointData } from '@/data/joint-action-data';
 
-const STORAGE_KEY = "antigravity_joint_of_the_day";
+const STORAGE_KEY = "rk_joint_of_the_day";
 
 const RandomJointCard = () => {
   const [joint, setJoint] = useState<JointData>(JOINT_ACTION_LIBRARY[0]);

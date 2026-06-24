@@ -114,7 +114,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
       fetchBacklogItem(currentBacklogId);
       checkForDraft(currentBacklogId);
     }
-  }, [currentBacklogId]);
+  }, [currentBacklogId, clientId]);
 
   const fetchBacklogItem = async (id: string) => {
     const { data } = await supabase
@@ -143,9 +143,15 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data, error } = await supabase
+    let query = supabase
       .from('identity_alignment_sessions')
-      .select('*')
+      .select('*');
+
+    if (clientId) {
+      query = query.eq('client_id', clientId);
+    }
+
+    const { data, error } = await query
       .order('created_at', { ascending: false });
 
     if (!error) setPastSessions(data || []);
@@ -216,7 +222,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
 
   const handleLeave = async () => {
     await saveProgress(false);
-    navigate('/sandbox');
+    navigate('/identity-map');
   };
 
   const handleDeepScan = async () => {

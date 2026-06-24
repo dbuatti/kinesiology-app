@@ -32,7 +32,7 @@ import { format, isToday } from 'date-fns';
 import { showSuccess } from '@/utils/toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const STORAGE_KEY = "antigravity_morning_program";
+const STORAGE_KEY = "rk_morning_program";
 
 const RITUAL_STEPS = [
   { id: 'grounding', label: 'Grounding & Presence', icon: Wind, color: 'text-primary', bg: 'bg-primary/10', desc: '60s centering to shift into a neutral clinical state.' },
@@ -111,7 +111,7 @@ const MorningProgramPage = () => {
               <Sun size={28} className="fill-current" />
             </div>
             <div>
-              <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-foreground">Morning Ritual</h1>
+              <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-foreground">Morning Program</h1>
               <p className="text-muted-foreground font-medium mt-1 text-lg">Establish your clinical state before the first session.</p>
             </div>
           </div>

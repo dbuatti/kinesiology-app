@@ -5,9 +5,10 @@ import CoherenceAssessment from '../CoherenceAssessment';
 import CogsAssessment from '../CogsAssessment';
 import NeurologicalAssessments from '../NeurologicalAssessments';
 import LymphaticAssessment from '../LymphaticAssessment';
+import IntrinsicMusclesAssessment from '../IntrinsicMusclesAssessment';
 import EditableField from '@/components/shared/EditableField';
 import { AppointmentWithClient } from '@/types/crm';
-import { Target, ClipboardList, Activity, ShieldAlert, Compass, AlertTriangle, Info } from 'lucide-react';
+import { Target, ClipboardList, Activity, ShieldAlert, Compass, AlertTriangle, Info, Hand, Dumbbell } from 'lucide-react';
 import { differenceInDays } from 'date-fns';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from "@/lib/utils";
@@ -135,6 +136,19 @@ const BaselineTab = ({ appointment, history = [], onUpdate, saveField }: Baselin
             onSaveField={saveField}
           />
         </div>
+      </div>
+
+      {/* 4. DIRECT MUSCLE TESTS */}
+      <div className="space-y-6">
+        <div className="flex items-center gap-3 pb-3 border-b border-border">
+          <Dumbbell size={18} className="text-muted-foreground" />
+          <h2 className="text-lg font-bold text-foreground tracking-tight">Direct Muscle Tests</h2>
+        </div>
+
+        <IntrinsicMusclesAssessment
+          findings={appointment.intrinsic_muscle_findings}
+          onSave={(json) => saveField('intrinsic_muscle_findings', json)}
+        />
       </div>
     </div>
   );

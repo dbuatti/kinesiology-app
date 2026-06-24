@@ -189,7 +189,7 @@ const ProceduresPage = () => {
     <AppLayout>
       <div className="space-y-6">
         <PageHeader 
-          title="Practice Health"
+          title="Procedures"
           subtitle="Clinical mastery tracking, protocol proficiency, and interactive reference."
           icon={Trophy}
           actions={
@@ -382,8 +382,8 @@ const ProceduresPage = () => {
             <div className="bg-card rounded-xl border border-border shadow-sm p-5 md:p-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-5">
                 <div className="space-y-1">
-                  <h2 className="text-3xl font-semibold text-foreground tracking-tight">Protocol Sandbox</h2>
-                  <p className="text-muted-foreground font-medium">Interactive reference for clinical assessments. (Sandbox Mode: No data is saved to a client).</p>
+                  <h2 className="text-3xl font-semibold text-foreground tracking-tight">Protocol Practice</h2>
+                  <p className="text-muted-foreground font-medium">Interactive reference for clinical assessments. (Practice Mode: No data is saved to a client).</p>
                 </div>
                 <Badge className="bg-chart-primary text-white border-none font-semibold text-[10px] uppercase tracking-wider px-4 py-1.5 rounded-full shadow-sm">
                   Reference Only
@@ -483,7 +483,7 @@ const ProceduresPage = () => {
                   <TabsContent value="mechanoreceptive" className="mt-0 focus-visible:ring-0">
                     <MechanoreceptiveAssessment 
                       appointmentId={SANDBOX_ID}
-                      onSave={(summary) => console.log("Sandbox Save:", summary)}
+                      onSave={(summary) => console.log("Practice Save:", summary)}
                     />
                   </TabsContent>
 

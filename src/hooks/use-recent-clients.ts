@@ -6,7 +6,7 @@ interface RecentClient {
   name: string;
 }
 
-const STORAGE_KEY = 'antigravity_recent_clients';
+const STORAGE_KEY = 'rk_recent_clients';
 const MAX_RECENT = 5;
 
 export function useRecentClients() {

@@ -37,7 +37,7 @@ const PEACEFrameworkPage = () => {
  <Badge className="bg-muted0/20 text-chart-primary border-primary/30 font-semibold text-[10px] uppercase tracking-wider px-4 py-1">
  FNH Living Manual • 2026 Gold Standard
  </Badge>
- <h1 className="text-5xl md:text-6xl font-semibold tracking-tighter">The PEACE Method</h1>
+ <h1 className="text-5xl md:text-6xl font-semibold tracking-tighter">PEACE Framework</h1>
  <p className="text-xl text-muted-foreground/60 font-medium max-w-2xl leading-relaxed">
  The central organising framework of Functional Neuro Health. 
  </p>

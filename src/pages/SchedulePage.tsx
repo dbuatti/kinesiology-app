@@ -16,8 +16,8 @@ const SchedulePage = () => {
     <AppLayout variant="workspace">
       <div className="space-y-5">
         <PageHeader 
-          title="Clinical Schedule"
-          subtitle="Manage your upcoming sessions and live Cal.com availability."
+          title="Schedule"
+          subtitle="Manage your upcoming sessions and live availability."
           icon={CalendarClock}
         />
         
@@ -29,7 +29,7 @@ const SchedulePage = () => {
                 className="rounded-lg px-5 h-9 data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all font-bold text-[10px] uppercase tracking-widest"
               >
                 <List className="mr-1.5" size={14} />
-                Session List
+                Sessions
               </TabsTrigger>
               <TabsTrigger 
                 value="availability" 

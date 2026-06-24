@@ -33,7 +33,7 @@ interface SearchResult {
   color?: string;
 }
 
-const RECENT_SEARCHES_KEY = "antigravity_recent_searches";
+const RECENT_SEARCHES_KEY = "rk_recent_searches";
 
 const SearchBar = ({ compact = false }: { compact?: boolean }) => {
   const [open, setOpen] = useState(false);
@@ -132,12 +132,6 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
       // Mode Switching
       if ("clinical hub".includes(query.toLowerCase())) {
         searchResults.push({ type: "mode", id: "clinical", title: "Switch to Clinical Hub", subtitle: "Practice management", path: "/", icon: Activity, color: "text-indigo-500" });
-      }
-      if ("practice lab".includes(query.toLowerCase())) {
-        searchResults.push({ type: "mode", id: "lab", title: "Switch to Practice Lab", subtitle: "Personal integration", path: "/", icon: Zap, color: "text-emerald-500" });
-      }
-      if ("knowledge hub".includes(query.toLowerCase())) {
-        searchResults.push({ type: "mode", id: "library", title: "Switch to Knowledge Hub", subtitle: "Protocols & study", path: "/", icon: BookOpen, color: "text-amber-500" });
       }
       if ("voice studio".includes(query.toLowerCase())) {
         searchResults.push({ type: "mode", id: "voice", title: "Switch to Voice Studio", subtitle: "Voice & piano lessons", path: "/voice", icon: Mic, color: "text-rose-500" });
@@ -244,19 +238,7 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
       ];
     }
 
-    if (mode === 'lab') {
-      return [
-        { type: "action", id: "morning-program", title: "Morning Program", subtitle: "Daily readiness", path: "/morning-program", icon: Sparkles, color: "text-emerald-500" },
-        { type: "action", id: "identity-shifting", title: "Identity Shifting", subtitle: "Sandbox tool", path: "/sandbox/identity-shifting", icon: Fingerprint, color: "text-emerald-500" },
-        ...baseActions
-      ];
-    }
-
-    return [
-      { type: "action", id: "quiz", title: "Start Infinite Quiz", subtitle: "Mastery practice", path: "/practice/quiz", icon: Zap, color: "text-amber-500" },
-      { type: "action", id: "bible", title: "Clinical Bible", subtitle: "Reference guide", path: "/resources", icon: BookOpen, color: "text-amber-500" },
-      ...baseActions
-    ];
+    return [...baseActions];
   };
 
   return (

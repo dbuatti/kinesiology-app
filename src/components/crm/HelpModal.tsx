@@ -50,7 +50,7 @@ const HelpModal = ({ open, onOpenChange }: HelpModalProps) => {
             Help & Shortcuts
           </DialogTitle>
           <DialogDescription>
-            Master Antigravity CRM with these quick tips and keyboard shortcuts.
+            Master Resonance Kinesiology with these quick tips and keyboard shortcuts.
           </DialogDescription>
         </DialogHeader>
 

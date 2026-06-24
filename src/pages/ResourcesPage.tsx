@@ -1,31 +1,31 @@
 
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { 
- BookOpen, 
- Activity, 
- Zap, 
- Move, 
- Target, 
- Heart, 
- Layers, 
- Clock, 
- RefreshCw, 
- Youtube, 
- GraduationCap, 
- Workflow, 
- ImageIcon, 
- Trophy,
- LayoutGrid,
- Baby,
- Calculator,
- Wind,
- Dumbbell,
- Brain,
- Shield,
- Printer,
- Lightbulb,
- Droplets
+import {
+  BookOpen,
+  Activity,
+  Zap,
+  Move,
+  Target,
+  Heart,
+  Layers,
+  Clock,
+  RefreshCw,
+  Youtube,
+  GraduationCap,
+  Workflow,
+  ImageIcon,
+  Trophy,
+  LayoutGrid,
+  Baby,
+  Calculator,
+  Wind,
+  Dumbbell,
+  Brain,
+  Shield,
+  Printer,
+  Lightbulb,
+  FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -62,8 +62,8 @@ const CATEGORIES = [
  label: "Foundations",
  icon: GraduationCap,
  color: "text-chart-primary",
- bgColor: "bg-chart-primary/10 ",
- borderColor: "border-border ",
+  bgColor: "bg-chart-primary/10",
+  borderColor: "border-border",
  items: [
  { id: "mechano-academy", label: "Mechano Academy", icon: Trophy, desc: "Daily clinical drills and mastery tools." },
  { id: "bible", label: "Mechano Bible", icon: BookOpen, desc: "Definitive guide to joints and movement geometry." },
@@ -76,8 +76,8 @@ const CATEGORIES = [
  label: "Clinical Reference",
  icon: Activity,
  color: "text-chart-destructive",
- bgColor: "bg-chart-destructive/10 ",
- borderColor: "border-border ",
+  bgColor: "bg-chart-destructive/10",
+  borderColor: "border-border",
  items: [
  { id: "muscles", label: "Muscle Reference", icon: Dumbbell, desc: "Manage reference images and clinical details for all muscles." },
  { id: "primitive", label: "Primitive Reflexes", icon: Baby, desc: "Foundational OS of the nervous system." },
@@ -93,8 +93,8 @@ const CATEGORIES = [
  label: "TCM & Meridians",
  icon: Layers,
  color: "text-chart-emerald",
- bgColor: "bg-chart-emerald/10 ",
- borderColor: "border-border ",
+  bgColor: "bg-chart-emerald/10",
+  borderColor: "border-border",
  items: [
  { id: "clock", label: "Meridian Clock", icon: Clock, desc: "Interactive TCM peak activity reference." },
  { id: "elements", label: "5 Elements", icon: RefreshCw, desc: "Sheng and Ko cycle relationships." },
@@ -103,44 +103,67 @@ const CATEGORIES = [
  { id: "acupoints", label: "Acupoints", icon: Target, desc: "Primary point locations and clinical functions." },
  ]
  },
- {
- id: "tools",
- label: "Practice Tools",
+  {
+  id: "worksheets",
+  label: "Worksheets",
+  icon: FileText,
+  color: "text-chart-emerald",
+  bgColor: "bg-chart-emerald/10",
+  borderColor: "border-border",
+  items: [
+  { id: "where-your-value-begins", label: "Where Your Value Begins", icon: Lightbulb, desc: "Meet the beliefs that get in the way of owning your worth.", path: "/resources/worksheets/where-your-value-begins" },
+  { id: "fear-creativity", label: "Fear & Creativity", icon: Zap, desc: "Explore the relationship between fear and creative expression.", path: "/resources/worksheets/fear-creativity" },
+  { id: "north-star", label: "Setting Your North Star", icon: Target, desc: "Define your guiding vision and core direction.", path: "/resources/worksheets/north-star" },
+  { id: "inner-awareness", label: "Inner Awareness & Sovereignty", icon: Brain, desc: "Deepen self-awareness and claim your sovereignty.", path: "/resources/worksheets/inner-awareness" },
+  { id: "anger-flow", label: "Week 8: Anger & Flow", icon: Activity, desc: "Working with anger as a source of creative flow.", path: "/resources/worksheets/anger-flow" },
+  { id: "business-model", label: "Business Model Canvas", icon: LayoutGrid, desc: "Strategic planning canvas for your practice.", path: "/resources/worksheets/business-model" },
+  ]
+  },
+  {
+  id: "tools",
+  label: "Practice Tools",
  icon: Zap,
  color: "text-muted-foreground",
- bgColor: "bg-muted ",
- borderColor: "border-border ",
+  bgColor: "bg-muted",
+  borderColor: "border-border",
  items: [
  { id: "emotional-theory", label: "Emotional Theory", icon: Heart, desc: "The 9-step Neuro-Emotional hierarchy." },
  { id: "rehab-calc", label: "Rehab Calc", icon: Calculator, desc: "Calculate 70% threshold for nerve homework." },
  { id: "brainstem-breath", label: "Brainstem Breath", icon: Wind, desc: "Breathing patterns for Midbrain, Pons, Medulla." },
  { id: "logic", label: "Clinical Logic", icon: Lightbulb, desc: "The hierarchy of neurological correction." },
- { id: "spinal", label: "Spinal", icon: Move, desc: "Spinal segment and Lovett-Brother associations." },
- { id: "lymphatic", label: "Lymphatic", icon: Droplets, desc: "Drainage protocols and counterstrain points." },
- { id: "postural", label: "Postural Reflexes", icon: RefreshCw, desc: "Ocular and Labyrinthine righting reflexes." },
+  { id: "spinal", label: "Spinal", icon: Move, desc: "Spinal segment and Lovett-Brother associations." },
+  { id: "postural", label: "Postural Reflexes", icon: RefreshCw, desc: "Ocular and Labyrinthine righting reflexes." },
  ]
  }
 ];
 
 const ResourcesPage = () => {
- const [searchParams, setSearchParams] = useSearchParams();
- const activeTab = searchParams.get("tab") || "hub";
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") || "hub";
 
- const activeCategory = useMemo(() => {
- if (activeTab === "hub") return null;
- return CATEGORIES.find(cat => cat.items.some(item => item.id === activeTab));
- }, [activeTab]);
+  useEffect(() => {
+  if (activeTab === "worksheets") {
+    setTimeout(() => {
+    document.getElementById("category-worksheets")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  }
+  }, [activeTab]);
 
- const handleTabChange = (value: string) => {
- setSearchParams({ tab: value });
- };
+  const activeCategory = useMemo(() => {
+  if (activeTab === "hub" || activeTab === "worksheets") return null;
+  return CATEGORIES.find(cat => cat.items.some(item => item.id === activeTab));
+  }, [activeTab]);
+
+  const handleTabChange = (value: string) => {
+  setSearchParams({ tab: value });
+  };
 
  return (
  <AppLayout variant="workspace">
  <div className="p-4 md:p-8 max-w-full mx-auto space-y-8">
- <PageHeader 
-  title="Clinical Reference"
- subtitle="The definitive knowledge base for FNH protocols, anatomy, and TCM references."
+        <PageHeader 
+          title="Resources & Reference"
+         subtitle="Clinical references, practitioner worksheets, and knowledge tools."
   icon={BookOpen}
   actions={
  <div className="flex items-center gap-3">
@@ -158,8 +181,8 @@ const ResourcesPage = () => {
  }
  />
 
- {activeTab === "hub" ? (
- <ResourceHub categories={CATEGORIES} />
+  {activeTab === "hub" || activeTab === "worksheets" ? (
+  <ResourceHub categories={CATEGORIES} />
  ) : (
  <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
  <div className="overflow-x-auto pb-4 no-scrollbar">
@@ -193,9 +216,8 @@ const ResourcesPage = () => {
  <TabsContent value="rehab-calc"><CranialNerveHomeworkTool /></TabsContent>
  <TabsContent value="brainstem-breath"><BrainstemBreathingReference /></TabsContent>
  <TabsContent value="logic"><FnTheory /></TabsContent>
- <TabsContent value="spinal"><SpinalSegmentReference /></TabsContent>
- <TabsContent value="lymphatic"><LigamentReference /></TabsContent>
- <TabsContent value="postural"><FnTheory /></TabsContent>
+  <TabsContent value="spinal"><SpinalSegmentReference /></TabsContent>
+  <TabsContent value="postural"><FnTheory /></TabsContent>
  </div>
  </Tabs>
  )}

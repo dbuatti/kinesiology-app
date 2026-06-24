@@ -172,7 +172,7 @@ const IdentitySmartTool = () => {
                       asChild
                       className="bg-white text-slate-900 hover:bg-indigo-50 h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl transition-all hover:scale-105"
                     >
-                      <Link to={smartSuggestion.type === 'alignment' ? "/sandbox/identity-alignment" : "/sandbox/identity-shifting"} state={{ prefill: smartSuggestion.label }}>
+                      <Link to={smartSuggestion.type === 'alignment' ? "/identity-alignment" : "/identity-shifting"} state={{ prefill: smartSuggestion.label }}>
                         {smartSuggestion.type === 'alignment' ? 'Align Again' : 'Shift Again'}
                       </Link>
                     </Button>
@@ -181,7 +181,7 @@ const IdentitySmartTool = () => {
                       variant="outline"
                       className="bg-transparent border-white/20 text-white hover:bg-white/10 h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest transition-all"
                     >
-                      <Link to="/sandbox">View Map</Link>
+                       <Link to="/identity-map">View Map</Link>
                     </Button>
                   </div>
                 </>
@@ -243,7 +243,7 @@ const IdentitySmartTool = () => {
             <h2 className="text-2xl font-black text-foreground tracking-tight">Backlog</h2>
           </div>
           <Button variant="ghost" size="sm" className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 rounded-xl h-9 px-4" asChild>
-            <Link to="/sandbox">View All <ArrowRight size={14} className="ml-2" /></Link>
+             <Link to="/identity-map">View All <ArrowRight size={14} className="ml-2" /></Link>
           </Button>
         </div>
 
@@ -318,7 +318,7 @@ const IdentitySmartTool = () => {
                       className="h-8 w-8 rounded-xl text-slate-300 hover:text-indigo-600 shrink-0 transition-all"
                       asChild
                     >
-                      <Link to={item.type === 'shifting' ? "/sandbox/identity-shifting" : item.type === 'alignment' ? "/sandbox/identity-alignment" : "/sandbox/limiting-beliefs"} state={{ prefill: item.content, backlogId: item.id }}>
+                       <Link to={item.type === 'shifting' ? "/identity-shifting" : item.type === 'alignment' ? "/identity-alignment" : "/limiting-beliefs"} state={{ prefill: item.content, backlogId: item.id }}>
                         <ChevronRight size={18} />
                       </Link>
                     </Button>

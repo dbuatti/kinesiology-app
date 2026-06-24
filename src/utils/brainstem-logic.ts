@@ -31,6 +31,16 @@ export const FINDING_TO_NUCLEI: Record<string, { nuclei: Nuclei, tone: 'Flexors'
   'SCM': { nuclei: 'Medulla', tone: 'Flexors' },
   'Gluteus Medius': { nuclei: 'Pons', tone: 'Extensors' },
   'Latissimus Dorsi': { nuclei: 'Pons', tone: 'Extensors' },
+  // Hand Intrinsics
+  'Abductor Pollicis Brevis': { nuclei: 'Medulla', tone: 'Flexors' },
+  'Opponens Pollicis': { nuclei: 'Medulla', tone: 'Flexors' },
+  'Adductor Pollicis': { nuclei: 'Medulla', tone: 'Flexors' },
+  'First Dorsal Interossei': { nuclei: 'Medulla', tone: 'Flexors' },
+  'Abductor Digiti Minimi': { nuclei: 'Medulla', tone: 'Flexors' },
+  // Foot Intrinsics
+  'Extensor Digitorum Brevis': { nuclei: 'Pons', tone: 'Extensors' },
+  'Abductor Hallucis': { nuclei: 'Medulla', tone: 'Flexors' },
+  'Flexor Digitorum Brevis': { nuclei: 'Medulla', tone: 'Flexors' },
 };
 
 const DYSFUNCTIONAL_STATUSES = ['Inhibited', 'Hypertonic', 'Switching', 'Inhibition'];

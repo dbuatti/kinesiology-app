@@ -22,7 +22,7 @@ const DailyMechanoChallenge = () => {
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [streak, setStreak] = useState(() => {
-    const saved = localStorage.getItem('antigravity_mechano_challenge_streak');
+    const saved = localStorage.getItem('rk_mechano_challenge_streak');
     return saved ? parseInt(saved) : 0;
   });
 
@@ -62,11 +62,11 @@ const DailyMechanoChallenge = () => {
     if (correct) {
       const nextStreak = streak + 1;
       setStreak(nextStreak);
-      localStorage.setItem('antigravity_mechano_challenge_streak', nextStreak.toString());
+      localStorage.setItem('rk_mechano_challenge_streak', nextStreak.toString());
       showSuccess("Correct! Your clinical reasoning is spot on.");
     } else {
       setStreak(0);
-      localStorage.setItem('antigravity_mechano_challenge_streak', '0');
+      localStorage.setItem('rk_mechano_challenge_streak', '0');
       showError("Incorrect. Review the clinical logic breakdown.");
     }
   };

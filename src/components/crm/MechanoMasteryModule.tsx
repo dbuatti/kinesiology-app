@@ -33,7 +33,7 @@ const MechanoMasteryModule = () => {
   });
 
   const loadProgress = () => {
-    const saved = localStorage.getItem('antigravity_mechano_lessons_progress');
+    const saved = localStorage.getItem('rk_mechano_lessons_progress');
     if (saved) {
       try {
         setLessonProgress(JSON.parse(saved));
@@ -76,7 +76,7 @@ const MechanoMasteryModule = () => {
       title: "Interactive Tools",
       items: [
         { id: 'anatomy' as TabType, label: "Interactive Anatomy", icon: Layers, desc: "Clickable joint & tissue models" },
-        { id: 'sandbox' as TabType, label: "Protocol Sandbox", icon: Compass, desc: "Generate custom clinical protocols" },
+        { id: 'sandbox' as TabType, label: "Protocol Practice", icon: Compass, desc: "Generate custom clinical protocols" },
         { id: 'explorer' as TabType, label: "Joint Explorer", icon: Target, desc: "Master the joint action table" }
       ]
     },

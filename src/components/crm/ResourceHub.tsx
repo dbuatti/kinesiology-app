@@ -172,7 +172,7 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
 
       {/* CATEGORY SECTIONS */}
       {categories.map((category) => (
-        <div key={category.id} className="space-y-10">
+        <div key={category.id} id={`category-${category.id}`} className="space-y-10">
           <div className="flex items-center gap-6 px-2">
             <div className={cn("w-16 h-16 rounded-[1.5rem] flex items-center justify-center shadow-xl", category.bgColor, category.color)}>
               <category.icon size={32} />

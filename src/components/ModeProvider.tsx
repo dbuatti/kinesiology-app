@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-export type AppMode = 'clinical' | 'lab' | 'library' | 'business';
+export type AppMode = 'clinical' | 'business' | 'voice';
 export type AppViewMode = 'default' | 'voice';
 
 interface ModeContextType {
@@ -13,8 +13,8 @@ interface ModeContextType {
 
 const ModeContext = createContext<ModeContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'antigravity_app_mode';
-const APP_MODE_STORAGE_KEY = 'antigravity_app_view_mode';
+const STORAGE_KEY = 'rk_app_mode';
+const APP_MODE_STORAGE_KEY = 'rk_app_view_mode';
 
 export const ModeProvider = ({ children }: { children: React.ReactNode }) => {
   const [mode, setModeState] = useState<AppMode>(() => {

@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from "sonner";
 
-const STORAGE_KEY = 'antigravity_privacy_mode';
+const STORAGE_KEY = 'rk_privacy_mode';
 
 export function usePrivacyMode() {
   const [isPrivate, setIsPrivate] = useState(() => {

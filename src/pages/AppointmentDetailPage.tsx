@@ -87,24 +87,24 @@ const AppointmentDetailPage = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   const [isFullScreen, setIsFullScreen] = useState(() => {
-    return localStorage.getItem('antigravity_fullscreen') === 'true';
+    return localStorage.getItem('rk_fullscreen') === 'true';
   });
   const [medicalHistoryEditing, setMedicalHistoryEditing] = useState(false);
   const [medicalHistoryValue, setMedicalHistoryValue] = useState("");
 
   useEffect(() => {
     const handleFullScreenChange = () => {
-      setIsFullScreen(localStorage.getItem('antigravity_fullscreen') === 'true');
+      setIsFullScreen(localStorage.getItem('rk_fullscreen') === 'true');
     };
-    window.addEventListener('antigravity_fullscreen_change', handleFullScreenChange);
-    return () => window.removeEventListener('antigravity_fullscreen_change', handleFullScreenChange);
+    window.addEventListener('rk_fullscreen_change', handleFullScreenChange);
+    return () => window.removeEventListener('rk_fullscreen_change', handleFullScreenChange);
   }, []);
 
   const toggleFullScreen = () => {
     const nextState = !isFullScreen;
     setIsFullScreen(nextState);
-    localStorage.setItem('antigravity_fullscreen', String(nextState));
-    window.dispatchEvent(new Event('antigravity_fullscreen_change'));
+    localStorage.setItem('rk_fullscreen', String(nextState));
+    window.dispatchEvent(new Event('rk_fullscreen_change'));
     showSuccess(nextState ? "Full Screen Mode Enabled" : "Full Screen Mode Disabled");
   };
 

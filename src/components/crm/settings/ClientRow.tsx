@@ -830,10 +830,12 @@ Daniele`;
  };
 
  return (
- <tr className={cn(
- "hover:bg-muted/10 transition-colors group",
- isSelectedInSimulator ? "bg-muted/20" : ""
- )}>
+  <tr className={cn(
+  "hover:bg-muted/10 transition-colors group",
+  isSelectedInSimulator ? "bg-muted/20" : "",
+  journalData.reengagement_status === 'booked' ? "bg-chart-emerald/[0.02]" : "",
+  journalData.reengagement_status === 'sent' ? "bg-chart-primary/[0.02]" : ""
+  )}>
  {/* Simulator Checkbox */}
  <td className="p-4 pl-6">
  <button
@@ -848,18 +850,21 @@ Daniele`;
  </button>
  </td>
 
- {/* Client */}
- <td className="p-4">
- <div className="space-y-1">
- <div className="flex items-center gap-1.5">
- <Link 
- to={`/clients/${client.id}`}
- className="font-semibold text-foreground text-sm hover:underline hover:text-chart-primary transition-colors flex items-center gap-1"
- >
- {client.name}
- <ArrowRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity text-chart-primary" />
- </Link>
- </div>
+  {/* Client */}
+  <td className="p-4">
+  <div className="space-y-1">
+  <div className="flex items-center gap-1.5">
+  <Link 
+  to={`/clients/${client.id}`}
+  className="font-semibold text-foreground text-sm hover:underline hover:text-chart-primary transition-colors flex items-center gap-1.5"
+  >
+  {client.name}
+  {journalData.reengagement_status === 'sent' && <span className="w-1.5 h-1.5 rounded-full bg-chart-primary shrink-0" title="Nudge sent" />}
+  {journalData.reengagement_status === 'booked' && <span className="w-1.5 h-1.5 rounded-full bg-chart-emerald shrink-0" title="Replied / Booked" />}
+  {journalData.reengagement_status === 'no_reply' && <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 shrink-0" title="No reply" />}
+  <ArrowRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity text-chart-primary" />
+  </Link>
+  </div>
  <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium flex-wrap">
  {client.pronouns && <span>{client.pronouns}</span>}
  {client.pronouns && <span>•</span>}
@@ -1121,11 +1126,23 @@ Daniele`;
  );
  }
  })()}
- {journalData.last_contacted_at && (
- <p className="text-[10px] text-muted-foreground font-medium">
- Contacted {formatDistanceToNow(new Date(journalData.last_contacted_at), { addSuffix: true })}
- </p>
- )}
+  {journalData.reengagement_status && (
+  <p className={cn(
+  "text-[10px] font-medium",
+  journalData.reengagement_status === 'booked' ? "text-chart-emerald" :
+  journalData.reengagement_status === 'sent' ? "text-chart-primary" :
+  "text-muted-foreground"
+  )}>
+  {journalData.reengagement_status === 'sent' && "✓ Nudge sent"}
+  {journalData.reengagement_status === 'booked' && "✓ Booked"}
+  {journalData.reengagement_status === 'no_reply' && "✗ No reply"}
+  </p>
+  )}
+  {journalData.last_contacted_at && (
+  <p className="text-[10px] text-muted-foreground font-medium">
+  Contacted {formatDistanceToNow(new Date(journalData.last_contacted_at), { addSuffix: true })}
+  </p>
+  )}
  </div>
  </td>
 

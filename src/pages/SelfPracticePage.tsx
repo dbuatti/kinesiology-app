@@ -200,7 +200,7 @@ const SelfPracticePage = () => {
  <Heart size={32} className="fill-current" />
  </div>
  <div>
- <h1 className="text-3xl font-semibold tracking-tight text-foreground">Self-Monitoring Zone</h1>
+ <h1 className="text-3xl font-semibold tracking-tight text-foreground">Self Practice</h1>
  <p className="text-muted-foreground font-medium">Your private space for personal health tracking and protocol practice.</p>
  </div>
  </div>

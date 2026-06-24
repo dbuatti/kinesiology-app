@@ -328,7 +328,7 @@ const JournalPage = () => {
       }
 
       if (totalAdded > 0) {
-        showSuccess(`Added ${totalAdded} items to Sandbox Backlog.`);
+        showSuccess(`Added ${totalAdded} items to Identity Backlog.`);
         fetchData();
       } else {
         showSuccess("No new items to add.");
@@ -415,7 +415,7 @@ const JournalPage = () => {
     <AppLayout>
       <div className="max-w-5xl mx-auto space-y-10 animate-in fade-in duration-700">
         <PageHeader 
-          title="Practitioner Journal"
+          title="Journal"
           subtitle="Private reflections and session-linked insights for clinical growth."
           icon={MessageSquare}
 
@@ -516,7 +516,7 @@ const JournalPage = () => {
                 </div>
 
                 <Textarea 
-                  placeholder="Write your thoughts here. AI will automatically extract beliefs, identities, and goals for your Sandbox..."
+                  placeholder="Write your thoughts here. AI will automatically extract beliefs, identities, and goals for Identity Work..."
                   className="min-h-[200px] rounded-xl border-2 border-border focus:border-primary bg-card p-8 text-xl font-medium leading-relaxed shadow-inner resize-none transition-all"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
@@ -608,7 +608,7 @@ const JournalPage = () => {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Sparkles size={14} className="text-muted-foreground" />
-                              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Extracted Sandbox Insights</p>
+                              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Extracted Insights</p>
                             </div>
                             {pendingExtractions.length > 1 && (
                               <Button 

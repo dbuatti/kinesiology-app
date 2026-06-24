@@ -229,7 +229,7 @@ export default function ClientAuditPage() {
     fetchData();
     
     // Load cached AI suggestions
-    const cached = localStorage.getItem("antigravity_client_audit_suggestions");
+    const cached = localStorage.getItem("rk_client_audit_suggestions");
     if (cached) {
       try {
         const parsed = JSON.parse(cached);
@@ -240,7 +240,7 @@ export default function ClientAuditPage() {
       }
     }
 
-    const cachedWeeklyClients = localStorage.getItem("antigravity_selected_weekly_clients");
+    const cachedWeeklyClients = localStorage.getItem("rk_selected_weekly_clients");
     if (cachedWeeklyClients) setSelectedWeeklyClients(JSON.parse(cachedWeeklyClients));
   }, []);
 
@@ -274,9 +274,9 @@ export default function ClientAuditPage() {
       );
 
       // Migrate localStorage data to database if present
-      const cachedTargetRates = localStorage.getItem("antigravity_client_target_rates");
-      const cachedRateUpdatedDates = localStorage.getItem("antigravity_client_rate_updated_dates");
-      const cachedReengagementTags = localStorage.getItem("antigravity_client_reengagement_tags");
+      const cachedTargetRates = localStorage.getItem("rk_client_target_rates");
+      const cachedRateUpdatedDates = localStorage.getItem("rk_client_rate_updated_dates");
+      const cachedReengagementTags = localStorage.getItem("rk_client_reengagement_tags");
 
       if (cachedTargetRates || cachedRateUpdatedDates || cachedReengagementTags) {
         const targetRatesMap = cachedTargetRates ? JSON.parse(cachedTargetRates) : {};
@@ -307,9 +307,9 @@ export default function ClientAuditPage() {
         }
 
         // Clear localStorage so we don't run this again
-        localStorage.removeItem("antigravity_client_target_rates");
-        localStorage.removeItem("antigravity_client_rate_updated_dates");
-        localStorage.removeItem("antigravity_client_reengagement_tags");
+        localStorage.removeItem("rk_client_target_rates");
+        localStorage.removeItem("rk_client_rate_updated_dates");
+        localStorage.removeItem("rk_client_reengagement_tags");
       }
 
       const processedClients: ClientWithAppointments[] = filteredRawClients.map((client) => {
@@ -388,7 +388,7 @@ export default function ClientAuditPage() {
       const nowStr = new Date().toISOString();
       setLastAnalyzed(nowStr);
 
-      localStorage.setItem("antigravity_client_audit_suggestions", JSON.stringify({
+      localStorage.setItem("rk_client_audit_suggestions", JSON.stringify({
         suggestions: data,
         lastAnalyzed: nowStr
       }));
@@ -617,14 +617,14 @@ export default function ClientAuditPage() {
       const updated = prev.includes(clientId)
         ? prev.filter(id => id !== clientId)
         : [...prev, clientId];
-      localStorage.setItem("antigravity_selected_weekly_clients", JSON.stringify(updated));
+      localStorage.setItem("rk_selected_weekly_clients", JSON.stringify(updated));
       return updated;
     });
   };
 
   const handleClearWeeklyClients = () => {
     setSelectedWeeklyClients([]);
-    localStorage.removeItem("antigravity_selected_weekly_clients");
+    localStorage.removeItem("rk_selected_weekly_clients");
     showSuccess("Weekly booking simulator cleared.");
   };
 
@@ -1022,21 +1022,21 @@ export default function ClientAuditPage() {
   const handleSelectAllActive = () => {
     const activeIds = groups.lastMonth.map(c => c.id);
     setSelectedWeeklyClients(activeIds);
-    localStorage.setItem("antigravity_selected_weekly_clients", JSON.stringify(activeIds));
+    localStorage.setItem("rk_selected_weekly_clients", JSON.stringify(activeIds));
     showSuccess("Selected all active clients (seen in last 30 days).");
   };
 
   const handleSelectAllNeedsFollowUp = () => {
     const needsFollowUpIds = clients.filter(c => c.followUpStatus === "Needs Follow-up").map(c => c.id);
     setSelectedWeeklyClients(needsFollowUpIds);
-    localStorage.setItem("antigravity_selected_weekly_clients", JSON.stringify(needsFollowUpIds));
+    localStorage.setItem("rk_selected_weekly_clients", JSON.stringify(needsFollowUpIds));
     showSuccess("Selected all clients needing follow-up.");
   };
 
   const handleSelectAllOneToThreeMonths = () => {
     const ids = groups.oneToThreeMonths.map(c => c.id);
     setSelectedWeeklyClients(ids);
-    localStorage.setItem("antigravity_selected_weekly_clients", JSON.stringify(ids));
+    localStorage.setItem("rk_selected_weekly_clients", JSON.stringify(ids));
     showSuccess("Selected all clients seen 1-3 months ago.");
   };
 
@@ -1047,13 +1047,13 @@ export default function ClientAuditPage() {
     if (isAllLastMonthSelected) {
       setSelectedWeeklyClients(prev => {
         const updated = prev.filter(id => !lastMonthIds.includes(id));
-        localStorage.setItem("antigravity_selected_weekly_clients", JSON.stringify(updated));
+        localStorage.setItem("rk_selected_weekly_clients", JSON.stringify(updated));
         return updated;
       });
     } else {
       setSelectedWeeklyClients(prev => {
         const updated = Array.from(new Set([...prev, ...lastMonthIds]));
-        localStorage.setItem("antigravity_selected_weekly_clients", JSON.stringify(updated));
+        localStorage.setItem("rk_selected_weekly_clients", JSON.stringify(updated));
         return updated;
       });
     }
@@ -1065,13 +1065,13 @@ export default function ClientAuditPage() {
     if (isAllOneToThreeMonthsSelected) {
       setSelectedWeeklyClients(prev => {
         const updated = prev.filter(id => !ids.includes(id));
-        localStorage.setItem("antigravity_selected_weekly_clients", JSON.stringify(updated));
+        localStorage.setItem("rk_selected_weekly_clients", JSON.stringify(updated));
         return updated;
       });
     } else {
       setSelectedWeeklyClients(prev => {
         const updated = Array.from(new Set([...prev, ...ids]));
-        localStorage.setItem("antigravity_selected_weekly_clients", JSON.stringify(updated));
+        localStorage.setItem("rk_selected_weekly_clients", JSON.stringify(updated));
         return updated;
       });
     }
@@ -1083,13 +1083,13 @@ export default function ClientAuditPage() {
     if (isAllThreePlusMonthsSelected) {
       setSelectedWeeklyClients(prev => {
         const updated = prev.filter(id => !ids.includes(id));
-        localStorage.setItem("antigravity_selected_weekly_clients", JSON.stringify(updated));
+        localStorage.setItem("rk_selected_weekly_clients", JSON.stringify(updated));
         return updated;
       });
     } else {
       setSelectedWeeklyClients(prev => {
         const updated = Array.from(new Set([...prev, ...ids]));
-        localStorage.setItem("antigravity_selected_weekly_clients", JSON.stringify(updated));
+        localStorage.setItem("rk_selected_weekly_clients", JSON.stringify(updated));
         return updated;
       });
     }
@@ -1102,7 +1102,7 @@ export default function ClientAuditPage() {
       setGlobalSimRate(150);
       setGlobalSimFrequency(1.5);
       setClientOverrides({});
-      showSuccess("Sandbox reset to actual values.");
+      showSuccess("Preview reset to actual values.");
       return;
     }
 
@@ -1182,15 +1182,18 @@ export default function ClientAuditPage() {
           {/* ── Persistent summary strip ── */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: "Active Clients", value: totalActiveClients.toString(), sub: "seen last 90 days", colour: "text-chart-primary" },
-              { label: "Avg Session Rate", value: `$${averageSessionRate.toFixed(0)}`, sub: `target $150`, colour: "text-muted-foreground" },
-              { label: "This Week", value: `$${thisWeekRevenue.toLocaleString()}`, sub: `${thisWeekSessions} sessions · $${weeklyTarget} target`, colour: thisWeekRevenue >= weeklyTarget ? "text-chart-emerald" : "text-chart-destructive" },
-              { label: "Proj. Monthly", value: `$${Math.round(projectedMonthlyRevenue).toLocaleString()}`, sub: "FNH only · current rates", colour: "text-primary" },
-            ].map(({ label, value, sub, colour }) => (
-              <div key={label} className="bg-card rounded-xl border border-border px-5 py-4 space-y-1">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
-                <p className={`text-xl font-semibold ${colour}`}>{value}</p>
-                <p className="text-[10px] text-muted-foreground font-medium">{sub}</p>
+              { label: "Active Clients", value: totalActiveClients.toString(), sub: "seen last 90 days", colour: "text-chart-primary", icon: Users },
+              { label: "Avg Session Rate", value: `$${averageSessionRate.toFixed(0)}`, sub: `target $150`, colour: "text-muted-foreground", icon: DollarSign },
+              { label: "This Week", value: `$${thisWeekRevenue.toLocaleString()}`, sub: `${thisWeekSessions} sessions · $${weeklyTarget} target`, colour: thisWeekRevenue >= weeklyTarget ? "text-chart-emerald" : "text-chart-destructive", icon: Calendar },
+              { label: "Proj. Monthly", value: `$${Math.round(projectedMonthlyRevenue).toLocaleString()}`, sub: "FNH only · current rates", colour: "text-primary", icon: TrendingUp },
+            ].map(({ label, value, sub, colour, icon: Icon }) => (
+              <div key={label} className="bg-card rounded-xl border border-border px-5 py-4 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+                  <Icon size={16} className="text-muted-foreground/30" />
+                </div>
+                <p className={`text-2xl font-bold ${colour}`}>{value}</p>
+                <p className="text-[11px] text-muted-foreground font-medium">{sub}</p>
               </div>
             ))}
           </div>
@@ -1835,7 +1838,7 @@ export default function ClientAuditPage() {
                             <p className="text-sm font-semibold text-foreground">FNH Sessions</p>
                             <p className="text-[10px] text-muted-foreground font-medium">
                               ~{fnh_sessions} sessions/mo · ${fnh_rate}/session avg
-                              {isSandboxActive ? ' · Sandbox' : ' · Live'}
+                              {isSandboxActive ? ' · Preview' : ' · Live'}
                             </p>
                           </div>
                           <div className="text-right shrink-0">
@@ -1898,7 +1901,7 @@ export default function ClientAuditPage() {
                     <div className="flex items-center gap-4 px-8 py-5 bg-muted">
                       <div className="flex-1">
                         <p className="text-sm font-semibold text-foreground uppercase tracking-wider">Total Combined</p>
-                        <p className="text-[10px] text-muted-foreground font-medium">All enabled streams · {isSandboxActive ? 'Sandbox' : 'Current'} FNH</p>
+                        <p className="text-[10px] text-muted-foreground font-medium">All enabled streams · {isSandboxActive ? 'Preview' : 'Current'} FNH</p>
                       </div>
                       <div className="text-right">
                         <p className="text-xl font-semibold text-chart-emerald">
@@ -1930,11 +1933,11 @@ export default function ClientAuditPage() {
                         </li>
                         <li className="flex items-start gap-2.5">
                           <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5">2</span>
-                          <span><strong className="text-foreground">Toggle Sandbox Mode on</strong> — use the global sliders or client-by-client controls on the right to test a new rate or frequency scenario. The right column instantly reflects the impact.</span>
+                          <span><strong className="text-foreground">Toggle Preview Mode on</strong> — use the global sliders or client-by-client controls on the right to test a new rate or frequency scenario. The right column instantly reflects the impact.</span>
                         </li>
                         <li className="flex items-start gap-2.5">
                           <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold flex items-center justify-center shrink-0 mt-0.5">3</span>
-                          <span><strong className="text-foreground">Try a Preset</strong> — Conservative (+10%), Moderate (+25%), or Target ($150) are quick-start scenarios. Hit Reset Sandbox any time to return to your actual numbers.</span>
+                          <span><strong className="text-foreground">Try a Preset</strong> — Conservative (+10%), Moderate (+25%), or Target ($150) are quick-start scenarios. Hit Reset Preview any time to return to your actual numbers.</span>
                         </li>
                       </ol>
                     </div>
@@ -1965,7 +1968,7 @@ export default function ClientAuditPage() {
                         className="h-2 bg-muted [&>div]:bg-primary" 
                       />
                       <p className="text-xs text-muted-foreground font-medium">
-                        {isSandboxActive ? "Sandbox" : "Current"} average rate of clients seen in the last 30 days.
+                        {isSandboxActive ? "Preview" : "Current"} average rate of clients seen in the last 30 days.
                       </p>
                     </div>
                   </CardContent>
@@ -1998,7 +2001,7 @@ export default function ClientAuditPage() {
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-center gap-2">
                     <Sliders className="text-chart-primary" size={18} />
-                    <h4 className="text-sm font-semibold uppercase tracking-wider text-foreground">Sandbox Presets</h4>
+                    <h4 className="text-sm font-semibold uppercase tracking-wider text-foreground">Preview Presets</h4>
                   </div>
                   <p className="text-xs text-muted-foreground font-medium">
                     Quickly apply pre-configured pricing scenarios to see their immediate impact on your practice financials.
@@ -2030,7 +2033,7 @@ export default function ClientAuditPage() {
                       onClick={() => handleApplyPreset('reset')}
                       className="rounded-xl text-xs font-medium text-chart-destructive hover:bg-muted"
                     >
-                      <RotateCcw size={14} className="mr-1.5" /> Reset Sandbox
+                      <RotateCcw size={14} className="mr-1.5" /> Reset Preview
                     </Button>
                   </div>
                 </CardContent>
@@ -2057,7 +2060,7 @@ export default function ClientAuditPage() {
                             className="data-[state=checked]:bg-primary"
                           />
                           <Label htmlFor="sandbox-mode-toggle" className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer">
-                            Sandbox Mode
+                            Preview Mode
                           </Label>
                         </div>
                       </div>
@@ -2068,7 +2071,7 @@ export default function ClientAuditPage() {
                         <div className="grid grid-cols-3 bg-muted/40 border-b border-border text-[10px] font-semibold uppercase tracking-wider text-muted-foreground p-4">
                           <div>Frequency</div>
                           <div>Current</div>
-                          <div className="text-chart-primary">Sandbox</div>
+                          <div className="text-chart-primary">Preview</div>
                         </div>
                         <div className="divide-y divide-border">
                           {[
@@ -2095,7 +2098,7 @@ export default function ClientAuditPage() {
                       {isSandboxActive && (
                         <div className="space-y-6 p-6 bg-muted/30 rounded-xl border border-border animate-in slide-in-from-top-2 duration-300">
                           <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                            <Sparkles size={14} className="text-chart-primary" /> Global Sandbox Controls
+                            <Sparkles size={14} className="text-chart-primary" /> Global Preview Controls
                           </h4>
 
                           {/* Global Rate Slider */}
@@ -2142,7 +2145,7 @@ export default function ClientAuditPage() {
                   <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
                     <CardHeader className="p-8 pb-4 border-b border-border bg-muted/30">
                       <CardTitle className="text-lg font-medium flex items-center gap-2">
-                        <Users size={20} className="text-chart-primary" /> Client Sandbox
+                        <Users size={20} className="text-chart-primary" /> Client Preview
                       </CardTitle>
                       <CardDescription>Customize individual client rates and frequencies.</CardDescription>
                     </CardHeader>

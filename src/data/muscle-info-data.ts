@@ -211,8 +211,82 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     name: 'Gluteus Maximus',
     meridian: 'Bladder',
     testingPosition: 'Hip extension with knee flexed.',
-    videoUrl: "https://embed-ssl.wistia.com/deliveries/c1e61933c8c2f127535acf940838eb4765ceb24a.mp4",
+    videoUrl: "https://embed-ssl.wistia.com/deliveries/c1e61933c8f2c127535acf940838eb4765ceb24a.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152591139/posts/2167833413"
+  },
+  // Hand Intrinsics
+  'Abductor Pollicis Brevis': {
+    name: 'Abductor Pollicis Brevis',
+    brainstemControl: 'Medulla',
+    meridian: 'Lung',
+    myotome: 'C8, T1',
+    nerveSupply: 'Median Nerve (C8-T1)',
+    testingPosition: 'Thumb abduction against resistance in the plane of the palm.',
+    description: 'Thenar muscle innervated by the median nerve. Key indicator for lower brachial plexus and cervical nerve root C8-T1 function.'
+  },
+  'Opponens Pollicis': {
+    name: 'Opponens Pollicis',
+    brainstemControl: 'Medulla',
+    meridian: 'Pericardium',
+    myotome: 'C8, T1',
+    nerveSupply: 'Median Nerve (C8-T1)',
+    testingPosition: 'Touch thumb tip to little finger tip while practitioner applies separating force.',
+    description: 'Thenar muscle enabling thumb opposition. Essential for precision grip and fine motor control.'
+  },
+  'Adductor Pollicis': {
+    name: 'Adductor Pollicis',
+    brainstemControl: 'Medulla',
+    meridian: 'Large Intestine',
+    myotome: 'C8, T1',
+    nerveSupply: 'Ulnar Nerve (C8-T1)',
+    testingPosition: 'Adduct the thumb against resistance toward the palm.',
+    description: 'Deep thenar muscle innervated by the ulnar nerve. Tests lower brachial plexus integrity.'
+  },
+  'First Dorsal Interossei': {
+    name: 'First Dorsal Interossei',
+    brainstemControl: 'Medulla',
+    meridian: 'Small Intestine',
+    myotome: 'C8, T1',
+    nerveSupply: 'Ulnar Nerve (C8-T1)',
+    testingPosition: 'Abduct the index finger against resistance.',
+    description: 'Key intrinsic hand muscle innervated by the ulnar nerve. Often tested in cervical radiculopathy screening.'
+  },
+  'Abductor Digiti Minimi': {
+    name: 'Abductor Digiti Minimi',
+    brainstemControl: 'Medulla',
+    meridian: 'Small Intestine',
+    myotome: 'C8, T1',
+    nerveSupply: 'Ulnar Nerve (C8-T1)',
+    testingPosition: 'Abduct the little finger against resistance.',
+    description: 'Hypothenar muscle innervated by the ulnar nerve. Tests ulnar nerve function and lower brachial plexus.'
+  },
+  // Foot Intrinsics
+  'Extensor Digitorum Brevis': {
+    name: 'Extensor Digitorum Brevis',
+    brainstemControl: 'Pons',
+    meridian: 'Gall Bladder',
+    myotome: 'L5, S1',
+    nerveSupply: 'Deep Peroneal Nerve (L5-S1)',
+    testingPosition: 'Extend the toes against resistance while stabilising the ankle.',
+    description: 'Dorsal foot muscle. Often tested in peroneal nerve and lumbar spine assessments.'
+  },
+  'Abductor Hallucis': {
+    name: 'Abductor Hallucis',
+    brainstemControl: 'Medulla',
+    meridian: 'Kidney',
+    myotome: 'L4, L5, S1, S2, S3',
+    nerveSupply: 'Medial Plantar Nerve (L4-S3)',
+    testingPosition: 'Abduct the great toe against resistance.',
+    description: 'Medial arch muscle innervated by the medial plantar nerve. Supports foot arch integrity and gait mechanics.'
+  },
+  'Flexor Digitorum Brevis': {
+    name: 'Flexor Digitorum Brevis',
+    brainstemControl: 'Medulla',
+    meridian: 'Spleen',
+    myotome: 'L5, S1',
+    nerveSupply: 'Medial Plantar Nerve (L5-S1)',
+    testingPosition: 'Flex the lateral four toes at the PIP joints against resistance.',
+    description: 'Plantar foot muscle supporting the longitudinal arch. Test of medial plantar nerve function.'
   }
 };
 

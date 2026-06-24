@@ -51,22 +51,22 @@ export const SITE_MAP: PageAudit[] = [
     keyFeatures: ["Vertical Protocol Navigation", "Image Toggle", "Persistent Summary Area"]
   },
   {
-    path: "/lab",
-    title: "The Lab",
+    path: "/identity-map",
+    title: "Identity Work",
     category: "Practice",
     description: "A dedicated space for the practitioner's personal integration and identity work.",
-    keyFeatures: ["Identity Map", "Worksheets Hub", "Fractal Analysis", "Backlog Management"]
+    keyFeatures: ["Identity Map", "Identity Shifting", "Fractal Analysis", "Backlog Management"]
   },
   {
     path: "/practice/journal",
     title: "Practitioner Journal",
     category: "Practice",
-    description: "Private reflection space with AI-powered insight extraction for the Identity Sandbox.",
+    description: "Private reflection space with AI-powered insight extraction.",
     keyFeatures: ["AI Insight Extraction", "Meetup Question Tracking", "Session Linking", "Deep Scan"]
   },
   {
     path: "/practice/quiz",
-    title: "Knowledge Oracle",
+    title: "Knowledge Quiz",
     category: "Practice",
     description: "Infinite practice questions to sharpen clinical intuition across all FNH domains.",
     keyFeatures: ["AI-Generated Scenarios", "Streak Tracking", "Category Selection"]
@@ -80,7 +80,7 @@ export const SITE_MAP: PageAudit[] = [
   },
   {
     path: "/resources",
-    title: "Clinical Bible",
+    title: "Resources & Reference",
     category: "Practice",
     description: "The definitive knowledge base for FNH protocols, anatomy, and TCM references.",
     keyFeatures: ["Meridian Clock", "Muscle Reference", "Brain Zone Map", "Video Library"]
@@ -108,10 +108,10 @@ export const SITE_MAP: PageAudit[] = [
   },
   {
     path: "/business",
-    title: "Business Hub",
+    title: "Business",
     category: "Business",
     description: "Strategic tools for practice growth and audience ownership.",
-    keyFeatures: ["Marketing Engine", "Kit Integration", "AI Strategy Partners", "Leadership Portals"]
+    keyFeatures: ["Marketing Engine", "Client Audit", "AI Strategy Partners", "Leadership Portals"]
   },
   {
     path: "/business/marketing-engine",

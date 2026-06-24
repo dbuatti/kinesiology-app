@@ -35,7 +35,7 @@ import { useNavigate } from 'react-router-dom';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { formatDistanceToNow } from 'date-fns';
 
-const SUGGESTIONS_CACHE_KEY = "antigravity_fractal_suggestions_cache";
+const SUGGESTIONS_CACHE_KEY = "rk_fractal_suggestions_cache";
 
 const FractalTool = () => {
   const navigate = useNavigate();
@@ -274,9 +274,9 @@ const FractalTool = () => {
   };
 
   const handleProcess = (item: any) => {
-    const path = item.type === 'alignment' ? '/sandbox/identity-alignment' : 
-                 item.type === 'belief' ? '/sandbox/limiting-beliefs' : 
-                 '/sandbox/identity-shifting';
+    const path = item.type === 'alignment' ? '/identity-alignment' : 
+                 item.type === 'belief' ? '/limiting-beliefs' : 
+                 '/identity-shifting';
     navigate(path, { state: { prefill: item.content, backlogId: item.id } });
   };
 
@@ -534,7 +534,7 @@ const FractalTool = () => {
               <Layers className="text-muted-foreground/60" size={40} />
             </div>
             <h3 className="text-xl font-semibold text-foreground">No active identities</h3>
-            <p className="text-muted-foreground mt-2">Add items to your backlog from the Sandbox or Journal to begin fractal analysis.</p>
+            <p className="text-muted-foreground mt-2">Add items to your backlog from Identity Map or Journal to begin fractal analysis.</p>
           </div>
         )}
       </div>

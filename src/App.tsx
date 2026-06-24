@@ -20,7 +20,7 @@ const OnboardingPage = lazy(() => import("./pages/public/OnboardingPage"));
 const OnboardingLookupPage = lazy(() => import("./pages/public/OnboardingLookupPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// --- Clinical Hub Pages ---
+// --- Clinic Pages ---
 const DashboardPage = lazy(() => import("./pages/app/DashboardPage"));
 const ClientsPage = lazy(() => import("./pages/ClientsPage"));
 const ClientDetailPage = lazy(() => import("./pages/ClientDetailPage"));
@@ -31,7 +31,7 @@ const ClinicalOversightPage = lazy(() => import("./pages/ClinicalOversightPage")
 const FollowUpPage = lazy(() => import("./pages/FollowUpPage"));
 const AiPromptPage = lazy(() => import("./pages/AiPromptPage"));
 
-// --- Practice Lab Pages ---
+// --- Practitioner Pages ---
 const LabPage = lazy(() => import("./pages/LabPage"));
 const JournalPage = lazy(() => import("./pages/JournalPage"));
 const SelfPracticePage = lazy(() => import("./pages/SelfPracticePage"));
@@ -48,8 +48,9 @@ const FearCreativityWorksheetPage = lazy(() => import("./pages/FearCreativityWor
 const InnerAwarenessWorksheetPage = lazy(() => import("./pages/InnerAwarenessWorksheetPage"));
 const AngerFlowWorksheetPage = lazy(() => import("./pages/AngerFlowWorksheetPage"));
 const BusinessModelWorksheetPage = lazy(() => import("./pages/BusinessModelWorksheetPage"));
+const ValueWorksheetPage = lazy(() => import("./pages/ValueWorksheetPage"));
 
-// --- Knowledge & Reference ---
+// --- Reference Pages ---
 const ResourcesPage = lazy(() => import("./pages/ResourcesPage"));
 const PEACEFrameworkPage = lazy(() => import("./pages/PEACEFrameworkPage"));
 const CogsLearningPage = lazy(() => import("./pages/CogsLearningPage"));
@@ -135,7 +136,7 @@ const AppRoutes = () => {
         >
           <Route path="/" element={<DashboardPage />} />
 
-          {/* Clinical Hub */}
+          {/* Clinic */}
           <Route path="/clients" element={<ClientsPage />} />
           <Route path="/clients/:id" element={<ClientDetailPage />} />
           <Route path="/schedule" element={<SchedulePage />} />
@@ -146,17 +147,17 @@ const AppRoutes = () => {
           <Route path="/resources/ai-prompt" element={<AiPromptPage />} />
           <Route path="/calendar" element={<UnifiedCalendarPage />} />
 
-          {/* Practice Lab */}
-          <Route path="/lab" element={<LabPage />} />
+          {/* Practitioner */}
+          <Route path="/identity-map" element={<LabPage />} />
           <Route path="/practice/journal" element={<JournalPage />} />
           <Route path="/practice/self" element={<SelfPracticePage />} />
           <Route path="/morning-program" element={<MorningProgramPage />} />
-          <Route path="/sandbox/identity-shifting" element={<IdentityShiftingPage />} />
-          <Route path="/sandbox/identity-alignment" element={<IdentityAlignmentPage />} />
-          <Route path="/sandbox/limiting-beliefs" element={<LimitingBeliefsPage />} />
-          <Route path="/sandbox/fractals" element={<FractalToolPage />} />
+          <Route path="/identity-shifting" element={<IdentityShiftingPage />} />
+          <Route path="/identity-alignment" element={<IdentityAlignmentPage />} />
+          <Route path="/limiting-beliefs" element={<LimitingBeliefsPage />} />
+          <Route path="/fractals" element={<FractalToolPage />} />
 
-          {/* Knowledge Base */}
+          {/* Reference */}
           <Route path="/resources" element={<ResourcesPage />} />
           <Route path="/resources/cogs" element={<CogsLearningPage />} />
           <Route path="/peace-framework" element={<PEACEFrameworkPage />} />
@@ -171,6 +172,7 @@ const AppRoutes = () => {
           <Route path="/resources/worksheets/inner-awareness" element={<InnerAwarenessWorksheetPage />} />
           <Route path="/resources/worksheets/anger-flow" element={<AngerFlowWorksheetPage />} />
           <Route path="/resources/worksheets/business-model" element={<BusinessModelWorksheetPage />} />
+          <Route path="/resources/worksheets/where-your-value-begins" element={<ValueWorksheetPage />} />
 
           {/* Voice Studio */}
           <Route path="/voice" element={<VoiceDashboardPage />} />
@@ -185,6 +187,7 @@ const AppRoutes = () => {
           <Route path="/business/overview" element={<BusinessOverviewPage />} />
           <Route path="/business/marketing-engine" element={<MarketingEnginePage />} />
           <Route path="/business/client-audit" element={<ClientAuditPage />} />
+          <Route path="/business/follow-up" element={<FollowUpPage />} />
 
           {/* System */}
           <Route path="/settings" element={<SettingsPage />} />
@@ -196,8 +199,13 @@ const AppRoutes = () => {
           {/* Legacy Redirects */}
           <Route path="/appointments" element={<Navigate to="/schedule?view=list" replace />} />
           <Route path="/availability" element={<Navigate to="/schedule?view=availability" replace />} />
-          <Route path="/sandbox" element={<Navigate to="/lab?tab=map" replace />} />
-          <Route path="/resources/worksheets" element={<Navigate to="/lab?tab=worksheets" replace />} />
+
+          <Route path="/resources/worksheets" element={<Navigate to="/resources?tab=worksheets" replace />} />
+          <Route path="/lab" element={<Navigate to="/identity-map" replace />} />
+          <Route path="/lab/identity-shifting" element={<Navigate to="/identity-shifting" replace />} />
+          <Route path="/lab/identity-alignment" element={<Navigate to="/identity-alignment" replace />} />
+          <Route path="/lab/limiting-beliefs" element={<Navigate to="/limiting-beliefs" replace />} />
+          <Route path="/lab/fractals" element={<Navigate to="/fractals" replace />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

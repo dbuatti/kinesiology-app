@@ -121,9 +121,52 @@ const VoiceCalendarPage = () => {
  refetchInterval: 60_000,
  });
 
- const bookings = bookingsData || [];
+  const bookings = bookingsData || [];
 
- const { data: availabilityData } = useQuery({
+  const { data: weekSlotsData } = useQuery({
+  queryKey: ["voice-week-slots", format(weekStart, "yyyy-MM-dd")],
+  queryFn: async () => {
+  const weekEnd = endOfWeek(weekStart);
+  const eventTypes = ["1945081", "5925021"];
+  const merged: Record<string, any[]> = {};
+  for (const etId of eventTypes) {
+  const res = await supabase.functions.invoke("get-calcom-slots", {
+  body: {
+  start: weekStart.toISOString(),
+  end: weekEnd.toISOString(),
+  eventTypeId: etId,
+  timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  },
+  });
+  if (res.error) continue;
+  const slotsByDate = (res.data?.data || {}) as Record<string, any[]>;
+  for (const [dateKey, slots] of Object.entries(slotsByDate)) {
+  if (!Array.isArray(slots)) continue;
+  if (!merged[dateKey]) merged[dateKey] = [];
+  merged[dateKey].push(...slots);
+  }
+  }
+  return merged;
+  },
+  staleTime: 30_000,
+  });
+
+  const availableSlots = useMemo(() => {
+  const lookup = new Set<string>();
+  if (!weekSlotsData) return lookup;
+  for (const slots of Object.values(weekSlotsData)) {
+  if (!Array.isArray(slots)) continue;
+  for (const slot of slots) {
+  const localDate = new Date(slot.time);
+  const dateKey = format(localDate, "yyyy-MM-dd");
+  const hour = localDate.getHours();
+  lookup.add(`${dateKey}-${hour}`);
+  }
+  }
+  return lookup;
+  }, [weekSlotsData]);
+
+  const { data: availabilityData } = useQuery({
  queryKey: ["voice-calendar-availability", format(currentMonth, "yyyy-MM")],
  queryFn: async () => {
  const res = await supabase.functions.invoke("get-calcom-slots", {
@@ -717,6 +760,7 @@ const VoiceCalendarPage = () => {
             onToday={goToToday}
             minHour={9}
             maxHour={17}
+            availableSlots={availableSlots}
             onSlotClick={(day, hour) => {
               setBookPrefillDate(format(day, "yyyy-MM-dd"));
               setBookPrefillTime(`${hour.toString().padStart(2, "0")}:00`);

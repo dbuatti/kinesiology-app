@@ -71,6 +71,8 @@ const BUFFER_MIN_PER_EVENT = 60;
 const paymentStyles: Record<string, string> = {
   "Paid (Stripe)": "bg-chart-emerald/10 text-chart-emerald border-chart-emerald/20",
   "Paid on Day": "bg-chart-primary/10 text-chart-primary border-chart-primary/20",
+  "Pending payment": "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+  "Unpaid": "bg-muted/40 text-muted-foreground border-border/30",
 };
 
 const variantStyles: Record<string, string> = {
@@ -106,9 +108,6 @@ function parseTimeEvent(lesson: VoiceLesson): TimeEvent | null {
   const [year, month, day] = lesson.date.split("-").map(Number);
   const isUTC = /UTC/i.test(lesson.time);
 
-  const parts = lesson.time.split("–").map((s) => s.trim());
-  if (parts.length !== 2) return null;
-
   const parseTime = (s: string) => {
     const cleaned = s.replace(/UTC/i, "").trim();
     const match = cleaned.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
@@ -120,9 +119,14 @@ function parseTimeEvent(lesson: VoiceLesson): TimeEvent | null {
     return { h, m };
   };
 
-  const startT = parseTime(parts[0]);
-  const endT = parseTime(parts[1]);
-  if (!startT || !endT) return null;
+  const parts = lesson.time.split("–").map((s) => s.trim());
+  const startT = parseTime(parts[0] || lesson.time);
+  if (!startT) return null;
+
+  let endT = parts.length >= 2 ? parseTime(parts[1]) : null;
+  if (!endT) {
+    endT = { h: startT.h + 1, m: startT.m };
+  }
 
   const startDate = isUTC
     ? new Date(Date.UTC(year, month - 1, day, startT.h, startT.m))
@@ -357,6 +361,7 @@ interface WeeklyTimeGridProps {
   voiceRatePerHour?: number;
   fnhRatePerHour?: number;
   onSlotClick?: (date: Date, hour: number) => void;
+  availableSlots?: Set<string>;
 }
 
 const WeeklyTimeGrid = ({
@@ -371,6 +376,7 @@ const WeeklyTimeGrid = ({
   voiceRatePerHour = DEFAULT_VOICE_RATE,
   fnhRatePerHour = DEFAULT_FNH_RATE,
   onSlotClick,
+  availableSlots,
 }: WeeklyTimeGridProps) => {
   const startHour = Math.max(0, minHour);
   const endHour = Math.min(24, maxHour);
@@ -539,17 +545,22 @@ const WeeklyTimeGrid = ({
                       const hasEvent = dayEvents.some(
                         (e: any) => e.startMin < (hour + 1) * 60 && e.endMin > hour * 60
                       );
+                      const dateKey = format(day, "yyyy-MM-dd");
+                      const slotKey = `${dateKey}-${hour}`;
+                      const isAvailable = !availableSlots || availableSlots.size === 0 || availableSlots.has(slotKey);
+                      const slotClickable = onSlotClick && !hasEvent && isAvailable;
                       return (
                         <div
                           key={hour}
                           className={cn(
                             "border-t border-border/30",
-                            onSlotClick && !hasEvent && "cursor-pointer hover:bg-chart-emerald/5 transition-colors group"
+                            slotClickable && "cursor-pointer hover:bg-chart-emerald/5 transition-colors group",
+                            !slotClickable && !hasEvent && "opacity-30"
                           )}
                           style={{ height: HOUR_HEIGHT }}
-                          onClick={() => onSlotClick && !hasEvent && onSlotClick(day, hour)}
+                          onClick={() => slotClickable && onSlotClick(day, hour)}
                         >
-                          {onSlotClick && !hasEvent && (
+                          {slotClickable && (
                             <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center h-full">
                               <Plus size={12} className="text-chart-emerald/40" />
                             </div>

@@ -72,8 +72,7 @@ const JointActionPrintPage = lazy(() => import("./pages/JointActionPrintPage"));
 const VoiceDashboardPage = lazy(() => import("./pages/VoiceDashboardPage"));
 const VoiceNewClientPage = lazy(() => import("./pages/VoiceNewClientPage"));
 const VoiceClientsPage = lazy(() => import("./pages/VoiceClientsPage"));
-const VoiceBookLessonPage = lazy(() => import("./pages/VoiceBookLessonPage"));
-const VoiceCalendarPage = lazy(() => import("./pages/VoiceCalendarPage"));
+// VoiceBookLessonPage / VoiceCalendarPage retired — consolidated into /calendar.
 const VoiceOnboardingPage = lazy(() => import("./pages/public/VoiceOnboardingPage"));
 const VoicePaidPage = lazy(() => import("./pages/public/VoicePaidPage"));
 const UnifiedCalendarPage = lazy(() => import("./pages/UnifiedCalendarPage"));
@@ -143,7 +142,9 @@ const AppRoutes = () => {
           {/* Clinic */}
           <Route path="/clients" element={<ClientsPage />} />
           <Route path="/clients/:id" element={<ClientDetailPage />} />
-          <Route path="/schedule" element={<SchedulePage />} />
+          <Route path="/availability" element={<SchedulePage />} />
+          {/* Consolidated: sessions now live in the unified Calendar */}
+          <Route path="/schedule" element={<Navigate to="/calendar" replace />} />
           <Route path="/appointments/:id" element={<AppointmentDetailPage />} />
           <Route path="/appointments/:id/protocols" element={<ClinicalProtocolsPage />} />
           <Route path="/oversight" element={<ClinicalOversightPage />} />
@@ -182,8 +183,9 @@ const AppRoutes = () => {
           <Route path="/voice" element={<VoiceDashboardPage />} />
           <Route path="/voice/clients" element={<VoiceClientsPage />} />
           <Route path="/voice/clients/new" element={<VoiceNewClientPage />} />
-          <Route path="/voice/book" element={<VoiceBookLessonPage />} />
-          <Route path="/voice/calendar" element={<VoiceCalendarPage />} />
+          {/* Consolidated into the unified Calendar (book + view voice there) */}
+          <Route path="/voice/book" element={<Navigate to="/calendar" replace />} />
+          <Route path="/voice/calendar" element={<Navigate to="/calendar" replace />} />
 
           {/* Business Tools */}
           <Route path="/business" element={<Navigate to="/business/dashboard" replace />} />

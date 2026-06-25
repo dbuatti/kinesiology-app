@@ -57,8 +57,8 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Clinic",
     items: [
       { label: "Dashboard", icon: LayoutDashboard, path: "/" },
-      { label: "Schedule", icon: Calendar, path: "/schedule" },
       { label: "Calendar", icon: CalendarDays, path: "/calendar" },
+      { label: "Availability", icon: Calendar, path: "/availability" },
       { label: "Clients", icon: Users, path: "/clients" },
       { label: "Oversight", icon: TrendingUp, path: "/oversight" },
     ],
@@ -119,8 +119,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Dashboard", icon: LayoutDashboard, path: "/voice" },
       { label: "Clients", icon: Users, path: "/voice/clients" },
-      { label: "Book Lesson", icon: Calendar, path: "/voice/book" },
-      { label: "Studio Calendar", icon: TrendingUp, path: "/voice/calendar" },
+      { label: "Calendar", icon: CalendarDays, path: "/calendar" },
     ],
   },
 ];

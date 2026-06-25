@@ -36,7 +36,18 @@ serve(async (req) => {
 
     const slotsResponse = await fetch(slotsUrl.toString(), { method: 'GET', headers })
     const slotsData = await slotsResponse.json()
-    
+
+    if (!slotsResponse.ok) {
+      console.error("[get-calcom-slots] API Error:", slotsData);
+      return new Response(JSON.stringify({ 
+        status: 'error', 
+        message: slotsData.error?.message || "Cal.com Slots API Error"
+      }), { 
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      })
+    }
+
     const slotDates = Object.keys(slotsData?.data?.slots || {});
     console.log(`[get-calcom-slots] Got ${slotDates.length} available dates with slots`);
     
@@ -52,16 +63,6 @@ serve(async (req) => {
 
     const bookingsResponse = await fetch(bookingsUrl.toString(), { method: 'GET', headers })
     const bookingsData = await bookingsResponse.json()
-
-    if (!slotsResponse.ok) {
-      return new Response(JSON.stringify({ 
-        status: 'error', 
-        message: slotsData.error?.message || "Cal.com Slots API Error"
-      }), { 
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      })
-    }
 
     // 4. Robust Date Matching (Timezone Aware)
     const blockedDates = (oooData.data || []).map(entry => {

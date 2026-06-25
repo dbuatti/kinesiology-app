@@ -272,27 +272,27 @@ const VoiceCalendarPage = () => {
  const startDate = startOfWeek(monthStart);
  const endDate = endOfWeek(monthEnd);
 
- type SlotRange = "upcoming" | "near" | "future" | "ten";
- const rangeConfig: Record<string, { label: string; startDays: number; endDays: number }> = {
- upcoming: { label: "Active & Upcoming", startDays: 0, endDays: 30 },
- near: { label: "1–3 Months", startDays: 30, endDays: 90 },
- future: { label: "3+ Months", startDays: 90, endDays: 180 },
- ten: { label: "Next 10 Days", startDays: 0, endDays: 60 },
- };
+  type SlotRange = "upcoming" | "near" | "future" | "ten";
+  const rangeConfig: Record<string, { label: string; startDays: number; endDays: number }> = {
+  upcoming: { label: "Next 30 Days", startDays: 0, endDays: 30 },
+  near: { label: "1–3 Months", startDays: 0, endDays: 90 },
+  future: { label: "3+ Months", startDays: 90, endDays: 180 },
+  ten: { label: "Next 10 Days", startDays: 0, endDays: 60 },
+  };
 
  const handleCopySlots = useCallback(async (range: SlotRange) => {
  const cfg = rangeConfig[range];
  setCopyingWeeks(range === "ten" ? 10 : cfg.endDays);
  try {
- const now = new Date();
- const res = await supabase.functions.invoke("get-calcom-slots", {
- body: {
- start: addDays(now, range === "upcoming" ? 0 : cfg.startDays).toISOString(),
- end: addDays(now, range === "ten" ? 60 : cfg.endDays).toISOString(),
- eventTypeId: "1945081",
- timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
- },
- });
+  const now = new Date();
+  const res = await supabase.functions.invoke("get-calcom-slots", {
+  body: {
+  start: addDays(now, cfg.startDays).toISOString(),
+  end: addDays(now, cfg.endDays).toISOString(),
+  eventTypeId: "1945081",
+  timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  },
+  });
  if (res.error) throw res.error;
 
  const slotsByDate: Record<string, any[]> = res.data?.data || {};

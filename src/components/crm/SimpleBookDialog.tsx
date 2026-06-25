@@ -98,17 +98,17 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
       const endDate = format(addDays(new Date(date + "T12:00:00"), 1), "yyyy-MM-dd");
       const { data, error } = await supabase.functions.invoke("get-calcom-slots", {
         body: {
-          startDate: date,
-          endDate,
-          eventTypeId: parseInt(eventType.eventTypeId),
+          start: date,
+          end: endDate,
+          eventTypeId: eventType.eventTypeId,
           timeZone: "Australia/Melbourne",
         },
       });
       if (error) throw error;
-      const daySlots: string[] = data?.slots?.[date] ?? [];
-      return daySlots.map((iso: string) => {
-        const match = iso.match(/T(\d{2}):(\d{2})/);
-        return match ? `${match[1]}:${match[2]}` : iso;
+      const slotEntries = (data?.data as Record<string, { time: string }[]> | undefined)?.[date] ?? [];
+      return slotEntries.map((slot) => {
+        const match = slot.time?.match(/T(\d{2}):(\d{2})/);
+        return match ? `${match[1]}:${match[2]}` : "09:00";
       });
     },
     enabled: !!date && !!eventType,

@@ -175,17 +175,12 @@ serve(async (req) => {
 
     if (createRes.ok) {
       const bookingUid = createResult.data.uid;
-      // Confirm the booking to trigger Cal.com emails and iCal sync
+      // Confirm with correct API version (v2.6 added 2026-02-25 version)
+      const confirmHeaders = { ...headers, 'cal-api-version': '2026-02-25' };
       await fetch(`https://api.cal.com/v2/bookings/${bookingUid}/confirm`, {
         method: "POST",
-        headers,
+        headers: confirmHeaders,
       }).catch((e) => console.error(`[${functionName}] Confirm call failed:`, e.message));
-      // Trigger calendar sync so API-created bookings appear on Apple Calendar
-      await fetch("https://api.cal.com/v2/calendars/sync", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({}),
-      }).catch((e) => console.error(`[${functionName}] Calendar sync call failed:`, e.message));
       return new Response(JSON.stringify({ success: true, uid: bookingUid, action: "created" }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

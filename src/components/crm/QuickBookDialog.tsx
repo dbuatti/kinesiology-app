@@ -29,11 +29,14 @@ interface QuickBookDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+  prefillPrice?: number;
 }
 
-const PRICES = [0, 50, 100];
+// Prices are driven by the actual Cal.com event types so every button maps to a real
+// event type (previously [0,50,100] — $50 had no event type and crashed booking).
+const PRICES = Array.from(new Set(CALCOM_CONFIG.EVENT_TYPES.map((t) => t.price))).sort((a, b) => a - b);
 
-const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess }: QuickBookDialogProps) => {
+const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice }: QuickBookDialogProps) => {
   const { session } = useAuth();
   const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -53,8 +56,12 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess }: QuickBookD
       setSubmitting(false);
       setSyncStatus("idle");
       setConflictError(null);
+    } else if (prefillPrice !== undefined) {
+      // Pre-select the chosen appointment's price (from the "New Booking" menu).
+      setSelectedPrice(prefillPrice);
+      setSendOnboarding(prefillPrice > 0);
     }
-  }, [open]);
+  }, [open, prefillPrice]);
 
   const { data: slotsData, isLoading: slotsLoading, error: slotsError } = useQuery({
     queryKey: ["quick-book-slots", clientId],
@@ -143,8 +150,10 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess }: QuickBookD
 
       if (sendOnboarding) {
         setSyncStatus("email");
+        // force: true makes this toggle authoritative — it overrides the function's
+        // 6-month auto-skip so a checked box always sends the link/intake.
         await supabase.functions.invoke("send-manual-onboarding", {
-          body: { clientId, appointmentId: newApp?.id },
+          body: { clientId, appointmentId: newApp?.id, force: true },
         });
       }
 
@@ -275,7 +284,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess }: QuickBookD
                       <button
                         key={price}
                         type="button"
-                        onClick={() => setSelectedPrice(price)}
+                        onClick={() => { setSelectedPrice(price); setSendOnboarding(price > 0); }}
                         className={cn(
                           "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all",
                           selectedPrice === price
@@ -307,8 +316,8 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess }: QuickBookD
                       <Mail size={20} />
                     </div>
                     <div className="space-y-0.5">
-                      <p className="text-base font-black text-foreground">Send Onboarding Email</p>
-                      <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">Automatically email the intake form</p>
+                      <p className="text-base font-black text-foreground">Send Onboarding + Payment Email</p>
+                      <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">{selectedPrice > 0 ? "Emails intake form + Stripe payment link" : "Emails the intake form"}</p>
                     </div>
                   </div>
                   <div className={cn("w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all", sendOnboarding ? "bg-emerald-600 border-emerald-600" : "border-muted-foreground/30")}>

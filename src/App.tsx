@@ -75,6 +75,7 @@ const VoiceClientsPage = lazy(() => import("./pages/VoiceClientsPage"));
 const VoiceBookLessonPage = lazy(() => import("./pages/VoiceBookLessonPage"));
 const VoiceCalendarPage = lazy(() => import("./pages/VoiceCalendarPage"));
 const VoiceOnboardingPage = lazy(() => import("./pages/public/VoiceOnboardingPage"));
+const VoicePaidPage = lazy(() => import("./pages/public/VoicePaidPage"));
 const UnifiedCalendarPage = lazy(() => import("./pages/UnifiedCalendarPage"));
 
 // --- Business & System ---
@@ -120,6 +121,9 @@ const AppRoutes = () => {
 
         {/* Public Voice Onboarding (no auth required) */}
         <Route path="/voice-onboarding/:email" element={<VoiceOnboardingPage />} />
+
+        {/* Public Stripe payment success page (no auth required) */}
+        <Route path="/voice/paid" element={<VoicePaidPage />} />
 
         {/* Protected App Routes */}
         <Route path="/notes-doc" element={session ? <PracticeNotes /> : <Navigate to="/login" replace />} />

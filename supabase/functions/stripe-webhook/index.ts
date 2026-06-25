@@ -8,60 +8,71 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-async function syncCalcomPayment(calcomBookingId: string) {
-  const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY');
-  if (!CALCOM_KEY) {
-    console.log(`[stripe-webhook] Skipping cal.com sync: CALCOM_API_KEY not set`);
+// NOTE: Cal.com payment sync removed — FNH event types are now payment-OFF, so bookings
+// sync to the calendar on creation and `appointments.payment_received` is the source of truth.
+
+async function getGmailAccessToken(clientId: string, clientSecret: string, refreshToken: string) {
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ client_id: clientId, client_secret: clientSecret, refresh_token: refreshToken, grant_type: "refresh_token" }),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(`Gmail Auth Error: ${data.error_description || data.error}`);
+  return data.access_token;
+}
+
+async function sendGmail(accessToken: string, from: string, to: string, subject: string, htmlBody: string) {
+  const utf8Subject = `=?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`;
+  const message = [
+    `From: ${from}`, `To: ${to}`, `Bcc: daniele.buatti@gmail.com`,
+    `Content-Type: text/html; charset=utf-8`, `MIME-Version: 1.0`, `Subject: ${utf8Subject}`, ``, htmlBody,
+  ].join("\n");
+  const encoded = btoa(unescape(encodeURIComponent(message))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ raw: encoded }),
+  });
+}
+
+// Sends a "payment received" confirmation to the client. Non-fatal on failure.
+async function sendFnhPaymentConfirmation(to: string | null, name: string | null, amountCents: number | null, currency: string) {
+  if (!to) return;
+  const CLIENT_ID = Deno.env.get("GMAIL_CLIENT_ID");
+  const CLIENT_SECRET = Deno.env.get("GMAIL_CLIENT_SECRET");
+  const REFRESH = Deno.env.get("GMAIL_REFRESH_TOKEN");
+  const SENDER = Deno.env.get("GMAIL_USER_EMAIL");
+  if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH || !SENDER) {
+    console.log("[stripe-webhook] Gmail creds missing — skipping confirmation email");
     return;
   }
-
-  const headers = {
-    'Authorization': `Bearer ${CALCOM_KEY}`,
-    'cal-api-version': '2024-08-13',
-    'Content-Type': 'application/json',
-  };
-
+  const first = (name || "there").split(" ")[0];
+  const amount = amountCents ? `$${(amountCents / 100).toFixed(2)} ${(currency || "AUD").toUpperCase()}` : "";
   try {
-    // Confirm the booking in cal.com (moves it from PENDING to ACCEPTED,
-    // effectively marking it as paid when payment is required)
-    const res = await fetch(`https://api.cal.com/v2/bookings/${calcomBookingId}/confirm`, {
-      method: "POST",
-      headers,
-    });
-
-    if (res.ok) {
-      console.log(`[stripe-webhook] Cal.com sync: Booking ${calcomBookingId} confirmed as paid`);
-
-      // Also update metadata so calcom-webhook picks up the is_paid flag
-      await fetch(`https://api.cal.com/v2/bookings/${calcomBookingId}`, {
-        method: "PATCH",
-        headers,
-        body: JSON.stringify({
-          metadata: { is_paid: "true" },
-        }),
-      }).catch(() => {});
-    } else {
-      const err = await res.json();
-      console.error(`[stripe-webhook] Cal.com confirm failed: ${res.status}`, JSON.stringify(err).slice(0, 200));
-
-      // Fallback: try updating metadata directly
-      const metaRes = await fetch(`https://api.cal.com/v2/bookings/${calcomBookingId}`, {
-        method: "PATCH",
-        headers,
-        body: JSON.stringify({
-          metadata: { is_paid: "true" },
-        }),
-      });
-
-      if (metaRes.ok) {
-        console.log(`[stripe-webhook] Cal.com sync (metadata): Booking ${calcomBookingId} marked as paid via metadata`);
-      } else {
-        const metaErr = await metaRes.json();
-        console.error(`[stripe-webhook] Cal.com sync (metadata) failed: ${metaRes.status}`, JSON.stringify(metaErr).slice(0, 200));
-      }
-    }
-  } catch (err) {
-    console.error(`[stripe-webhook] Cal.com sync error:`, err.message);
+    const token = await getGmailAccessToken(CLIENT_ID, CLIENT_SECRET, REFRESH);
+    const html = `
+      <!DOCTYPE html><html><body style="margin:0;padding:0;font-family:sans-serif;">
+        <center style="width:100%;padding:40px 0;background:#f8fafc;">
+          <table role="presentation" width="100%" style="max-width:560px;margin:0 auto;background:#fff;border-radius:32px;overflow:hidden;">
+            <tr><td style="height:6px;background:#4f46e5;"></td></tr>
+            <tr><td style="padding:48px 40px;text-align:center;">
+              <div style="font-size:44px;">✅</div>
+              <div style="color:#4f46e5;font-size:11px;font-weight:900;letter-spacing:0.3em;text-transform:uppercase;margin-top:12px;">Payment Received</div>
+              <h1 style="color:#1E293B;font-size:24px;margin:12px 0 8px;">Thank you, ${first}!</h1>
+              <p style="color:#475569;font-size:15px;line-height:1.6;">Your payment${amount ? ` of <strong>${amount}</strong>` : ""} for your FNH Neuro-Health Assessment is confirmed. Your session is locked in — looking forward to seeing you.</p>
+              <div style="border-top:1px solid #F1F5F9;margin-top:32px;padding-top:24px;text-align:left;">
+                <div style="font-weight:700;color:#1E293B;">Daniele Buatti</div>
+                <div style="color:#4f46e5;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;">Resonance Kinesiology</div>
+              </div>
+            </td></tr>
+          </table>
+        </center>
+      </body></html>`;
+    await sendGmail(token, SENDER, to, "Payment received — Your FNH session is confirmed", html);
+    console.log(`[stripe-webhook] Confirmation email sent to ${to}`);
+  } catch (e) {
+    console.error("[stripe-webhook] Confirmation email failed (non-fatal):", e.message);
   }
 }
 
@@ -137,10 +148,6 @@ serve(async (req) => {
               .update({ payment_received: true, payment_method: 'Stripe' })
               .eq('id', refApp.id);
             matched = true;
-
-            if (refApp.calcom_booking_id) {
-              await syncCalcomPayment(refApp.calcom_booking_id);
-            }
           }
         }
       }
@@ -222,11 +229,6 @@ serve(async (req) => {
                 .update({ payment_received: true, payment_method: 'Stripe' })
                 .eq('id', app.id);
               matched = true;
-
-              // Sync payment status back to cal.com
-              if (app.calcom_booking_id) {
-                await syncCalcomPayment(app.calcom_booking_id);
-              }
             } else {
               console.log(`[stripe-webhook] Email Fallback: No unpaid appointments found for client ${clientByEmail.id}`);
             }
@@ -235,9 +237,15 @@ serve(async (req) => {
           }
         }
       }
+
+      // Email the client a payment confirmation (non-fatal).
+      const confEmail = data.customer_details?.email || data.customer_email || data.receipt_email || null;
+      const confName = data.customer_details?.name || data.metadata?.student_name || null;
+      const confAmount = data.amount_total ?? data.amount ?? null;
+      await sendFnhPaymentConfirmation(confEmail, confName, confAmount, data.currency || "aud");
     }
 
-    return new Response(JSON.stringify({ received: true }), { 
+    return new Response(JSON.stringify({ received: true }), {
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
   } catch (err) {

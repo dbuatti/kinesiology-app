@@ -1,6 +1,12 @@
 [functions.create-calcom-booking]
 verify_jwt = false
 
+[functions.list-calcom-event-types]
+verify_jwt = false
+
+[functions.voice-mark-paid]
+verify_jwt = false
+
 [functions.get-calcom-slots]
 verify_jwt = false
 

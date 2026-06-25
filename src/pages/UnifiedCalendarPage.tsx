@@ -31,6 +31,10 @@ import WeeklyTimeGrid, {
   EarningsPanel,
 } from "@/components/crm/WeeklyTimeGrid";
 import WeekByWeekOverview from "@/components/crm/WeekByWeekOverview";
+import BookingsList from "@/components/crm/BookingsList";
+import SimpleBookDialog from "@/components/crm/SimpleBookDialog";
+import QuickBookDialog from "@/components/crm/QuickBookDialog";
+import ShareAvailabilityButton from "@/components/crm/ShareAvailabilityButton";
 import { supabase } from "@/integrations/supabase/client";
 import { CALCOM_CONFIG } from "@/config/integrations";
 import { cn } from "@/lib/utils";
@@ -46,17 +50,31 @@ interface VoiceLesson {
  time: string | null;
  studentName: string | null;
  studentEmail: string | null;
+ paymentStatus: string | null;
+}
+
+interface VoiceBookingRow {
+ calcom_booking_id: string;
+ student_email: string;
+ lesson_date: string;
+ status: string;
+ notion_lesson_id_1: string | null;
+ notion_lesson_id_2: string | null;
 }
 
 interface KinesiologyAppt {
  id: string;
  date: string;
  clientName: string | null;
+ clientId: string | null;
  status: string | null;
  tag: string | null;
  time: string | null;
  priceAmount: number | null;
  standardRate: number | null;
+ paymentReceived: boolean;
+ isPaid: boolean;
+ calcomUid: string | null;
 }
 
 interface CalendarItem {
@@ -70,6 +88,22 @@ interface CalendarItem {
  tag: string | null;
  priceAmount?: number | null;
  standardRate?: number | null;
+ // payment + action payload (used by the compact Bookings list)
+ datetime?: string;
+ status?: string | null;
+ cancelled?: boolean;
+ paid?: boolean;
+ isFree?: boolean;
+ amount?: number | null;
+ calcomUid?: string | null;
+ notionLessonId1?: string | null;
+ notionLessonId2?: string | null;
+ lessonId?: string | null;
+ studentEmail?: string | null;
+ studentName?: string | null;
+ clientId?: string | null;
+ appointmentId?: string | null;
+ eventTypeId?: string | null;
 }
 
 function parseTimeToEvent(item: CalendarItem): CalendarEvent | null {
@@ -113,13 +147,47 @@ function parseTimeToEvent(item: CalendarItem): CalendarEvent | null {
   };
 }
 
+// Bookable services for the slot-click flow (Week/Overview calendars).
+const SLOT_SERVICES = [
+  { key: "voice60", group: "Voice", label: "Voice & Piano — 60 min", kind: "voice", duration: "60" },
+  { key: "voice45", group: "Voice", label: "Voice & Piano — 45 min", kind: "voice", duration: "45" },
+  { key: "fnhStandard", group: "FNH", label: "FNH Assessment · $70", kind: "fnh", eventTypeId: "4279898", price: 70 },
+  { key: "fnhFull", group: "FNH", label: "FNH Full Price · $100", kind: "fnh", eventTypeId: "5302336", price: 100 },
+  { key: "fnhFree", group: "FNH", label: "FNH Community · Free", kind: "fnh", eventTypeId: "5927215", price: 0 },
+] as const;
+
 const UnifiedCalendarPage = () => {
   const navigate = useNavigate();
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [viewMode, setViewMode] = useState<"month" | "week" | "overview">("month");
+  const [viewMode, setViewMode] = useState<"list" | "month" | "week" | "overview">("list");
   const [weekStart, setWeekStart] = useState(startOfWeek(new Date()));
   const [bookSlot, setBookSlot] = useState<{ date: Date; hour: number } | null>(null);
   const [bookClient, setBookClient] = useState<string | null>(null);
+  // One-stop "New Booking" entry points
+  const [voiceBookOpen, setVoiceBookOpen] = useState(false);
+  const [voicePrefillDuration, setVoicePrefillDuration] = useState<string>("60");
+  const [voicePrefillDate, setVoicePrefillDate] = useState<string | undefined>(undefined);
+  const [voicePrefillTime, setVoicePrefillTime] = useState<string | undefined>(undefined);
+  const [fnhPickOpen, setFnhPickOpen] = useState(false);
+  const [fnhClientId, setFnhClientId] = useState<string | null>(null);
+  const [fnhPrefillPrice, setFnhPrefillPrice] = useState<number>(70);
+  // Slot-click flow (Week/Overview): chosen service for the clicked slot
+  const [bookSvc, setBookSvc] = useState<string | null>(null);
+
+  const openVoiceBooking = (duration: string, date?: string, time?: string) => {
+    setVoicePrefillDuration(duration);
+    setVoicePrefillDate(date);
+    setVoicePrefillTime(time);
+    setVoiceBookOpen(true);
+  };
+
+  const handleNewBooking = (service: string) => {
+    if (service === "voice60") openVoiceBooking("60");
+    else if (service === "voice45") openVoiceBooking("45");
+    else if (service === "fnhStandard") { setFnhPrefillPrice(70); setFnhPickOpen(true); }
+    else if (service === "fnhFull") { setFnhPrefillPrice(100); setFnhPickOpen(true); }
+    else if (service === "fnhFree") { setFnhPrefillPrice(0); setFnhPickOpen(true); }
+  };
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -153,7 +221,7 @@ const UnifiedCalendarPage = () => {
  queryFn: async () => {
  const { data } = await supabase
  .from("appointments")
- .select("id, date, status, tag, price_amount, clients (name, is_practitioner, standard_rate)")
+ .select("id, date, status, tag, price_amount, is_paid, payment_received, calcom_booking_id, client_id, clients (name, is_practitioner, standard_rate)")
  .gte("date", fetchStart)
  .lte("date", fetchEnd)
  .order("date", { ascending: true });
@@ -163,14 +231,30 @@ const UnifiedCalendarPage = () => {
  id: a.id,
  date: a.date,
  clientName: a.clients?.name || "Unknown",
+ clientId: a.client_id ?? null,
  status: a.status,
  tag: a.tag,
  time: null,
  priceAmount: a.price_amount ?? null,
  standardRate: a.clients?.standard_rate ?? null,
+ paymentReceived: a.payment_received === true,
+ isPaid: a.is_paid === true,
+ calcomUid: a.calcom_booking_id ?? null,
 })) as KinesiologyAppt[];
  },
   staleTime: 60_000,
+  });
+
+  // Voice bookings carry the Cal.com uid + Notion ids needed for cancel/reschedule.
+  const { data: voiceBookings, refetch: refetchVoiceBookings } = useQuery({
+    queryKey: ["unified-voice-bookings"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("voice_bookings")
+        .select("calcom_booking_id, student_email, lesson_date, status, notion_lesson_id_1, notion_lesson_id_2");
+      return (data || []) as VoiceBookingRow[];
+    },
+    staleTime: 60_000,
   });
 
   const { session } = useAuth();
@@ -181,7 +265,7 @@ const UnifiedCalendarPage = () => {
     queryFn: async () => {
       const { data } = await supabase
         .from("clients")
-        .select("id, name, is_practitioner")
+        .select("id, name, is_practitioner, standard_rate")
         .eq("is_practitioner", false)
         .order("name", { ascending: true });
       return data || [];
@@ -190,18 +274,23 @@ const UnifiedCalendarPage = () => {
   });
 
   const bookMutation = useMutation({
-    mutationFn: async ({ clientId, date }: { clientId: string; date: Date }) => {
+    mutationFn: async ({ clientId, date, eventTypeId, price }: { clientId: string; date: Date; eventTypeId?: string; price?: number }) => {
       const isoTime = date.toISOString();
+      // Use the price/event type chosen in the slot dialog; fall back to the
+      // client's standing rate (then $50) when not specified.
+      const client = (clients || []).find((c: any) => c.id === clientId);
+      const rate = price !== undefined ? price : (client?.standard_rate ?? 50);
+      const isPaidSession = rate > 0;
       const { data: calcomData, error: invokeError } = await supabase.functions.invoke(
         "create-calcom-booking",
         {
           body: {
             clientId,
             startTime: isoTime,
-            eventTypeId: CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID,
+            eventTypeId: eventTypeId || CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID,
             title: `FNH Session — ${format(date, "MMM d, yyyy")}`,
             notes: "",
-            is_paid: true,
+            is_paid: isPaidSession,
           },
         }
       );
@@ -215,22 +304,31 @@ const UnifiedCalendarPage = () => {
           date: isoTime,
           tag: "Kinesiology",
           status: "Scheduled",
-          is_paid: true,
+          is_paid: isPaidSession,
           calcom_booking_id: calcomId,
-          price_amount: 50,
+          price_amount: rate,
           price_currency: "AUD",
           name: `Session — ${format(date, "MMM d, yyyy")}`,
         }, { onConflict: calcomId ? "calcom_booking_id" : "id" })
         .select("id")
         .single();
       if (dbError) throw dbError;
+      // Send the Stripe payment link for paid sessions (was previously missing,
+      // leaving these bookings permanently "Unpaid" with no way to charge).
+      if (isPaidSession && newApp?.id) {
+        await supabase.functions.invoke("send-manual-onboarding", {
+          body: { clientId, appointmentId: newApp.id, force: true },
+        }).catch(() => {});
+      }
       return newApp;
     },
     onSuccess: () => {
-      showSuccess("Session booked successfully!");
+      showSuccess("Session booked & payment link sent.");
       queryClient.invalidateQueries({ queryKey: ["unified-kinesiology-appts"] });
+      refetchKinesiology();
       setBookSlot(null);
       setBookClient(null);
+      setBookSvc(null);
     },
     onError: (err: any) => {
       showError(err.message || "Failed to book session");
@@ -242,24 +340,52 @@ const UnifiedCalendarPage = () => {
 
   (voiceLessons || []).forEach((l) => {
   if (!l.date) return;
+  const booking = (voiceBookings || []).find(
+    (b) => b.lesson_date === l.date && b.student_email === l.studentEmail
+  );
+  const is45 = /45/.test((l.name || "").toLowerCase());
+  // Voice paid signal comes from Notion's Payment property OR a voice_bookings row
+  // marked paid (covers Stripe + manually-recorded external payments).
+  // NB: must exclude "Unpaid" — a naive /paid/ test matches it.
+  const ps = (l.paymentStatus || "").toLowerCase();
+  const voicePaid = (ps.includes("paid") && !ps.includes("unpaid")) || booking?.status === "paid";
   items.push({
   id: `v-${l.id}`,
   source: "voice",
   date: l.date,
+  datetime: l.date,
   time: l.date && l.time ? formatVoiceTime(l.date, l.time) : null,
   title: l.name || "Voice Lesson",
   subtitle: l.studentName || null,
   url: l.notionUrl || null,
   tag: "voice",
+  status: booking?.status ?? null,
+  cancelled: booking?.status === "cancelled",
+  paid: voicePaid,
+  isFree: false,
+  amount: is45 ? 75 : 95,
+  calcomUid: booking?.calcom_booking_id ?? null,
+  notionLessonId1: booking?.notion_lesson_id_1 ?? null,
+  notionLessonId2: booking?.notion_lesson_id_2 ?? null,
+  lessonId: l.id,
+  studentEmail: l.studentEmail,
+  studentName: l.studentName,
   });
   });
 
   (kinesiologyAppts || []).forEach((a) => {
   const appDate = new Date(a.date);
+  // Effective price falls back to the client's standard rate so a $50 client
+  // with no per-appointment price isn't mislabelled "Free".
+  const effectivePrice = (a.priceAmount && a.priceAmount > 0) ? a.priceAmount : (a.standardRate ?? 0);
+  // Free is an explicit state: a deliberate $0 price, or no price anywhere.
+  // (Use "Mark as free" to set a session free regardless of the client's rate.)
+  const isFree = a.priceAmount === 0 || effectivePrice === 0;
   items.push({
   id: `k-${a.id}`,
   source: "kinesiology",
   date: format(appDate, 'yyyy-MM-dd'),
+  datetime: a.date,
   time: format(appDate, 'h:mm a'),
   title: a.clientName || "Appointment",
  subtitle: null,
@@ -267,6 +393,15 @@ const UnifiedCalendarPage = () => {
  tag: a.tag || a.status || "Kinesiology",
  priceAmount: a.priceAmount,
  standardRate: a.standardRate,
+ status: a.status,
+ cancelled: (a.status || "").toLowerCase() === "cancelled",
+ paid: a.paymentReceived,
+ isFree,
+ amount: isFree ? null : (effectivePrice || null),
+ calcomUid: a.calcomUid,
+ clientId: a.clientId,
+ appointmentId: a.id,
+ eventTypeId: CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID,
  });
  });
 
@@ -285,7 +420,7 @@ const UnifiedCalendarPage = () => {
   return parseStart(a.time || "") - parseStart(b.time || "");
   });
   return items;
-  }, [voiceLessons, kinesiologyAppts]);
+  }, [voiceLessons, kinesiologyAppts, voiceBookings]);
 
   const weeklyEvents: CalendarEvent[] = useMemo(() => {
   const ws = startOfWeek(weekStart);
@@ -350,7 +485,8 @@ const UnifiedCalendarPage = () => {
   icon={CalendarIcon}
   iconClassName="bg-primary text-white "
   actions={
- <div className="flex gap-2">
+ <div className="flex gap-2 items-center">
+ <ShareAvailabilityButton />
  <Button
  variant="outline"
  size="sm"
@@ -380,6 +516,17 @@ const UnifiedCalendarPage = () => {
    {/* Shared view toggle */}
    <div className="flex items-center justify-between mb-4">
      <div className="flex bg-muted rounded-xl p-0.5 border border-border">
+       <button
+         onClick={() => setViewMode("list")}
+         className={cn(
+           "px-4 py-2 rounded-[10px] text-xs font-semibold transition-all",
+           viewMode === "list"
+           ? "bg-card text-foreground shadow-sm"
+           : "text-muted-foreground hover:text-foreground"
+         )}
+       >
+         List
+       </button>
        <button
          onClick={() => setViewMode("month")}
          className={cn(
@@ -416,7 +563,15 @@ const UnifiedCalendarPage = () => {
      </div>
    </div>
 
-   {viewMode === "month" ? (
+   {viewMode === "list" ? (
+
+   <BookingsList
+     items={calendarItems}
+     onChanged={() => { refetchVoice(); refetchKinesiology(); refetchVoiceBookings(); }}
+     onNewBooking={handleNewBooking}
+   />
+
+   ) : viewMode === "month" ? (
 
    <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden animate-in fade-in duration-500">
    {/* Legend */}
@@ -647,7 +802,7 @@ const UnifiedCalendarPage = () => {
 
    </div>
 
-    {viewMode !== "overview" && (
+    {viewMode !== "overview" && viewMode !== "list" && (
     <div className="w-24 shrink-0 flex flex-col items-center gap-6 pt-2">
       <EarningsPanel
         summary={monthlySummary}
@@ -662,68 +817,160 @@ const UnifiedCalendarPage = () => {
 
   )}
 
+  {/* One-stop New Booking: Voice */}
+  <SimpleBookDialog
+    open={voiceBookOpen}
+    onOpenChange={(o) => { setVoiceBookOpen(o); if (!o) { setVoicePrefillDate(undefined); setVoicePrefillTime(undefined); } }}
+    prefillDuration={voicePrefillDuration}
+    prefillDate={voicePrefillDate}
+    prefillTime={voicePrefillTime}
+  />
+
+  {/* One-stop New Booking: FNH — pick a client, then the booking dialog */}
+  <Dialog open={fnhPickOpen} onOpenChange={(open) => { if (!open) setFnhPickOpen(false); }}>
+    <DialogContent className="sm:max-w-[440px] rounded-2xl p-0 mx-4 w-[calc(100%-2rem)] flex flex-col bg-background">
+      <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-chart-primary text-white flex items-center justify-center shadow-sm">
+            <User size={20} />
+          </div>
+          <div>
+            <DialogTitle className="text-lg font-semibold">New FNH Booking</DialogTitle>
+            <DialogDescription className="text-muted-foreground text-xs">Choose a client to book a session for.</DialogDescription>
+          </div>
+        </div>
+      </DialogHeader>
+      <div className="px-6 py-5">
+        <div className="max-h-72 overflow-y-auto space-y-1.5">
+          {(clients || []).map((c: any) => (
+            <button
+              key={c.id}
+              onClick={() => { setFnhClientId(c.id); setFnhPickOpen(false); }}
+              className="w-full flex items-center gap-3 p-3 rounded-xl border-2 border-border hover:border-chart-primary/40 transition-all text-left"
+            >
+              <div className="w-8 h-8 rounded-full bg-chart-primary/10 flex items-center justify-center shrink-0">
+                <User size={14} className="text-chart-primary" />
+              </div>
+              <span className="text-sm font-medium truncate">{c.name}</span>
+            </button>
+          ))}
+          {(clients || []).length === 0 && (
+            <p className="text-xs text-muted-foreground text-center py-4">No clients found</p>
+          )}
+        </div>
+      </div>
+    </DialogContent>
+  </Dialog>
+
+  <QuickBookDialog
+    clientId={fnhClientId}
+    open={!!fnhClientId}
+    prefillPrice={fnhPrefillPrice}
+    onOpenChange={(open) => { if (!open) setFnhClientId(null); }}
+    onSuccess={() => { setFnhClientId(null); refetchKinesiology(); }}
+  />
+
   {bookSlot && (
-    <Dialog open onOpenChange={(open) => { if (!open) { setBookSlot(null); setBookClient(null); } }}>
+    <Dialog open onOpenChange={(open) => { if (!open) { setBookSlot(null); setBookClient(null); setBookSvc(null); } }}>
       <DialogContent className="sm:max-w-[480px] rounded-2xl p-0 mx-4 w-[calc(100%-2rem)] flex flex-col bg-background">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-chart-emerald text-white flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-sm">
               <Plus size={20} />
             </div>
             <div>
-              <DialogTitle className="text-lg font-semibold">Book FNH Session</DialogTitle>
+              <DialogTitle className="text-lg font-semibold">
+                {bookSvc ? "Select Client" : "New Booking"}
+              </DialogTitle>
               <DialogDescription className="text-muted-foreground text-xs">
                 {format(setMinutes(setHours(bookSlot.date, bookSlot.hour), 0), "EEE, MMM d 'at' h:mm a")}
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
-        <div className="px-6 py-5 space-y-4">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
-              Select Client
-            </p>
-            <div className="max-h-64 overflow-y-auto space-y-1.5">
-              {(clients || []).map((c: any) => (
+
+        {/* Step 1 — choose what to book */}
+        {!bookSvc ? (
+          <div className="px-6 py-5 space-y-2">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Choose appointment</p>
+            {SLOT_SERVICES.map((s) => {
+              const isVoice = s.kind === "voice";
+              return (
                 <button
-                  key={c.id}
-                  onClick={() => setBookClient(c.id)}
+                  key={s.key}
+                  onClick={() => {
+                    if (isVoice) {
+                      const dateStr = format(bookSlot.date, "yyyy-MM-dd");
+                      const timeStr = `${String(bookSlot.hour).padStart(2, "0")}:00`;
+                      setBookSlot(null);
+                      openVoiceBooking((s as any).duration, dateStr, timeStr);
+                    } else {
+                      setBookSvc(s.key);
+                    }
+                  }}
                   className={cn(
-                    "w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left",
-                    bookClient === c.id
-                      ? "border-chart-emerald bg-chart-emerald/5"
-                      : "border-border hover:border-chart-emerald/30"
+                    "w-full flex items-center gap-3 p-3 rounded-xl border-2 border-border transition-all text-left",
+                    isVoice ? "hover:border-chart-destructive/40" : "hover:border-chart-primary/40"
                   )}
                 >
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <User size={14} className="text-primary" />
+                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0", isVoice ? "bg-chart-destructive/10 text-chart-destructive" : "bg-chart-primary/10 text-chart-primary")}>
+                    {isVoice ? <Mic size={15} /> : <User size={15} />}
                   </div>
-                  <span className="text-sm font-medium truncate">{c.name}</span>
+                  <span className="text-sm font-medium">{s.label}</span>
                 </button>
-              ))}
-              {(clients || []).length === 0 && (
-                <p className="text-xs text-muted-foreground text-center py-4">No clients found</p>
-              )}
-            </div>
+              );
+            })}
           </div>
-        </div>
-        <div className="px-6 pb-6 pt-2 border-t border-border">
-          <Button
-            onClick={() => {
-              if (!bookSlot || !bookClient) return;
-              const date = setMinutes(setHours(bookSlot.date, bookSlot.hour), 0);
-              bookMutation.mutate({ clientId: bookClient, date });
-            }}
-            disabled={!bookClient || bookMutation.isPending}
-            className="w-full bg-chart-emerald hover:bg-chart-emerald/90 h-12 rounded-xl font-semibold text-sm"
-          >
-            {bookMutation.isPending ? (
-              <><Loader2 size={16} className="mr-2 animate-spin" /> Booking…</>
-            ) : (
-              <><Plus size={16} className="mr-2" /> Book Session</>
-            )}
-          </Button>
-        </div>
+        ) : (
+          <>
+            <div className="px-6 py-5 space-y-4">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Select Client</p>
+                <div className="max-h-64 overflow-y-auto space-y-1.5">
+                  {(clients || []).map((c: any) => (
+                    <button
+                      key={c.id}
+                      onClick={() => setBookClient(c.id)}
+                      className={cn(
+                        "w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left",
+                        bookClient === c.id ? "border-chart-primary bg-chart-primary/5" : "border-border hover:border-chart-primary/30"
+                      )}
+                    >
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <User size={14} className="text-primary" />
+                      </div>
+                      <span className="text-sm font-medium truncate">{c.name}</span>
+                    </button>
+                  ))}
+                  {(clients || []).length === 0 && (
+                    <p className="text-xs text-muted-foreground text-center py-4">No clients found</p>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="px-6 pb-6 pt-2 border-t border-border flex gap-2">
+              <Button variant="outline" onClick={() => { setBookSvc(null); setBookClient(null); }} className="h-12 rounded-xl font-semibold text-sm">
+                Back
+              </Button>
+              <Button
+                onClick={() => {
+                  if (!bookSlot || !bookClient) return;
+                  const svc = SLOT_SERVICES.find((s) => s.key === bookSvc) as any;
+                  const date = setMinutes(setHours(bookSlot.date, bookSlot.hour), 0);
+                  bookMutation.mutate({ clientId: bookClient, date, eventTypeId: svc?.eventTypeId, price: svc?.price });
+                }}
+                disabled={!bookClient || bookMutation.isPending}
+                className="flex-1 h-12 rounded-xl font-semibold text-sm"
+              >
+                {bookMutation.isPending ? (
+                  <><Loader2 size={16} className="mr-2 animate-spin" /> Booking…</>
+                ) : (
+                  <><Plus size={16} className="mr-2" /> Book Session</>
+                )}
+              </Button>
+            </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   )}

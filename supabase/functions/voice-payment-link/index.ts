@@ -49,8 +49,8 @@ serve(async (req) => {
         type: "voice_lesson",
       },
       ...(email ? { customer_email: email } : {}),
-      success_url: `${req.headers.get("origin") || req.headers.get("referer")?.replace(/\/+$/, "") || "https://antigravity.io"}/voice/calendar`,
-      cancel_url: `${req.headers.get("origin") || req.headers.get("referer")?.replace(/\/+$/, "") || "https://antigravity.io"}/voice/calendar`,
+      success_url: `${Deno.env.get("SITE_URL") || "https://kinesiology-app.vercel.app"}/voice/paid`,
+      cancel_url: `${Deno.env.get("SITE_URL") || "https://kinesiology-app.vercel.app"}/voice/calendar`,
     });
 
     console.log(`[${functionName}] Created checkout session: ${session.id} for ${lessonTitle}`);

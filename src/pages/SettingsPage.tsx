@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import IntegrationStatus from "../components/crm/settings/IntegrationStatus";
 import StripeSettings from "../components/crm/settings/StripeSettings";
+import PricingSettings from "../components/crm/settings/PricingSettings";
 import NotionSettings from "../components/crm/settings/NotionSettings";
 import CalcomSettings from "../components/crm/settings/CalcomSettings";
 import DuplicateResolutionCenter from "../components/crm/settings/DuplicateResolutionCenter";
@@ -71,6 +72,8 @@ const SettingsPage = () => {
               <CalcomSettings />
               <NotionSettings />
             </div>
+
+            <PricingSettings />
 
             <StripeSettings />
           </TabsContent>

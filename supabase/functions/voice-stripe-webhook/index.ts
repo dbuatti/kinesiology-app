@@ -8,58 +8,70 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-async function syncCalcomVoicePayment(calcomBookingId: string, session: any) {
-  const CALCOM_KEY = Deno.env.get("CALCOM_API_KEY");
-  if (!CALCOM_KEY) {
-    console.log(`[voice-stripe-webhook] Skipping cal.com sync: CALCOM_API_KEY not set`);
+async function getGmailAccessToken(clientId: string, clientSecret: string, refreshToken: string) {
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({ client_id: clientId, client_secret: clientSecret, refresh_token: refreshToken, grant_type: "refresh_token" }),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(`Gmail Auth Error: ${data.error_description || data.error}`);
+  return data.access_token;
+}
+
+async function sendGmail(accessToken: string, from: string, to: string, subject: string, htmlBody: string) {
+  const utf8Subject = `=?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`;
+  const message = [
+    `From: ${from}`, `To: ${to}`, `Bcc: daniele.buatti@gmail.com`,
+    `Content-Type: text/html; charset=utf-8`, `MIME-Version: 1.0`, `Subject: ${utf8Subject}`, ``, htmlBody,
+  ].join("\n");
+  const encoded = btoa(unescape(encodeURIComponent(message))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ raw: encoded }),
+  });
+}
+
+// Sends a "payment received" confirmation to the client. Non-fatal on failure.
+async function sendVoicePaymentConfirmation(session: any) {
+  const to = session.customer_details?.email || session.customer_email;
+  if (!to) return;
+  const CLIENT_ID = Deno.env.get("GMAIL_CLIENT_ID");
+  const CLIENT_SECRET = Deno.env.get("GMAIL_CLIENT_SECRET");
+  const REFRESH = Deno.env.get("GMAIL_REFRESH_TOKEN");
+  const SENDER = Deno.env.get("GMAIL_USER_EMAIL");
+  if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH || !SENDER) {
+    console.log("[voice-stripe-webhook] Gmail creds missing — skipping confirmation email");
     return;
   }
-
-  const headers = {
-    "Authorization": `Bearer ${CALCOM_KEY}`,
-    "cal-api-version": "2026-02-25",
-    "Content-Type": "application/json",
-  };
-
+  const name = (session.customer_details?.name || session.metadata?.student_name || "there").split(" ")[0];
+  const amount = session.amount_total ? `$${(session.amount_total / 100).toFixed(2)} ${(session.currency || "AUD").toUpperCase()}` : "";
+  const lessonDate = session.metadata?.lesson_date || "";
   try {
-    // Get numeric booking ID
-    const getRes = await fetch(`https://api.cal.com/v2/bookings/${calcomBookingId}`, { method: "GET", headers });
-    const bookingData = getRes.ok ? await getRes.json() : null;
-    const numericId = bookingData?.data?.id || bookingData?.id;
-    console.log(`[voice-stripe-webhook] Cal.com booking ${calcomBookingId}, numeric ID: ${numericId}`);
-
-    if (numericId) {
-      // Create a payment record so Cal.com considers the booking paid
-      const payRes = await fetch(`https://api.cal.com/v1/payments`, {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${CALCOM_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          bookingId: numericId,
-          amount: session.amount_total ? Math.round(session.amount_total / 100) : 95,
-          currency: (session.currency || "aud").toLowerCase(),
-          success: true,
-          paymentOption: "FULL",
-          data: { externalId: session.payment_intent || session.id },
-        }),
-      });
-
-      if (payRes.ok) {
-        console.log(`[voice-stripe-webhook] Cal.com: Payment created for booking ${numericId}`);
-      } else {
-        const payErr = await payRes.json();
-        console.error(`[voice-stripe-webhook] Cal.com payment create failed: ${payRes.status}`, JSON.stringify(payErr).slice(0, 200));
-      }
-    }
-
-    // Update metadata for ICS feed / traceability
-    await fetch(`https://api.cal.com/v2/bookings/${calcomBookingId}`, {
-      method: "PATCH",
-      headers,
-      body: JSON.stringify({ metadata: { is_paid: "true" } }),
-    }).catch(() => {});
-
-  } catch (err) {
-    console.error(`[voice-stripe-webhook] Cal.com sync error:`, err.message);
+    const token = await getGmailAccessToken(CLIENT_ID, CLIENT_SECRET, REFRESH);
+    const html = `
+      <!DOCTYPE html><html><body style="margin:0;padding:0;font-family:sans-serif;">
+        <center style="width:100%;padding:40px 0;background:#f8fafc;">
+          <table role="presentation" width="100%" style="max-width:560px;margin:0 auto;background:#fff;border-radius:32px;overflow:hidden;">
+            <tr><td style="height:6px;background:#E11D48;"></td></tr>
+            <tr><td style="padding:48px 40px;text-align:center;">
+              <div style="font-size:44px;">✅</div>
+              <div style="color:#E11D48;font-size:11px;font-weight:900;letter-spacing:0.3em;text-transform:uppercase;margin-top:12px;">Payment Received</div>
+              <h1 style="color:#1E293B;font-size:24px;margin:12px 0 8px;">Thank you, ${name}! 🎵</h1>
+              <p style="color:#475569;font-size:15px;line-height:1.6;">Your payment${amount ? ` of <strong>${amount}</strong>` : ""} is confirmed${lessonDate ? ` for your lesson on <strong>${lessonDate}</strong>` : ""}. Your spot is locked in — I'm looking forward to working with you.</p>
+              <div style="border-top:1px solid #F1F5F9;margin-top:32px;padding-top:24px;text-align:left;">
+                <div style="font-weight:700;color:#1E293B;">Daniele Buatti</div>
+                <div style="color:#E11D48;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;">Voice Coach</div>
+              </div>
+            </td></tr>
+          </table>
+        </center>
+      </body></html>`;
+    await sendGmail(token, SENDER, to, "Payment received 🎵 — Your lesson is confirmed", html);
+    console.log(`[voice-stripe-webhook] Confirmation email sent to ${to}`);
+  } catch (e) {
+    console.error("[voice-stripe-webhook] Confirmation email failed (non-fatal):", e.message);
   }
 }
 
@@ -159,10 +171,9 @@ serve(async (req) => {
         console.log(`[${functionName}] Could not resolve lessonId, skipping voice_bookings update`);
       }
 
-      // Sync payment status back to cal.com
-      if (calcomBookingId) {
-        await syncCalcomVoicePayment(calcomBookingId, session);
-      }
+      // NOTE: No Cal.com payment sync needed. The event type no longer has "Require payment"
+      // ON, so bookings already sync to the calendar on creation. Stripe's
+      // checkout.session.completed is the single source of truth for "paid".
 
       // Update Notion payment status
       if (lessonId) {
@@ -214,6 +225,9 @@ serve(async (req) => {
           console.log(`[${functionName}] Inserted new paid booking for ${customerEmail}`);
         }
       }
+
+      // Email the client a payment confirmation (non-fatal).
+      await sendVoicePaymentConfirmation(session);
     }
 
     return new Response(JSON.stringify({ received: true }), {

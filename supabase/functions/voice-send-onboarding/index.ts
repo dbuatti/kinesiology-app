@@ -72,7 +72,11 @@ serve(async (req) => {
     const GMAIL_CLIENT_SECRET = Deno.env.get("GMAIL_CLIENT_SECRET");
     const GMAIL_REFRESH_TOKEN = Deno.env.get("GMAIL_REFRESH_TOKEN");
     const SENDER_EMAIL = Deno.env.get("GMAIL_USER_EMAIL");
-    const APP_ORIGIN = req.headers.get('origin') || 'https://kinesiology-app.vercel.app';
+    // Public-facing site URL for client-facing links (Stripe success/cancel, onboarding).
+    // Must NOT depend on the caller's origin — when the practitioner books from localhost,
+    // the client's email/redirect would otherwise point at localhost. Set the SITE_URL
+    // secret to your production domain.
+    const APP_ORIGIN = Deno.env.get('SITE_URL') || 'https://kinesiology-app.vercel.app';
 
     if (!GMAIL_CLIENT_ID || !GMAIL_CLIENT_SECRET || !GMAIL_REFRESH_TOKEN || !SENDER_EMAIL) {
       throw new Error("Missing Gmail credentials in Supabase Secrets.");
@@ -164,8 +168,8 @@ serve(async (req) => {
             quantity: 1,
           }],
           mode: 'payment',
-          success_url: `${APP_ORIGIN}/voice/calendar?paid=true`,
-          cancel_url: `${APP_ORIGIN}/voice/calendar`,
+          success_url: `${APP_ORIGIN}/voice/paid`,
+          cancel_url: `${APP_ORIGIN}/voice-onboarding/${encodeURIComponent(studentEmail)}`,
           metadata,
         });
         paymentUrl = session.url;

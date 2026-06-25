@@ -22,7 +22,6 @@ import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import VoiceOnboardingForm from "@/components/crm/VoiceOnboardingForm";
 import VoiceMessagePopover from "@/components/crm/VoiceMessagePopover";
-import VoiceQuickBookDialog from "@/components/crm/VoiceQuickBookDialog";
 import SimpleBookDialog from "@/components/crm/SimpleBookDialog";
 import { cn } from "@/lib/utils";
 
@@ -66,8 +65,6 @@ const VoiceClientsPage = () => {
  const [selectedIds, setSelectedIds] = useState<string[]>([]);
  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
  const [loggingContact, setLoggingContact] = useState<string | null>(null);
-  const [bookStudent, setBookStudent] = useState<{ id: string; name: string | null; email: string | null } | null>(null);
-  const [bookOpen, setBookOpen] = useState(false);
   const [simpleBookOpen, setSimpleBookOpen] = useState(false);
   const [simpleBookStudentId, setSimpleBookStudentId] = useState<string | null>(null);
 
@@ -521,16 +518,6 @@ const VoiceClientsPage = () => {
  );
  })}
  </div>
-
-  {/* Quick Book Dialog (Cal.com slots) */}
-  <VoiceQuickBookDialog
-  student={bookStudent}
-  open={bookOpen}
-  onOpenChange={(o) => {
-  setBookOpen(o);
-  if (!o) setBookStudent(null);
-  }}
-  />
 
   {/* Simple Book Dialog (pick any date/time) */}
   <SimpleBookDialog

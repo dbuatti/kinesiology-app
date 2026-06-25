@@ -146,8 +146,8 @@ serve(async (req) => {
           quantity: 1,
         }],
         mode: 'payment',
-        success_url: `${req.headers.get('origin') || 'https://kinesiology-app.vercel.app'}/onboarding/success`,
-        cancel_url: `${req.headers.get('origin') || 'https://kinesiology-app.vercel.app'}/onboarding/${client.id}`,
+        success_url: `${Deno.env.get('SITE_URL') || req.headers.get('origin') || 'https://kinesiology-app.vercel.app'}/onboarding/success`,
+        cancel_url: `${Deno.env.get('SITE_URL') || req.headers.get('origin') || 'https://kinesiology-app.vercel.app'}/onboarding/${client.id}`,
         metadata: {
           appointment_id: targetApp.id,
           client_id: client.id

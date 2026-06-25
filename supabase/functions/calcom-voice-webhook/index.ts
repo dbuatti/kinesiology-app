@@ -343,6 +343,57 @@ serve(async (req) => {
 
     console.log(`[${functionName}] Lesson successfully logged for ${attendeeEmail}`);
 
+    // Send the Stripe "Pay Now" / onboarding email — but ONLY for bookings made via the
+    // embedded Cal.com page. CRM bookings (source "Voice Studio CRM") already trigger the
+    // onboarding email from the booking dialog, so we skip them here to avoid a double-send.
+    const bookingSource = payload.metadata?.source || payload.data?.metadata?.source || null;
+    if (bookingSource !== "Voice Studio CRM") {
+      try {
+        const supabase = createClient(
+          Deno.env.get("SUPABASE_URL") ?? "",
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+        );
+
+        // Resolve the price for this event type from the editable event_pricing table.
+        const eventTypeId = payload.eventTypeId || payload.eventType?.id || payload.type?.id || null;
+        let cost = 0;
+        let duration = null;
+        let sendLink = true;
+        if (eventTypeId) {
+          const { data: pricing } = await supabase
+            .from("event_pricing")
+            .select("price, duration_minutes, send_payment_link")
+            .eq("calcom_event_type_id", eventTypeId)
+            .maybeSingle();
+          if (pricing) {
+            sendLink = pricing.send_payment_link;
+            duration = pricing.duration_minutes;
+            cost = sendLink ? Number(pricing.price) || 0 : 0;
+          }
+        }
+
+        await fetch(`${SUPABASE_URL}/functions/v1/voice-send-onboarding`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+          },
+          body: JSON.stringify({
+            studentName: attendee.name || attendeeEmail.split("@")[0],
+            studentEmail: attendeeEmail,
+            date: lessonDate,
+            time: lessonTime,
+            duration,
+            cost,
+            calcomBookingUid,
+          }),
+        });
+        console.log(`[${functionName}] Onboarding/payment email triggered for embed booking (cost ${cost}).`);
+      } catch (onboardErr) {
+        console.error(`[${functionName}] Onboarding send failed (non-fatal):`, onboardErr.message);
+      }
+    }
+
     return new Response(
       JSON.stringify({ success: true, message: "Lesson scheduled in both Notion databases." }),
       {

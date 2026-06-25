@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { useEventPricing } from "@/hooks/useEventPricing";
 import { cn } from "@/lib/utils";
 import {
   Loader2, Calendar, Clock, Check, Music, Search, Mail, CalendarPlus, CheckCircle2
@@ -30,6 +31,7 @@ interface SimpleBookDialogProps {
   prefillDate?: string;
   prefillTime?: string;
   prefillStudentId?: string;
+  prefillDuration?: string;
 }
 
 const EVENT_TYPES = [
@@ -37,14 +39,14 @@ const EVENT_TYPES = [
   { key: "45", label: "45 min", eventTypeId: "5925021", price: "$75" },
 ];
 
-const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefillStudentId }: SimpleBookDialogProps) => {
+const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefillStudentId, prefillDuration }: SimpleBookDialogProps) => {
   const queryClient = useQueryClient();
   const [step, setStep] = useState<"details" | "confirm">("details");
   const [studentSearch, setStudentSearch] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<VoiceStudent | null>(null);
   const [date, setDate] = useState(prefillDate || format(addDays(new Date(), 1), "yyyy-MM-dd"));
   const [time, setTime] = useState(prefillTime || "10:00");
-  const [duration, setDuration] = useState("60");
+  const [duration, setDuration] = useState(prefillDuration || "60");
   const [sendOnboarding, setSendOnboarding] = useState(true);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -66,12 +68,15 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
       setStudentSearch("");
       setDate(prefillDate || format(addDays(new Date(), 1), "yyyy-MM-dd"));
       setTime(prefillTime || "10:00");
-      setDuration("60");
+      setDuration(prefillDuration || "60");
       setSendOnboarding(true);
       setSendingEmail(false);
       setEmailSent(false);
+    } else if (prefillDuration) {
+      // Apply the chosen duration when opened from the "New Booking" menu.
+      setDuration(prefillDuration);
     }
-  }, [open, prefillDate, prefillTime]);
+  }, [open, prefillDate, prefillTime, prefillDuration]);
 
   useEffect(() => {
     if (prefillStudentId && students.length > 0 && !selectedStudent) {
@@ -90,6 +95,9 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
   }, [students, studentSearch]);
 
   const eventType = EVENT_TYPES.find(e => e.key === duration)!;
+  const { priceFor } = useEventPricing();
+  // Price comes from the editable event_pricing table; fall back to the static label.
+  const costVal = priceFor(eventType.eventTypeId) ?? parseInt(eventType.price.replace("$", ""));
 
   const { data: calSlots } = useQuery<string[]>({
     queryKey: ["simple-book-slots", date, eventType?.eventTypeId],
@@ -141,7 +149,6 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
     });
     if (bookingError) throw bookingError;
 
-    const costVal = parseInt(eventType.price.replace("$", ""));
     const { data: lessonData, error: lessonError } = await supabase.functions.invoke("voice-schedule-lesson", {
       body: {
         studentId: selectedStudent.id,
@@ -190,7 +197,6 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
       const dateObj = new Date(date + "T" + time);
       const dateStr = format(dateObj, "MMM d, yyyy");
       const timeStr = format(dateObj, "h:mm a");
-      const costVal = parseInt(eventType.price.replace("$", ""));
       const calcomBookingUid = uid || lastBookingUid;
       const { error } = await supabase.functions.invoke("voice-send-onboarding", {
         body: {
@@ -301,7 +307,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                       : "bg-card border-border text-foreground hover:border-rose-300 dark:hover:border-rose-700"
                   )}
                 >
-                  {et.label} · {et.price}
+                  {et.label} · {priceFor(et.eventTypeId) != null ? `$${priceFor(et.eventTypeId)}` : et.price}
                 </button>
               ))}
             </div>
@@ -440,7 +446,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
               </div>
               <div className="flex items-center gap-2 text-sm font-bold">
                 <Clock size={14} className="text-rose-500" />
-                {format(new Date(date + "T" + time), "h:mm a")} · {eventType.label} · {eventType.price}
+                {format(new Date(date + "T" + time), "h:mm a")} · {eventType.label} · ${costVal}
               </div>
             </div>
           )}

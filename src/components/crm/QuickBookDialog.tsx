@@ -138,6 +138,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
           status: "Scheduled",
           is_paid: selectedPrice > 0,
           calcom_booking_id: calcomId,
+          calcom_event_type_id: priceEventType?.id ? parseInt(priceEventType.id, 10) : null,
           price_amount: selectedPrice,
           price_currency: "AUD",
           send_onboarding: sendOnboarding,

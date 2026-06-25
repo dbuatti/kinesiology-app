@@ -141,6 +141,7 @@ serve(async (req) => {
           client_id: dbClient.id,
           date: startTime,
           calcom_booking_id: calcomId,
+          calcom_event_type_id: booking.eventTypeId ?? null,
           is_paid: booking.metadata?.is_paid === "true" || !!booking.payment?.[0]
         }, { 
           onConflict: targetId ? 'id' : 'calcom_booking_id' 

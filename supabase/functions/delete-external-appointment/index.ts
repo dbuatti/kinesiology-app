@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { requireUser } from "../_shared/auth.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,6 +10,8 @@ const corsHeaders = {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+  const authErr = await requireUser(req, corsHeaders)
+  if (authErr) return authErr
 
   try {
     const { notionPageId, notionPlannerId, calcomBookingId } = await req.json()

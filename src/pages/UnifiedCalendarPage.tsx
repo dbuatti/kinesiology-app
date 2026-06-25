@@ -76,6 +76,7 @@ interface KinesiologyAppt {
  paymentReceived: boolean;
  isPaid: boolean;
  calcomUid: string | null;
+ calcomEventTypeId: number | null;
 }
 
 interface CalendarItem {
@@ -157,6 +158,12 @@ const SLOT_SERVICES = [
   { key: "fnhFree", group: "FNH", label: "FNH Community · Free", kind: "fnh", eventTypeId: "5927215", price: 0 },
 ] as const;
 
+// The Cal.com event type that represents a free community session ($0).
+const communityFreeEventTypeId = (() => {
+  const t = CALCOM_CONFIG.EVENT_TYPES.find((e: any) => e.price === 0);
+  return t?.id ? parseInt(t.id, 10) : null;
+})();
+
 const UnifiedCalendarPage = () => {
   const navigate = useNavigate();
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -222,7 +229,7 @@ const UnifiedCalendarPage = () => {
  queryFn: async () => {
  const { data } = await supabase
  .from("appointments")
- .select("id, date, status, tag, price_amount, is_paid, payment_received, calcom_booking_id, client_id, clients (name, is_practitioner, standard_rate)")
+ .select("id, date, status, tag, price_amount, is_paid, payment_received, calcom_booking_id, calcom_event_type_id, client_id, clients (name, is_practitioner, standard_rate)")
  .gte("date", fetchStart)
  .lte("date", fetchEnd)
  .order("date", { ascending: true });
@@ -241,6 +248,7 @@ const UnifiedCalendarPage = () => {
  paymentReceived: a.payment_received === true,
  isPaid: a.is_paid === true,
  calcomUid: a.calcom_booking_id ?? null,
+ calcomEventTypeId: a.calcom_event_type_id ?? null,
 })) as KinesiologyAppt[];
  },
   staleTime: 60_000,
@@ -311,6 +319,7 @@ const UnifiedCalendarPage = () => {
           status: "Scheduled",
           is_paid: isPaidSession,
           calcom_booking_id: calcomId,
+          calcom_event_type_id: eventTypeId ? parseInt(eventTypeId, 10) : (CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID ? parseInt(CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID, 10) : null),
           price_amount: rate,
           price_currency: "AUD",
           name: `Session — ${format(date, "MMM d, yyyy")}`,
@@ -385,9 +394,11 @@ const UnifiedCalendarPage = () => {
   // Charge the client's CURRENT rate (from Client Audit / standard_rate) — this is
   // what "Send payment link" bills. Falls back to any per-appointment price.
   const currentRate = (a.standardRate && a.standardRate > 0) ? a.standardRate : (a.priceAmount && a.priceAmount > 0 ? a.priceAmount : 0);
-  // Free is an explicit state: a deliberate $0 price, or no rate at all.
-  // (Use "Mark as free" to set a session free regardless of the client's rate.)
-  const isFree = a.priceAmount === 0 || currentRate === 0;
+  // Free when: booked under the Community-Free Cal.com event type (auto-detected
+  // once synced), or a deliberate $0 price, or no rate at all.
+  const isFree = (communityFreeEventTypeId != null && a.calcomEventTypeId === communityFreeEventTypeId)
+    || a.priceAmount === 0
+    || currentRate === 0;
   items.push({
   id: `k-${a.id}`,
   source: "kinesiology",

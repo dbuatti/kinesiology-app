@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { requireUser } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,6 +15,8 @@ serve(async (req) => {
   console.log(`[${functionName}] Request received`);
 
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const authErr = await requireUser(req, corsHeaders);
+  if (authErr) return authErr;
 
   try {
     const NOTION_KEY = Deno.env.get("NOTION_API_KEY");

@@ -3,6 +3,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@14.25.0'
 import { format, subMonths } from 'https://esm.sh/date-fns@3.6.0'
+import { requireUser } from "../_shared/auth.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -62,6 +63,8 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+  const authErr = await requireUser(req, corsHeaders)
+  if (authErr) return authErr
 
   try {
     const body = await req.json().catch(() => ({}));

@@ -28,9 +28,6 @@ verify_jwt = false
 [functions.send-manual-onboarding]
 verify_jwt = false
 
-[functions.sync-to-mailchimp]
-verify_jwt = false
-
 [functions.notion-to-calcom]
 verify_jwt = false
 

@@ -78,7 +78,7 @@ serve(async (req) => {
       throw new Error("Missing Gmail credentials in Supabase Secrets.");
     }
 
-    const { studentName, studentEmail, date, time, duration, cost } = await req.json();
+    const { studentName, studentEmail, date, time, duration, cost, calcomBookingUid } = await req.json();
     if (!studentName || !studentEmail || !date || !time) {
       throw new Error("Missing required fields: studentName, studentEmail, date, time");
     }
@@ -134,14 +134,22 @@ serve(async (req) => {
       }
     }
 
-    // 2. Create Stripe Checkout Session (if cost provided)
-    let stripeUrl = null;
+    // 2. Create Stripe payment link (primary) with Cal.com booking UID for webhook matching
+    let paymentUrl = null;
     if (cost && STRIPE_KEY) {
       try {
         const stripe = new Stripe(STRIPE_KEY, {
           apiVersion: '2023-10-16',
           httpClient: Stripe.createFetchHttpClient(),
         });
+        const metadata: Record<string, string> = {
+          student_name: studentName,
+          student_email: studentEmail,
+          lesson_date: date,
+        };
+        if (calcomBookingUid && !calcomBookingUid.startsWith("force-")) {
+          metadata.calcom_booking_uid = calcomBookingUid;
+        }
         const session = await stripe.checkout.sessions.create({
           customer_email: studentEmail,
           line_items: [{
@@ -158,13 +166,9 @@ serve(async (req) => {
           mode: 'payment',
           success_url: `${APP_ORIGIN}/voice/calendar?paid=true`,
           cancel_url: `${APP_ORIGIN}/voice/calendar`,
-          metadata: {
-            student_name: studentName,
-            student_email: studentEmail,
-            lesson_date: date,
-          },
+          metadata,
         });
-        stripeUrl = session.url;
+        paymentUrl = session.url;
       } catch (stripeErr) {
         console.error(`[${functionName}] Stripe error (non-fatal):`, stripeErr.message);
       }
@@ -186,11 +190,11 @@ serve(async (req) => {
     const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
     const onboardingUrl = `${APP_ORIGIN}/voice-onboarding/${encodeURIComponent(studentEmail)}`;
 
-    const paymentSection = stripeUrl ? `
+    const paymentSection = paymentUrl ? `
       <div style="background-color: #FFF1F2; border-radius: 24px; padding: 24px; margin: 28px 0; border: 1px solid #FECDD3; text-align: center;">
         <div style="font-size: 10px; font-weight: 800; color: #BE123C; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;">Secure Payment (AU $${cost})</div>
-        <p style="margin: 0 0 20px 0; font-size: 14px; color: #475569; line-height: 1.6;">You can settle the lesson fee securely via Stripe:</p>
-        <a href="${stripeUrl}" style="display: inline-block; background-color: #E11D48; color: #ffffff; padding: 14px 32px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 14px;">Pay via Stripe</a>
+        <p style="margin: 0 0 20px 0; font-size: 14px; color: #475569; line-height: 1.6;">Complete your payment to confirm your lesson time.</p>
+        <a href="${paymentUrl}" style="display: inline-block; background-color: #E11D48; color: #ffffff; padding: 14px 32px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 14px;">Pay Now</a>
       </div>
     ` : '';
 
@@ -254,7 +258,7 @@ serve(async (req) => {
 
     console.log(`[${functionName}] Onboarding email sent to ${studentEmail}`);
 
-    return new Response(JSON.stringify({ success: true, stripeUrl }), {
+    return new Response(JSON.stringify({ success: true, paymentUrl }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

@@ -8,7 +8,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-async function syncCalcomVoicePayment(calcomBookingId: string) {
+async function syncCalcomVoicePayment(calcomBookingId: string, session: any) {
   const CALCOM_KEY = Deno.env.get("CALCOM_API_KEY");
   if (!CALCOM_KEY) {
     console.log(`[voice-stripe-webhook] Skipping cal.com sync: CALCOM_API_KEY not set`);
@@ -17,41 +17,47 @@ async function syncCalcomVoicePayment(calcomBookingId: string) {
 
   const headers = {
     "Authorization": `Bearer ${CALCOM_KEY}`,
-    "cal-api-version": "2024-08-13",
+    "cal-api-version": "2026-02-25",
     "Content-Type": "application/json",
   };
 
   try {
-    const res = await fetch(`https://api.cal.com/v2/bookings/${calcomBookingId}/confirm`, {
-      method: "POST",
-      headers,
-    });
+    // Get numeric booking ID
+    const getRes = await fetch(`https://api.cal.com/v2/bookings/${calcomBookingId}`, { method: "GET", headers });
+    const bookingData = getRes.ok ? await getRes.json() : null;
+    const numericId = bookingData?.data?.id || bookingData?.id;
+    console.log(`[voice-stripe-webhook] Cal.com booking ${calcomBookingId}, numeric ID: ${numericId}`);
 
-    if (res.ok) {
-      console.log(`[voice-stripe-webhook] Cal.com sync: Booking ${calcomBookingId} confirmed as paid`);
-
-      await fetch(`https://api.cal.com/v2/bookings/${calcomBookingId}`, {
-        method: "PATCH",
-        headers,
-        body: JSON.stringify({ metadata: { is_paid: "true" } }),
-      }).catch(() => {});
-    } else {
-      const err = await res.json();
-      console.error(`[voice-stripe-webhook] Cal.com confirm failed: ${res.status}`, JSON.stringify(err).slice(0, 200));
-
-      const metaRes = await fetch(`https://api.cal.com/v2/bookings/${calcomBookingId}`, {
-        method: "PATCH",
-        headers,
-        body: JSON.stringify({ metadata: { is_paid: "true" } }),
+    if (numericId) {
+      // Create a payment record so Cal.com considers the booking paid
+      const payRes = await fetch(`https://api.cal.com/v1/payments`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${CALCOM_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bookingId: numericId,
+          amount: session.amount_total ? Math.round(session.amount_total / 100) : 95,
+          currency: (session.currency || "aud").toLowerCase(),
+          success: true,
+          paymentOption: "FULL",
+          data: { externalId: session.payment_intent || session.id },
+        }),
       });
 
-      if (metaRes.ok) {
-        console.log(`[voice-stripe-webhook] Cal.com sync (metadata): Booking ${calcomBookingId} marked as paid`);
+      if (payRes.ok) {
+        console.log(`[voice-stripe-webhook] Cal.com: Payment created for booking ${numericId}`);
       } else {
-        const metaErr = await metaRes.json();
-        console.error(`[voice-stripe-webhook] Cal.com sync (metadata) failed: ${metaRes.status}`, JSON.stringify(metaErr).slice(0, 200));
+        const payErr = await payRes.json();
+        console.error(`[voice-stripe-webhook] Cal.com payment create failed: ${payRes.status}`, JSON.stringify(payErr).slice(0, 200));
       }
     }
+
+    // Update metadata for ICS feed / traceability
+    await fetch(`https://api.cal.com/v2/bookings/${calcomBookingId}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ metadata: { is_paid: "true" } }),
+    }).catch(() => {});
+
   } catch (err) {
     console.error(`[voice-stripe-webhook] Cal.com sync error:`, err.message);
   }
@@ -97,9 +103,28 @@ serve(async (req) => {
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
       );
 
-      // If no lesson_id in metadata, find the booking by customer email
+      // Resolve lessonId: try calcom_booking_uid metadata first, then email lookup
+      if (!lessonId) {
+        const calcomUid = session.metadata?.calcom_booking_uid;
+        if (calcomUid) {
+          console.log(`[${functionName}] Looking up by calcom_booking_uid: ${calcomUid}`);
+          const { data: booking } = await supabase
+            .from("voice_bookings")
+            .select("notion_lesson_id_1, id, calcom_booking_id")
+            .eq("calcom_booking_id", calcomUid)
+            .maybeSingle();
+
+          if (booking?.notion_lesson_id_1) {
+            lessonId = booking.notion_lesson_id_1;
+            calcomBookingId = booking.calcom_booking_id;
+            console.log(`[${functionName}] Resolved lesson_id ${lessonId} via calcom_booking_uid`);
+          }
+        }
+      }
+
+      // If still no lesson_id, fall back to email lookup
       if (!lessonId && customerEmail) {
-        console.log(`[${functionName}] No lesson_id, looking up booking by email: ${customerEmail}`);
+        console.log(`[${functionName}] Falling back to email lookup: ${customerEmail}`);
         const { data: booking } = await supabase
           .from("voice_bookings")
           .select("notion_lesson_id_1, id, calcom_booking_id")
@@ -136,7 +161,7 @@ serve(async (req) => {
 
       // Sync payment status back to cal.com
       if (calcomBookingId) {
-        await syncCalcomVoicePayment(calcomBookingId);
+        await syncCalcomVoicePayment(calcomBookingId, session);
       }
 
       // Update Notion payment status

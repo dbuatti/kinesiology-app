@@ -158,12 +158,15 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
     return bookingData;
   };
 
-  const onBookingSuccess = () => {
+  const [lastBookingUid, setLastBookingUid] = useState<string | null>(null);
+
+  const onBookingSuccess = (data: any) => {
     queryClient.invalidateQueries({ queryKey: ["voice-lessons"] });
     queryClient.invalidateQueries({ queryKey: ["voice-students"] });
     queryClient.invalidateQueries({ queryKey: ["voice-bookings"] });
+    setLastBookingUid(data?.uid);
     if (sendOnboarding) {
-      handleSendOnboarding();
+      handleSendOnboarding(data?.uid);
     }
   };
 
@@ -180,7 +183,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
   const bookingDone = createBooking.isSuccess || forceBooking.isSuccess;
   const bookingPending = createBooking.isPending || forceBooking.isPending;
 
-  const handleSendOnboarding = async () => {
+  const handleSendOnboarding = async (uid?: string) => {
     if (!selectedStudent || !date || !time) return;
     setSendingEmail(true);
     try {
@@ -188,6 +191,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
       const dateStr = format(dateObj, "MMM d, yyyy");
       const timeStr = format(dateObj, "h:mm a");
       const costVal = parseInt(eventType.price.replace("$", ""));
+      const calcomBookingUid = uid || lastBookingUid;
       const { error } = await supabase.functions.invoke("voice-send-onboarding", {
         body: {
           studentName: selectedStudent.name,
@@ -196,6 +200,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
           time: timeStr,
           duration,
           cost: costVal,
+          calcomBookingUid,
         },
       });
       if (error) throw error;

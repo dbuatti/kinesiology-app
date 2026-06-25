@@ -296,15 +296,15 @@ const VoiceCalendarPage = () => {
  body: {
  bookingUid: rescheduleLesson.booking.calcom_booking_id,
  studentName: rescheduleLesson.lesson.studentName,
- studentEmail: rescheduleLesson.lesson.studentEmail,
- startTime: rescheduleSlot,
- eventTypeId: "1945081",
- notionLessonId1: rescheduleLesson.booking.notion_lesson_id_1,
- notionLessonId2: rescheduleLesson.booking.notion_lesson_id_2,
- },
- });
- if (error) throw error;
- showSuccess("Lesson rescheduled in Cal.com and Notion!");
+  studentEmail: rescheduleLesson.lesson.studentEmail,
+  startTime: rescheduleSlot,
+  eventTypeId: "1945081",
+  notionLessonId1: rescheduleLesson.booking.notion_lesson_id_1,
+  notionLessonId2: rescheduleLesson.booking.notion_lesson_id_2,
+  },
+  });
+  if (error) throw error;
+  showSuccess("Lesson rescheduled in Cal.com and Notion!");
  queryClient.invalidateQueries({ queryKey: ["voice-lessons"] });
  queryClient.invalidateQueries({ queryKey: ["voice-bookings"] });
  setRescheduleLesson(null);
@@ -951,16 +951,16 @@ const RescheduleSlotPicker = ({
  queryFn: async () => {
  const res = await supabase.functions.invoke("get-calcom-slots", {
  body: {
- start: new Date().toISOString(),
- end: addDays(new Date(), 30).toISOString(),
- eventTypeId: "1945081",
- timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
- },
- });
- if (res.error) throw res.error;
- return res.data;
- },
- enabled: !!booking,
+  start: new Date().toISOString(),
+  end: addDays(new Date(), 30).toISOString(),
+  eventTypeId: "1945081",
+  timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  },
+  });
+  if (res.error) throw res.error;
+  return res.data;
+  },
+  enabled: !!booking,
  staleTime: 30_000,
  });
 

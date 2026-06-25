@@ -175,7 +175,7 @@ serve(async (req) => {
 
     if (createRes.ok) {
       const bookingUid = createResult.data.uid;
-      // Confirm with correct API version (v2.6 added 2026-02-25 version)
+      // Confirm immediately so it syncs to calendar (payment tracked externally via Stripe)
       const confirmHeaders = { ...headers, 'cal-api-version': '2026-02-25' };
       await fetch(`https://api.cal.com/v2/bookings/${bookingUid}/confirm`, {
         method: "POST",

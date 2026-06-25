@@ -113,6 +113,7 @@ const VoiceQuickBookDialog = ({ student, open, onOpenChange }: VoiceQuickBookDia
       const dateStr = format(selectedDate, "MMM d, yyyy");
       const timeStr = format(parseISO(selectedSlot.time), "h:mm a");
       const costVal = parseInt(eventType.price.replace("$", ""));
+      const calcomBookingUid = createBooking.data?.uid;
       const { error } = await supabase.functions.invoke("voice-send-onboarding", {
         body: {
           studentName: student.name,
@@ -121,6 +122,7 @@ const VoiceQuickBookDialog = ({ student, open, onOpenChange }: VoiceQuickBookDia
           time: timeStr,
           duration,
           cost: costVal,
+          calcomBookingUid,
         },
       });
       if (error) throw error;

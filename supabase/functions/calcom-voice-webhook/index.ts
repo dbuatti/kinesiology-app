@@ -35,6 +35,75 @@ serve(async (req) => {
       });
     }
 
+    const notionHeaders = {
+      Authorization: `Bearer ${NOTION_KEY}`,
+      "Content-Type": "application/json",
+      "Notion-Version": "2022-06-28",
+    };
+
+    // Handle payment success — mark lessons as Paid in Notion
+    if (triggerEvent === "BOOKING_PAYMENT_SUCCESSFUL") {
+      const payload = body.payload || body.data || body;
+      const calcomBookingUid = payload.uid || payload.data?.uid || null;
+      console.log(`[${functionName}] Payment successful for booking: ${calcomBookingUid}`);
+
+      if (calcomBookingUid) {
+        // Confirm the booking in Cal.com (created without auto-confirm so payment page shows)
+        const CALCOM_KEY = Deno.env.get("CALCOM_API_KEY");
+        if (CALCOM_KEY) {
+          await fetch(`https://api.cal.com/v2/bookings/${calcomBookingUid}/confirm`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${CALCOM_KEY}`,
+              "Content-Type": "application/json",
+              "cal-api-version": "2026-02-25",
+            },
+          }).catch((e) => console.error(`[${functionName}] Confirm after payment failed:`, e.message));
+        }
+
+        const supabase = createClient(
+          Deno.env.get("SUPABASE_URL") ?? "",
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+        );
+
+        const { data: booking } = await supabase
+          .from("voice_bookings")
+          .select("notion_lesson_id_1, notion_lesson_id_2")
+          .eq("calcom_booking_id", calcomBookingUid)
+          .single();
+
+        if (booking) {
+          const patchBody = JSON.stringify({
+            properties: { Payment: { select: { name: "Paid" } } },
+          });
+          if (booking.notion_lesson_id_1) {
+            await fetch(`https://api.notion.com/v1/pages/${booking.notion_lesson_id_1}`, {
+              method: "PATCH",
+              headers: notionHeaders,
+              body: patchBody,
+            }).catch((e) => console.error(`[${functionName}] Failed to update lesson 1 payment:`, e.message));
+          }
+          if (booking.notion_lesson_id_2) {
+            await fetch(`https://api.notion.com/v1/pages/${booking.notion_lesson_id_2}`, {
+              method: "PATCH",
+              headers: notionHeaders,
+              body: patchBody,
+            }).catch((e) => console.error(`[${functionName}] Failed to update lesson 2 payment:`, e.message));
+          }
+        }
+
+        await supabase
+          .from("voice_bookings")
+          .update({ status: "paid" })
+          .eq("calcom_booking_id", calcomBookingUid);
+      }
+
+      return new Response(JSON.stringify({ success: true, message: "Paid" }), {
+        status: 200,
+        headers: corsHeaders,
+      });
+    }
+
     // Handle cancellations
     if (triggerEvent === "BOOKING_CANCELLED") {
       const payload = body.payload || body.data || body;
@@ -121,12 +190,14 @@ serve(async (req) => {
     const startTimeStr = new Date(startTime).toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
+      timeZone: "Australia/Melbourne",
       timeZoneName: "short",
     });
     const endTimeStr = endTime
       ? new Date(endTime).toLocaleTimeString("en-US", {
           hour: "numeric",
           minute: "2-digit",
+          timeZone: "Australia/Melbourne",
           timeZoneName: "short",
         })
       : "";

@@ -72,6 +72,7 @@ const BookingsList = ({ items, onChanged, onNewBooking }: BookingsListProps) => 
   const [tab, setTab] = useState<Tab>("upcoming");
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [payTarget, setPayTarget] = useState<BookingListItem | null>(null);
   const [cancelTarget, setCancelTarget] = useState<BookingListItem | null>(null);
   const [rescheduleTarget, setRescheduleTarget] = useState<BookingListItem | null>(null);
   const [rescheduleAt, setRescheduleAt] = useState("");
@@ -421,7 +422,7 @@ const BookingsList = ({ items, onChanged, onNewBooking }: BookingsListProps) => 
                     )
                   )}
                   {!item.isFree && (
-                    <DropdownMenuItem onClick={() => sendPaymentLink(item)}>
+                    <DropdownMenuItem onClick={() => setPayTarget(item)}>
                       <CreditCard size={14} className="mr-2" />
                       {item.paid ? "Resend payment link" : "Send payment link"}
                     </DropdownMenuItem>
@@ -471,6 +472,38 @@ const BookingsList = ({ items, onChanged, onNewBooking }: BookingsListProps) => 
           );
         })}
       </div>
+
+      {/* Send payment link — confirm the rate first */}
+      <Dialog open={!!payTarget} onOpenChange={(o) => { if (!o) setPayTarget(null); }}>
+        <DialogContent className="sm:max-w-[420px] rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>Send payment link</DialogTitle>
+            <DialogDescription>
+              {payTarget && (
+                <>Charge <strong>{payTarget.source === "voice" ? (payTarget.subtitle || payTarget.studentName) : payTarget.title}</strong>{payTarget.source === "kinesiology" ? " their current rate" : ""}:</>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2 text-center">
+            <div className="text-4xl font-black text-foreground tabular-nums">${payTarget?.amount ?? "—"}</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              {payTarget?.source === "voice"
+                ? "Generates a Stripe checkout link and copies it to your clipboard."
+                : "Emails the client a Stripe checkout link for this amount."}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPayTarget(null)} className="rounded-xl">Cancel</Button>
+            <Button
+              onClick={() => { const t = payTarget; setPayTarget(null); if (t) sendPaymentLink(t); }}
+              disabled={!!busyId}
+              className="rounded-xl"
+            >
+              <CreditCard size={15} className="mr-2" /> Send for ${payTarget?.amount ?? ""}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Cancel confirm */}
       <Dialog open={!!cancelTarget} onOpenChange={(o) => { if (!o) setCancelTarget(null); }}>

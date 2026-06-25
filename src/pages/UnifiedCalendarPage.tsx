@@ -382,12 +382,12 @@ const UnifiedCalendarPage = () => {
 
   (kinesiologyAppts || []).forEach((a) => {
   const appDate = new Date(a.date);
-  // Effective price falls back to the client's standard rate so a $50 client
-  // with no per-appointment price isn't mislabelled "Free".
-  const effectivePrice = (a.priceAmount && a.priceAmount > 0) ? a.priceAmount : (a.standardRate ?? 0);
-  // Free is an explicit state: a deliberate $0 price, or no price anywhere.
+  // Charge the client's CURRENT rate (from Client Audit / standard_rate) — this is
+  // what "Send payment link" bills. Falls back to any per-appointment price.
+  const currentRate = (a.standardRate && a.standardRate > 0) ? a.standardRate : (a.priceAmount && a.priceAmount > 0 ? a.priceAmount : 0);
+  // Free is an explicit state: a deliberate $0 price, or no rate at all.
   // (Use "Mark as free" to set a session free regardless of the client's rate.)
-  const isFree = a.priceAmount === 0 || effectivePrice === 0;
+  const isFree = a.priceAmount === 0 || currentRate === 0;
   items.push({
   id: `k-${a.id}`,
   source: "kinesiology",
@@ -404,7 +404,7 @@ const UnifiedCalendarPage = () => {
  cancelled: (a.status || "").toLowerCase() === "cancelled",
  paid: a.paymentReceived,
  isFree,
- amount: isFree ? null : (effectivePrice || null),
+ amount: isFree ? null : (currentRate || null),
  calcomUid: a.calcomUid,
  clientId: a.clientId,
  appointmentId: a.id,

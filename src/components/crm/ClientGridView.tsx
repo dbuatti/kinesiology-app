@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { calculateAge, getStarSign } from "@/utils/crm-utils";
 import { cn } from "@/lib/utils";
+import NewInfoBadge from "@/components/crm/NewInfoBadge";
 
 interface ClientGridViewProps {
   clients: any[];
@@ -56,6 +57,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
                   "text-2xl font-black text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate",
                   isPrivate && "blur-sm select-none"
                 )}>{client.name}</h3>
+                <NewInfoBadge submittedAt={(client as any).onboarding_submitted_at} />
                 {client.stripe_customer_id && (
                   <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-black uppercase border-blue-200 text-blue-600 bg-blue-50">
                     <CreditCard size={8} className="mr-1" /> Synced

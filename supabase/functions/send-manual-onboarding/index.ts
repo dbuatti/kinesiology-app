@@ -124,11 +124,13 @@ serve(async (req) => {
       targetApp = apps?.[0];
     }
 
-    // 3. Generate Stripe Link if needed
-    let stripeUrl = targetApp?.payment_link;
-    const priceAmount = targetApp?.price_amount || 50;
+    // 3. Generate Stripe Link — charge the client's CURRENT rate (standard_rate from
+    // Client Audit), falling back to the appointment price. Always regenerate so a
+    // rate change in Client Audit is reflected on the next send.
+    let stripeUrl = null;
+    const priceAmount = client?.standard_rate || targetApp?.price_amount || 50;
 
-    if (targetApp?.is_paid && !targetApp?.payment_received && !stripeUrl) {
+    if (targetApp?.is_paid && !targetApp?.payment_received) {
       console.log(`[send-manual-onboarding] Generating Stripe link for app: ${targetApp.id} at $${priceAmount}`);
       
       const session = await stripe.checkout.sessions.create({

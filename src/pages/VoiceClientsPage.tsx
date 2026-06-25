@@ -23,6 +23,7 @@ import PageHeader from "@/components/shared/PageHeader";
 import VoiceOnboardingForm from "@/components/crm/VoiceOnboardingForm";
 import VoiceMessagePopover from "@/components/crm/VoiceMessagePopover";
 import SimpleBookDialog from "@/components/crm/SimpleBookDialog";
+import NewInfoBadge from "@/components/crm/NewInfoBadge";
 import { cn } from "@/lib/utils";
 
 interface VoiceStudent {
@@ -115,6 +116,25 @@ const VoiceClientsPage = () => {
  staleTime: 2 * 60 * 1000,
  gcTime: 5 * 60 * 1000,
  });
+
+ // Voice onboarding submissions → "NEW" badge by student email.
+ const { data: voiceOnboarding = [] } = useQuery({
+ queryKey: ["voice-onboarding-status"],
+ queryFn: async () => {
+ const { data } = await supabase
+ .from("voice_onboarding")
+ .select("email, submitted_at, onboarding_completed");
+ return data || [];
+ },
+ staleTime: 2 * 60 * 1000,
+ });
+ const onboardingByEmail = useMemo(() => {
+ const m = new Map<string, string>();
+ for (const o of voiceOnboarding as any[]) {
+ if (o.email && o.onboarding_completed && o.submitted_at) m.set(o.email.toLowerCase(), o.submitted_at);
+ }
+ return m;
+ }, [voiceOnboarding]);
 
  const enriched = useMemo(() => {
  return students.map((s) => {
@@ -433,6 +453,7 @@ const VoiceClientsPage = () => {
  <span className="font-medium text-sm text-foreground truncate">
  {student.name || "Unnamed"}
  </span>
+ <NewInfoBadge submittedAt={student.email ? onboardingByEmail.get(student.email.toLowerCase()) : undefined} />
  {student.hasUpcoming && (
  <Badge className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-chart-emerald/10 text-chart-emerald border-none shrink-0">
  Booked

@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { calculateAge, getStarSign } from "@/utils/crm-utils";
 import { cn } from "@/lib/utils";
+import NewInfoBadge from "@/components/crm/NewInfoBadge";
 
 interface ClientTableViewProps {
   clients: any[];
@@ -50,6 +51,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
                         "font-black text-foreground text-lg group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors",
                         isPrivate && "blur-sm select-none"
                       )}>{client.name}</span>
+                      <NewInfoBadge submittedAt={(client as any).onboarding_submitted_at} />
                       {client.stripe_customer_id && (
                         <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-black uppercase border-blue-200 text-blue-600 bg-blue-50">
                           <CreditCard size={8} className="mr-1" /> Synced

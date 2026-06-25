@@ -104,6 +104,8 @@ const PublicOnboardingForm = ({ clientId, appointmentId, initialData, onSuccess 
         current_stress_level: values.current_stress_level,
         sleep_quality: values.sleep_quality || null,
         digestive_health: values.digestive_health || null,
+        // Stamp the submission so the CRM can flag new profile info ("NEW" badge).
+        onboarding_submitted_at: new Date().toISOString(),
       };
 
       // 2. Dynamic Appointment Data

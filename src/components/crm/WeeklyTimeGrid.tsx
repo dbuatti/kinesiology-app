@@ -547,7 +547,7 @@ const WeeklyTimeGrid = ({
                       );
                       const dateKey = format(day, "yyyy-MM-dd");
                       const slotKey = `${dateKey}-${hour}`;
-                      const isAvailable = !availableSlots || availableSlots.size === 0 || availableSlots.has(slotKey);
+                      const isAvailable = !availableSlots || availableSlots.has(slotKey);
                       const slotClickable = onSlotClick && !hasEvent && isAvailable;
                       return (
                         <div

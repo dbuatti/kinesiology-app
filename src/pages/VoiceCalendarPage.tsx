@@ -10,6 +10,7 @@ import { format, addMonths, subMonths, startOfMonth, endOfMonth,
   startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, 
   eachDayOfInterval, isToday, parseISO, addWeeks, subWeeks, parse, getISOWeek } from "date-fns";
 import WeeklyTimeGrid from "@/components/crm/WeeklyTimeGrid";
+import SimpleBookDialog from "@/components/crm/SimpleBookDialog";
 import { formatDateLine, formatVoiceTime } from "@/utils/availability";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -91,6 +92,9 @@ const VoiceCalendarPage = () => {
   const [rescheduleLesson, setRescheduleLesson] = useState<{ lesson: VoiceLesson; booking: VoiceBooking } | null>(null);
   const [rescheduleSlot, setRescheduleSlot] = useState<string | null>(null);
   const [copyingWeeks, setCopyingWeeks] = useState<number | null>(null);
+  const [bookDialogOpen, setBookDialogOpen] = useState(false);
+  const [bookPrefillDate, setBookPrefillDate] = useState<string>("");
+  const [bookPrefillTime, setBookPrefillTime] = useState<string>("");
 
  const { data: lessonsData, isLoading, refetch, isRefetching } = useQuery({
  queryKey: ["voice-lessons"],
@@ -368,27 +372,36 @@ const VoiceCalendarPage = () => {
  icon={CalendarIcon}
   iconClassName="bg-destructive text-white "
   actions={
- <div className="flex gap-2">
- <Button
- variant="outline"
- size="sm"
- onClick={() => refetch()}
- disabled={isRefetching}
- className="h-10 px-4 rounded-xl border-border font-medium text-[10px] uppercase tracking-wider gap-2"
- >
- <RefreshCw size={14} className={isRefetching ? "animate-spin" : ""} />
- {isRefetching ? "Refreshing..." : "Refresh"}
- </Button>
- <Button
- variant="outline"
- size="sm"
- onClick={() => navigate(-1)}
- className="h-10 px-4 rounded-xl border-border font-medium text-[10px] uppercase tracking-wider gap-2"
- >
- <ArrowLeft size={14} />
- Back
- </Button>
- </div>
+  <div className="flex gap-2">
+  <Button
+  variant="outline"
+  size="sm"
+  onClick={() => { setBookPrefillDate(""); setBookPrefillTime(""); setBookDialogOpen(true); }}
+  className="h-10 px-4 rounded-xl border-border font-medium text-[10px] uppercase tracking-wider gap-2 bg-rose-500 text-white hover:bg-rose-600 border-rose-500"
+  >
+  <CalendarPlus size={14} />
+  Book
+  </Button>
+  <Button
+  variant="outline"
+  size="sm"
+  onClick={() => refetch()}
+  disabled={isRefetching}
+  className="h-10 px-4 rounded-xl border-border font-medium text-[10px] uppercase tracking-wider gap-2"
+  >
+  <RefreshCw size={14} className={isRefetching ? "animate-spin" : ""} />
+  {isRefetching ? "Refreshing..." : "Refresh"}
+  </Button>
+  <Button
+  variant="outline"
+  size="sm"
+  onClick={() => navigate(-1)}
+  className="h-10 px-4 rounded-xl border-border font-medium text-[10px] uppercase tracking-wider gap-2"
+  >
+  <ArrowLeft size={14} />
+  Back
+  </Button>
+  </div>
  }
  />
 
@@ -534,12 +547,20 @@ const VoiceCalendarPage = () => {
     return (
     <div
     key={day.toString()}
+    onClick={() => {
+      if (isCurrent && !isPast) {
+        setBookPrefillDate(format(day, "yyyy-MM-dd"));
+        setBookPrefillTime("");
+        setBookDialogOpen(true);
+      }
+    }}
     className={cn(
     "min-h-[130px] p-3 border-r border-b border-border/50 transition-colors",
     !isCurrent && "bg-muted/20 opacity-40",
     isCurrentDay && "bg-chart-destructive/10/40 ",
-    dayHasAvailability && "bg-chart-emerald/10 border-l-[3px] border-emerald-400 ",
-    dayNoAvailability && "bg-gray-100/50 border-l-[3px] border-gray-200 "
+    dayHasAvailability && "bg-chart-emerald/10 border-l-[3px] border-emerald-400 cursor-pointer hover:bg-chart-emerald/20 ",
+    dayNoAvailability && "bg-gray-100/50 border-l-[3px] border-gray-200 cursor-pointer hover:bg-gray-200/50 ",
+    isCurrent && !isPast && !dayHasAvailability && !dayNoAvailability && "cursor-pointer hover:bg-muted/40 "
     )}
     >
     <div className="flex justify-between items-start mb-2">
@@ -696,6 +717,11 @@ const VoiceCalendarPage = () => {
             onToday={goToToday}
             minHour={9}
             maxHour={17}
+            onSlotClick={(day, hour) => {
+              setBookPrefillDate(format(day, "yyyy-MM-dd"));
+              setBookPrefillTime(`${hour.toString().padStart(2, "0")}:00`);
+              setBookDialogOpen(true);
+            }}
           />
   )}
   </div>
@@ -852,11 +878,18 @@ const VoiceCalendarPage = () => {
  {generatePaymentLink.isPending ? "Generating..." : copiedUrl ? "Copied!" : "Generate & Copy"}
  </Button>
  </DialogFooter>
- </DialogContent>
- </Dialog>
- </AppLayout>
- );
-};
+  </DialogContent>
+  </Dialog>
+
+  <SimpleBookDialog
+    open={bookDialogOpen}
+    onOpenChange={setBookDialogOpen}
+    prefillDate={bookPrefillDate || undefined}
+    prefillTime={bookPrefillTime || undefined}
+  />
+  </AppLayout>
+  );
+ };
 
 const RescheduleSlotPicker = ({
  booking,

@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
- Search, Plus, Mic, Mail, Phone, ExternalLink, Users,
- ChevronDown, ChevronRight, CheckCheck, Square, Loader2,
- Calendar, Music, MessageCircle, Trash2, RotateCcw
+  Search, Plus, Mic, Mail, Phone, ExternalLink, Users,
+  ChevronDown, ChevronRight, CheckCheck, Square, Loader2,
+  Calendar, CalendarPlus, Music, MessageCircle, Trash2, RotateCcw
 } from "lucide-react";
 import {
  Dialog,
@@ -23,6 +23,7 @@ import PageHeader from "@/components/shared/PageHeader";
 import VoiceOnboardingForm from "@/components/crm/VoiceOnboardingForm";
 import VoiceMessagePopover from "@/components/crm/VoiceMessagePopover";
 import VoiceQuickBookDialog from "@/components/crm/VoiceQuickBookDialog";
+import SimpleBookDialog from "@/components/crm/SimpleBookDialog";
 import { cn } from "@/lib/utils";
 
 interface VoiceStudent {
@@ -65,8 +66,10 @@ const VoiceClientsPage = () => {
  const [selectedIds, setSelectedIds] = useState<string[]>([]);
  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
  const [loggingContact, setLoggingContact] = useState<string | null>(null);
- const [bookStudent, setBookStudent] = useState<{ id: string; name: string | null; email: string | null } | null>(null);
- const [bookOpen, setBookOpen] = useState(false);
+  const [bookStudent, setBookStudent] = useState<{ id: string; name: string | null; email: string | null } | null>(null);
+  const [bookOpen, setBookOpen] = useState(false);
+  const [simpleBookOpen, setSimpleBookOpen] = useState(false);
+  const [simpleBookStudentId, setSimpleBookStudentId] = useState<string | null>(null);
 
  const logContact = useMutation({
  mutationFn: async (studentId: string) => {
@@ -301,11 +304,12 @@ const VoiceClientsPage = () => {
  <DialogHeader className="mb-6">
  <DialogTitle className="text-2xl font-semibold">New Student</DialogTitle>
  </DialogHeader>
- <VoiceOnboardingForm
- onSuccess={() => {
- setOnboardOpen(false);
- }}
- />
+  <VoiceOnboardingForm
+  onSuccess={() => {
+  setOnboardOpen(false);
+  queryClient.invalidateQueries({ queryKey: ["voice-students"] });
+  }}
+  />
  </div>
  </DialogContent>
  </Dialog>
@@ -478,16 +482,16 @@ const VoiceClientsPage = () => {
  logContact.mutate(id);
  }}
  />
- <button
- onClick={() => {
- setBookStudent({ id: student.id, name: student.name, email: student.email });
- setBookOpen(true);
- }}
- className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-muted transition-all"
- title="Book a lesson"
- >
- <Calendar size={15} />
- </button>
+  <button
+  onClick={() => {
+  setSimpleBookStudentId(student.id);
+  setSimpleBookOpen(true);
+  }}
+  className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-muted transition-all"
+  title="Book a lesson"
+  >
+  <CalendarPlus size={15} />
+  </button>
  {student.notionUrl && (
  <a
  href={student.notionUrl}
@@ -518,15 +522,25 @@ const VoiceClientsPage = () => {
  })}
  </div>
 
- {/* Quick Book Dialog */}
- <VoiceQuickBookDialog
- student={bookStudent}
- open={bookOpen}
- onOpenChange={(o) => {
- setBookOpen(o);
- if (!o) setBookStudent(null);
- }}
- />
+  {/* Quick Book Dialog (Cal.com slots) */}
+  <VoiceQuickBookDialog
+  student={bookStudent}
+  open={bookOpen}
+  onOpenChange={(o) => {
+  setBookOpen(o);
+  if (!o) setBookStudent(null);
+  }}
+  />
+
+  {/* Simple Book Dialog (pick any date/time) */}
+  <SimpleBookDialog
+  open={simpleBookOpen}
+  onOpenChange={(o) => {
+  setSimpleBookOpen(o);
+  if (!o) setSimpleBookStudentId(null);
+  }}
+  prefillStudentId={simpleBookStudentId || undefined}
+  />
 
  {/* Delete confirmation */}
  <Dialog open={!!deleteConfirmId} onOpenChange={(o) => !o && setDeleteConfirmId(null)}>

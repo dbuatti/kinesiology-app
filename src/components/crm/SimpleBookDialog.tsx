@@ -91,51 +91,64 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
 
   const eventType = EVENT_TYPES.find(e => e.key === duration)!;
 
+  const bookLesson = async (forceBooking: boolean) => {
+    if (!selectedStudent || !date || !time) throw new Error("Missing booking details");
+
+    const startTimeIso = new Date(date + "T" + time).toISOString();
+    const dateStr = format(new Date(date + "T" + time), "yyyy-MM-dd");
+    const timeStr = format(new Date(date + "T" + time), "h:mm a");
+
+    const { data: bookingData, error: bookingError } = await supabase.functions.invoke("voice-create-booking", {
+      body: {
+        studentName: selectedStudent.name || "Voice Student",
+        studentEmail: selectedStudent.email || "",
+        startTime: startTimeIso,
+        eventTypeId: eventType.eventTypeId,
+        title: `Voice Lesson — ${dateStr}`,
+        notes: `Booked via Simple Book (${duration} min)`,
+        force: forceBooking,
+      },
+    });
+    if (bookingError) throw bookingError;
+
+    const costVal = parseInt(eventType.price.replace("$", ""));
+    const { data: lessonData, error: lessonError } = await supabase.functions.invoke("voice-schedule-lesson", {
+      body: {
+        studentId: selectedStudent.id,
+        date: dateStr,
+        time: timeStr,
+        cost: costVal,
+        studentName: selectedStudent.name,
+        studentEmail: selectedStudent.email,
+        calcomBookingUid: bookingData?.uid,
+      },
+    });
+    if (lessonError) throw lessonError;
+
+    return bookingData;
+  };
+
+  const onBookingSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ["voice-lessons"] });
+    queryClient.invalidateQueries({ queryKey: ["voice-students"] });
+    queryClient.invalidateQueries({ queryKey: ["voice-bookings"] });
+    if (sendOnboarding) {
+      handleSendOnboarding();
+    }
+  };
+
   const createBooking = useMutation({
-    mutationFn: async () => {
-      if (!selectedStudent || !date || !time) throw new Error("Missing booking details");
-
-      const startTimeIso = new Date(date + "T" + time).toISOString();
-      const dateStr = format(new Date(date + "T" + time), "yyyy-MM-dd");
-      const timeStr = format(new Date(date + "T" + time), "h:mm a");
-
-      const { data: bookingData, error: bookingError } = await supabase.functions.invoke("voice-create-booking", {
-        body: {
-          studentName: selectedStudent.name || "Voice Student",
-          studentEmail: selectedStudent.email || "",
-          startTime: startTimeIso,
-          eventTypeId: eventType.eventTypeId,
-          title: `Voice Lesson — ${dateStr}`,
-          notes: `Booked via Simple Book (${duration} min)`,
-        },
-      });
-      if (bookingError) throw bookingError;
-
-      const costVal = parseInt(eventType.price.replace("$", ""));
-      const { data: lessonData, error: lessonError } = await supabase.functions.invoke("voice-schedule-lesson", {
-        body: {
-          studentId: selectedStudent.id,
-          date: dateStr,
-          time: timeStr,
-          cost: costVal,
-          studentName: selectedStudent.name,
-          studentEmail: selectedStudent.email,
-          calcomBookingUid: bookingData?.uid,
-        },
-      });
-      if (lessonError) throw lessonError;
-
-      return bookingData;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["voice-lessons"] });
-      queryClient.invalidateQueries({ queryKey: ["voice-students"] });
-      queryClient.invalidateQueries({ queryKey: ["voice-bookings"] });
-      if (sendOnboarding) {
-        handleSendOnboarding();
-      }
-    },
+    mutationFn: () => bookLesson(false),
+    onSuccess: onBookingSuccess,
   });
+
+  const forceBooking = useMutation({
+    mutationFn: () => bookLesson(true),
+    onSuccess: onBookingSuccess,
+  });
+
+  const bookingDone = createBooking.isSuccess || forceBooking.isSuccess;
+  const bookingPending = createBooking.isPending || forceBooking.isPending;
 
   const handleSendOnboarding = async () => {
     if (!selectedStudent || !date || !time) return;
@@ -283,15 +296,25 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
           </div>
 
           {/* Confirm step extras */}
-          {createBooking.isSuccess && (
+          {bookingDone && (
             <div className="space-y-3">
-              <div className="flex items-center gap-3 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 p-4 rounded-xl">
-                <Check size={18} />
-                <div>
-                  <p className="font-bold text-sm">Booked!</p>
-                  <p className="text-xs">Lesson created in Cal.com and Notion.</p>
+              {forceBooking.isSuccess ? (
+                <div className="flex items-center gap-3 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 p-4 rounded-xl">
+                  <Check size={18} />
+                  <div>
+                    <p className="font-bold text-sm">Booked (No Cal.com)</p>
+                    <p className="text-xs">Lesson created in Notion, but not visible on your Cal.com calendar.</p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex items-center gap-3 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 p-4 rounded-xl">
+                  <Check size={18} />
+                  <div>
+                    <p className="font-bold text-sm">Booked!</p>
+                    <p className="text-xs">Lesson created in Cal.com and Notion.</p>
+                  </div>
+                </div>
+              )}
               {sendOnboarding && sendingEmail && (
                 <div className="flex items-center gap-3 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 p-4 rounded-xl">
                   <Loader2 size={16} className="animate-spin" />
@@ -310,14 +333,26 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
             </div>
           )}
 
-          {createBooking.isError && (
-            <div className="bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 p-4 rounded-xl text-xs font-bold">
-              {(createBooking.error as any)?.message || "Booking failed. The slot may already be taken."}
+          {createBooking.isError && !bookingDone && (
+            <div className="space-y-3">
+              <div className="bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 p-4 rounded-xl text-xs font-bold">
+                {(createBooking.error as any)?.message || "Booking failed. The slot may already be taken."}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => forceBooking.mutate()}
+                disabled={forceBooking.isPending}
+                className="w-full rounded-xl font-bold text-xs"
+              >
+                {forceBooking.isPending && <Loader2 size={14} className="animate-spin mr-2" />}
+                Book Anyway (Skip Cal.com)
+              </Button>
             </div>
           )}
 
           {/* Onboarding toggle (only before booking) */}
-          {!createBooking.isSuccess && selectedStudent && (
+          {!bookingDone && selectedStudent && (
             <div
               onClick={() => setSendOnboarding(!sendOnboarding)}
               className={cn(
@@ -341,7 +376,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
           )}
 
           {/* Confirmation summary */}
-          {!createBooking.isSuccess && selectedStudent && (
+          {!bookingDone && selectedStudent && (
             <div className="bg-muted/50 rounded-xl p-5 space-y-2">
               <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Summary</p>
               <div className="flex items-center gap-2 text-sm font-bold">
@@ -360,27 +395,27 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
         <div className="px-8 py-4 border-t border-border shrink-0 flex justify-between items-center">
           <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Voice Studio</p>
           <div className="flex gap-2">
-            {!createBooking.isSuccess ? (
+            {!bookingDone ? (
               <>
                 <Button
                   variant="ghost"
                   onClick={() => onOpenChange(false)}
                   className="rounded-xl font-bold text-xs text-muted-foreground"
-                  disabled={createBooking.isPending}
+                  disabled={bookingPending}
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleConfirm}
-                  disabled={createBooking.isPending || !selectedStudent || !date || !time}
+                  disabled={bookingPending || !selectedStudent || !date || !time}
                   className="bg-rose-500 hover:bg-rose-600 rounded-xl font-bold text-xs gap-2"
                 >
-                  {createBooking.isPending ? (
+                  {bookingPending ? (
                     <Loader2 size={14} className="animate-spin" />
                   ) : (
                     <CalendarPlus size={14} />
                   )}
-                  {createBooking.isPending ? "Booking..." : "Confirm & Book"}
+                  {bookingPending ? "Booking..." : "Confirm & Book"}
                 </Button>
               </>
             ) : (

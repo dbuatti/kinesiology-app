@@ -21,7 +21,7 @@ serve(async (req) => {
     const NOTION_KEY = Deno.env.get('NOTION_API_KEY');
 
     const body = await req.json();
-    const { studentName, studentEmail, startTime, eventTypeId, title, notes, bookingUid, notionLessonId1, notionLessonId2 } = body;
+    const { studentName, studentEmail, startTime, eventTypeId, title, notes, bookingUid, notionLessonId1, notionLessonId2, force } = body;
 
     if (!studentName || !studentEmail) throw new Error("Missing studentName or studentEmail.");
     if (!startTime) throw new Error("Missing startTime.");
@@ -141,6 +141,16 @@ serve(async (req) => {
 
     // Create new booking
     console.log(`[${functionName}] CREATE new booking`);
+
+    if (force) {
+      console.log(`[${functionName}] FORCE booking — skipping Cal.com`);
+      const syntheticUid = `force-${Date.now()}`;
+      return new Response(JSON.stringify({ success: true, uid: syntheticUid, action: "force_booked" }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const createRes = await fetch("https://api.cal.com/v2/bookings", {
       method: "POST",
       headers,

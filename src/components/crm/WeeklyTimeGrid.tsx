@@ -541,7 +541,7 @@ const WeeklyTimeGrid = ({
                       isToday(day) && "bg-chart-destructive/[0.03]"
                     )}
                   >
-                    {visibleHours.map((hour) => {
+                      {visibleHours.map((hour) => {
                       const hasEvent = dayEvents.some(
                         (e: any) => e.startMin < (hour + 1) * 60 && e.endMin > hour * 60
                       );
@@ -554,15 +554,15 @@ const WeeklyTimeGrid = ({
                           key={hour}
                           className={cn(
                             "border-t border-border/30",
-                            slotClickable && "cursor-pointer hover:bg-chart-emerald/5 transition-colors group",
-                            !slotClickable && !hasEvent && "opacity-30"
+                            slotClickable && "cursor-pointer hover:bg-chart-emerald/10 transition-colors"
                           )}
                           style={{ height: HOUR_HEIGHT }}
                           onClick={() => slotClickable && onSlotClick(day, hour)}
                         >
                           {slotClickable && (
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center h-full">
-                              <Plus size={12} className="text-chart-emerald/40" />
+                            <div className="flex items-center justify-center h-full gap-1">
+                              <Plus size={14} className="text-chart-emerald/60 shrink-0" />
+                              <span className="text-[10px] font-medium text-chart-emerald/60">Available</span>
                             </div>
                           )}
                         </div>

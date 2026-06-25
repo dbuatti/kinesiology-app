@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { format, addDays, parseISO } from "date-fns";
+import { format, addDays } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -80,6 +80,12 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
     }
   }, [prefillStudentId, open, students, selectedStudent]);
 
+  useEffect(() => {
+    if (calSlots && calSlots.length > 0 && !calSlots.includes(time)) {
+      setTime(calSlots[0]);
+    }
+  }, [calSlots, time]);
+
   const filteredStudents = useMemo(() => {
     if (!studentSearch) return students;
     const q = studentSearch.toLowerCase();
@@ -90,6 +96,30 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
   }, [students, studentSearch]);
 
   const eventType = EVENT_TYPES.find(e => e.key === duration)!;
+
+  const { data: calSlots } = useQuery<string[]>({
+    queryKey: ["simple-book-slots", date, eventType?.eventTypeId],
+    queryFn: async () => {
+      if (!date || !eventType) return [];
+      const endDate = format(addDays(new Date(date + "T12:00:00"), 1), "yyyy-MM-dd");
+      const { data, error } = await supabase.functions.invoke("get-calcom-slots", {
+        body: {
+          startDate: date,
+          endDate,
+          eventTypeId: parseInt(eventType.eventTypeId),
+          timeZone: "Australia/Melbourne",
+        },
+      });
+      if (error) throw error;
+      const daySlots: string[] = data?.slots?.[date] ?? [];
+      return daySlots.map((iso: string) => {
+        const match = iso.match(/T(\d{2}):(\d{2})/);
+        return match ? `${match[1]}:${match[2]}` : iso;
+      });
+    },
+    enabled: !!date && !!eventType,
+    staleTime: 30_000,
+  });
 
   const bookLesson = async (forceBooking: boolean) => {
     if (!selectedStudent || !date || !time) throw new Error("Missing booking details");
@@ -286,12 +316,32 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
             </div>
             <div className="space-y-2">
               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Time</p>
-              <input
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl border border-border bg-card text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500"
-              />
+              {calSlots === undefined ? (
+                <div className="h-12 flex items-center justify-center rounded-xl border border-border bg-card">
+                  <Loader2 size={14} className="animate-spin text-muted-foreground" />
+                </div>
+              ) : calSlots.length === 0 ? (
+                <div className="h-12 flex items-center justify-center rounded-xl border border-border bg-card">
+                  <p className="text-xs text-muted-foreground">No available slots</p>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
+                  {calSlots.map((slotTime) => (
+                    <button
+                      key={slotTime}
+                      onClick={() => setTime(slotTime)}
+                      className={cn(
+                        "px-3 py-1.5 rounded-lg text-xs font-bold border transition-all",
+                        time === slotTime
+                          ? "bg-rose-600 border-rose-600 text-white"
+                          : "bg-card border-border text-foreground hover:border-rose-300 dark:hover:border-rose-700"
+                      )}
+                    >
+                      {format(new Date(`2000-01-01T${slotTime}:00`), "h:mm a")}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

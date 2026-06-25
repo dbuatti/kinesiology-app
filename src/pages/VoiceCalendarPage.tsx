@@ -4,7 +4,7 @@ import {
  ArrowLeft, Mic, Calendar as CalendarIcon, Clock, 
  ChevronLeft, ChevronRight, Loader2, ExternalLink, RefreshCw,
  CreditCard, Copy, Check, DollarSign, Trash2, CalendarSync,
- XCircle, Search, ChevronDown
+  XCircle, Search, ChevronDown, CalendarPlus
 } from "lucide-react";
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, 
   startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, 

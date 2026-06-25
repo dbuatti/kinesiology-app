@@ -46,6 +46,35 @@ serve(async (req) => {
           Deno.env.get("SUPABASE_URL") ?? "",
           Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
         );
+
+        const { data: booking } = await supabase
+          .from("voice_bookings")
+          .select("notion_lesson_id_1, notion_lesson_id_2")
+          .eq("calcom_booking_id", calcomBookingUid)
+          .single();
+
+        if (booking) {
+          const notionHeaders = {
+            Authorization: `Bearer ${NOTION_KEY}`,
+            "Content-Type": "application/json",
+            "Notion-Version": "2022-06-28",
+          };
+          if (booking.notion_lesson_id_1) {
+            await fetch(`https://api.notion.com/v1/pages/${booking.notion_lesson_id_1}`, {
+              method: "PATCH",
+              headers: notionHeaders,
+              body: JSON.stringify({ archived: true }),
+            }).catch((e) => console.error(`[${functionName}] Failed to archive lesson 1:`, e.message));
+          }
+          if (booking.notion_lesson_id_2) {
+            await fetch(`https://api.notion.com/v1/pages/${booking.notion_lesson_id_2}`, {
+              method: "PATCH",
+              headers: notionHeaders,
+              body: JSON.stringify({ archived: true }),
+            }).catch((e) => console.error(`[${functionName}] Failed to archive lesson 2:`, e.message));
+          }
+        }
+
         await supabase
           .from("voice_bookings")
           .update({ status: "cancelled" })

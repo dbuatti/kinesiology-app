@@ -35,6 +35,7 @@ import BookingsList from "@/components/crm/BookingsList";
 import SimpleBookDialog from "@/components/crm/SimpleBookDialog";
 import QuickBookDialog from "@/components/crm/QuickBookDialog";
 import ShareAvailabilityButton from "@/components/crm/ShareAvailabilityButton";
+import { useEventPricing } from "@/hooks/useEventPricing";
 import { supabase } from "@/integrations/supabase/client";
 import { CALCOM_CONFIG } from "@/config/integrations";
 import { cn } from "@/lib/utils";
@@ -257,6 +258,10 @@ const UnifiedCalendarPage = () => {
     staleTime: 60_000,
   });
 
+  // Voice prices come from the editable event_pricing table (Settings → Pricing),
+  // kept separate from the client rate ladder used for FNH.
+  const { priceFor, pricing } = useEventPricing();
+
   const { session } = useAuth();
   const queryClient = useQueryClient();
 
@@ -363,7 +368,9 @@ const UnifiedCalendarPage = () => {
   cancelled: booking?.status === "cancelled",
   paid: voicePaid,
   isFree: false,
-  amount: is45 ? 75 : 95,
+  // Read voice price from event_pricing (Voice 45 = 5925021, Voice 60 = 1945081),
+  // falling back to the prior defaults if the table has no row.
+  amount: priceFor(is45 ? "5925021" : "1945081") ?? (is45 ? 75 : 95),
   calcomUid: booking?.calcom_booking_id ?? null,
   notionLessonId1: booking?.notion_lesson_id_1 ?? null,
   notionLessonId2: booking?.notion_lesson_id_2 ?? null,
@@ -420,7 +427,7 @@ const UnifiedCalendarPage = () => {
   return parseStart(a.time || "") - parseStart(b.time || "");
   });
   return items;
-  }, [voiceLessons, kinesiologyAppts, voiceBookings]);
+  }, [voiceLessons, kinesiologyAppts, voiceBookings, pricing]);
 
   const weeklyEvents: CalendarEvent[] = useMemo(() => {
   const ws = startOfWeek(weekStart);
@@ -575,7 +582,7 @@ const UnifiedCalendarPage = () => {
 
    <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden animate-in fade-in duration-500">
    {/* Legend */}
-   <div className="px-8 pt-6 pb-0 flex items-center gap-6">
+   <div className="px-8 pt-6 pb-0 flex flex-wrap items-center gap-x-6 gap-y-2">
    <div className="flex items-center gap-2">
    <div className="w-3 h-3 rounded-full bg-primary" />
    <span className="text-[10px] font-medium text-muted-foreground">Kinesiology</span>
@@ -583,6 +590,19 @@ const UnifiedCalendarPage = () => {
    <div className="flex items-center gap-2">
    <div className="w-3 h-3 rounded-full bg-destructive" />
    <span className="text-[10px] font-medium text-muted-foreground">Voice Studio</span>
+   </div>
+   <div className="w-px h-3 bg-border" />
+   <div className="flex items-center gap-1.5">
+   <span className="w-2 h-2 rounded-full bg-chart-emerald" />
+   <span className="text-[10px] font-medium text-muted-foreground">Paid</span>
+   </div>
+   <div className="flex items-center gap-1.5">
+   <span className="w-2 h-2 rounded-full bg-amber-500" />
+   <span className="text-[10px] font-medium text-muted-foreground">Unpaid</span>
+   </div>
+   <div className="flex items-center gap-1.5">
+   <span className="w-2 h-2 rounded-full bg-slate-400" />
+   <span className="text-[10px] font-medium text-muted-foreground">Free</span>
    </div>
    </div>
 
@@ -644,7 +664,7 @@ const UnifiedCalendarPage = () => {
    className={cn(
    "min-h-[130px] p-3 border-r border-b border-border/50 transition-colors",
    !isCurrent && "bg-muted/20 opacity-40",
-   isCurrentDay && "bg-chart-primary/10/30 "
+   isCurrentDay && "bg-chart-primary/5 ring-1 ring-inset ring-primary/20"
    )}
    >
    <div className="flex justify-between items-start mb-2">
@@ -697,6 +717,7 @@ const UnifiedCalendarPage = () => {
    )}
    >
    <div className="flex items-center gap-1">
+   <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", item.isFree ? "bg-slate-400" : item.paid ? "bg-chart-emerald" : "bg-amber-500")} />
    {item.source === "voice" ? (
    <Mic size={9} className="shrink-0 opacity-60" />
    ) : (
@@ -716,6 +737,7 @@ const UnifiedCalendarPage = () => {
    )}
    >
    <div className="flex items-center gap-1">
+   <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", item.isFree ? "bg-slate-400" : item.paid ? "bg-chart-emerald" : "bg-amber-500")} />
    {item.source === "voice" ? (
    <Mic size={9} className="shrink-0 opacity-60" />
    ) : (
@@ -746,6 +768,7 @@ const UnifiedCalendarPage = () => {
    {item.source === "voice" ? "Student" : "Client"}: {item.subtitle}
    </div>
    )}
+   <div className="flex items-center gap-1.5 flex-wrap">
    <Badge
    className={cn(
    "text-[10px] font-semibold border-none",
@@ -756,6 +779,13 @@ const UnifiedCalendarPage = () => {
    >
    {item.source === "voice" ? "Voice" : item.tag || "Kinesiology"}
    </Badge>
+   <Badge className={cn("text-[10px] font-semibold border-none",
+     item.isFree ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+     : item.paid ? "bg-chart-emerald/10 text-chart-emerald"
+     : "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400")}>
+   {item.isFree ? "Free" : item.paid ? `Paid · $${item.amount ?? ""}` : `Unpaid · $${item.amount ?? ""}`}
+   </Badge>
+   </div>
    {item.url && item.source === "voice" && (
    <div className="flex items-center gap-1 text-[10px] text-destructive">
    <ExternalLink size={10} /> Open in Notion

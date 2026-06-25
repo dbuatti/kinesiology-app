@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import {
   Loader2, Calendar, Clock, Check, Music, Search, Mail, CalendarPlus, CheckCircle2
 } from "lucide-react";
-import { showSuccess, showError } from "@/utils/toast";
+
 
 interface VoiceStudent {
   id: string;
@@ -46,16 +46,24 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
   const [time, setTime] = useState(prefillTime || "10:00");
   const [duration, setDuration] = useState("60");
   const [sendOnboarding, setSendOnboarding] = useState(true);
-  const [showStudentPicker, setShowStudentPicker] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+
+  const { data: students = [] } = useQuery<VoiceStudent[]>({
+    queryKey: ["voice-students"],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("voice-clients");
+      if (error) throw error;
+      return data?.students || [];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
   useEffect(() => {
     if (!open) {
       setStep("details");
       setSelectedStudent(null);
       setStudentSearch("");
-      setShowStudentPicker(false);
       setDate(prefillDate || format(addDays(new Date(), 1), "yyyy-MM-dd"));
       setTime(prefillTime || "10:00");
       setDuration("60");
@@ -72,16 +80,6 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
     }
   }, [prefillStudentId, open, students, selectedStudent]);
 
-  const { data: students = [] } = useQuery<VoiceStudent[]>({
-    queryKey: ["voice-students"],
-    queryFn: async () => {
-      const { data, error } = await supabase.functions.invoke("voice-clients");
-      if (error) throw error;
-      return data?.students || [];
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-
   const filteredStudents = useMemo(() => {
     if (!studentSearch) return students;
     const q = studentSearch.toLowerCase();
@@ -92,32 +90,6 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
   }, [students, studentSearch]);
 
   const eventType = EVENT_TYPES.find(e => e.key === duration)!;
-
-  const handleSendOnboarding = async () => {
-    if (!selectedStudent || !date || !time) return;
-    setSendingEmail(true);
-    try {
-      const dateObj = new Date(date + "T" + time);
-      const dateStr = format(dateObj, "MMM d, yyyy");
-      const timeStr = format(dateObj, "h:mm a");
-      const costVal = parseInt(eventType.price.replace("$", ""));
-      const { error } = await supabase.functions.invoke("voice-send-onboarding", {
-        body: {
-          studentName: selectedStudent.name,
-          studentEmail: selectedStudent.email,
-          date: dateStr,
-          time: timeStr,
-          duration,
-          cost: costVal,
-        },
-      });
-      if (error) throw error;
-      setEmailSent(true);
-    } catch (err) {
-      console.error("Failed to send onboarding:", err);
-    }
-    setSendingEmail(false);
-  };
 
   const createBooking = useMutation({
     mutationFn: async () => {
@@ -165,6 +137,32 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
     },
   });
 
+  const handleSendOnboarding = async () => {
+    if (!selectedStudent || !date || !time) return;
+    setSendingEmail(true);
+    try {
+      const dateObj = new Date(date + "T" + time);
+      const dateStr = format(dateObj, "MMM d, yyyy");
+      const timeStr = format(dateObj, "h:mm a");
+      const costVal = parseInt(eventType.price.replace("$", ""));
+      const { error } = await supabase.functions.invoke("voice-send-onboarding", {
+        body: {
+          studentName: selectedStudent.name,
+          studentEmail: selectedStudent.email,
+          date: dateStr,
+          time: timeStr,
+          duration,
+          cost: costVal,
+        },
+      });
+      if (error) throw error;
+      setEmailSent(true);
+    } catch (err) {
+      console.error("Failed to send onboarding:", err);
+    }
+    setSendingEmail(false);
+  };
+
   const handleConfirm = () => {
     createBooking.mutate();
   };
@@ -203,7 +201,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                   )}
                 </div>
                 <button
-                  onClick={() => { setSelectedStudent(null); setShowStudentPicker(true); }}
+                  onClick={() => { setSelectedStudent(null); }}
                   className="text-xs font-bold text-rose-600 hover:underline"
                 >
                   Change
@@ -225,7 +223,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                   {filteredStudents.map((s) => (
                     <button
                       key={s.id}
-                      onClick={() => { setSelectedStudent(s); setShowStudentPicker(false); setStudentSearch(""); }}
+                      onClick={() => { setSelectedStudent(s); setStudentSearch(""); }}
                       className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-muted transition-colors"
                     >
                       <p className="font-semibold text-sm">{s.name || "Unnamed"}</p>

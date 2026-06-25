@@ -80,12 +80,6 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
     }
   }, [prefillStudentId, open, students, selectedStudent]);
 
-  useEffect(() => {
-    if (calSlots && calSlots.length > 0 && !calSlots.includes(time)) {
-      setTime(calSlots[0]);
-    }
-  }, [calSlots, time]);
-
   const filteredStudents = useMemo(() => {
     if (!studentSearch) return students;
     const q = studentSearch.toLowerCase();
@@ -120,6 +114,12 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
     enabled: !!date && !!eventType,
     staleTime: 30_000,
   });
+
+  useEffect(() => {
+    if (calSlots && calSlots.length > 0 && !calSlots.includes(time)) {
+      setTime(calSlots[0]);
+    }
+  }, [calSlots, time]);
 
   const bookLesson = async (forceBooking: boolean) => {
     if (!selectedStudent || !date || !time) throw new Error("Missing booking details");

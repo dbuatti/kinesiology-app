@@ -156,7 +156,6 @@ serve(async (req) => {
       headers,
       body: JSON.stringify({
         start: cleanStartTime,
-        allowConflicts: true,
         eventTypeId: parseInt(eventTypeId, 10) || 1945081,
         attendee: {
           name: studentName,
@@ -175,7 +174,13 @@ serve(async (req) => {
     const createResult = await createRes.json();
 
     if (createRes.ok) {
-      return new Response(JSON.stringify({ success: true, uid: createResult.data.uid, action: "created" }), {
+      const bookingUid = createResult.data.uid;
+      // Confirm the booking to trigger Cal.com emails and iCal sync
+      await fetch(`https://api.cal.com/v2/bookings/${bookingUid}/confirm`, {
+        method: "POST",
+        headers,
+      }).catch((e) => console.error(`[${functionName}] Confirm call failed:`, e.message));
+      return new Response(JSON.stringify({ success: true, uid: bookingUid, action: "created" }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

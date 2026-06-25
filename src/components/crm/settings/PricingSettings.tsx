@@ -11,6 +11,11 @@ import type { EventPricing } from "@/hooks/useEventPricing";
 
 interface DraftRow extends EventPricing {}
 
+// Only show real bookable services — filters out the generic Cal.com event types
+// (15 Min Meeting, Secret Meeting, IT 1:1, etc.) that get pulled in by Sync.
+const isRealService = (slug?: string | null, label?: string | null) =>
+  /voice|piano|fnh|neuro|kinesi/i.test(`${slug ?? ""} ${label ?? ""}`);
+
 const PricingSettings = () => {
   const queryClient = useQueryClient();
   const [rows, setRows] = useState<DraftRow[]>([]);
@@ -30,7 +35,7 @@ const PricingSettings = () => {
   });
 
   useEffect(() => {
-    if (data) setRows(data.map((r) => ({ ...r })));
+    if (data) setRows(data.filter((r) => isRealService(r.slug, r.label)).map((r) => ({ ...r })));
   }, [data]);
 
   const updateRow = (id: number, patch: Partial<DraftRow>) => {
@@ -72,7 +77,7 @@ const PricingSettings = () => {
       const eventTypes: any[] = result?.eventTypes || [];
       const existingIds = new Set(rows.map((r) => r.calcom_event_type_id));
       const newRows: DraftRow[] = eventTypes
-        .filter((et) => et.id && !existingIds.has(et.id))
+        .filter((et) => et.id && !existingIds.has(et.id) && isRealService(et.slug, et.title))
         .map((et) => ({
           calcom_event_type_id: et.id,
           slug: et.slug ?? null,

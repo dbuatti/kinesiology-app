@@ -180,6 +180,12 @@ serve(async (req) => {
         method: "POST",
         headers,
       }).catch((e) => console.error(`[${functionName}] Confirm call failed:`, e.message));
+      // Trigger calendar sync so API-created bookings appear on Apple Calendar
+      await fetch("https://api.cal.com/v2/calendars/sync", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({}),
+      }).catch((e) => console.error(`[${functionName}] Calendar sync call failed:`, e.message));
       return new Response(JSON.stringify({ success: true, uid: bookingUid, action: "created" }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

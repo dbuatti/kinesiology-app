@@ -383,6 +383,7 @@ const UnifiedCalendarPage = () => {
   calcomUid: booking?.calcom_booking_id ?? null,
   notionLessonId1: booking?.notion_lesson_id_1 ?? null,
   notionLessonId2: booking?.notion_lesson_id_2 ?? null,
+  eventTypeId: is45 ? "5925021" : "1945081",
   lessonId: l.id,
   studentEmail: l.studentEmail,
   studentName: l.studentName,

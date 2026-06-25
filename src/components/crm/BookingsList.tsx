@@ -76,6 +76,33 @@ const BookingsList = ({ items, onChanged, onNewBooking }: BookingsListProps) => 
   const [cancelTarget, setCancelTarget] = useState<BookingListItem | null>(null);
   const [rescheduleTarget, setRescheduleTarget] = useState<BookingListItem | null>(null);
   const [rescheduleAt, setRescheduleAt] = useState("");
+  const [slotOptions, setSlotOptions] = useState<string[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
+
+  // Load real open slots (next 21 days) for the booking being rescheduled.
+  const loadSlots = async (item: BookingListItem) => {
+    if (!item.eventTypeId) { setSlotOptions([]); return; }
+    setSlotsLoading(true);
+    setSlotOptions([]);
+    try {
+      const start = new Date();
+      const end = new Date();
+      end.setDate(end.getDate() + 21);
+      const res = await supabase.functions.invoke("get-calcom-slots", {
+        body: { start: start.toISOString(), end: end.toISOString(), eventTypeId: item.eventTypeId, timeZone: "Australia/Melbourne" },
+      });
+      const byDate = (res.data?.data || {}) as Record<string, any[]>;
+      const all: string[] = [];
+      for (const k of Object.keys(byDate).sort()) {
+        for (const s of byDate[k] || []) all.push(s.start || s.time);
+      }
+      setSlotOptions(all.filter(Boolean).slice(0, 200));
+    } catch {
+      setSlotOptions([]);
+    } finally {
+      setSlotsLoading(false);
+    }
+  };
 
   const now = Date.now();
   const buckets = useMemo(() => {
@@ -442,7 +469,7 @@ const BookingsList = ({ items, onChanged, onNewBooking }: BookingsListProps) => 
                   {!item.cancelled && (
                     <DropdownMenuItem
                       disabled={!item.calcomUid}
-                      onClick={() => { setRescheduleTarget(item); setRescheduleAt(""); }}
+                      onClick={() => { setRescheduleTarget(item); setRescheduleAt(""); loadSlots(item); }}
                     >
                       <CalendarClock size={14} className="mr-2" /> Reschedule
                     </DropdownMenuItem>
@@ -531,16 +558,44 @@ const BookingsList = ({ items, onChanged, onNewBooking }: BookingsListProps) => 
           <DialogHeader>
             <DialogTitle>Reschedule booking</DialogTitle>
             <DialogDescription>
-              Pick a new date and time. Cal.com will reject the change if the slot isn’t available.
+              Pick from your real open times, or enter a custom time below.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-2">
-            <Input
-              type="datetime-local"
-              value={rescheduleAt}
-              onChange={(e) => setRescheduleAt(e.target.value)}
-              className="rounded-xl"
-            />
+          <div className="py-2 space-y-3">
+            {slotsLoading ? (
+              <div className="flex items-center justify-center py-6 text-sm text-muted-foreground gap-2">
+                <Loader2 size={16} className="animate-spin" /> Loading open times…
+              </div>
+            ) : slotOptions.length > 0 ? (
+              <div className="max-h-52 overflow-y-auto grid grid-cols-2 gap-1.5">
+                {slotOptions.map((iso) => {
+                  const selected = rescheduleAt === iso;
+                  return (
+                    <button
+                      key={iso}
+                      onClick={() => setRescheduleAt(iso)}
+                      className={cn(
+                        "text-left text-xs rounded-lg border px-2.5 py-2 transition-all",
+                        selected ? "border-primary bg-primary/5 font-semibold" : "border-border hover:border-primary/40"
+                      )}
+                    >
+                      {format(new Date(iso), "EEE d MMM · h:mma").toLowerCase()}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">No open times found in the next 3 weeks — use a custom time below.</p>
+            )}
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Custom time</p>
+              <Input
+                type="datetime-local"
+                value={rescheduleAt && rescheduleAt.includes("T") && !rescheduleAt.endsWith("Z") ? rescheduleAt : ""}
+                onChange={(e) => setRescheduleAt(e.target.value)}
+                className="rounded-xl"
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setRescheduleTarget(null); setRescheduleAt(""); }} className="rounded-xl">Cancel</Button>

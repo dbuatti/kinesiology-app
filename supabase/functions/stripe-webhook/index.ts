@@ -238,6 +238,18 @@ serve(async (req) => {
         }
       }
 
+      // Money came in but we couldn't match an appointment — never lose this silently.
+      if (!matched) {
+        const refEmail = data.customer_details?.email || data.customer_email || data.receipt_email || null;
+        await supabase.from("webhook_failures").insert({
+          source: "stripe-webhook",
+          event_type: event.type,
+          reference: data.id || refEmail,
+          amount: (data.amount_total ?? data.amount) ? (data.amount_total ?? data.amount) / 100 : null,
+          detail: `Paid but unmatched (email: ${refEmail || "none"})`,
+        }).catch((e) => console.error(`[stripe-webhook] failed to log webhook_failure:`, e.message));
+      }
+
       // Email the client a payment confirmation (non-fatal).
       const confEmail = data.customer_details?.email || data.customer_email || data.receipt_email || null;
       const confName = data.customer_details?.name || data.metadata?.student_name || null;

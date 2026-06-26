@@ -388,7 +388,17 @@ const BookingsList = ({ items, onChanged, onNewBooking }: BookingsListProps) => 
           const eventLabel = isVoice ? item.title : "FNH Neuro-Health Assessment";
           const busy = busyId === item.id;
           return (
-            <div key={item.id} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors">
+            <div
+              key={item.id}
+              className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors cursor-pointer"
+              onClick={() => {
+                if (item.source === "kinesiology" && item.url) {
+                  navigate(item.url);
+                } else if (item.source === "voice" && item.url) {
+                  window.open(item.url, "_blank");
+                }
+              }}
+            >
               <div
                 className={cn(
                   "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
@@ -400,7 +410,17 @@ const BookingsList = ({ items, onChanged, onNewBooking }: BookingsListProps) => 
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-sm text-foreground truncate">{person}</span>
+                  <span
+                    className="font-semibold text-sm text-foreground truncate cursor-pointer hover:underline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (item.source === "kinesiology" && item.clientId) {
+                        navigate(`/clients/${item.clientId}`);
+                      }
+                    }}
+                  >
+                    {person}
+                  </span>
                   {item.cancelled ? (
                     <Badge className="bg-muted text-muted-foreground border-none text-[10px] font-semibold">Cancelled</Badge>
                   ) : item.isFree ? (
@@ -432,7 +452,7 @@ const BookingsList = ({ items, onChanged, onNewBooking }: BookingsListProps) => 
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg shrink-0" disabled={busy}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg shrink-0" disabled={busy} onClick={(e) => e.stopPropagation()}>
                     {busy ? <Loader2 size={15} className="animate-spin" /> : <MoreHorizontal size={16} />}
                   </Button>
                 </DropdownMenuTrigger>

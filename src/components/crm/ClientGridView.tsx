@@ -1,5 +1,5 @@
-
-import React from 'react';
+ 
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { 
@@ -10,14 +10,19 @@ import {
   CreditCard, 
   ArrowRight,
   FlaskConical,
-  Activity
+  Activity,
+  Loader2
 } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useToast } from "@/components/ui/use-toast";
 import { calculateAge, getStarSign } from "@/utils/crm-utils";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 import NewInfoBadge from "@/components/crm/NewInfoBadge";
+import { IntakeStatusBadge } from "@/components/crm/IntakeStatusBadge";
 
 interface ClientGridViewProps {
   clients: any[];
@@ -27,6 +32,27 @@ interface ClientGridViewProps {
 
 const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps) => {
   const navigate = useNavigate();
+  const [sendingId, setSendingId] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const handleSendOnboarding = async (client: any) => {
+    if (!client.email) {
+      toast({ title: "Error", description: "Client has no email address.", variant: "destructive" });
+      return;
+    }
+    setSendingId(client.id);
+    try {
+      const { error } = await supabase.functions.invoke('send-manual-onboarding', {
+        body: { clientId: client.id, force: true }
+      });
+      if (error) throw error;
+      toast({ title: "Onboarding email sent", description: `Email sent to ${client.name}.` });
+    } catch (err: any) {
+      toast({ title: "Failed", description: err.message || "Failed to send onboarding email.", variant: "destructive" });
+    } finally {
+      setSendingId(null);
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -57,6 +83,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
                   "text-2xl font-black text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate",
                   isPrivate && "blur-sm select-none"
                 )}>{client.name}</h3>
+                <IntakeStatusBadge client={client} />
                 <NewInfoBadge submittedAt={(client as any).onboarding_submitted_at} />
                 {client.stripe_customer_id && (
                   <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-black uppercase border-blue-200 text-blue-600 bg-blue-50">
@@ -108,16 +135,36 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
               )}
             </div>
 
-            <div className="pt-4 flex items-center justify-between">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="p-0 text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest hover:bg-transparent"
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickBook(client.id); }}
-              >
-                <CalendarPlus size={14} className="mr-2" /> Quick Book
-              </Button>
-              <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+            <div className="pt-4 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="p-0 text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest hover:bg-transparent"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickBook(client.id); }}
+                >
+                  <CalendarPlus size={14} className="mr-2" /> Quick Book
+                </Button>
+                {client.email && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-xl text-muted-foreground hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                        disabled={sendingId === client.id}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSendOnboarding(client); }}
+                      >
+                        {sendingId === client.id ? <Loader2 size={14} className="animate-spin" /> : <Mail size={14} />}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent className="rounded-xl font-bold text-xs">
+                      {sendingId === client.id ? "Sending..." : "Send Onboarding Email"}
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
+              <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-indigo-600 group-hover:text-white transition-all shrink-0">
                 <ArrowRight size={16} />
               </div>
             </div>

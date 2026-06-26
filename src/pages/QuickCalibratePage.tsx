@@ -34,7 +34,7 @@ const QuickCalibratePage = () => {
         <PathwayLogicWizard 
           onSave={(summary) => {
             // In quick mode, we just show a success message since there's no appointment to save to
-            console.log("Quick Calibration Result:", summary);
+            //
           }} 
         />
 

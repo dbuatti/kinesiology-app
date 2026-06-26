@@ -1,5 +1,5 @@
-
-import React from 'react';
+ 
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { 
@@ -8,15 +8,19 @@ import {
   CalendarPlus, 
   Clock, 
   CreditCard, 
-  ArrowRight 
+  ArrowRight,
+  Loader2 
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useToast } from "@/components/ui/use-toast";
 import { calculateAge, getStarSign } from "@/utils/crm-utils";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 import NewInfoBadge from "@/components/crm/NewInfoBadge";
+import { IntakeStatusBadge } from "@/components/crm/IntakeStatusBadge";
 
 interface ClientTableViewProps {
   clients: any[];
@@ -25,6 +29,28 @@ interface ClientTableViewProps {
 }
 
 const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewProps) => {
+  const [sendingId, setSendingId] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const handleSendOnboarding = async (client: any) => {
+    if (!client.email) {
+      toast({ title: "Error", description: "Client has no email address.", variant: "destructive" });
+      return;
+    }
+    setSendingId(client.id);
+    try {
+      const { error } = await supabase.functions.invoke('send-manual-onboarding', {
+        body: { clientId: client.id, force: true }
+      });
+      if (error) throw error;
+      toast({ title: "Onboarding email sent", description: `Email sent to ${client.name}.` });
+    } catch (err: any) {
+      toast({ title: "Failed", description: err.message || "Failed to send onboarding email.", variant: "destructive" });
+    } finally {
+      setSendingId(null);
+    }
+  };
+
   return (
     <div className="bg-card rounded-[2.5rem] border border-border shadow-xl overflow-hidden">
       <Table>
@@ -51,6 +77,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
                         "font-black text-foreground text-lg group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors",
                         isPrivate && "blur-sm select-none"
                       )}>{client.name}</span>
+                      <IntakeStatusBadge client={client} />
                       <NewInfoBadge submittedAt={(client as any).onboarding_submitted_at} />
                       {client.stripe_customer_id && (
                         <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-black uppercase border-blue-200 text-blue-600 bg-blue-50">
@@ -104,6 +131,24 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent className="rounded-xl font-bold text-xs">Call Client</TooltipContent>
+                    </Tooltip>
+                  )}
+                  {client.email && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-9 w-9 rounded-xl text-muted-foreground hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                          disabled={sendingId === client.id}
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSendOnboarding(client); }}
+                        >
+                          {sendingId === client.id ? <Loader2 size={16} className="animate-spin" /> : <Mail size={16} />}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="rounded-xl font-bold text-xs">
+                        {sendingId === client.id ? "Sending..." : "Send Onboarding Email"}
+                      </TooltipContent>
                     </Tooltip>
                   )}
                   <Tooltip>

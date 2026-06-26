@@ -693,7 +693,7 @@ export default function ClientAuditPage() {
           if (error) throw error;
           successCount++;
         } catch (err) {
-          console.error(`Failed to send onboarding to ${client.name}: err`);
+          console.error(`Failed to send onboarding to ${client.name}: ${err}`);
         }
       }
       showSuccess(`Successfully sent onboarding emails to ${successCount} of ${clientsWithEmail.length} clients.`);

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   format,
   startOfWeek,
@@ -36,6 +37,7 @@ export interface CalendarEvent {
   variant?: "voice" | "kinesiology";
   priceAmount?: number | null;
   standardRate?: number | null;
+  clientId?: string | null;
 }
 
 interface VoiceLesson {
@@ -378,6 +380,7 @@ const WeeklyTimeGrid = ({
   onSlotClick,
   availableSlots,
 }: WeeklyTimeGridProps) => {
+  const navigate = useNavigate();
   const startHour = Math.max(0, minHour);
   const endHour = Math.min(24, maxHour);
   const weekEnd = endOfWeek(weekStart);
@@ -600,8 +603,9 @@ const WeeklyTimeGrid = ({
                           <TooltipTrigger asChild>
                             <a
                               href={event.url || "#"}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                              target={event.url?.startsWith("/") ? undefined : "_blank"}
+                              rel={event.url?.startsWith("/") ? undefined : "noopener noreferrer"}
+                              onClick={event.url?.startsWith("/") ? (e) => { e.preventDefault(); navigate(event.url!); } : undefined}
                               className={cn(
                                 "absolute left-0.5 right-0.5 rounded-lg border px-1.5 py-1 overflow-hidden z-20",
                                 "hover:opacity-90 transition-opacity cursor-pointer block",
@@ -617,7 +621,16 @@ const WeeklyTimeGrid = ({
                                   <Icon size={10} className="shrink-0 opacity-60" />
                                 )}
                                 <span className="text-[10px] font-medium truncate leading-tight">
-                                  {event.title}
+                                  {event.variant === "kinesiology" && event.clientId ? (
+                                    <span
+                                      className="cursor-pointer hover:underline"
+                                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/clients/${event.clientId}`); }}
+                                    >
+                                      {event.title}
+                                    </span>
+                                  ) : (
+                                    event.title
+                                  )}
                                 </span>
                               </div>
                               {event.subtitle && (

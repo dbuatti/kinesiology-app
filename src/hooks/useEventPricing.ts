@@ -32,7 +32,7 @@ export const useEventPricing = () => {
 
   const priceFor = (eventTypeId: string | number): number | undefined => {
     const id = typeof eventTypeId === "string" ? parseInt(eventTypeId, 10) : eventTypeId;
-    return query.data?.find((r) => r.calcom_event_type_id === id)?.price;
+    return query.data?.find((r) => Number(r.calcom_event_type_id) === id)?.price;
   };
 
   return { ...query, pricing: query.data ?? [], priceFor };

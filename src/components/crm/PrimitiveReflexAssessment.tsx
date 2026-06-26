@@ -3,7 +3,6 @@ import React, { useState, useEffect, useMemo } from "react";
 import { PRIMITIVE_REFLEXES, PrimitiveReflex } from "@/data/primitive-reflex-data";
 import { usePrimitiveReflexTests } from "@/hooks/usePrimitiveReflexTests";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Zap, 

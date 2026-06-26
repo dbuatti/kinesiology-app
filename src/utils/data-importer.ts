@@ -40,8 +40,7 @@ export async function importAppointmentsFromCSV(csvText: string) {
     return { success: 0, failed: 0 };
   }
 
-  console.log(`Parsed ${rows.length} rows from CSV`);
-
+  // 
   // 1. Fetch all clients for lookup
   const { data: clientsData, error: clientError } = await supabase
     .from('clients')
@@ -58,8 +57,7 @@ export async function importAppointmentsFromCSV(csvText: string) {
     clientLookup[client.name.trim().toLowerCase()] = client.id;
   });
 
-  console.log(`Loaded ${Object.keys(clientLookup).length} clients for matching`);
-
+  // 
   // 2. Get authenticated user
   const user = (await supabase.auth.getUser()).data.user;
   if (!user) {
@@ -160,8 +158,7 @@ export async function importAppointmentsFromCSV(csvText: string) {
     return { success: 0, failed: rows.length };
   }
 
-  console.log(`Attempting to insert ${appointmentsToInsert.length} appointments`);
-
+  // 
   // 5. Bulk insert
   const { error: insertError } = await supabase
     .from('appointments')

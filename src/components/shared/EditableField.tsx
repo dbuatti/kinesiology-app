@@ -115,17 +115,17 @@ const EditableField = ({
  if (trimmed !== lastCommittedRef.current) {
  setIsSaving(true);
  setHasError(false);
- onSave(field, trimmed === '' ? null : trimmed)
- .then(() => {
- setIsSaving(false);
- setShowSaved(true);
- setTimeout(() => setShowSaved(false), 3000);
- })
- .catch(() => {
- setIsSaving(false);
- setHasError(true);
- });
- lastCommittedRef.current = trimmed;
+      onSave(field, trimmed === '' ? null : trimmed)
+      .then(() => {
+        setIsSaving(false);
+        setShowSaved(true);
+        lastCommittedRef.current = trimmed;
+        setTimeout(() => setShowSaved(false), 3000);
+      })
+      .catch(() => {
+        setIsSaving(false);
+        setHasError(true);
+      });
  }
  }
  setTimeout(() => setIsFocused(false), 200);
@@ -216,7 +216,7 @@ const EditableField = ({
  value={localValue}
  onChange={handleChange}
  onFocus={handleFocus}
- onBlur={handleFocus}
+  onBlur={handleBlur}
  placeholder={placeholder}
  className={cn(
  "transition-all duration-300 border-none focus-visible:ring-0 text-lg font-medium text-foreground placeholder:text-muted-foreground/10 bg-transparent w-full",

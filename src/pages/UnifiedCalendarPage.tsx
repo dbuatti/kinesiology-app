@@ -146,6 +146,7 @@ function parseTimeToEvent(item: CalendarItem): CalendarEvent | null {
     variant: item.source === "voice" ? "voice" as const : "kinesiology" as const,
     priceAmount: item.priceAmount ?? null,
     standardRate: item.standardRate ?? null,
+    clientId: item.clientId ?? null,
   };
 }
 
@@ -153,16 +154,10 @@ function parseTimeToEvent(item: CalendarItem): CalendarEvent | null {
 const SLOT_SERVICES = [
   { key: "voice60", group: "Voice", label: "Voice & Piano — 60 min", kind: "voice", duration: "60" },
   { key: "voice45", group: "Voice", label: "Voice & Piano — 45 min", kind: "voice", duration: "45" },
-  { key: "fnhStandard", group: "FNH", label: "FNH Assessment · $70", kind: "fnh", eventTypeId: "4279898", price: 70 },
-  { key: "fnhFull", group: "FNH", label: "FNH Full Price · $100", kind: "fnh", eventTypeId: "5302336", price: 100 },
-  { key: "fnhFree", group: "FNH", label: "FNH Community · Free", kind: "fnh", eventTypeId: "5927215", price: 0 },
+  { key: "fnhCurrent", group: "FNH", label: "Current rate", kind: "fnh", eventTypeId: "4279898" as const, price: undefined as number | undefined },
+  { key: "fnhNew", group: "FNH", label: "New client · $70", kind: "fnh", eventTypeId: "4279898" as const, price: 70 },
+  { key: "fnhFree", group: "FNH", label: "FNH Community · Free", kind: "fnh", eventTypeId: "5927215" as const, price: 0 },
 ] as const;
-
-// The Cal.com event type that represents a free community session ($0).
-const communityFreeEventTypeId = (() => {
-  const t = CALCOM_CONFIG.EVENT_TYPES.find((e: any) => e.price === 0);
-  return t?.id ? parseInt(t.id, 10) : null;
-})();
 
 const UnifiedCalendarPage = () => {
   const navigate = useNavigate();
@@ -192,8 +187,8 @@ const UnifiedCalendarPage = () => {
   const handleNewBooking = (service: string) => {
     if (service === "voice60") openVoiceBooking("60");
     else if (service === "voice45") openVoiceBooking("45");
-    else if (service === "fnhStandard") { setFnhPrefillPrice(70); setFnhPickOpen(true); }
-    else if (service === "fnhFull") { setFnhPrefillPrice(100); setFnhPickOpen(true); }
+    else if (service === "fnhCurrent") { setFnhPrefillPrice(70); setFnhPickOpen(true); }
+    else if (service === "fnhNew") { setFnhPrefillPrice(70); setFnhPickOpen(true); }
     else if (service === "fnhFree") { setFnhPrefillPrice(0); setFnhPickOpen(true); }
   };
 
@@ -395,11 +390,9 @@ const UnifiedCalendarPage = () => {
   // Charge the client's CURRENT rate (from Client Audit / standard_rate) — this is
   // what "Send payment link" bills. Falls back to any per-appointment price.
   const currentRate = (a.standardRate && a.standardRate > 0) ? a.standardRate : (a.priceAmount && a.priceAmount > 0 ? a.priceAmount : 0);
-  // Free when: booked under the Community-Free Cal.com event type (auto-detected
-  // once synced), or a deliberate $0 price, or no rate at all.
-  const isFree = (communityFreeEventTypeId != null && a.calcomEventTypeId === communityFreeEventTypeId)
-    || a.priceAmount === 0
-    || currentRate === 0;
+  // Free only when the effective rate is $0 — a client's standard_rate always
+  // takes precedence over the Cal.com event type used at booking time.
+  const isFree = currentRate === 0;
   items.push({
   id: `k-${a.id}`,
   source: "kinesiology",
@@ -712,55 +705,65 @@ const UnifiedCalendarPage = () => {
    </div>
    )}
 
-   <div className="space-y-1">
-   {dayItems.map((item) => (
-   <Tooltip key={item.id}>
-   <TooltipTrigger asChild>
-   {item.url ? (
-   <a
-   href={item.url}
-   target={item.source === "voice" ? "_blank" : undefined}
-   rel={item.source === "voice" ? "noopener noreferrer" : undefined}
-   className={cn(
-   "block p-1.5 rounded-lg text-[10px] font-medium truncate transition-all hover:scale-[1.02] border",
-   item.source === "voice"
-   ? "bg-chart-destructive/10 text-chart-destructive border-border "
-   : "bg-chart-primary/10 text-chart-primary border-border "
-   )}
-   >
-   <div className="flex items-center gap-1">
-   <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", item.isFree ? "bg-slate-400" : item.paid ? "bg-chart-emerald" : "bg-amber-500")} />
-   {item.source === "voice" ? (
-   <Mic size={9} className="shrink-0 opacity-60" />
-   ) : (
-   <User size={9} className="shrink-0 opacity-60" />
-   )}
-   <span className="truncate">{item.title}</span>
-   {item.time && <span className="text-[9px] opacity-60 shrink-0 ml-0.5">{item.time}</span>}
-   </div>
-   </a>
-   ) : (
-   <div
-   className={cn(
-   "block p-1.5 rounded-lg text-[10px] font-medium truncate border",
-   item.source === "voice"
-   ? "bg-chart-destructive/10 text-chart-destructive border-border "
-   : "bg-chart-primary/10 text-chart-primary border-border "
-   )}
-   >
-   <div className="flex items-center gap-1">
-   <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", item.isFree ? "bg-slate-400" : item.paid ? "bg-chart-emerald" : "bg-amber-500")} />
-   {item.source === "voice" ? (
-   <Mic size={9} className="shrink-0 opacity-60" />
-   ) : (
-   <User size={9} className="shrink-0 opacity-60" />
-   )}
-   <span className="truncate">{item.title}</span>
-   {item.time && <span className="text-[9px] opacity-60 shrink-0 ml-0.5">{item.time}</span>}
-   </div>
-   </div>
-   )}
-   </TooltipTrigger>
+    <div className="space-y-1">
+    {dayItems.map((item) => (
+    <Tooltip key={item.id}>
+    <TooltipTrigger asChild>
+     {item.url ? (
+     <a
+     href={item.url}
+     target={item.source === "voice" ? "_blank" : undefined}
+     rel={item.source === "voice" ? "noopener noreferrer" : undefined}
+     onClick={!item.source || item.source === "kinesiology" ? (e) => { e.preventDefault(); navigate(item.url!); } : undefined}
+     className={cn(
+    "block p-1.5 rounded-lg text-[10px] font-medium truncate transition-all hover:scale-[1.02] border",
+    item.source === "voice"
+    ? "bg-chart-destructive/10 text-chart-destructive border-border "
+    : "bg-chart-primary/10 text-chart-primary border-border "
+    )}
+    >
+    <div className="flex items-center gap-1">
+    <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", item.isFree ? "bg-slate-400" : item.paid ? "bg-chart-emerald" : "bg-amber-500")} />
+    {item.source === "voice" ? (
+    <Mic size={9} className="shrink-0 opacity-60" />
+    ) : (
+    <User size={9} className="shrink-0 opacity-60" />
+    )}
+    {item.source === "kinesiology" && item.clientId ? (
+    <span
+      className="truncate cursor-pointer hover:underline"
+      onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/clients/${item.clientId}`); }}
+    >
+      {item.title}
+    </span>
+    ) : (
+    <span className="truncate">{item.title}</span>
+    )}
+    {item.time && <span className="text-[9px] opacity-60 shrink-0 ml-0.5">{item.time}</span>}
+    </div>
+    </a>
+    ) : (
+    <div
+    className={cn(
+    "block p-1.5 rounded-lg text-[10px] font-medium truncate border",
+    item.source === "voice"
+    ? "bg-chart-destructive/10 text-chart-destructive border-border "
+    : "bg-chart-primary/10 text-chart-primary border-border "
+    )}
+    >
+    <div className="flex items-center gap-1">
+    <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", item.isFree ? "bg-slate-400" : item.paid ? "bg-chart-emerald" : "bg-amber-500")} />
+    {item.source === "voice" ? (
+    <Mic size={9} className="shrink-0 opacity-60" />
+    ) : (
+    <User size={9} className="shrink-0 opacity-60" />
+    )}
+    <span className="truncate">{item.title}</span>
+    {item.time && <span className="text-[9px] opacity-60 shrink-0 ml-0.5">{item.time}</span>}
+    </div>
+    </div>
+    )}
+    </TooltipTrigger>
    <TooltipContent className="rounded-xl p-3 shadow-sm border-none w-64 bg-popover">
    <div className="space-y-2">
    <p className="font-semibold text-foreground text-sm">{item.title}</p>

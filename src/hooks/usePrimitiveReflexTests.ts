@@ -52,19 +52,23 @@ export function usePrimitiveReflexTests(
         if (isLat && !side) {
           await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : 'Clear', 'L');
           latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : 'Clear', 'R');
-        } else {
+        } else if (side) {
           latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
         }
         
         // Determine if the reflex is still inhibited globally (either L or R) using the latest pattern
-        if (side && latestPattern) {
-          const otherSide = side === 'L' ? 'R' : 'L';
+        if (isLat && latestPattern) {
           const reflexPattern = latestPattern.primitiveReflexes || {};
-          const otherSideStatus = reflexPattern[`${patternKey} (${otherSide})`] || '';
-          const isOtherSideInhibited = otherSideStatus.startsWith('Inhibited');
-          
-          if (!updates.is_inhibited && isOtherSideInhibited) {
-            updates.is_inhibited = true;
+          const sidesToCheck = side ? [side] : ['L', 'R'];
+          for (const s of sidesToCheck) {
+            const otherSide = s === 'L' ? 'R' : 'L';
+            const otherSideStatus = reflexPattern[`${patternKey} (${otherSide})`] || '';
+            const isOtherSideInhibited = otherSideStatus.startsWith('Inhibited');
+            
+            if (!updates.is_inhibited && isOtherSideInhibited) {
+              updates.is_inhibited = true;
+              await updatePriorityPattern('primitiveReflexes', patternKey, 'Inhibited', s as 'L' | 'R');
+            }
           }
         }
       }

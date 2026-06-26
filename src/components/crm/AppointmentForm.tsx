@@ -117,12 +117,14 @@ const AppointmentForm = ({
     if (existingAppointment) return existingAppointment.price_amount || 0;
     if (initialTime || currentSlotTime) {
       const type = CALCOM_CONFIG.EVENT_TYPES.find(t => t.id === currentEventTypeId);
-      return type?.price || 50;
+      return type?.price || 70;
     }
     return 0; 
   });
+  const [customPrice, setCustomPrice] = useState<string>("");
 
   const currentEventType = CALCOM_CONFIG.EVENT_TYPES.find(t => t.price === selectedPrice) || CALCOM_CONFIG.EVENT_TYPES[0];
+  const effectivePrice = selectedPrice === -1 ? (parseInt(customPrice) || 0) : selectedPrice;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!session?.user?.id) {

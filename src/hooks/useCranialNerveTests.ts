@@ -53,19 +53,23 @@ export function useCranialNerveTests(
         if (isLat && !side) {
           await updatePriorityPattern('cranialNerves', nerveName, updates.is_inhibited ? 'Inhibited' : 'Clear', 'L');
           latestPattern = await updatePriorityPattern('cranialNerves', nerveName, updates.is_inhibited ? 'Inhibited' : 'Clear', 'R');
-        } else {
+        } else if (side) {
           latestPattern = await updatePriorityPattern('cranialNerves', nerveName, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
         }
         
         // Determine if the nerve is still inhibited globally (either L or R) using the latest pattern
-        if (side && latestPattern) {
-          const otherSide = side === 'L' ? 'R' : 'L';
+        if (isLat && latestPattern) {
           const nervePattern = latestPattern.cranialNerves || {};
-          const otherSideStatus = nervePattern[`${nerveName} (${otherSide})`] || '';
-          const isOtherSideInhibited = otherSideStatus.startsWith('Inhibited');
-          
-          if (!updates.is_inhibited && isOtherSideInhibited) {
-            updates.is_inhibited = true;
+          const sidesToCheck = side ? [side] : ['L', 'R'];
+          for (const s of sidesToCheck) {
+            const otherSide = s === 'L' ? 'R' : 'L';
+            const otherSideStatus = nervePattern[`${nerveName} (${otherSide})`] || '';
+            const isOtherSideInhibited = otherSideStatus.startsWith('Inhibited');
+            
+            if (!updates.is_inhibited && isOtherSideInhibited) {
+              updates.is_inhibited = true;
+              await updatePriorityPattern('cranialNerves', nerveName, 'Inhibited', s as 'L' | 'R');
+            }
           }
         }
       }

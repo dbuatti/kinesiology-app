@@ -33,7 +33,7 @@ serve(async (req) => {
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-    const origin = body.origin || "https://kinesiology-app.vercel.app";
+    const origin = body.origin || Deno.env.get('SITE_URL') || "https://kinesiology-app.vercel.app";
 
     const notionHeaders = {
       'Authorization': `Bearer ${NOTION_KEY}`,

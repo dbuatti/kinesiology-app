@@ -483,7 +483,7 @@ const ProceduresPage = () => {
                   <TabsContent value="mechanoreceptive" className="mt-0 focus-visible:ring-0">
                     <MechanoreceptiveAssessment 
                       appointmentId={SANDBOX_ID}
-                      onSave={(summary) => console.log("Practice Save:", summary)}
+                      onSave={(summary) => {}}
                     />
                   </TabsContent>
 

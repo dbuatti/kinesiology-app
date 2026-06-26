@@ -131,7 +131,7 @@ const SessionPhaseTabs = ({
             previousValue={history.length > 1 ? history[1]?.priority_pattern : undefined}
             history={history}
             onSave={(s) => saveField('priority_pattern', s)} 
-            onUpdateItem={(cat, item, status, side) => updatePriorityPattern(cat, side ? `${item} (${side})` : item, status)}
+            onUpdateItem={(cat, item, status, side) => updatePriorityPattern(cat, item, status, side)}
             onJumpToCalibrate={(itemName) => {
               onTabChange('calibration');
             }}

@@ -2,7 +2,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@14.25.0'
-import { format, subMonths } from 'https://esm.sh/date-fns@3.6.0'
+import { format } from 'https://esm.sh/date-fns@3.6.0'
 import { requireUser } from "../_shared/auth.ts"
 
 const corsHeaders = {
@@ -22,7 +22,6 @@ async function getGmailAccessToken(clientId: string, clientSecret: string, refre
       grant_type: "refresh_token",
     }),
   });
-  
   const data = await response.json();
   if (!response.ok) throw new Error(`Gmail Auth Error: ${data.error_description || data.error}`);
   return data.access_token;
@@ -57,8 +56,33 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
       body: JSON.stringify({ raw: encodedMessage }),
     }
   );
-  
   return await response.json();
+}
+
+// Fields on the clients table that belong to the intake form.
+// Used to calculate what percentage of the form is filled out.
+const INTAKE_FIELDS = [
+  'name', 'email', 'phone', 'born', 'home_address',
+  'referral_source', 'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relationship',
+  'occupation', 'children', 'change_one_thing', 'never_been_same_since', 'chief_complaint',
+  'health_problem_severity', 'seen_medical_doctor', 'symptoms_worse_stress', 'symptoms_worse_fatigue',
+  'pain_movement', 'current_stress_level', 'therapies_used', 'therapies_other', 'therapies_success',
+  'specific_illnesses', 'covid_vaccinated', 'covid_shots', 'allergies_asthma',
+  'energy_worse_time', 'family_medical_history', 'alcohol_frequency',
+  'sleep_schedule', 'sleep_quality_details', 'concussion_history', 'concussion_details',
+  'birthing_experience', 'avoided_emotion', 'craved_emotion', 'stress_response',
+  'most_craved_human_need', 'startled_by_loud_noises', 'emotional_regulation_time', 'additional_notes',
+];
+
+function isIntakeFormFilled(client: Record<string, any>): boolean {
+  let filled = 0;
+  for (const field of INTAKE_FIELDS) {
+    const val = client[field];
+    if (val != null && val !== '' && !(Array.isArray(val) && val.length === 0)) {
+      filled++;
+    }
+  }
+  return (filled / INTAKE_FIELDS.length) >= 0.5;
 }
 
 serve(async (req) => {
@@ -85,36 +109,7 @@ serve(async (req) => {
 
     const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
 
-    // 1. Check for recent appointments (6-month rule)
-    if (!force) {
-      const sixMonthsAgo = subMonths(new Date(), 6).toISOString();
-      let query = supabase
-        .from('appointments')
-        .select('id, date')
-        .eq('client_id', clientId)
-        .gt('date', sixMonthsAgo);
-
-      if (appointmentId) {
-        query = query.neq('id', appointmentId);
-      }
-
-      const { data: recentApps, error: historyError } = await query.limit(1);
-
-      if (historyError) console.error("[send-manual-onboarding] History check error:", historyError);
-
-      if (recentApps && recentApps.length > 0) {
-        console.log(`[send-manual-onboarding] Skipping email for client ${clientId}: Recent appointment found on ${recentApps[0].date}`);
-        return new Response(JSON.stringify({ 
-          success: true, 
-          skipped: true, 
-          reason: "Client had an appointment within the last 6 months." 
-        }), { 
-          status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        });
-      }
-    }
-
-    // 2. Fetch Client & Appointment
+    // 1. Fetch Client & Appointment
     const { data: client } = await supabase.from('clients').select('*').eq('id', clientId).single();
     if (!client?.email) throw new Error("Client email missing");
 
@@ -123,17 +118,15 @@ serve(async (req) => {
       const { data: app } = await supabase.from('appointments').select('*').eq('id', appointmentId).single();
       targetApp = app;
     } else {
-      const { data: apps } = await supabase.from('appointments').select('*').eq('client_id', clientId).eq('is_paid', true).eq('payment_received', false).order('date', { ascending: true }).limit(1);
+      const { data: apps } = await supabase.from('appointments').select('*').eq('client_id', clientId).order('date', { ascending: false }).limit(1);
       targetApp = apps?.[0];
     }
 
-    // 3. Generate Stripe Link — charge the client's CURRENT rate (standard_rate from
-    // Client Audit), falling back to the appointment price. Always regenerate so a
-    // rate change in Client Audit is reflected on the next send.
+    // 2. Generate Stripe Link — always send for any non-free session.
     let stripeUrl = null;
     const priceAmount = client?.standard_rate || targetApp?.price_amount || 50;
 
-    if (targetApp?.is_paid && !targetApp?.payment_received) {
+    if (targetApp && priceAmount > 0) {
       console.log(`[send-manual-onboarding] Generating Stripe link for app: ${targetApp.id} at $${priceAmount}`);
       
       const session = await stripe.checkout.sessions.create({
@@ -163,14 +156,24 @@ serve(async (req) => {
       await supabase.from('appointments').update({ payment_link: stripeUrl }).eq('id', targetApp.id);
     }
 
-    const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
-    const onboardingUrl = `https://kinesiology-app.vercel.app/onboarding/${client.id}`;
+    // 3. Check if intake form is filled enough (skip CTA if >= 50% complete).
+    const intakeFilled = isIntakeFormFilled(client);
+    const intakeUrl = `${Deno.env.get('SITE_URL') || req.headers.get('origin') || 'https://kinesiology-app.vercel.app'}/onboarding/${client.id}`;
+
+    const appDate = targetApp?.date ? format(new Date(targetApp.date), "EEEE, MMMM d, yyyy 'at' h:mm a") : null;
+
+    const appointmentSection = appDate ? `
+      <div style="text-align: center; padding: 24px 0; border-bottom: 1px solid #F1F5F9;">
+        <div style="font-size: 13px; color: #64748B; margin-bottom: 8px;">Appointment</div>
+        <div style="font-size: 18px; font-weight: 700; color: #1E3261;">${appDate}</div>
+      </div>
+    ` : '';
 
     const paymentSection = stripeUrl ? `
       <div style="background-color: #F8FAFC; border-radius: 24px; padding: 32px; margin: 32px 0; border: 1px solid #E2E8F0; text-align: center;">
         <div style="font-size: 11px; font-weight: 800; color: #1E3261; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px;">Secure Payment ($${priceAmount})</div>
         <p style="margin: 0 0 24px 0; font-size: 16px; color: #475569; line-height: 1.6;">This session is a paid clinical assessment. You can settle the fee securely via Stripe using the button below:</p>
-        <a href="${stripeUrl}" style="display: inline-block; background-color: #4F46E5; color: #ffffff; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; shadow: 0 4px 6px rgba(79, 70, 229, 0.2);">Pay via Stripe</a>
+        <div style="text-align: center;"><a href="${stripeUrl}" style="display: inline-block; background-color: #4F46E5; color: #ffffff; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; shadow: 0 4px 6px rgba(79, 70, 229, 0.2);">Pay via Stripe</a></div>
         <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #E2E8F0;">
           <p style="font-size: 12px; color: #94a3b8; margin-bottom: 8px;">Alternatively, via PayID / Bank Transfer:</p>
           <div style="font-family: monospace; font-size: 14px; color: #1E3261; font-weight: 700;">
@@ -181,6 +184,16 @@ serve(async (req) => {
       </div>
     ` : '';
 
+    const intakeSection = intakeFilled ? '' : `
+      <div style="text-align: center; padding: 32px 0;">
+        <a href="${intakeUrl}" style="display: inline-block; background-color: #1E3261; color: #ffffff; padding: 20px 48px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 16px;">Complete Intake Form</a>
+      </div>
+    `;
+
+    const subject = stripeUrl
+      ? `Your FNH Session is Confirmed`
+      : `Your FNH Session is Confirmed`;
+
     const htmlBody = `
       <!DOCTYPE html>
       <html>
@@ -189,19 +202,26 @@ serve(async (req) => {
           <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 40px; overflow: hidden; border: 1px solid #E0F2FE;">
             <tr><td style="height: 6px; background-color: #D46A9B;"></td></tr>
             <tr>
-              <td style="padding: 56px 40px; text-align: center;">
-                <div style="color: #1E3261; font-size: 28px; font-weight: 700;">✦ Resonance Kinesiology</div>
-                <div style="color: #D46A9B; font-size: 11px; font-weight: 900; letter-spacing: 0.4em; margin-top: 16px; text-transform: uppercase;">Clinical Onboarding</div>
+              <td style="padding: 56px 40px;">
+                <div style="text-align: center;">
+                  <div style="color: #1E3261; font-size: 28px; font-weight: 700;">✦ Resonance Kinesiology</div>
+                  <div style="color: #D46A9B; font-size: 11px; font-weight: 900; letter-spacing: 0.4em; margin-top: 16px; text-transform: uppercase;">Functional Neuro Health</div>
+                </div>
                 
                 <div style="text-align: left; margin-top: 48px; line-height: 1.8; font-size: 17px; color: #334155;">
                   <p>Hi ${client.name.split(' ')[0]},</p>
-                  <p>To ensure we make the most of our time together, please complete your clinical history form before we meet.</p>
+                  <p>Your Functional Neuro Health session has been booked.</p>
                   
+                  ${appointmentSection}
+
                   ${paymentSection}
 
-                  <div style="text-align: center; padding: 32px 0;">
-                    <a href="${onboardingUrl}" style="display: inline-block; background-color: #1E3261; color: #ffffff; padding: 20px 48px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 16px;">Complete Onboarding Form</a>
-                  </div>
+                  ${!intakeFilled ? `
+                    <div style="margin-top: 32px; padding: 24px; background-color: #F8FAFC; border-radius: 16px; border: 1px solid #E2E8F0; text-align: center;">
+                      <p style="margin: 0 0 12px 0; font-size: 14px; color: #64748B;">If you haven't already, please also complete your clinical intake form so we can prepare for your session.</p>
+                      <div style="text-align: center;"><a href="${intakeUrl}" style="display: inline-block; background-color: #1E3261; color: #ffffff; padding: 12px 32px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 14px;">Complete Intake Form</a></div>
+                    </div>
+                  ` : ''}
                 </div>
                 
                 <div style="border-top: 1px solid #F1F5F9; margin-top: 40px; padding-top: 32px; text-align: left;">
@@ -216,9 +236,14 @@ serve(async (req) => {
       </html>
     `;
 
-    await sendGmail(accessToken, SENDER_EMAIL, client.email, "Action Required: Your Onboarding Form", htmlBody);
+    const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
+    await sendGmail(accessToken, SENDER_EMAIL, client.email, subject, htmlBody);
 
-    return new Response(JSON.stringify({ success: true }), { 
+    return new Response(JSON.stringify({ 
+      success: true, 
+      paymentLinkSent: !!stripeUrl,
+      intakeFormSent: !intakeFilled,
+    }), { 
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
     });
 

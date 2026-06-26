@@ -75,6 +75,7 @@ const VoiceClientsPage = lazy(() => import("./pages/VoiceClientsPage"));
 // VoiceBookLessonPage / VoiceCalendarPage retired — consolidated into /calendar.
 const VoiceOnboardingPage = lazy(() => import("./pages/public/VoiceOnboardingPage"));
 const VoicePaidPage = lazy(() => import("./pages/public/VoicePaidPage"));
+const OnboardingSuccessPage = lazy(() => import("./pages/public/OnboardingSuccessPage"));
 const UnifiedCalendarPage = lazy(() => import("./pages/UnifiedCalendarPage"));
 
 // --- Business & System ---
@@ -87,6 +88,7 @@ const ImportPage = lazy(() => import("./pages/ImportPage"));
 const DebugAppointmentPage = lazy(() => import("./pages/DebugAppointmentPage"));
 const DemoSessionPage = lazy(() => import("./pages/DemoSessionPage"));
 const SiteAuditPage = lazy(() => import("./pages/SiteAuditPage"));
+const WorkflowDebuggerPage = lazy(() => import("./pages/WorkflowDebuggerPage"));
 
 const queryClient = new QueryClient();
 
@@ -121,8 +123,9 @@ const AppRoutes = () => {
         {/* Public Voice Onboarding (no auth required) */}
         <Route path="/voice-onboarding/:email" element={<VoiceOnboardingPage />} />
 
-        {/* Public Stripe payment success page (no auth required) */}
+        {/* Public Stripe payment success pages (no auth required) */}
         <Route path="/voice/paid" element={<VoicePaidPage />} />
+        <Route path="/onboarding/success" element={<OnboardingSuccessPage />} />
 
         {/* Protected App Routes */}
         <Route path="/notes-doc" element={session ? <PracticeNotes /> : <Navigate to="/login" replace />} />
@@ -201,10 +204,10 @@ const AppRoutes = () => {
           <Route path="/settings/debug" element={<DebugAppointmentPage />} />
           <Route path="/settings/demo" element={<DemoSessionPage />} />
           <Route path="/settings/audit" element={<SiteAuditPage />} />
+          <Route path="/settings/workflows" element={<WorkflowDebuggerPage />} />
 
           {/* Legacy Redirects */}
           <Route path="/appointments" element={<Navigate to="/schedule?view=list" replace />} />
-          <Route path="/availability" element={<Navigate to="/schedule?view=availability" replace />} />
 
           <Route path="/resources/worksheets" element={<Navigate to="/resources?tab=worksheets" replace />} />
           <Route path="/lab" element={<Navigate to="/identity-map" replace />} />

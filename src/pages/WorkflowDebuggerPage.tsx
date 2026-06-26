@@ -6,6 +6,7 @@ import PageHeader from "@/components/shared/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { showSuccess } from "@/utils/toast";
 
 type StepType = "trigger" | "edge-function" | "email" | "db-write" | "ui" | "decision" | "webhook";
 type BadgeColor = "default" | "primary" | "destructive" | "emerald" | "amber" | "indigo" | "rose" | "slate" | "purple" | "cyan";
@@ -783,6 +784,236 @@ const WorkflowDebuggerPage = () => {
     setExpandedTemplates(new Set());
   };
 
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      showSuccess("Copied to clipboard!");
+    } catch {
+      showSuccess("Failed to copy to clipboard.");
+    }
+  };
+
+  const copyAll = () => {
+    const lines: string[] = [];
+
+    // Header
+    lines.push("# Workflow Debugger — Full Export");
+    lines.push("");
+
+    // Workflows
+    lines.push("## Workflows");
+    lines.push("");
+    WORKFLOWS.forEach((wf) => {
+      lines.push(`### ${wf.title} [${wf.category.toUpperCase()}]`);
+      lines.push(`**Trigger:** ${wf.trigger}`);
+      lines.push(`**Trigger Detail:** ${wf.triggerDetail}`);
+      lines.push("");
+      lines.push("**Steps:**");
+      wf.steps.forEach((s, i) => {
+        lines.push(`${i + 1}. **[${s.type}]** ${s.label} — ${s.desc}`);
+        if (s.fileRef) lines.push(`   - File: ${s.fileRef}`);
+      });
+      if (wf.emailSubject) lines.push(`\n**Email:** ${wf.emailSubject}`);
+      if (wf.errorStates?.length) lines.push(`\n**Error States:** ${wf.errorStates.join(", ")}`);
+      if (wf.notes) lines.push(`\n**Notes:** ${wf.notes}`);
+      lines.push("");
+    });
+
+    // Edge Functions
+    lines.push("## Edge Functions");
+    lines.push("");
+    EDGE_FUNCTIONS.forEach((ef) => {
+      lines.push(`### ${ef.name}`);
+      lines.push(`**Description:** ${ef.description}`);
+      lines.push(`**Triggers:** ${ef.triggers.join(", ")}`);
+      lines.push(`**Calls:** ${ef.calls.join(", ")}`);
+      lines.push(`**Env Vars:** ${ef.envVars.join(", ")}`);
+      lines.push(`**DB Tables:** ${ef.dbTables.join(", ")}`);
+      lines.push(`**Auth:** ${ef.authGuard}`);
+      if (ef.codePattern) lines.push(`**Code Flow:** ${ef.codePattern}`);
+      if (ef.errorHandling) lines.push(`**Error Handling:** ${ef.errorHandling}`);
+      if (ef.emailSubject) lines.push(`**Email Subject:** ${ef.emailSubject}`);
+      if (ef.notes) lines.push(`**Notes:** ${ef.notes}`);
+      lines.push("");
+    });
+
+    // Email Templates
+    lines.push("## Email Templates");
+    lines.push("");
+    EMAIL_TEMPLATES.forEach((tmpl) => {
+      lines.push(`### ${tmpl.name}`);
+      lines.push(`**Source:** ${tmpl.source}`);
+      lines.push(`**Subject:** ${tmpl.subject}`);
+      lines.push(`**When Sent:** ${tmpl.when}`);
+      lines.push("");
+      lines.push("**Sections:**");
+      tmpl.sections.forEach((s) => lines.push(`- ${s}`));
+      lines.push("");
+      lines.push("**HTML Skeleton:**");
+      lines.push("```html");
+      lines.push(tmpl.htmlSkeleton);
+      lines.push("```");
+      lines.push("");
+    });
+
+    // State Machine
+    lines.push("## Client State Machine");
+    lines.push("");
+    FNH_STATES.forEach((st) => {
+      lines.push(`### ${st.state}`);
+      lines.push(`**Description:** ${st.description}`);
+      lines.push(`**Details:** ${st.details}`);
+      st.transitions.forEach((t) => lines.push(`- → **${t.to}** via ${t.via}`));
+      lines.push("");
+    });
+
+    // DB Tables
+    lines.push("## Database Tables");
+    lines.push("");
+    DB_TABLES.forEach((tbl) => {
+      lines.push(`### ${tbl.name}`);
+      lines.push(`**Description:** ${tbl.description}`);
+      lines.push(`**Key Fields:** ${tbl.keyFields.join(", ")}`);
+      lines.push(`**Used By:** ${tbl.usedBy.join(", ")}`);
+      lines.push("");
+    });
+
+    lines.push("### Notion Database IDs");
+    NOTION_DB_IDS.forEach((ndb) => {
+      lines.push(`- **${ndb.name}:** \`${ndb.id}\` (${ndb.usedBy})`);
+    });
+    lines.push("");
+
+    lines.push("### Cal.com Event Types");
+    EVENT_TYPE_IDS.forEach((et) => {
+      lines.push(`- **${et.name}:** ID \`${et.id}\` — ${et.price} · ${et.system}`);
+    });
+    lines.push("");
+
+    // Env Vars
+    lines.push("## Environment Variables");
+    lines.push("");
+    ENV_VARS.forEach((ev) => {
+      lines.push(`- **${ev.name}:** ${ev.description} (used by: ${ev.usedBy.join(", ")})`);
+    });
+    lines.push("");
+
+    // External APIs
+    lines.push("## External APIs");
+    lines.push("");
+    EXTERNAL_APIS.forEach((api) => {
+      lines.push(`### ${api.name}`);
+      lines.push(`**Endpoints:**`);
+      api.endpoints.forEach((ep) => lines.push(`- \`${ep}\``));
+      lines.push(`**Used by:** ${api.usedBy.join(", ")}`);
+      lines.push("");
+    });
+
+    copyToClipboard(lines.join("\n"));
+  };
+
+  const copySection = (section: string) => {
+    const lines: string[] = [];
+    const add = (s: string) => lines.push(s);
+
+    switch (section) {
+      case "workflows":
+        add("# Workflows\n");
+        WORKFLOWS.forEach((wf) => {
+          add(`## ${wf.title} [${wf.category.toUpperCase()}]`);
+          add(`Trigger: ${wf.trigger}`);
+          add(`Trigger Detail: ${wf.triggerDetail}\n`);
+          add("Steps:");
+          wf.steps.forEach((s, i) => {
+            add(`${i + 1}. [${s.type}] ${s.label} — ${s.desc}`);
+            if (s.fileRef) add(`   File: ${s.fileRef}`);
+          });
+          if (wf.emailSubject) add(`\nEmail: ${wf.emailSubject}`);
+          if (wf.errorStates?.length) add(`\nError States: ${wf.errorStates.join(", ")}`);
+          if (wf.notes) add(`\nNotes: ${wf.notes}`);
+          add("");
+        });
+        break;
+
+      case "edge-functions":
+        add("# Edge Functions\n");
+        EDGE_FUNCTIONS.forEach((ef) => {
+          add(`## ${ef.name}`);
+          add(`Description: ${ef.description}`);
+          add(`Triggers: ${ef.triggers.join(", ")}`);
+          add(`Calls: ${ef.calls.join(", ")}`);
+          add(`Env Vars: ${ef.envVars.join(", ")}`);
+          add(`DB Tables: ${ef.dbTables.join(", ")}`);
+          add(`Auth: ${ef.authGuard}`);
+          if (ef.codePattern) add(`Code Flow: ${ef.codePattern}`);
+          if (ef.errorHandling) add(`Error Handling: ${ef.errorHandling}`);
+          if (ef.emailSubject) add(`Email Subject: ${ef.emailSubject}`);
+          if (ef.notes) add(`Notes: ${ef.notes}`);
+          add("");
+        });
+        break;
+
+      case "email-templates":
+        add("# Email Templates\n");
+        EMAIL_TEMPLATES.forEach((tmpl) => {
+          add(`## ${tmpl.name}`);
+          add(`Source: ${tmpl.source}`);
+          add(`Subject: ${tmpl.subject}`);
+          add(`When Sent: ${tmpl.when}\n`);
+          add("Sections:");
+          tmpl.sections.forEach((s) => add(`- ${s}`));
+          add("\nHTML Skeleton:");
+          add("```html");
+          add(tmpl.htmlSkeleton);
+          add("```\n");
+        });
+        break;
+
+      case "state-machine":
+        add("# Client State Machine\n");
+        FNH_STATES.forEach((st) => {
+          add(`## ${st.state}`);
+          add(`Description: ${st.description}`);
+          add(`Details: ${st.details}`);
+          st.transitions.forEach((t) => add(`- → ${t.to} via ${t.via}`));
+          add("");
+        });
+        break;
+
+      case "database":
+        add("# Database Tables\n");
+        DB_TABLES.forEach((tbl) => {
+          add(`## ${tbl.name}`);
+          add(`Description: ${tbl.description}`);
+          add(`Key Fields: ${tbl.keyFields.join(", ")}`);
+          add(`Used By: ${tbl.usedBy.join(", ")}\n`);
+        });
+        add("Notion Database IDs:\n");
+        NOTION_DB_IDS.forEach((ndb) => add(`- ${ndb.name}: \`${ndb.id}\` (${ndb.usedBy})`));
+        add("");
+        add("Cal.com Event Types:\n");
+        EVENT_TYPE_IDS.forEach((et) => add(`- ${et.name}: ID \`${et.id}\` — ${et.price} · ${et.system}`));
+        break;
+
+      case "env-vars":
+        add("# Environment Variables\n");
+        ENV_VARS.forEach((ev) => add(`- **${ev.name}:** ${ev.description}`));
+        break;
+
+      case "external-apis":
+        add("# External APIs\n");
+        EXTERNAL_APIS.forEach((api) => {
+          add(`## ${api.name}`);
+          add("Endpoints:");
+          api.endpoints.forEach((ep) => add(`- \`${ep}\``));
+          add(`Used by: ${api.usedBy.join(", ")}\n`);
+        });
+        break;
+    }
+
+    copyToClipboard(lines.join("\n"));
+  };
+
   return (
     <AppLayout variant="workspace">
       <div className="space-y-8 animate-in fade-in duration-500 pb-20">
@@ -837,6 +1068,7 @@ const WorkflowDebuggerPage = () => {
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search workflows..." className="pl-8 h-9 rounded-xl text-xs" />
           </div>
           <div className="flex gap-2 ml-auto">
+            <button onClick={copyAll} className="text-xs font-semibold text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg border border-border hover:bg-muted/50 transition-all inline-flex items-center gap-1.5"><Copy size={12} />Copy all</button>
             <button onClick={selectAll} className="text-xs font-semibold text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg border border-border hover:bg-muted/50 transition-all">Expand all</button>
             <button onClick={collapseAll} className="text-xs font-semibold text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg border border-border hover:bg-muted/50 transition-all">Collapse all</button>
           </div>
@@ -854,7 +1086,10 @@ const WorkflowDebuggerPage = () => {
                 <p className="text-xs text-muted-foreground font-medium">Every booking path, email trigger, intake flow, cancellation, reschedule, and sync</p>
               </div>
             </div>
-            {expandedSections.has("workflows") ? <ChevronDown size={18} className="text-muted-foreground" /> : <ChevronRight size={18} className="text-muted-foreground" />}
+            <div className="flex items-center gap-2">
+              <button onClick={(e) => { e.stopPropagation(); copySection("workflows"); }} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all" title="Copy section"><Copy size={14} /></button>
+              {expandedSections.has("workflows") ? <ChevronDown size={18} className="text-muted-foreground" /> : <ChevronRight size={18} className="text-muted-foreground" />}
+            </div>
           </button>
           {expandedSections.has("workflows") && (
             <div className="px-5 pb-5 space-y-3">
@@ -953,7 +1188,10 @@ const WorkflowDebuggerPage = () => {
               <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 flex items-center justify-center"><Zap size={16} /></div>
               <div><h3 className="font-black text-foreground text-sm">Edge Functions ({EDGE_FUNCTIONS.length})</h3><p className="text-xs text-muted-foreground font-medium">Supabase edge functions — triggers, call chains, env vars, DB tables, error handling</p></div>
             </div>
-            {expandedSections.has("edge-functions") ? <ChevronDown size={18} className="text-muted-foreground" /> : <ChevronRight size={18} className="text-muted-foreground" />}
+            <div className="flex items-center gap-2">
+              <button onClick={(e) => { e.stopPropagation(); copySection("edge-functions"); }} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all" title="Copy section"><Copy size={14} /></button>
+              {expandedSections.has("edge-functions") ? <ChevronDown size={18} className="text-muted-foreground" /> : <ChevronRight size={18} className="text-muted-foreground" />}
+            </div>
           </button>
           {expandedSections.has("edge-functions") && (
             <div className="px-5 pb-5 space-y-2">
@@ -1052,7 +1290,10 @@ const WorkflowDebuggerPage = () => {
               <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 flex items-center justify-center"><Mail size={16} /></div>
               <div><h3 className="font-black text-foreground text-sm">Email Templates ({EMAIL_TEMPLATES.length})</h3><p className="text-xs text-muted-foreground font-medium">Full email templates with HTML structure and section breakdowns</p></div>
             </div>
-            {expandedSections.has("email-templates") ? <ChevronDown size={18} className="text-muted-foreground" /> : <ChevronRight size={18} className="text-muted-foreground" />}
+            <div className="flex items-center gap-2">
+              <button onClick={(e) => { e.stopPropagation(); copySection("email-templates"); }} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all" title="Copy section"><Copy size={14} /></button>
+              {expandedSections.has("email-templates") ? <ChevronDown size={18} className="text-muted-foreground" /> : <ChevronRight size={18} className="text-muted-foreground" />}
+            </div>
           </button>
           {expandedSections.has("email-templates") && (
             <div className="px-5 pb-5 space-y-4">
@@ -1111,7 +1352,10 @@ const WorkflowDebuggerPage = () => {
               <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 flex items-center justify-center"><Brain size={16} /></div>
               <div><h3 className="font-black text-foreground text-sm">Client State Machine ({FNH_STATES.length} states)</h3><p className="text-xs text-muted-foreground font-medium">All possible FNH client states, transitions, and triggers — from New Client through Active, Re-engagement, and Cancelled</p></div>
             </div>
-            {expandedSections.has("state-machine") ? <ChevronDown size={18} className="text-muted-foreground" /> : <ChevronRight size={18} className="text-muted-foreground" />}
+            <div className="flex items-center gap-2">
+              <button onClick={(e) => { e.stopPropagation(); copySection("state-machine"); }} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all" title="Copy section"><Copy size={14} /></button>
+              {expandedSections.has("state-machine") ? <ChevronDown size={18} className="text-muted-foreground" /> : <ChevronRight size={18} className="text-muted-foreground" />}
+            </div>
           </button>
           {expandedSections.has("state-machine") && (
             <div className="px-5 pb-5 space-y-3">
@@ -1158,7 +1402,10 @@ const WorkflowDebuggerPage = () => {
               <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 flex items-center justify-center"><Database size={16} /></div>
               <div><h3 className="font-black text-foreground text-sm">Database Tables ({DB_TABLES.length})</h3><p className="text-xs text-muted-foreground font-medium">Supabase tables used across all workflows and edge functions</p></div>
             </div>
-            {expandedSections.has("database") ? <ChevronDown size={18} className="text-muted-foreground" /> : <ChevronRight size={18} className="text-muted-foreground" />}
+            <div className="flex items-center gap-2">
+              <button onClick={(e) => { e.stopPropagation(); copySection("database"); }} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all" title="Copy section"><Copy size={14} /></button>
+              {expandedSections.has("database") ? <ChevronDown size={18} className="text-muted-foreground" /> : <ChevronRight size={18} className="text-muted-foreground" />}
+            </div>
           </button>
           {expandedSections.has("database") && (
             <div className="px-5 pb-5 space-y-3">
@@ -1216,7 +1463,10 @@ const WorkflowDebuggerPage = () => {
               <div className="w-8 h-8 rounded-xl bg-cyan-100 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-300 flex items-center justify-center"><Hash size={16} /></div>
               <div><h3 className="font-black text-foreground text-sm">Environment Variables ({ENV_VARS.length})</h3><p className="text-xs text-muted-foreground font-medium">All Supabase Edge Function secrets — API keys, OAuth credentials, and configuration</p></div>
             </div>
-            {expandedSections.has("env-vars") ? <ChevronDown size={18} className="text-muted-foreground" /> : <ChevronRight size={18} className="text-muted-foreground" />}
+            <div className="flex items-center gap-2">
+              <button onClick={(e) => { e.stopPropagation(); copySection("env-vars"); }} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all" title="Copy section"><Copy size={14} /></button>
+              {expandedSections.has("env-vars") ? <ChevronDown size={18} className="text-muted-foreground" /> : <ChevronRight size={18} className="text-muted-foreground" />}
+            </div>
           </button>
           {expandedSections.has("env-vars") && (
             <div className="px-5 pb-5">
@@ -1244,7 +1494,10 @@ const WorkflowDebuggerPage = () => {
               <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 flex items-center justify-center"><Cloud size={16} /></div>
               <div><h3 className="font-black text-foreground text-sm">External APIs ({EXTERNAL_APIS.length})</h3><p className="text-xs text-muted-foreground font-medium">All third-party APIs integrated with the system</p></div>
             </div>
-            {expandedSections.has("external-apis") ? <ChevronDown size={18} className="text-muted-foreground" /> : <ChevronRight size={18} className="text-muted-foreground" />}
+            <div className="flex items-center gap-2">
+              <button onClick={(e) => { e.stopPropagation(); copySection("external-apis"); }} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all" title="Copy section"><Copy size={14} /></button>
+              {expandedSections.has("external-apis") ? <ChevronDown size={18} className="text-muted-foreground" /> : <ChevronRight size={18} className="text-muted-foreground" />}
+            </div>
           </button>
           {expandedSections.has("external-apis") && (
             <div className="px-5 pb-5 space-y-3">

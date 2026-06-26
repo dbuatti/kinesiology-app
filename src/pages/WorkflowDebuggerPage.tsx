@@ -526,20 +526,38 @@ const EMAIL_TEMPLATES = [
       "BCC: daniele.buatti@gmail.com (on every send)",
     ],
     htmlSkeleton: `<!DOCTYPE html>
-<html><body style="margin:0;padding:0;background-color:#FDFCFB;font-family:sans-serif;">
-<center style="width:100%;background-color:#FDFCFB;padding:40px 0;">
-<table role="presentation" width="100%" style="max-width:600px;margin:0 auto;background:#fff;border-radius:40px;overflow:hidden;border:1px solid #E0F2FE;">
-<tr><td style="height:6px;background-color:#D46A9B;"></td></tr>
-<tr><td style="padding:56px 40px;">
-<div style="text-align:center;color:#1E3261;font-size:28px;font-weight:700;">✦ Resonance Kinesiology</div>
-<div style="color:#D46A9B;font-size:11px;font-weight:900;letter-spacing:0.4em;margin-top:16px;text-transform:uppercase;">Functional Neuro Health</div>
-<div style="text-align:left;margin-top:48px;line-height:1.8;font-size:17px;color:#334155;">
-<p>Hi {firstName},</p><p>Your Functional Neuro Health session has been booked.</p>
-{appointmentSection}{paymentSection}{conditionalIntakeSection}</div>
-<div style="border-top:1px solid #F1F5F9;margin-top:40px;padding-top:32px;text-align:left;">
-<div style="font-weight:700;color:#1E3261;font-size:18px;">Daniele Buatti</div>
-<div style="color:#D46A9B;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;">Neuro-Somatic Kinesiologist</div>
-</div></td></tr></table></center></body></html>`,
+<html>
+<body style="margin: 0; padding: 0; background-color: #FDFCFB; font-family: sans-serif;">
+  <center style="width: 100%; background-color: #FDFCFB; padding: 40px 0;">
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 40px; overflow: hidden; border: 1px solid #E0F2FE;">
+      <tr><td style="height: 6px; background-color: #D46A9B;"></td></tr>
+      <tr>
+        <td style="padding: 56px 40px;">
+          <div style="text-align: center;">
+            <div style="color: #1E3261; font-size: 28px; font-weight: 700;">✦ Resonance Kinesiology</div>
+            <div style="color: #D46A9B; font-size: 11px; font-weight: 900; letter-spacing: 0.4em; margin-top: 16px; text-transform: uppercase;">Functional Neuro Health</div>
+          </div>
+
+          <div style="text-align: left; margin-top: 48px; line-height: 1.8; font-size: 17px; color: #334155;">
+            <p>Hi {firstName},</p>
+            <p>Your Functional Neuro Health session has been booked.</p>
+
+            {appointmentSection}
+            {paymentSection}
+
+            {conditionalIntakeSection}
+          </div>
+
+          <div style="border-top: 1px solid #F1F5F9; margin-top: 40px; padding-top: 32px; text-align: left;">
+            <div style="font-weight: 700; color: #1E3261; font-size: 18px;">Daniele Buatti</div>
+            <div style="color: #D46A9B; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">Neuro-Somatic Kinesiologist</div>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </center>
+</body>
+</html>`,
   },
   {
     name: "FNH Payment Confirmation",
@@ -555,18 +573,22 @@ const EMAIL_TEMPLATES = [
       "Signature: Daniele Buatti, Resonance Kinesiology",
     ],
     htmlSkeleton: `<!DOCTYPE html><html><body style="margin:0;padding:0;font-family:sans-serif;">
-<center style="width:100%;padding:40px 0;background:#f8fafc;">
-<table role="presentation" width="100%" style="max-width:560px;margin:0 auto;background:#fff;border-radius:32px;overflow:hidden;">
-<tr><td style="height:6px;background:#4f46e5;"></td></tr>
-<tr><td style="padding:48px 40px;text-align:center;">
-<div style="font-size:44px;">✅</div>
-<div style="color:#4f46e5;font-size:11px;font-weight:900;letter-spacing:0.3em;text-transform:uppercase;margin-top:12px;">Payment Received</div>
-<h1 style="color:#1E293B;font-size:24px;">Thank you, {firstName}!</h1>
-<p style="color:#475569;font-size:15px;">Your payment{amount} is confirmed.</p>
-<div style="border-top:1px solid #F1F5F9;margin-top:32px;padding-top:24px;text-align:left;">
-<div style="font-weight:700;color:#1E293B;">Daniele Buatti</div>
-<div style="color:#4f46e5;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;">Resonance Kinesiology</div>
-</div></td></tr></table></center></body></html>`,
+  <center style="width:100%;padding:40px 0;background:#f8fafc;">
+    <table role="presentation" width="100%" style="max-width:560px;margin:0 auto;background:#fff;border-radius:32px;overflow:hidden;">
+      <tr><td style="height:6px;background:#4f46e5;"></td></tr>
+      <tr><td style="padding:48px 40px;text-align:center;">
+        <div style="font-size:44px;">✅</div>
+        <div style="color:#4f46e5;font-size:11px;font-weight:900;letter-spacing:0.3em;text-transform:uppercase;margin-top:12px;">Payment Received</div>
+        <h1 style="color:#1E293B;font-size:24px;margin:12px 0 8px;">Thank you, {firstName}!</h1>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">Your payment{amountSection} for your FNH Neuro-Health Assessment is confirmed. Your session is locked in — looking forward to seeing you.</p>
+        <div style="border-top:1px solid #F1F5F9;margin-top:32px;padding-top:24px;text-align:left;">
+          <div style="font-weight:700;color:#1E293B;">Daniele Buatti</div>
+          <div style="color:#4f46e5;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;">Resonance Kinesiology</div>
+        </div>
+      </td></tr>
+    </table>
+  </center>
+</body></html>`,
   },
   {
     name: "Voice Onboarding",
@@ -584,23 +606,44 @@ const EMAIL_TEMPLATES = [
       "Signature: Daniele Buatti, Voice Coach",
       "BCC: daniele.buatti@gmail.com",
     ],
-    htmlSkeleton: `<!DOCTYPE html><html><body style="margin:0;padding:0;font-family:sans-serif;">
-<center style="width:100%;padding:40px 0;">
-<table role="presentation" width="100%" style="max-width:600px;margin:0 auto;background:#fff;border-radius:40px;overflow:hidden;">
-<tr><td style="height:6px;background-color:#E11D48;"></td></tr>
-<tr><td style="padding:56px 40px;text-align:center;">
-<div style="font-size:48px;margin-bottom:16px;">🎵</div>
-<div style="color:#1E293B;font-size:28px;font-weight:700;">Welcome to Voice Studio</div>
-<div style="color:#E11D48;font-size:11px;font-weight:900;letter-spacing:0.4em;margin-top:12px;text-transform:uppercase;">Lesson Confirmed</div>
-<div style="text-align:left;margin-top:40px;line-height:1.8;font-size:16px;color:#475569;">
-{lessonDetailsSection}{paymentSection}
-<div style="text-align:center;padding:12px 0 28px;">
-<a href="{onboardingUrl}" style="display:inline-block;background-color:#E11D48;color:#fff;padding:16px 40px;border-radius:100px;text-decoration:none;font-weight:700;font-size:15px;">Complete Student Profile</a>
-</div></div>
-<div style="border-top:1px solid #F1F5F9;margin-top:40px;padding-top:32px;text-align:left;">
-<div style="font-weight:700;color:#1E293B;font-size:18px;">Daniele Buatti</div>
-<div style="color:#E11D48;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;">Voice Coach</div>
-</div></td></tr></table></center></body></html>`,
+    htmlSkeleton: `<!DOCTYPE html>
+<html>
+<body style="margin: 0; padding: 0; font-family: sans-serif;">
+  <center style="width: 100%; padding: 40px 0;">
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 40px; overflow: hidden;">
+      <tr><td style="height: 6px; background-color: #E11D48;"></td></tr>
+      <tr>
+        <td style="padding: 56px 40px; text-align: center;">
+          <div style="font-size: 48px; margin-bottom: 16px;">🎵</div>
+          <div style="color: #1E293B; font-size: 28px; font-weight: 700;">Welcome to Voice Studio</div>
+          <div style="color: #E11D48; font-size: 11px; font-weight: 900; letter-spacing: 0.4em; margin-top: 12px; text-transform: uppercase;">Lesson Confirmed</div>
+
+          <div style="text-align: left; margin-top: 40px; line-height: 1.8; font-size: 16px; color: #475569;">
+            <p>Hi {firstName},</p>
+            <p>Thanks for booking a voice lesson! Here's your session details:</p>
+
+            {lessonDetailsCard}
+
+            {paymentSection}
+
+            <div style="text-align: center; padding: 12px 0 28px;">
+              <a href="{onboardingUrl}" style="display: inline-block; background-color: #E11D48; color: #ffffff; padding: 16px 40px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 15px;">Complete Student Profile</a>
+            </div>
+            <p style="font-size: 13px; color: #94A3B8; text-align: center;">Tell me about your goals, experience level, and what you'd like to focus on.</p>
+
+            <p>I'm looking forward to working with you!</p>
+          </div>
+
+          <div style="border-top: 1px solid #F1F5F9; margin-top: 40px; padding-top: 32px; text-align: left;">
+            <div style="font-weight: 700; color: #1E293B; font-size: 18px;">Daniele Buatti</div>
+            <div style="color: #E11D48; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">Voice Coach</div>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </center>
+</body>
+</html>`,
   },
   {
     name: "Voice Payment Confirmation",
@@ -616,18 +659,22 @@ const EMAIL_TEMPLATES = [
       "Signature: Daniele Buatti, Voice Coach",
     ],
     htmlSkeleton: `<!DOCTYPE html><html><body style="margin:0;padding:0;font-family:sans-serif;">
-<center style="width:100%;padding:40px 0;background:#f8fafc;">
-<table role="presentation" width="100%" style="max-width:560px;margin:0 auto;background:#fff;border-radius:32px;overflow:hidden;">
-<tr><td style="height:6px;background:#E11D48;"></td></tr>
-<tr><td style="padding:48px 40px;text-align:center;">
-<div style="font-size:44px;">✅</div>
-<div style="color:#E11D48;font-size:11px;font-weight:900;letter-spacing:0.3em;text-transform:uppercase;margin-top:12px;">Payment Received</div>
-<h1 style="color:#1E293B;font-size:24px;">Thank you, {name}! 🎵</h1>
-<p style="color:#475569;font-size:15px;">Your payment{amount} is confirmed{lessonDate}.</p>
-<div style="border-top:1px solid #F1F5F9;margin-top:32px;padding-top:24px;text-align:left;">
-<div style="font-weight:700;color:#1E293B;">Daniele Buatti</div>
-<div style="color:#E11D48;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;">Voice Coach</div>
-</div></td></tr></table></center></body></html>`,
+  <center style="width:100%;padding:40px 0;background:#f8fafc;">
+    <table role="presentation" width="100%" style="max-width:560px;margin:0 auto;background:#fff;border-radius:32px;overflow:hidden;">
+      <tr><td style="height:6px;background:#E11D48;"></td></tr>
+      <tr><td style="padding:48px 40px;text-align:center;">
+        <div style="font-size:44px;">✅</div>
+        <div style="color:#E11D48;font-size:11px;font-weight:900;letter-spacing:0.3em;text-transform:uppercase;margin-top:12px;">Payment Received</div>
+        <h1 style="color:#1E293B;font-size:24px;margin:12px 0 8px;">Thank you, {name}! 🎵</h1>
+        <p style="color:#475569;font-size:15px;line-height:1.6;">Your payment{amountSection} is confirmed{lessonDateSection}. Your spot is locked in — I'm looking forward to working with you.</p>
+        <div style="border-top:1px solid #F1F5F9;margin-top:32px;padding-top:24px;text-align:left;">
+          <div style="font-weight:700;color:#1E293B;">Daniele Buatti</div>
+          <div style="color:#E11D48;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;">Voice Coach</div>
+        </div>
+      </td></tr>
+    </table>
+  </center>
+</body></html>`,
   },
 ];
 

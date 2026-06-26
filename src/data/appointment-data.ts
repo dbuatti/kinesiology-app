@@ -11,4 +11,6 @@ export const APPOINTMENT_STATUSES = [
   "Completed",
   "Cancelled",
   "No Show",
+  "AP",
+  "OPEN",
 ];

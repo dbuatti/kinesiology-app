@@ -32,23 +32,29 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
   const [celebratingItem, setCelebratingItem] = useState<string | null>(null);
   const [openPopover, setOpenPopover] = useState<string | null>(null);
 
-  const loadFocus = async () => {
-    try {
-      const focusItems = await getWeeklyFocus();
-      setItems(focusItems);
-      setIsVisible(focusItems.length > 0);
-    } catch (e) {
-      console.error("Failed to load weekly focus banner", e);
-    }
-  };
-
   useEffect(() => {
+    let cancelled = false;
+
+    const loadFocus = async () => {
+      try {
+        const focusItems = await getWeeklyFocus();
+        if (cancelled) return;
+        setItems(focusItems);
+        setIsVisible(focusItems.length > 0);
+      } catch (e) {
+        console.error("Failed to load weekly focus banner", e);
+      }
+    };
+
     loadFocus();
     const channel = supabase
       .channel('weekly-focus-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'weekly_focus' }, loadFocus)
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const itemStatuses = useMemo(() => {

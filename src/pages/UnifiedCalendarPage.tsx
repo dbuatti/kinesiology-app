@@ -322,12 +322,16 @@ const UnifiedCalendarPage = () => {
         .select("id")
         .single();
       if (dbError) throw dbError;
-      // Send the Stripe payment link for paid sessions (was previously missing,
-      // leaving these bookings permanently "Unpaid" with no way to charge).
+      // Send payment link for paid sessions. Only include intake CTA if client
+      // hasn't already submitted it (the edge function checks isIntakeFormFilled).
       if (isPaidSession && newApp?.id) {
-        await supabase.functions.invoke("send-manual-onboarding", {
-          body: { clientId, appointmentId: newApp.id, force: true },
-        }).catch(() => {});
+        try {
+          await supabase.functions.invoke("send-manual-onboarding", {
+            body: { clientId, appointmentId: newApp.id, force: true },
+          });
+        } catch (err) {
+          console.error("Failed to send payment email:", err);
+        }
       }
       return newApp;
     },

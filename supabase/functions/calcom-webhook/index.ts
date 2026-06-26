@@ -166,7 +166,7 @@ serve(async (req) => {
         client_id: dbClient.id,
         date: startTime,
         calcom_booking_id: calcomId,
-        status: triggerEvent === 'BOOKING_RESCHEDULED' ? 'Scheduled' : undefined,
+        status: triggerEvent === 'BOOKING_RESCHEDULED' ? 'Scheduled' : 'Scheduled',
         is_paid: payload.metadata?.is_paid === "true" || !!payload.payment?.[0],
         price_amount: priceAmount,
         price_currency: 'AUD'

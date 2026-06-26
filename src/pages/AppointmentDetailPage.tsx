@@ -390,7 +390,7 @@ const AppointmentDetailPage = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                <Link to="?view=document"
+                <Link to={`?view=document`}
                   className="h-8 px-3 gap-1.5 border-border bg-card rounded-lg text-xs font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors inline-flex items-center border no-underline">
                   <FileText size={13} />
                   <span className="hidden md:inline ml-1.5">Doc View</span>
@@ -535,7 +535,7 @@ const AppointmentDetailPage = () => {
               <div className="flex items-center gap-1">
                 <Droplets size={12} className={cn("text-muted-foreground", !appointment.hydrated && "text-chart-destructive")} />
                 <Switch checked={appointment.hydrated || false} onCheckedChange={(c) => saveField('hydrated', c)}
-                  className="scale-[0.5] origin-left data-[state=checked]:bg-chart-emerald data-[state=unchecked]:bg-muted-foreground/30" />
+                  className="data-[state=checked]:bg-chart-emerald data-[state=unchecked]:bg-muted-foreground/30" />
               </div>
               {!appointment.hydrated && (
                 <span className="text-[11px] text-chart-destructive">Hydration priority</span>

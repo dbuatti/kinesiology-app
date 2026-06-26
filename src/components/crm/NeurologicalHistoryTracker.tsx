@@ -27,13 +27,12 @@ const NeurologicalHistoryTracker = ({ appointments }: NeurologicalHistoryTracker
   const historyData = useMemo(() => processNeurologicalHistory(appointments), [appointments]);
   
   const sessionDates = useMemo(() => {
-    const dates = new Set<string>();
-    appointments.forEach(app => {
-      if (app.priority_pattern) {
-        dates.add(format(new Date(app.date), "MMM d, yyyy"));
-      }
-    });
-    return Array.from(dates).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+    return appointments
+      .filter(app => app.priority_pattern && app.date)
+      .map(app => new Date(app.date))
+      .sort((a, b) => a.getTime() - b.getTime())
+      .map(d => format(d, "MMM d, yyyy"))
+      .filter((d, i, arr) => arr.indexOf(d) === i);
   }, [appointments]);
 
   if (historyData.length === 0) {

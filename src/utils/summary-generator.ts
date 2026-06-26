@@ -104,7 +104,7 @@ export const generateSessionSummary = (appointment: AppointmentWithClient): stri
 
   if (appointment.emotion_primary_selection || appointment.emotion_notes || appointment.luscher_color_1) {
     summary += `[8] EMOTIONAL CONTEXT\n`;
-    if (appointment.luscher_color_1) summary += `- Luscher Pair: ${appointment.luscher_color_1} + ${appointment.luscher_color_2}\n`;
+    if (appointment.luscher_color_1) summary += `- Luscher Pair: ${appointment.luscher_color_1}${appointment.luscher_color_2 ? ` + ${appointment.luscher_color_2}` : ''}\n`;
     if (appointment.emotion_primary_selection) summary += `- Primary Emotion: ${appointment.emotion_primary_selection}\n`;
     if (appointment.emotion_secondary_selection) summary += `- Specifics: ${appointment.emotion_secondary_selection.join(', ')}\n`;
     if (appointment.emotion_notes) summary += `- Emotional Notes: ${appointment.emotion_notes}\n`;

@@ -811,7 +811,7 @@ const CalcomSlotsView = () => {
                 </Button>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {week.map(date => {
                   const daySlots = slots[date] || [];
                   const dayBookings = bookings[date] || [];
@@ -899,26 +899,26 @@ const CalcomSlotsView = () => {
                                       key={booking.id} 
                                       className="flex items-center justify-between p-3 rounded-2xl bg-indigo-900 text-white shadow-lg border border-indigo-800 group/booking"
                                     >
-                                      <div className="flex items-center gap-3 min-w-0">
+                                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                         <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0 border border-white/10">
                                           <User size={14} className="text-indigo-300" />
                                         </div>
-                                        <div className="min-w-0">
-                                          <div className="flex items-center gap-1.5">
-                                            <p className="text-xs font-black truncate">{booking.attendeeName}</p>
+                                        <div className="min-w-0 flex-1">
+                                          <p className="text-sm font-black truncate leading-tight">{booking.attendeeName}</p>
+                                          <div className="flex items-center gap-1.5 mt-1">
                                             <span className={cn(
                                               "text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0",
                                               isVoiceTitle(booking.title) ? "bg-rose-500/30 text-rose-200" : "bg-emerald-500/30 text-emerald-200"
                                             )}>
                                               {isVoiceTitle(booking.title) ? "Voice" : "FNH"}
                                             </span>
+                                            <p className="text-[9px] font-bold text-indigo-300 uppercase tracking-widest truncate">
+                                              {format(new Date(booking.start), "h:mm a")}
+                                            </p>
                                           </div>
-                                          <p className="text-[9px] font-bold text-indigo-300 uppercase tracking-widest mt-0.5">
-                                            {format(new Date(booking.start), "h:mm a")}
-                                          </p>
                                         </div>
                                       </div>
-                                      <div className="flex items-center gap-1">
+                                      <div className="hidden group-hover/booking:flex items-center gap-1 shrink-0 pl-1">
                                         <Button
                                           variant="ghost"
                                           size="icon"

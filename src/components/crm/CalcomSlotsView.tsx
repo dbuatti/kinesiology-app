@@ -36,7 +36,8 @@ import {
   Send,
   Sparkles,
   Instagram,
-  CalendarClock
+  CalendarClock,
+  Mic
 } from "lucide-react";
 import { format, addWeeks, subWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays, isBefore, startOfDay, nextMonday, isMonday, startOfWeek, parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,9 +65,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import AppointmentForm from "./AppointmentForm";
+import SimpleBookDialog from "./SimpleBookDialog";
 import { CALCOM_CONFIG } from "../../config/integrations";
 
 const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+// Bookable services for the slot-click chooser. Voice routes to the voice dialog
+// (different backend); FNH routes to the AppointmentForm flow below.
+const SLOT_SERVICES = [
+  { key: "voice60", group: "Voice", label: "Voice & Piano — 60 min", kind: "voice", duration: "60" },
+  { key: "voice45", group: "Voice", label: "Voice & Piano — 45 min", kind: "voice", duration: "45" },
+  { key: "fnhStandard", group: "FNH", label: "FNH Assessment · $70", kind: "fnh", eventTypeId: "4279898" },
+  { key: "fnhFull", group: "FNH", label: "FNH Full Price · $100", kind: "fnh", eventTypeId: "5302336" },
+  { key: "fnhFree", group: "FNH", label: "FNH Community · Free", kind: "fnh", eventTypeId: "5927215" },
+] as const;
+
+const isVoiceTitle = (title?: string | null) => /voice|piano/i.test(title || "");
 
 const CalcomSlotsView = () => {
   const [loading, setLoading] = useState(false);
@@ -84,8 +98,13 @@ const CalcomSlotsView = () => {
   const [showOnlyAvailable, setShowOnlyAvailable] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
   
-  const [bookingData, setBookingData] = useState<{ date: Date; time: string; slotTime?: string } | null>(null);
+  const [bookingData, setBookingData] = useState<{ date: Date; time: string; slotTime?: string; eventTypeId?: string } | null>(null);
   const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
+
+  // Slot-click "what are you booking?" chooser + voice routing
+  const [slotChooser, setSlotChooser] = useState<{ date: Date; timeStr: string } | null>(null);
+  const [voiceBookOpen, setVoiceBookOpen] = useState(false);
+  const [voicePrefill, setVoicePrefill] = useState<{ date: string; time: string; duration: string } | null>(null);
 
   const [rescheduleBooking, setRescheduleBooking] = useState<any | null>(null);
   const [rescheduling, setRescheduling] = useState(false);
@@ -309,14 +328,21 @@ const CalcomSlotsView = () => {
   };
 
   const handleSlotClick = (dateStr: string, timeStr: string) => {
-    const slotDate = new Date(timeStr);
-    
-    setBookingData({ 
-      date: slotDate, 
-      time: format(slotDate, "HH:mm"),
-      slotTime: timeStr 
-    });
-    setBookingDialogOpen(true);
+    // Ask which appointment type before booking (voice vs FNH route differently).
+    setSlotChooser({ date: new Date(timeStr), timeStr });
+  };
+
+  const handleChooseService = (svc: typeof SLOT_SERVICES[number]) => {
+    if (!slotChooser) return;
+    const { date, timeStr } = slotChooser;
+    setSlotChooser(null);
+    if (svc.kind === "voice") {
+      setVoicePrefill({ date: format(date, "yyyy-MM-dd"), time: format(date, "HH:mm"), duration: (svc as any).duration });
+      setVoiceBookOpen(true);
+    } else {
+      setBookingData({ date, time: format(date, "HH:mm"), slotTime: timeStr, eventTypeId: (svc as any).eventTypeId });
+      setBookingDialogOpen(true);
+    }
   };
 
   const handleCopyWeek = (week: string[]) => {
@@ -878,7 +904,15 @@ const CalcomSlotsView = () => {
                                           <User size={14} className="text-indigo-300" />
                                         </div>
                                         <div className="min-w-0">
-                                          <p className="text-xs font-black truncate">{booking.attendeeName}</p>
+                                          <div className="flex items-center gap-1.5">
+                                            <p className="text-xs font-black truncate">{booking.attendeeName}</p>
+                                            <span className={cn(
+                                              "text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0",
+                                              isVoiceTitle(booking.title) ? "bg-rose-500/30 text-rose-200" : "bg-emerald-500/30 text-emerald-200"
+                                            )}>
+                                              {isVoiceTitle(booking.title) ? "Voice" : "FNH"}
+                                            </span>
+                                          </div>
                                           <p className="text-[9px] font-bold text-indigo-300 uppercase tracking-widest mt-0.5">
                                             {format(new Date(booking.start), "h:mm a")}
                                           </p>
@@ -1088,7 +1122,7 @@ const CalcomSlotsView = () => {
                 initialDate={bookingData.date}
                 initialTime={bookingData.time}
                 slotTime={bookingData.slotTime}
-                eventTypeId={eventTypeId}
+                eventTypeId={bookingData.eventTypeId || eventTypeId}
                 onSuccess={() => {
                   setBookingDialogOpen(false);
                   fetchSlots();
@@ -1098,6 +1132,61 @@ const CalcomSlotsView = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Slot-click: choose appointment type (voice vs FNH route differently) */}
+      <Dialog open={!!slotChooser} onOpenChange={(open) => { if (!open) setSlotChooser(null); }}>
+        <DialogContent className="sm:max-w-[440px] rounded-[2rem] p-0">
+          <div className="p-8">
+            <DialogHeader className="mb-5">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+                  <CalendarPlus size={22} />
+                </div>
+                <div>
+                  <DialogTitle className="text-xl font-serif font-bold">Choose appointment</DialogTitle>
+                  <DialogDescription className="text-xs font-medium">
+                    {slotChooser && format(slotChooser.date, "EEE, MMM d 'at' h:mm a")}
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+            <div className="space-y-2">
+              {SLOT_SERVICES.map((s, i) => {
+                const prev = SLOT_SERVICES[i - 1];
+                const voice = s.kind === "voice";
+                return (
+                  <div key={s.key}>
+                    {(!prev || prev.group !== s.group) && (
+                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground mt-3 mb-1.5 ml-1">{s.group}</p>
+                    )}
+                    <button
+                      onClick={() => handleChooseService(s)}
+                      className={cn(
+                        "w-full flex items-center gap-3 p-3 rounded-2xl border-2 border-border transition-all text-left",
+                        voice ? "hover:border-chart-destructive/40" : "hover:border-chart-primary/40"
+                      )}
+                    >
+                      <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0", voice ? "bg-chart-destructive/10 text-chart-destructive" : "bg-chart-primary/10 text-chart-primary")}>
+                        {voice ? <Mic size={16} /> : <User size={16} />}
+                      </div>
+                      <span className="text-sm font-bold">{s.label}</span>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Voice booking (routed from the chooser) */}
+      <SimpleBookDialog
+        open={voiceBookOpen}
+        onOpenChange={(o) => { setVoiceBookOpen(o); if (!o) setVoicePrefill(null); }}
+        prefillDate={voicePrefill?.date}
+        prefillTime={voicePrefill?.time}
+        prefillDuration={voicePrefill?.duration}
+      />
     </div>
   );
 };

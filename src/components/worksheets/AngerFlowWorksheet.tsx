@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,6 +37,7 @@ const AngerFlowWorksheet = ({ submissionId, onBack }: AngerFlowWorksheetProps) =
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [localId, setLocalId] = useState<string | null>(submissionId || null);
+  const autoSaveTimer = useRef<ReturnType<typeof setInterval>>();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,7 +62,7 @@ const AngerFlowWorksheet = ({ submissionId, onBack }: AngerFlowWorksheetProps) =
     fetchData();
   }, [localId]);
 
-  const handleSave = async (silent = false) => {
+  const handleSave = useCallback(async (silent = false) => {
     if (!userId) return;
     if (!silent) setSaving(true);
     try {
@@ -82,12 +83,17 @@ const AngerFlowWorksheet = ({ submissionId, onBack }: AngerFlowWorksheetProps) =
       if (result.error) throw result.error;
       if (!localId && result.data) setLocalId(result.data.id);
       if (!silent) toast.success("Progress saved.");
-    } catch (error: any) {
+    } catch {
       if (!silent) toast.error("Failed to save.");
     } finally {
       if (!silent) setSaving(false);
     }
-  };
+  }, [userId, localId, title, answers]);
+
+  useEffect(() => {
+    autoSaveTimer.current = setInterval(() => handleSave(true), 60000);
+    return () => clearInterval(autoSaveTimer.current);
+  }, [handleSave]);
 
   const handleInputChange = (id: string, value: string) => {
     setAnswers(prev => ({ ...prev, [id]: value }));
@@ -96,7 +102,7 @@ const AngerFlowWorksheet = ({ submissionId, onBack }: AngerFlowWorksheetProps) =
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
       <Loader2 className="w-12 h-12 text-emerald-600 animate-spin" />
-      <p className="text-slate-500 font-medium">Loading Week 8...</p>
+      <p className="text-muted-foreground font-medium">Loading Week 8...</p>
     </div>
   );
 
@@ -111,19 +117,19 @@ const AngerFlowWorksheet = ({ submissionId, onBack }: AngerFlowWorksheetProps) =
                 <PlayCircle size={16} className="mr-2" /> Watch Lesson
               </a>
             </Button>
-            <Button variant="outline" size="sm" onClick={() => handleSave()} disabled={saving} className="flex items-center gap-2 border-slate-200 rounded-xl">
+            <Button variant="outline" size="sm" onClick={() => handleSave()} disabled={saving} className="flex items-center gap-2 border-border rounded-xl">
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
             </Button>
-            <Button variant="outline" size="sm" onClick={() => window.print()} className="flex items-center gap-2 border-slate-200 rounded-xl">
+            <Button variant="outline" size="sm" onClick={() => window.print()} className="flex items-center gap-2 border-border rounded-xl">
               <Printer className="w-4 h-4" /> Print
             </Button>
           </div>
           <div className="inline-flex items-center justify-center p-2 bg-emerald-100 rounded-full text-emerald-600 mb-4">
             <RefreshCw className="w-6 h-6" />
           </div>
-          <h1 className="text-4xl font-black tracking-tight text-slate-900 sm:text-5xl">Week 8: Anger & Flow</h1>
+          <h1 className="text-4xl font-black tracking-tight text-foreground sm:text-5xl">Week 8: Anger & Flow</h1>
           <p className="text-xl text-emerald-600 font-medium">The Wood Element & Self-Acceptance</p>
-          <p className="max-w-2xl mx-auto text-slate-500 italic">"Anger arises when we feel we cannot express ourselves. The antidote is self-acceptance."</p>
+          <p className="max-w-2xl mx-auto text-muted-foreground italic">"Anger arises when we feel we cannot express ourselves. The antidote is self-acceptance."</p>
         </div>
 
         {/* Section 1: Linguistic Prison */}
@@ -133,8 +139,8 @@ const AngerFlowWorksheet = ({ submissionId, onBack }: AngerFlowWorksheetProps) =
               <Zap size={24} />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-slate-900">The "Must & Should" Audit</h2>
-              <p className="text-sm text-slate-500 font-medium">Identify where you are imprisoning your own expression.</p>
+              <h2 className="text-2xl font-black text-foreground">The "Must & Should" Audit</h2>
+              <p className="text-sm text-muted-foreground font-medium">Identify where you are imprisoning your own expression.</p>
             </div>
           </div>
 
@@ -143,7 +149,7 @@ const AngerFlowWorksheet = ({ submissionId, onBack }: AngerFlowWorksheetProps) =
               <Label className="text-lg font-bold text-slate-800">Where am I using "Must" or "Should" in my life right now?</Label>
               <Textarea 
                 placeholder="List your self-imposed limitations..."
-                className="min-h-[150px] border-2 border-slate-100 focus:border-emerald-500 rounded-[2rem] p-8 text-lg font-medium leading-relaxed shadow-inner"
+                className="min-h-[150px] border-2 border-border focus:border-emerald-500 rounded-[2rem] p-8 text-lg font-medium leading-relaxed shadow-inner"
                 value={answers.must_should || ''}
                 onChange={(e) => handleInputChange('must_should', e.target.value)}
               />
@@ -152,7 +158,7 @@ const AngerFlowWorksheet = ({ submissionId, onBack }: AngerFlowWorksheetProps) =
               <Label className="text-lg font-bold text-slate-800">Who or what am I currently blaming for my lack of expression?</Label>
               <Textarea 
                 placeholder="Explore the strategy of blame..."
-                className="min-h-[150px] border-2 border-slate-100 focus:border-emerald-500 rounded-[2rem] p-8 text-lg font-medium leading-relaxed shadow-inner"
+                className="min-h-[150px] border-2 border-border focus:border-emerald-500 rounded-[2rem] p-8 text-lg font-medium leading-relaxed shadow-inner"
                 value={answers.blame_audit || ''}
                 onChange={(e) => handleInputChange('blame_audit', e.target.value)}
               />
@@ -167,8 +173,8 @@ const AngerFlowWorksheet = ({ submissionId, onBack }: AngerFlowWorksheetProps) =
               <Target size={24} />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-slate-900">Perfectionism as Control</h2>
-              <p className="text-sm text-slate-500 font-medium">Uncovering the "Not Good Enough" core belief.</p>
+              <h2 className="text-2xl font-black text-foreground">Perfectionism as Control</h2>
+              <p className="text-sm text-muted-foreground font-medium">Uncovering the "Not Good Enough" core belief.</p>
             </div>
           </div>
 
@@ -180,7 +186,7 @@ const AngerFlowWorksheet = ({ submissionId, onBack }: AngerFlowWorksheetProps) =
               <Label className="text-lg font-bold text-slate-800">What am I currently procrastinating on because I fear being judged?</Label>
               <Textarea 
                 placeholder="Be specific about the task and the fear..."
-                className="min-h-[150px] border-2 border-slate-100 focus:border-indigo-500 rounded-[2rem] p-8 text-lg font-medium leading-relaxed shadow-inner"
+                className="min-h-[150px] border-2 border-border focus:border-indigo-500 rounded-[2rem] p-8 text-lg font-medium leading-relaxed shadow-inner"
                 value={answers.procrastination || ''}
                 onChange={(e) => handleInputChange('procrastination', e.target.value)}
               />
@@ -219,7 +225,7 @@ const AngerFlowWorksheet = ({ submissionId, onBack }: AngerFlowWorksheetProps) =
 
         {/* Footer */}
         <div className="text-center pb-12">
-          <p className="text-slate-400 text-sm">© {new Date().getFullYear()} The Integrated Healer Program. Week 8: Anger & Flow.</p>
+          <p className="text-muted-foreground text-sm">© {new Date().getFullYear()} The Integrated Healer Program. Week 8: Anger & Flow.</p>
         </div>
       </motion.div>
     </div>

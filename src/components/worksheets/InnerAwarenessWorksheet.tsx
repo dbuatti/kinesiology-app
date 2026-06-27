@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -48,6 +48,7 @@ const InnerAwarenessWorksheet = ({ submissionId, onBack }: InnerAwarenessWorkshe
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [localId, setLocalId] = useState<string | null>(submissionId || null);
+  const autoSaveTimer = useRef<ReturnType<typeof setInterval>>();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -75,7 +76,7 @@ const InnerAwarenessWorksheet = ({ submissionId, onBack }: InnerAwarenessWorkshe
     fetchData();
   }, [localId]);
 
-  const handleSave = async (silent = false) => {
+  const handleSave = useCallback(async (silent = false) => {
     if (!userId) return;
     
     if (!silent) setSaving(true);
@@ -112,13 +113,17 @@ const InnerAwarenessWorksheet = ({ submissionId, onBack }: InnerAwarenessWorkshe
       }
 
       if (!silent) toast.success("Practice saved successfully.");
-    } catch (error: any) {
-      console.error("Error saving worksheet:", error);
+    } catch {
       if (!silent) toast.error("Failed to save progress.");
     } finally {
       if (!silent) setSaving(false);
     }
-  };
+  }, [userId, localId, title, triggerContext, answers, flowCompleted]);
+
+  useEffect(() => {
+    autoSaveTimer.current = setInterval(() => handleSave(true), 60000);
+    return () => clearInterval(autoSaveTimer.current);
+  }, [handleSave]);
 
   const handleInputChange = (id: string, value: string) => {
     setAnswers(prev => ({ ...prev, [id]: value }));
@@ -134,7 +139,7 @@ const InnerAwarenessWorksheet = ({ submissionId, onBack }: InnerAwarenessWorkshe
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
-        <p className="text-slate-500 font-medium">Loading practice...</p>
+        <p className="text-muted-foreground font-medium">Loading practice...</p>
       </div>
     );
   }
@@ -177,13 +182,13 @@ const InnerAwarenessWorksheet = ({ submissionId, onBack }: InnerAwarenessWorkshe
             <Input 
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl text-center border-none bg-transparent focus:ring-0 h-auto p-0 mb-2"
+              className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl text-center border-none bg-transparent focus:ring-0 h-auto p-0 mb-2"
               placeholder="Practice Title"
             />
           </div>
           
           <p className="text-xl text-indigo-600 font-medium">Inner Awareness & Sovereignty</p>
-          <p className="max-w-2xl mx-auto text-slate-500 italic">
+          <p className="max-w-2xl mx-auto text-muted-foreground italic">
             "A practice to develop inner awareness and sovereignty over your personal state."
           </p>
         </div>
@@ -195,8 +200,8 @@ const InnerAwarenessWorksheet = ({ submissionId, onBack }: InnerAwarenessWorkshe
               <Clock size={24} />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-slate-900">The Daily Flow</h2>
-              <p className="text-sm text-slate-500 font-medium">Track your daily integration practices.</p>
+              <h2 className="text-2xl font-black text-foreground">The Daily Flow</h2>
+              <p className="text-sm text-muted-foreground font-medium">Track your daily integration practices.</p>
             </div>
           </div>
 
@@ -216,8 +221,8 @@ const InnerAwarenessWorksheet = ({ submissionId, onBack }: InnerAwarenessWorkshe
                   className="mt-1"
                 />
                 <div className="space-y-1">
-                  <Label className="text-lg font-bold text-slate-900 cursor-pointer">{item.label}</Label>
-                  <p className="text-sm text-slate-500">{item.sub}</p>
+                  <Label className="text-lg font-bold text-foreground cursor-pointer">{item.label}</Label>
+                  <p className="text-sm text-muted-foreground">{item.sub}</p>
                 </div>
               </div>
             ))}
@@ -231,8 +236,8 @@ const InnerAwarenessWorksheet = ({ submissionId, onBack }: InnerAwarenessWorkshe
               <Zap size={24} />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-slate-900">Trigger & Projection Tracking</h2>
-              <p className="text-sm text-slate-500 font-medium">Identify the specific trigger you are working with today.</p>
+              <h2 className="text-2xl font-black text-foreground">Trigger & Projection Tracking</h2>
+              <p className="text-sm text-muted-foreground font-medium">Identify the specific trigger you are working with today.</p>
             </div>
           </div>
 
@@ -253,8 +258,8 @@ const InnerAwarenessWorksheet = ({ submissionId, onBack }: InnerAwarenessWorkshe
               <Brain size={24} />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-slate-900">Deep Reflection</h2>
-              <p className="text-sm text-slate-500 font-medium">Engage with the 5 questions to uncover root patterns.</p>
+              <h2 className="text-2xl font-black text-foreground">Deep Reflection</h2>
+              <p className="text-sm text-muted-foreground font-medium">Engage with the 5 questions to uncover root patterns.</p>
             </div>
           </div>
 
@@ -267,7 +272,7 @@ const InnerAwarenessWorksheet = ({ submissionId, onBack }: InnerAwarenessWorkshe
               { id: 'q5', label: "5. Somatic Integration Affirmations", icon: Sparkles }
             ].map((q) => (
               <div key={q.id} className="space-y-4">
-                <Label className="text-lg font-bold text-slate-900">{q.label}</Label>
+                <Label className="text-lg font-bold text-foreground">{q.label}</Label>
                 <Textarea 
                   placeholder="Write your reflection here..."
                   className="min-h-[120px] border-2 border-slate-100 focus:border-indigo-500 rounded-[2rem] p-8 text-lg font-medium leading-relaxed shadow-inner"

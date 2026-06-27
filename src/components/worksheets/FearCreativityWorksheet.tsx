@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,7 @@ const FearCreativityWorksheet = ({ submissionId, onBack }: FearCreativityWorkshe
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [localId, setLocalId] = useState<string | null>(submissionId || null);
+  const autoSaveTimer = useRef<ReturnType<typeof setInterval>>();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,7 +59,7 @@ const FearCreativityWorksheet = ({ submissionId, onBack }: FearCreativityWorkshe
     fetchData();
   }, [localId]);
 
-  const handleSave = async (silent = false) => {
+  const handleSave = useCallback(async (silent = false) => {
     if (!userId) return;
     
     if (!silent) setSaving(true);
@@ -93,13 +94,17 @@ const FearCreativityWorksheet = ({ submissionId, onBack }: FearCreativityWorkshe
       }
 
       if (!silent) toast.success("Progress saved successfully.");
-    } catch (error: any) {
-      console.error("Error saving worksheet:", error);
+    } catch {
       if (!silent) toast.error("Failed to save progress.");
     } finally {
       if (!silent) setSaving(false);
     }
-  };
+  }, [userId, localId, title, answers]);
+
+  useEffect(() => {
+    autoSaveTimer.current = setInterval(() => handleSave(true), 60000);
+    return () => clearInterval(autoSaveTimer.current);
+  }, [handleSave]);
 
   const handleInputChange = (id: string, value: string) => {
     setAnswers(prev => ({ ...prev, [id]: value }));
@@ -108,8 +113,8 @@ const FearCreativityWorksheet = ({ submissionId, onBack }: FearCreativityWorkshe
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
-        <p className="text-slate-500 font-medium">Loading worksheet...</p>
+        <Loader2 className="w-12 h-12 text-rose-500 animate-spin" />
+        <p className="text-muted-foreground font-medium">Loading worksheet...</p>
       </div>
     );
   }
@@ -152,13 +157,13 @@ const FearCreativityWorksheet = ({ submissionId, onBack }: FearCreativityWorkshe
             <Input 
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl text-center border-none bg-transparent focus:ring-0 h-auto p-0 mb-2"
+              className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl text-center border-none bg-transparent focus:ring-0 h-auto p-0 mb-2"
               placeholder="Reflection Title"
             />
           </div>
           
           <p className="text-xl text-rose-600 font-medium">Integrated Healer Program</p>
-          <p className="max-w-2xl mx-auto text-slate-500 italic">
+          <p className="max-w-2xl mx-auto text-muted-foreground italic">
             "Create awareness of how fear manifests in the body, mind, and creativity."
           </p>
         </div>
@@ -170,8 +175,8 @@ const FearCreativityWorksheet = ({ submissionId, onBack }: FearCreativityWorkshe
               <Brain size={24} />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-slate-900">Fill in the Blanks: Body & Mind</h2>
-              <p className="text-sm text-slate-500 font-medium">Observe the physical and mental patterns of tension.</p>
+              <h2 className="text-2xl font-black text-foreground">Fill in the Blanks: Body & Mind</h2>
+              <p className="text-sm text-muted-foreground font-medium">Observe the physical and mental patterns of tension.</p>
             </div>
           </div>
 
@@ -183,11 +188,11 @@ const FearCreativityWorksheet = ({ submissionId, onBack }: FearCreativityWorkshe
                 value={answers.q1 || ''}
                 onChange={(e) => handleInputChange('q1', e.target.value)}
               />
-              <span className="font-medium text-slate-700">makes me tense.</span>
+              <span className="font-medium text-muted-foreground">makes me tense.</span>
             </div>
 
             <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-xl leading-relaxed">
-              <span className="font-medium text-slate-700">I typically feel this tense sensation in my</span>
+              <span className="font-medium text-muted-foreground">I typically feel this tense sensation in my</span>
               <Input 
                 className="w-64 h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"
                 placeholder="[Body Part]"
@@ -197,7 +202,7 @@ const FearCreativityWorksheet = ({ submissionId, onBack }: FearCreativityWorkshe
             </div>
 
             <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-xl leading-relaxed">
-              <span className="font-medium text-slate-700">This makes me feel</span>
+              <span className="font-medium text-muted-foreground">This makes me feel</span>
               <Input 
                 className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"
                 placeholder="[Emotions/Feelings]"
@@ -207,7 +212,7 @@ const FearCreativityWorksheet = ({ submissionId, onBack }: FearCreativityWorkshe
             </div>
 
             <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-xl leading-relaxed">
-              <span className="font-medium text-slate-700">When this happens, I start to</span>
+              <span className="font-medium text-muted-foreground">When this happens, I start to</span>
               <Input 
                 className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-indigo-600"
                 placeholder="[Behavior/Reaction]"
@@ -225,14 +230,14 @@ const FearCreativityWorksheet = ({ submissionId, onBack }: FearCreativityWorkshe
               <Palette size={24} />
             </div>
             <div>
-              <h2 className="text-2xl font-black text-slate-900">Creativity-Related Awareness</h2>
-              <p className="text-sm text-slate-500 font-medium">Uncover the blocks in your creative expression.</p>
+              <h2 className="text-2xl font-black text-foreground">Creativity-Related Awareness</h2>
+              <p className="text-sm text-muted-foreground font-medium">Uncover the blocks in your creative expression.</p>
             </div>
           </div>
 
           <div className="space-y-8 pl-16">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-xl leading-relaxed">
-              <span className="font-medium text-slate-700">Fear stops me from creating</span>
+              <span className="font-medium text-muted-foreground">Fear stops me from creating</span>
               <Input 
                 className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-rose-600"
                 placeholder="[What would you create?]"
@@ -242,7 +247,7 @@ const FearCreativityWorksheet = ({ submissionId, onBack }: FearCreativityWorkshe
             </div>
 
             <div className="flex flex-wrap items-center gap-x-2 gap-y-4 text-xl leading-relaxed">
-              <span className="font-medium text-slate-700">I avoid taking risks in my work because I worry</span>
+              <span className="font-medium text-muted-foreground">I avoid taking risks in my work because I worry</span>
               <Input 
                 className="w-full h-10 border-b-2 border-t-0 border-x-0 rounded-none focus:ring-0 bg-transparent font-bold text-rose-600"
                 placeholder="[The worry/fear]"

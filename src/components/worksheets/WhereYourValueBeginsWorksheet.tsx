@@ -1,13 +1,16 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import {
   Sparkles,
   Save,
+  Printer,
   Loader2,
   Heart,
   Eye,
@@ -85,30 +88,9 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
   const [userId, setUserId] = useState<string | null>(null);
   const [localId, setLocalId] = useState<string | null>(submissionId || null);
   const [copied, setCopied] = useState(false);
+  const autoSaveTimer = useRef<ReturnType<typeof setInterval>>();
 
-  useEffect(() => {
-    const init = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-        if (localId) {
-          const { data } = await supabase
-            .from('value_worksheet_submissions')
-            .select('*')
-            .eq('id', localId)
-            .single();
-          if (data) {
-            setAnswers(data.form_data || {});
-            setTitle(data.title || 'Where Your Value Begins');
-          }
-        }
-      }
-      setLoading(false);
-    };
-    init();
-  }, [localId]);
-
-  const handleSave = async (silent = false) => {
+  const handleSave = useCallback(async (silent = false) => {
     if (!userId) return;
     if (!silent) setSaving(true);
     try {
@@ -143,7 +125,34 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
     } finally {
       if (!silent) setSaving(false);
     }
-  };
+  }, [userId, localId, title, answers]);
+
+  useEffect(() => {
+    autoSaveTimer.current = setInterval(() => handleSave(true), 60000);
+    return () => clearInterval(autoSaveTimer.current);
+  }, [handleSave]);
+
+  useEffect(() => {
+    const init = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+        if (localId) {
+          const { data } = await supabase
+            .from('value_worksheet_submissions')
+            .select('*')
+            .eq('id', localId)
+            .single();
+          if (data) {
+            setAnswers(data.form_data || {});
+            setTitle(data.title || 'Where Your Value Begins');
+          }
+        }
+      }
+      setLoading(false);
+    };
+    init();
+  }, [localId]);
 
   const set = (key: string, value: any) => {
     setAnswers(prev => ({ ...prev, [key]: value }));
@@ -199,39 +208,33 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-4xl mx-auto">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-16">
       {/* Header */}
-      <div className="text-center mb-12 space-y-4">
+      <div className="text-center space-y-4 relative">
+        <div className="absolute right-0 top-0 flex gap-2 print:hidden">
+          <Button variant="outline" size="sm" onClick={() => handleSave(false)} disabled={saving} className="flex items-center gap-2 border-slate-200 rounded-xl">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => window.print()} className="flex items-center gap-2 border-slate-200 rounded-xl">
+            <Printer className="w-4 h-4" /> Print
+          </Button>
+          {onBack && (
+            <Button variant="outline" size="sm" onClick={onBack} className="flex items-center gap-2 border-slate-200 rounded-xl">
+              <ChevronLeft className="w-4 h-4" /> Back
+            </Button>
+          )}
+        </div>
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100">
           <Sparkles size={12} className="text-indigo-500" />
           <span className="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider">Neuro Pro Mastery · Value & Self-Worth</span>
         </div>
         <h1 className="text-3xl md:text-4xl font-bold text-slate-900 leading-tight">Where Your Value Begins</h1>
         <p className="text-slate-500 text-sm max-w-xl mx-auto">A starting point for the earlier-stage practitioner</p>
-        <div className="flex items-center justify-center gap-4 pt-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleSave(false)}
-            disabled={saving}
-            className="rounded-lg h-8 text-xs font-medium"
-          >
-            {saving ? <Loader2 size={12} className="animate-spin mr-1.5" /> : <Save size={12} className="mr-1.5" />}
-            Save
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onBack}
-            className="rounded-lg h-8 text-xs font-medium"
-          >
-            <ChevronLeft size={12} className="mr-1.5" /> Back
-          </Button>
-        </div>
       </div>
 
       {/* Epigraph */}
-      <div className="text-center mb-16 px-4">
+      <div className="text-center px-4">
         <p className="text-lg md:text-xl italic text-indigo-600 font-serif leading-relaxed">
           "Your worth was never measured in years."
         </p>
@@ -244,8 +247,6 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
           This worksheet helps you see it, and gently meet the beliefs that get in the way of owning it.
         </p>
       </div>
-
-      <Separator className="mb-12" />
 
       {/* BEFORE YOU BEGIN */}
       <div className="mb-12 p-6 rounded-2xl bg-amber-50 border border-amber-200 space-y-4">
@@ -305,27 +306,25 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
             <Label className="text-sm font-semibold text-slate-700 mb-2 block">
               Now write the first sentence that pops up when you imagine quoting it:
             </Label>
-            <textarea
+            <Textarea
               value={get('flinched_reaction')}
               onChange={e => set('flinched_reaction', e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white p-4 text-sm min-h-[80px] resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="min-h-[100px] rounded-2xl border-2 border-slate-100 focus:border-indigo-500 p-6 text-base leading-relaxed"
               placeholder="..."
             />
           </div>
           <div>
             <Label className="text-sm font-semibold text-slate-700 mb-2 block">Notice</Label>
             <p className="text-xs text-slate-500 mb-2">What does that sentence quietly tell you about what's running underneath?</p>
-            <textarea
+            <Textarea
               value={get('flinched_notice')}
               onChange={e => set('flinched_notice', e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white p-4 text-sm min-h-[80px] resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="min-h-[100px] rounded-2xl border-2 border-slate-100 focus:border-indigo-500 p-6 text-base leading-relaxed"
               placeholder="..."
             />
           </div>
         </div>
       </div>
-
-      <Separator className="mb-16" />
 
       {/* SECTION 2 */}
       <div className="mb-16">
@@ -349,16 +348,16 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
           <Label className="text-sm font-semibold text-slate-700 mb-2 block">
             Which one feels most charged or true for you right now? Write it as 'I believe…'
           </Label>
-          <textarea
+          <Textarea
             value={get('belief_statement')}
             onChange={e => set('belief_statement', e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white p-4 text-sm min-h-[80px] resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            className="min-h-[100px] rounded-2xl border-2 border-slate-100 focus:border-indigo-500 p-6 text-base leading-relaxed"
             placeholder="I believe..."
           />
         </div>
       </div>
 
-      <Separator className="mb-16" />
+
 
       {/* SECTION 3 */}
       <div className="mb-16">
@@ -385,16 +384,16 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
         <div>
           <Label className="text-sm font-semibold text-slate-700 mb-2 block">The Sensation</Label>
           <p className="text-xs text-slate-500 mb-2">What's it like? (tight, heavy, fluttery, hollow…) Just describe it — you don't need to change it.</p>
-          <textarea
+          <Textarea
             value={get('body_sensation')}
             onChange={e => set('body_sensation', e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white p-4 text-sm min-h-[80px] resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            className="min-h-[100px] rounded-2xl border-2 border-slate-100 focus:border-indigo-500 p-6 text-base leading-relaxed"
             placeholder="..."
           />
         </div>
       </div>
 
-      <Separator className="mb-16" />
+
 
       {/* SECTION 4 */}
       <div className="mb-16">
@@ -429,10 +428,10 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
           <div>
             <Label className="text-sm font-semibold text-slate-700 mb-2 block">What shifted?</Label>
             <p className="text-xs text-slate-500 mb-2">After a pass or two — what changed, even slightly?</p>
-            <textarea
+            <Textarea
               value={get('allow_what_shifted')}
               onChange={e => set('allow_what_shifted', e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white p-4 text-sm min-h-[80px] resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="min-h-[100px] rounded-2xl border-2 border-slate-100 focus:border-indigo-500 p-6 text-base leading-relaxed"
               placeholder="..."
             />
           </div>
@@ -441,17 +440,17 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
               Say the belief again. Does it still feel as true?
             </Label>
             <p className="text-xs text-slate-500 mb-2">Beliefs can be layered — a few gentle passes is normal.</p>
-            <textarea
+            <Textarea
               value={get('allow_belief_now')}
               onChange={e => set('allow_belief_now', e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white p-4 text-sm min-h-[80px] resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="min-h-[100px] rounded-2xl border-2 border-slate-100 focus:border-indigo-500 p-6 text-base leading-relaxed"
               placeholder="..."
             />
           </div>
         </div>
       </div>
 
-      <Separator className="mb-16" />
+
 
       {/* SECTION 5 */}
       <div className="mb-16">
@@ -463,10 +462,10 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
             <Label className="text-sm font-semibold text-slate-700 mb-2 block">
               What life or lived experience do you bring that no course could teach?
             </Label>
-            <textarea
+            <Textarea
               value={get('carry_life_experience')}
               onChange={e => set('carry_life_experience', e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white p-4 text-sm min-h-[80px] resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="min-h-[100px] rounded-2xl border-2 border-slate-100 focus:border-indigo-500 p-6 text-base leading-relaxed"
               placeholder="..."
             />
           </div>
@@ -474,10 +473,10 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
             <Label className="text-sm font-semibold text-slate-700 mb-2 block">
               What do people naturally come to you for?
             </Label>
-            <textarea
+            <Textarea
               value={get('carry_natural')}
               onChange={e => set('carry_natural', e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white p-4 text-sm min-h-[80px] resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="min-h-[100px] rounded-2xl border-2 border-slate-100 focus:border-indigo-500 p-6 text-base leading-relaxed"
               placeholder="..."
             />
           </div>
@@ -485,10 +484,10 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
             <Label className="text-sm font-semibold text-slate-700 mb-2 block">
               What problem do you genuinely help people with?
             </Label>
-            <textarea
+            <Textarea
               value={get('carry_problem')}
               onChange={e => set('carry_problem', e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white p-4 text-sm min-h-[80px] resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="min-h-[100px] rounded-2xl border-2 border-slate-100 focus:border-indigo-500 p-6 text-base leading-relaxed"
               placeholder="..."
             />
           </div>
@@ -496,10 +495,10 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
             <Label className="text-sm font-semibold text-slate-700 mb-2 block">
               Who have you already helped — even friends, family or practice clients? What changed?
             </Label>
-            <textarea
+            <Textarea
               value={get('carry_already_helped')}
               onChange={e => set('carry_already_helped', e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white p-4 text-sm min-h-[80px] resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="min-h-[100px] rounded-2xl border-2 border-slate-100 focus:border-indigo-500 p-6 text-base leading-relaxed"
               placeholder="..."
             />
           </div>
@@ -508,7 +507,7 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
         <div className="mt-6 p-6 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200">
           <h4 className="text-sm font-bold text-emerald-800 mb-3">Read it back</h4>
           <p className="text-xs text-emerald-600 mb-3">Reading that back — what value do you already carry, today?</p>
-          <textarea
+          <Textarea
             value={get('carry_readback')}
             onChange={e => set('carry_readback', e.target.value)}
             className="w-full rounded-xl border border-emerald-200 bg-white/80 p-4 text-sm min-h-[80px] resize-y focus:outline-none focus:ring-2 focus:ring-emerald-200"
@@ -517,7 +516,7 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
         </div>
       </div>
 
-      <Separator className="mb-16" />
+
 
       {/* SECTION 6 */}
       <div className="mb-16">
@@ -527,7 +526,7 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
         <div className="space-y-6">
           <div>
             <Label className="text-sm font-semibold text-slate-700 mb-2 block">Complete: 'I am worthy of…'</Label>
-            <textarea
+            <Textarea
               value={get('narrative_worthy')}
               onChange={e => set('narrative_worthy', e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-white p-4 text-sm min-h-[60px] resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
@@ -536,7 +535,7 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
           </div>
           <div>
             <Label className="text-sm font-semibold text-slate-700 mb-2 block">Complete: 'My worth does not depend on…'</Label>
-            <textarea
+            <Textarea
               value={get('narrative_not_depend')}
               onChange={e => set('narrative_not_depend', e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-white p-4 text-sm min-h-[60px] resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
@@ -546,7 +545,7 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
           <div>
             <Label className="text-sm font-semibold text-slate-700 mb-2 block">My New Narrative</Label>
             <p className="text-xs text-slate-500 mb-2">Write your new story around value and charging.</p>
-            <textarea
+            <Textarea
               value={get('narrative_story')}
               onChange={e => set('narrative_story', e.target.value)}
               className="w-full rounded-xl border border-slate-200 bg-white p-4 text-sm min-h-[120px] resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
@@ -556,7 +555,7 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
         </div>
       </div>
 
-      <Separator className="mb-16" />
+
 
       {/* SECTION 7 */}
       <div className="mb-16">
@@ -612,7 +611,7 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
         </div>
       </div>
 
-      <Separator className="mb-16" />
+
 
       {/* FINAL REFLECTION */}
       <div className="mb-16 text-center">
@@ -632,10 +631,10 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
           <Label className="text-sm font-semibold text-slate-700 block">
             What is one small, kind step you'll take in the next 30 days — toward owning your value, or toward the support you need?
           </Label>
-          <textarea
+          <Textarea
             value={get('commitment_step')}
             onChange={e => set('commitment_step', e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white p-4 text-sm min-h-[80px] resize-y focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            className="min-h-[100px] rounded-2xl border-2 border-slate-100 focus:border-indigo-500 p-6 text-base leading-relaxed"
             placeholder="..."
           />
           <div className="flex items-center gap-4">
@@ -660,7 +659,7 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
           <Sparkles size={12} className="text-indigo-500" />
           <span className="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider">Neuro Pro Mastery · Where Your Value Begins</span>
         </div>
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center justify-center gap-4 print:hidden">
           <Button
             onClick={() => handleSave(false)}
             disabled={saving}
@@ -669,11 +668,12 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onBack }: WhereYourValueB
             {saving ? <Loader2 size={14} className="animate-spin mr-2" /> : <Save size={14} className="mr-2" />}
             Save Progress
           </Button>
-          <Button variant="outline" onClick={onBack} className="rounded-xl">
+          {onBack && <Button variant="outline" onClick={onBack} className="rounded-xl">
             <ChevronLeft size={14} className="mr-2" /> Back to Worksheets
-          </Button>
+          </Button>}
         </div>
       </div>
+      </motion.div>
     </div>
   );
 };

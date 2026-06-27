@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import AppLayout from '@/components/crm/AppLayout';
 import {
   ChevronLeft,
   Plus,
@@ -55,19 +56,19 @@ const ValueWorksheetPage = () => {
 
   if (selectedId || isCreating) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      <AppLayout>
         <div className="max-w-4xl mx-auto px-4 py-8">
           <WhereYourValueBeginsWorksheet
             submissionId={selectedId}
             onBack={() => { setSelectedId(null); setIsCreating(false); fetchSubmissions(); }}
           />
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <AppLayout>
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -154,7 +155,7 @@ const ValueWorksheetPage = () => {
           </div>
         )}
       </div>
-    </div>
+    </AppLayout>
   );
 };
 

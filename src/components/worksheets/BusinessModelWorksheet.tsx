@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,6 +54,7 @@ const BusinessModelWorksheet = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const autoSaveTimer = useRef<ReturnType<typeof setInterval>>();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -75,7 +76,7 @@ const BusinessModelWorksheet = () => {
     fetchData();
   }, []);
 
-  const handleSave = async (silent = false) => {
+  const handleSave = useCallback(async (silent = false) => {
     if (!userId) return;
     if (!silent) setSaving(true);
     try {
@@ -89,12 +90,17 @@ const BusinessModelWorksheet = () => {
 
       if (error) throw error;
       if (!silent) toast.success("Business plan saved.");
-    } catch (error: any) {
+    } catch {
       if (!silent) toast.error("Failed to save progress.");
     } finally {
       if (!silent) setSaving(false);
     }
-  };
+  }, [userId, answers]);
+
+  useEffect(() => {
+    autoSaveTimer.current = setInterval(() => handleSave(true), 60000);
+    return () => clearInterval(autoSaveTimer.current);
+  }, [handleSave]);
 
   const handleInputChange = (id: string, value: any) => {
     setAnswers(prev => ({ ...prev, [id]: value }));
@@ -173,8 +179,8 @@ const BusinessModelWorksheet = () => {
       <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center mb-4 shadow-xl", color)}>
         <Icon size={32} className="text-white" />
       </div>
-      <h2 className="text-4xl font-serif font-bold text-slate-900">{title}</h2>
-      <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.4em] mt-2">{subtitle}</p>
+      <h2 className="text-4xl font-serif font-bold text-foreground">{title}</h2>
+      <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.4em] mt-2">{subtitle}</p>
     </div>
   );
 
@@ -202,7 +208,7 @@ const BusinessModelWorksheet = () => {
         </div>
       </div>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-32 pt-12">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-20 pt-12">
         
         {/* Header */}
         <div className="text-center space-y-6 relative">
@@ -210,10 +216,10 @@ const BusinessModelWorksheet = () => {
             <Briefcase className="w-10 h-10" />
           </div>
           <div className="space-y-2">
-            <h1 className="text-5xl md:text-7xl font-serif font-bold tracking-tighter text-slate-900">Business Model</h1>
+            <h1 className="text-5xl md:text-7xl font-serif font-bold tracking-tighter text-foreground">Business Model</h1>
             <p className="text-xl text-emerald-600 font-medium tracking-widest uppercase">Mastery Program — Student Worksheet</p>
           </div>
-          <div className="max-w-2xl mx-auto p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 italic text-slate-500 text-xl leading-relaxed">
+          <div className="max-w-2xl mx-auto p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100 italic text-muted-foreground text-xl leading-relaxed">
             "Transition from a practitioner who owns a job to a business owner who delivers outcomes."
           </div>
         </div>
@@ -260,7 +266,7 @@ const BusinessModelWorksheet = () => {
             </Card>
             
             <div className="p-10 bg-white rounded-[3rem] border-2 border-slate-100 space-y-8">
-              <h4 className="font-black text-slate-900 uppercase tracking-widest text-xs flex items-center gap-3">
+              <h4 className="font-black text-foreground uppercase tracking-widest text-xs flex items-center gap-3">
                 <ShieldCheck size={20} className="text-emerald-500" /> Why the Hourly Model Breaks Down
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -286,7 +292,7 @@ const BusinessModelWorksheet = () => {
               <Label className="text-2xl font-serif font-bold text-slate-800 block text-center">What story are you telling yourself about why you charge per hour?</Label>
               <div className="flex flex-wrap justify-center gap-2 mb-4">
                 {MUST_SHOULD_EXAMPLES.map(chip => (
-                  <button key={chip} onClick={() => addChip('pricing_story', chip)} className="px-4 py-2 rounded-full bg-slate-100 hover:bg-indigo-100 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-indigo-600 transition-all border border-transparent hover:border-indigo-200">
+                  <button key={chip} onClick={() => addChip('pricing_story', chip)} className="px-4 py-2 rounded-full bg-slate-100 hover:bg-indigo-100 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-indigo-600 transition-all border border-transparent hover:border-indigo-200">
                     + {chip}
                   </button>
                 ))}
@@ -316,16 +322,16 @@ const BusinessModelWorksheet = () => {
 
             <div className="space-y-8">
               <div className="flex items-center justify-between px-4">
-                <h3 className="text-3xl font-black text-slate-900">Build Your LCV</h3>
+                <h3 className="text-3xl font-black text-foreground">Build Your LCV</h3>
                 <Badge className="bg-emerald-500 text-white border-none font-black text-[10px] uppercase tracking-widest px-4 py-2 rounded-full shadow-lg">Auto-Calculating</Badge>
               </div>
               <div className="overflow-hidden rounded-[3rem] border-2 border-slate-100 shadow-2xl bg-white">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-slate-50 border-b-2 border-slate-100">
-                      <th className="p-10 font-black text-[10px] uppercase tracking-widest text-slate-500">Program / Offering</th>
-                      <th className="p-10 font-black text-[10px] uppercase tracking-widest text-slate-500">Price ($)</th>
-                      <th className="p-10 font-black text-[10px] uppercase tracking-widest text-slate-500">Format</th>
+                      <th className="p-10 font-black text-[10px] uppercase tracking-widest text-muted-foreground">Program / Offering</th>
+                      <th className="p-10 font-black text-[10px] uppercase tracking-widest text-muted-foreground">Price ($)</th>
+                      <th className="p-10 font-black text-[10px] uppercase tracking-widest text-muted-foreground">Format</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -416,14 +422,14 @@ const BusinessModelWorksheet = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-8 mt-10">
                   <div className="text-center p-6 bg-white/5 rounded-3xl border border-white/10">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Hourly Grind</p>
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">Hourly Grind</p>
                     <p className="text-4xl font-black text-indigo-400">{sessionsNeeded}</p>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase mt-1">Sessions/mo</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1">Sessions/mo</p>
                   </div>
                   <div className="text-center p-6 bg-white/5 rounded-3xl border border-white/10">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Program Flow</p>
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">Program Flow</p>
                     <p className="text-4xl font-black text-emerald-400">{programsNeeded}</p>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase mt-1">Clients/mo</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1">Clients/mo</p>
                   </div>
                 </div>
               </CardContent>
@@ -433,8 +439,8 @@ const BusinessModelWorksheet = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50 border-b-2 border-slate-100">
-                    <th className="p-10 font-black text-[10px] uppercase tracking-widest text-slate-500">Variable</th>
-                    <th className="p-10 font-black text-[10px] uppercase tracking-widest text-slate-500">Your Figure</th>
+                    <th className="p-10 font-black text-[10px] uppercase tracking-widest text-muted-foreground">Variable</th>
+                    <th className="p-10 font-black text-[10px] uppercase tracking-widest text-muted-foreground">Your Figure</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -510,7 +516,7 @@ const BusinessModelWorksheet = () => {
           
           <div className="space-y-16">
             <div className="space-y-6">
-              <h3 className="text-3xl font-black text-slate-900 text-center">What's Included?</h3>
+              <h3 className="text-3xl font-black text-foreground text-center">What's Included?</h3>
               <div className="space-y-3">
                 {[
                   "In-person / online sessions",
@@ -533,9 +539,9 @@ const BusinessModelWorksheet = () => {
             </div>
 
             <div className="space-y-6">
-              <h3 className="text-3xl font-black text-slate-900 text-center">Program Draft</h3>
+              <h3 className="text-3xl font-black text-foreground text-center">Program Draft</h3>
               <div className="space-y-4">
-                <Label className="text-sm font-bold text-slate-500 uppercase tracking-widest block text-center">Draft a 2–3 sentence description of your program offer:</Label>
+                <Label className="text-sm font-bold text-muted-foreground uppercase tracking-widest block text-center">Draft a 2–3 sentence description of your program offer:</Label>
                 <Textarea 
                   placeholder="What it delivers, what's included, and who it's for..."
                   className="min-h-[350px] rounded-[3.5rem] border-2 border-slate-100 focus:border-amber-500 p-12 text-2xl italic leading-relaxed shadow-2xl"
@@ -561,7 +567,7 @@ const BusinessModelWorksheet = () => {
                 <div key={phase.range} className="p-12 bg-white rounded-[3.5rem] border-2 border-slate-100 flex flex-col gap-8 group hover:border-purple-200 transition-all shadow-sm hover:shadow-xl">
                   <div className="space-y-4">
                     <Badge className={cn("text-white border-none font-black text-[10px] uppercase tracking-[0.4em] px-6 py-2 rounded-full shadow-lg", phase.color)}>Sessions {phase.range}</Badge>
-                    <p className="text-2xl font-serif font-bold text-slate-900 leading-tight">{phase.focus}</p>
+                    <p className="text-2xl font-serif font-bold text-foreground leading-tight">{phase.focus}</p>
                   </div>
                   <div className="space-y-3">
                     <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Your Notes / ICP Considerations</Label>
@@ -601,7 +607,7 @@ const BusinessModelWorksheet = () => {
                 { id: 'icp_why', label: 'Why this ICP? (clinical fit + personal resonance):', icon: Sparkles }
               ].map(field => (
                 <div key={field.id} className="space-y-4">
-                  <Label className="text-sm font-black uppercase tracking-widest text-slate-500 flex items-center gap-3 ml-1">
+                  <Label className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-3 ml-1">
                     <field.icon size={16} className="text-rose-500" /> {field.label}
                   </Label>
                   <Input 
@@ -645,8 +651,8 @@ const BusinessModelWorksheet = () => {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50 border-b-2 border-slate-100">
-                    <th className="p-10 font-black text-[10px] uppercase tracking-widest text-slate-500">Question</th>
-                    <th className="p-10 font-black text-[10px] uppercase tracking-widest text-slate-500">Your Answer</th>
+                    <th className="p-10 font-black text-[10px] uppercase tracking-widest text-muted-foreground">Question</th>
+                    <th className="p-10 font-black text-[10px] uppercase tracking-widest text-muted-foreground">Your Answer</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -733,14 +739,14 @@ const BusinessModelWorksheet = () => {
           <SectionHeader icon={ShieldCheck} title="Action Steps & Commitments" subtitle="Section 8: Final Integration" color="bg-emerald-600" />
           
           <div className="space-y-12">
-            <h3 className="text-3xl font-black text-slate-900 text-center">Commitments</h3>
+            <h3 className="text-3xl font-black text-foreground text-center">Commitments</h3>
             <div className="overflow-hidden rounded-[3rem] border-2 border-slate-100 shadow-2xl bg-white">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50 border-b-2 border-slate-100">
-                    <th className="p-10 font-black text-[10px] uppercase tracking-widest text-slate-500">Action Item</th>
-                    <th className="p-10 font-black text-[10px] uppercase tracking-widest text-slate-500">By When</th>
-                    <th className="p-10 font-black text-[10px] uppercase tracking-widest text-slate-500 text-center">Done</th>
+                    <th className="p-10 font-black text-[10px] uppercase tracking-widest text-muted-foreground">Action Item</th>
+                    <th className="p-10 font-black text-[10px] uppercase tracking-widest text-muted-foreground">By When</th>
+                    <th className="p-10 font-black text-[10px] uppercase tracking-widest text-muted-foreground text-center">Done</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -783,7 +789,7 @@ const BusinessModelWorksheet = () => {
 
             <div className="space-y-12">
               <div className="space-y-6">
-                <h3 className="text-3xl font-black text-slate-900 text-center flex items-center justify-center gap-4">
+                <h3 className="text-3xl font-black text-foreground text-center flex items-center justify-center gap-4">
                   <Sparkles size={32} className="text-emerald-500" /> My Own Commitment
                 </h3>
                 <Textarea 
@@ -795,11 +801,11 @@ const BusinessModelWorksheet = () => {
               </div>
 
               <div className="space-y-6">
-                <h3 className="text-3xl font-black text-slate-900 text-center flex items-center justify-center gap-4">
+                <h3 className="text-3xl font-black text-foreground text-center flex items-center justify-center gap-4">
                   <RefreshCw size={32} className="text-emerald-500" /> Mindset Shift
                 </h3>
                 <div className="space-y-4">
-                  <Label className="text-sm font-bold text-slate-500 uppercase tracking-widest block text-center">What is the biggest mindset shift this session has triggered for you?</Label>
+                  <Label className="text-sm font-bold text-muted-foreground uppercase tracking-widest block text-center">What is the biggest mindset shift this session has triggered for you?</Label>
                   <Textarea 
                     placeholder="What does it mean to be a business owner rather than a practitioner who owns a job?"
                     className="min-h-[250px] rounded-[3.5rem] border-2 border-slate-100 focus:border-emerald-600 p-12 text-2xl italic leading-relaxed shadow-2xl"

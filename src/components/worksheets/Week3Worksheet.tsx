@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ const Week3Worksheet = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const autoSaveTimer = useRef<ReturnType<typeof setInterval>>();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,7 +55,7 @@ const Week3Worksheet = () => {
     fetchData();
   }, []);
 
-  const handleSave = async (silent = false) => {
+  const handleSave = useCallback(async (silent = false) => {
     if (!userId) return;
     
     if (!silent) setSaving(true);
@@ -71,13 +72,17 @@ const Week3Worksheet = () => {
 
       if (error) throw error;
       if (!silent) toast.success("Progress saved successfully.");
-    } catch (error: any) {
-      console.error("Error saving worksheet:", error);
+    } catch {
       if (!silent) toast.error("Failed to save progress.");
     } finally {
       if (!silent) setSaving(false);
     }
-  };
+  }, [userId, name, isReleased, answers]);
+
+  useEffect(() => {
+    autoSaveTimer.current = setInterval(() => handleSave(true), 60000);
+    return () => clearInterval(autoSaveTimer.current);
+  }, [handleSave]);
 
   const handleAnswerChange = (id: string, value: string) => {
     setAnswers(prev => ({ ...prev, [id]: value }));
@@ -119,7 +124,7 @@ const Week3Worksheet = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
         <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
-        <p className="text-slate-500 font-medium">Loading your worksheet...</p>
+        <p className="text-muted-foreground font-medium">Loading your worksheet...</p>
       </div>
     );
   }
@@ -174,14 +179,14 @@ const Week3Worksheet = () => {
             <Sparkles className="w-6 h-6" />
           </div>
 
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
             The Integrated Healer Program: Week 3
           </h1>
           <p className="text-xl text-indigo-600 font-medium">Be your No.1 Client</p>
           <h2 className="text-2xl font-semibold text-slate-700">
             Releasing Curses, Generational Trauma & Secret Society Agreements
           </h2>
-          <p className="max-w-2xl mx-auto text-slate-500 italic">
+          <p className="max-w-2xl mx-auto text-muted-foreground italic">
             "Shame, blame, and guilt are not just personal experiences—they are inherited patterns, passed down through generations."
           </p>
         </motion.div>
@@ -388,7 +393,7 @@ const Week3Worksheet = () => {
         <motion.div variants={itemVariants}>
           <Card className="border-none shadow-xl bg-white">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-slate-900">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <PenLine className="w-5 h-5" />
                 Post-Session Journaling
               </CardTitle>

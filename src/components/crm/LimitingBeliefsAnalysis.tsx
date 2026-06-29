@@ -1,15 +1,17 @@
 
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Sparkles, Copy, Check, Loader2, Lightbulb, 
-  Shuffle, AlertTriangle, Wand2, History
+  Shuffle, AlertTriangle, Wand2, History, ArrowRight
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showError } from "@/utils/toast";
+import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
 interface SuggestionItem {
@@ -101,6 +103,7 @@ const buildTranscript = (session: PastSession): string => {
 };
 
 const LimitingBeliefsAnalysis = () => {
+  const navigate = useNavigate();
   const [transcript, setTranscript] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -110,6 +113,23 @@ const LimitingBeliefsAnalysis = () => {
   const [pastSessions, setPastSessions] = useState<PastSession[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState("");
   const [loadingSessions, setLoadingSessions] = useState(true);
+
+  const toolRoute = (name: string): string | null => {
+    const lower = name.toLowerCase();
+    if (lower.includes("identity shifting")) return "/identity-shifting";
+    if (lower.includes("identity alignment")) return "/identity-alignment";
+    if (lower.includes("limiting belief")) return "/limiting-beliefs";
+    if (lower.includes("inner child")) return "/identity-shifting";
+    if (lower.includes("visualization")) return "/identity-alignment";
+    if (lower.includes("boundaries")) return "/limiting-beliefs";
+    if (lower.includes("affirmation")) return "/identity-alignment";
+    if (lower.includes("narrative") || lower.includes("refram") || lower.includes("cognitive")) return "/identity-shifting";
+    return null;
+  };
+
+  const openSuggestion = (path: string, prefill: string) => {
+    navigate(path, { state: { prefill } });
+  };
 
   useEffect(() => {
     const fetch = async () => {
@@ -195,12 +215,13 @@ const LimitingBeliefsAnalysis = () => {
     }).catch(() => showError("Failed to copy"));
   };
 
-  const SectionCard = ({ icon: Icon, title, items, color, emptyMsg }: {
+  const SectionCard = ({ icon: Icon, title, items, color, emptyMsg, onItemClick }: {
     icon: React.ElementType;
     title: string;
     items: SuggestionItem[];
     color: string;
     emptyMsg: string;
+    onItemClick?: (item: SuggestionItem) => void;
   }) => (
     <Card className="border-0 shadow-none bg-muted/30">
       <CardContent className="p-4 space-y-2">
@@ -214,8 +235,18 @@ const LimitingBeliefsAnalysis = () => {
         ) : (
           <div className="space-y-1.5">
             {items.map((item, i) => (
-              <div key={i} className="p-2 rounded-lg bg-card/80 border border-border/40">
-                <p className="text-xs font-medium text-foreground">{item.name}</p>
+              <div
+                key={i}
+                onClick={onItemClick ? () => onItemClick(item) : undefined}
+                className={cn(
+                  "p-2 rounded-lg bg-card/80 border border-border/40",
+                  onItemClick && "cursor-pointer hover:bg-card hover:border-chart-primary/30 hover:shadow-sm transition-all"
+                )}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-xs font-medium text-foreground">{item.name}</p>
+                  {onItemClick && <ArrowRight size={11} className="shrink-0 mt-0.5 text-muted-foreground" />}
+                </div>
                 {(item.reasoning || item.evidence) && (
                   <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">
                     {item.reasoning || item.evidence}
@@ -348,6 +379,10 @@ const LimitingBeliefsAnalysis = () => {
             items={result.tools}
             color="text-chart-primary"
             emptyMsg="No tool suggestions generated."
+            onItemClick={(item) => {
+              const route = toolRoute(item.name);
+              if (route) openSuggestion(route, item.reasoning || item.name);
+            }}
           />
 
           <SectionCard
@@ -356,6 +391,7 @@ const LimitingBeliefsAnalysis = () => {
             items={result.identities}
             color="text-chart-emerald"
             emptyMsg="No identity shift suggestions generated."
+            onItemClick={(item) => openSuggestion("/identity-alignment", item.name)}
           />
 
           <SectionCard
@@ -364,6 +400,7 @@ const LimitingBeliefsAnalysis = () => {
             items={result.patterns}
             color="text-chart-destructive"
             emptyMsg="No additional patterns detected."
+            onItemClick={(item) => openSuggestion("/limiting-beliefs", item.name)}
           />
         </div>
       )}

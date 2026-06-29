@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -60,7 +61,10 @@ const CORE_BELIEFS = [
 ];
 
 const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: LimitingBeliefsToolProps = {}) => {
-  const [belief, setBelief] = useState("");
+  const location = useLocation();
+  const prefillData = location.state?.prefill;
+
+  const [belief, setBelief] = useState(prefillData || "");
   const [oppositeBelief, setOppositeBelief] = useState("");
   const [stepIndex, setStepIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, string>>({});

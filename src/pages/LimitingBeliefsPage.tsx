@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, PlayCircle, ShieldAlert, Info } from "lucide-react";
+import { BookOpen, PlayCircle, Sparkles, ShieldAlert, Info } from "lucide-react";
 import LimitingBeliefsBackground from "@/components/crm/LimitingBeliefsBackground";
 import LimitingBeliefsTool from "@/components/crm/LimitingBeliefsTool";
+import LimitingBeliefsAnalysis from "@/components/crm/LimitingBeliefsAnalysis";
 
 import AppLayout from '@/components/crm/AppLayout';
 
@@ -38,6 +39,13 @@ const LimitingBeliefsPage = () => {
   <PlayCircle className="mr-1.5" size={11} />
   Practice
   </TabsTrigger>
+  <TabsTrigger 
+  value="analysis" 
+  className="rounded-md px-3 h-7 data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all font-medium text-[10px] uppercase tracking-wider"
+  >
+  <Sparkles className="mr-1.5" size={11} />
+  Review
+  </TabsTrigger>
   </TabsList>
   </div>
 
@@ -50,6 +58,12 @@ const LimitingBeliefsPage = () => {
   <TabsContent value="practice" className="mt-0 focus-visible:ring-0">
   <div className="max-w-4xl mx-auto">
   <LimitingBeliefsTool />
+  </div>
+  </TabsContent>
+
+  <TabsContent value="analysis" className="mt-0 focus-visible:ring-0">
+  <div className="max-w-3xl mx-auto">
+  <LimitingBeliefsAnalysis />
   </div>
   </TabsContent>
  </Tabs>

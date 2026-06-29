@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { Mic, User, MoreHorizontal, CalendarClock, X, CreditCard, Loader2, ExternalLink, Plus, CheckCircle2, Circle, Gift } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -46,6 +47,7 @@ export interface BookingListItem {
   clientId?: string | null;
   appointmentId?: string | null;
   eventTypeId?: string | null;
+  notionLink?: string | null;
 }
 
 type Tab = "upcoming" | "past" | "cancelled";
@@ -53,10 +55,37 @@ type SourceFilter = "all" | "voice" | "kinesiology";
 
 const itemTime = (i: BookingListItem) => new Date(i.datetime || i.date).getTime();
 
+const INITIAL_COLORS = [
+  "#4f46e5", "#db2777", "#059669", "#d97706", "#7c3aed",
+  "#0891b2", "#be123c", "#65a30d", "#0d9488", "#c026d3",
+  "#2563eb", "#ca8a04", "#16a34a", "#9333ea", "#ea580c",
+];
+
+function nameHash(name: string): number {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+  return Math.abs(h);
+}
+
+function nameInitials(name: string): string {
+  return name.replace(/[^a-zA-Z\s]/g, "").split(/\s+/).filter(Boolean).map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
+}
+
+const parseTime = (t: string) => {
+  const m = t.match(/^(\d+):(\d+)\s*(AM|PM)/i);
+  if (!m) return 0;
+  let h = parseInt(m[1]);
+  const min = parseInt(m[2]);
+  if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
+  if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
+  return h * 60 + min;
+};
+
 interface BookingsListProps {
   items: BookingListItem[];
   onChanged: () => void;
   onNewBooking?: (service: string) => void;
+  onRebook?: (item: BookingListItem) => void;
 }
 
 const NEW_BOOKING_SERVICES = [
@@ -67,10 +96,13 @@ const NEW_BOOKING_SERVICES = [
   { group: "FNH", key: "fnhFree", label: "FNH — Community (Free)" },
 ];
 
-const BookingsList = ({ items, onChanged, onNewBooking }: BookingsListProps) => {
+const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsListProps) => {
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("upcoming");
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [busyId, setBusyId] = useState<string | null>(null);
   const [payTarget, setPayTarget] = useState<BookingListItem | null>(null);
   const [cancelTarget, setCancelTarget] = useState<BookingListItem | null>(null);
@@ -105,21 +137,40 @@ const BookingsList = ({ items, onChanged, onNewBooking }: BookingsListProps) => 
   };
 
   const now = Date.now();
+  const GRACE_MS = 30 * 60 * 1000;
   const buckets = useMemo(() => {
     const upcoming: BookingListItem[] = [];
     const past: BookingListItem[] = [];
     const cancelled: BookingListItem[] = [];
     for (const i of items) {
       if (sourceFilter !== "all" && i.source !== sourceFilter) continue;
+      if (statusFilter === "paid" && !i.paid) continue;
+      if (statusFilter === "unpaid" && (i.paid || i.isFree)) continue;
+      if (statusFilter === "free" && !i.isFree) continue;
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        const name = (i.source === "voice" ? i.subtitle || i.studentName || "" : i.title).toLowerCase();
+        const label = (i.source === "voice" ? i.title : "FNH Neuro-Health Assessment").toLowerCase();
+        if (!name.includes(q) && !label.includes(q) && !i.date.includes(q)) continue;
+      }
       if (i.cancelled) cancelled.push(i);
-      else if (itemTime(i) >= now) upcoming.push(i);
+      else if (itemTime(i) >= now - GRACE_MS) upcoming.push(i);
       else past.push(i);
     }
-    upcoming.sort((a, b) => itemTime(a) - itemTime(b));
-    past.sort((a, b) => itemTime(b) - itemTime(a));
-    cancelled.sort((a, b) => itemTime(b) - itemTime(a));
+    upcoming.sort((a, b) => {
+      const dc = a.date.localeCompare(b.date);
+      return dc !== 0 ? dc : parseTime(a.time || "") - parseTime(b.time || "");
+    });
+    past.sort((a, b) => {
+      const dc = b.date.localeCompare(a.date);
+      return dc !== 0 ? dc : parseTime(b.time || "") - parseTime(a.time || "");
+    });
+    cancelled.sort((a, b) => {
+      const dc = b.date.localeCompare(a.date);
+      return dc !== 0 ? dc : parseTime(b.time || "") - parseTime(a.time || "");
+    });
     return { upcoming, past, cancelled };
-  }, [items, now, sourceFilter]);
+  }, [items, now, sourceFilter, statusFilter, searchQuery]);
 
   const rows = buckets[tab];
 
@@ -319,27 +370,46 @@ const BookingsList = ({ items, onChanged, onNewBooking }: BookingsListProps) => 
     </button>
   );
 
+  // Group rows by date for sticky headers
+  const grouped = useMemo(() => {
+    const map = new Map<string, BookingListItem[]>();
+    for (const r of rows) {
+      const g = map.get(r.date);
+      if (g) g.push(r);
+      else map.set(r.date, [r]);
+    }
+    return [...map.entries()];
+  }, [rows]);
+
   return (
     <div className="animate-in fade-in duration-300">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <div className="flex bg-muted rounded-xl p-0.5 border border-border w-fit">
-          <TabButton id="upcoming" label="Upcoming" count={buckets.upcoming.length} />
-          <TabButton id="past" label="Past" count={buckets.past.length} />
-          <TabButton id="cancelled" label="Cancelled" count={buckets.cancelled.length} />
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="flex bg-muted rounded-xl p-0.5 border border-border w-fit">
+      {/* Consolidated filter bar: search, time-state pills, source toggle, new booking */}
+      <div className="bg-card border border-border rounded-xl p-3 mb-4 space-y-2.5">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative flex-1 min-w-[140px] max-w-xs">
+            <Input
+              placeholder="Search name, event, date…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 rounded-lg text-xs pl-7"
+            />
+            <svg className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          </div>
+          <div className="flex bg-muted rounded-lg p-0.5 border border-border w-fit">
+            <TabButton id="upcoming" label="Upcoming" count={buckets.upcoming.length} />
+            <TabButton id="past" label="Past" count={buckets.past.length} />
+            <TabButton id="cancelled" label="Cancelled" count={buckets.cancelled.length} />
+          </div>
+          <div className="flex bg-muted rounded-lg p-0.5 border border-border w-fit">
             <FilterButton id="all" label="All" />
             <FilterButton id="voice" label="Voice" />
             <FilterButton id="kinesiology" label="FNH" />
           </div>
-
           {onNewBooking && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button className="rounded-xl font-semibold text-xs h-9">
-                  <Plus size={15} className="mr-1.5" /> New Booking
+                <Button className="rounded-lg font-semibold text-xs h-8 px-3">
+                  <Plus size={14} className="mr-1" /> New
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-60">
@@ -362,27 +432,117 @@ const BookingsList = ({ items, onChanged, onNewBooking }: BookingsListProps) => 
             </DropdownMenu>
           )}
         </div>
+
+        {rows.length > 0 && (
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+            {summary.outstanding > 0 && (
+              <button
+                onClick={() => setStatusFilter(statusFilter === "unpaid" ? "all" : "unpaid")}
+                className={cn(
+                  "tabular-nums transition-colors",
+                  statusFilter === "unpaid"
+                    ? "text-amber-600 dark:text-amber-400 font-semibold underline underline-offset-4 decoration-2 decoration-amber-500/50"
+                    : "text-amber-600 dark:text-amber-400 hover:underline"
+                )}
+              >
+                ${summary.outstanding} outstanding
+              </button>
+            )}
+            {summary.unpaid > 0 && (
+              <button
+                onClick={() => setStatusFilter(statusFilter === "unpaid" ? "all" : "unpaid")}
+                className={cn(
+                  "transition-colors",
+                  statusFilter === "unpaid" ? "text-foreground font-semibold underline underline-offset-4" : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {summary.unpaid} unpaid
+              </button>
+            )}
+            {summary.collected > 0 && (
+              <button
+                onClick={() => setStatusFilter(statusFilter === "paid" ? "all" : "paid")}
+                className={cn(
+                  "tabular-nums transition-colors",
+                  statusFilter === "paid"
+                    ? "text-chart-emerald font-semibold underline underline-offset-4 decoration-2 decoration-chart-emerald/50"
+                    : "text-chart-emerald hover:underline"
+                )}
+              >
+                ${summary.collected} collected
+              </button>
+            )}
+            {summary.free > 0 && (
+              <button
+                onClick={() => setStatusFilter(statusFilter === "free" ? "all" : "free")}
+                className={cn(
+                  "transition-colors",
+                  statusFilter === "free" ? "text-foreground font-semibold underline underline-offset-4" : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {summary.free} free
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
-      {rows.length > 0 && (
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-1 mb-3 px-1 text-xs">
-          <span className="font-semibold text-foreground">{rows.length} {tab}</span>
-          {summary.outstanding > 0 && (
-            <span className="text-amber-600 dark:text-amber-400 font-semibold tabular-nums">${summary.outstanding} outstanding</span>
-          )}
-          {summary.unpaid > 0 && <span className="text-muted-foreground">{summary.unpaid} unpaid</span>}
-          {summary.collected > 0 && (
-            <span className="text-chart-emerald font-semibold tabular-nums">${summary.collected} collected</span>
-          )}
-          {summary.free > 0 && <span className="text-muted-foreground">{summary.free} free</span>}
+      {/* Batch actions bar */}
+      {selectedIds.size > 0 && (
+        <div className="bg-primary/5 border border-primary/20 rounded-xl px-4 py-2.5 mb-3 flex items-center justify-between animate-in fade-in slide-in-from-top-1 duration-200">
+          <span className="text-xs font-medium text-foreground">{selectedIds.size} selected</span>
+          <div className="flex items-center gap-2">
+            {rows.some((r) => selectedIds.has(r.id) && !r.paid && !r.isFree && !r.cancelled) && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-lg text-xs"
+                onClick={async () => {
+                  const toMark = rows.filter((r) => selectedIds.has(r.id) && !r.paid && !r.isFree && !r.cancelled);
+                  for (const item of toMark) await togglePaid(item, true);
+                  setSelectedIds(new Set());
+                }}
+              >
+                <CheckCircle2 size={13} className="mr-1.5" /> Mark paid
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 rounded-lg text-xs"
+              onClick={() => setSelectedIds(new Set())}
+            >
+              Clear
+            </Button>
+          </div>
         </div>
       )}
 
-      <div className="bg-card rounded-xl border border-border shadow-sm divide-y divide-border overflow-hidden">
-        {rows.length === 0 && (
+      {/* Date-grouped list with sticky headers */}
+      <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+        {grouped.length === 0 && (
           <div className="px-6 py-16 text-center text-sm text-muted-foreground">No {tab} bookings.</div>
         )}
-        {rows.map((item) => {
+        {grouped.map(([dateLabel, dateItems]) => (
+          <div key={dateLabel}>
+            <div className="sticky top-0 z-10 bg-card border-b border-border px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <Checkbox
+                checked={dateItems.length > 0 && dateItems.every((i) => selectedIds.has(i.id))}
+                onCheckedChange={(checked) => {
+                  setSelectedIds((prev) => {
+                    const next = new Set(prev);
+                    for (const i of dateItems) {
+                      if (checked) next.add(i.id);
+                      else next.delete(i.id);
+                    }
+                    return next;
+                  });
+                }}
+              />
+              <span>{format(new Date(dateLabel + "T12:00:00"), "EEEE, MMMM d, yyyy")}</span>
+              <span className="text-[10px] font-normal text-muted-foreground/60">{dateItems.length}</span>
+            </div>
+            {dateItems.map((item) => {
           const isVoice = item.source === "voice";
           const person = isVoice ? item.subtitle || item.studentName || "—" : item.title;
           const eventLabel = isVoice ? item.title : "FNH Neuro-Health Assessment";
@@ -399,13 +559,24 @@ const BookingsList = ({ items, onChanged, onNewBooking }: BookingsListProps) => 
                 }
               }}
             >
+              <Checkbox
+                checked={selectedIds.has(item.id)}
+                onCheckedChange={(checked) => {
+                  setSelectedIds((prev) => {
+                    const next = new Set(prev);
+                    if (checked) next.add(item.id);
+                    else next.delete(item.id);
+                    return next;
+                  });
+                }}
+                onClick={(e) => e.stopPropagation()}
+                className="shrink-0"
+              />
               <div
-                className={cn(
-                  "w-9 h-9 rounded-lg flex items-center justify-center shrink-0",
-                  isVoice ? "bg-chart-destructive/10 text-chart-destructive" : "bg-chart-primary/10 text-chart-primary"
-                )}
+                className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 font-bold text-xs text-white"
+                style={{ backgroundColor: INITIAL_COLORS[nameHash(person) % INITIAL_COLORS.length] }}
               >
-                {isVoice ? <Mic size={15} /> : <User size={15} />}
+                {nameInitials(person)}
               </div>
 
               <div className="min-w-0 flex-1">
@@ -425,11 +596,9 @@ const BookingsList = ({ items, onChanged, onNewBooking }: BookingsListProps) => 
                     <Badge className="bg-muted text-muted-foreground border-none text-[10px] font-semibold">Cancelled</Badge>
                   ) : item.isFree ? (
                     <Badge className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border-none text-[10px] font-semibold">Free</Badge>
-                  ) : item.paid ? (
-                    <Badge className="bg-chart-emerald/10 text-chart-emerald border-none text-[10px] font-semibold">Paid</Badge>
-                  ) : (
+                  ) : !item.paid ? (
                     <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-none text-[10px] font-semibold">Unpaid</Badge>
-                  )}
+                  ) : null}
                 </div>
                 <div className="text-xs text-muted-foreground truncate">{eventLabel}</div>
               </div>
@@ -439,7 +608,7 @@ const BookingsList = ({ items, onChanged, onNewBooking }: BookingsListProps) => 
                 {item.isFree ? (
                   <span className="text-xs font-bold text-slate-400">Free</span>
                 ) : item.amount != null ? (
-                  <span className={cn("text-sm font-bold tabular-nums", item.paid ? "text-chart-emerald" : "text-foreground")}>${item.amount}</span>
+                  <span className={cn("text-sm font-bold tabular-nums", item.paid ? "text-chart-emerald" : "text-orange-600 dark:text-orange-400")}>${item.amount}</span>
                 ) : (
                   <span className="text-xs text-muted-foreground">—</span>
                 )}
@@ -449,6 +618,33 @@ const BookingsList = ({ items, onChanged, onNewBooking }: BookingsListProps) => 
                 <div className="text-xs font-medium text-foreground">{format(new Date(item.datetime || item.date), "EEE, d MMM")}</div>
                 {item.time && <div className="text-[11px] text-muted-foreground">{item.time}</div>}
               </div>
+
+              {tab === "past" && onRebook && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 rounded-lg text-[10px] font-semibold shrink-0 px-2.5"
+                  onClick={(e) => { e.stopPropagation(); onRebook(item); }}
+                >
+                  <Plus size={11} className="mr-1" /> Book again
+                </Button>
+              )}
+
+              {item.notionLink && (
+                <a
+                  href={item.notionLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg shrink-0 text-muted-foreground hover:text-foreground">
+                    <svg viewBox="0 0 24 24" width={14} height={14} fill="none">
+                      <rect x="2" y="2" width="20" height="20" rx="4" fill="currentColor"/>
+                      <path d="M8 6v12l8-12v12" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </Button>
+                </a>
+              )}
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -494,6 +690,15 @@ const BookingsList = ({ items, onChanged, onNewBooking }: BookingsListProps) => 
                       <CalendarClock size={14} className="mr-2" /> Reschedule
                     </DropdownMenuItem>
                   )}
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRebook?.(item);
+                    }}
+                    disabled={!onRebook}
+                  >
+                    <Plus size={14} className="mr-2" /> Book another
+                  </DropdownMenuItem>
                   {item.url && (
                     <DropdownMenuItem
                       onClick={() => {
@@ -518,7 +723,9 @@ const BookingsList = ({ items, onChanged, onNewBooking }: BookingsListProps) => 
             </div>
           );
         })}
-      </div>
+        </div>
+      ))}
+    </div>
 
       {/* Send payment link — confirm the rate first */}
       <Dialog open={!!payTarget} onOpenChange={(o) => { if (!o) setPayTarget(null); }}>

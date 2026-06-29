@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
- ArrowLeft, Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, ExternalLink, Mic, User, RotateCcw, Plus
+  ArrowLeft, Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, ExternalLink, Mic, User, RotateCcw, Plus, BookOpen
 } from "lucide-react";
 import {
   format, addMonths, subMonths, addWeeks, subWeeks, startOfMonth, endOfMonth,
@@ -31,7 +31,7 @@ import WeeklyTimeGrid, {
   EarningsPanel,
 } from "@/components/crm/WeeklyTimeGrid";
 import WeekByWeekOverview from "@/components/crm/WeekByWeekOverview";
-import BookingsList from "@/components/crm/BookingsList";
+import BookingsList, { type BookingListItem } from "@/components/crm/BookingsList";
 import SimpleBookDialog from "@/components/crm/SimpleBookDialog";
 import QuickBookDialog from "@/components/crm/QuickBookDialog";
 import ShareAvailabilityButton from "@/components/crm/ShareAvailabilityButton";
@@ -42,6 +42,21 @@ import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { useAuth } from "@/components/AuthProvider";
 import { formatVoiceTime } from "@/utils/availability";
+
+/** Parse voice lesson date + time string into an ISO datetime for sorting. */
+function voiceDateISO(date: string, time: string): string {
+  const [year, month, day] = date.split("-").map(Number);
+  if (!year || !month || !day) return date;
+  const t = time.replace(/\s*–.*/, "").trim().replace(/UTC/i, "").trim();
+  const m = t.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
+  if (!m) return date;
+  let h = parseInt(m[1]);
+  const min = parseInt(m[2]);
+  if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
+  if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
+  const d = new Date(year, month - 1, day, h, min);
+  return d.toISOString();
+}
 
 interface VoiceLesson {
  id: string;
@@ -64,19 +79,20 @@ interface VoiceBookingRow {
 }
 
 interface KinesiologyAppt {
- id: string;
- date: string;
- clientName: string | null;
- clientId: string | null;
- status: string | null;
- tag: string | null;
- time: string | null;
- priceAmount: number | null;
- standardRate: number | null;
- paymentReceived: boolean;
- isPaid: boolean;
- calcomUid: string | null;
- calcomEventTypeId: number | null;
+  id: string;
+  date: string;
+  clientName: string | null;
+  clientId: string | null;
+  status: string | null;
+  tag: string | null;
+  time: string | null;
+  priceAmount: number | null;
+  standardRate: number | null;
+  paymentReceived: boolean;
+  isPaid: boolean;
+  calcomUid: string | null;
+  calcomEventTypeId: number | null;
+  notionLink: string | null;
 }
 
 interface CalendarItem {
@@ -103,9 +119,10 @@ interface CalendarItem {
  lessonId?: string | null;
  studentEmail?: string | null;
  studentName?: string | null;
- clientId?: string | null;
- appointmentId?: string | null;
- eventTypeId?: string | null;
+  clientId?: string | null;
+  appointmentId?: string | null;
+  eventTypeId?: string | null;
+  notionLink?: string | null;
 }
 
 function parseTimeToEvent(item: CalendarItem): CalendarEvent | null {
@@ -174,6 +191,7 @@ const UnifiedCalendarPage = () => {
   const [fnhPickOpen, setFnhPickOpen] = useState(false);
   const [fnhClientId, setFnhClientId] = useState<string | null>(null);
   const [fnhPrefillPrice, setFnhPrefillPrice] = useState<number>(70);
+  const [rebookFrom, setRebookFrom] = useState<string | null>(null);
   // Slot-click flow (Week/Overview): chosen service for the clicked slot
   const [bookSvc, setBookSvc] = useState<string | null>(null);
 
@@ -190,6 +208,16 @@ const UnifiedCalendarPage = () => {
     else if (service === "fnhCurrent") { setFnhPrefillPrice(70); setFnhPickOpen(true); }
     else if (service === "fnhNew") { setFnhPrefillPrice(70); setFnhPickOpen(true); }
     else if (service === "fnhFree") { setFnhPrefillPrice(0); setFnhPickOpen(true); }
+  };
+
+  const handleRebook = (item: BookingListItem) => {
+    if (item.source === "voice") {
+      openVoiceBooking("60");
+    } else if (item.clientId) {
+      setFnhPrefillPrice(70);
+      setFnhClientId(item.clientId);
+      setRebookFrom(item.datetime || null);
+    }
   };
 
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
@@ -224,7 +252,7 @@ const UnifiedCalendarPage = () => {
  queryFn: async () => {
  const { data } = await supabase
  .from("appointments")
- .select("id, date, status, tag, price_amount, is_paid, payment_received, calcom_booking_id, calcom_event_type_id, client_id, clients (name, is_practitioner, standard_rate)")
+  .select("id, date, status, tag, price_amount, is_paid, payment_received, calcom_booking_id, calcom_event_type_id, client_id, clients (name, is_practitioner, standard_rate, notion_link)")
  .gte("date", fetchStart)
  .lte("date", fetchEnd)
  .order("date", { ascending: true });
@@ -242,8 +270,9 @@ const UnifiedCalendarPage = () => {
  standardRate: a.clients?.standard_rate ?? null,
  paymentReceived: a.payment_received === true,
  isPaid: a.is_paid === true,
- calcomUid: a.calcom_booking_id ?? null,
- calcomEventTypeId: a.calcom_event_type_id ?? null,
+  calcomUid: a.calcom_booking_id ?? null,
+  calcomEventTypeId: a.calcom_event_type_id ?? null,
+  notionLink: a.clients?.notion_link ?? null,
 })) as KinesiologyAppt[];
  },
   staleTime: 60_000,
@@ -366,7 +395,7 @@ const UnifiedCalendarPage = () => {
   id: `v-${l.id}`,
   source: "voice",
   date: l.date,
-  datetime: l.date,
+  datetime: l.date && l.time ? voiceDateISO(l.date, l.time) : l.date,
   time: l.date && l.time ? formatVoiceTime(l.date, l.time) : null,
   title: l.name || "Voice Lesson",
   subtitle: l.studentName || null,
@@ -386,6 +415,7 @@ const UnifiedCalendarPage = () => {
   lessonId: l.id,
   studentEmail: l.studentEmail,
   studentName: l.studentName,
+  notionLink: l.notionUrl,
   });
   });
 
@@ -402,7 +432,7 @@ const UnifiedCalendarPage = () => {
   source: "kinesiology",
   date: format(appDate, 'yyyy-MM-dd'),
   datetime: a.date,
-  time: format(appDate, 'h:mm a'),
+  time: `${format(appDate, 'h:mm a')} – ${format(new Date(appDate.getTime() + 60 * 60 * 1000), 'h:mm a')}`,
   title: a.clientName || "Appointment",
  subtitle: null,
  url: `/appointments/${a.id}`,
@@ -415,10 +445,11 @@ const UnifiedCalendarPage = () => {
  isFree,
  amount: isFree ? null : (currentRate || null),
  calcomUid: a.calcomUid,
- clientId: a.clientId,
- appointmentId: a.id,
- eventTypeId: CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID,
- });
+  clientId: a.clientId,
+  appointmentId: a.id,
+  eventTypeId: CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID,
+  notionLink: a.notionLink,
+  });
  });
 
   items.sort((a, b) => {
@@ -509,10 +540,10 @@ const UnifiedCalendarPage = () => {
  onClick={() => navigate(-1)}
  className="h-10 px-4 rounded-xl border-border font-medium text-[10px] uppercase tracking-wider gap-2"
  >
- <ArrowLeft size={14} />
- Back
- </Button>
- </div>
+            <ArrowLeft size={14} />
+            Back
+          </Button>
+          </div>
  }
  />
 
@@ -585,6 +616,7 @@ const UnifiedCalendarPage = () => {
      items={calendarItems}
      onChanged={() => { refetchVoice(); refetchKinesiology(); refetchVoiceBookings(); }}
      onNewBooking={handleNewBooking}
+     onRebook={handleRebook}
    />
 
    ) : viewMode === "month" ? (
@@ -915,8 +947,9 @@ const UnifiedCalendarPage = () => {
     clientId={fnhClientId}
     open={!!fnhClientId}
     prefillPrice={fnhPrefillPrice}
-    onOpenChange={(open) => { if (!open) setFnhClientId(null); }}
-    onSuccess={() => { setFnhClientId(null); refetchKinesiology(); }}
+    rebookFrom={rebookFrom}
+    onOpenChange={(open) => { if (!open) { setFnhClientId(null); setRebookFrom(null); } }}
+    onSuccess={() => { setFnhClientId(null); setRebookFrom(null); refetchKinesiology(); }}
   />
 
   {bookSlot && (

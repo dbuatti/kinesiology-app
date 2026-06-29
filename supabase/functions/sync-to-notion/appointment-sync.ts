@@ -315,19 +315,19 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
   const projectProp = findSchemaProperty(plannerSchema, ['Project', 'Category', 'Type', 'Source', 'Service']);
   if (projectProp) {
     if (projectProp.schema.type === 'select') {
-      plannerProps[projectProp.name] = { select: { name: appointment.tag || "Kinesiology" } };
+      plannerProps[projectProp.name] = { select: { name: "FNH" } };
     } else if (projectProp.schema.type === 'multi_select') {
-      plannerProps[projectProp.name] = { multi_select: [{ name: appointment.tag || "Kinesiology" }] };
+      plannerProps[projectProp.name] = { multi_select: [{ name: "FNH" }] };
     } else if (projectProp.schema.type === 'rich_text') {
-      plannerProps[projectProp.name] = { rich_text: [{ text: { content: appointment.tag || "Kinesiology" } }] };
+      plannerProps[projectProp.name] = { rich_text: [{ text: { content: "FNH" } }] };
     }
   } else {
     // Fallback
-    plannerProps["Project"] = { select: { name: "Kinesiology" } };
+    plannerProps["Project"] = { select: { name: "FNH" } };
   }
 
   // 4. Amount/Price (Finance specific)
-  const amountProp = findSchemaProperty(plannerSchema, ['Amount', 'Price', 'Cost', 'Value', 'Income', 'Earnings', 'Fee']);
+  const amountProp = findSchemaProperty(plannerSchema, ['Amount', 'Price', 'Cost', 'Value', 'Income', 'Earnings', 'Fee', 'Dollars']);
   if (amountProp) {
     const price = Number(appointment.price_amount) || 50;
     if (amountProp.schema.type === 'number') {
@@ -359,6 +359,13 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
     } else if (methodProp.schema.type === 'rich_text') {
       plannerProps[methodProp.name] = { rich_text: [{ text: { content: method } }] };
     }
+  }
+
+  // 7. Client relation for Planner DB (links to Client CRM)
+  const clientKinProp = findSchemaProperty(plannerSchema, ['Client (Kin)', 'Client', 'Client Name', 'Client Profile', 'Linked Client']);
+  if (clientKinProp && clientPageId) {
+    console.log(`[appointment-sync] Linking planner page to client: ${clientPageId} via property: ${clientKinProp.name}`);
+    plannerProps[clientKinProp.name] = { relation: [{ id: clientPageId }] };
   }
 
   let plannerPageId = appointment.notion_planner_id;

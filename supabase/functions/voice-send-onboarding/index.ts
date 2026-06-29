@@ -168,6 +168,9 @@ serve(async (req) => {
             quantity: 1,
           }],
           mode: 'payment',
+          payment_intent_data: {
+            statement_descriptor: 'VOICE COACHING',
+          },
           success_url: `${APP_ORIGIN}/voice/paid`,
           cancel_url: `${APP_ORIGIN}/voice-onboarding/${encodeURIComponent(studentEmail)}`,
           metadata,

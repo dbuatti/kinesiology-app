@@ -145,7 +145,8 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
 
     let query = supabase
       .from('identity_alignment_sessions')
-      .select('*');
+      .select('*')
+      .eq('user_id', user.id);
 
     if (clientId) {
       query = query.eq('client_id', clientId);
@@ -189,7 +190,11 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
         goal_inevitable: dataToSave.goalInevitable,
         final_anchor: dataToSave.finalAnchor,
         is_complete: isComplete,
-        current_phase: phaseToSave
+        current_phase: phaseToSave,
+        metadata: {
+          currentLoop,
+          loopStep,
+        },
       };
 
       let error;
@@ -273,6 +278,9 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
       goalInevitable: session.goal_inevitable,
       finalAnchor: session.final_anchor || '',
     });
+    const meta = session.metadata || {};
+    setCurrentLoop(meta.currentLoop || {});
+    setLoopStep(meta.loopStep || 1);
     setPhase((session.current_phase || 1) as Phase);
     setShowHistory(false);
     setViewingReportId(null);

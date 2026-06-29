@@ -53,10 +53,13 @@ serve(async (req) => {
       Title: { title: [{ text: { content: title } }] },
       Date: { date: { start: date } },
       Details: { rich_text: [{ text: { content: time } }] },
+      Project: { select: { name: "Coaching" } },
       "Voice Students": { relation: [{ id: studentId }] },
     };
 
-    // DB 2 doesn't have a Cost property; only include it for DB 1
+    if (cost) {
+      db2Properties.Dollars = { number: Number(cost) };
+    }
 
     const createPage = async (dbId, properties, label) => {
       console.log(`[${functionName}] Creating page in ${label} (${dbId})...`);

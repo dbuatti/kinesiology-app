@@ -144,6 +144,9 @@ serve(async (req) => {
           quantity: 1,
         }],
         mode: 'payment',
+        payment_intent_data: {
+          statement_descriptor: 'FNH ASSESSMENT',
+        },
         success_url: `${Deno.env.get('SITE_URL') || req.headers.get('origin') || 'https://kinesiology-app.vercel.app'}/onboarding/success`,
         cancel_url: `${Deno.env.get('SITE_URL') || req.headers.get('origin') || 'https://kinesiology-app.vercel.app'}/onboarding/${client.id}`,
         metadata: {

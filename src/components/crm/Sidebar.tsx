@@ -31,6 +31,7 @@ import {
   EyeOff,
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
   Lightbulb,
   LayoutGrid,
   Fingerprint,
@@ -131,6 +132,15 @@ const Sidebar = () => {
     "Identity Work": true,
   });
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    return localStorage.getItem('rk_sidebar_collapsed') === 'true';
+  });
+
+  const toggleCollapsed = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    localStorage.setItem('rk_sidebar_collapsed', String(next));
+  };
 
   const isVoiceRoute = location.pathname.startsWith('/voice');
   const groups = isVoiceRoute
@@ -157,17 +167,32 @@ const Sidebar = () => {
             <span className="w-7 h-7 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">
               K
             </span>
-            <span className="text-xs font-bold uppercase tracking-wider text-foreground">
+            <span className={cn(
+              "text-xs font-bold uppercase tracking-wider text-foreground transition-opacity duration-200",
+              collapsed && "hidden"
+            )}>
               Kinesiology
             </span>
           </Link>
         </div>
-        <button
-          className="lg:hidden p-1 rounded-lg hover:bg-muted"
-          onClick={() => setMobileOpen(false)}
-        >
-          <ChevronRight size={18} className="text-muted-foreground" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            className="hidden lg:flex p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            onClick={toggleCollapsed}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <ChevronLeft size={18} className={cn(
+              "transition-transform duration-200",
+              collapsed && "rotate-180"
+            )} />
+          </button>
+          <button
+            className="lg:hidden p-1 rounded-lg hover:bg-muted"
+            onClick={() => setMobileOpen(false)}
+          >
+            <ChevronRight size={18} className="text-muted-foreground" />
+          </button>
+        </div>
       </div>
 
       {/* Context Switcher */}
@@ -176,28 +201,32 @@ const Sidebar = () => {
           <Link
             to="/"
             onClick={() => setMobileOpen(false)}
+            title={collapsed ? "Kinesiology" : undefined}
             className={cn(
-              "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all no-underline",
+              "flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all no-underline",
+              collapsed ? "flex-1" : "flex-1",
               !location.pathname.startsWith('/voice')
                 ? "bg-card text-foreground shadow-sm border border-border"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <Activity size={12} className="text-chart-primary" />
-            Kinesiology
+            <Activity size={12} className="text-chart-primary shrink-0" />
+            <span className={cn("transition-opacity duration-200", collapsed && "hidden")}>Kinesiology</span>
           </Link>
           <Link
             to="/voice"
             onClick={() => setMobileOpen(false)}
+            title={collapsed ? "Voice" : undefined}
             className={cn(
-              "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all no-underline",
+              "flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all no-underline",
+              collapsed ? "flex-1" : "flex-1",
               location.pathname.startsWith('/voice')
                 ? "bg-card text-foreground shadow-sm border border-border"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <Mic size={12} className="text-chart-destructive" />
-            Voice
+            <Mic size={12} className="text-chart-destructive shrink-0" />
+            <span className={cn("transition-opacity duration-200", collapsed && "hidden")}>Voice</span>
           </Link>
         </div>
       </div>
@@ -206,7 +235,10 @@ const Sidebar = () => {
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
         {groups.map((group) => (
           <div key={group.label}>
-            <p className="px-3 mb-1 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+            <p className={cn(
+              "px-3 mb-1 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 transition-opacity duration-200",
+              collapsed && "sr-only"
+            )}>
               {group.label}
             </p>
             <div className="space-y-0.5">
@@ -218,22 +250,24 @@ const Sidebar = () => {
                     <div key={item.label}>
                       <button
                         onClick={() => toggleExpand(item.label)}
+                        title={collapsed ? item.label : undefined}
                         className={cn(
                           "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors",
+                          collapsed ? "justify-center px-2" : "",
                           childActive
                             ? "bg-primary/10 text-primary"
                             : "text-muted-foreground hover:text-foreground hover:bg-muted"
                         )}
                       >
-                        <item.icon size={16} />
-                        <span className="flex-1 text-left">{item.label}</span>
-                        {isExpanded ? (
-                          <ChevronDown size={14} className="opacity-50" />
+                        <item.icon size={16} className="shrink-0" />
+                        <span className={cn("flex-1 text-left transition-opacity duration-200", collapsed && "hidden")}>{item.label}</span>
+                        {!collapsed && (isExpanded ? (
+                          <ChevronDown size={14} className="opacity-50 shrink-0" />
                         ) : (
-                          <ChevronRight size={14} className="opacity-50" />
-                        )}
+                          <ChevronRight size={14} className="opacity-50 shrink-0" />
+                        ))}
                       </button>
-                      {isExpanded && (
+                      {!collapsed && isExpanded && (
                         <div className="ml-5 mt-0.5 space-y-0.5 border-l-2 border-border pl-3">
                           {item.children.map((child) => (
                             <Link
@@ -261,15 +295,17 @@ const Sidebar = () => {
                     key={item.path}
                     to={item.path!}
                     onClick={() => setMobileOpen(false)}
+                    title={collapsed ? item.label : undefined}
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors",
+                      collapsed ? "justify-center px-2" : "",
                       isActive(item.path!)
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     )}
                   >
-                    <item.icon size={16} />
-                    <span>{item.label}</span>
+                    <item.icon size={16} className="shrink-0" />
+                    <span className={cn("transition-opacity duration-200", collapsed && "hidden")}>{item.label}</span>
                   </Link>
                 );
               })}
@@ -282,22 +318,30 @@ const Sidebar = () => {
       <div className="shrink-0 border-t border-border py-3 px-3 space-y-0.5">
         <button
           onClick={togglePrivacy}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          title={collapsed ? (isPrivate ? "Disable Privacy" : "Enable Privacy") : undefined}
+          className={cn(
+            "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-muted transition-colors",
+            collapsed && "justify-center px-2"
+          )}
         >
           {isPrivate ? (
-            <EyeOff size={16} className="text-chart-destructive" />
+            <EyeOff size={16} className="text-chart-destructive shrink-0" />
           ) : (
-            <Eye size={16} />
+            <Eye size={16} className="shrink-0" />
           )}
-          <span>{isPrivate ? "Disable Privacy" : "Enable Privacy"}</span>
+          <span className={cn("transition-opacity duration-200", collapsed && "hidden")}>{isPrivate ? "Disable Privacy" : "Enable Privacy"}</span>
         </button>
         <Link
           to="/settings"
           onClick={() => setMobileOpen(false)}
-          className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          title={collapsed ? "Settings" : undefined}
+          className={cn(
+            "flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-muted transition-colors",
+            collapsed && "justify-center px-2"
+          )}
         >
-          <Settings size={16} />
-          <span>Settings</span>
+          <Settings size={16} className="shrink-0" />
+          <span className={cn("transition-opacity duration-200", collapsed && "hidden")}>Settings</span>
         </Link>
         <button
           onClick={async () => {
@@ -307,10 +351,14 @@ const Sidebar = () => {
             showSuccess("Signed out successfully");
             window.location.href = "/login";
           }}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider text-chart-destructive hover:bg-destructive/10 transition-colors"
+          title={collapsed ? "Sign Out" : undefined}
+          className={cn(
+            "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider text-chart-destructive hover:bg-destructive/10 transition-colors",
+            collapsed && "justify-center px-2"
+          )}
         >
-          <LogOut size={16} />
-          <span>Sign Out</span>
+          <LogOut size={16} className="shrink-0" />
+          <span className={cn("transition-opacity duration-200", collapsed && "hidden")}>Sign Out</span>
         </button>
       </div>
     </div>
@@ -319,7 +367,10 @@ const Sidebar = () => {
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-64 shrink-0 flex-col h-full">
+      <aside className={cn(
+        "hidden lg:flex shrink-0 flex-col h-full transition-all duration-300 ease-in-out",
+        collapsed ? "w-16" : "w-64"
+      )}>
         {sidebarContent}
       </aside>
 

@@ -30,13 +30,14 @@ interface QuickBookDialogProps {
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
   prefillPrice?: number;
+  rebookFrom?: string | null; // ISO datetime of the original lesson being rebooked
 }
 
 // Prices are driven by the actual Cal.com event types so every button maps to a real
 // event type (previously [0,50,100] — $50 had no event type and crashed booking).
 const PRICES = Array.from(new Set(CALCOM_CONFIG.EVENT_TYPES.map((t) => t.price))).sort((a, b) => a - b);
 
-const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice }: QuickBookDialogProps) => {
+const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice, rebookFrom }: QuickBookDialogProps) => {
   const { session } = useAuth();
   const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -99,6 +100,40 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
   const currentSlots = selectedDate
     ? (slotsByDate[format(selectedDate, "yyyy-MM-dd")] || [])
     : [];
+
+  // Rebook recurring slots: same day-of-week + time for next 3 weeks
+  const rebookInfo = useMemo(() => {
+    if (!rebookFrom) return null;
+    const d = new Date(rebookFrom);
+    return {
+      weekday: d.getDay(),
+      timeLabel: format(d, "h:mm a"),
+      label: format(d, "EEEE h:mm a"),
+    };
+  }, [rebookFrom]);
+
+  const rebookSlots = useMemo(() => {
+    if (!rebookInfo || !rebookFrom) return [];
+    const origTimeStr = rebookInfo.timeLabel;
+    const origWeekday = rebookInfo.weekday;
+    const today = new Date();
+    const results: { date: Date; time: string; available: boolean }[] = [];
+    let count = 0;
+    for (let i = 1; i <= 28 && count < 3; i++) {
+      const next = addDays(today, i);
+      if (next.getDay() !== origWeekday) continue;
+      const dateKey = format(next, "yyyy-MM-dd");
+      const daySlots = slotsByDate[dateKey];
+      if (!daySlots || daySlots.length === 0) {
+        results.push({ date: next, time: "", available: false });
+      } else {
+        const match = daySlots.find((s) => format(parseISO(s.time), "h:mm a") === origTimeStr);
+        results.push({ date: next, time: match?.time || daySlots[0].time, available: !!match });
+      }
+      count++;
+    }
+    return results;
+  }, [rebookInfo, rebookFrom, slotsByDate]);
 
   const priceEventType = CALCOM_CONFIG.EVENT_TYPES.find((t) => t.price === selectedPrice);
 
@@ -180,16 +215,46 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
         {/* Header */}
         <div className="px-8 pt-8 pb-5 border-b border-border shrink-0">
           <DialogHeader>
-            <div className="flex items-center gap-4">
+            <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shrink-0">
                 <CalendarPlus size={22} />
               </div>
-              <div>
+              <div className="flex-1 min-w-0">
                 <DialogTitle className="text-2xl font-black">Quick Book Session</DialogTitle>
                 <DialogDescription className="text-muted-foreground text-sm font-medium">
                   Schedule a new appointment
                 </DialogDescription>
               </div>
+              {rebookSlots.length > 0 && (
+                <div className="shrink-0 space-y-1.5">
+                  <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground text-right">{rebookInfo!.label}</p>
+                  <div className="flex gap-1">
+                    {rebookSlots.map((rs, idx) => (
+                      <button
+                        key={rs.date.toISOString()}
+                        onClick={() => {
+                          if (!rs.available || !rs.time) return;
+                          const match = { time: rs.time } as Slot;
+                          setSelectedDate(rs.date);
+                          setSelectedSlot(match);
+                          setConflictError(null);
+                        }}
+                        disabled={!rs.available}
+                        title={format(rs.date, "EEEE, MMMM d, yyyy")}
+                        className={cn(
+                          "px-2.5 py-1.5 rounded-lg text-[10px] font-bold tracking-wider transition-all",
+                          rs.available
+                            ? "bg-chart-emerald/10 text-chart-emerald border border-chart-emerald/30 hover:bg-chart-emerald/20 cursor-pointer"
+                            : "bg-muted text-muted-foreground/40 border border-border cursor-default"
+                        )}
+                      >
+                        {idx === 0 ? "Next" : `${idx + 1}wk`}{" "}
+                        {rs.available ? format(parseISO(rs.time), "MMM d · h:mm a") : format(rs.date, "MMM d")}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </DialogHeader>
         </div>

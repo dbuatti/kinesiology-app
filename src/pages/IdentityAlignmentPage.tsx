@@ -10,65 +10,60 @@ import AppLayout from '@/components/crm/AppLayout';
 const IdentityAlignmentPage = () => {
  return (
  <AppLayout>
-  <div className="max-w-5xl mx-auto space-y-6">
- <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
- <div>
-
-
- <h1 className="text-4xl md:text-5xl font-serif font-medium tracking-tight mt-4 flex items-center gap-4">
- <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center shadow-sm ">
- <Target size={28} />
- </div>
- Identity Alignment
- </h1>
- <p className="text-lg text-muted-foreground mt-2 font-medium">Neural Reconsolidation & Autonomic Safety Protocol.</p>
- </div>
+  <div className="max-w-5xl mx-auto space-y-4">
+ <div className="flex items-center gap-3">
+  <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center">
+    <Target size={16} />
+  </div>
+  <div>
+    <h1 className="text-xl font-serif font-semibold tracking-tight">Identity Alignment</h1>
+    <p className="text-sm text-muted-foreground">Neural Reconsolidation & Autonomic Safety Protocol.</p>
+  </div>
  </div>
 
  <Tabs defaultValue="practice" className="w-full">
- <div className="flex justify-center mb-6">
- <TabsList className="bg-muted p-1.5 rounded-xl h-14">
- <TabsTrigger 
- value="learn" 
- className="rounded-xl px-8 h-12 data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all font-medium text-xs uppercase tracking-wider"
- >
- <BookOpen className="mr-2" size={16} />
- Learn
- </TabsTrigger>
- <TabsTrigger 
- value="practice" 
- className="rounded-xl px-8 h-12 data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all font-medium text-xs uppercase tracking-wider"
- >
- <PlayCircle className="mr-2" size={16} />
- Practice
- </TabsTrigger>
- </TabsList>
- </div>
+  <div className="flex justify-center mb-3">
+  <TabsList className="bg-muted p-0.5 rounded-lg h-8">
+  <TabsTrigger 
+  value="learn" 
+  className="rounded-md px-3 h-7 data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all font-medium text-[10px] uppercase tracking-wider"
+  >
+  <BookOpen className="mr-1.5" size={11} />
+  Learn
+  </TabsTrigger>
+  <TabsTrigger 
+  value="practice" 
+  className="rounded-md px-3 h-7 data-[state=active]:bg-card data-[state=active]:shadow-sm transition-all font-medium text-[10px] uppercase tracking-wider"
+  >
+  <PlayCircle className="mr-1.5" size={11} />
+  Practice
+  </TabsTrigger>
+  </TabsList>
+  </div>
 
- <TabsContent value="learn" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-500">
- <div className="max-w-5xl mx-auto">
- <IdentityAlignmentBackground />
- </div>
- </TabsContent>
+  <TabsContent value="learn" className="mt-0 focus-visible:ring-0">
+  <div className="max-w-5xl mx-auto">
+  <IdentityAlignmentBackground />
+  </div>
+  </TabsContent>
 
- <TabsContent value="practice" className="mt-0 focus-visible:ring-0 animate-in fade-in duration-700">
- <div className="max-w-4xl mx-auto">
- <IdentityAlignmentTool />
- </div>
- </TabsContent>
+  <TabsContent value="practice" className="mt-0 focus-visible:ring-0">
+  <div className="max-w-4xl mx-auto">
+  <IdentityAlignmentTool singlePage />
+  </div>
+  </TabsContent>
  </Tabs>
 
- {/* Clinical Notes Footer */}
- <div className="max-w-3xl mx-auto bg-chart-primary/5 border border-blue-500/10 rounded-xl p-8 flex gap-6 items-start">
- <div className="w-12 h-12 bg-chart-primary/10 rounded-xl flex items-center justify-center shrink-0 text-chart-primary">
- <Info size={24} />
- </div>
- <div className="space-y-2">
- <h4 className="font-semibold text-blue-900 text-sm uppercase tracking-wider">Practitioner's Playbook</h4>
- <p className="text-sm text-blue-800/70 leading-relaxed font-medium">
- The Identity Alignment Protocol is most effective when the client is in a state of autonomic safety. If you detect high sympathetic arousal, pause and use a down-regulation technique.
- </p>
- </div>
+ <div className="max-w-3xl mx-auto bg-chart-primary/5 border border-blue-500/10 rounded-xl p-4 flex gap-3 items-start">
+  <div className="w-6 h-6 bg-chart-primary/10 rounded-lg flex items-center justify-center shrink-0 text-chart-primary">
+  <Info size={14} />
+  </div>
+  <div className="space-y-1">
+  <h4 className="font-semibold text-blue-900 text-[10px] uppercase tracking-wider">Practitioner's Playbook</h4>
+  <p className="text-xs text-blue-800/70 leading-relaxed font-medium">
+  The Identity Alignment Protocol is most effective when the client is in a state of autonomic safety. If you detect high sympathetic arousal, pause and use a down-regulation technique.
+  </p>
+  </div>
  </div>
  </div>
  </AppLayout>

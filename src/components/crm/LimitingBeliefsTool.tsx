@@ -30,6 +30,15 @@ const STEP_PROMPTS: Record<string, string> = {
   F: "Do you still believe (BELIEF)?",
 };
 
+const STEP_LABELS: Record<string, string> = {
+  A: "Feel the belief in your body",
+  B: "Follow the sensation deeper",
+  C: "Identify the desired state",
+  D: "Embody the alternative",
+  E: "Deepen the new feeling",
+  F: "Check if the belief still holds",
+};
+
 const CHECK_QUESTIONS = [
   "Does any part of you still believe (BELIEF)?",
   "Do you feel you may believe (BELIEF) again in the future?",
@@ -59,7 +68,7 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
   const [isChecking, setIsChecking] = useState(false);
   const [checkResults, setCheckResults] = useState<Record<number, boolean>>({});
   const [isComplete, setIsComplete] = useState(false);
-  const [showReference, setShowReference] = useState(false);
+  const [showReference, setShowReference] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
   const [pastSessions, setPastSessions] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
@@ -209,90 +218,110 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Belief Setup */}
-      <div ref={scrollRef} className="space-y-4">
+      <div ref={scrollRef} className="space-y-3">
         <div className="flex items-center gap-2">
-          <ShieldAlert size={18} className="text-chart-destructive" />
-          <h3 className="text-base font-semibold text-foreground">Belief Shifting Protocol</h3>
-          <Badge className="text-[10px] bg-muted text-muted-foreground border-border">Somatic alchemy</Badge>
+          <ShieldAlert size={14} className="text-chart-destructive" />
+          <h3 className="text-sm font-semibold text-foreground">Belief Shifting Protocol</h3>
+          <Badge className="text-[9px] bg-muted text-muted-foreground border-border">A-F Somatic Loop</Badge>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2">
           <div>
-            <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1 block">Limiting Belief</label>
+            <label className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground mb-0.5 block">Limiting Belief</label>
             <div className="flex gap-2">
               <Input 
                 placeholder='e.g. "I am not good enough"'
                 value={belief}
                 onChange={(e) => setBelief(e.target.value)}
-                className="h-10 rounded-lg text-base font-medium"
+                className="h-9 rounded-lg text-sm font-medium"
               />
-              <Button variant="ghost" size="sm" onClick={() => setShowReference(!showReference)} className="h-10 w-10 shrink-0 rounded-lg">
-                <BookOpen size={16} className="text-muted-foreground" />
+              <Button variant="ghost" size="sm" onClick={() => setShowReference(!showReference)} className="h-9 w-9 shrink-0 rounded-lg">
+                <BookOpen size={14} className="text-muted-foreground" />
               </Button>
             </div>
           </div>
 
           {showReference && (
-            <div className="p-4 rounded-lg bg-muted/30 border border-border space-y-3 animate-in fade-in duration-200">
-              <p className="text-xs font-medium text-muted-foreground">Core 7 Belief Patterns</p>
+            <div className="p-3 rounded-lg bg-muted/30 border border-border space-y-2 animate-in fade-in duration-200">
+              <p className="text-[10px] font-medium text-muted-foreground">Common limiting belief patterns</p>
               <div className="flex flex-wrap gap-1.5">
                 {CORE_BELIEFS.map((b, i) => (
                   <button key={i} onClick={() => setBelief(b)} className={cn(
-                    "text-[10px] px-2 py-1 rounded-md border transition-colors",
+                    "text-[9px] px-1.5 py-0.5 rounded-md border transition-colors",
                     belief === b ? "border-chart-destructive bg-chart-destructive/10 text-chart-destructive font-medium" : "border-border bg-card text-muted-foreground hover:border-chart-destructive/30"
                   )}>
                     {b}
                   </button>
                 ))}
               </div>
-              <p className="text-[10px] text-muted-foreground/60 leading-relaxed">A limiting belief is a state-dependent neural network formed to reduce uncertainty and protect the organism. They behave like primitive reflexes: ON or OFF.</p>
+              <p className="text-[9px] text-muted-foreground/60 leading-relaxed">A limiting belief is a state-dependent neural network formed to reduce uncertainty and protect the organism. They behave like primitive reflexes: ON or OFF.</p>
             </div>
           )}
 
           <div>
-            <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1 block">Opposite / Desired Knowing</label>
+            <label className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground mb-0.5 block">Opposite / Desired Knowing</label>
             <Input 
               placeholder='e.g. "I am capable and enough"'
               value={oppositeBelief}
               onChange={(e) => setOppositeBelief(e.target.value)}
-              className="h-10 rounded-lg text-base font-medium"
+              className="h-9 rounded-lg text-sm font-medium"
             />
           </div>
         </div>
       </div>
 
-      {/* A-F Loop */}
-      {belief && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-chart-destructive/10 text-chart-destructive flex items-center justify-center text-[10px] font-semibold">{currentStep}</span>
-              <span className="text-sm font-medium text-foreground">Step {currentStep} of A-F</span>
-              {loopCount > 0 && <Badge className="text-[10px] bg-muted text-muted-foreground">Loop {loopCount + 1}</Badge>}
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={handleSave} disabled={saving} className="h-7 text-xs rounded-lg">
-                {saving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} className="mr-1" />}
-                Save
-              </Button>
-            </div>
-          </div>
+      {/* A-F Loop Steps Preview (shown even without belief) */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <RefreshCw size={12} className={cn(belief ? "text-chart-primary" : "text-muted-foreground")} />
+          <span className={cn("text-[10px] font-semibold uppercase tracking-wider", belief ? "text-chart-primary" : "text-muted-foreground")}>
+            Dissolution Loop {loopCount > 0 && `(Loop ${loopCount + 1})`}
+          </span>
+        </div>
 
+        <div className="grid grid-cols-6 gap-1.5">
+          {BELIEF_STEPS.map((s, i) => {
+            const isActive = belief && s === currentStep && !isChecking;
+            const isDone = belief && !!responses[s];
+            return (
+              <div key={s} className={cn(
+                "flex flex-col items-center gap-1 p-2 rounded-lg border text-center transition-all",
+                isActive ? "border-chart-destructive/30 bg-chart-destructive/5" :
+                isDone ? "border-chart-emerald/30 bg-chart-emerald/5" :
+                belief ? "border-border bg-card" :
+                "border-dashed border-border/60 bg-muted/30 opacity-50"
+              )}>
+                <span className={cn(
+                  "w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold",
+                  isDone ? "bg-chart-emerald/20 text-chart-emerald" :
+                  isActive ? "bg-chart-destructive/20 text-chart-destructive" :
+                  "bg-muted text-muted-foreground"
+                )}>{s}</span>
+                <span className="text-[7px] leading-tight text-muted-foreground">{STEP_LABELS[s]}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Active A-F Loop Card */}
+      {belief && !isChecking && (
+        <div className="space-y-3">
           <Card className="border border-border bg-card">
-            <CardContent className="p-4 space-y-3">
-              <p className="text-base text-foreground font-medium italic leading-relaxed">
+            <CardContent className="p-3 space-y-2">
+              <p className="text-sm text-foreground font-medium italic leading-relaxed">
                 "{getPrompt(currentStep, belief)}"
               </p>
-              <p className="text-xs text-muted-foreground">Keep answers brief — emotion, body sensation, thought or mental image.</p>
+              <p className="text-[10px] text-muted-foreground">Keep answers brief — emotion, body sensation, thought or mental image.</p>
 
               {currentStep === "F" ? (
-                <div className="flex gap-3">
-                  <Button variant="outline" onClick={() => handleFQuick(true)} className="flex-1 h-10 rounded-lg border-destructive text-destructive font-medium text-xs">
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => handleFQuick(true)} className="flex-1 h-8 rounded-lg border-destructive text-destructive font-medium text-[10px]">
                     Yes, still believe it
                   </Button>
-                  <Button variant="outline" onClick={() => handleFQuick(false)} className="flex-1 h-10 rounded-lg border-chart-emerald text-chart-emerald font-medium text-xs">
+                  <Button variant="outline" onClick={() => handleFQuick(false)} className="flex-1 h-8 rounded-lg border-chart-emerald text-chart-emerald font-medium text-[10px]">
                     No, it's shifted
                   </Button>
                 </div>
@@ -303,11 +332,11 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
                     onChange={(e) => setCurrentResponse(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleNext()}
                     placeholder="Brief response..."
-                    className="h-10 rounded-lg text-base font-medium flex-1"
+                    className="h-9 rounded-lg text-sm font-medium flex-1"
                     autoFocus
                   />
-                  <Button onClick={handleNext} className="h-10 w-10 rounded-lg shrink-0">
-                    <ArrowRight size={16} />
+                  <Button onClick={handleNext} className="h-9 w-9 rounded-lg shrink-0">
+                    <ArrowRight size={14} />
                   </Button>
                 </div>
               )}
@@ -316,101 +345,112 @@ const LimitingBeliefsTool = ({ singlePage = false, clientId, appointmentId }: Li
 
           {/* Loop responses log */}
           {Object.keys(responses).length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-1">
               {BELIEF_STEPS.map((s, i) => {
                 const key = `${s}`;
                 if (!responses[key]) return null;
                 return (
-                  <Badge key={i} variant="outline" className="text-[10px] font-normal border-border text-muted-foreground">
-                    {s}: {responses[key].slice(0, 30)}{responses[key].length > 30 ? "…" : ""}
+                  <Badge key={i} variant="outline" className="text-[9px] font-normal border-border text-muted-foreground">
+                    {s}: {responses[key].slice(0, 25)}{responses[key].length > 25 ? "…" : ""}
                   </Badge>
                 );
               })}
             </div>
           )}
+
+          <div className="flex gap-2">
+            <Button variant="ghost" size="sm" onClick={handleSave} disabled={saving} className="h-7 text-[10px] rounded-lg">
+              {saving ? <Loader2 size={11} className="animate-spin mr-1" /> : <Save size={11} className="mr-1" />}
+              Save Progress
+            </Button>
+          </div>
         </div>
       )}
 
-      {/* Verification Check */}
-      {isChecking && (
-        <div id="belief-check" className="space-y-4 animate-in fade-in duration-300">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 size={18} className="text-chart-emerald" />
-            <h3 className="text-base font-semibold text-foreground">Verifying the Shift</h3>
-          </div>
-          <p className="text-sm text-muted-foreground">
+      {/* Verification Check - shown when checking or as preview */}
+      <div id="belief-check" className={cn("space-y-3", !isChecking && !belief && "opacity-40 pointer-events-none")}>
+        <div className="flex items-center gap-2">
+          <CheckCircle2 size={14} className={cn(isChecking ? "text-chart-emerald" : "text-muted-foreground")} />
+          <h3 className="text-sm font-semibold text-foreground">Verifying the Shift</h3>
+        </div>
+        {belief && (
+          <p className="text-xs text-muted-foreground">
             Belief: <strong className="text-foreground">"{belief}"</strong>{" · "}
-            Loops: {loopCount + 1}{" · "}
+            {loopCount > 0 && <>Loops: {loopCount + 1}{" · "}</>}
             Opposite: <strong className="text-foreground">"{oppositeBelief}"</strong>
           </p>
+        )}
+        {!belief && (
+          <p className="text-xs text-muted-foreground">Enter a belief above and work through the A-F loop to unlock verification.</p>
+        )}
 
-          <div className="space-y-3">
-            {CHECK_QUESTIONS.map((q, i) => {
-              const prompt = q
-                .replace(/\(BELIEF\)/g, belief)
-                .replace(/\(OPPOSITE OF BELIEF\)/g, oppositeBelief || "...");
-              const result = checkResults[i];
-              return (
-                <Card key={i} className={cn(
-                  "border transition-colors",
-                  result === undefined ? "border-border bg-card" : 
-                  result ? "border-destructive/30 bg-destructive/5" : 
-                  "border-chart-emerald/30 bg-chart-emerald/5"
-                )}>
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <p className="text-sm text-foreground">{prompt}</p>
-                    <div className="flex gap-2 shrink-0 ml-4">
-                      <Button variant="outline" size="sm" onClick={() => handleCheckAnswer(i, true)}
-                        className={cn("h-8 w-8 rounded-lg", result === true && "border-destructive bg-destructive/10 text-destructive")}>Y</Button>
-                      <Button variant="outline" size="sm" onClick={() => handleCheckAnswer(i, false)}
-                        className={cn("h-8 w-8 rounded-lg", result === false && "border-chart-emerald bg-chart-emerald/10 text-chart-emerald")}>N</Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
-          {allChecksClear && (
-            <div className="p-5 rounded-xl bg-chart-emerald/5 border border-chart-emerald/20 text-center space-y-3">
-              <CheckCircle2 size={28} className="text-chart-emerald mx-auto" />
-              <div>
-                <p className="text-base font-semibold text-foreground">Belief Cleared</p>
-                <p className="text-sm text-muted-foreground">"{belief}" has been integrated. Double-check with indicator muscle or body dowsing.</p>
-              </div>
-              <div className="flex gap-2 justify-center">
-                <Button variant="outline" onClick={handleSave} disabled={saving} className="rounded-lg h-9 text-xs">
-                  {saving ? <Loader2 size={13} className="animate-spin mr-1" /> : <Save size={13} className="mr-1" />}
-                  Save Session
-                </Button>
-                <Button onClick={handleReset} variant="ghost" className="rounded-lg h-9 text-xs">
-                  <RotateCcw size={13} className="mr-1" /> New Belief
-                </Button>
-              </div>
-            </div>
-          )}
+        <div className="space-y-2">
+          {CHECK_QUESTIONS.map((q, i) => {
+            const prompt = q
+              .replace(/\(BELIEF\)/g, belief || "(belief)")
+              .replace(/\(OPPOSITE OF BELIEF\)/g, oppositeBelief || "(opposite)");
+            const result = isChecking ? checkResults[i] : undefined;
+            return (
+              <Card key={i} className={cn(
+                "border transition-colors",
+                !isChecking ? "border-border/50 bg-muted/20" :
+                result === undefined ? "border-border bg-card" : 
+                result ? "border-destructive/30 bg-destructive/5" : 
+                "border-chart-emerald/30 bg-chart-emerald/5"
+              )}>
+                <CardContent className="p-3 flex items-center justify-between">
+                  <p className={cn("text-xs", isChecking ? "text-foreground" : "text-muted-foreground")}>{prompt}</p>
+                  <div className="flex gap-1.5 shrink-0 ml-3">
+                    <Button variant="outline" size="sm" onClick={() => isChecking && handleCheckAnswer(i, true)}
+                      className={cn("h-7 w-7 rounded-lg", !isChecking && "opacity-30", result === true && "border-destructive bg-destructive/10 text-destructive")}>Y</Button>
+                    <Button variant="outline" size="sm" onClick={() => isChecking && handleCheckAnswer(i, false)}
+                      className={cn("h-7 w-7 rounded-lg", !isChecking && "opacity-30", result === false && "border-chart-emerald bg-chart-emerald/10 text-chart-emerald")}>N</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
-      )}
+
+        {allChecksClear && (
+          <div className="p-4 rounded-xl bg-chart-emerald/5 border border-chart-emerald/20 text-center space-y-2">
+            <CheckCircle2 size={20} className="text-chart-emerald mx-auto" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Belief Cleared</p>
+              <p className="text-xs text-muted-foreground">"{belief}" has been integrated. Double-check with indicator muscle or body dowsing.</p>
+            </div>
+            <div className="flex gap-2 justify-center">
+              <Button variant="outline" onClick={handleSave} disabled={saving} className="rounded-lg h-8 text-[10px]">
+                {saving ? <Loader2 size={11} className="animate-spin mr-1" /> : <Save size={11} className="mr-1" />}
+                Save Session
+              </Button>
+              <Button onClick={handleReset} variant="ghost" className="rounded-lg h-8 text-[10px]">
+                <RotateCcw size={11} className="mr-1" /> New Belief
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* History */}
       <div>
-        <button onClick={() => setShowHistory(!showHistory)} className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground">
-          <History size={13} />
+        <button onClick={() => setShowHistory(!showHistory)} className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground">
+          <History size={11} />
           Past Sessions ({pastSessions.length})
-          {showHistory ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+          {showHistory ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
         </button>
         {showHistory && (
-          <div className="mt-2 space-y-1 max-h-48 overflow-y-auto">
+          <div className="mt-2 space-y-0.5 max-h-40 overflow-y-auto">
             {pastSessions.map(s => (
-              <button key={s.id} onClick={() => loadSession(s)} className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-muted transition-colors text-left">
+              <button key={s.id} onClick={() => loadSession(s)} className="w-full flex items-center justify-between p-1.5 rounded-lg hover:bg-muted transition-colors text-left">
                 <div className="min-w-0">
                   <p className="text-xs font-medium text-foreground truncate">{s.limiting_belief || s.problem}</p>
-                  <p className="text-[10px] text-muted-foreground">{format(new Date(s.created_at), 'MMM d, h:mm a')}</p>
+                  <p className="text-[9px] text-muted-foreground">{format(new Date(s.created_at), 'MMM d, h:mm a')}</p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  {s.is_complete && <Badge className="bg-chart-emerald/10 text-chart-emerald text-[9px]">Cleared</Badge>}
+                  {s.is_complete && <Badge className="bg-chart-emerald/10 text-chart-emerald text-[8px]">Cleared</Badge>}
                   <button onClick={(e) => deleteSession(e, s.id)} className="p-1 hover:bg-muted rounded">
-                    <Trash2 size={12} className="text-muted-foreground" />
+                    <Trash2 size={10} className="text-muted-foreground" />
                   </button>
                 </div>
               </button>

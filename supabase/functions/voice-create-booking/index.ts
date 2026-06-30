@@ -21,10 +21,31 @@ serve(async (req) => {
     const NOTION_KEY = Deno.env.get('NOTION_API_KEY');
 
     const body = await req.json();
-    const { studentName, studentEmail, startTime, eventTypeId, title, notes, bookingUid, notionLessonId1, notionLessonId2, force } = body;
+    let { studentName, studentEmail } = body;
+    const { startTime, eventTypeId, title, notes, bookingUid, notionLessonId1, notionLessonId2, force } = body;
 
-    if (!studentName || !studentEmail) throw new Error("Missing studentName or studentEmail.");
     if (!startTime) throw new Error("Missing startTime.");
+
+    // For a RESCHEDULE we already have an existing booking — backfill the student
+    // from voice_bookings if the caller didn't supply name/email (e.g. a Notion
+    // lesson with no email on file). New bookings still require them (checked below).
+    const isReschedule = bookingUid && bookingUid !== "undefined" && bookingUid !== "null" && bookingUid !== "";
+    if (isReschedule && (!studentName || !studentEmail)) {
+      try {
+        const lookup = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
+        const { data: existing } = await lookup
+          .from("voice_bookings")
+          .select("student_name, student_email")
+          .eq("calcom_booking_id", bookingUid)
+          .maybeSingle();
+        if (existing) {
+          studentName = studentName || existing.student_name;
+          studentEmail = studentEmail || existing.student_email;
+        }
+      } catch (e) {
+        console.error(`[${functionName}] Reschedule student lookup failed:`, e.message);
+      }
+    }
 
     console.log(`[${functionName}] Booking for ${studentName} at ${startTime}`);
 
@@ -139,7 +160,8 @@ serve(async (req) => {
       throw new Error(result.error?.message || "Failed to reschedule");
     }
 
-    // Create new booking
+    // Create new booking — a brand-new booking genuinely needs a student.
+    if (!studentName || !studentEmail) throw new Error("Missing studentName or studentEmail.");
     console.log(`[${functionName}] CREATE new booking`);
 
     if (force) {

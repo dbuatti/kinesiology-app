@@ -1,13 +1,13 @@
-
 import React from 'react';
-import BusinessModelWorksheet from '@/components/worksheets/BusinessModelWorksheet';
-import AppLayout from '@/components/crm/AppLayout';
-
+import { AppLayout } from '@/components/layout/AppLayout';
+import { BusinessModelWorksheet } from '@/components/worksheets/BusinessModelWorksheet';
 
 const BusinessModelWorksheetPage = () => {
   return (
     <AppLayout>
-      <BusinessModelWorksheet />
+      <div className="max-w-4xl mx-auto p-4">
+        <BusinessModelWorksheet submissionId={null} onComplete={() => {}} />
+      </div>
     </AppLayout>
   );
 };

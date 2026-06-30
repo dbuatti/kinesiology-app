@@ -1,296 +1,223 @@
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import { Check, Trash2, Loader, Copy, Save } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Brain,
-  Heart,
-  Wind,
-  Sparkles,
-  Printer,
-  Save,
-  Loader2,
-  Zap,
-  ShieldCheck,
-  History,
-  Clock,
-  Volume2,
-  Target,
-  Activity
-} from 'lucide-react';
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { cn } from "@/lib/utils";
-
-interface InnerAwarenessWorksheetProps {
-  submissionId?: string | null;
-  onBack?: () => void;
-}
-
-const DAILY_FLOW = [
-  { id: 'anapana', label: 'Anapana Meditation (5-10 min)', sub: 'Single-pointed focus on breath awareness.' },
-  { id: 'journaling', label: 'Journaling (15-20 min)', sub: 'Engage with the 5 deep questions below.' },
-  { id: 'somatic', label: 'Daily Release & Somatic Integration (5 min)', sub: 'Affirmations + shaking.' },
-  { id: 'heart', label: 'Heart-Focused Breathing (5-10 min)', sub: 'Activate self-compassion.' },
-  { id: 'ssss', label: 'Healing Sound "Ssss" (3-5 min)', sub: 'Release sadness & shame.' },
-];
-
-const InnerAwarenessWorksheet = ({ submissionId, onBack }: InnerAwarenessWorksheetProps) => {
-  const [title, setTitle] = useState('New Practice Session');
-  const [triggerContext, setTriggerContext] = useState('');
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [flowCompleted, setFlowCompleted] = useState<string[]>([]);
-  const [loading, setLoading] = useState(!!submissionId);
-  const [saving, setSaving] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
+const InnerAwarenessWorksheet = ({ submissionId, onComplete, onBack }) => {
   const [localId, setLocalId] = useState<string | null>(submissionId || null);
-  const autoSaveTimer = useRef<ReturnType<typeof setInterval>>();
+  const autoSaveTimer = useRef<number | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchUserId = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);
-        if (localId) {
-          const { data, error } = await supabase
-            .from('inner_awareness_submissions')
-            .select('*')
-            .eq('id', localId)
-            .single();
-
-          if (data) {
-            setAnswers(data.form_data || {});
-            setFlowCompleted(data.flow_completed || []);
-            setTriggerContext(data.trigger_context || '');
-            setTitle(data.title || 'Untitled Practice');
-          }
-        }
       }
-      setLoading(false);
     };
-
-    fetchData();
-  }, [localId]);
-
-  const handleSave = useCallback(async (silent = false) => {
-    if (!userId) return;
-    
-    if (!silent) setSaving(true);
-    try {
-      const payload = {
-        user_id: userId,
-        title: title,
-        trigger_context: triggerContext,
-        form_data: answers,
-        flow_completed: flowCompleted,
-        updated_at: new Date().toISOString()
-      };
-
-      let result;
-      if (localId) {
-        result = await supabase
-          .from('inner_awareness_submissions')
-          .update(payload)
-          .eq('id', localId)
-          .select()
-          .single();
-      } else {
-        result = await supabase
-          .from('inner_awareness_submissions')
-          .insert(payload)
-          .select()
-          .single();
-      }
-
-      if (result.error) throw result.error;
-      
-      if (!localId && result.data) {
-        setLocalId(result.data.id);
-      }
-
-      if (!silent) toast.success("Practice saved successfully.");
-    } catch {
-      if (!silent) toast.error("Failed to save progress.");
-    } finally {
-      if (!silent) setSaving(false);
-    }
-  }, [userId, localId, title, triggerContext, answers, flowCompleted]);
+    fetchUserId();
+  }, []);
 
   useEffect(() => {
-    autoSaveTimer.current = setInterval(() => handleSave(true), 60000);
-    return () => clearInterval(autoSaveTimer.current);
-  }, [handleSave]);
+    if (submissionId && localId === submissionId) {
+      const loadSubmission = async () => {
+        const { data } = await supabase
+          .from('inner_awareness_submissions')
+          .select('*')
+          .eq('id', submissionId)
+          .single();
+        if (data) {
+          setFormData(data.form_data || {});
+          setIsCompleted(data.is_released || false);
+        }
+      };
+      loadSubmission();
+    }
+  }, [submissionId, localId]);
 
-  const handleInputChange = (id: string, value: string) => {
-    setAnswers(prev => ({ ...prev, [id]: value }));
-  };
+  useEffect(() => {
+    if (!userId || !localId) return;
 
-  const toggleFlowItem = (id: string) => {
-    setFlowCompleted(prev => 
-      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-    );
-  };
+    const saveData = async () => {
+      setIsSaving(true);
+      try {
+        const { error } = await supabase
+          .from('inner_awareness_submissions')
+          .upsert({
+            id: localId,
+            user_id: userId,
+            form_data: formData,
+            updated_at: new Date().toISOString(),
+          });
+        if (error) throw error;
+      } catch (error) {
+        console.error('Error saving worksheet:', error);
+      } finally {
+        setIsSaving(false);
+      }
+    };
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
-        <p className="text-muted-foreground font-medium">Loading practice...</p>
-      </div>
-    );
-  }
+    if (autoSaveTimer.current) {
+      clearTimeout(autoSaveTimer.current);
+    }
+
+    autoSaveTimer.current = window.setTimeout(saveData, 2000);
+
+    return () => {
+      if (autoSaveTimer.current) {
+        clearTimeout(autoSaveTimer.current);
+      }
+    };
+  }, [userId, localId, formData]);
+
+  const handleSave = useCallback(async () => {
+    if (!userId || !localId) return;
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('inner_awareness_submissions')
+        .upsert({
+          id: localId,
+          user_id: userId,
+          form_data: formData,
+          updated_at: new Date().toISOString(),
+        });
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error saving worksheet:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [userId, localId, formData]);
+
+  const handleFieldChange = useCallback((field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+  }, []);
+
+  const handleComplete = useCallback(async () => {
+    if (!userId || !localId) return;
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('inner_awareness_submissions')
+        .update({
+          is_released: true,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', localId);
+      if (error) throw error;
+      setIsCompleted(true);
+      if (onComplete) onComplete();
+    } catch (error) {
+      console.error('Error completing worksheet:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [userId, localId, onComplete]);
 
   return (
-    <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8 min-h-screen pb-32">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="space-y-20"
-      >
-        {/* Header */}
-        <div className="text-center space-y-4 relative">
-          <div className="absolute right-0 top-0 flex gap-2 print:hidden">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSave()}
-              disabled={saving}
-              className="flex items-center gap-2 border-slate-200 text-slate-600 hover:bg-slate-100 rounded-xl"
-            >
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              Save
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.print()}
-              className="flex items-center gap-2 border-slate-200 text-slate-600 hover:bg-slate-100 rounded-xl"
-            >
-              <Printer className="w-4 h-4" />
-              Print
-            </Button>
-          </div>
-          <div className="inline-flex items-center justify-center p-2 bg-indigo-100 rounded-full text-indigo-600 mb-4">
-            <ShieldCheck className="w-6 h-6" />
-          </div>
-
-          <div className="max-w-md mx-auto">
-            <Input 
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl text-center border-none bg-transparent focus:ring-0 h-auto p-0 mb-2"
-              placeholder="Practice Title"
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          {onBack && (
+            <Button variant="ghost" size="sm" onClick={onBack}>Back</Button>
+          )}
+          <h2 className="text-xl font-bold">Inner Awareness Worksheet</h2>
+        </div>
+        {isSaving && (
+          <Button variant="outline" size="icon" disabled>
+            <Loader className="h-4 w-4 animate-spin" />
+          </Button>
+        )}
+        {!isSaving && !isCompleted && (
+          <Button onClick={handleSave} className="btn-ghost">
+            <Save className="h-4 w-4" /> Save
+          </Button>
+        )}
+        {isCompleted && (
+          <Button onClick={handleSave} variant="outline" className="btn-ghost">
+            <Check className="h-4 w-4" /> Saved
+          </Button>
+        )}
+      </div>
+      <form onSubmit={e => e.preventDefault()}>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">What situation triggered your emotional reaction?</label>
+            <textarea
+              className="w-full min-h-[80px] rounded-border border-input bg-background px-3 py-2 text-sm ring-offset-file placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder="Describe the event, conversation, or circumstance that triggered you."
+              value={formData.trigger_context || ''}
+              onChange={e => handleFieldChange('trigger_context', e.target.value)}
+              disabled={isSaving}
             />
           </div>
-          
-          <p className="text-xl text-indigo-600 font-medium">Inner Awareness & Sovereignty</p>
-          <p className="max-w-2xl mx-auto text-muted-foreground italic">
-            "A practice to develop inner awareness and sovereignty over your personal state."
-          </p>
-        </div>
-
-        {/* Daily Flow */}
-        <section className="space-y-10">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-              <Clock size={24} />
-            </div>
-            <div>
-              <h2 className="text-2xl font-black text-foreground">The Daily Flow</h2>
-              <p className="text-sm text-muted-foreground font-medium">Track your daily integration practices.</p>
-            </div>
-          </div>
-
-          <div className="grid gap-4 pl-16">
-            {DAILY_FLOW.map((item) => (
-              <div 
-                key={item.id} 
-                className={cn(
-                  "flex items-start gap-4 p-6 rounded-[2rem] border-2 transition-all cursor-pointer",
-                  flowCompleted.includes(item.id) ? "bg-emerald-50 border-emerald-200" : "bg-slate-50 border-transparent hover:border-indigo-100"
-                )}
-                onClick={() => toggleFlowItem(item.id)}
-              >
-                <Checkbox 
-                  checked={flowCompleted.includes(item.id)}
-                  onCheckedChange={() => toggleFlowItem(item.id)}
-                  className="mt-1"
-                />
-                <div className="space-y-1">
-                  <Label className="text-lg font-bold text-foreground cursor-pointer">{item.label}</Label>
-                  <p className="text-sm text-muted-foreground">{item.sub}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Trigger Tracking */}
-        <section className="space-y-10">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-              <Zap size={24} />
-            </div>
-            <div>
-              <h2 className="text-2xl font-black text-foreground">Trigger & Projection Tracking</h2>
-              <p className="text-sm text-muted-foreground font-medium">Identify the specific trigger you are working with today.</p>
-            </div>
-          </div>
-
-          <div className="pl-16">
-            <Textarea 
-              placeholder="Describe the person, situation, or physical sensation..."
-              className="min-h-[150px] border-2 border-slate-100 focus:border-rose-500 rounded-[2rem] p-8 text-xl font-medium leading-relaxed shadow-inner"
-              value={triggerContext}
-              onChange={(e) => setTriggerContext(e.target.value)}
+          <div>
+            <label className="block text-sm font-medium mb-2">What emotions came up for you?</label>
+            <textarea
+              className="w-full min-h-[80px] rounded-border border-input bg-background px-3 py-2 text-sm ring-offset-file placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder="Name the specific emotions you felt (anger, sadness, fear, etc.)."
+              value={formData.emotions || ''}
+              onChange={e => handleFieldChange('emotions', e.target.value)}
+              disabled={isSaving}
             />
           </div>
-        </section>
-
-        {/* Deep Reflection */}
-        <section className="space-y-10">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-              <Brain size={24} />
-            </div>
-            <div>
-              <h2 className="text-2xl font-black text-foreground">Deep Reflection</h2>
-              <p className="text-sm text-muted-foreground font-medium">Engage with the 5 questions to uncover root patterns.</p>
-            </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Where did you feel these emotions in your body?</label>
+            <textarea
+              className="w-full min-h-[80px] rounded-border border-input bg-background px-3 py-2 text-sm ring-offset-file placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder="Describe the physical sensations (tight chest, clenched jaw, butterflies, etc.)."
+              value={formData.body_sensations || ''}
+              onChange={e => handleFieldChange('body_sensations', e.target.value)}
+              disabled={isSaving}
+            />
           </div>
-
-          <div className="space-y-12 pl-16">
-            {[
-              { id: 'q1', label: "1. What was the thought or belief that surfaced?", icon: Target },
-              { id: 'q2', label: "2. What emotion was underneath it?", icon: Heart },
-              { id: 'q3', label: "3. What was the felt sense in my body?", icon: Activity },
-              { id: 'q4', label: "4. Where did this pattern start in my life?", icon: History },
-              { id: 'q5', label: "5. Somatic Integration Affirmations", icon: Sparkles }
-            ].map((q) => (
-              <div key={q.id} className="space-y-4">
-                <Label className="text-lg font-bold text-foreground">{q.label}</Label>
-                <Textarea 
-                  placeholder="Write your reflection here..."
-                  className="min-h-[120px] border-2 border-slate-100 focus:border-indigo-500 rounded-[2rem] p-8 text-lg font-medium leading-relaxed shadow-inner"
-                  value={answers[q.id] || ''}
-                  onChange={(e) => handleInputChange(q.id, e.target.value)}
-                />
-              </div>
-            ))}
+          <div>
+            <label className="block text-sm font-medium mb-2">What story did you tell yourself about this situation?</label>
+            <textarea
+              className="w-full min-h-[80px] rounded-border border-input bg-background px-3 py-2 text-sm ring-offset-file placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder="What meaning did you assign to what happened?"
+              value={formData.self_story || ''}
+              onChange={e => handleFieldChange('self_story', e.target.value)}
+              disabled={isSaving}
+            />
           </div>
-        </section>
-
-        {/* Footer */}
-        <div className="text-center pb-12">
-          <p className="text-slate-400 text-sm">
-            © {new Date().getFullYear()} The Integrated Healer Program. All rights reserved.
-          </p>
+          <div>
+            <label className="block text-sm font-medium mb-2">What is a more balanced or truthful perspective?</label>
+            <textarea
+              className="w-full min-h-[80px] rounded-border border-input bg-background px-3 py-2 text-sm ring-offset-file placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder="How might a wise friend view this situation?"
+              value={formData.balanced_perspective || ''}
+              onChange={e => handleFieldChange('balanced_perspective', e.target.value)}
+              disabled={isSaving}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">What do you need right now?</label>
+            <textarea
+              className="w-full min-h-[80px] rounded-border border-input bg-background px-3 py-2 text-sm ring-offset-file placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              placeholder="What would help you feel more settled or empowered?"
+              value={formData.needs || ''}
+              onChange={e => handleFieldChange('needs', e.target.value)}
+              disabled={isSaving}
+            />
+          </div>
         </div>
-      </motion.div>
+        {!isCompleted && (
+          <div className="mt-6">
+            <Button onClick={handleComplete} className="w-full">
+              Gain Clarity
+            </Button>
+          </div>
+        )}
+      </form>
     </div>
   );
 };

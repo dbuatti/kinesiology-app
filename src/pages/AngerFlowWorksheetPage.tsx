@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { AngerFlowWorksheet } from '@/components/worksheets/AngerFlowWorksheet';
+import AngerFlowWorksheet from '@/components/worksheets/AngerFlowWorksheet';
 
 const AngerFlowWorksheetPage = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { InnerAwarenessWorksheet } from '@/components/worksheets/InnerAwarenessWorksheet';
+import InnerAwarenessWorksheet from '@/components/worksheets/InnerAwarenessWorksheet';
 
 const InnerAwarenessWorksheetPage = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);

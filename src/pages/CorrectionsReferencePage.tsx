@@ -9,13 +9,13 @@ import { cn } from '@/lib/utils';
 const CorrectionsReferencePage = () => {
   const [search, setSearch] = useState('');
   const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
-  const [methods, setMethods] = useState<Array<string>>(['cognitive', 'somatic', 'emotional']);
+  const [methods, setMethods] = useState<string[]>(['cognitive', 'somatic', 'emotional']);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCorrection, setSelectedCorrection] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [corrections, setCorrections] = useState<Array<any>>([]);
+  const [corrections, setCorrections] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchCorrections = async () => {
@@ -71,7 +71,7 @@ const CorrectionsReferencePage = () => {
     });
   };
 
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,

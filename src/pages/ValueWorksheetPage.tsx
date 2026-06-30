@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { WhereYourValueBeginsWorksheet } from '@/components/worksheets/WhereYourValueBeginsWorksheet';
+import WhereYourValueBeginsWorksheet from '@/components/worksheets/WhereYourValueBeginsWorksheet';
 
 const ValueWorksheetPage = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);

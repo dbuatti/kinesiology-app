@@ -1,6 +1,6 @@
 import React from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Week3Worksheet } from '@/components/worksheets/Week3Worksheet';
+import Week3Worksheet from '@/components/worksheets/Week3Worksheet';
 
 const Week3WorksheetPage = () => {
   return (

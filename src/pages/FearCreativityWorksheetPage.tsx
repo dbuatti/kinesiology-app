@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { FearCreativityWorksheet } from '@/components/worksheets/FearCreativityWorksheet';
+import FearCreativityWorksheet from '@/components/worksheets/FearCreativityWorksheet';
 
 const FearCreativityWorksheetPage = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);

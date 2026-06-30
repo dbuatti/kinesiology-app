@@ -655,17 +655,17 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                 <DropdownMenuContent align="end" className="w-52">
                   {!item.isFree && (
                     item.paid ? (
-                      <DropdownMenuItem onClick={() => togglePaid(item, false)}>
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); togglePaid(item, false); }}>
                         <Circle size={14} className="mr-2" /> Mark as unpaid
                       </DropdownMenuItem>
                     ) : (
-                      <DropdownMenuItem onClick={() => togglePaid(item, true)}>
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); togglePaid(item, true); }}>
                         <CheckCircle2 size={14} className="mr-2 text-chart-emerald" /> Mark as paid
                       </DropdownMenuItem>
                     )
                   )}
                   {!item.isFree && (
-                    <DropdownMenuItem onClick={() => setPayTarget(item)}>
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setPayTarget(item); }}>
                       <CreditCard size={14} className="mr-2" />
                       {item.paid ? "Resend payment link" : "Send payment link"}
                     </DropdownMenuItem>
@@ -673,11 +673,11 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                   {/* Free is FNH-only (voice lessons are always charged) */}
                   {item.source === "kinesiology" && (
                     item.isFree ? (
-                      <DropdownMenuItem onClick={() => setFree(item, false)}>
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setFree(item, false); }}>
                         <CreditCard size={14} className="mr-2" /> This is a paid session
                       </DropdownMenuItem>
                     ) : (
-                      <DropdownMenuItem onClick={() => setFree(item, true)}>
+                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setFree(item, true); }}>
                         <Gift size={14} className="mr-2 text-slate-500" /> Mark as free
                       </DropdownMenuItem>
                     )
@@ -685,7 +685,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                   {!item.cancelled && (
                     <DropdownMenuItem
                       disabled={!item.calcomUid}
-                      onClick={() => { setRescheduleTarget(item); setRescheduleAt(""); loadSlots(item); }}
+                      onClick={(e) => { e.stopPropagation(); setRescheduleTarget(item); setRescheduleAt(""); loadSlots(item); }}
                     >
                       <CalendarClock size={14} className="mr-2" /> Reschedule
                     </DropdownMenuItem>
@@ -713,7 +713,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                     <DropdownMenuItem
                       disabled={!item.calcomUid}
                       className="text-destructive focus:text-destructive"
-                      onClick={() => setCancelTarget(item)}
+                      onClick={(e) => { e.stopPropagation(); setCancelTarget(item); }}
                     >
                       <X size={14} className="mr-2" /> Cancel booking
                     </DropdownMenuItem>

@@ -59,6 +59,7 @@ interface KinesiologyAppt {
   time: string | null;
   priceAmount: number | null;
   standardRate: number | null;
+  calcomUid?: string | null;
 }
 
 interface DaySlot {
@@ -202,6 +203,24 @@ const WeekByWeekOverview = ({
 
   const slotsByDate: Record<string, any[]> = slotsData?.data || {};
 
+  // Deduplicate kinesiologyAppts by calcomUid — if the same Cal.com booking
+  // appears on multiple dates (e.g. stale row after reschedule), keep the latest.
+  const dedupedKinesiologyAppts = useMemo(() => {
+    const seen = new Map<string, KinesiologyAppt>();
+    const standalone: KinesiologyAppt[] = [];
+    for (const a of kinesiologyAppts) {
+      if (a.calcomUid) {
+        const existing = seen.get(a.calcomUid);
+        if (!existing || new Date(a.date) > new Date(existing.date)) {
+          seen.set(a.calcomUid, a);
+        }
+      } else {
+        standalone.push(a);
+      }
+    }
+    return [...standalone, ...seen.values()];
+  }, [kinesiologyAppts]);
+
   const getDaySlots = (day: Date): DaySlot[] => {
     const dateKey = format(day, "yyyy-MM-dd");
     const slots: DaySlot[] = [];
@@ -219,7 +238,7 @@ const WeekByWeekOverview = ({
       }
     });
 
-    kinesiologyAppts.forEach((a) => {
+    dedupedKinesiologyAppts.forEach((a) => {
       const appDate = new Date(a.date);
       if (isSameDay(appDate, day)) {
         const timeMin = appDate.getHours() * 60 + appDate.getMinutes();
@@ -268,7 +287,7 @@ const WeekByWeekOverview = ({
   const getWeekSummary = (week: Date[]): WeeklySummary => {
     const events: any[] = [];
     week.forEach((day) => {
-      kinesiologyAppts.forEach((a) => {
+      dedupedKinesiologyAppts.forEach((a) => {
         const appDate = new Date(a.date);
         if (isSameDay(appDate, day)) {
           const startMin = appDate.getHours() * 60 + appDate.getMinutes();

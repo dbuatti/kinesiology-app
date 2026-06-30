@@ -339,7 +339,11 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
       }
       // Persist the new Cal.com UID so future reschedules use the right booking
       if (newUid && newUid !== item.calcomUid && item.appointmentId) {
-        await supabase.from("appointments").update({ calcom_booking_id: newUid }).eq("id", item.appointmentId);
+        await supabase.from("appointments").update({
+          calcom_booking_id: newUid,
+          date: new Date(rescheduleAt).toISOString(),
+          time: format(new Date(rescheduleAt), "h:mm a"),
+        }).eq("id", item.appointmentId);
       }
       showSuccess("Booking rescheduled.");
       setRescheduleTarget(null);

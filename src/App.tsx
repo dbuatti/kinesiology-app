@@ -57,6 +57,7 @@ const CogsLearningPage = lazy(() => import("./pages/CogsLearningPage"));
 const ProceduresPage = lazy(() => import("./pages/ProceduresPage"));
 const QuizPage = lazy(() => import("./pages/QuizPage"));
 const QuickCalibratePage = lazy(() => import("./pages/QuickCalibratePage"));
+const CorrectionsReferencePage = lazy(() => import("./pages/CorrectionsReferencePage"));
 const PracticeNotes = lazy(() => import("./pages/PracticeNotes"));
 
 // --- Print & Reference Sheets ---
@@ -172,6 +173,7 @@ const AppRoutes = () => {
           <Route path="/practice/procedures" element={<ProceduresPage />} />
           <Route path="/practice/quiz" element={<QuizPage />} />
           <Route path="/practice/calibrate" element={<QuickCalibratePage />} />
+          <Route path="/practice/corrections" element={<CorrectionsReferencePage />} />
 
           {/* Worksheets */}
           <Route path="/resources/worksheets/north-star" element={<NorthStarPage />} />

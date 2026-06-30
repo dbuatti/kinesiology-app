@@ -103,6 +103,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Procedures", icon: Trophy, path: "/practice/procedures" },
       { label: "Knowledge Quiz", icon: GraduationCap, path: "/practice/quiz" },
       { label: "Quick Calibrate", icon: Zap, path: "/practice/calibrate" },
+      { label: "Corrections", icon: Target, path: "/practice/corrections" },
     ],
   },
   {

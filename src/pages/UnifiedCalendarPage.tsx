@@ -205,8 +205,7 @@ const UnifiedCalendarPage = () => {
   const handleNewBooking = (service: string) => {
     if (service === "voice60") openVoiceBooking("60");
     else if (service === "voice45") openVoiceBooking("45");
-    else if (service === "fnhCurrent") { setFnhPrefillPrice(70); setFnhPickOpen(true); }
-    else if (service === "fnhNew") { setFnhPrefillPrice(70); setFnhPickOpen(true); }
+    else if (service === "fnhStandard" || service === "fnhFull") { setFnhPrefillPrice(70); setFnhPickOpen(true); }
     else if (service === "fnhFree") { setFnhPrefillPrice(0); setFnhPickOpen(true); }
   };
 

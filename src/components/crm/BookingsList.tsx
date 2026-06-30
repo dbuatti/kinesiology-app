@@ -313,6 +313,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
     setBusyId(item.id);
     try {
       const startTime = new Date(rescheduleAt).toISOString();
+      let newUid: string | undefined;
       if (item.source === "voice") {
         const res = await supabase.functions.invoke("voice-create-booking", {
           body: {
@@ -323,6 +324,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
           },
         });
         if (res.error) throw res.error;
+        newUid = res.data?.uid;
       } else {
         const res = await supabase.functions.invoke("create-calcom-booking", {
           body: {
@@ -333,6 +335,11 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
           },
         });
         if (res.error) throw res.error;
+        newUid = res.data?.uid;
+      }
+      // Persist the new Cal.com UID so future reschedules use the right booking
+      if (newUid && newUid !== item.calcomUid && item.appointmentId) {
+        await supabase.from("appointments").update({ calcom_booking_id: newUid }).eq("id", item.appointmentId);
       }
       showSuccess("Booking rescheduled.");
       setRescheduleTarget(null);

@@ -82,8 +82,56 @@ serve(async (req) => {
         });
       }
 
-      const errorMsg = result.error?.message || result.message || "Failed to reschedule Cal.com booking";
-      throw new Error(`Cal.com Reschedule Error (${res.status}): ${errorMsg}`);
+      // 404 means the stored UID is stale. Try to find the correct booking by attendee email.
+      if (res.status === 404) {
+        console.warn(`[${functionName}] Booking ${bookingUid} not found in Cal.com — attempting to locate by email`);
+
+        const lookback = new Date();
+        lookback.setDate(lookback.getDate() - 30);
+        const lookahead = new Date();
+        lookahead.setDate(lookahead.getDate() + 90);
+
+        const listRes = await fetch(
+          `https://api.cal.com/v2/bookings?startTime=${lookback.toISOString()}&endTime=${lookahead.toISOString()}&status=upcoming`,
+          { method: "GET", headers }
+        );
+        const listData = await listRes.json();
+        const matched = (listData.data || []).find(
+          (b: any) => b.attendees?.[0]?.email?.toLowerCase() === client.email.toLowerCase()
+        );
+
+        if (matched) {
+          console.log(`[${functionName}] Found correct uid=${matched.uid} for ${client.email}. Retrying reschedule.`);
+
+          const retryRes = await fetch(`https://api.cal.com/v2/bookings/${matched.uid}/reschedule`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              start: cleanStartTime,
+              reschedulingReason: "Rescheduled via Antigravity CRM",
+            }),
+          });
+          const retryResult = await retryRes.json();
+
+          if (retryRes.ok) {
+            const newUid = retryResult.data?.uid || matched.uid;
+            console.log(`[${functionName}] Reschedule successful via email lookup. New uid: ${newUid}`);
+            return new Response(JSON.stringify({ success: true, uid: newUid, data: retryResult.data, repaired: true }), {
+              status: 200,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+
+          console.warn(`[${functionName}] Retry reschedule failed for matched uid=${matched.uid}: ${retryResult.error?.message}`);
+        } else {
+          console.warn(`[${functionName}] No future booking found for ${client.email} in Cal.com`);
+        }
+        // If lookup fails, fall through to create a new booking
+        console.log(`[${functionName}] Falling through to create new booking`);
+      } else {
+        const errorMsg = result.error?.message || result.message || "Failed to reschedule Cal.com booking";
+        throw new Error(`Cal.com Reschedule Error (${res.status}): ${errorMsg}`);
+      }
     }
     
     // 3. Create new booking

@@ -40,6 +40,13 @@ serve(async (req) => {
     const payload = body.payload || body.data || body;
     const calcomId = String(payload.bookingId || payload.id || payload.uid);
 
+    // For rescheduled bookings, grab the old booking UID so we can update
+    // the existing row instead of creating a duplicate (Cal.com cancels the
+    // old booking and creates a new one with a different UID on reschedule).
+    const oldBookingUid = triggerEvent === 'BOOKING_RESCHEDULED'
+      ? (payload.rescheduleUid || payload.oldBookingUid || payload.oldUid || null)
+      : null;
+
     if (triggerEvent === 'BOOKING_CANCELLED') {
       console.log(`[${functionName}] Deleting cancelled booking: ${calcomId}`);
       const { error } = await supabase.from('appointments').delete().eq('calcom_booking_id', calcomId);
@@ -149,6 +156,20 @@ serve(async (req) => {
       if (timeMatch) {
         console.log(`[${functionName}] Found existing appointment by time window. Linking to Cal.com ID: ${calcomId}`);
         targetId = timeMatch.id;
+      }
+    }
+
+    // 2b. For rescheduled bookings: try to find the old row by its previous
+    // Cal.com UID so we update it with the new date + UID instead of duping.
+    if (!targetId && triggerEvent === 'BOOKING_RESCHEDULED' && oldBookingUid) {
+      const { data: oldMatch } = await supabase
+        .from('appointments')
+        .select('id')
+        .eq('calcom_booking_id', oldBookingUid)
+        .maybeSingle();
+      if (oldMatch) {
+        console.log(`[${functionName}] Found appointment by old Cal.com UID: ${oldBookingUid}. Replacing with new UID: ${calcomId}`);
+        targetId = oldMatch.id;
       }
     }
 

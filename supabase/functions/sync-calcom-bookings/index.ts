@@ -132,6 +132,30 @@ serve(async (req) => {
         }
       }
 
+      // 3b. If still not found, this may be a rescheduled booking (new UID, new time).
+      // Try to find the old row by looking for a Cal.com-linked appointment for this
+      // client whose UID differs from the current one, within ±7 days of the new time.
+      // The date guard avoids stealing a completely unrelated booking's row.
+      if (!targetId) {
+        const newDate = new Date(startTime);
+        const rangeStart = new Date(newDate.getTime() - 7 * 86400000).toISOString();
+        const rangeEnd = new Date(newDate.getTime() + 7 * 86400000).toISOString();
+        const { data: orphan } = await supabase
+          .from('appointments')
+          .select('id')
+          .eq('client_id', dbClient.id)
+          .neq('calcom_booking_id', calcomId)
+          .not('calcom_booking_id', 'is', null)
+          .gte('date', rangeStart)
+          .lte('date', rangeEnd)
+          .limit(1)
+          .maybeSingle();
+        if (orphan) {
+          console.log(`[${functionName}] Possible reschedule — found orphan appointment ${orphan.id} for client ${dbClient.id}. Replacing UID with ${calcomId}`);
+          targetId = orphan.id;
+        }
+      }
+
       // 4. Upsert with the matched ID
       const { error: appError } = await supabase
         .from('appointments')

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, addDays, parseISO } from "date-fns";
 import {
   Dialog,
@@ -15,7 +15,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import { useAuth } from "@/components/AuthProvider";
 import { CALCOM_CONFIG } from "@/config/integrations";
 import {
-  Loader2, Calendar, Clock, Check, CalendarPlus, Mail, AlertCircle, CheckCircle2
+  Loader2, Calendar, Clock, CalendarPlus, Mail, AlertCircle, CheckCircle2, Sparkles
 } from "lucide-react";
 
 interface Slot {
@@ -48,6 +48,22 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
   const [syncStatus, setSyncStatus] = useState<"idle" | "calcom" | "email">("idle");
   const [conflictError, setConflictError] = useState<string | null>(null);
 
+  const { data: clientInfo } = useQuery({
+    queryKey: ["quick-book-client", clientId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("clients")
+        .select("id, name, standard_rate")
+        .eq("id", clientId!)
+        .single();
+      return data ?? null;
+    },
+    enabled: open && !!clientId,
+    staleTime: 60_000,
+  });
+
+  const clientRate = clientInfo?.standard_rate ?? null;
+
   useEffect(() => {
     if (!open) {
       setSelectedDate(null);
@@ -58,11 +74,13 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
       setSyncStatus("idle");
       setConflictError(null);
     } else if (prefillPrice !== undefined) {
-      // Pre-select the chosen appointment's price (from the "New Booking" menu).
       setSelectedPrice(prefillPrice);
       setSendOnboarding(prefillPrice > 0);
+    } else if (clientRate !== null) {
+      setSelectedPrice(clientRate);
+      setSendOnboarding(clientRate > 0);
     }
-  }, [open, prefillPrice]);
+  }, [open, prefillPrice, clientRate]);
 
   const { data: slotsData, isLoading: slotsLoading, error: slotsError } = useQuery({
     queryKey: ["quick-book-slots", clientId],
@@ -137,6 +155,26 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
 
   const priceEventType = CALCOM_CONFIG.EVENT_TYPES.find((t) => t.price === selectedPrice);
 
+  const priceOptions = useMemo(() => {
+    const options: { price: number; label: string; sublabel: string }[] = [];
+    if (clientRate !== null) {
+      options.push({
+        price: clientRate,
+        label: clientRate === 0 ? "Free" : `$${clientRate}`,
+        sublabel: clientRate === 0 ? "No Charge" : "Current rate",
+      });
+    }
+    PRICES.forEach((p) => {
+      if (p === clientRate) return;
+      options.push({
+        price: p,
+        label: p === 0 ? "Free" : `$${p}`,
+        sublabel: p === 0 ? "No Charge" : "Paid Session",
+      });
+    });
+    return options;
+  }, [clientRate]);
+
   const handleBook = async () => {
     if (!session?.user?.id || !clientId || !selectedSlot || !selectedDate) return;
 
@@ -148,11 +186,12 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
 
       if (selectedPrice > 0) {
         setSyncStatus("calcom");
+        const eventTypeId = priceEventType?.id ?? CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID;
         const { data: calcomData, error: invokeError } = await supabase.functions.invoke("create-calcom-booking", {
           body: {
             clientId,
             startTime: selectedSlot.time,
-            eventTypeId: priceEventType!.id,
+            eventTypeId,
             title: `Kinesiology Session - ${format(selectedDate, "MMM d, yyyy")}`,
             notes: "",
             is_paid: selectedPrice > 0,
@@ -346,24 +385,36 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                 <div className="space-y-3 animate-in fade-in duration-300 mt-6">
                   <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Session Price</p>
                   <div className="grid grid-cols-3 gap-3">
-                    {PRICES.map((price) => (
-                      <button
-                        key={price}
-                        type="button"
-                        onClick={() => { setSelectedPrice(price); setSendOnboarding(price > 0); }}
-                        className={cn(
-                          "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all",
-                          selectedPrice === price
-                            ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100"
-                            : "bg-card border-border text-foreground hover:border-indigo-300"
-                        )}
-                      >
-                        <span className="text-lg font-black">{price === 0 ? "Free" : `$${price}`}</span>
-                        <span className="text-[8px] font-bold uppercase tracking-widest opacity-70">
-                          {price === 0 ? "No Charge" : "Paid Session"}
-                        </span>
-                      </button>
-                    ))}
+                    {priceOptions.map((opt) => {
+                      const isCurrentRate = opt.sublabel === "Current rate";
+                      const isSelected = selectedPrice === opt.price;
+                      return (
+                        <button
+                          key={opt.price}
+                          type="button"
+                          onClick={() => { setSelectedPrice(opt.price); setSendOnboarding(opt.price > 0); }}
+                          className={cn(
+                            "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all relative",
+                            isSelected
+                              ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100"
+                              : "bg-card border-border text-foreground hover:border-indigo-300"
+                          )}
+                        >
+                          {isCurrentRate && !isSelected && (
+                            <span className="absolute -top-2 right-2 bg-chart-emerald text-white text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full">
+                              Rate
+                            </span>
+                          )}
+                          {isCurrentRate && isSelected && (
+                            <Sparkles size={12} className="absolute top-2 right-2 opacity-70" />
+                          )}
+                          <span className="text-lg font-black">{opt.label}</span>
+                          <span className="text-[8px] font-bold uppercase tracking-widest opacity-70">
+                            {opt.sublabel}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}

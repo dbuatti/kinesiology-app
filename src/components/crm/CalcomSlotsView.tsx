@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +44,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -108,6 +109,8 @@ const CalcomSlotsView = () => {
 
   const [rescheduleBooking, setRescheduleBooking] = useState<any | null>(null);
   const [rescheduling, setRescheduling] = useState(false);
+
+  const [confirmAction, setConfirmAction] = useState<{callback: () => void; title: string; description: string} | null>(null);
   
   const [eventTypeId, setEventTypeId] = useState<string>(() => 
     localStorage.getItem('calcom_preferred_event_id') || CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID
@@ -217,16 +220,23 @@ const CalcomSlotsView = () => {
   };
 
   const handleCancelBooking = async (bookingUid: string, attendeeName: string) => {
-    if (!confirm(`Are you sure you want to cancel the booking for ${attendeeName}?`)) return;
-
     setProcessingBooking(bookingUid);
+    let calcomFailed = false;
     try {
-      const { error: invokeError } = await supabase.functions.invoke('delete-external-appointment', {
+      const { data, error: invokeError } = await supabase.functions.invoke('delete-external-appointment', {
         body: { calcomBookingId: bookingUid }
       });
 
       if (invokeError) throw invokeError;
+      if (data?.results?.calcom === "failed") {
+        calcomFailed = true;
+      }
+    } catch (err) {
+      calcomFailed = true;
+    }
 
+    // Always clean up locally regardless of Cal.com result
+    try {
       await supabase
         .from('appointments')
         .delete()
@@ -240,7 +250,11 @@ const CalcomSlotsView = () => {
         return newBookings;
       });
 
-      showSuccess(`Booking for ${attendeeName} cancelled.`);
+      if (calcomFailed) {
+        showSuccess(`Booking for ${attendeeName} cancelled locally. Cal.com cleanup skipped (booking may not exist there).`);
+      } else {
+        showSuccess(`Booking for ${attendeeName} cancelled.`);
+      }
       setTimeout(fetchSlots, 2000);
     } catch (err) {
       showError("Failed to cancel booking.");
@@ -297,8 +311,6 @@ const CalcomSlotsView = () => {
 
   const handleToggleBlock = async (date: string, isCurrentlyBlocked: boolean) => {
     const action = isCurrentlyBlocked ? 'unblock-day' : 'block-day';
-    if (!confirm(`${isCurrentlyBlocked ? 'Unblock' : 'Block'} ${format(new Date(date), "EEEE, MMMM do")}?`)) return;
-
     setProcessingDate(date);
     try {
       const { data, error: invokeError } = await supabase.functions.invoke('manage-calcom-availability', {
@@ -881,7 +893,11 @@ const CalcomSlotsView = () => {
                               variant="outline" 
                               size="sm" 
                               className="h-10 px-6 rounded-xl border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-black text-[9px] uppercase tracking-widest shadow-sm"
-                              onClick={() => handleToggleBlock(date, true)}
+                              onClick={() => setConfirmAction({
+                                callback: () => handleToggleBlock(date, true),
+                                title: "Unblock day?",
+                                description: `${format(new Date(date), "EEEE, MMMM do")} will be unblocked for new bookings.`
+                              })}
                               disabled={processingDate === date}
                             >
                               {processingDate === date ? <Loader2 size={14} className="animate-spin mr-2" /> : <Unlock size={14} className="mr-2" />}
@@ -941,7 +957,11 @@ const CalcomSlotsView = () => {
                                           variant="ghost"
                                           size="icon"
                                           className="h-8 w-8 rounded-lg text-indigo-300 hover:text-rose-400 hover:bg-rose-500/20 opacity-0 group-hover/booking:opacity-100 transition-all"
-                                          onClick={() => handleCancelBooking(booking.uid, booking.attendeeName)}
+                                          onClick={() => setConfirmAction({
+                                            callback: () => handleCancelBooking(booking.uid, booking.attendeeName),
+                                            title: "Cancel booking?",
+                                            description: `Are you sure you want to cancel the booking for ${booking.attendeeName}?`
+                                          })}
                                           disabled={processingBooking === booking.uid}
                                         >
                                           {processingBooking === booking.uid ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
@@ -993,7 +1013,11 @@ const CalcomSlotsView = () => {
                                 variant="ghost" 
                                 size="sm" 
                                 className="w-full h-10 px-4 text-[9px] font-black uppercase tracking-widest rounded-xl text-rose-600 hover:bg-rose-50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2"
-                                onClick={() => handleToggleBlock(date, false)}
+                                onClick={() => setConfirmAction({
+                                  callback: () => handleToggleBlock(date, false),
+                                  title: "Block day?",
+                                  description: `${format(new Date(date), "EEEE, MMMM do")} will be blocked for new bookings.`
+                                })}
                                 disabled={processingDate === date}
                               >
                                 {processingDate === date ? <Loader2 size={14} className="animate-spin" /> : <Ban size={14} />}
@@ -1186,6 +1210,16 @@ const CalcomSlotsView = () => {
         prefillDate={voicePrefill?.date}
         prefillTime={voicePrefill?.time}
         prefillDuration={voicePrefill?.duration}
+      />
+      <ConfirmDialog
+        open={!!confirmAction}
+        onOpenChange={(open) => { if (!open) setConfirmAction(null); }}
+        title={confirmAction?.title || ""}
+        description={confirmAction?.description}
+        onConfirm={() => {
+          confirmAction?.callback();
+          setConfirmAction(null);
+        }}
       />
     </div>
   );

@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronDown, ChevronRight, Mail, User, Globe, CreditCard, FileText, Calendar, Webhook, Brain, Mic, Zap, ArrowRight, AlertTriangle, CheckCircle2, ExternalLink, Settings, Search, BookOpen, Workflow, Database, Cloud, Play, Copy, Terminal, Hash, Shield, Clock, RefreshCw, XCircle, DollarSign, Building, Eye, Code } from "lucide-react";
+import { ChevronDown, ChevronRight, Mail, User, Globe, CreditCard, FileText, Calendar, Webhook, Brain, Mic, Zap, ArrowRight, AlertTriangle, CheckCircle2, ExternalLink, Settings, Search, BookOpen, Workflow, Database, Cloud, Play, Copy, Terminal, Hash, Shield, Clock, RefreshCw, XCircle, DollarSign, Building, Eye, Code, Activity, Loader2 } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { showSuccess } from "@/utils/toast";
+import { supabase } from "@/integrations/supabase/client";
 
 type StepType = "trigger" | "edge-function" | "email" | "db-write" | "ui" | "decision" | "webhook";
 type BadgeColor = "default" | "primary" | "destructive" | "emerald" | "amber" | "indigo" | "rose" | "slate" | "purple" | "cyan";
@@ -72,6 +73,19 @@ interface ExternalApi {
   name: string;
   endpoints: string[];
   usedBy: string[];
+}
+
+interface TestResult {
+  functionName: string;
+  status: "success" | "error";
+  response: string;
+  timestamp: number;
+  duration: number;
+}
+
+interface HealthStatus {
+  supabase: "pending" | "ok" | "error";
+  supabaseDetail?: string;
 }
 
 const WORKFLOWS: Workflow[] = [
@@ -752,6 +766,13 @@ const WorkflowDebuggerPage = () => {
   const [expandedTemplates, setExpandedTemplates] = useState<Set<string>>(new Set(EMAIL_TEMPLATES.map(t => t.name)));
   const [filter, setFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [health, setHealth] = useState<HealthStatus>({ supabase: "pending" });
+  const [healthChecking, setHealthChecking] = useState(false);
+  const [testPayloads, setTestPayloads] = useState<Record<string, string>>({});
+  const [testResults, setTestResults] = useState<Record<string, TestResult>>({});
+  const [runningTests, setRunningTests] = useState<Set<string>>(new Set());
+  const [showTestLog, setShowTestLog] = useState(false);
+  const [logFilter, setLogFilter] = useState<string>("all");
 
   const toggleWorkflow = (id: string) => {
     const next = new Set(expandedWorkflows);
@@ -796,6 +817,73 @@ const WorkflowDebuggerPage = () => {
     setExpandedTemplates(new Set());
     setExpandedSections(new Set());
   };
+
+  const runHealthCheck = useCallback(async () => {
+    setHealthChecking(true);
+    setHealth({ supabase: "pending" });
+    const start = performance.now();
+    try {
+      const { count, error } = await supabase
+        .from("appointments")
+        .select("*", { count: "exact", head: true });
+      if (error) throw error;
+      setHealth({ supabase: "ok", supabaseDetail: `Connected. ${count ?? 0} appointments.` });
+      showSuccess(`Supabase OK — ${count ?? 0} appointments (${Math.round(performance.now() - start)}ms)`);
+    } catch (e) {
+      setHealth({ supabase: "error", supabaseDetail: String(e) });
+    } finally {
+      setHealthChecking(false);
+    }
+  }, []);
+
+  const payloadFor = (name: string): string => {
+    if (testPayloads[name]) return testPayloads[name];
+    if (name === "send-manual-onboarding") return JSON.stringify({ appointmentId: "00000000-0000-0000-0000-000000000000" }, null, 2);
+    if (name === "create-calcom-booking") return JSON.stringify({ appointmentId: "00000000-0000-0000-0000-000000000000" }, null, 2);
+    if (name === "voice-send-onboarding") return JSON.stringify({ bookingId: "00000000-0000-0000-0000-000000000000" }, null, 2);
+    if (name === "voice-payment-link") return JSON.stringify({ name: "Test Student", email: "test@example.com", eventTypeId: 1945081 }, null, 2);
+    if (name === "voice-lessons" || name === "voice-clients") return JSON.stringify({}, null, 2);
+    return JSON.stringify({ test: true }, null, 2);
+  };
+
+  const invokeFunction = useCallback(async (name: string) => {
+    const payloadStr = testPayloads[name] || payloadFor(name);
+    setRunningTests(prev => new Set(prev).add(name));
+    const start = performance.now();
+    try {
+      let parsedPayload: Record<string, unknown>;
+      try { parsedPayload = JSON.parse(payloadStr); } catch { parsedPayload = { raw: payloadStr }; }
+      const { data, error } = await supabase.functions.invoke(name, { body: parsedPayload });
+      const duration = Math.round(performance.now() - start);
+      if (error) throw error;
+      const result: TestResult = {
+        functionName: name,
+        status: "success",
+        response: JSON.stringify(data ?? "(empty response)", null, 2),
+        timestamp: Date.now(),
+        duration,
+      };
+      setTestResults(prev => ({ ...prev, [name]: result }));
+      showSuccess(`${name} → OK (${duration}ms)`);
+    } catch (e) {
+      const duration = Math.round(performance.now() - start);
+      const result: TestResult = {
+        functionName: name,
+        status: "error",
+        response: String(e),
+        timestamp: Date.now(),
+        duration,
+      };
+      setTestResults(prev => ({ ...prev, [name]: result }));
+      showSuccess(`${name} → Error (${duration}ms): ${e}`);
+    } finally {
+      setRunningTests(prev => { const next = new Set(prev); next.delete(name); return next; });
+    }
+  }, [testPayloads]);
+
+  const allResults = Object.values(testResults).sort((a, b) => b.timestamp - a.timestamp);
+
+  const clearResults = () => setTestResults({});
 
   const typeIcon = (type: StepType) => {
     switch (type) {
@@ -1122,6 +1210,101 @@ const WorkflowDebuggerPage = () => {
         </div>
 
         {/* ══════════════════════════════════════════════════════════
+           LIVE DEBUG
+           ══════════════════════════════════════════════════════════ */}
+        <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+          <button onClick={() => { if (!expandedSections.has("live-debug")) setExpandedSections(prev => new Set(prev).add("live-debug")); }} className="w-full flex items-center justify-between p-5 hover:bg-muted/30 transition-colors">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 flex items-center justify-center"><Activity size={16} /></div>
+              <div>
+                <h3 className="font-black text-foreground text-sm">Live Debug</h3>
+                <p className="text-xs text-muted-foreground font-medium">Health checks, edge function test runner, and invocation log</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={async (e) => { e.stopPropagation(); await runHealthCheck(); }}
+                disabled={healthChecking}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 text-xs font-semibold hover:bg-emerald-200 dark:hover:bg-emerald-950/60 transition-all"
+              >
+                {healthChecking ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+                {healthChecking ? "Checking..." : "Run health check"}
+              </button>
+              {expandedSections.has("live-debug") ? <ChevronDown size={18} className="text-muted-foreground" /> : <ChevronRight size={18} className="text-muted-foreground" />}
+            </div>
+          </button>
+          {expandedSections.has("live-debug") && (
+            <div className="px-5 pb-5 space-y-4">
+              {/* Health status */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className={cn("border rounded-xl p-4", health.supabase === "ok" ? "border-emerald-200 dark:border-emerald-900 bg-emerald-50/50 dark:bg-emerald-950/20" : health.supabase === "error" ? "border-rose-200 dark:border-rose-900 bg-rose-50/50 dark:bg-rose-950/20" : "border-border bg-card")}>
+                  <div className="flex items-center gap-2 mb-1">
+                    {health.supabase === "ok" ? <CheckCircle2 size={14} className="text-emerald-500" /> : health.supabase === "error" ? <XCircle size={14} className="text-rose-500" /> : <Database size={14} className="text-muted-foreground" />}
+                    <span className="font-semibold text-xs">Supabase</span>
+                    {health.supabase === "ok" && <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-none text-[9px] ml-auto">Connected</Badge>}
+                    {health.supabase === "error" && <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-none text-[9px] ml-auto">Error</Badge>}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">{health.supabaseDetail ?? "Click 'Run health check' to test connectivity"}</p>
+                </div>
+                <div className="border border-border rounded-xl p-4 bg-card">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Activity size={14} className="text-muted-foreground" />
+                    <span className="font-semibold text-xs">Tests Run</span>
+                    <Badge className="bg-muted text-muted-foreground border-none text-[9px] ml-auto">{Object.keys(testResults).length}</Badge>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">{allResults.length > 0 ? `Last: ${allResults[0].functionName} (${allResults[0].duration}ms)` : "No tests run yet"}</p>
+                </div>
+                <div className="border border-border rounded-xl p-4 bg-card">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Clock size={14} className="text-muted-foreground" />
+                    <span className="font-semibold text-xs">Edge Functions</span>
+                    <Badge className="bg-muted text-muted-foreground border-none text-[9px] ml-auto">{EDGE_FUNCTIONS.length}</Badge>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground">{EDGE_FUNCTIONS.filter(f => testResults[f.name]?.status === "success").length} passed / {EDGE_FUNCTIONS.filter(f => testResults[f.name]?.status === "error").length} failed</p>
+                </div>
+              </div>
+
+              {/* Test invocation log */}
+              {allResults.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => setShowTestLog(!showTestLog)} className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors">
+                        {showTestLog ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                        Test Log ({allResults.length})
+                      </button>
+                      <div className="flex gap-1">
+                        {["all", "success", "error"].map(f => (
+                          <button key={f} onClick={() => setLogFilter(f)} className={cn("px-2 py-0.5 rounded-md text-[9px] font-semibold transition-all", logFilter === f ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground")}>{f === "all" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <button onClick={clearResults} className="text-[9px] font-semibold text-muted-foreground hover:text-foreground px-2 py-0.5 rounded-lg border border-border hover:bg-muted/50 transition-all">Clear log</button>
+                  </div>
+                  {showTestLog && (
+                    <div className="space-y-1 max-h-60 overflow-y-auto">
+                      {allResults.filter(r => logFilter === "all" || r.status === logFilter).map((r, i) => (
+                        <div key={`${r.timestamp}-${i}`} className={cn("border rounded-lg p-3", r.status === "success" ? "border-emerald-200 dark:border-emerald-900 bg-emerald-50/30 dark:bg-emerald-950/10" : "border-rose-200 dark:border-rose-900 bg-rose-50/30 dark:bg-rose-950/10")}>
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-1.5">
+                              {r.status === "success" ? <CheckCircle2 size={10} className="text-emerald-500" /> : <XCircle size={10} className="text-rose-500" />}
+                              <span className="font-semibold text-[10px]">{r.functionName}</span>
+                              <span className={cn("px-1 py-0.5 rounded text-[8px] font-semibold", r.status === "success" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300")}>{r.duration}ms</span>
+                            </div>
+                            <span className="text-[8px] text-muted-foreground">{new Date(r.timestamp).toLocaleTimeString()}</span>
+                          </div>
+                          <pre className="text-[8px] text-muted-foreground font-mono whitespace-pre-wrap break-all max-h-20 overflow-y-auto">{r.response}</pre>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ══════════════════════════════════════════════════════════
            WORKFLOWS SECTION
            ══════════════════════════════════════════════════════════ */}
         <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
@@ -1257,6 +1440,50 @@ const WorkflowDebuggerPage = () => {
                   {expandedFunctions.has(ef.name) && (
                     <div className="px-3 pb-3 space-y-3 text-xs">
                       <p className="text-muted-foreground leading-relaxed">{ef.description}</p>
+
+                      {/* Test invocation */}
+                      <div className="p-3 bg-muted/30 rounded-xl border border-border/50">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="font-semibold text-foreground flex items-center gap-1.5"><Play size={12} /> Test Invocation</div>
+                          <div className="flex items-center gap-2">
+                            {testResults[ef.name] && (
+                              <span className={cn("text-[9px] font-semibold", testResults[ef.name].status === "success" ? "text-emerald-500" : "text-rose-500")}>
+                                {testResults[ef.name].status === "success" ? "✓" : "✗"} {testResults[ef.name].duration}ms
+                              </span>
+                            )}
+                            <button
+                              onClick={() => invokeFunction(ef.name)}
+                              disabled={runningTests.has(ef.name)}
+                              className={cn(
+                                "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[9px] font-semibold transition-all",
+                                runningTests.has(ef.name)
+                                  ? "bg-muted text-muted-foreground cursor-not-allowed"
+                                  : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-950/60"
+                              )}
+                            >
+                              {runningTests.has(ef.name) ? <Loader2 size={10} className="animate-spin" /> : <Zap size={10} />}
+                              {runningTests.has(ef.name) ? "Running..." : "Run Test"}
+                            </button>
+                          </div>
+                        </div>
+                        <textarea
+                          value={testPayloads[ef.name] ?? payloadFor(ef.name)}
+                          onChange={(e) => setTestPayloads(prev => ({ ...prev, [ef.name]: e.target.value }))}
+                          className="w-full bg-background border border-border rounded-lg p-2 text-[9px] font-mono text-muted-foreground resize-y min-h-[48px] max-h-[120px]"
+                          rows={3}
+                        />
+                        {testResults[ef.name] && (
+                          <div className={cn("mt-2 rounded-lg p-2", testResults[ef.name].status === "success" ? "bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-900/50" : "bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200/50 dark:border-rose-900/50")}>
+                            <div className="flex items-center gap-1 text-[8px] font-semibold mb-1">
+                              {testResults[ef.name].status === "success" ? <CheckCircle2 size={8} className="text-emerald-500" /> : <XCircle size={8} className="text-rose-500" />}
+                              <span className={testResults[ef.name].status === "success" ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>
+                                {testResults[ef.name].status === "success" ? "Response" : "Error"} ({testResults[ef.name].duration}ms)
+                              </span>
+                            </div>
+                            <pre className="text-[8px] text-muted-foreground font-mono whitespace-pre-wrap break-all max-h-[80px] overflow-y-auto">{testResults[ef.name].response}</pre>
+                          </div>
+                        )}
+                      </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="p-3 bg-muted/30 rounded-xl border border-border/50">

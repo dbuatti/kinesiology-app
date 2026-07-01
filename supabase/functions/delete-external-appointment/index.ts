@@ -36,18 +36,30 @@ serve(async (req) => {
     // v2 Cancellation: POST /v2/bookings/{uid}/cancel
     if (calcomBookingId && CALCOM_KEY && calcomBookingId !== "undefined") {
       console.log(`[v2] Cancelling Cal.com booking: ${calcomBookingId}`);
-      
-      const res = await fetch(`https://api.cal.com/v2/bookings/${calcomBookingId}/cancel`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${CALCOM_KEY}`,
-          'cal-api-version': '2024-08-13',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ cancellationReason: "Cancelled via Antigravity CRM" })
-      });
-      
-      results.calcom = res.ok ? 'success' : 'failed';
+      try {
+        const res = await fetch(`https://api.cal.com/v2/bookings/${calcomBookingId}/cancel`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${CALCOM_KEY}`,
+            'cal-api-version': '2024-08-13',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ cancellationReason: "Cancelled via Antigravity CRM" })
+        });
+        if (res.ok) {
+          results.calcom = 'success';
+        } else {
+          const data = await res.json().catch(() => ({}));
+          const errMsg = (data?.error?.message || data?.message || '').toLowerCase();
+          if (errMsg.includes('already') || errMsg.includes('cancelled')) {
+            results.calcom = 'success';
+          } else {
+            results.calcom = 'failed';
+          }
+        }
+      } catch (e) {
+        results.calcom = 'failed';
+      }
     }
 
     return new Response(JSON.stringify({ success: true, results }), { 

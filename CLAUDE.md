@@ -84,6 +84,20 @@ SVG/Recharts attributes support CSS variables: `stroke="hsl(var(--chart-primary)
 
 Do not hardcode `#4f46e5`, `#e11d48`, `#10b981`, or `#F9FBFD` — use the tokens above. Static domain colour data in `luscher-data.ts` and `tcm-channel-data.ts` is intentionally hardcoded (it represents the actual colour values of the Luscher and TCM systems).
 
+## Voice Calendar Fallback (`UnifiedCalendarPage.tsx`)
+
+Notion voice lessons and Cal.com voice_bookings are merged into `calendarItems` at `src/pages/UnifiedCalendarPage.tsx:405`. The logic:
+
+1. **Primary** — Notion lessons (`voiceLessons`) are fetched via Supabase edge function. Each becomes a `CalendarItem` with local time (converted via `formatVoiceTime`/`voiceDateISO`).
+2. **Fallback** — `voice_bookings` rows that lack a Notion lesson appear as fallback items. Dedup uses two layers:
+   - `notionLessonIds` — if the voice_booking's `notion_lesson_id_1` or `notion_lesson_id_2` matches a fetched Notion lesson ID, skip it.
+   - `matchedEmail` — if the voice_booking's email+date matches a Notion lesson's matched booking email+date, skip it.
+3. **Filters** — fallback skips practitioner self-bookings (`student_email === session.user.email`), entries without a real student name, and cancelled bookings.
+4. **Pricing** — uses `priceFor()` with event type key (`"5925021"` = 45min, `"1945081"` = 60min), detected via `voiceTimeDuration()`.
+5. **Time display** — fallback entries with UTC times (e.g. `"5:15 AM UTC – 6:00 AM UTC"`) are converted to local time using the same `formatVoiceTime`/`voiceDateISO` helpers as Notion lessons.
+
+**IMPORTANT**: When adding new dedup, always add a layer ON TOP of existing ones — never replace. Different voice_bookings have different columns populated (some have `notion_lesson_id_*`, others only have matching emails). The combination of both covers all cases.
+
 ## Database migrations
 
 SQL migration files live at the repo root (`supabase_*.sql`). Apply them manually via the Supabase dashboard or CLI — there is no automated migration runner.

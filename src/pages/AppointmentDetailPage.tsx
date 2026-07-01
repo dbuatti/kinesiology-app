@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useAppointment } from "@/hooks/useAppointment";
 import { CranialNerveAssessment } from "@/components/crm/CranialNerveAssessment";
@@ -37,6 +37,7 @@ import AppointmentSidebar from "@/components/crm/AppointmentSidebar";
 import SessionWorksheetTemplate from "@/components/crm/SessionWorksheetTemplate";
 import SessionDocumentView from "@/components/crm/SessionDocumentView";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 import {
   DropdownMenu,
@@ -89,6 +90,7 @@ const AppointmentDetailPage = () => {
   const [isFullScreen, setIsFullScreen] = useState(() => {
     return localStorage.getItem('rk_fullscreen') === 'true';
   });
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [medicalHistoryEditing, setMedicalHistoryEditing] = useState(false);
   const [medicalHistoryValue, setMedicalHistoryValue] = useState("");
 
@@ -219,8 +221,9 @@ const AppointmentDetailPage = () => {
     }
   }, [appointment, id, saveField, refresh]);
 
-  const handleDeleteAppointment = useCallback(async () => {
-    if (!id || !appointment || !confirm("Are you sure you want to delete this appointment? It will also be removed from Notion and Cal.com if linked.")) return;
+  const executeDelete = useCallback(async () => {
+    if (!id || !appointment) return;
+    setShowDeleteConfirm(false);
     try {
       if (appointment.notion_page_id || appointment.notion_planner_id || appointment.calcom_booking_id) {
         await supabase.functions.invoke('delete-external-appointment', {
@@ -229,7 +232,7 @@ const AppointmentDetailPage = () => {
             notionPlannerId: appointment.notion_planner_id,
             calcomBookingId: appointment.calcom_booking_id
           }
-        });
+        }).catch(() => {});
       }
       const { error = null } = await supabase.from('appointments').delete().eq('id', id);
       if (error) throw error;
@@ -445,7 +448,7 @@ const AppointmentDetailPage = () => {
                       <span className="text-xs">Print Session Report</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="my-1" />
-                    <DropdownMenuItem onClick={handleDeleteAppointment} className="rounded-lg py-2 px-3 cursor-pointer flex items-center gap-2.5 text-destructive focus:text-destructive">
+                    <DropdownMenuItem onClick={() => setShowDeleteConfirm(true)} className="rounded-lg py-2 px-3 cursor-pointer flex items-center gap-2.5 text-destructive focus:text-destructive">
                       <Trash2 size={14} />
                       <span className="text-xs">Delete Appointment</span>
                     </DropdownMenuItem>
@@ -588,7 +591,7 @@ const AppointmentDetailPage = () => {
                 onClonePrevious={handleClonePrevious}
                 onPrint={() => window.print()}
                 onCopySummary={handleCopySummary}
-                onDelete={handleDeleteAppointment}
+                onDelete={executeDelete}
                 isCopied={isCopied}
                 onOpenDocument={() => setIsDocumentView(true)}
                 onTabChange={setActivePhaseId}
@@ -637,6 +640,14 @@ const AppointmentDetailPage = () => {
           </div>
         </div>
       </AppLayout>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title="Delete Appointment"
+        description="Are you sure you want to delete this appointment? It will also be removed from Notion and Cal.com if linked."
+        onConfirm={executeDelete}
+      />
     </ErrorBoundary>
   );
 };

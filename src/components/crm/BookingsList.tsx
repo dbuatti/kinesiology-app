@@ -55,10 +55,10 @@ type SourceFilter = "all" | "voice" | "kinesiology";
 
 const itemTime = (i: BookingListItem) => new Date(i.datetime || i.date).getTime();
 
-const INITIAL_COLORS = [
-  "#4f46e5", "#db2777", "#059669", "#d97706", "#7c3aed",
-  "#0891b2", "#be123c", "#65a30d", "#0d9488", "#c026d3",
-  "#2563eb", "#ca8a04", "#16a34a", "#9333ea", "#ea580c",
+const AVATAR_COLORS = [
+  "bg-chart-primary", "bg-pink-600", "bg-chart-emerald", "bg-amber-600", "bg-purple-600",
+  "bg-cyan-600", "bg-rose-700", "bg-lime-600", "bg-teal-600", "bg-fuchsia-600",
+  "bg-blue-600", "bg-yellow-600", "bg-green-600", "bg-violet-600", "bg-orange-600",
 ];
 
 function nameHash(name: string): number {
@@ -584,8 +584,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                 className="shrink-0"
               />
               <div
-                className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 font-bold text-xs text-white"
-                style={{ backgroundColor: INITIAL_COLORS[nameHash(person) % INITIAL_COLORS.length] }}
+                className={`${AVATAR_COLORS[nameHash(person) % AVATAR_COLORS.length]} w-9 h-9 rounded-lg flex items-center justify-center shrink-0 font-bold text-xs text-white`}
               >
                 {nameInitials(person)}
               </div>

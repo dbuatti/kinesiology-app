@@ -1,9 +1,9 @@
 
-import React from "react";
+import type { ComponentType } from 'react';
 import { cn } from "@/lib/utils";
 
 interface EmptyStateProps {
-  icon?: React.ComponentType<{ className?: string }>;
+  icon?: ComponentType<{ className?: string }>;
   title: string;
   description?: string;
   action?: { label: string; onClick: () => void };

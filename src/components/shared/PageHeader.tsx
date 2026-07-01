@@ -1,5 +1,5 @@
 
-import React from "react";
+import type { ElementType, ReactNode } from 'react';
 import { cn } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
@@ -7,11 +7,11 @@ import { Badge } from "@/components/ui/badge";
 interface PageHeaderProps {
   title: string;
   subtitle?: string;
-  icon?: React.ElementType;
+  icon?: ElementType;
   iconClassName?: string;
 
   badge?: string;
-  actions?: React.ReactNode;
+  actions?: ReactNode;
   className?: string;
 }
 

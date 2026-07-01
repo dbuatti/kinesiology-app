@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { format } from 'date-fns';
 import { Activity, Zap, Heart, Brain, Target, ClipboardList, Wind, Droplets } from 'lucide-react';
 

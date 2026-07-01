@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react"; import type { ElementType } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -216,7 +216,7 @@ const LimitingBeliefsAnalysis = () => {
   };
 
   const SectionCard = ({ icon: Icon, title, items, color, emptyMsg, onItemClick }: {
-    icon: React.ElementType;
+    icon: ElementType;
     title: string;
     items: SuggestionItem[];
     color: string;

@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, PlayCircle, Sparkles, ShieldAlert, Info } from "lucide-react";
 import LimitingBeliefsBackground from "@/components/crm/LimitingBeliefsBackground";

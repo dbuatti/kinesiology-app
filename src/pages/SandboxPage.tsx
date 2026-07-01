@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Fingerprint, 
@@ -56,6 +56,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import IdentityHistoryList from "@/components/crm/IdentityHistoryList";
 import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 import PageHeader from "@/components/shared/PageHeader";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 const TOOLS = [
   {
@@ -117,6 +118,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
   const [scanningId, setScanningId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>('priority');
   const [activeTab, setActiveTab] = useState("active");
+  const [confirmAction, setConfirmAction] = useState<{callback: () => void; title: string; description: string} | null>(null);
 
   const fetchData = async () => {
     try {
@@ -267,9 +269,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
     }
   };
 
-  const handleMarkIntegrated = async (id: string) => {
-    if (!confirm("Are you sure you have truly processed this for good? It will move to your Archive.")) return;
-
+  const executeMarkIntegrated = async (id: string) => {
     try {
       const { error } = await supabase
         .from('identity_backlog')
@@ -299,8 +299,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Delete this identity from your map?")) return;
+  const executeDelete = async (id: string) => {
     try {
       const { error } = await supabase.from('identity_backlog').delete().eq('id', id);
       if (error) throw error;
@@ -416,7 +415,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={() => handleDelete(item.id)}
+                onClick={() => setConfirmAction({callback: () => executeDelete(item.id), title: "Delete Identity", description: "Delete this identity from your map?"})}
                 className="h-11 px-5 rounded-xl text-muted-foreground/60 hover:text-chart-destructive hover:bg-muted font-medium text-[10px] uppercase tracking-wider"
               >
                 <X size={18} className="mr-2" /> Dismiss
@@ -454,12 +453,12 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
                         <DropdownMenuItem onClick={() => handleRescanItem(item)} disabled={isScanning} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4">
                           <Wand2 size={18} className="text-chart-primary" /> Rescan with AI
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleMarkIntegrated(item.id)} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4 text-chart-emerald font-medium">
+                        <DropdownMenuItem onClick={() => setConfirmAction({callback: () => executeMarkIntegrated(item.id), title: "Mark Integrated", description: "Are you sure you have truly processed this for good? It will move to your Archive."})} className="rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4 text-chart-emerald font-medium">
                           <CheckCircle2 size={18} /> Mark Integrated
                         </DropdownMenuItem>
                       </>
                     )}
-                    <DropdownMenuItem onClick={() => handleDelete(item.id)} className="text-destructive focus:text-destructive rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4">
+                    <DropdownMenuItem onClick={() => setConfirmAction({callback: () => executeDelete(item.id), title: "Delete Identity", description: "Delete this identity from your map?"})} className="text-destructive focus:text-destructive rounded-xl py-3 px-5 cursor-pointer flex items-center gap-4">
                       <Trash2 size={18} /> Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -653,7 +652,21 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
     </div>
   );
 
-  return isNested ? content : <AppLayout>{content}</AppLayout>;
+  return isNested ? content : (
+    <AppLayout>
+      {content}
+      <ConfirmDialog
+        open={confirmAction !== null}
+        onOpenChange={(open) => { if (!open) setConfirmAction(null); }}
+        title={confirmAction?.title ?? ""}
+        description={confirmAction?.description}
+        onConfirm={() => {
+          confirmAction?.callback();
+          setConfirmAction(null);
+        }}
+      />
+    </AppLayout>
+  );
 };
 
 export default SandboxPage;

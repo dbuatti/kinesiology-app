@@ -47,6 +47,7 @@ import { formatVoiceTime } from "@/utils/availability";
 function voiceDateISO(date: string, time: string): string {
   const [year, month, day] = date.split("-").map(Number);
   if (!year || !month || !day) return date;
+  const isUTC = /UTC/i.test(time);
   const t = time.replace(/\s*–.*/, "").trim().replace(/UTC/i, "").trim();
   const m = t.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
   if (!m) return date;
@@ -54,8 +55,30 @@ function voiceDateISO(date: string, time: string): string {
   const min = parseInt(m[2]);
   if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
   if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
-  const d = new Date(year, month - 1, day, h, min);
+  const d = isUTC
+    ? new Date(Date.UTC(year, month - 1, day, h, min))
+    : new Date(year, month - 1, day, h, min);
   return d.toISOString();
+}
+
+function voiceTimeDuration(time: string): number | null {
+  const parts = time.split("–").map((s) => s.trim());
+  if (parts.length !== 2) return null;
+  const parseT = (s: string) => {
+    const cleaned = s.replace(/UTC/i, "").trim();
+    const m = cleaned.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
+    if (!m) return null;
+    let h = parseInt(m[1]);
+    const min = parseInt(m[2]);
+    if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
+    if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
+    return h * 60 + min;
+  };
+  const start = parseT(parts[0]);
+  const end = parseT(parts[1]);
+  if (start === null || end === null) return null;
+  if (end < start) return end + 1440 - start;
+  return end - start;
 }
 
 interface VoiceLesson {
@@ -70,12 +93,15 @@ interface VoiceLesson {
 }
 
 interface VoiceBookingRow {
- calcom_booking_id: string;
- student_email: string;
- lesson_date: string;
- status: string;
- notion_lesson_id_1: string | null;
- notion_lesson_id_2: string | null;
+  calcom_booking_id: string;
+  student_email: string;
+  student_name: string | null;
+  lesson_date: string;
+  lesson_time: string | null;
+  cost: number | null;
+  status: string;
+  notion_lesson_id_1: string | null;
+  notion_lesson_id_2: string | null;
 }
 
 interface KinesiologyAppt {
@@ -283,7 +309,7 @@ const UnifiedCalendarPage = () => {
     queryFn: async () => {
       const { data } = await supabase
         .from("voice_bookings")
-        .select("calcom_booking_id, student_email, lesson_date, status, notion_lesson_id_1, notion_lesson_id_2");
+        .select("calcom_booking_id, student_email, student_name, lesson_date, lesson_time, cost, status, notion_lesson_id_1, notion_lesson_id_2");
       return (data || []) as VoiceBookingRow[];
     },
     staleTime: 60_000,
@@ -379,46 +405,95 @@ const UnifiedCalendarPage = () => {
   const calendarItems: CalendarItem[] = useMemo(() => {
  const items: CalendarItem[] = [];
 
-  (voiceLessons || []).forEach((l) => {
-  if (!l.date) return;
-  const booking = (voiceBookings || []).find(
-    (b) => b.lesson_date === l.date && b.student_email === l.studentEmail
-  );
-  const is45 = /45/.test((l.name || "").toLowerCase());
-  // Voice paid signal comes from Notion's Payment property OR a voice_bookings row
-  // marked paid (covers Stripe + manually-recorded external payments).
-  // NB: must exclude "Unpaid" — a naive /paid/ test matches it.
-  const ps = (l.paymentStatus || "").toLowerCase();
-  const voicePaid = (ps.includes("paid") && !ps.includes("unpaid")) || booking?.status === "paid";
-  items.push({
-  id: `v-${l.id}`,
-  source: "voice",
-  date: l.date,
-  datetime: l.date && l.time ? voiceDateISO(l.date, l.time) : l.date,
-  time: l.date && l.time ? formatVoiceTime(l.date, l.time) : null,
-  title: l.name || "Voice Lesson",
-  subtitle: l.studentName || null,
-  url: l.notionUrl || null,
-  tag: "voice",
-  status: booking?.status ?? null,
-  cancelled: booking?.status === "cancelled",
-  paid: voicePaid,
-  isFree: false,
-  // Read voice price from event_pricing (Voice 45 = 5925021, Voice 60 = 1945081),
-  // falling back to the prior defaults if the table has no row.
-  amount: priceFor(is45 ? "5925021" : "1945081") ?? (is45 ? 75 : 95),
-  calcomUid: booking?.calcom_booking_id ?? null,
-  notionLessonId1: booking?.notion_lesson_id_1 ?? null,
-  notionLessonId2: booking?.notion_lesson_id_2 ?? null,
-  eventTypeId: is45 ? "5925021" : "1945081",
-  lessonId: l.id,
-  studentEmail: l.studentEmail,
-  studentName: l.studentName,
-  notionLink: l.notionUrl,
-  });
-  });
+    const notionLessonIds = new Set((voiceLessons || []).map((l) => l.id));
+    const matchedEmail = new Set<string>();
 
-  (kinesiologyAppts || []).forEach((a) => {
+    (voiceLessons || []).forEach((l) => {
+    if (!l.date) return;
+    const booking = (voiceBookings || []).find(
+      (b) => b.lesson_date === l.date && b.student_email === l.studentEmail
+    );
+    if (booking) {
+    matchedEmail.add(`${booking.lesson_date}|${booking.student_email}`);
+    }
+    const is45 = /45/.test((l.name || "").toLowerCase());
+    // Voice paid signal comes from Notion's Payment property OR a voice_bookings row
+    // marked paid (covers Stripe + manually-recorded external payments).
+    // NB: must exclude "Unpaid" — a naive /paid/ test matches it.
+    const ps = (l.paymentStatus || "").toLowerCase();
+    const voicePaid = (ps.includes("paid") && !ps.includes("unpaid")) || booking?.status === "paid";
+    items.push({
+    id: `v-${l.id}`,
+    source: "voice",
+    date: l.date,
+    datetime: l.date && l.time ? voiceDateISO(l.date, l.time) : l.date,
+    time: l.date && l.time ? formatVoiceTime(l.date, l.time) : null,
+    title: l.name || "Voice Lesson",
+    subtitle: l.studentName || null,
+    url: l.notionUrl || null,
+    tag: "voice",
+    status: booking?.status ?? null,
+    cancelled: booking?.status === "cancelled",
+    paid: voicePaid,
+    isFree: false,
+    // Read voice price from event_pricing (Voice 45 = 5925021, Voice 60 = 1945081),
+    // falling back to the prior defaults if the table has no row.
+    amount: priceFor(is45 ? "5925021" : "1945081") ?? (is45 ? 75 : 95),
+    calcomUid: booking?.calcom_booking_id ?? null,
+    notionLessonId1: booking?.notion_lesson_id_1 ?? null,
+    notionLessonId2: booking?.notion_lesson_id_2 ?? null,
+    eventTypeId: is45 ? "5925021" : "1945081",
+    lessonId: l.id,
+    studentEmail: l.studentEmail,
+    studentName: l.studentName,
+    notionLink: l.notionUrl,
+    });
+    });
+
+    // Fallback: include voice_bookings that don't have a matching Notion lesson
+    const practitionerEmail = session?.user?.email || "";
+    (voiceBookings || []).forEach((vb) => {
+    if (!vb.lesson_date) return;
+    // Skip practitioner self-bookings
+    if (vb.student_email === practitionerEmail) return;
+    // Skip entries without a real student name (system/test records)
+    if (!vb.student_name || vb.student_name.trim() === "" || vb.student_name === "—") return;
+    // Skip if already linked to a Notion lesson that exists
+    if (vb.notion_lesson_id_1 && notionLessonIds.has(vb.notion_lesson_id_1)) return;
+    if (vb.notion_lesson_id_2 && notionLessonIds.has(vb.notion_lesson_id_2)) return;
+    // Skip if already matched by email+date
+    if (matchedEmail.has(`${vb.lesson_date}|${vb.student_email}`)) return;
+    // Skip cancelled
+    if (vb.status === "cancelled") return;
+    const dur = vb.lesson_time ? voiceTimeDuration(vb.lesson_time) : null;
+    const is45 = dur === 45;
+    items.push({
+    id: `vb-${vb.calcom_booking_id}`,
+    source: "voice",
+    date: vb.lesson_date,
+    datetime: vb.lesson_time ? voiceDateISO(vb.lesson_date, vb.lesson_time) : vb.lesson_date,
+    time: vb.lesson_time ? formatVoiceTime(vb.lesson_date, vb.lesson_time) : null,
+    title: vb.student_name,
+    subtitle: null,
+    url: null,
+    tag: "voice",
+    status: vb.status ?? null,
+    cancelled: false,
+    paid: vb.status === "paid",
+    isFree: vb.cost === 0,
+    amount: priceFor(is45 ? "5925021" : "1945081") ?? (vb.cost ?? null),
+    calcomUid: vb.calcom_booking_id ?? null,
+    notionLessonId1: vb.notion_lesson_id_1 ?? null,
+    notionLessonId2: vb.notion_lesson_id_2 ?? null,
+    eventTypeId: is45 ? "5925021" : "1945081",
+    lessonId: null,
+    studentEmail: vb.student_email,
+    studentName: vb.student_name,
+    notionLink: null,
+    });
+    });
+
+   (kinesiologyAppts || []).forEach((a) => {
   const appDate = new Date(a.date);
   // Charge the client's CURRENT rate (from Client Audit / standard_rate) — this is
   // what "Send payment link" bills. Falls back to any per-appointment price.
@@ -466,7 +541,7 @@ const UnifiedCalendarPage = () => {
   return parseStart(a.time || "") - parseStart(b.time || "");
   });
   return items;
-  }, [voiceLessons, kinesiologyAppts, voiceBookings, pricing]);
+  }, [voiceLessons, kinesiologyAppts, voiceBookings, pricing, session]);
 
   const weeklyEvents: CalendarEvent[] = useMemo(() => {
   const ws = startOfWeek(weekStart);

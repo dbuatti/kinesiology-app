@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Fingerprint, 
@@ -24,12 +24,14 @@ import { showSuccess, showError } from "@/utils/toast";
 import IdentityShiftingReport from './IdentityShiftingReport';
 import IdentityAlignmentReport from './IdentityAlignmentReport';
 import LimitingBeliefsReport from './LimitingBeliefsReport';
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 const IdentityHistoryList = () => {
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [viewingSession, setViewingSession] = useState<any | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
 
   const fetchHistory = async () => {
     setLoading(true);
@@ -61,9 +63,10 @@ const IdentityHistoryList = () => {
     fetchHistory();
   }, []);
 
-  const handleDelete = async (e: React.MouseEvent, session: any) => {
-    e.stopPropagation();
-    if (!confirm("Are you sure you want to delete this session record?")) return;
+  const executeDelete = async () => {
+    if (!deleteTarget) return;
+    const session = deleteTarget;
+    setDeleteTarget(null);
 
     const table = session.type === 'shifting' ? 'identity_shifting_sessions' :
                   session.type === 'alignment' ? 'identity_alignment_sessions' :
@@ -148,7 +151,7 @@ const IdentityHistoryList = () => {
                     variant="ghost" 
                     size="icon" 
                     className="h-9 w-9 rounded-xl text-muted-foreground hover:text-rose-600 hover:bg-rose-50 opacity-0 group-hover:opacity-100 transition-all"
-                    onClick={(e) => handleDelete(e, session)}
+                    onClick={(e) => { e.stopPropagation(); setDeleteTarget(session); }}
                   >
                     <Trash2 size={16} />
                   </Button>
@@ -169,6 +172,14 @@ const IdentityHistoryList = () => {
           <p className="text-muted-foreground mt-1 font-medium">Complete a session in Identity Map to see it here.</p>
         </div>
       )}
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="Delete session record?"
+        description="Are you sure you want to delete this session record?"
+        confirmLabel="Delete"
+        onConfirm={executeDelete}
+      />
     </div>
   );
 };

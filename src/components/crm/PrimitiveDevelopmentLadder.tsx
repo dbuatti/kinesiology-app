@@ -1,5 +1,5 @@
 
-import React from 'react';
+import { Fragment } from 'react';
 import { 
   Wind, 
   Eye, 
@@ -36,7 +36,7 @@ const PrimitiveDevelopmentLadder = () => {
 
       <div className="relative flex items-center justify-between gap-2 overflow-x-auto pb-6 no-scrollbar">
         {LADDER_STEPS.map((step, i) => (
-          <React.Fragment key={step.label}>
+          <Fragment key={step.label}>
             <div className="flex flex-col items-center text-center min-w-[100px] group">
               <div className="w-12 h-12 rounded-2xl bg-white border-2 border-slate-100 shadow-sm flex items-center justify-center text-slate-400 group-hover:border-indigo-500 group-hover:text-indigo-600 transition-all duration-500">
                 <step.icon size={24} />
@@ -47,7 +47,7 @@ const PrimitiveDevelopmentLadder = () => {
             {i < LADDER_STEPS.length - 1 && (
               <ArrowRight size={16} className="text-slate-200 shrink-0 mt-[-20px]" />
             )}
-          </React.Fragment>
+          </Fragment>
         ))}
       </div>
 

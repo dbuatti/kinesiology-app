@@ -1,8 +1,9 @@
 
-import React, { useState } from "react";
+	import { useState } from "react";
 import { FlaskConical, ChevronDown, AlertCircle, BookOpen, RotateCcw, Info, Target, CheckCircle2, PlayCircle, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Badge } from "@/components/ui/badge";
 import BoltTimer from "./BoltTimer";
 import BoltResourcesModal from "./BoltResourcesModal";
@@ -28,6 +29,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
   const [isOpen, setIsOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
   const [showExercise, setShowExercise] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const pastBoltScores = history
     .filter((a: any) => a.bolt_score != null)
@@ -52,8 +54,8 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
     }
   };
 
-  const handleReset = async () => {
-    if (!confirm("Reset BOLT score?")) return;
+  const executeReset = async () => {
+    setShowResetConfirm(false);
     setLoading(true);
     try {
       const { error } = await supabase
@@ -169,7 +171,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
                         <BookOpen size={14} className="mr-2" /> Resources
                       </Button>
                       {initialBoltScore !== null && (
-                        <Button variant="ghost" onClick={handleReset} className="text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 h-9 px-3 rounded-xl font-bold text-[10px] uppercase tracking-widest">
+                        <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 h-9 px-3 rounded-xl font-bold text-[10px] uppercase tracking-widest">
                           <RotateCcw size={14} />
                         </Button>
                       )}
@@ -200,6 +202,15 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
       )}
 
       <BoltResourcesModal open={resourcesOpen} onOpenChange={setResourcesOpen} currentScore={initialBoltScore} />
+
+      <ConfirmDialog
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
+        title="Reset BOLT score?"
+        description="This will clear the BOLT score for this session."
+        confirmLabel="Reset"
+        onConfirm={executeReset}
+      />
     </div>
   );
 };

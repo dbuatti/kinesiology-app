@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, PlayCircle, Fingerprint, Info } from "lucide-react";
 import IdentityShiftingBackground from "@/components/crm/IdentityShiftingBackground";

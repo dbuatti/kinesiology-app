@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { cn } from '@/lib/utils';
 import { Zap, Minus, Plus, Info } from 'lucide-react';
 import { FINGER_POLARITIES } from '@/data/emotion-data';

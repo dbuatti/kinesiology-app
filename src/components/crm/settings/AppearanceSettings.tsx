@@ -1,5 +1,4 @@
 
-import React from "react";
 import { useTheme } from "next-themes";
 import { Sun, Moon, Monitor, Palette } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'; import type { ElementType } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   Heart, 
@@ -58,7 +58,7 @@ const SessionToolNavigation = ({
     }
   };
 
-  const NavItem = ({ view, label, Icon }: { view: ActiveView, label: string, Icon: React.ElementType }) => (
+  const NavItem = ({ view, label, Icon }: { view: ActiveView, label: string, Icon: ElementType }) => (
     <Button
       variant="ghost"
       onClick={() => onViewChange(view)}

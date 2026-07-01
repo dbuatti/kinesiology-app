@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react'; import type { MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { format, formatDistanceToNow, differenceInMonths, addWeeks, startOfWeek, addDays, endOfDay, parseISO, getISOWeek } from "date-fns";
 import {
@@ -41,7 +41,7 @@ import {
  PopoverContent,
  PopoverTrigger,
 } from "@/components/ui/popover";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { CALCOM_CONFIG } from "../../../config/integrations";
 import { showSuccess, showError } from "@/utils/toast";
@@ -576,7 +576,7 @@ export const ClientRow = ({
 
  const isSelectedInSimulator = selectedWeeklyClients.includes(client.id);
 
- const handleSyncToStripe = async (e: React.MouseEvent) => {
+ const handleSyncToStripe = async (e: MouseEvent) => {
  e.stopPropagation();
  setSyncingStripe(true);
  try {
@@ -606,7 +606,7 @@ export const ClientRow = ({
  }
  };
 
- const handleSyncToNotion = async (e: React.MouseEvent) => {
+ const handleSyncToNotion = async (e: MouseEvent) => {
  e.stopPropagation();
  setSyncingNotion(true);
  try {
@@ -628,7 +628,7 @@ export const ClientRow = ({
  }
  };
 
- const handleSendOnboarding = async (e: React.MouseEvent) => {
+ const handleSendOnboarding = async (e: MouseEvent) => {
  e.stopPropagation();
  if (!client.email) {
  showError("Client email is missing.");
@@ -1152,24 +1152,22 @@ Daniele`;
  {/* Rate Increase Follow-up Action */}
  {client.standard_rate !== targetRate && (
  <div className="flex items-center gap-1.5">
- <TooltipProvider>
- <Tooltip>
- <TooltipTrigger asChild>
- <Button
- variant="outline"
- size="sm"
- onClick={() => setIsEmailModalOpen(true)}
- className="h-8 rounded-xl border-border text-chart-primary hover:bg-muted font-semibold text-[10px] uppercase tracking-wider flex items-center gap-1"
- >
- <MessageSquare size={12} />
- Contact
- </Button>
- </TooltipTrigger>
- <TooltipContent className="rounded-xl font-medium text-xs p-2">
- Send rate increase email: ${currentRateNum} → ${targetRate}
- </TooltipContent>
- </Tooltip>
- </TooltipProvider>
+<Tooltip>
+  <TooltipTrigger asChild>
+  <Button
+  variant="outline"
+  size="sm"
+  onClick={() => setIsEmailModalOpen(true)}
+  className="h-8 rounded-xl border-border text-chart-primary hover:bg-muted font-semibold text-[10px] uppercase tracking-wider flex items-center gap-1"
+  >
+  <MessageSquare size={12} />
+  Contact
+  </Button>
+  </TooltipTrigger>
+  <TooltipContent className="rounded-xl font-medium text-xs p-2">
+  Send rate increase email: ${currentRateNum} → ${targetRate}
+  </TooltipContent>
+  </Tooltip>
 
  {confirmUpgrade ? (
  <>
@@ -1191,10 +1189,9 @@ Daniele`;
  Confirm ${targetRate}?
  </Button>
  </>
- ) : (
- <TooltipProvider>
- <Tooltip>
- <TooltipTrigger asChild>
+  ) : (
+  <Tooltip>
+  <TooltipTrigger asChild>
  <Button
  variant="outline"
  size="sm"
@@ -1206,33 +1203,30 @@ Daniele`;
  </Button>
  </TooltipTrigger>
  <TooltipContent className="rounded-xl font-medium text-xs p-2">Upgrade to ${targetRate}</TooltipContent>
- </Tooltip>
- </TooltipProvider>
- )}
- </div>
- )}
+  </Tooltip>
+  )}
+  </div>
+  )}
 
- {/* Re-engagement email button for lapsed clients */}
- {isLapsedSection && (
- <TooltipProvider>
- <Tooltip>
- <TooltipTrigger asChild>
- <Button
- variant="outline"
- size="sm"
- onClick={() => setIsReengagementEmailModalOpen(true)}
- className="h-8 rounded-xl border-border text-chart-destructive hover:bg-muted font-semibold text-[10px] uppercase tracking-wider flex items-center gap-1"
- >
- <Mail size={12} />
- Re-engage
- </Button>
- </TooltipTrigger>
- <TooltipContent className="rounded-xl font-medium text-xs p-2">Send Re-engagement Email</TooltipContent>
- </Tooltip>
- </TooltipProvider>
- )}
+  {/* Re-engagement email button for lapsed clients */}
+  {isLapsedSection && (
+  <Tooltip>
+  <TooltipTrigger asChild>
+  <Button
+  variant="outline"
+  size="sm"
+  onClick={() => setIsReengagementEmailModalOpen(true)}
+  className="h-8 rounded-xl border-border text-chart-destructive hover:bg-muted font-semibold text-[10px] uppercase tracking-wider flex items-center gap-1"
+  >
+  <Mail size={12} />
+  Re-engage
+  </Button>
+  </TooltipTrigger>
+  <TooltipContent className="rounded-xl font-medium text-xs p-2">Send Re-engagement Email</TooltipContent>
+   </Tooltip>
+   )}
 
- {/* Message via iMessage/SMS — template picker */}
+  {/* Message via iMessage/SMS — template picker */}
  {client.phone && (
  <SmsTemplateButton
  client={client}
@@ -1242,10 +1236,9 @@ Daniele`;
  />
  )}
 
- {/* Log Contact */}
- <TooltipProvider>
- <Tooltip>
- <TooltipTrigger asChild>
+  {/* Log Contact */}
+  <Tooltip>
+  <TooltipTrigger asChild>
  <Button
  variant="ghost"
  size="icon"
@@ -1257,13 +1250,11 @@ Daniele`;
  </Button>
  </TooltipTrigger>
  <TooltipContent className="rounded-xl font-medium text-xs p-2">Log Contact (resets follow-up grace)</TooltipContent>
- </Tooltip>
- </TooltipProvider>
+  </Tooltip>
 
- {/* Quick Book */}
- <TooltipProvider>
- <Tooltip>
- <TooltipTrigger asChild>
+  {/* Quick Book */}
+  <Tooltip>
+  <TooltipTrigger asChild>
  <Button
  variant="ghost"
  size="icon"
@@ -1274,10 +1265,9 @@ Daniele`;
  </Button>
  </TooltipTrigger>
  <TooltipContent className="rounded-xl font-medium text-xs p-2">Quick Book Session</TooltipContent>
- </Tooltip>
- </TooltipProvider>
+  </Tooltip>
 
- {/* More Actions Dropdown */}
+  {/* More Actions Dropdown */}
  <DropdownMenu>
  <DropdownMenuTrigger asChild>
  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-muted-foreground/60 hover:text-foreground">

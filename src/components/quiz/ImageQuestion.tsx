@@ -1,4 +1,4 @@
-import React from 'react';
+import type { FC } from 'react';
 import MultipleChoice from './MultipleChoice';
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 
@@ -12,7 +12,7 @@ interface ImageQuestionProps {
   isCorrect?: boolean;
 }
 
-const ImageQuestion: React.FC<ImageQuestionProps> = ({
+const ImageQuestion: FC<ImageQuestionProps> = ({
   question,
   imageUrl,
   options,

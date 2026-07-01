@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import {
   Collapsible,
   CollapsibleContent,
@@ -97,10 +98,11 @@ const LuscherColourAssessment = ({
     }
   };
 
-  const handleReset = () => {
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  const executeReset = () => {
+    setShowResetConfirm(false);
     if (!color1 && !color2) return;
-    if (!confirm("Are you sure you want to reset the Luscher Colour selection?")) return;
-    
     setColor1('');
     setColor2('');
     handleSave('', '');
@@ -129,7 +131,7 @@ const LuscherColourAssessment = ({
                     variant="outline" 
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleReset();
+                      setShowResetConfirm(true);
                     }}
                     disabled={isSaving}
                     className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3"
@@ -295,6 +297,15 @@ const LuscherColourAssessment = ({
           </CardContent>
         </CollapsibleContent>
       </Card>
+
+      <ConfirmDialog
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
+        title="Reset Luscher Colour selection?"
+        description="This will clear your current colour selection."
+        confirmLabel="Reset"
+        onConfirm={executeReset}
+      />
     </Collapsible>
   );
 };

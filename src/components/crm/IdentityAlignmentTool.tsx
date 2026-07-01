@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -105,6 +106,8 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   const progress = (phase / 5) * 100;
 
@@ -286,19 +289,19 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
     setViewingReportId(null);
   };
 
-  const deleteSession = async (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    if (!confirm("Are you sure you want to delete this session?")) return;
+  const executeDeleteSession = async () => {
+    setShowDeleteConfirm(false);
+    if (!deleteTargetId) return;
 
     try {
       const { error } = await supabase
         .from('identity_alignment_sessions')
         .delete()
-        .eq('id', id);
+        .eq('id', deleteTargetId);
 
       if (error) throw error;
       toast.success("Session deleted.");
-      if (formData.id === id) reset();
+      if (formData.id === deleteTargetId) reset();
       fetchPastSessions();
     } catch (error) {
       toast.error("Failed to delete session.");
@@ -730,7 +733,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
                       <p className="text-[9px] font-medium text-muted-foreground uppercase tracking-wider mt-0.5">Phase {session.current_phase} • {new Date(session.created_at).toLocaleDateString()}</p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-chart-destructive" onClick={(e) => deleteSession(e, session.id)}><Trash2 size={14} /></Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-chart-destructive" onClick={(e) => { e.stopPropagation(); setDeleteTargetId(session.id); setShowDeleteConfirm(true); }}><Trash2 size={14} /></Button>
                 </div>
               ))}
             </div>
@@ -761,7 +764,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-chart-destructive opacity-0 group-hover:opacity-100 transition-all" onClick={(e) => deleteSession(e, session.id)}><Trash2 size={14} /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-chart-destructive opacity-0 group-hover:opacity-100 transition-all" onClick={(e) => { e.stopPropagation(); setDeleteTargetId(session.id); setShowDeleteConfirm(true); }}><Trash2 size={14} /></Button>
                     <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-white transition-all"><ArrowRight size={14} /></div>
                   </div>
                 </div>
@@ -863,6 +866,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
           )
         )}
       </div>
+      <ConfirmDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm} title="Delete session?" description="This cannot be undone." confirmLabel="Delete" onConfirm={executeDeleteSession} />
     </div>
   );
 };

@@ -1,5 +1,4 @@
 
-import React from 'react';
 import SympatheticDownRegulation from '../SympatheticDownRegulation';
 import T1SympatheticReset from '../T1SympatheticReset';
 import DiaphragmReset from '../DiaphragmReset';

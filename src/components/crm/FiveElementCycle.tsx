@@ -1,8 +1,8 @@
 
-import React from "react";
+import { Fragment } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, Zap, Heart, Shield, ArrowRight, Info } from "lucide-react";
+import { RefreshCw, Zap, Shield, ArrowRight, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -69,12 +69,12 @@ const FiveElementCycle = () => {
           <CardContent className="p-8 pt-0 space-y-4">
             <div className="flex flex-wrap gap-3">
               {ELEMENTS.map((el, i) => (
-                <React.Fragment key={el.name}>
+                <Fragment key={el.name}>
                   <div className={cn("px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg", el.color)}>
                     {el.name}
                   </div>
                   {i < ELEMENTS.length - 1 && <ArrowRight size={16} className="mt-2 text-indigo-400" />}
-                </React.Fragment>
+                </Fragment>
               ))}
               <ArrowRight size={16} className="mt-2 text-indigo-400" />
               <div className="px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg bg-emerald-500">Wood</div>

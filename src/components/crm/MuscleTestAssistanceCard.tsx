@@ -1,5 +1,4 @@
 
-import React from "react";
 import { AlertTriangle, Zap } from "lucide-react";
 import { MUSCLE_TEST_ASSISTANCE } from "@/data/muscle-data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

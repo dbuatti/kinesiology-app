@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Fragment } from 'react';
 import { Target, Sparkles, Zap, CheckCircle2, ChevronDown, Trophy, AlertCircle, PlayCircle, HelpCircle, ChevronsUp, MousePointer2 } from 'lucide-react';
 import { getWeeklyFocus } from '@/utils/weekly-focus';
 import { cn } from '@/lib/utils';
@@ -173,13 +173,13 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
                   const videoUrl = getVideoUrl(item);
                   
                   if (!isInteractive) return (
-                    <React.Fragment key={item}>
+                    <Fragment key={item}>
                       <div className="flex items-center gap-1.5">
                         {videoUrl && <PlayCircle size={12} className="text-muted-foreground" />}
                         <span className="text-sm font-medium tracking-tight">{item}</span>
                       </div>
                       {i < items.length - 1 && <span className="text-muted-foreground/30 font-medium">•</span>}
-                    </React.Fragment>
+                    </Fragment>
                   );
 
                   return (

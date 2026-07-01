@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { EMOTION_CODE_CHART, ROW_DATA } from '@/data/emotion-code-data';
 import { cn } from '@/lib/utils';
 

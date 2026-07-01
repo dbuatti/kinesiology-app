@@ -1,5 +1,6 @@
 
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { 
   Brain, Zap, Activity, Dumbbell, Layers, ImageIcon, Baby, 
@@ -47,16 +48,19 @@ const PathwayAssessment = ({
 }: PathwayAssessmentProps) => {
   const results = useMemo(() => safeParse(initialValue, {} as Record<string, Record<string, Status>>), [initialValue]);
   const [showImages, setShowImages] = useState(true);
+  const [confirmAction, setConfirmAction] = useState<{
+    callback: () => void;
+    title: string;
+    description: string;
+  } | null>(null);
 
   const handleClearAll = async () => {
-    if (!confirm("Clear all findings for this session?")) return;
     onSave("");
     showSuccess("All findings cleared.");
   };
 
   const handleSyncPrevious = async () => {
     if (!previousValue) return;
-    if (!confirm("Sync unresolved findings from previous session?")) return;
     
     try {
       const prev = safeParse(previousValue, {} as any);
@@ -145,7 +149,11 @@ const PathwayAssessment = ({
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={handleSyncPrevious}
+                onClick={() => setConfirmAction({
+                  callback: handleSyncPrevious,
+                  title: "Sync unresolved findings?",
+                  description: "This will copy unresolved findings from the previous session."
+                })}
                 className="h-9 text-[10px] font-medium uppercase tracking-wider hover:bg-muted"
               >
                 <RefreshCw size={14} className="mr-2" /> Sync Unresolved
@@ -160,7 +168,11 @@ const PathwayAssessment = ({
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={handleClearAll}
+                onClick={() => setConfirmAction({
+                  callback: handleClearAll,
+                  title: "Clear all findings?",
+                  description: "This will remove all assessment findings for this session."
+                })}
                 className="h-9 font-medium text-[10px] text-destructive hover:bg-destructive/10 rounded-xl border border-border"
               >
                 <Trash2 size={14} className="mr-2" /> Clear All
@@ -307,6 +319,17 @@ const PathwayAssessment = ({
           showImages={showImages}
         />
       </AssessmentSection>
+      <ConfirmDialog
+        open={!!confirmAction}
+        onOpenChange={(open) => { if (!open) setConfirmAction(null); }}
+        title={confirmAction?.title || ""}
+        description={confirmAction?.description || ""}
+        confirmLabel="Confirm"
+        onConfirm={() => {
+          confirmAction?.callback();
+          setConfirmAction(null);
+        }}
+      />
     </div>
   );
 };

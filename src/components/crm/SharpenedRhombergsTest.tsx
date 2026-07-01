@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Scale, Loader2, RotateCcw, CheckCircle2, Zap, RefreshCw, ArrowRightLeft, Timer, Play, Pause, ChevronDown, FileText } from "lucide-react";
@@ -29,6 +30,7 @@ const SharpenedRhombergsTest = ({
   const [currentStatus, setCurrentStatus] = useState<'Clear' | 'Inhibited' | 'Recheck' | null>(null);
   const [isProtocolOpen, setIsProtocolOpen] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const initialLoadDone = useRef(false);
 
@@ -184,8 +186,8 @@ const SharpenedRhombergsTest = ({
     }
   };
 
-  const handleReset = async () => {
-    if (!confirm("Reset Sharpened Rhombergs Test data?")) return;
+  const executeReset = async () => {
+    setShowResetConfirm(false);
     setLoading(true);
     try {
       const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
@@ -328,7 +330,7 @@ const SharpenedRhombergsTest = ({
               <span className="text-[10px] text-muted-foreground font-medium">Saved {lastSaved}</span>
             )}
             {(initialNotes || currentStatus) && (
-              <Button variant="outline" onClick={handleReset} disabled={loading} className="h-7 px-3 rounded-lg border-red-200 text-red-600 hover:bg-red-50 text-[10px]">
+              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-7 px-3 rounded-lg border-red-200 text-red-600 hover:bg-red-50 text-[10px]">
                 <RotateCcw size={12} className="mr-1" /> Reset
               </Button>
             )}
@@ -375,6 +377,15 @@ const SharpenedRhombergsTest = ({
           </div>
         </CollapsibleContent>
       </Collapsible>
+
+      <ConfirmDialog
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
+        title="Reset Sharpened Rhombergs Test?"
+        description="This will clear all Sharpened Rhombergs Test data for this session."
+        confirmLabel="Reset"
+        onConfirm={executeReset}
+      />
     </div>
   );
 };

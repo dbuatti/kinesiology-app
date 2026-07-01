@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import { useState, Children } from 'react';
+import type { ReactNode } from 'react';
 import { 
   ChevronRight, 
   ChevronDown, 
@@ -30,7 +31,7 @@ import { Progress } from "@/components/ui/progress";
 
 interface FractalNodeProps {
   item: any;
-  children?: React.ReactNode;
+  children?: ReactNode;
   level: number;
   onUpdateRating: (id: string, rating: number) => void;
   onDelete: (id: string) => void;
@@ -52,7 +53,7 @@ const FractalNode = ({
   sessionCount
 }: FractalNodeProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
-  const hasChildren = React.Children.count(children) > 0;
+  const hasChildren = Children.count(children) > 0;
 
   // Tier Logic: 
   // Level 0 + Children = Grandparent (Tier 3)

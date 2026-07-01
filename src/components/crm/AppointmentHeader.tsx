@@ -1,5 +1,5 @@
 
-import React, { useMemo } from "react";
+	import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { 
@@ -22,7 +22,6 @@ import {
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { APPOINTMENT_STATUSES } from "@/data/appointment-data";
@@ -104,8 +103,7 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
           ID: {appointment.display_id || appointment.id.slice(0,8)}
         </Badge>
 
-        <TooltipProvider>
-          <Tooltip>
+        <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border bg-muted text-muted-foreground text-xs font-medium">
                 <ShieldAlert size={12} />
@@ -116,16 +114,14 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
               <p className="text-xs">Threat level based on brainstem nuclei inhibition</p>
             </TooltipContent>
           </Tooltip>
-        </TooltipProvider>
 
-        <TooltipProvider>
-          <Tooltip>
+        <Tooltip>
             <TooltipTrigger asChild>
               <button onClick={handlePaymentClick} className={cn(
                 "flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border text-xs font-medium transition-colors",
-                appointment.is_paid && appointment.payment_received ? "bg-muted text-muted-foreground" :
-                appointment.is_paid ? "bg-muted text-muted-foreground" :
-                "bg-muted text-muted-foreground"
+                !appointment.is_paid ? "bg-muted text-muted-foreground" :
+                appointment.payment_received ? "bg-chart-emerald/10 text-chart-emerald border-chart-emerald/20" :
+                "bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-amber-200/50 dark:border-amber-800/30"
               )}>
                 <CreditCard size={12} />
                 {!appointment.is_paid ? "Free" : appointment.payment_received ? "Paid" : `$${appointment.price_amount || 50}`}
@@ -135,7 +131,6 @@ const AppointmentHeader = ({ appointment, onSaveField, onUpdate }: AppointmentHe
               <p className="text-xs">Click to toggle payment status</p>
             </TooltipContent>
           </Tooltip>
-        </TooltipProvider>
 
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border bg-muted text-muted-foreground text-xs font-medium">
           <Droplets size={12} />

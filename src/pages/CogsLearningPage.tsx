@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { BookOpen, Move, ArrowUpDown, RotateCw, Brain, Eye, Link as LinkIcon } from 'lucide-react';
 import AppLayout from '@/components/crm/AppLayout';
 

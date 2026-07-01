@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -159,13 +160,14 @@ const InteractiveIntentionWorksheet = () => {
     }
   };
 
-  const handleReset = () => {
-    if (confirm("Are you sure you want to clear your entire worksheet? This cannot be undone.")) {
-      setFormData({});
-      localStorage.removeItem(STORAGE_KEY);
-      setCurrentStep(0);
-      showSuccess("Worksheet reset.");
-    }
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  const executeReset = () => {
+    setShowResetConfirm(false);
+    setFormData({});
+    localStorage.removeItem(STORAGE_KEY);
+    setCurrentStep(0);
+    showSuccess("Worksheet reset.");
   };
 
   if (!isLoaded) return null;
@@ -318,7 +320,7 @@ const InteractiveIntentionWorksheet = () => {
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                onClick={handleReset}
+                onClick={() => setShowResetConfirm(true)}
                 className="rounded-xl h-12 px-4 border-slate-200 text-slate-400 hover:text-rose-600"
               >
                 <RotateCcw size={18} />
@@ -419,6 +421,14 @@ const InteractiveIntentionWorksheet = () => {
           </Card>
         </div>
       )}
+      <ConfirmDialog
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
+        title="Clear entire worksheet?"
+        description="This will reset all your worksheet entries. This cannot be undone."
+        confirmLabel="Clear"
+        onConfirm={executeReset}
+      />
     </div>
   );
 };

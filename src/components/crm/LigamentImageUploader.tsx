@@ -5,6 +5,7 @@ import { Upload, X, Loader2, ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from "@/integrations/supabase/client";
 import { showError, showSuccess } from '@/utils/toast';
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 const BUCKET_NAME = 'ligament-images';
 
@@ -21,6 +22,7 @@ const LigamentImageUploader = ({ userId, category, imageIndex, initialUrl, onUpl
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -65,10 +67,8 @@ const LigamentImageUploader = ({ userId, category, imageIndex, initialUrl, onUpl
     }
   };
 
-  const handleRemove = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!confirm(`Remove this image?`)) return;
-
+  const executeDelete = async () => {
+    setShowDeleteConfirm(false);
     try {
       const { error } = await supabase
         .from('ligament_images')
@@ -113,7 +113,7 @@ const LigamentImageUploader = ({ userId, category, imageIndex, initialUrl, onUpl
             <img key={initialUrl} src={initialUrl} alt={title} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
               <Button variant="secondary" size="icon" className="rounded-xl h-8 w-8 shadow-lg"><Upload size={14} /></Button>
-              <Button variant="destructive" size="icon" className="rounded-xl h-8 w-8 shadow-lg" onClick={handleRemove}><X size={14} /></Button>
+              <Button variant="destructive" size="icon" className="rounded-xl h-8 w-8 shadow-lg" onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}><X size={14} /></Button>
             </div>
           </>
         ) : (
@@ -131,6 +131,13 @@ const LigamentImageUploader = ({ userId, category, imageIndex, initialUrl, onUpl
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title="Remove image?"
+        description="This will remove this image."
+        onConfirm={executeDelete}
+      />
     </div>
   );
 };

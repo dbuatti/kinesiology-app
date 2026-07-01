@@ -25,7 +25,6 @@ import {
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
@@ -180,7 +179,6 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
 
       {/* Current Peak Meridian */}
       {currentPeakMeridian && (
-        <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
               <Card className={cn(
@@ -213,7 +211,6 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
               </p>
             </TooltipContent>
           </Tooltip>
-        </TooltipProvider>
       )}
 
       {/* Payment Management */}

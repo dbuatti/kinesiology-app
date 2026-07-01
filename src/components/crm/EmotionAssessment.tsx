@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import {
   Collapsible,
   CollapsibleContent,
@@ -38,6 +39,7 @@ const EmotionAssessment = ({
   const [primarySelection, setPrimarySelection] = useState<string>(initialPrimary || '');
   const [secondarySelections, setSecondarySelections] = useState<string[]>(initialSecondary || []);
   const [isSaving, setIsSaving] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   useEffect(() => {
     setMode(initialMode || 'channel');
@@ -86,9 +88,8 @@ const EmotionAssessment = ({
     handleSave(mode, primarySelection, newSelections);
   };
 
-  const handleReset = async () => {
-    if (!confirm("Are you sure you want to reset the Emotional Assessment data?")) return;
-    
+  const executeReset = async () => {
+    setShowResetConfirm(false);
     setIsSaving(true);
     try {
       await Promise.all([
@@ -149,7 +150,7 @@ const EmotionAssessment = ({
                     variant="outline" 
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleReset();
+                      setShowResetConfirm(true);
                     }}
                     disabled={isSaving}
                     className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3"
@@ -290,6 +291,15 @@ const EmotionAssessment = ({
           </CardContent>
         </CollapsibleContent>
       </Card>
+
+      <ConfirmDialog
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
+        title="Reset Emotional Assessment?"
+        description="This will clear all emotional assessment data for this session."
+        confirmLabel="Reset"
+        onConfirm={executeReset}
+      />
     </Collapsible>
   );
 };

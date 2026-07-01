@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { VAGUS_ASSOCIATIONS, VAGAL_FUNCTIONS, HAND_REFLEXOLOGY, VAGAL_GLANDS } from '@/data/vagus-data';
 import { showSuccess } from '@/utils/toast';
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import DocInput from './DocInput';
 
 interface EaseSectionProps {
@@ -46,6 +47,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
   const [correctionTime, setCorrectionTime] = useState(30);
   const [isCorrectionActive, setIsCorrectionActive] = useState(false);
   const [isCleared, setIsCleared] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const correctionTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -102,8 +104,8 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
     };
   }, [selectedAssociation]);
 
-  const handleResetProtocol = () => {
-    if (!confirm("Reset Vagus Nerve protocol state?")) return;
+  const executeReset = () => {
+    setShowResetConfirm(false);
     setReflexPoint("Occiput");
     setAuricularSide("Left");
     setVagusSide("Left");
@@ -218,7 +220,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
                 <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-sm bg-foreground text-background">Screen</span>
               </div>
               <div className="flex items-center gap-2">
-                <button type="button" onClick={handleResetProtocol} className="text-[10px] font-semibold text-chart-destructive uppercase tracking-wider hover:underline">
+                <button type="button" onClick={() => setShowResetConfirm(true)} className="text-[10px] font-semibold text-chart-destructive uppercase tracking-wider hover:underline">
                   Reset
                 </button>
                 <Checkbox 
@@ -371,6 +373,13 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
           onChange={handleFieldChange}
         />
       </div>
+      <ConfirmDialog
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
+        title="Reset Vagus Nerve protocol state?"
+        description="This will clear all current selections and reset the protocol."
+        onConfirm={executeReset}
+      />
     </div>
   );
 };

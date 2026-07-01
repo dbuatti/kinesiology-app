@@ -1,5 +1,5 @@
 
-import React from 'react';
+import type { ReactNode } from 'react';
 import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
 import { CRANIAL_NERVES } from '@/data/cranial-nerve-data';
 import { MUSCLE_GROUPS, MIDLINE_MUSCLES } from '@/data/muscle-data';
@@ -10,7 +10,7 @@ interface AlignSectionProps {
   onToggle: (category: string, name: string, nextStatus: string, side?: 'L' | 'R') => void;
 }
 
-const SubHeader = ({ id, children }: { id?: string; children: React.ReactNode }) => (
+const SubHeader = ({ id, children }: { id?: string; children: ReactNode }) => (
   <h3 id={id} className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 mt-10 border-l-4 border-slate-200 pl-3 scroll-mt-24">{children}</h3>
 );
 

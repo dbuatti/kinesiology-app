@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import {
   Collapsible,
   CollapsibleContent,
@@ -29,6 +30,7 @@ const DiaphragmReset = ({
 }: DiaphragmResetProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // Timer State
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
@@ -61,8 +63,8 @@ const DiaphragmReset = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleReset = async () => {
-    if (!confirm("Are you sure you want to reset the Diaphragm Reset notes?")) return;
+  const executeReset = async () => {
+    setShowResetConfirm(false);
     setLoading(true);
     try {
       const { error } = await supabase
@@ -103,7 +105,7 @@ const DiaphragmReset = ({
                     variant="outline" 
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleReset();
+                      setShowResetConfirm(true);
                     }}
                     disabled={loading}
                     className="border-border text-muted-foreground hover:bg-muted h-8 px-3"
@@ -196,6 +198,15 @@ const DiaphragmReset = ({
           </CardContent>
         </CollapsibleContent>
       </Card>
+
+      <ConfirmDialog
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
+        title="Reset Diaphragm Reset notes?"
+        description="This will clear all diaphragm reset notes for this session."
+        confirmLabel="Reset"
+        onConfirm={executeReset}
+      />
     </Collapsible>
   );
 };

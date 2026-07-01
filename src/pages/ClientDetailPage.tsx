@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type MouseEvent } from "react";
 import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { getClientRollups } from "@/utils/crm-utils";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,6 +59,7 @@ const ClientDetailPage = () => {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [aiCopying, setAiCopying] = useState(false);
   const [linkCopying, setLinkCopying] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [syncingKit, setSyncingKit] = useState(false);
   const [syncingStripe, setSyncingStripe] = useState(false);
@@ -108,7 +110,7 @@ const ClientDetailPage = () => {
     }
   };
 
-  const handleGeneratePaymentLink = async (e: React.MouseEvent, app: Appointment) => {
+  const handleGeneratePaymentLink = async (e: MouseEvent, app: Appointment) => {
     e.preventDefault();
     e.stopPropagation();
     if (!client) return;
@@ -287,8 +289,8 @@ const ClientDetailPage = () => {
     showSuccess("Full session summary copied!");
   };
 
-  const handleDeleteClient = async () => {
-    if (!confirm("Are you sure you want to delete this client? This will remove all their appointments too.")) return;
+  const executeDelete = async () => {
+    setShowDeleteConfirm(false);
     try {
       const { error = null } = await supabase.from('clients').delete().eq('id', id);
       if (error) throw error;
@@ -398,7 +400,7 @@ const ClientDetailPage = () => {
                       <DropdownMenuSeparator className="my-2" />
                       <DropdownMenuItem 
                           className="text-destructive focus:text-destructive rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"
-                          onClick={handleDeleteClient}
+                          onClick={() => setShowDeleteConfirm(true)}
                       >
                           <Trash2 size={16} /> Delete Client
                       </DropdownMenuItem>
@@ -971,6 +973,14 @@ const ClientDetailPage = () => {
           onComplete={fetchClientData}
         />
       )}
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title="Delete Client"
+        description="Are you sure you want to delete this client? This will remove all their appointments too."
+        onConfirm={executeDelete}
+      />
     </AppLayout>
   );
 };

@@ -1,4 +1,3 @@
-import React from "react";
 import { Settings, Mail, Link as LinkIcon, Sparkles, Globe, Calendar, ExternalLink, FileText, Bug, FlaskConical, Workflow, ClipboardList, Eye, Share2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/crm/AppLayout";

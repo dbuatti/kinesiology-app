@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { MUSCLE_INFO_DETAILS } from "@/data/muscle-info-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
@@ -49,8 +50,9 @@ const OUTLINE_ITEMS = [
 const PracticeNotes = () => {
  const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
  const [textData, setTextData] = useState<Record<string, string>>({});
- const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
- const [customImages, setCustomImages] = useState<Record<string, ReflexImages>>({});
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [customImages, setCustomImages] = useState<Record<string, ReflexImages>>({});
  const [loading, setLoading] = useState(true);
 
  useEffect(() => {
@@ -132,22 +134,21 @@ const PracticeNotes = () => {
  setCollapsedSections((prev) => ({ ...prev, [id]: !prev[id] }));
  };
 
- const resetDocument = () => {
- if (window.confirm("Are you sure you want to clear all notes and checkboxes?")) {
- setCheckedItems({});
- setTextData({});
- setCollapsedSections({});
- localStorage.removeItem(CHECKED_STORAGE_KEY);
- localStorage.removeItem(TEXT_STORAGE_KEY);
- localStorage.removeItem(COLLAPSED_STORAGE_KEY);
- }
- };
+  const executeClear = () => {
+  setShowClearConfirm(false);
+  setCheckedItems({});
+  setTextData({});
+  setCollapsedSections({});
+  localStorage.removeItem(CHECKED_STORAGE_KEY);
+  localStorage.removeItem(TEXT_STORAGE_KEY);
+  localStorage.removeItem(COLLAPSED_STORAGE_KEY);
+  };
 
  const handlePrint = () => {
  window.print();
  };
 
- const Section = ({ id, title, children }: { id: string; title: string; children: React.ReactNode }) => {
+  const Section = ({ id, title, children }: { id: string; title: string; children: ReactNode }) => {
  const isCollapsed = !!collapsedSections[id];
  return (
  <Collapsible 
@@ -713,22 +714,31 @@ const PracticeNotes = () => {
  }}
  placeholder="Type your clinical observations here..."
  />
- </div>
- </div>
- </div>
- </div>
+  </div>
+  </div>
+  </div>
 
- {/* Floating Action Buttons for Docs feel */}
- <div className="fixed bottom-8 right-8 flex flex-col gap-3 print:hidden">
- <Button variant="outline" size="icon" onClick={resetDocument} className="h-12 w-12 rounded-full shadow-sm bg-white border-border text-muted-foreground hover:text-chart-destructive">
- <RotateCcw size={20} />
- </Button>
- <Button onClick={handlePrint} className="h-14 w-14 rounded-full shadow-sm bg-primary hover:bg-blue-700 text-white">
- <Printer size={24} />
- </Button>
- </div>
- </div>
- );
+  {/* Floating Action Buttons for Docs feel */}
+  <div className="fixed bottom-8 right-8 flex flex-col gap-3 print:hidden">
+  <Button variant="outline" size="icon" onClick={() => setShowClearConfirm(true)} className="h-12 w-12 rounded-full shadow-sm bg-white border-border text-muted-foreground hover:text-chart-destructive">
+  <RotateCcw size={20} />
+  </Button>
+  <Button onClick={handlePrint} className="h-14 w-14 rounded-full shadow-sm bg-primary hover:bg-blue-700 text-white">
+  <Printer size={24} />
+  </Button>
+  </div>
+
+  <ConfirmDialog
+    open={showClearConfirm}
+    onOpenChange={setShowClearConfirm}
+    title="Clear All Notes"
+    description="Are you sure you want to clear all notes and checkboxes?"
+    confirmLabel="Clear"
+    onConfirm={executeClear}
+  />
+  </div>
+  </div>
+  );
 };
 
 export default PracticeNotes;

@@ -1,7 +1,8 @@
 
-import React, { useState, useEffect, useRef } from "react";
-import { Activity, ChevronDown, Heart, Brain, RotateCcw, Zap, RefreshCw, Loader2, CheckCircle2, Info } from "lucide-react";
+	import { useState, useEffect, useRef } from "react";
+import { Activity, ChevronDown, Heart, Brain, RotateCcw, RefreshCw, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { showSuccess, showError } from "@/utils/toast";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -36,6 +37,7 @@ const CoherenceAssessment = ({
 }: CoherenceAssessmentProps) => {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   
   const [heartRateRaw, setHeartRateRaw] = useState<string>(initialHeartRate ? (initialHeartRate / 2).toString() : '');
   const [breathRateRaw, setBreathRateRaw] = useState<string>(initialBreathRate ? (initialBreathRate / 2).toString() : '');
@@ -115,8 +117,8 @@ const CoherenceAssessment = ({
     }
   };
 
-  const handleReset = async () => {
-    if (!confirm("Reset coherence data?")) return;
+  const executeReset = async () => {
+    setShowResetConfirm(false);
     setLoading(true);
     try {
       if (appointmentId && appointmentId !== "temp") {
@@ -256,7 +258,7 @@ const CoherenceAssessment = ({
                   </Button>
                 )}
                 {hasSavedData && (
-                  <Button variant="ghost" onClick={handleReset} className="text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 h-10 px-3 rounded-xl">
+                  <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 h-10 px-3 rounded-xl">
                     <RotateCcw size={14} />
                   </Button>
                 )}
@@ -265,6 +267,15 @@ const CoherenceAssessment = ({
           </div>
         </CollapsibleContent>
       </Collapsible>
+
+      <ConfirmDialog
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
+        title="Reset coherence data?"
+        description="This will clear all heart rate, breath rate, and coherence score data for this session."
+        confirmLabel="Reset"
+        onConfirm={executeReset}
+      />
     </div>
   );
 };

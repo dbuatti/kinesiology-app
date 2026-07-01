@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Footprints, Info, Save, Loader2, RotateCcw, CheckCircle2, Zap, RefreshCw, ArrowRightLeft, Timer, Play, Pause, ChevronDown, FileText } from "lucide-react";
@@ -25,6 +26,7 @@ const FakudaStepTest = ({
   onUpdate 
 }: FakudaStepTestProps) => {
   const [loading, setLoading] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [fakudaNotes, setFakudaNotes] = useState(initialFakudaNotes || '');
   const [currentStatus, setCurrentStatus] = useState<'Clear' | 'Inhibited' | 'Recheck' | null>(null);
   const [isProtocolOpen, setIsProtocolOpen] = useState(false);
@@ -186,8 +188,8 @@ const FakudaStepTest = ({
     }
   };
 
-  const handleReset = async () => {
-    if (!confirm("Reset Fukuda Step Test data?")) return;
+  const executeReset = async () => {
+    setShowResetConfirm(false);
     setLoading(true);
     try {
       const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
@@ -326,7 +328,7 @@ const FakudaStepTest = ({
               <span className="text-[10px] text-muted-foreground font-medium">Saved {lastSaved}</span>
             )}
             {(initialFakudaNotes || currentStatus) && (
-              <Button variant="outline" onClick={handleReset} disabled={loading} className="h-7 px-3 rounded-lg border-red-200 text-red-600 hover:bg-red-50 text-[10px]">
+              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-7 px-3 rounded-lg border-red-200 text-red-600 hover:bg-red-50 text-[10px]">
                 <RotateCcw size={12} className="mr-1" /> Reset
               </Button>
             )}
@@ -371,6 +373,15 @@ const FakudaStepTest = ({
           </div>
         </CollapsibleContent>
       </Collapsible>
+
+      <ConfirmDialog
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
+        title="Reset Fukuda Step Test?"
+        description="This will clear all Fukuda Step Test data for this session."
+        confirmLabel="Reset"
+        onConfirm={executeReset}
+      />
     </div>
   );
 };

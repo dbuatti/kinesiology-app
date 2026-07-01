@@ -1,5 +1,4 @@
 
-import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Youtube, ExternalLink, PlayCircle, User, Sparkles, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";

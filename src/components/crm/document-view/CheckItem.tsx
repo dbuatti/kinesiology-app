@@ -1,5 +1,5 @@
 
-import React from 'react';
+import type { MouseEvent } from 'react';
 import { Check, ArrowDown, ArrowUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -31,7 +31,7 @@ const CheckItem = ({ category, name, side, pattern, onToggle }: CheckItemProps) 
     ? (baseStatus === 'Inhibition' || baseStatus === 'Inhibited' ? 'Inhibited' : baseStatus === 'Hypertonic' ? 'Hypertonic' : 'Clear')
     : (baseStatus === 'Inhibited' ? 'Inhibited' : 'Clear');
 
-  const handleCycle = (e: React.MouseEvent) => {
+  const handleCycle = (e: MouseEvent) => {
     e.stopPropagation();
     let nextStatus = 'Clear';
 

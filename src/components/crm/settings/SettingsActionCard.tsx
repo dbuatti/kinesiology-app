@@ -1,5 +1,5 @@
 
-import React from 'react';
+import type { ComponentType } from 'react';
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -8,7 +8,7 @@ interface SettingsActionCardProps {
   title: string;
   description: string;
   buttonText: string;
-  buttonIcon: React.ComponentType<any>;
+  buttonIcon: ComponentType<any>;
   onClick: () => void;
   loading: boolean;
   themeColor?: 'purple' | 'indigo' | 'emerald' | 'amber' | 'rose';

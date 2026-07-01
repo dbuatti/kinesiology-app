@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef, type DragEvent } from 'react';
+import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -138,10 +139,12 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  const [applyingMoves, setApplyingMoves] = useState(false);
  const [draggingClientId, setDraggingClientId] = useState<string | null>(null);
  const [dragOverKey, setDragOverKey] = useState<string | null>(null);
- const [manualPlacements, setManualPlacements] = useState<Record<string, ManualPlacement>>({});
- const [pendingSaves, setPendingSaves] = useState<Set<string>>(new Set());
- const [isSaving, setIsSaving] = useState(false);
- const [isLocked, setIsLocked] = useState(() => localStorage.getItem('timetable_locked') === 'true');
+  const [manualPlacements, setManualPlacements] = useState<Record<string, ManualPlacement>>({});
+  const [pendingSaves, setPendingSaves] = useState<Set<string>>(new Set());
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLocked, setIsLocked] = useState(() => localStorage.getItem('timetable_locked') === 'true');
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showApplyConfirm, setShowApplyConfirm] = useState(false);
 
  const activeClients = useMemo(() => {
  const now = new Date();
@@ -315,11 +318,22 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  return seen.size;
  }, [activeGrid]);
 
- // Handlers
- const handleApplyOptimizedSchedule = async () => {
- if (!optimizedData.proposedMoves.length) return;
- if (!confirm(`Apply auto-resolved schedule for ${optimizedData.proposedMoves.length} client${optimizedData.proposedMoves.length > 1 ? "s" : ""}?`)) return;
- setApplyingMoves(true);
+  const autoSave = useCallback(async (clientId: string, placement: ManualPlacement | null) => {
+    try {
+      const { error } = await supabase.from("clients")
+        .update({ preferred_time: placement ? `${placement.day}s at ${TIME_LABELS[placement.slot]}` : null })
+        .eq("id", clientId);
+      if (error) console.error("Auto-save failed:", error);
+    } catch (err) {
+      console.error("Auto-save failed:", err);
+    }
+  }, []);
+
+  // Handlers
+  const executeApplySchedule = async () => {
+  if (!optimizedData.proposedMoves.length) return;
+  setShowApplyConfirm(false);
+  setApplyingMoves(true);
  try {
  const now = new Date().toISOString();
  for (const move of optimizedData.proposedMoves) {
@@ -338,7 +352,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  }
  };
 
- const handleDragStart = useCallback((e: React.DragEvent, clientId: string) => {
+ const handleDragStart = useCallback((e: DragEvent, clientId: string) => {
  if (isLocked) { e.preventDefault(); return; }
  setDraggingClientId(clientId);
  e.dataTransfer.effectAllowed = "move";
@@ -350,38 +364,40 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  setDragOverKey(null);
  }, []);
 
- const handleDragOver = useCallback((e: React.DragEvent, key: string) => {
+ const handleDragOver = useCallback((e: DragEvent, key: string) => {
  if (isLocked) return;
  e.preventDefault();
  e.dataTransfer.dropEffect = "move";
  setDragOverKey(key);
  }, [isLocked]);
 
- const handleDragLeave = useCallback((e: React.DragEvent) => {
+ const handleDragLeave = useCallback((e: DragEvent) => {
  if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOverKey(null);
  }, []);
 
- const handleDrop = useCallback((e: React.DragEvent, week: 1 | 2, day: string, slot: string) => {
- if (isLocked) return;
- e.preventDefault();
- const clientId = e.dataTransfer.getData("clientId");
- if (!clientId) return;
- setManualPlacements(prev => ({ ...prev, [clientId]: { week, day, slot } }));
- setPendingSaves(prev => new Set(prev).add(clientId));
- setDragOverKey(null);
- setDraggingClientId(null);
- }, [isLocked]);
+  const handleDrop = useCallback((e: DragEvent, week: 1 | 2, day: string, slot: string) => {
+  if (isLocked) return;
+  e.preventDefault();
+  const clientId = e.dataTransfer.getData("clientId");
+  if (!clientId) return;
+  setManualPlacements(prev => ({ ...prev, [clientId]: { week, day, slot } }));
+  setPendingSaves(prev => new Set(prev).add(clientId));
+  autoSave(clientId, { week, day, slot });
+  setDragOverKey(null);
+  setDraggingClientId(null);
+  }, [isLocked, autoSave]);
 
- const handleDropUnscheduled = useCallback((e: React.DragEvent) => {
- if (isLocked) return;
- e.preventDefault();
- const clientId = e.dataTransfer.getData("clientId");
- if (!clientId) return;
- setManualPlacements(prev => ({ ...prev, [clientId]: null }));
- setPendingSaves(prev => new Set(prev).add(clientId));
- setDragOverKey(null);
- setDraggingClientId(null);
- }, [isLocked]);
+  const handleDropUnscheduled = useCallback((e: DragEvent) => {
+  if (isLocked) return;
+  e.preventDefault();
+  const clientId = e.dataTransfer.getData("clientId");
+  if (!clientId) return;
+  setManualPlacements(prev => ({ ...prev, [clientId]: null }));
+  setPendingSaves(prev => new Set(prev).add(clientId));
+  autoSave(clientId, null);
+  setDragOverKey(null);
+  setDraggingClientId(null);
+  }, [isLocked, autoSave]);
 
  const handleResetPlacement = useCallback((clientId: string) => {
  setManualPlacements(prev => { const n = { ...prev }; delete n[clientId]; return n; });
@@ -737,7 +753,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  {optimizedData.proposedMoves.length} client{optimizedData.proposedMoves.length > 1 ? "s" : ""} moved to open slots.
  </CardDescription>
  </div>
- <Button onClick={handleApplyOptimizedSchedule} disabled={applyingMoves}
+  <Button onClick={() => setShowApplyConfirm(true)} disabled={applyingMoves}
  className="bg-chart-emerald hover:bg-chart-emerald/90 text-white rounded-xl h-9 px-6 font-semibold text-[10px] uppercase tracking-wider shrink-0">
  {applyingMoves ? <Loader2 className="mr-2 animate-spin" size={13} /> : <CheckCircle2 size={13} className="mr-2" />}
  Apply Schedule
@@ -905,10 +921,18 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  <p className="text-[10px] text-muted-foreground/60">Drag clients between slots to rearrange the schedule.</p>
  </CardContent>
  </Card>
- )}
- </div>
- </div>
- );
+  )}
+
+  <ConfirmDialog
+    open={showApplyConfirm}
+    onOpenChange={setShowApplyConfirm}
+    title="Apply Resolved Schedule"
+    description={`Apply auto-resolved schedule for ${optimizedData.proposedMoves.length} client${optimizedData.proposedMoves.length > 1 ? "s" : ""}?`}
+    onConfirm={executeApplySchedule}
+  />
+  </div>
+  </div>
+  );
 };
 
 export default TimetableVisualizer;

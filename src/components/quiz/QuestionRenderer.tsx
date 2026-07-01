@@ -1,4 +1,4 @@
-import React from 'react';
+import type { FC } from 'react';
 import { Question } from "@/utils/quiz-engine";
 import MultipleChoice from "./MultipleChoice";
 import FillInTheBlank from "./FillInTheBlank";
@@ -12,7 +12,7 @@ interface QuestionRendererProps {
   isCorrect?: boolean;
 }
 
-const QuestionRenderer: React.FC<QuestionRendererProps> = ({
+const QuestionRenderer: FC<QuestionRendererProps> = ({
   question,
   onAnswer,
   selectedAnswer,

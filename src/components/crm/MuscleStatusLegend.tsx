@@ -1,5 +1,4 @@
 
-import React from "react";
 import { cn } from "@/lib/utils";
 import { MUSCLE_STATUSES } from "@/data/muscle-data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

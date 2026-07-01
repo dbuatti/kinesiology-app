@@ -1,5 +1,4 @@
 
-import React from "react";
 import AppLayout from "@/components/crm/AppLayout";
 
 import InteractiveIntentionWorksheet from "@/components/crm/InteractiveIntentionWorksheet";

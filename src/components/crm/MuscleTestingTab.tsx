@@ -1,10 +1,11 @@
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, RotateCcw, Zap, Sparkles, Trash2, Filter, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { MUSCLE_GROUPS, PRIMARY_14_MUSCLES, MuscleStatus, MIDLINE_MUSCLES } from "@/data/muscle-data";
 import { MuscleTestResult } from "@/types/crm";
 import MuscleInfoModal from "./MuscleInfoModal";
@@ -41,6 +42,13 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
   const [logicModalOpen, setLogicModalOpen] = useState(false);
   
   const { counts: proficiencyCounts } = useMuscleProficiency();
+
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+  }>({ open: false, title: "", description: "", onConfirm: () => {} });
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
@@ -151,25 +159,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
     }
   };
 
-  const handleQuickLog14 = async () => {
-    if (appointmentId === DEMO_ID) {
-      const newResults = { ...results };
-      PRIMARY_14_MUSCLES.forEach(name => {
-        const isMidline = MIDLINE_MUSCLES.includes(name);
-        if (isMidline) {
-          newResults[name] = { id: 'demo-' + name, appointment_id: DEMO_ID, muscle_name: name, status: 'Normotonic', created_at: new Date().toISOString() } as MuscleTestResult;
-        } else {
-          newResults[`${name} (L)`] = { id: 'demo-' + name + '-L', appointment_id: DEMO_ID, muscle_name: `${name} (L)`, status: 'Normotonic', created_at: new Date().toISOString() } as MuscleTestResult;
-          newResults[`${name} (R)`] = { id: 'demo-' + name + '-R', appointment_id: DEMO_ID, muscle_name: `${name} (R)`, status: 'Normotonic', created_at: new Date().toISOString() } as MuscleTestResult;
-        }
-      });
-      setResults(newResults);
-      showSuccess("14 Primary Muscles logged (Demo Mode)!");
-      return;
-    }
-
-    if (!confirm("This will log all 14 Primary Muscles (Bilateral) as 'Normotonic'. Continue?")) return;
-    
+  const executeQuickLog14 = async () => {
     setSaving(true);
     try {
       const user = (await supabase.auth.getUser()).data.user;
@@ -205,16 +195,36 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
     }
   };
 
-  const handleClearAll = async () => {
-    if (Object.keys(results).length === 0) return;
-    if (!confirm("Clear ALL muscle test results for this session?")) return;
+  const handleQuickLog14 = () => {
+    if (appointmentId === DEMO_ID) {
+      const newResults = { ...results };
+      PRIMARY_14_MUSCLES.forEach(name => {
+        const isMidline = MIDLINE_MUSCLES.includes(name);
+        if (isMidline) {
+          newResults[name] = { id: 'demo-' + name, appointment_id: DEMO_ID, muscle_name: name, status: 'Normotonic', created_at: new Date().toISOString() } as MuscleTestResult;
+        } else {
+          newResults[`${name} (L)`] = { id: 'demo-' + name + '-L', appointment_id: DEMO_ID, muscle_name: `${name} (L)`, status: 'Normotonic', created_at: new Date().toISOString() } as MuscleTestResult;
+          newResults[`${name} (R)`] = { id: 'demo-' + name + '-R', appointment_id: DEMO_ID, muscle_name: `${name} (R)`, status: 'Normotonic', created_at: new Date().toISOString() } as MuscleTestResult;
+        }
+      });
+      setResults(newResults);
+      showSuccess("14 Primary Muscles logged (Demo Mode)!");
+      return;
+    }
+    setConfirmDialog({
+      open: true,
+      title: "Log 14 Primary Muscles?",
+      description: "This will log all 14 Primary Muscles (bilateral) as 'Normotonic'. Continue?",
+      onConfirm: executeQuickLog14,
+    });
+  };
 
+  const executeClearAll = async () => {
     if (appointmentId === DEMO_ID) {
       setResults({});
       showSuccess("All muscle tests cleared (Demo Mode).");
       return;
     }
-
     setSaving(true);
     try {
       const { error } = await supabase.from("muscle_tests").delete().eq('appointment_id', appointmentId);
@@ -228,37 +238,55 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
     }
   };
 
-  const handleClearMuscle = async (muscleName: string, side?: 'L' | 'R') => {
+  const handleClearAll = () => {
+    if (Object.keys(results).length === 0) return;
+    setConfirmDialog({
+      open: true,
+      title: "Clear all muscle tests?",
+      description: "This will remove ALL muscle test results for this session.",
+      onConfirm: executeClearAll,
+    });
+  };
+
+  const handleClearMuscle = (muscleName: string, side?: 'L' | 'R') => {
     const dbMuscleName = side ? `${muscleName} (${side})` : muscleName;
     const result = results[dbMuscleName];
     if (!result) return;
-    if (!confirm(`Clear test result for ${dbMuscleName}?`)) return;
 
-    if (appointmentId === DEMO_ID) {
-      setResults(prev => {
-        const newResults = { ...prev };
-        delete newResults[dbMuscleName];
-        return newResults;
-      });
-      showSuccess(`${dbMuscleName} test cleared (Demo Mode).`);
-      return;
-    }
+    const executeClear = async () => {
+      setConfirmDialog(prev => ({ ...prev, open: false }));
+      if (appointmentId === DEMO_ID) {
+        setResults(prev => {
+          const newResults = { ...prev };
+          delete newResults[dbMuscleName];
+          return newResults;
+        });
+        showSuccess(`${dbMuscleName} test cleared (Demo Mode).`);
+        return;
+      }
+      setSaving(true);
+      try {
+        const { error } = await supabase.from("muscle_tests").delete().eq('id', result.id);
+        if (error) throw error;
+        setResults(prev => {
+          const newResults = { ...prev };
+          delete newResults[dbMuscleName];
+          return newResults;
+        });
+        showSuccess(`${dbMuscleName} test cleared.`);
+      } catch (error: any) {
+        showError(`Failed to clear ${dbMuscleName} test.`);
+      } finally {
+        setSaving(false);
+      }
+    };
 
-    setSaving(true);
-    try {
-      const { error } = await supabase.from("muscle_tests").delete().eq('id', result.id);
-      if (error) throw error;
-      setResults(prev => {
-        const newResults = { ...prev };
-        delete newResults[dbMuscleName];
-        return newResults;
-      });
-      showSuccess(`${dbMuscleName} test cleared.`);
-    } catch (error: any) {
-      showError(`Failed to clear ${dbMuscleName} test.`);
-    } finally {
-      setSaving(false);
-    }
+    setConfirmDialog({
+      open: true,
+      title: `Clear test for ${dbMuscleName}?`,
+      description: `Remove the test result for ${dbMuscleName}.`,
+      onConfirm: executeClear,
+    });
   };
 
   const filteredGroups = useMemo(() => {
@@ -397,6 +425,15 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
         status={selectedStatusForLogic} 
         open={logicModalOpen} 
         onOpenChange={setLogicModalOpen} 
+      />
+
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+        confirmLabel={confirmDialog.title.startsWith("Clear") ? "Clear" : "Log"}
+        onConfirm={confirmDialog.onConfirm}
       />
     </div>
   );

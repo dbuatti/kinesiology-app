@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 interface JournalTabProps {
   appointmentId: string;
@@ -37,6 +38,7 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [analyzingId, setAnalyzingId] = useState<string | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   const fetchReflections = async () => {
     try {
@@ -114,11 +116,12 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Delete this reflection?")) return;
+  const executeDelete = async () => {
+    if (!deleteTargetId) return;
+    setDeleteTargetId(null);
     try {
-      await supabase.from('practitioner_reflections').delete().eq('id', id);
-      setReflections(prev => prev.filter(r => r.id !== id));
+      await supabase.from('practitioner_reflections').delete().eq('id', deleteTargetId);
+      setReflections(prev => prev.filter(r => r.id !== deleteTargetId));
       showSuccess("Reflection removed.");
     } catch (err) {
       showError("Failed to delete.");
@@ -198,7 +201,7 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
                         </Badge>
                       )}
                     </div>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-slate-200 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all" onClick={() => handleDelete(ref.id)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-slate-200 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all" onClick={() => setDeleteTargetId(ref.id)}>
                       <Trash2 size={14} />
                     </Button>
                   </div>
@@ -229,6 +232,14 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={deleteTargetId !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTargetId(null); }}
+        title="Delete reflection?"
+        description="Delete this reflection?"
+        confirmLabel="Delete"
+        onConfirm={executeDelete}
+      />
     </div>
   );
 };

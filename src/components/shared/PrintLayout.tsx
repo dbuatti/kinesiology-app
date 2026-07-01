@@ -1,11 +1,11 @@
-import React from "react";
+import type { ReactNode } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Printer } from "lucide-react";
 
 interface PrintLayoutProps {
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 const PrintLayout = ({ title, children }: PrintLayoutProps) => {

@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react'; import type { ReactNode } from 'react';
 
 export type AppMode = 'clinical' | 'business' | 'voice';
 export type AppViewMode = 'default' | 'voice';
@@ -16,7 +16,7 @@ const ModeContext = createContext<ModeContextType | undefined>(undefined);
 const STORAGE_KEY = 'rk_app_mode';
 const APP_MODE_STORAGE_KEY = 'rk_app_view_mode';
 
-export const ModeProvider = ({ children }: { children: React.ReactNode }) => {
+export const ModeProvider = ({ children }: { children: ReactNode }) => {
   const [mode, setModeState] = useState<AppMode>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     return (saved as AppMode) || 'clinical';

@@ -1,11 +1,11 @@
 
-import React from "react";
+import type { ReactNode } from 'react';
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
 
 interface AppLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
   hasFixedHeader?: boolean;
   className?: string;
   variant?: "standard" | "workspace" | "wide" | "full";

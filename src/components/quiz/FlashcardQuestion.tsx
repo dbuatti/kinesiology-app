@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react'; import type { FC } from 'react';
 import { Button } from "@/components/ui/button";
 import { Check, X, RotateCw } from "lucide-react";
 
@@ -9,7 +9,7 @@ interface FlashcardQuestionProps {
   onAnswer: (isCorrect: boolean) => void;
 }
 
-const FlashcardQuestion: React.FC<FlashcardQuestionProps> = ({
+const FlashcardQuestion: FC<FlashcardQuestionProps> = ({
   question,
   correctAnswer,
   explanation,

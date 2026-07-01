@@ -1,14 +1,14 @@
-import React from 'react';
+import type { FC, ReactNode } from 'react';
 import { LucideIcon } from 'lucide-react';
 
 interface SectionHeaderProps {
   icon: LucideIcon;
   gradient: string;
   label: string;
-  children?: React.ReactNode;
+  children?: ReactNode;
 }
 
-export const SectionHeader: React.FC<SectionHeaderProps> = ({ icon: Icon, gradient, label, children }) => {
+export const SectionHeader: FC<SectionHeaderProps> = ({ icon: Icon, gradient, label, children }) => {
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-3">

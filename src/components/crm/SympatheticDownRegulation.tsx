@@ -1,5 +1,6 @@
 
-import React, { useState } from "react";
+import { useState } from "react";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import {
   Collapsible,
   CollapsibleContent,
@@ -29,9 +30,10 @@ const SympatheticDownRegulation = ({
 }: SympatheticDownRegulationProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
-  const handleReset = async () => {
-    if (!confirm("Are you sure you want to reset the Harmonic Rocking notes?")) return;
+  const executeReset = async () => {
+    setShowResetConfirm(false);
     setLoading(true);
     try {
       const { error } = await supabase
@@ -72,7 +74,7 @@ const SympatheticDownRegulation = ({
                     variant="outline" 
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleReset();
+                      setShowResetConfirm(true);
                     }}
                     disabled={loading}
                     className="border-border text-muted-foreground hover:bg-muted h-8 px-3"
@@ -137,6 +139,15 @@ const SympatheticDownRegulation = ({
           </CardContent>
         </CollapsibleContent>
       </Card>
+
+      <ConfirmDialog
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
+        title="Reset Harmonic Rocking notes?"
+        description="This will clear all Harmonic Rocking notes for this session."
+        confirmLabel="Reset"
+        onConfirm={executeReset}
+      />
     </Collapsible>
   );
 };

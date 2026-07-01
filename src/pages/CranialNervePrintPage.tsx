@@ -1,4 +1,3 @@
-import React from "react";
 import PrintLayout from "@/components/shared/PrintLayout";
 import CranialNervePrintable from "@/components/crm/CranialNervePrintable";
 

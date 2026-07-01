@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react"; import type { MouseEvent } from 'react';
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
@@ -76,7 +76,7 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
     localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
   };
 
-  const clearRecentSearches = (e: React.MouseEvent) => {
+  const clearRecentSearches = (e: MouseEvent) => {
     e.stopPropagation();
     setRecentSearches([]);
     localStorage.removeItem(RECENT_SEARCHES_KEY);

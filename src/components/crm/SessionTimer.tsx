@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { 
   Clock, 
@@ -28,6 +28,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccess, showError } from '@/utils/toast';
 import { useLocation, useNavigate } from 'react-router-dom';
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 interface SessionTimerProps {
   sessionId: string;
@@ -67,6 +68,8 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
     window.addEventListener('rk_fullscreen_change', handleFullScreenChange);
     return () => window.removeEventListener('rk_fullscreen_change', handleFullScreenChange);
   }, []);
+
+  const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
 
   const toggleFullScreen = () => {
     const nextState = !isFullScreen;
@@ -145,8 +148,8 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
   const isUpcoming = elapsedSeconds < 0;
   const isFinished = status === 'Completed';
 
-  const handleComplete = async () => {
-    if (!confirm("Complete this session?")) return;
+  const executeComplete = async () => {
+    setShowCompleteConfirm(false);
     try {
       const { error } = await supabase
         .from('appointments')
@@ -271,7 +274,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
             <DropdownMenuContent align="end" className="w-52 md:w-56 rounded-xl p-2 shadow-3xl border-none bg-foreground text-background">
               {!isFinished && (
                 <DropdownMenuItem 
-                  onClick={handleComplete}
+                  onClick={() => setShowCompleteConfirm(true)}
                   className="rounded-xl py-2.5 md:py-3 px-4 cursor-pointer flex items-center gap-3 text-chart-emerald focus:text-chart-emerald focus:bg-chart-emerald/10"
                 >
                   <CheckCircle2 size={14} />
@@ -297,6 +300,14 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
           />
         </div>
       )}
+
+      <ConfirmDialog
+        open={showCompleteConfirm}
+        onOpenChange={setShowCompleteConfirm}
+        title="Complete session?"
+        confirmLabel="Complete"
+        onConfirm={executeComplete}
+      />
     </div>
   );
 };

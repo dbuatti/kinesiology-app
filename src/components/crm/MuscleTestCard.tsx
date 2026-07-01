@@ -1,5 +1,4 @@
 
-import React from "react";
 import { Info, RotateCcw, CheckCircle2, Lightbulb, Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

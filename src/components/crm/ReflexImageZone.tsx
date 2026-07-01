@@ -5,6 +5,7 @@ import { Upload, X, Loader2, Plus, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 const BUCKET_NAME = 'reflex-images';
 
@@ -24,6 +25,7 @@ const ReflexImageZone = ({
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{type: string} | null>(null);
 
   const handleUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -77,15 +79,16 @@ const ReflexImageZone = ({
     }
   };
 
-  const handleRemove = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!confirm(`Remove this ${type} image?`)) return;
+  const executeDelete = async () => {
+    if (!deleteTarget?.type) return;
+    const currentType = deleteTarget.type;
+    setDeleteTarget(null);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const dbField = type === 'primary' ? 'image_url' : 'secondary_image_url';
+      const dbField = currentType === 'primary' ? 'image_url' : 'secondary_image_url';
 
       const { error } = await supabase
         .from('primitive_reflex_customizations')
@@ -151,7 +154,7 @@ const ReflexImageZone = ({
                 <Button variant="secondary" size="icon" className="rounded-xl h-8 w-8 shadow-lg">
                   <Upload size={14} />
                 </Button>
-                <Button variant="destructive" size="icon" className="rounded-xl h-8 w-8 shadow-lg" onClick={handleRemove}>
+                <Button variant="destructive" size="icon" className="rounded-xl h-8 w-8 shadow-lg" onClick={(e) => { e.stopPropagation(); setDeleteTarget({type}); }}>
                   <X size={14} />
                 </Button>
               </div>
@@ -178,6 +181,13 @@ const ReflexImageZone = ({
           )}
         </div>
       )}
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="Remove image?"
+        description={`This will remove this ${deleteTarget?.type} image.`}
+        onConfirm={executeDelete}
+      />
     </div>
   );
 };

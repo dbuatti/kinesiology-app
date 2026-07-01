@@ -1,5 +1,6 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type MouseEvent } from "react";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,8 @@ const SelfPracticePage = () => {
  const [selfClient, setSelfClient] = useState<any>(null);
  const [sessions, setSessions] = useState<any[]>([]);
  const [loading, setLoading] = useState(true);
- const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
  const fetchSelfData = async () => {
  try {
@@ -112,24 +114,29 @@ const SelfPracticePage = () => {
  }
  };
 
- const handleDeleteSession = async (e: React.MouseEvent, id: string) => {
- e.preventDefault();
- e.stopPropagation();
- if (!confirm("Are you sure you want to delete this self-practice session?")) return;
+  const handleDeleteClick = (e: MouseEvent, id: string) => {
+  e.preventDefault();
+  e.stopPropagation();
+  setDeleteTarget(id);
+  };
 
- try {
- const { error } = await supabase
- .from('appointments')
- .delete()
- .eq('id', id);
+  const executeDelete = async () => {
+  if (!deleteTarget) return;
+  try {
+  const { error } = await supabase
+  .from('appointments')
+  .delete()
+  .eq('id', deleteTarget);
 
- if (error) throw error;
- showSuccess("Self-practice session deleted.");
- fetchSelfData();
- } catch (err: any) {
- showError(err.message || "Failed to delete session.");
- }
- };
+  if (error) throw error;
+  showSuccess("Self-practice session deleted.");
+  setDeleteTarget(null);
+  fetchSelfData();
+  } catch (err: any) {
+  showError(err.message || "Failed to delete session.");
+  setDeleteTarget(null);
+  }
+  };
 
  useEffect(() => {
  fetchSelfData();
@@ -378,7 +385,7 @@ const SelfPracticePage = () => {
  variant="ghost" 
  size="icon" 
  className="h-9 w-9 rounded-xl text-muted-foreground hover:text-chart-destructive hover:bg-muted opacity-0 group-hover:opacity-100 transition-all"
- onClick={(e) => handleDeleteSession(e, session.id)}
+  onClick={(e: MouseEvent) => handleDeleteClick(e, session.id)}
  >
  <Trash2 size={16} />
  </Button>
@@ -441,9 +448,17 @@ const SelfPracticePage = () => {
  />
  </TabsContent>
  </Tabs>
- </div>
- </AppLayout>
- );
+  </div>
+
+  <ConfirmDialog
+    open={deleteTarget !== null}
+    onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+    title="Delete Session"
+    description="Are you sure you want to delete this self-practice session?"
+    onConfirm={executeDelete}
+  />
+  </AppLayout>
+  );
 };
 
 export default SelfPracticePage;

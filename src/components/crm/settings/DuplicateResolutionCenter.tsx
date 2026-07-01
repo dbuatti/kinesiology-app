@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Merge, Loader2, CheckCircle2, RefreshCw } from "lucide-react";
@@ -312,11 +313,14 @@ const DuplicateResolutionCenter = () => {
     }
   };
 
-  const handleAutoMergeGroup = async (group: DuplicateGroup) => {
-    if (!confirm(`Are you sure you want to auto-merge all duplicates for "${group.name}" into the primary profile? This will automatically combine non-empty fields.`)) {
-      return;
-    }
+  const [confirmAction, setConfirmAction] = useState<{
+    callback: () => void;
+    title: string;
+    description: string;
+  } | null>(null);
 
+  const executeAutoMergeGroup = async (group: DuplicateGroup) => {
+    setConfirmAction(null);
     setMerging(true);
     try {
       let currentPrimary = { ...group.primary };
@@ -334,13 +338,9 @@ const DuplicateResolutionCenter = () => {
     }
   };
 
-  const handleAutoMergeAll = async () => {
+  const executeAutoMergeAll = async () => {
+    setConfirmAction(null);
     if (detectedDuplicates.length === 0) return;
-    
-    if (!confirm(`WARNING: This will automatically merge ALL ${detectedDuplicates.length} duplicate groups into their primary profiles.\n\nThis is a bulk operation. Are you sure you want to proceed?`)) {
-      return;
-    }
-
     setMerging(true);
     let successCount = 0;
     try {
@@ -384,7 +384,11 @@ const DuplicateResolutionCenter = () => {
             </Button>
             {detectedDuplicates.length > 0 && (
               <Button 
-                onClick={handleAutoMergeAll}
+                onClick={() => setConfirmAction({
+                  callback: executeAutoMergeAll,
+                  title: "Auto-merge all duplicate groups?",
+                  description: `This will automatically merge ALL ${detectedDuplicates.length} duplicate groups into their primary profiles. This is a bulk operation. Are you sure you want to proceed?`
+                })}
                 disabled={merging}
                 className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl h-10 px-4 font-black text-[10px] uppercase tracking-widest shadow-lg"
               >
@@ -401,7 +405,11 @@ const DuplicateResolutionCenter = () => {
           isDetecting={isDetecting}
           merging={merging}
           onReviewMerge={startMergeSession}
-          onAutoMerge={handleAutoMergeGroup}
+          onAutoMerge={(group) => setConfirmAction({
+            callback: () => executeAutoMergeGroup(group),
+            title: `Auto-merge duplicates for "${group.name}"?`,
+            description: "This will automatically combine non-empty fields into the primary profile."
+          })}
         />
 
         <div className="h-px bg-border" />
@@ -433,6 +441,15 @@ const DuplicateResolutionCenter = () => {
           }
         }}
         merging={merging}
+      />
+
+      <ConfirmDialog
+        open={!!confirmAction}
+        onOpenChange={(open) => { if (!open) setConfirmAction(null); }}
+        title={confirmAction?.title || ""}
+        description={confirmAction?.description || ""}
+        confirmLabel="Merge"
+        onConfirm={() => confirmAction?.callback()}
       />
     </Card>
   );

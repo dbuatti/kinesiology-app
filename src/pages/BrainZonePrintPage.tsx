@@ -1,4 +1,3 @@
-import React from "react";
 import PrintLayout from "@/components/shared/PrintLayout";
 import BrainZonePrintable from "@/components/crm/BrainZonePrintable";
 

@@ -1,4 +1,3 @@
-import React from "react";
 import AppLayout from "@/components/crm/AppLayout";
 import AvailabilityPage from "./AvailabilityPage";
 import { CalendarDays } from "lucide-react";

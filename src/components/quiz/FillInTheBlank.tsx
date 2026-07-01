@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react'; import type { FC } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle, ArrowRight, Sparkles } from "lucide-react";
@@ -12,7 +12,7 @@ interface FillInTheBlankProps {
   isCorrect?: boolean;
 }
 
-const FillInTheBlank: React.FC<FillInTheBlankProps> = ({
+const FillInTheBlank: FC<FillInTheBlankProps> = ({
   question,
   correctAnswer,
   onAnswer,

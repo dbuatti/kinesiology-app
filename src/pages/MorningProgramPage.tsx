@@ -1,6 +1,7 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import AppLayout from '@/components/crm/AppLayout';
+import ConfirmDialog from '@/components/shared/ConfirmDialog';
 
 import PractitionerGrounding from '@/components/crm/PractitionerGrounding';
 import HeartMathBreathing from '@/components/crm/HeartMathBreathing';
@@ -47,6 +48,7 @@ const MorningProgramPage = () => {
   const [completedTasks, setCompletedTasks] = useState<string[]>([]);
   const [ritualMode, setRitualMode] = useState<string | null>(null);
   const [intention, setIntention] = useState("");
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -90,12 +92,11 @@ const MorningProgramPage = () => {
     saveState(completedTasks, val);
   };
 
-  const resetProgram = () => {
-    if (confirm("Reset your morning progress?")) {
-      setCompletedTasks([]);
-      setIntention("");
-      localStorage.removeItem(STORAGE_KEY);
-    }
+  const executeReset = () => {
+    setShowResetConfirm(false);
+    setCompletedTasks([]);
+    setIntention("");
+    localStorage.removeItem(STORAGE_KEY);
   };
 
   const progress = (completedTasks.length / RITUAL_STEPS.length) * 100;
@@ -116,7 +117,7 @@ const MorningProgramPage = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" onClick={resetProgram} className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-chart-destructive">
+            <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-chart-destructive">
               <RotateCcw size={14} className="mr-2" /> Reset Daily
             </Button>
           </div>
@@ -299,6 +300,14 @@ const MorningProgramPage = () => {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
+        title="Reset Morning Program"
+        description="Reset your morning progress?"
+        onConfirm={executeReset}
+      />
     </AppLayout>
   );
 };

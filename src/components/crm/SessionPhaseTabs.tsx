@@ -1,5 +1,5 @@
 
-import React from 'react';
+import type { RefObject } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Activity, 
@@ -40,7 +40,7 @@ interface SessionPhaseTabsProps {
   onTabChange: (tabId: string) => void;
   preselectedFinding: string | null;
   onClearItem: (itemName: string) => void;
-  wizardRef: React.RefObject<HTMLDivElement>;
+  wizardRef: RefObject<HTMLDivElement>;
 }
 
 const SessionPhaseTabs = ({

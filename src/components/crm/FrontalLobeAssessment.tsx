@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Hand, Info, Save, Loader2, RotateCcw, ImageOff, CheckCircle2, Zap, RefreshCw, ArrowRightLeft } from "lucide-react";
@@ -34,6 +35,7 @@ const FrontalLobeAssessment = ({
   const [notes, setNotes] = useState(initialNotes || '');
   const [imageError, setImageError] = useState(false);
   const [currentStatus, setCurrentStatus] = useState<'Clear' | 'Inhibited' | 'Recheck' | null>(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // Structured Fields
   const [leftHandSpeed, setLeftHandSpeed] = useState<string>("");
@@ -153,8 +155,8 @@ const FrontalLobeAssessment = ({
     }
   };
 
-  const handleReset = async () => {
-    if (!confirm("Reset Frontal Lobe Assessment data?")) return;
+  const executeReset = async () => {
+    setShowResetConfirm(false);
     setLoading(true);
     try {
       const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
@@ -315,13 +317,22 @@ const FrontalLobeAssessment = ({
               {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Save Notes"}
             </Button>
             {(initialNotes || currentStatus) && (
-              <Button variant="outline" onClick={handleReset} disabled={loading} className="h-12 px-6 rounded-xl border-red-200 text-red-600 hover:bg-red-50">
+              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-12 px-6 rounded-xl border-red-200 text-red-600 hover:bg-red-50">
                 <RotateCcw size={16} />
               </Button>
             )}
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
+        title="Reset Frontal Lobe Assessment?"
+        description="This will clear all Frontal Lobe Assessment data and notes for this session."
+        confirmLabel="Reset"
+        onConfirm={executeReset}
+      />
     </div>
   );
 };

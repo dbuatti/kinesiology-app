@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react'; import type { ElementType, ReactNode } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -10,11 +10,11 @@ interface AssessmentSectionProps {
   id: string;
   title: string;
   description: string;
-  icon: React.ElementType;
-  children: React.ReactNode;
+  icon: ElementType;
+  children: ReactNode;
   count: number;
   inhibitedCount: number;
-  protocol?: React.ReactNode;
+  protocol?: ReactNode;
   onClearAll?: () => void;
 }
 

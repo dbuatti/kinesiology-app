@@ -1,5 +1,5 @@
 
-import React from 'react';
+import type { FC } from 'react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, XCircle } from "lucide-react";
@@ -13,7 +13,7 @@ interface MultipleChoiceProps {
   isCorrect?: boolean;
 }
 
-const MultipleChoice: React.FC<MultipleChoiceProps> = ({
+const MultipleChoice: FC<MultipleChoiceProps> = ({
   question,
   options,
   correctAnswer,

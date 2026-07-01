@@ -1,4 +1,4 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import { 
   Shield, 
   Link as LinkIcon, 
@@ -22,7 +22,7 @@ export interface Lesson {
   duration: string;
   icon: any;
   difficulty: 'Beginner' | 'Intermediate';
-  content: React.ReactNode;
+  content: ReactNode;
   quiz: {
     question: string;
     options: string[];

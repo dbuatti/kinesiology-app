@@ -49,6 +49,7 @@ import { anatomyStructures, sandboxActions } from '@/data/mechano-anatomy-data';
 import ReflexImageZone from './ReflexImageZone';
 import AnatomyModel from './AnatomyModel';
 import PracticeSimulator from './PracticeSimulator';
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 interface MechanoLessonsProps {
   activeSubTab?: 'lessons' | 'anatomy' | 'sandbox';
@@ -79,6 +80,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
   const [dbImages, setDbImages] = useState<Record<string, string>>({});
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Sandbox State
@@ -230,10 +232,9 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
     }
   };
 
-  const handleRemoveImage = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const executeDelete = async () => {
+    setShowDeleteConfirm(false);
     if (!userId || !activeMapping) return;
-    if (!confirm("Are you sure you want to remove this reference image?")) return;
 
     try {
       const { error } = await supabase
@@ -674,7 +675,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                                 <div className="flex flex-col items-center gap-2">
                                   <div className="flex gap-2">
                                     <Button variant="secondary" size="icon" className="rounded-xl h-8 w-8 shadow-lg"><Upload size={14} /></Button>
-                                    <Button variant="destructive" size="icon" className="rounded-xl h-8 w-8 shadow-lg" onClick={handleRemoveImage}><X size={14} /></Button>
+                                    <Button variant="destructive" size="icon" className="rounded-xl h-8 w-8 shadow-lg" onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}><X size={14} /></Button>
                                   </div>
                                   <p className="text-[8px] font-black text-white uppercase tracking-widest">Click to Change</p>
                                 </div>
@@ -889,6 +890,14 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        title="Remove reference image?"
+        description="Are you sure you want to remove this reference image?"
+        confirmLabel="Remove"
+        onConfirm={executeDelete}
+      />
     </div>
   );
 };

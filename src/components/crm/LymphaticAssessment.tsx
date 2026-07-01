@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 interface LymphaticAssessmentProps {
   appointmentId: string;
@@ -100,6 +101,7 @@ const LymphaticAssessment = ({
   const [tenderness, setTenderness] = useState([10]); // 0-10 scale
   const [prescribeHomework, setPrescribeHomework] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
+  const [showAppendConfirm, setShowAppendConfirm] = useState(false);
   
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [isActive, setIsActive] = useState(false);
@@ -151,15 +153,12 @@ const LymphaticAssessment = ({
     setTenderness([10]); // Reset tenderness when toggling
   };
 
-  const handleAutoPopulate = async () => {
+  const executeAppend = async () => {
+    setShowAppendConfirm(false);
     if (priorityZones.length === 0) return;
     
     const reduction = 100 - (tenderness[0] * 10);
     const summaryHeader = `LYMPHATIC ASSESSMENT:`;
-    
-    if (notes?.includes(summaryHeader)) {
-      if (!confirm("A lymphatic summary already exists in your notes. Append another one?")) return;
-    }
 
     let summary = `${summaryHeader}\n- Suture Side: ${sutureSide || 'Not set'}\n- Priority Zones: ${priorityZones.join(', ')}\n- Tenderness Reduction: ${reduction}% (Level ${tenderness[0]}/10)`;
     
@@ -495,7 +494,14 @@ const LymphaticAssessment = ({
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={handleAutoPopulate}
+                  onClick={() => {
+                    if (priorityZones.length === 0) return;
+                    if (notes?.includes("LYMPHATIC ASSESSMENT:")) {
+                      setShowAppendConfirm(true);
+                    } else {
+                      executeAppend();
+                    }
+                  }}
                   className="h-8 rounded-xl text-[10px] font-medium uppercase tracking-wider text-chart-primary hover:bg-muted"
                 >
                   <ClipboardCheck size={14} className="mr-2" /> Auto-Populate Summary
@@ -512,6 +518,15 @@ const LymphaticAssessment = ({
           </CardContent>
         </CollapsibleContent>
       </Card>
+
+      <ConfirmDialog
+        open={showAppendConfirm}
+        onOpenChange={setShowAppendConfirm}
+        title="Append lymphatic summary?"
+        description="A lymphatic summary already exists in your notes. Append another one?"
+        confirmLabel="Append"
+        onConfirm={executeAppend}
+      />
     </Collapsible>
   );
 };

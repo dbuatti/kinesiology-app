@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Layers, 
@@ -50,6 +51,8 @@ const FractalTool = () => {
   const [proposedRelationships, setProposedRelationships] = useState<any[]>([]);
   const [proposedMerges, setProposedMerges] = useState<any[]>([]);
   const [proposedPrimary, setProposedPrimary] = useState<any>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   const fetchData = async () => {
     try {
@@ -262,10 +265,11 @@ const FractalTool = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Delete this item?")) return;
+  const executeDelete = async () => {
+    setShowDeleteConfirm(false);
+    if (!deleteTargetId) return;
     try {
-      const { error } = await supabase.from('identity_backlog').delete().eq('id', id);
+      const { error } = await supabase.from('identity_backlog').delete().eq('id', deleteTargetId);
       if (error) throw error;
       fetchData();
     } catch (err) {
@@ -318,7 +322,7 @@ const FractalTool = () => {
         item={node} 
         level={level}
         onUpdateRating={handleUpdateRating}
-        onDelete={handleDelete}
+        onDelete={(id) => { setDeleteTargetId(id); setShowDeleteConfirm(true); }}
         onMove={handleMove}
         onProcess={handleProcess}
         allPossibleParents={backlog}
@@ -553,6 +557,7 @@ const FractalTool = () => {
           </div>
         </div>
       </div>
+      <ConfirmDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm} title="Delete item?" description="This cannot be undone." confirmLabel="Delete" onConfirm={executeDelete} />
     </div>
   );
 };

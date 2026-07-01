@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, type ChangeEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Zap, Lightbulb, Check, Search, Trash2, Loader2, Copy, Save, Edit, Brain, Heart, Activity } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { SectionHeader } from '@/components/section-header';
 import { cn } from '@/lib/utils';
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 const CorrectionsReferencePage = () => {
   const [search, setSearch] = useState('');
@@ -16,6 +17,7 @@ const CorrectionsReferencePage = () => {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [corrections, setCorrections] = useState<any[]>([]);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCorrections = async () => {
@@ -71,7 +73,7 @@ const CorrectionsReferencePage = () => {
     });
   };
 
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleFormChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -105,13 +107,14 @@ const CorrectionsReferencePage = () => {
     }
   };
 
-  const handleDeleteCorrection = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this correction?')) return;
+  const executeDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleteTarget(null);
     try {
       const { error } = await supabase
         .from('corrections')
         .delete()
-        .eq('id', id);
+        .eq('id', deleteTarget);
       if (error) throw error;
       const { data } = await supabase
         .from('corrections')
@@ -230,7 +233,7 @@ const CorrectionsReferencePage = () => {
               <Button onClick={handleShowForm} variant="outline" className="btn-ghost">
                 <Edit className="h-4 w-4" /> Edit
               </Button>
-              <Button onClick={() => handleDeleteCorrection(selectedCorrection.id)} variant="destructive" className="btn-ghost">
+              <Button onClick={() => setDeleteTarget(selectedCorrection.id)} variant="destructive" className="btn-ghost">
                 <Trash2 className="h-4 w-4" /> Delete
               </Button>
             </div>
@@ -289,6 +292,14 @@ const CorrectionsReferencePage = () => {
           </form>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={() => setDeleteTarget(null)}
+        title="Delete Correction"
+        description="Are you sure you want to delete this correction?"
+        onConfirm={executeDelete}
+      />
     </div>
   );
 };

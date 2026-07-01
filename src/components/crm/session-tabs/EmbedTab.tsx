@@ -46,7 +46,6 @@ import {
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import AppointmentForm from "../AppointmentForm";
@@ -314,8 +313,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
                 </div>
                 <div className="flex items-center justify-between p-2 bg-muted rounded-lg border border-border">
                   <span className="text-[10px] font-medium text-muted-foreground">Hydration</span>
-                  <TooltipProvider>
-                    <Tooltip>
+                  <Tooltip>
                       <TooltipTrigger asChild>
                         <Badge className={cn("border-none font-medium text-[10px]", appointment.hydrated ? "bg-chart-emerald/10 text-chart-emerald" : "bg-chart-destructive/10 text-chart-destructive")}>
                           {appointment.hydrated ? 'Passed' : 'Flagged'}
@@ -329,7 +327,6 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
                         </p>
                       </TooltipContent>
                     </Tooltip>
-                  </TooltipProvider>
                 </div>
               </CardContent>
             </Card>

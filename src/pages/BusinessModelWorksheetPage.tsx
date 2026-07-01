@@ -1,4 +1,3 @@
-import React from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import BusinessModelWorksheet from '@/components/worksheets/BusinessModelWorksheet';
 

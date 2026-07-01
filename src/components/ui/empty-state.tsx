@@ -1,4 +1,4 @@
-import React from 'react';
+import type { FC } from 'react';
 import { Button } from '@/components/ui/button';
 
 interface EmptyStateProps {
@@ -7,7 +7,7 @@ interface EmptyStateProps {
   onAction?: () => void;
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({ title, description, onAction }) => {
+export const EmptyState: FC<EmptyStateProps> = ({ title, description, onAction }) => {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <div className="space-y-3">

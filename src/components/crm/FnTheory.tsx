@@ -1,5 +1,5 @@
 
-import React from 'react';
+import type { ElementType } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -10,7 +10,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import MotorControlHierarchy from './MotorControlHierarchy';
 
-const SectionHeader = ({ icon: Icon, title, color }: { icon: React.ElementType, title: string, color: string }) => (
+const SectionHeader = ({ icon: Icon, title, color }: { icon: ElementType, title: string, color: string }) => (
   <h3 className={`text-2xl font-black flex items-center gap-3 ${color}`}>
     <Icon size={28} /> {title}
   </h3>

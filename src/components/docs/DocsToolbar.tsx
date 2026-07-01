@@ -1,5 +1,5 @@
 
-import React from 'react';
+import type { ReactNode } from 'react';
 import { 
   Search, 
   Undo2, 
@@ -30,7 +30,7 @@ import { cn } from '@/lib/utils';
 const DocsToolbar = () => {
   const Separator = () => <div className="w-px h-5 bg-slate-300 mx-1" />;
 
-  const ToolButton = ({ children, className }: { children: React.ReactNode, className?: string }) => (
+  const ToolButton = ({ children, className }: { children: ReactNode, className?: string }) => (
     <button className={cn(
       "p-1.5 hover:bg-slate-200 rounded-md transition-colors text-slate-700",
       className

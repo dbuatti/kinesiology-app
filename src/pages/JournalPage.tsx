@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -85,6 +86,7 @@ const JournalPage = () => {
   
   const [respondingToId, setRespondingToId] = useState<string | null>(null);
   const [tempResponse, setTempResponse] = useState("");
+  const [confirmAction, setConfirmAction] = useState<{callback: () => void; title: string; description: string} | null>(null);
 
   const fetchData = async () => {
     setError(null);
@@ -365,8 +367,7 @@ const JournalPage = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Delete this entry?")) return;
+  const executeDeleteEntry = async (id: string) => {
     try {
       await supabase.from('practitioner_reflections').delete().eq('id', id);
       fetchData();
@@ -376,9 +377,7 @@ const JournalPage = () => {
     }
   };
 
-  const handleDeleteQuestion = async (question: any) => {
-    if (!confirm("Delete this question?")) return;
-
+  const executeDeleteQuestion = async (question: any) => {
     try {
       if (question.id.startsWith('manual-')) {
         await supabase.from('practitioner_reflections').delete().eq('id', question.reflectionId);
@@ -595,7 +594,7 @@ const JournalPage = () => {
                               </Button>
                             )
                           )}
-                          <Button variant="ghost" size="icon" className="rounded-xl text-muted-foreground hover:text-chart-destructive opacity-0 group-hover:opacity-100 transition-all" onClick={() => handleDelete(ref.id)}>
+                          <Button variant="ghost" size="icon" className="rounded-xl text-muted-foreground hover:text-chart-destructive opacity-0 group-hover:opacity-100 transition-all" onClick={() => setConfirmAction({callback: () => executeDeleteEntry(ref.id), title: "Delete Entry", description: "Delete this entry?"})}>
                             <Trash2 size={18} />
                           </Button>
                         </div>
@@ -723,7 +722,7 @@ const JournalPage = () => {
                         <Button 
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDeleteQuestion(q)}
+                          onClick={() => setConfirmAction({callback: () => executeDeleteQuestion(q), title: "Delete Question", description: "Delete this question?"})}
                           className="h-11 w-11 rounded-xl text-muted-foreground hover:text-chart-destructive hover:bg-muted transition-all"
                         >
                           <Trash2 size={20} />
@@ -782,6 +781,17 @@ const JournalPage = () => {
         </Tabs>
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmAction !== null}
+        onOpenChange={(open) => { if (!open) setConfirmAction(null); }}
+        title={confirmAction?.title ?? ""}
+        description={confirmAction?.description}
+        onConfirm={() => {
+          confirmAction?.callback();
+          setConfirmAction(null);
+        }}
+      />
     </AppLayout>
   );
 };

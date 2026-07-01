@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from "react";
+import { useState, useEffect, useRef, useLayoutEffect, useCallback } from "react"; import type { MouseEvent, ElementType } from 'react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -94,7 +94,7 @@ const EditableField = ({
  setTimeout(() => inputRef.current?.focus(), 0);
  };
 
- const handleCopy = (e: React.MouseEvent) => {
+ const handleCopy = (e: MouseEvent) => {
  e.stopPropagation();
  if (!localValue) return;
  navigator.clipboard.writeText(localValue);
@@ -140,7 +140,7 @@ const EditableField = ({
  }, [isFocused, localValue]);
 
  const isEmpty = !localValue && !isFocused;
- const InputComponent = multiline ? Textarea : Input as React.ElementType<any>;
+ const InputComponent = multiline ? Textarea : Input as ElementType<any>;
 
  const isSensitive = ['goal', 'issue', 'journal', 'notes', 'additional_notes', 'session_north_star'].includes(field.toLowerCase());
  const shouldBlur = isPrivate && isSensitive && !isFocused;

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { differenceInMinutes, isToday } from "date-fns";
@@ -57,7 +57,7 @@ const UpcomingMarquee = () => {
         </div>
         <span className="text-muted-foreground/30 mx-1">·</span>
         {nextSessions.map((session, idx) => (
-          <React.Fragment key={idx}>
+          <Fragment key={idx}>
             <div className="flex items-center gap-1.5">
               <Link
                 to={`/appointments/${session.id}`}
@@ -72,7 +72,7 @@ const UpcomingMarquee = () => {
             {idx < nextSessions.length - 1 && (
               <span className="text-muted-foreground/30 text-xs mx-0.5">·</span>
             )}
-          </React.Fragment>
+          </Fragment>
         ))}
       </div>
     </div>

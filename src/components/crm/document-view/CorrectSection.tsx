@@ -1,5 +1,5 @@
 
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react'; import type { ReactNode } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Zap, BookOpen, ExternalLink, Info, CheckCircle2, Sparkles, Brain, Activity, Heart, ShieldAlert, Wind, Droplets, ArrowDownCircle, ArrowUpCircle, Layers, Eye, Copy, Check, History, Trash2, ArrowLeftRight } from 'lucide-react';
 import DocInput from './DocInput';
@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { AFFERENT_PATHWAYS, EFFERENT_PATHWAYS } from '@/data/pathway-logic-data';
 import { Button } from '@/components/ui/button';
 import { showSuccess, showError } from '@/utils/toast';
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 interface CorrectSectionProps {
   metadata: any;
@@ -135,6 +136,7 @@ const CorrectSection = ({
   const [copied, setCopied] = useState(false);
   const [showLog, setShowLog] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{index: number} | null>(null);
 
   // Parse past corrections from modes_balances
   const pastCorrections = useMemo(() => {
@@ -189,8 +191,10 @@ Correction Method: ${method}`;
     }
   };
 
-  const handleDeleteSingleLog = async (indexToDelete: number) => {
-    if (!confirm("Are you sure you want to delete this logged correction?")) return;
+  const executeDeleteLog = async () => {
+    if (deleteTarget === null) return;
+    const indexToDelete = deleteTarget.index;
+    setDeleteTarget(null);
     
     try {
       const updatedLogs = pastCorrections.filter((_, idx) => idx !== indexToDelete);
@@ -298,7 +302,7 @@ Correction Method: ${method}`;
     }
   };
 
-  const ProtocolBlock = ({ title, icon: Icon, color, steps, desc, children }: { title: string, icon: any, color: string, steps: string[], desc?: string, children?: React.ReactNode }) => (
+  const ProtocolBlock = ({ title, icon: Icon, color, steps, desc, children }: { title: string, icon: any, color: string, steps: string[], desc?: string, children?: ReactNode }) => (
     <div className="p-5 bg-muted border border-border rounded-xl space-y-3">
       <div className="flex items-center gap-2">
         <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-white", color)}>
@@ -387,7 +391,7 @@ Correction Method: ${method}`;
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDeleteSingleLog(idx)}
+                        onClick={() => setDeleteTarget({index: idx})}
                         className="h-8 w-8 rounded-md border border-rose-100 text-chart-destructive hover:bg-rose-50"
                         title="Delete this correction"
                       >
@@ -819,6 +823,13 @@ Correction Method: ${method}`;
           </div>
         </div>
       </div>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="Delete this logged correction?"
+        description="Are you sure you want to delete this logged correction?"
+        onConfirm={executeDeleteLog}
+      />
     </div>
   );
 };

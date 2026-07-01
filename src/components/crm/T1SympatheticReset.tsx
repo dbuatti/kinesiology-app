@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import {
   Collapsible,
   CollapsibleContent,
@@ -29,6 +30,7 @@ const T1SympatheticReset = ({
 }: T1SympatheticResetProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   
   // Timer State
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
@@ -61,8 +63,8 @@ const T1SympatheticReset = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleReset = async () => {
-    if (!confirm("Are you sure you want to reset the T1 Reset notes?")) return;
+  const executeReset = async () => {
+    setShowResetConfirm(false);
     setLoading(true);
     try {
       const { error } = await supabase
@@ -103,7 +105,7 @@ const T1SympatheticReset = ({
                     variant="outline" 
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleReset();
+                      setShowResetConfirm(true);
                     }}
                     disabled={loading}
                     className="border-border text-muted-foreground hover:bg-muted h-8 px-3"
@@ -198,6 +200,15 @@ const T1SympatheticReset = ({
           </CardContent>
         </CollapsibleContent>
       </Card>
+
+      <ConfirmDialog
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
+        title="Reset T1 Reset notes?"
+        description="This will clear all T1 Reset notes for this session."
+        confirmLabel="Reset"
+        onConfirm={executeReset}
+      />
     </Collapsible>
   );
 };

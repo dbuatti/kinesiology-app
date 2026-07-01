@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +23,7 @@ import {
   Hand
 } from 'lucide-react';
 import EditableField from '@/components/shared/EditableField';
+import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import { cn } from '@/lib/utils';
 import { VAGUS_ASSOCIATIONS, VAGAL_FUNCTIONS, HAND_REFLEXOLOGY, VAGAL_GLANDS } from '@/data/vagus-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -64,6 +65,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
 
   const [selectedMuscleForInfo, setSelectedMuscleForInfo] = useState<string | null>(null);
   const [infoModalOpen, setInfoModalOpen] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const hasNotes = !!initialNotes;
 
   const correctionTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -126,9 +128,9 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
     };
   }, [selectedAssociation]);
 
-  const handleResetProtocol = async () => {
-    if (!confirm("Are you sure you want to reset the entire Vagus Nerve protocol state?")) return;
-    
+  const executeReset = () => {
+    setShowResetConfirm(false);
+    if (correctionTimerRef.current) clearInterval(correctionTimerRef.current);
     setReflexPoint("Occiput");
     setAuricularSide("Left");
     setVagusSide("Left");
@@ -142,7 +144,6 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
     setCorrectionTime(30);
     setIsCorrectionActive(false);
     setIsCleared(false);
-    
     showSuccess("Vagus Nerve protocol reset.");
   };
 
@@ -153,16 +154,22 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
       ? `Organ Pulse: ${pulseSide} Hand (${pulseDepth}) - ${selectedOrgan}`
       : `Gland Challenge: ${selectedGland} (${VAGAL_GLANDS.find(g => g.name === selectedGland)?.reflex})`;
     
+    const instruction = selectedOrgan || selectedGland
+      ? `Instruction: Hold ${challengeType === 'hand' ? selectedOrgan : selectedGland}${challengeType === 'hand' ? ` (${pulseSide} hand, ${pulseDepth.toLowerCase()})` : ''} with your ${polarity || 'energy'} finger, whilst client does ${breathingPattern || 'selected breathing pattern'}.`
+      : '';
+    
     const summary = [
       "VAGUS SCREEN & RESET:",
       `- Side: ${vagusSide}`,
       `- Reflex Point: ${reflexLabel}`,
       `- Dysfunctional Function: ${selectedFunction}`,
       `- ${challengeLabel}`,
-      `- Polarity: ${polarity || 'Not set'}`,
+      `- Polarity: ${polarity || 'Not set'} (finger)`,
       `- Associated Spinal: ${selectedAssociation} (${partnerInfo?.currentOrgan})`,
       `- Muscle: ${assoc?.muscle}`,
       `- Lovett-Brother: ${assoc?.reciprocatingSegment} (${partnerInfo?.partnerOrgan}) - ${partnerInfo?.partnerMuscle}`,
+      `- Breathing Pattern: ${breathingPattern || 'Not selected'}`,
+      `- ${instruction}`,
       `- Correction: ${breathingPattern} for ${30 - correctionTime}s`,
       `- Status: ${isCleared ? 'Cleared/Balanced' : 'In Progress'}`
     ].join('\n');
@@ -195,7 +202,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                    <Button variant="ghost" size="sm" onClick={handleResetProtocol} className="h-8 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg">
+                    <Button variant="ghost" size="sm" onClick={() => setShowResetConfirm(true)} className="h-8 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg">
                       <Trash2 size={14} className="mr-1" /> Reset
                     </Button>
                     {hasNotes ? (
@@ -207,7 +214,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                       SNS Stage
                     </Badge>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" aria-label={isOpen ? "Collapse Vagus Nerve process" : "Expand Vagus Nerve process"}>
                     <ChevronDown className={cn("h-5 w-5 transition-transform text-muted-foreground", isOpen && "rotate-180")} />
                   </Button>
                 </div>
@@ -293,11 +300,13 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                           }}
                           className={cn(
                             "h-auto py-2 flex flex-col items-center gap-0.5 rounded-xl transition-all",
-                            selectedOrgan === org.name ? "bg-card text-foreground" : "bg-background border-border"
+                            selectedOrgan === org.name
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "bg-background border-border text-muted-foreground hover:border-primary/30"
                           )}
                         >
-                          <div className="flex items-center">
-                            <span className={cn("w-2 h-2 rounded-full mr-2", org.color)} />
+                          <div className="flex items-center gap-1.5">
+                            <span className={cn("w-2 h-2 rounded-full", org.color, selectedOrgan === org.name && "ring-1 ring-white/50")} />
                             <span className="text-[10px] font-medium uppercase tracking-widest">{org.name}</span>
                           </div>
                           <span className="text-[7px] font-medium opacity-60 uppercase">{org.position}</span>
@@ -356,26 +365,30 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <Button 
-                    variant="outline" 
+                    variant={polarity === 'Energy OUT' ? "default" : "outline"}
                     className={cn(
-                      "h-16 flex-col gap-1 rounded-2xl border-2 transition-all",
-                      polarity === 'Energy OUT' ? "border-border bg-muted text-foreground" : "border-border hover:border-border"
+                      "h-20 flex-col gap-1.5 rounded-2xl transition-all",
+                      polarity === 'Energy OUT' ? "bg-chart-destructive hover:bg-chart-destructive/90 text-destructive-foreground shadow-sm ring-2 ring-chart-destructive/20" : "hover:border-border hover:bg-destructive/5"
                     )}
-                    onClick={() => setPolarity('Energy OUT')}
+                    onClick={() => setPolarity(polarity === 'Energy OUT' ? null : 'Energy OUT')}
+                    aria-label="Set energy polarity to Energy OUT"
                   >
-                    <span className="font-semibold text-xs">Energy OUT (-)</span>
-                    <span className="text-[8px] font-medium opacity-70 uppercase">Practitioner LEFT Hand</span>
+                    <span className="font-semibold text-sm">Energy OUT (−)</span>
+                    <span className="text-[9px] font-medium opacity-80 uppercase tracking-wider">Energy OUT Finger</span>
+                    <span className="text-[7px] font-light opacity-60">(practitioner's output hand)</span>
                   </Button>
                   <Button 
-                    variant="outline" 
+                    variant={polarity === 'Energy IN' ? "default" : "outline"}
                     className={cn(
-                      "h-16 flex-col gap-1 rounded-2xl border-2 transition-all",
-                      polarity === 'Energy IN' ? "border-border bg-muted text-foreground" : "border-border hover:border-border"
+                      "h-20 flex-col gap-1.5 rounded-2xl transition-all",
+                      polarity === 'Energy IN' ? "bg-chart-primary hover:bg-chart-primary/90 shadow-sm ring-2 ring-chart-primary/20" : "hover:border-border hover:bg-primary/5"
                     )}
-                    onClick={() => setPolarity('Energy IN')}
+                    onClick={() => setPolarity(polarity === 'Energy IN' ? null : 'Energy IN')}
+                    aria-label="Set energy polarity to Energy IN"
                   >
-                    <span className="font-semibold text-xs">Energy IN (+)</span>
-                    <span className="text-[8px] font-medium opacity-70 uppercase">Practitioner RIGHT Hand</span>
+                    <span className="font-semibold text-sm">Energy IN (+)</span>
+                    <span className="text-[9px] font-medium opacity-80 uppercase tracking-wider">Energy IN Finger</span>
+                    <span className="text-[7px] font-light opacity-60">(practitioner's input hand)</span>
                   </Button>
                 </div>
               </div>
@@ -430,9 +443,24 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
               </div>
 
               <div className="space-y-4 p-6 bg-muted rounded-2xl border border-border">
+                <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                  <Search size={14} /> 7. Breathing Pattern — Test & Select
+                </label>
+                <div className="p-4 bg-background rounded-2xl border border-border space-y-3">
+                  <p className="text-xs font-medium text-muted-foreground leading-relaxed">
+                    Test/challenge the client to determine which breathing pattern creates a change in the indicator muscle. Once identified, select it below:
+                  </p>
+                  <ToggleGroup type="single" value={breathingPattern} onValueChange={setBreathingPattern} className="justify-start gap-2">
+                    <ToggleGroupItem value="Blocked Inhalation" className="flex-1 rounded-xl px-4 py-3 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border border-border font-medium text-xs data-[state=on]:shadow-sm">Blocked Inhalation</ToggleGroupItem>
+                    <ToggleGroupItem value="Forced Exhalation" className="flex-1 rounded-xl px-4 py-3 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border border-border font-medium text-xs data-[state=on]:shadow-sm">Forced Exhalation</ToggleGroupItem>
+                  </ToggleGroup>
+                </div>
+              </div>
+
+              <div className="space-y-4 p-6 bg-muted rounded-2xl border border-border">
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                    <Wind size={14} /> 7. Correction Phase
+                    <Wind size={14} /> 8. Correction Phase
                   </label>
                   <div className="text-2xl font-semibold text-foreground tabular-nums">{formatTime(correctionTime)}</div>
                 </div>
@@ -441,26 +469,29 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                   <div className="p-4 bg-background rounded-2xl border border-border space-y-3">
                     <div className="flex items-center gap-2">
                       <Hand size={16} className="text-muted-foreground" />
-                      <p className="text-xs font-medium text-foreground uppercase tracking-tight">Practitioner Hand Instruction:</p>
+                      <p className="text-xs font-medium text-foreground uppercase tracking-tight">Instruction:</p>
                     </div>
                     <p className="text-sm font-medium text-muted-foreground leading-relaxed">
-                      Use your <span className="underline decoration-border underline-offset-4">{polarity === 'Energy OUT' ? 'LEFT' : 'RIGHT'}</span> hand to hold the {challengeType === 'hand' ? `${selectedOrgan} pulse point` : `${selectedGland} reflex`}.
+                      Hold <span className="font-semibold text-foreground underline decoration-border underline-offset-4">{challengeType === 'hand' ? selectedOrgan : selectedGland}</span>{challengeType === 'hand' ? ` (${pulseSide} hand, ${pulseDepth.toLowerCase()})` : ''} with your{' '}
+                      <span className="font-semibold text-foreground underline decoration-border underline-offset-4">{polarity === 'Energy OUT' ? 'Energy OUT' : polarity === 'Energy IN' ? 'Energy IN' : 'energy'}</span> finger,{' '}
+                      whilst client does{' '}
+                      <span className="font-semibold text-foreground underline decoration-border underline-offset-4">{breathingPattern || 'selected breathing pattern'}</span>.
                     </p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    <ToggleGroup type="single" value={breathingPattern} onValueChange={setBreathingPattern} className="justify-start gap-2">
-                      <ToggleGroupItem value="Blocked Inhalation" className="rounded-xl px-4 py-2 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border border-border font-medium text-xs">Blocked Inhalation</ToggleGroupItem>
-                      <ToggleGroupItem value="Forced Exhalation" className="rounded-xl px-4 py-2 h-auto data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border border-border font-medium text-xs">Forced Exhalation</ToggleGroupItem>
-                    </ToggleGroup>
+                    {(!selectedOrgan && !selectedGland) || !polarity || !breathingPattern ? (
+                      <div className="flex items-center gap-2 mt-2 p-2 bg-amber-50 border border-amber-200 rounded-xl">
+                        <span className="text-[10px] font-medium text-amber-700">
+                          Complete steps 4–7 to see full instruction
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
 
                   <div className="flex gap-3">
                     <Button onClick={toggleCorrectionTimer} variant={isCorrectionActive ? "outline" : "default"} className={cn("flex-1 rounded-2xl h-12 font-semibold transition-all", !isCorrectionActive && "bg-primary hover:bg-primary/90")}>
                       {isCorrectionActive ? <Pause size={18} className="mr-2" /> : <Play size={18} className="mr-2" />}
-                      {isCorrectionActive ? "Pause" : "Start Correction (15-30s)"}
+                      {isCorrectionActive ? "Pause" : "Start Correction (30s)"}
                     </Button>
-                    <Button onClick={resetCorrectionTimer} variant="ghost" size="icon" className="rounded-2xl h-12 w-12 text-muted-foreground hover:text-foreground"><RotateCcw size={18} /></Button>
+                    <Button onClick={resetCorrectionTimer} variant="ghost" size="icon" className="rounded-2xl h-12 w-12 text-muted-foreground hover:text-foreground" aria-label="Reset correction timer"><RotateCcw size={18} /></Button>
                   </div>
                   
                   <p className="text-xs text-muted-foreground/70 font-medium leading-relaxed italic">
@@ -472,16 +503,17 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
               <div className="pt-4 flex items-center justify-between border-t border-border">
                 <div className="flex items-center gap-2">
                   <RefreshCw size={16} className="text-muted-foreground" />
-                  <span className="text-xs font-medium text-muted-foreground">8. Re-assess all indicators</span>
+                  <span className="text-xs font-medium text-muted-foreground">9. Re-assess all indicators</span>
                 </div>
                 <Button 
                   variant={isCleared ? "default" : "outline"} 
                   size="sm" 
                   onClick={() => setIsCleared(!isCleared)}
                   className={cn("rounded-xl font-medium", isCleared ? "bg-primary hover:bg-primary/90" : "border-border")}
+                  aria-label={isCleared ? "Mark as not balanced" : "Mark as balanced"}
                 >
                   {isCleared ? <CheckCircle2 size={16} className="mr-2" /> : null}
-                  {isCleared ? "Balanced" : "Mark as Balanced"}
+                  {isCleared ? "Balanced (tap to undo)" : "Mark as Balanced"}
                 </Button>
               </div>
 
@@ -503,6 +535,15 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
         muscleName={selectedMuscleForInfo}
         open={infoModalOpen}
         onOpenChange={setInfoModalOpen}
+      />
+
+      <ConfirmDialog
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
+        title="Reset Vagus Nerve protocol?"
+        description="This will clear all selections and timer state for the Vagus Nerve process."
+        confirmLabel="Reset"
+        onConfirm={executeReset}
       />
     </>
   );

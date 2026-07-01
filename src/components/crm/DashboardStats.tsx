@@ -1,5 +1,4 @@
 
-import React from "react";
 import { Users, Calendar, FlaskConical, AlertCircle, ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";

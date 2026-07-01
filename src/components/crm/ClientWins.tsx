@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Heart, Quote, Sparkles, Plus, Loader2, Trash2, History, Save, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { showSuccess, showError } from "@/utils/toast";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,7 @@ const ClientWins = () => {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   // Form State
   const [newName, setNewName] = useState("");
@@ -86,12 +88,13 @@ const ClientWins = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Remove this win from your vault?")) return;
+  const executeDelete = async () => {
+    if (!deleteTargetId) return;
+    setDeleteTargetId(null);
     try {
-      const { error } = await supabase.from('client_wins').delete().eq('id', id);
+      const { error } = await supabase.from('client_wins').delete().eq('id', deleteTargetId);
       if (error) throw error;
-      setWins(wins.filter(w => w.id !== id));
+      setWins(wins.filter(w => w.id !== deleteTargetId));
       showSuccess("Win removed.");
     } catch (err) {
       showError("Failed to delete.");
@@ -135,7 +138,7 @@ const ClientWins = () => {
                     variant="ghost" 
                     size="icon" 
                     className="h-8 w-8 rounded-xl text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all"
-                    onClick={() => handleDelete(win.id)}
+                    onClick={() => setDeleteTargetId(win.id)}
                   >
                     <Trash2 size={16} />
                   </Button>
@@ -220,6 +223,15 @@ const ClientWins = () => {
           </Button>
         )}
       </div>
+
+      <ConfirmDialog
+        open={deleteTargetId !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTargetId(null); }}
+        title="Remove win?"
+        description="This will remove this win from your vault."
+        confirmLabel="Remove"
+        onConfirm={executeDelete}
+      />
     </div>
   );
 };

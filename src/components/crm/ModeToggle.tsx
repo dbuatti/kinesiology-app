@@ -1,5 +1,4 @@
 
-import * as React from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -16,13 +15,13 @@ export function ModeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-xl h-9 w-9 text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400">
+        <Button variant="ghost" size="icon" className="rounded-xl h-9 w-9 text-muted-foreground hover:text-foreground" aria-label="Toggle theme">
           <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-2xl border-none bg-white dark:bg-slate-900">
+      <DropdownMenuContent align="end" className="rounded-2xl p-2 shadow-2xl border bg-popover text-popover-foreground">
         <DropdownMenuItem onClick={() => setTheme("light")} className="rounded-xl py-2 px-4 cursor-pointer font-bold text-xs uppercase tracking-widest">
           Light
         </DropdownMenuItem>

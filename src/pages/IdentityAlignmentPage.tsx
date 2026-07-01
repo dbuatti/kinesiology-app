@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, PlayCircle, Info, Target } from "lucide-react";
 import IdentityAlignmentBackground from '@/components/crm/IdentityAlignmentBackground';

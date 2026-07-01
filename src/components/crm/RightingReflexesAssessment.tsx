@@ -1,11 +1,12 @@
 
-import React, { useState, useEffect } from "react";
+	import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Eye, EyeOff, Info, Save, Loader2, RotateCcw, Zap, Activity, RefreshCw, CheckCircle2, ArrowRightLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +29,7 @@ const RightingReflexesAssessment = ({
   const [notes, setNotes] = useState(initialNotes || '');
   const [activeTest, setActiveTest] = useState<'ocular' | 'labyrinthine'>('ocular');
   const [currentStatus, setCurrentStatus] = useState<'Clear' | 'Inhibited' | 'Recheck' | null>(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   // Structured Fields
   const [ocularStatus, setOcularStatus] = useState<string>("");
@@ -145,8 +147,8 @@ const RightingReflexesAssessment = ({
     }
   };
 
-  const handleReset = async () => {
-    if (!confirm("Reset Righting Reflexes data?")) return;
+  const executeReset = async () => {
+    setShowResetConfirm(false);
     setLoading(true);
     try {
       const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
@@ -301,13 +303,22 @@ const RightingReflexesAssessment = ({
               {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Save Notes"}
             </Button>
             {(initialNotes || currentStatus) && (
-              <Button variant="outline" onClick={handleReset} disabled={loading} className="h-12 px-6 rounded-xl border-red-200 text-red-600 hover:bg-red-50">
+              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-12 px-6 rounded-xl border-red-200 text-red-600 hover:bg-red-50">
                 <RotateCcw size={16} />
               </Button>
             )}
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
+        title="Reset Righting Reflexes data?"
+        description="This will clear all Righting Reflexes assessment notes and status."
+        confirmLabel="Reset"
+        onConfirm={executeReset}
+      />
     </div>
   );
 };

@@ -1,10 +1,11 @@
 
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, type ElementType } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -89,7 +90,7 @@ const DEFAULT_EXTRA_STREAMS: IncomeStream[] = [
   { id: 'theatre',   name: 'Musical Theatre',  unitLabel: 'shows',    ratePerUnit: 200, unitsPerMonth: 1, enabled: true },
   { id: 'piano',     name: 'Piano Backings',   unitLabel: 'sessions', ratePerUnit: 80,  unitsPerMonth: 4, enabled: true },
 ];
-const STREAM_ICONS: Record<string, React.ElementType> = {
+const STREAM_ICONS: Record<string, ElementType> = {
   fnh: Brain, voice: Mic2, corporate: Building2, theatre: Theater, piano: Music2,
 };
 
@@ -628,6 +629,9 @@ export default function ClientAuditPage() {
     showSuccess("Weekly booking simulator cleared.");
   };
 
+  const [showEmailConfirm, setShowEmailConfirm] = useState(false);
+  const [emailConfirmCount, setEmailConfirmCount] = useState(0);
+
   // BULK ACTIONS HANDLERS
   const handleBulkSetTargetRate = async (rate: number) => {
     if (selectedWeeklyClients.length === 0) return;
@@ -669,18 +673,22 @@ export default function ClientAuditPage() {
     }
   };
 
-  const handleBulkSendOnboarding = async () => {
+  const handleBulkSendOnboardingClick = () => {
     if (selectedWeeklyClients.length === 0) return;
-    
     const clientsWithEmail = clients.filter(c => selectedWeeklyClients.includes(c.id) && c.email);
     if (clientsWithEmail.length === 0) {
       showError("None of the selected clients have a valid email address.");
       return;
     }
+    setEmailConfirmCount(clientsWithEmail.length);
+    setShowEmailConfirm(true);
+  };
 
-    if (!confirm(`Are you sure you want to send onboarding emails to ${clientsWithEmail.length} clients?`)) {
-      return;
-    }
+  const executeSendEmails = async () => {
+    if (selectedWeeklyClients.length === 0) return;
+    setShowEmailConfirm(false);
+    const clientsWithEmail = clients.filter(c => selectedWeeklyClients.includes(c.id) && c.email);
+    if (clientsWithEmail.length === 0) return;
 
     setBulkActionLoading(true);
     let successCount = 0;
@@ -2698,6 +2706,14 @@ export default function ClientAuditPage() {
         }}
       />
 
+      <ConfirmDialog
+        open={showEmailConfirm}
+        onOpenChange={setShowEmailConfirm}
+        title="Send Onboarding Emails"
+        description={`Are you sure you want to send onboarding emails to ${emailConfirmCount} clients?`}
+        onConfirm={executeSendEmails}
+      />
+
       {/* STICKY BULK ACTIONS BAR */}
       {selectedWeeklyClients.length > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-3xl px-4 animate-in slide-in-from-bottom-10 duration-500">
@@ -2743,7 +2759,7 @@ export default function ClientAuditPage() {
               {/* Bulk Onboarding */}
               <Button
                 size="sm"
-                onClick={handleBulkSendOnboarding}
+                onClick={handleBulkSendOnboardingClick}
                 disabled={bulkActionLoading}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-9 px-4 font-semibold text-[10px] uppercase tracking-wider"
               >

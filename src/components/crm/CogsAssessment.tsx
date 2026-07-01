@@ -1,5 +1,6 @@
 
-import React, { useState } from "react";
+import { useState } from "react";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import {
   Collapsible,
   CollapsibleContent,
@@ -83,6 +84,7 @@ const CogsAssessment = ({
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [activePlane, setActivePlane] = useState<string | null>(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   
   const [sagittalNotes, setSagittalNotes] = useState(initialSagittalNotes || '');
   const [frontalNotes, setFrontalNotes] = useState(initialFrontalNotes || '');
@@ -116,8 +118,8 @@ const CogsAssessment = ({
     setter(prev => prev ? `${prev}, ${tag}` : tag);
   };
 
-  const handleReset = async () => {
-    if (!confirm("Reset all COGS notes?")) return;
+  const executeReset = async () => {
+    setShowResetConfirm(false);
     setLoading(true);
     try {
       await supabase.from("appointments").update({ sagittal_plane_notes: null, frontal_plane_notes: null, transverse_plane_notes: null }).eq("id", appointmentId);
@@ -324,7 +326,7 @@ const CogsAssessment = ({
                   Save All Planes
                 </Button>
                 {hasSavedNotes && (
-                  <Button variant="ghost" onClick={handleReset} className="h-10 px-3 rounded-xl text-xs text-muted-foreground hover:text-destructive">
+                  <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="h-10 px-3 rounded-xl text-xs text-muted-foreground hover:text-destructive">
                     <RotateCcw size={14} />
                   </Button>
                 )}
@@ -333,6 +335,15 @@ const CogsAssessment = ({
           </div>
         </CollapsibleContent>
       </Collapsible>
+
+      <ConfirmDialog
+        open={showResetConfirm}
+        onOpenChange={setShowResetConfirm}
+        title="Reset all COGS notes?"
+        description="This will clear all sagittal, frontal, and transverse plane notes."
+        confirmLabel="Reset"
+        onConfirm={executeReset}
+      />
     </div>
   );
 };

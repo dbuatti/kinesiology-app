@@ -1,6 +1,6 @@
-import React from 'react';
+import type { FC, ReactNode } from 'react';
 
-export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AppLayout: FC<{ children: ReactNode }> = ({ children }) => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card">

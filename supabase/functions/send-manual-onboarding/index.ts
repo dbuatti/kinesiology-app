@@ -2,7 +2,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@14.25.0'
-import { format } from 'https://esm.sh/date-fns@3.6.0'
 import { requireUser } from "../_shared/auth.ts"
 
 const corsHeaders = {
@@ -137,7 +136,7 @@ serve(async (req) => {
             currency: 'aud',
             product_data: {
               name: 'FNH Clinical Assessment',
-              description: `Session on ${format(new Date(targetApp.date), "MMM d, yyyy")}`
+              description: `Session on ${new Date(targetApp.date).toLocaleDateString("en-AU", { timeZone: "Australia/Melbourne", month: "short", day: "numeric", year: "numeric" })}`
             },
             unit_amount: priceAmount * 100,
           },
@@ -163,7 +162,17 @@ serve(async (req) => {
     const intakeFilled = isIntakeFormFilled(client);
     const intakeUrl = `${Deno.env.get('SITE_URL') || req.headers.get('origin') || 'https://kinesiology-app.vercel.app'}/onboarding/${client.id}`;
 
-    const appDate = targetApp?.date ? format(new Date(targetApp.date), "EEEE, MMMM d, yyyy 'at' h:mm a") : null;
+    const appDate = targetApp?.date
+      ? new Date(targetApp.date).toLocaleString("en-AU", {
+          timeZone: "Australia/Melbourne",
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        })
+      : null;
 
     const appointmentSection = appDate ? `
       <div style="text-align: center; padding: 24px 0; border-bottom: 1px solid #F1F5F9;">

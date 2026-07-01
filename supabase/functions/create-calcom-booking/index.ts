@@ -82,7 +82,9 @@ serve(async (req) => {
         });
       }
 
-      // 404 means the stored UID is stale. Try to find the correct booking by attendee email.
+      // 404 means the stored UID is stale. Try to find the correct booking by attendee email,
+      // but ONLY if the matched booking's numeric id matches the original bookingUid (the
+      // original may be a v1 numeric ID while the v2 API expects a string uid).
       if (res.status === 404) {
         console.warn(`[${functionName}] Booking ${bookingUid} not found in Cal.com — attempting to locate by email`);
 
@@ -101,7 +103,15 @@ serve(async (req) => {
         );
 
         if (matched) {
-          console.log(`[${functionName}] Found correct uid=${matched.uid} for ${client.email}. Retrying reschedule.`);
+          // Safety check: confirm the matched booking is the same one the user intended
+          // by comparing the original bookingUid against the matched booking's numeric id.
+          const sameBooking = String(matched.id) === String(bookingUid) || String(matched.uid) === String(bookingUid);
+          if (!sameBooking) {
+            console.warn(`[${functionName}] Matched booking ${matched.uid} (id=${matched.id}) does not match requested ${bookingUid}. Refusing to reschedule wrong booking.`);
+            throw new Error(`Booking ${bookingUid} was not found in Cal.com. The stored booking ID may be stale — please refresh and try again.`);
+          }
+
+          console.log(`[${functionName}] Found matching uid=${matched.uid} for ${client.email}. Retrying reschedule.`);
 
           const retryRes = await fetch(`https://api.cal.com/v2/bookings/${matched.uid}/reschedule`, {
             method: "POST",

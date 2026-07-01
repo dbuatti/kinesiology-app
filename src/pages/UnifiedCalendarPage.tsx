@@ -547,14 +547,14 @@ const UnifiedCalendarPage = () => {
   const ws = startOfWeek(weekStart);
   const we = endOfWeek(weekStart);
   return calendarItems
-    .filter((item) => item.time && new Date(item.date) >= ws && new Date(item.date) <= we)
+    .filter((item) => !item.cancelled && item.time && new Date(item.date) >= ws && new Date(item.date) <= we)
     .map(parseTimeToEvent)
     .filter((e): e is CalendarEvent => e !== null);
   }, [calendarItems, weekStart]);
 
   const monthlyEvents: CalendarEvent[] = useMemo(() => {
     return calendarItems
-      .filter((item) => item.time && new Date(item.date) >= monthStart && new Date(item.date) <= monthEnd)
+      .filter((item) => !item.cancelled && item.time && new Date(item.date) >= monthStart && new Date(item.date) <= monthEnd)
       .map(parseTimeToEvent)
       .filter((e): e is CalendarEvent => e !== null);
   }, [calendarItems, monthStart, monthEnd]);
@@ -565,7 +565,7 @@ const UnifiedCalendarPage = () => {
   );
 
   const getItemsForDay = (day: Date) =>
-  calendarItems.filter((item) => isSameDay(new Date(item.date), day));
+  calendarItems.filter((item) => !item.cancelled && isSameDay(new Date(item.date), day));
 
  const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
  const isLoading = voiceLoading || kinesiologyLoading;

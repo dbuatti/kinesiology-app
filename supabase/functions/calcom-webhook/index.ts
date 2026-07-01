@@ -38,7 +38,7 @@ serve(async (req) => {
     }
 
     const payload = body.payload || body.data || body;
-    const calcomId = String(payload.bookingId || payload.id || payload.uid);
+    const calcomId = String(payload.uid || payload.bookingId || payload.id);
 
     // For rescheduled bookings, grab the old booking UID so we can update
     // the existing row instead of creating a duplicate (Cal.com cancels the

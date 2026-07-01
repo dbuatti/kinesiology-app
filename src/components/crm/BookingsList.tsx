@@ -288,11 +288,16 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
           },
         });
         if (res.error) throw res.error;
-      } else {
+      } else if (item.calcomUid) {
         const res = await supabase.functions.invoke("delete-external-appointment", {
           body: { calcomBookingId: item.calcomUid },
         });
         if (res.error) throw res.error;
+        if (item.appointmentId) {
+          await supabase.from("appointments").update({ status: "Cancelled" }).eq("id", item.appointmentId);
+        }
+      } else {
+        // Local-only appointment (e.g. free/community) — just update status.
         if (item.appointmentId) {
           await supabase.from("appointments").update({ status: "Cancelled" }).eq("id", item.appointmentId);
         }
@@ -692,9 +697,8 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                       </DropdownMenuItem>
                     )
                   )}
-                  {!item.cancelled && (
+                  {!item.cancelled && item.calcomUid && (
                     <DropdownMenuItem
-                      disabled={!item.calcomUid}
                       onClick={(e) => { e.stopPropagation(); setRescheduleTarget(item); setRescheduleAt(""); loadSlots(item); }}
                     >
                       <CalendarClock size={14} className="mr-2" /> Reschedule
@@ -721,7 +725,6 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                   )}
                   {!item.cancelled && (
                     <DropdownMenuItem
-                      disabled={!item.calcomUid}
                       className="text-destructive focus:text-destructive"
                       onClick={(e) => { e.stopPropagation(); setCancelTarget(item); }}
                     >
@@ -776,7 +779,10 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
             <DialogTitle>Cancel this booking?</DialogTitle>
             <DialogDescription>
               {cancelTarget && (
-                <>This cancels the Cal.com booking for <strong>{cancelTarget.source === "voice" ? cancelTarget.subtitle : cancelTarget.title}</strong> and frees the slot. This can’t be undone.</>
+                <>{cancelTarget.calcomUid
+                  ? <>This cancels the Cal.com booking for <strong>{cancelTarget.source === "voice" ? cancelTarget.subtitle : cancelTarget.title}</strong> and frees the slot. This can’t be undone.</>
+                  : <>Cancel the appointment for <strong>{cancelTarget.source === "voice" ? cancelTarget.subtitle : cancelTarget.title}</strong>? This can’t be undone.</>
+                }</>
               )}
             </DialogDescription>
           </DialogHeader>

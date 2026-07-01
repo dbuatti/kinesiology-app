@@ -385,7 +385,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
                     <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Hold Simultaneously:</p>
                     <ul className="space-y-2 text-xs font-bold">
                       <li className="flex items-center gap-2"><CheckCircle2 size={14} className="text-rose-500" /> Frontal Lobe (ESR)</li>
-                      <li className="flex items-center gap-2"><CheckCircle2 size={14} className="text-rose-500" /> Eye Position: <span className="text-rose-400">{selectedEyePos.pos}</span></li>
+                      <li className="flex items-start gap-2"><CheckCircle2 size={14} className="text-rose-500 mt-0.5 shrink-0" /> <span>Eye Position: <span className="text-rose-400">{selectedEyePos.pos}</span><br /><span className="text-[10px] text-slate-400 font-medium">{selectedEyePos.label} — {selectedEyePos.sub}</span></span></li>
                       <li className="flex items-center gap-2"><CheckCircle2 size={14} className="text-rose-500" /> {selectedOrgan} Pulse Point</li>
                     </ul>
                   </div>
@@ -453,7 +453,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
                   <p className="text-[10px] font-black uppercase tracking-widest">The Process</p>
                 </div>
                 <p className="text-sm font-bold leading-relaxed">
-                  Maintain the same eye position ({selectedEyePos.pos}) and hold the points. Focus entirely on the feeling of <span className="underline decoration-emerald-400 underline-offset-4">{positiveState || 'the positive state'}</span>.
+                  Maintain the same eye position ({selectedEyePos.pos} — {selectedEyePos.label}) and hold the points. Focus entirely on the feeling of <span className="underline decoration-emerald-400 underline-offset-4">{positiveState || 'the positive state'}</span>.
                 </p>
               </div>
 

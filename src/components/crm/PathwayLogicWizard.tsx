@@ -31,6 +31,7 @@ import JointActionTableModal from './JointActionTableModal';
 import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';
 import { getMuscleInfo } from '@/data/muscle-info-data';
 import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
+import { EYE_POSITIONS } from '@/data/emotion-data';
 import { safeParse } from '@/utils/safe-json';
 import { format } from 'date-fns';
 
@@ -67,6 +68,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
   const [ligamentImages, setLigamentImages] = useState<Record<string, (string | null)[]>>({});
   const [ligamentModalOpen, setLigamentModalOpen] = useState(false);
   const [actionTableOpen, setActionTableOpen] = useState(false);
+  const [correctionSummary, setCorrectionSummary] = useState<string>("");
 
   const onOpenActionTable = () => setActionTableOpen(true);
   const onOpenLigamentCharts = () => setLigamentModalOpen(true);
@@ -214,6 +216,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
         onClearItem(effectiveItem);
       }
     }
+    setCorrectionSummary(summary);
     onSave(summary);
     setStep('COMPLETION');
     setHistory([]);
@@ -540,18 +543,57 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
         return <VestibularProcess onSave={handleSave} onInhibited={handleInhibited} onCancel={goBack} />;
 
       case 'COMPLETION':
+        const eyeMatch = EYE_POSITIONS.find(e => correctionSummary.includes(e.label));
+        const eyeLabel = eyeMatch?.label ?? "";
+        const eyeSub = eyeMatch?.sub ?? "";
+        const eyePos = eyeMatch?.pos ?? "";
         return (
-          <div className="py-8 flex flex-col items-center justify-center text-center space-y-6 animate-in zoom-in-95 duration-300">
-            <div className="w-16 h-16 rounded-2xl bg-chart-emerald/10 text-chart-emerald flex items-center justify-center">
-              <CheckCircle2 size={36} />
+          <div className="py-6 space-y-6 animate-in zoom-in-95 duration-300">
+            <div className="flex flex-col items-center justify-center text-center space-y-3">
+              <div className="w-16 h-16 rounded-2xl bg-chart-emerald/10 text-chart-emerald flex items-center justify-center">
+                <CheckCircle2 size={36} />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-xl font-semibold text-foreground">Correction Complete</h3>
+                <p className="text-sm text-muted-foreground">
+                  {effectiveItem || "Finding"} has been cleared.
+                </p>
+                <p className="text-xs text-muted-foreground/60">Additional layers can be added in future sessions.</p>
+              </div>
             </div>
-            <div className="space-y-1">
-              <h3 className="text-xl font-semibold text-foreground">Correction Complete</h3>
-              <p className="text-sm text-muted-foreground">
-                {effectiveItem || "Finding"} has been cleared.
-              </p>
-              <p className="text-xs text-muted-foreground/60">Additional layers can be added in future sessions.</p>
-            </div>
+
+            {correctionSummary && (
+              <div className="bg-card border border-border rounded-2xl p-5 space-y-3 text-left">
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">Correction Details</p>
+                <div className="space-y-2 text-sm">
+                  {correctionSummary.split(" | ").map((part, i) => {
+                    const [key, ...rest] = part.split(": ");
+                    const val = rest.join(": ");
+                    if (key === "Eye Position" && eyeMatch) {
+                      return (
+                        <div key={i} className="flex items-start gap-2">
+                          <Eye size={14} className="text-rose-500 mt-0.5 shrink-0" />
+                          <div>
+                            <span className="font-bold text-foreground">{eyeLabel}</span>
+                            <span className="text-muted-foreground"> ({eyePos})</span>
+                            <p className="text-xs text-muted-foreground/70 mt-0.5">{eyeSub}</p>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div key={i} className="flex items-start gap-2">
+                        <CheckCircle2 size={14} className="text-chart-emerald mt-0.5 shrink-0" />
+                        <span className="text-muted-foreground">
+                          {key && val ? <><span className="font-semibold text-foreground">{key}</span>: {val}</> : part}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div className="flex gap-3 pt-2">
               <Button variant="outline" onClick={resetWizard} className="rounded-xl h-10 px-5 text-sm font-medium">
                 <RefreshCw size={14} className="mr-2" /> Correct Another Finding

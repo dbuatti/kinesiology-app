@@ -16,6 +16,7 @@ const UpcomingMarquee = () => {
         .from('appointments')
         .select('id, date, clients!inner(name, is_practitioner)')
         .or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' })
+        .neq('status', 'Cancelled')
         .gte('date', now.toISOString())
         .order('date', { ascending: true })
         .limit(2); // Only need the next two

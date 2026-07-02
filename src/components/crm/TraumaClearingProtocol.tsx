@@ -120,11 +120,11 @@ const TraumaClearingProtocol = () => {
             <ul className="space-y-2 text-sm font-medium text-foreground">
               <li className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
-                A memory is <strong>replaying</strong>, or repeatedly triggering a response.
+                <span>A memory is <strong>replaying</strong>, or repeatedly triggering a response.</span>
               </li>
               <li className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
-                You suspect it's <strong>running underneath</strong> and driving a <strong>PNI somatic response</strong>.
+                <span>You suspect it's <strong>running underneath</strong> and driving a <strong>PNI somatic response</strong>.</span>
               </li>
             </ul>
           </div>
@@ -186,23 +186,25 @@ const TraumaClearingProtocol = () => {
             defaultOpen
           >
             <div className="space-y-3 text-sm">
-              <div className="p-3 bg-muted rounded-lg space-y-2">
-                <p className="font-bold text-foreground">Script:</p>
-                <p className="text-muted-foreground italic pl-4 border-l-2 border-indigo-300">
-                  "Bring your mind to the traumatic memory or negative experience."
-                </p>
-              </div>
-              <div className="p-3 bg-muted rounded-lg space-y-2">
-                <p className="font-bold text-foreground">Then:</p>
-                <p className="text-muted-foreground italic pl-4 border-l-2 border-indigo-300">
-                  "Take your mind back to the <strong>worst part</strong> of the frozen moment — the worst moment of that negative experience."
-                </p>
-              </div>
-              <div className="p-3 bg-muted rounded-lg space-y-2">
-                <p className="font-bold text-foreground">Once it lands:</p>
-                <p className="text-muted-foreground italic pl-4 border-l-2 border-indigo-300">
-                  "Now <strong>freeze it there</strong>. Keep feeling this frozen moment."
-                </p>
+              <div className="p-4 bg-muted rounded-lg space-y-3">
+                <div>
+                  <p className="font-bold text-foreground">Script:</p>
+                  <p className="text-muted-foreground italic pl-4 border-l-2 border-indigo-300 mt-1">
+                    "Bring your mind to the traumatic memory or negative experience."
+                  </p>
+                </div>
+                <div>
+                  <p className="font-bold text-foreground">Then:</p>
+                  <p className="text-muted-foreground italic pl-4 border-l-2 border-indigo-300 mt-1">
+                    "Take your mind back to the <strong>worst part</strong> of the frozen moment — the worst moment of that negative experience."
+                  </p>
+                </div>
+                <div>
+                  <p className="font-bold text-foreground">Once it lands:</p>
+                  <p className="text-muted-foreground italic pl-4 border-l-2 border-indigo-300 mt-1">
+                    "Now <strong>freeze it there</strong>. Keep feeling this frozen moment."
+                  </p>
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
                 {[
@@ -305,9 +307,9 @@ const TraumaClearingProtocol = () => {
                 <div className="p-3 bg-white/60 rounded-lg">
                   <p className="text-sm font-bold text-amber-800">Repeat as needed:</p>
                   <ul className="mt-2 space-y-1 text-xs text-amber-700 font-medium">
-                    <li className="flex items-start gap-2"><div className="w-1 h-1 rounded-full bg-amber-500 mt-1.5 shrink-0" /> Keep clearing against the <strong>future</strong></li>
-                    <li className="flex items-start gap-2"><div className="w-1 h-1 rounded-full bg-amber-500 mt-1.5 shrink-0" /> Keep clearing against <strong>scenarios</strong></li>
-                    <li className="flex items-start gap-2"><div className="w-1 h-1 rounded-full bg-amber-500 mt-1.5 shrink-0" /> Until the negative identity is <strong>no longer accessible</strong> ("gone")</li>
+                    <li className="flex items-start gap-2"><div className="w-1 h-1 rounded-full bg-amber-500 mt-1.5 shrink-0" /><span>Keep clearing against the <strong>future</strong></span></li>
+                    <li className="flex items-start gap-2"><div className="w-1 h-1 rounded-full bg-amber-500 mt-1.5 shrink-0" /><span>Keep clearing against <strong>scenarios</strong></span></li>
+                    <li className="flex items-start gap-2"><div className="w-1 h-1 rounded-full bg-amber-500 mt-1.5 shrink-0" /><span>Until the negative identity is <strong>no longer accessible</strong> ("gone")</span></li>
                   </ul>
                 </div>
               </div>
@@ -324,17 +326,19 @@ const TraumaClearingProtocol = () => {
             defaultOpen
           >
             <div className="space-y-3 text-sm">
-              <div className="p-3 bg-muted rounded-lg">
-                <p className="font-bold text-foreground">Bring them back:</p>
-                <p className="text-muted-foreground italic pl-4 border-l-2 border-emerald-400 mt-1">
-                  "Now take your mind back to the frozen moment — the worst part of that experience."
-                </p>
-              </div>
-              <div className="p-3 bg-muted rounded-lg">
-                <p className="font-bold text-foreground">Ask:</p>
-                <p className="text-muted-foreground italic pl-4 border-l-2 border-emerald-400 mt-1">
-                  "Does it still feel like a problem?"
-                </p>
+              <div className="p-4 bg-muted rounded-lg space-y-3">
+                <div>
+                  <p className="font-bold text-foreground">Bring them back:</p>
+                  <p className="text-muted-foreground italic pl-4 border-l-2 border-emerald-400 mt-1">
+                    "Now take your mind back to the frozen moment — the worst part of that experience."
+                  </p>
+                </div>
+                <div>
+                  <p className="font-bold text-foreground">Ask:</p>
+                  <p className="text-muted-foreground italic pl-4 border-l-2 border-emerald-400 mt-1">
+                    "Does it still feel like a problem?"
+                  </p>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-4 bg-rose-50 rounded-xl border border-rose-200">
@@ -407,18 +411,18 @@ const TraumaClearingProtocol = () => {
       {/* Key Points */}
       <section className="mb-8">
         <SectionTitle icon={Lightbulb} color="bg-amber-500">Key Points</SectionTitle>
-        <div className="space-y-3">
+        <div className="p-4 bg-muted rounded-lg space-y-3">
           {[
             '"Worst moment" is usually one single snapshot in the sequence — a vision, feeling, or sensory imprint.',
             'You may clear multiple identities for the same moment — sometimes 3, sometimes 1.',
             'Keep clearing against the future and scenarios until the negative identity is no longer accessible.',
             'Maintain client sovereignty at all times. If no (conscious or in the body), stop.',
           ].map((point, i) => (
-            <div key={i} className="flex items-start gap-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
+            <div key={i} className="flex items-start gap-3">
               <div className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
                 {i + 1}
               </div>
-              <p className="text-sm font-medium text-amber-900 leading-relaxed">{point}</p>
+              <p className="text-sm font-medium text-muted-foreground leading-relaxed">{point}</p>
             </div>
           ))}
         </div>

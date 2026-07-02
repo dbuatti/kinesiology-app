@@ -416,7 +416,7 @@ const HeartWallProtocol = () => {
                 <Brain size={16} className="text-indigo-600 shrink-0 mt-0.5" />
                 <p className="text-xs font-medium text-indigo-800 leading-relaxed">
                   <strong>Intention cue:</strong> While holding the points, state in your mind:
-                  "Heart wall, {organ}, {emotion}, inherited from {parent}."
+                  {`"Heart wall, {organ}, {emotion}, inherited from {parent}."`}
                   Keep repeating this over the 3-minute period — it anchors the correction.
                 </p>
               </div>

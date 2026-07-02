@@ -156,9 +156,55 @@ serve(async (req) => {
       });
     }
 
-    // Only process booking creation events
-    if (triggerEvent !== "BOOKING_CREATED") {
-      console.log(`[${functionName}] Ignoring non-creation event: ${triggerEvent}`);
+    // Handle reschedules — Cal.com cancels the old booking and creates a new UID.
+    // Update the existing voice_bookings row + Notion lesson dates in place so the
+    // reconcile sweep doesn't later treat the old UID as a deleted booking.
+    if (triggerEvent === "BOOKING_RESCHEDULED") {
+      const payload = body.payload || body.data || body;
+      const newUid = payload.uid || payload.data?.uid || null;
+      const oldUid = payload.rescheduleUid || payload.oldBookingUid || payload.originalRescheduledBooking?.uid || payload.fromReschedule || null;
+      const newStart = payload.startTime || payload.start;
+      const attendeeEmail = (payload.attendees?.[0]?.email || payload.responses?.email || "").toLowerCase().trim();
+
+      if (newStart) {
+        const supabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
+        let booking = null;
+        if (oldUid) {
+          const { data } = await supabase.from("voice_bookings").select("*").eq("calcom_booking_id", oldUid).maybeSingle();
+          booking = data;
+        }
+        if (!booking && attendeeEmail) {
+          const { data } = await supabase.from("voice_bookings").select("*").eq("student_email", attendeeEmail).neq("status", "cancelled").order("lesson_date", { ascending: false }).limit(1).maybeSingle();
+          booking = data;
+        }
+
+        if (booking) {
+          const newDate = newStart.split("T")[0];
+          const newTime = new Date(newStart).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "Australia/Melbourne" });
+          await supabase.from("voice_bookings")
+            .update({ calcom_booking_id: newUid || booking.calcom_booking_id, lesson_date: newDate, status: "scheduled" })
+            .eq("calcom_booking_id", booking.calcom_booking_id);
+
+          const nHeaders = { Authorization: `Bearer ${NOTION_KEY}`, "Content-Type": "application/json", "Notion-Version": "2022-06-28" };
+          if (booking.notion_lesson_id_1) {
+            await fetch(`https://api.notion.com/v1/pages/${booking.notion_lesson_id_1}`, { method: "PATCH", headers: nHeaders,
+              body: JSON.stringify({ properties: { Date: { date: { start: newDate } }, Breakthroughs: { rich_text: [{ text: { content: newTime } }] } } }) }).catch((e) => console.error(`[${functionName}] reschedule notion 1:`, e.message));
+          }
+          if (booking.notion_lesson_id_2) {
+            await fetch(`https://api.notion.com/v1/pages/${booking.notion_lesson_id_2}`, { method: "PATCH", headers: nHeaders,
+              body: JSON.stringify({ properties: { Date: { date: { start: newDate } }, Details: { rich_text: [{ text: { content: newTime } }] } } }) }).catch((e) => console.error(`[${functionName}] reschedule notion 2:`, e.message));
+          }
+          console.log(`[${functionName}] Rescheduled voice booking → ${newUid} @ ${newDate}`);
+          return new Response(JSON.stringify({ success: true, message: "Rescheduled" }), { status: 200, headers: corsHeaders });
+        }
+        // No existing record — fall through to the creation flow below to add it.
+        console.log(`[${functionName}] Reschedule with no existing voice booking — creating as new.`);
+      }
+    }
+
+    // Only process creation (and reschedule-with-no-existing) events
+    if (triggerEvent !== "BOOKING_CREATED" && triggerEvent !== "BOOKING_RESCHEDULED") {
+      console.log(`[${functionName}] Ignoring event: ${triggerEvent}`);
       return new Response(JSON.stringify({ success: true, message: "Ignored" }), {
         status: 200,
         headers: corsHeaders,

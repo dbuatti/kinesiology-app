@@ -1,6 +1,9 @@
 [functions.create-calcom-booking]
 verify_jwt = false
 
+[functions.reconcile-calcom]
+verify_jwt = false
+
 [functions.list-calcom-event-types]
 verify_jwt = false
 

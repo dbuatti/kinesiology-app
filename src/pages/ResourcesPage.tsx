@@ -55,6 +55,7 @@ import BaGuaReference from "@/components/crm/BaGuaReference";
 import HeartWallBible from "@/components/crm/HeartWallBible";
 import EmotionsProtocolReference from "@/components/crm/EmotionsProtocolReference";
 import ResourceHub from "@/components/crm/ResourceHub";
+import TraumaClearingProtocol from "@/components/crm/TraumaClearingProtocol";
 
 const CATEGORIES = [
  {
@@ -67,8 +68,9 @@ const CATEGORIES = [
  items: [
  { id: "mechano-academy", label: "Mechano Academy", icon: Trophy, desc: "Daily clinical drills and mastery tools." },
  { id: "bible", label: "Mechano Bible", icon: BookOpen, desc: "Definitive guide to joints and movement geometry." },
- { id: "heart-wall-bible", label: "Heart Wall Bible", icon: Shield, desc: "Understanding the subconscious shield." },
- { id: "theory", label: "FN Theory", icon: Workflow, desc: "Functional Neurology approach and principles." },
+  { id: "heart-wall-bible", label: "Heart Wall Bible", icon: Shield, desc: "Understanding the subconscious shield." },
+  { id: "trauma-clearing", label: "Trauma Clearing", icon: Wind, desc: "Identity Shifting Trauma Clearing Process." },
+  { id: "theory", label: "FN Theory", icon: Workflow, desc: "Functional Neurology approach and principles." },
  ]
  },
  {
@@ -198,8 +200,9 @@ const ResourcesPage = () => {
  <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
  <TabsContent value="mechano-academy"><MechanoMasteryModule /></TabsContent>
  <TabsContent value="bible"><MechanoBible /></TabsContent>
- <TabsContent value="heart-wall-bible"><HeartWallBible /></TabsContent>
- <TabsContent value="theory"><FnTheory /></TabsContent>
+  <TabsContent value="heart-wall-bible"><HeartWallBible /></TabsContent>
+  <TabsContent value="trauma-clearing"><TraumaClearingProtocol /></TabsContent>
+  <TabsContent value="theory"><FnTheory /></TabsContent>
  <TabsContent value="muscles"><MuscleReference /></TabsContent>
  <TabsContent value="primitive"><PrimitiveReflexReference /></TabsContent>
  <TabsContent value="cranial"><CranialNerveReference /></TabsContent>

@@ -21,7 +21,8 @@ import {
   Info,
   Shield,
   Dumbbell,
-  Baby
+  Baby,
+  Wind
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +46,7 @@ import { MuscleAssessment } from "@/components/crm/MuscleAssessment";
 import EmotionsProtocolReference from "@/components/crm/EmotionsProtocolReference";
 import MechanoreceptiveAssessment from "@/components/crm/MechanoreceptiveAssessment";
 import HeartWallProtocol from "@/components/crm/HeartWallProtocol";
+import TraumaClearingProtocol from "@/components/crm/TraumaClearingProtocol";
 
 // Modal Components
 import MuscleInfoModal from "@/components/crm/MuscleInfoModal";
@@ -442,6 +444,13 @@ const ProceduresPage = () => {
                       <Shield className="h-4 w-4 mr-1.5" />
                       Heart Wall
                     </TabsTrigger>
+                    <TabsTrigger 
+                      value="trauma-clearing" 
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                    >
+                      <Wind className="h-4 w-4 mr-1.5" />
+                      Trauma
+                    </TabsTrigger>
                   </TabsList>
                 </div>
                 
@@ -493,6 +502,9 @@ const ProceduresPage = () => {
 
                   <TabsContent value="heart-wall" className="mt-0 focus-visible:ring-0">
                     <HeartWallProtocol />
+                  </TabsContent>
+                  <TabsContent value="trauma-clearing" className="mt-0 focus-visible:ring-0">
+                    <TraumaClearingProtocol />
                   </TabsContent>
                 </div>
               </Tabs>

@@ -1,4 +1,5 @@
 
+
 import { EMOTION_CODE_CHART, ROW_DATA } from '@/data/emotion-code-data';
 import { cn } from '@/lib/utils';
 
@@ -17,7 +18,7 @@ const HeartWallPrintable = () => {
     {
       organ: "LUNG OR COLON",
       emotions: ["Crying", "Discouragement", "Sadness", "Sorrow", "Confusion", "Grief", "Self-Abuse", "Shame", "Unworthy", "Worthless"],
-      muscles: "Lungs: Posterior Deltoid; Colon: TFL, Glute Max, QL"
+      muscles: "Lungs: Posterior Deltoid, Serratus Anterior; Colon: TFL, Glute Max, QL"
     },
     {
       organ: "LIVER OR GALLBLADDER",
@@ -41,11 +42,27 @@ const HeartWallPrintable = () => {
       {/* Header */}
       <div className="border-b-2 border-black pb-2 mb-4 flex justify-between items-end">
         <div className="space-y-0.5">
-          <h1 className="text-3xl font-serif font-bold tracking-tight uppercase leading-none">Heart Wall Emotions Table</h1>
-          <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em]">Resonance Clinical Infrastructure • Protocol v2.3</p>
+          <h1 className="text-3xl font-serif font-bold tracking-tight uppercase leading-none">Heart Wall Protocol Sheet</h1>
+          <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em]">Resonance Clinical Infrastructure • Protocol v3.0</p>
         </div>
         <div className="text-right">
           <p className="text-[8px] font-black uppercase tracking-widest text-slate-400">Fractal Resolution OS</p>
+        </div>
+      </div>
+
+      {/* Screen + Permission + Priority Primary */}
+      <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="p-2 border-2 border-black bg-slate-50">
+          <h3 className="text-[8px] font-black uppercase tracking-widest border-b border-black pb-0.5 mb-1">Screen</h3>
+          <p className="text-[8px] font-bold leading-tight">Qualify IM. Client focuses on RECEIVING. If muscle inhibits → Heart Wall present.</p>
+        </div>
+        <div className="p-2 border-2 border-black bg-slate-50">
+          <h3 className="text-[8px] font-black uppercase tracking-widest border-b border-black pb-0.5 mb-1">Assess Priority Primary</h3>
+          <p className="text-[8px] font-bold leading-tight">PP → find emotion/organ → test muscles → find brain zones → CH (inherit?)</p>
+        </div>
+        <div className="p-2 border-2 border-black bg-slate-50">
+          <h3 className="text-[8px] font-black uppercase tracking-widest border-b border-black pb-0.5 mb-1">Count Layers</h3>
+          <p className="text-[8px] font-bold leading-tight">&gt;5 &gt;10 &gt;15 &gt;20 &gt;25. Narrow to exact number. Track before/after.</p>
         </div>
       </div>
 
@@ -96,20 +113,20 @@ const HeartWallPrintable = () => {
         </table>
       </div>
 
-      {/* Clinical Protocol Summary */}
+      {/* Correction Protocol */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
         <div className="md:col-span-8">
           <div className="p-3 border-2 border-black rounded-none bg-slate-50 h-full">
             <h3 className="text-[9px] font-black uppercase tracking-widest border-b border-black pb-1 mb-2 flex items-center gap-2">
-              Quick Release Protocol
+              Correction Protocol
             </h3>
             <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-[9px] font-medium leading-tight">
-              <p><strong>1. Permission:</strong> Confirm system readiness.</p>
-              <p><strong>2. Identify:</strong> Use PP to find Row/Col/Emotion.</p>
-              <p><strong>3. Verify:</strong> Test muscles to confirm circuit.</p>
-              <p><strong>4. Context:</strong> Identify Age and if Inherited.</p>
-              <p><strong>5. Correct:</strong> Stim Heart Zone + PP + Tap.</p>
-              <p><strong>6. Embed:</strong> Wait for shift before re-test.</p>
+              <p><strong>1.</strong> Permission to correct</p>
+              <p><strong>2.</strong> Stim Heart Visceral Referral Zone (chest → ulnar arm)</p>
+              <p><strong>3.</strong> Hold organ pulse point (or squeeze associated muscle)</p>
+              <p><strong>4.</strong> Tap efferent zones — 3 swipes (10 if inherited)</p>
+              <p><strong>5.</strong> Recheck muscles + count remaining layers</p>
+              <p><strong>6.</strong> Client hand ❤️ + organ for integration</p>
             </div>
           </div>
         </div>

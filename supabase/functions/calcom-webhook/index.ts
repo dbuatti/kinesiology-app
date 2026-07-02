@@ -49,6 +49,25 @@ serve(async (req) => {
 
     if (triggerEvent === 'BOOKING_CANCELLED') {
       console.log(`[${functionName}] Deleting cancelled booking: ${calcomId}`);
+
+      // Archive the linked Notion page(s) before deleting the appointment row, so a
+      // cancellation on Cal.com is removed from Notion too (not just Supabase).
+      const NOTION_KEY = Deno.env.get('NOTION_API_KEY');
+      if (NOTION_KEY) {
+        const { data: toCancel } = await supabase
+          .from('appointments')
+          .select('notion_page_id, notion_planner_id')
+          .eq('calcom_booking_id', calcomId)
+          .maybeSingle();
+        for (const pageId of [toCancel?.notion_page_id, toCancel?.notion_planner_id].filter(Boolean)) {
+          await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+            method: 'PATCH',
+            headers: { Authorization: `Bearer ${NOTION_KEY}`, 'Content-Type': 'application/json', 'Notion-Version': '2022-06-28' },
+            body: JSON.stringify({ archived: true }),
+          }).catch((e) => console.error(`[${functionName}] Notion archive failed for ${pageId}:`, e.message));
+        }
+      }
+
       const { error } = await supabase.from('appointments').delete().eq('calcom_booking_id', calcomId);
       
       // Also try to match by time window if calcom_booking_id didn't match
@@ -200,6 +219,11 @@ serve(async (req) => {
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
   } catch (error) {
     console.error(`[${functionName}] CRITICAL FAILURE:`, error.message);
+    // Surface failed Cal.com syncs in the Unmatched Payments / webhook_failures view.
+    try {
+      const sb = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
+      await sb.from('webhook_failures').insert({ source: functionName, event_type: 'calcom-webhook', detail: error.message });
+    } catch (_e) { /* non-fatal */ }
     return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: corsHeaders });
   }
 })

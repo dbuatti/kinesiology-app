@@ -374,6 +374,10 @@ serve(async (req) => {
 
     if (!scheduleData.success) {
       console.error(`[${functionName}] voice-schedule-lesson failed:`, scheduleData);
+      try {
+        const sbFail = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
+        await sbFail.from("webhook_failures").insert({ source: functionName, event_type: triggerEvent, reference: attendeeEmail, detail: `voice-schedule-lesson failed: ${scheduleData.error || "unknown"}` });
+      } catch (_e) { /* non-fatal */ }
       return new Response(
         JSON.stringify({
           success: false,
@@ -449,6 +453,10 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error(`[${functionName}] Error:`, error.message);
+    try {
+      const sbFail = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
+      await sbFail.from("webhook_failures").insert({ source: functionName, event_type: "calcom-voice-webhook", detail: error.message });
+    } catch (_e) { /* non-fatal */ }
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400,
       headers: corsHeaders,

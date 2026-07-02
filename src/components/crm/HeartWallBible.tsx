@@ -17,8 +17,12 @@ import {
   Eye,
   Crown,
   RefreshCw,
+  Printer,
+  FileText,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 const HeartWallBible = () => {
   return (
@@ -37,6 +41,17 @@ const HeartWallBible = () => {
                 Understanding the subconscious architecture of emotional protection.
               </CardDescription>
             </div>
+          </div>
+          <div className="flex flex-wrap gap-3 mt-6">
+            <Button asChild variant="secondary" className="rounded-xl bg-white/10 text-white border-white/20 hover:bg-white/20">
+              <Link to="/practice/procedures"><Zap size={16} className="mr-2" /> View Protocol</Link>
+            </Button>
+            <Button asChild variant="secondary" className="rounded-xl bg-white/10 text-white border-white/20 hover:bg-white/20">
+              <Link to="/resources/heart-wall/print"><Printer size={16} className="mr-2" /> Print Sheet</Link>
+            </Button>
+            <Button asChild variant="secondary" className="rounded-xl bg-white/10 text-white border-white/20 hover:bg-white/20">
+              <Link to="/resources/print"><FileText size={16} className="mr-2" /> Print Hub</Link>
+            </Button>
           </div>
         </CardHeader>
       </Card>
@@ -261,6 +276,16 @@ const HeartWallBible = () => {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Quick Nav */}
+      <div className="flex flex-wrap gap-3 justify-center">
+        <Button asChild variant="outline" className="rounded-2xl h-14 px-8 border-2">
+          <Link to="/practice/procedures"><Zap size={18} className="mr-2" /> Heart Wall Protocol</Link>
+        </Button>
+        <Button asChild variant="outline" className="rounded-2xl h-14 px-8 border-2">
+          <Link to="/resources/heart-wall/print"><Printer size={18} className="mr-2" /> Print Reference Sheet</Link>
+        </Button>
       </div>
 
       {/* Pro Tip */}

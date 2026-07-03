@@ -30,10 +30,11 @@ interface ZoneTestItemProps {
   isLateralized: boolean;
   imageUrl?: string | null;
   showImage: boolean;
+  compact?: boolean;
   onUpdate: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
 }
 
-const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, imageUrl, showImage, onUpdate }: ZoneTestItemProps) => {
+const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, imageUrl, showImage, compact, onUpdate }: ZoneTestItemProps) => {
   const hasInhibition = statusL === 'Inhibited' || statusR === 'Inhibited' || statusMidline === 'Inhibited';
   const isFullyClear = (isLateralized ? (statusL === 'Clear' && statusR === 'Clear') : statusMidline === 'Clear');
 
@@ -106,37 +107,39 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <div className="lg:col-span-8 space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-slate-400">
-                <Hand size={10} /> Location
+      {!compact && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <div className="lg:col-span-8 space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-slate-400">
+                  <Hand size={10} /> Location
+                </div>
+                <p className="text-xs font-bold text-slate-700 leading-tight">{point.location}</p>
               </div>
-              <p className="text-xs font-bold text-slate-700 leading-tight">{point.location}</p>
-            </div>
-            
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-slate-400">
-                <PlayCircle size={10} /> Stimulus
+              
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-slate-400">
+                  <PlayCircle size={10} /> Stimulus
+                </div>
+                <p className="text-xs font-bold text-slate-700 leading-tight">{point.stimulus || point.technique || ""}</p>
               </div>
-              <p className="text-xs font-bold text-slate-700 leading-tight">{point.stimulus || point.technique || "Standard challenge."}</p>
             </div>
           </div>
-        </div>
 
-        <div className="lg:col-span-4">
-          {showImage && imageUrl ? (
-            <div className="aspect-video border border-slate-100 p-0.5 rounded-lg bg-slate-50 overflow-hidden">
-              <img src={imageUrl} alt="Reference" className="w-full h-full object-cover rounded-md opacity-80" />
-            </div>
-          ) : showImage && (
-            <div className="h-full min-h-[60px] border border-dashed border-slate-100 rounded-xl flex items-center justify-center text-slate-200 bg-slate-50/20">
-              <Brain size={16} className="opacity-10" />
-            </div>
-          )}
+          <div className="lg:col-span-4">
+            {showImage && imageUrl ? (
+              <div className="aspect-video border border-slate-100 p-0.5 rounded-lg bg-slate-50 overflow-hidden">
+                <img src={imageUrl} alt="Reference" className="w-full h-full object-cover rounded-md opacity-80" />
+              </div>
+            ) : showImage && (
+              <div className="h-full min-h-[60px] border border-dashed border-slate-100 rounded-xl flex items-center justify-center text-slate-200 bg-slate-50/20">
+                <Brain size={16} className="opacity-10" />
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </section>
   );
 };
@@ -144,11 +147,13 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
 export function BrainZoneAssessment({ 
   priorityPattern, 
   updatePriorityPattern,
-  showImages
+  showImages,
+  compactMode
 }: { 
   priorityPattern?: string | null;
   updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
   showImages: boolean;
+  compactMode?: boolean;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [customImages, setCustomImages] = useState<Record<string, string | null>>({});
@@ -211,6 +216,7 @@ export function BrainZoneAssessment({
             isLateralized={point.lateralization !== 'Bilateral' && point.lateralization !== 'Mixed'}
             imageUrl={customImages[point.id]}
             showImage={showImages}
+            compact={compactMode}
             onUpdate={updatePriorityPattern}
           />
         ))}

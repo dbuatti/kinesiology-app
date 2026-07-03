@@ -4,7 +4,7 @@ import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Button } from "@/components/ui/button";
 import { 
   Brain, Zap, Activity, Dumbbell, Layers, ImageIcon, Baby, 
-  Trash2, RefreshCw, Search 
+  Trash2, RefreshCw, Search, ListChecks 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -48,6 +48,7 @@ const PathwayAssessment = ({
 }: PathwayAssessmentProps) => {
   const results = useMemo(() => safeParse(initialValue, {} as Record<string, Record<string, Status>>), [initialValue]);
   const [showImages, setShowImages] = useState(true);
+  const [compactMode, setCompactMode] = useState(false);
   const [confirmAction, setConfirmAction] = useState<{
     callback: () => void;
     title: string;
@@ -139,6 +140,13 @@ const PathwayAssessment = ({
                 <Label htmlFor="show-images" className="text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer flex items-center gap-2">
                   <ImageIcon size={14} className="text-muted-foreground" />
                   Reference Images
+                </Label>
+              </div>
+              <div className="flex items-center gap-3">
+                <Switch id="compact-mode" checked={compactMode} onCheckedChange={setCompactMode} />
+                <Label htmlFor="compact-mode" className="text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer flex items-center gap-2">
+                  <ListChecks size={14} className="text-muted-foreground" />
+                  Compact
                 </Label>
               </div>
             </div>
@@ -274,6 +282,7 @@ const PathwayAssessment = ({
           appointmentId={appointmentId} 
           priorityPattern={initialValue}
           updatePriorityPattern={onUpdateItem}
+          compactMode={compactMode}
         />
       </AssessmentSection>
 
@@ -289,6 +298,7 @@ const PathwayAssessment = ({
           priorityPattern={initialValue}
           updatePriorityPattern={onUpdateItem}
           showImages={showImages}
+          compactMode={compactMode}
         />
       </AssessmentSection>
 
@@ -303,6 +313,7 @@ const PathwayAssessment = ({
           priorityPattern={initialValue}
           updatePriorityPattern={onUpdateItem}
           showImages={showImages}
+          compactMode={compactMode}
         />
       </AssessmentSection>
 
@@ -317,6 +328,7 @@ const PathwayAssessment = ({
           priorityPattern={initialValue}
           updatePriorityPattern={onUpdateItem}
           showImages={showImages}
+          compactMode={compactMode}
         />
       </AssessmentSection>
       <ConfirmDialog

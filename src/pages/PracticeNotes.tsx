@@ -336,7 +336,7 @@ const PracticeNotes = () => {
  
  <div className="space-y-2 text-xs">
  <p><strong>Location:</strong> {point.location}</p>
- <p><strong>Stimulus:</strong> {point.stimulus || point.technique || "Standard challenge."}</p>
+ <p><strong>Stimulus:</strong> {point.stimulus || point.technique || ""}</p>
  </div>
  
  <ImageRow images={images} />

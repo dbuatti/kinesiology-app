@@ -35,11 +35,12 @@ interface NerveTestItemProps {
   isLateralized: boolean;
   images: { primary: string | null, secondary: string | null } | undefined;
   showImage: boolean;
+  compact?: boolean;
   onUpdate: (nerveId: string, updates: Partial<CranialNerveTest>, side?: 'L' | 'R') => Promise<void>;
   onShowInfo?: (nerveId: number) => void;
 }
 
-const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateralized, images, showImage, onUpdate, onShowInfo }: NerveTestItemProps) => {
+const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateralized, images, showImage, compact, onUpdate, onShowInfo }: NerveTestItemProps) => {
   const [localNotes, setLocalNotes] = useState(test.notes || "");
   const saveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -197,70 +198,72 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <div className="lg:col-span-8 space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                <Hand size={10} /> Reflex Point
+      {!compact && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <div className="lg:col-span-8 space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                  <Hand size={10} /> Reflex Point
+                </div>
+                <p className="text-xs font-medium text-foreground leading-tight">{nerve.reflexPoint}</p>
               </div>
-              <p className="text-xs font-medium text-foreground leading-tight">{nerve.reflexPoint}</p>
+              
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                  <PlayCircle size={10} /> Stimulus
+                </div>
+                <p className="text-xs font-medium text-foreground leading-tight">{nerve.stimulus}</p>
+              </div>
             </div>
-            
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                <PlayCircle size={10} /> Stimulus
+
+            {nerve.delineationGuide && (
+              <div className="p-3 bg-muted/50 rounded-xl border border-indigo-100 animate-in fade-in slide-in-from-top-1 duration-300">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <ArrowRightLeft size={12} className="text-indigo-50" />
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-chart-primary">Delineation Guide</span>
+                </div>
+                <p className="text-[10px] font-medium text-indigo-900 leading-relaxed">
+                  {nerve.delineationGuide}
+                </p>
               </div>
-              <p className="text-xs font-medium text-foreground leading-tight">{nerve.stimulus}</p>
+            )}
+
+            <div className="space-y-1">
+              <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                <FileText size={10} /> Notes
+              </div>
+              <textarea 
+                value={localNotes}
+                onChange={(e) => handleNotesChange(e.target.value)}
+                className="w-full min-h-[40px] bg-muted/30 border-none rounded-lg p-2 text-xs font-medium focus:ring-1 focus:ring-primary transition-all resize-none"
+                placeholder="Findings..."
+              />
             </div>
           </div>
 
-          {nerve.delineationGuide && (
-            <div className="p-3 bg-muted/50 rounded-xl border border-indigo-100 animate-in fade-in slide-in-from-top-1 duration-300">
-              <div className="flex items-center gap-2 mb-1.5">
-                <ArrowRightLeft size={12} className="text-indigo-50" />
-                <span className="text-[10px] font-medium uppercase tracking-wider text-chart-primary">Delineation Guide</span>
+          <div className="lg:col-span-4">
+            {showImage && hasImages ? (
+              <div className="flex h-32 rounded-lg overflow-hidden border border-border">
+                {images.primary && (
+                  <div className="flex-1 bg-muted overflow-hidden">
+                    <img src={images.primary} alt="Primary" className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
+                  </div>
+                )}
+                {images.secondary && (
+                  <div className="flex-1 bg-muted overflow-hidden">
+                    <img src={images.secondary} alt="Secondary" className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
+                  </div>
+                )}
               </div>
-              <p className="text-[10px] font-medium text-indigo-900 leading-relaxed">
-                {nerve.delineationGuide}
-              </p>
-            </div>
-          )}
-
-          <div className="space-y-1">
-            <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              <FileText size={10} /> Notes
-            </div>
-            <textarea 
-              value={localNotes}
-              onChange={(e) => handleNotesChange(e.target.value)}
-              className="w-full min-h-[40px] bg-muted/30 border-none rounded-lg p-2 text-xs font-medium focus:ring-1 focus:ring-primary transition-all resize-none"
-              placeholder="Findings..."
-            />
+            ) : showImage && (
+              <div className="h-full min-h-[60px] border border-dashed border-border rounded-xl flex items-center justify-center text-slate-200 bg-muted/20">
+                <ImageIcon size={16} className="opacity-10" />
+              </div>
+            )}
           </div>
         </div>
-
-        <div className="lg:col-span-4">
-          {showImage && hasImages ? (
-            <div className="flex h-32 rounded-lg overflow-hidden border border-border">
-              {images.primary && (
-                <div className="flex-1 bg-muted overflow-hidden">
-                  <img src={images.primary} alt="Primary" className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
-                </div>
-              )}
-              {images.secondary && (
-                <div className="flex-1 bg-muted overflow-hidden">
-                  <img src={images.secondary} alt="Secondary" className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
-                </div>
-              )}
-            </div>
-          ) : showImage && (
-            <div className="h-full min-h-[60px] border border-dashed border-border rounded-xl flex items-center justify-center text-slate-200 bg-muted/20">
-              <ImageIcon size={16} className="opacity-10" />
-            </div>
-          )}
-        </div>
-      </div>
+      )}
     </section>
   );
 };
@@ -277,12 +280,14 @@ export function CranialNerveAssessment({
   priorityPattern, 
   updatePriorityPattern,
   showImages,
+  compactMode,
   onShowInfo
 }: { 
   appointmentId: string;
   priorityPattern?: string | null;
   updatePriorityPattern?: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
   showImages: boolean;
+  compactMode?: boolean;
   onShowInfo?: (nerveId: number) => void;
 }) {
   const { tests, loading, updateTest } = useCranialNerveTests(appointmentId, priorityPattern, updatePriorityPattern);
@@ -400,6 +405,7 @@ export function CranialNerveAssessment({
                       isLateralized={nerve.isLateralized || false}
                       images={customImages[`cn${nerve.id}`]}
                       showImage={showImages}
+                      compact={compactMode}
                       onUpdate={updateTest}
                       onShowInfo={onShowInfo}
                     />

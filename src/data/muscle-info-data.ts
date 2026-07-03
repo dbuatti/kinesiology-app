@@ -298,7 +298,7 @@ export const getMuscleInfo = (name: string): MuscleInfo => {
     name: baseName,
     meridian: 'General',
     organGland: 'General',
-    testingPosition: 'Standard muscle testing protocol applies.',
+    testingPosition: '',
     description: 'Clinical details for this muscle are being updated.'
   };
 };

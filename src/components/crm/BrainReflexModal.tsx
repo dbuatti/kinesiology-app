@@ -115,7 +115,7 @@ const BrainReflexModal = ({
               <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none"><PlayCircle size={100} /></div>
               <SectionHeader icon={PlayCircle} title="Stimulus (Action)" color="text-amber-600" />
               <p className="text-lg font-bold text-amber-900 leading-tight relative z-10">
-                {point.stimulus || point.technique || "Standard challenge protocol."}
+                {point.stimulus || point.technique || ""}
               </p>
             </div>
           </div>

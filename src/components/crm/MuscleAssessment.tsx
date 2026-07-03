@@ -32,10 +32,11 @@ interface MuscleTestItemProps {
   isLateralized: boolean;
   imageUrl?: string | null;
   showImage: boolean;
+  compact?: boolean;
   onUpdate: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | null, side?: 'L' | 'R') => Promise<void>;
 }
 
-const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, imageUrl, showImage, onUpdate }: MuscleTestItemProps) => {
+const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, imageUrl, showImage, compact, onUpdate }: MuscleTestItemProps) => {
   const info = useMemo(() => getMuscleInfo(name), [name]);
   
   const isInhibited = statusL === 'Inhibited' || statusR === 'Inhibited' || statusMidline === 'Inhibited';
@@ -69,12 +70,14 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
             )}
           </div>
           
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] leading-tight">
-            <div className="flex items-center gap-1 text-slate-500">
-              <Zap size={10} className="text-indigo-400 shrink-0" />
-              <span className="font-medium">{info.testingPosition}</span>
+          {!compact && info.testingPosition && (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] leading-tight">
+              <div className="flex items-center gap-1 text-slate-500">
+                <Zap size={10} className="text-indigo-400 shrink-0" />
+                <span className="font-medium">{info.testingPosition}</span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {showImage && imageUrl && (
@@ -157,11 +160,13 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
 export function MuscleAssessment({ 
   priorityPattern, 
   updatePriorityPattern,
-  showImages
+  showImages,
+  compactMode
 }: { 
   priorityPattern?: string | null;
   updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | null, side?: 'L' | 'R') => Promise<void>;
   showImages: boolean;
+  compactMode?: boolean;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [customImages, setCustomImages] = useState<Record<string, string | null>>({});
@@ -227,6 +232,7 @@ export function MuscleAssessment({
                   isLateralized={!MIDLINE_MUSCLES.includes(muscle)}
                   imageUrl={customImages[muscle]}
                   showImage={showImages}
+                  compact={compactMode}
                   onUpdate={updatePriorityPattern}
                 />
               ))}

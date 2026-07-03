@@ -236,11 +236,13 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
 export function PrimitiveReflexAssessment({ 
   appointmentId, 
   priorityPattern, 
-  updatePriorityPattern 
+  updatePriorityPattern,
+  compactMode
 }: { 
   appointmentId: string;
   priorityPattern?: string | null;
   updatePriorityPattern?: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
+  compactMode?: boolean;
 }) {
   const { tests, loading, updateTest } = usePrimitiveReflexTests(appointmentId, priorityPattern, updatePriorityPattern);
   const [showOnlyInhibited, setShowOnlyInhibited] = useState(false);
@@ -336,8 +338,20 @@ export function PrimitiveReflexAssessment({
         </div>
       </div>
 
-      {sortedReflexes.map((reflex) => {
-        return (
+      {compactMode ? (
+        <div className="flex flex-wrap gap-2">
+          {sortedReflexes.map((reflex) => (
+            <Badge 
+              key={reflex.id}
+              variant="outline"
+              className="text-xs font-medium text-foreground border-border px-3 py-1.5 rounded-lg"
+            >
+              {reflex.name}
+            </Badge>
+          ))}
+        </div>
+      ) : (
+        sortedReflexes.map((reflex) => (
           <ReflexTestItem 
             key={reflex.id}
             reflex={reflex}
@@ -349,8 +363,8 @@ export function PrimitiveReflexAssessment({
             images={customImages[reflex.id]}
             onUpdate={updateTest}
           />
-        );
-      })}
+        ))
+      )}
     </div>
   );
 }

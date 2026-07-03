@@ -83,13 +83,14 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
 
   return (
     <section className={cn(
-      "space-y-2 p-4 rounded-xl border transition-all",
+      "rounded-xl border transition-all",
+      compact ? "p-2 space-y-1" : "space-y-2 p-4",
       test.is_primary_priority ? "bg-muted/30 border-indigo-200 ring-1 ring-indigo-100" : 
       test.is_priority ? "bg-muted/30 border-amber-200" : 
       !isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') ? "bg-emerald-50/30 border-emerald-200" :
       "border-border bg-white"
     )}>
-      <div className={cn("flex flex-col md:flex-row md:items-center justify-between gap-2 pb-2", !compact && "border-b border-border/50")}>
+      <div className={cn("flex flex-col md:flex-row md:items-center justify-between gap-2", compact ? "pb-0" : "pb-2 border-b border-border/50")}>
         <div className="flex items-center gap-3">
           <div 
             className="flex items-center gap-2 cursor-pointer group/title"

@@ -82,14 +82,15 @@ function voiceTimeDuration(time: string): number | null {
 }
 
 interface VoiceLesson {
- id: string;
- notionUrl: string | null;
- name: string | null;
- date: string | null;
- time: string | null;
- studentName: string | null;
- studentEmail: string | null;
- paymentStatus: string | null;
+  id: string;
+  notionUrl: string | null;
+  name: string | null;
+  date: string | null;
+  time: string | null;
+  studentName: string | null;
+  studentEmail: string | null;
+  paymentStatus: string | null;
+  priceAmount: number | null;
 }
 
 interface VoiceBookingRow {
@@ -314,6 +315,20 @@ const UnifiedCalendarPage = () => {
     },
     staleTime: 60_000,
   });
+
+  // Merge voice_bookings cost into voice lessons for the Week Overview price display.
+  const voiceLessonsWithPrice = useMemo(() => {
+    if (!voiceLessons) return [];
+    const costByNotionId = new Map<string, number>();
+    for (const vb of voiceBookings || []) {
+      const nid = vb.notion_lesson_id_1?.replace(/-/g, "").toLowerCase();
+      if (nid && vb.cost != null) costByNotionId.set(nid, vb.cost);
+    }
+    return voiceLessons.map((l) => ({
+      ...l,
+      priceAmount: costByNotionId.get(l.id?.replace(/-/g, "").toLowerCase()) ?? null,
+    }));
+  }, [voiceLessons, voiceBookings]);
 
   // Voice prices come from the editable event_pricing table (Settings → Pricing),
   // kept separate from the client rate ladder used for FNH.
@@ -946,7 +961,7 @@ const UnifiedCalendarPage = () => {
 
     <WeekByWeekOverview
       weekStart={weekStart}
-      voiceLessons={voiceLessons || []}
+      voiceLessons={voiceLessonsWithPrice}
       kinesiologyAppts={kinesiologyAppts || []}
       onPrevWeek={prevWeek}
       onNextWeek={nextWeek}

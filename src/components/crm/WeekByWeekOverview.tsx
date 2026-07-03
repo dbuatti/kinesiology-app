@@ -48,6 +48,7 @@ interface VoiceLesson {
   time: string | null;
   studentName: string | null;
   studentEmail: string | null;
+  priceAmount: number | null;
 }
 
 interface KinesiologyAppt {
@@ -268,6 +269,7 @@ const WeekByWeekOverview = ({
               type: "voice",
               clientName: l.studentName || l.name || undefined,
               url: l.notionUrl || undefined,
+              priceAmount: l.priceAmount,
             });
           }
         }

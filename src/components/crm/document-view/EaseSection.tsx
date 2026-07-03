@@ -30,6 +30,11 @@ interface EaseSectionProps {
 }
 
 const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
+  const [harmonicRockingDone, setHarmonicRockingDone] = useState(!!appointment.harmonic_rocking_notes);
+  const [t1ResetDone, setT1ResetDone] = useState(!!appointment.t1_reset_notes);
+  const [lymphaticDone, setLymphaticDone] = useState(!!appointment.lymphatic_notes);
+  const [diaphragmResetDone, setDiaphragmResetDone] = useState(!!appointment.diaphragm_reset_notes);
+  const [vagusNerveDone, setVagusNerveDone] = useState(!!appointment.vagus_nerve_notes);
   const [vagusSide, setVagusSide] = useState<"Left" | "Right">("Left");
   const [reflexPoint, setReflexPoint] = useState<string>("Occiput");
   const [auricularSide, setAuricularSide] = useState<string>("Left");
@@ -151,6 +156,20 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
     saveField(field, value);
   };
 
+  const toggleCompletion = (
+    done: boolean,
+    setDone: (v: boolean) => void,
+    field: string
+  ) => {
+    const newDone = !done;
+    setDone(newDone);
+    if (newDone && !appointment[field]) {
+      saveField(field, '✓');
+    } else if (!newDone) {
+      saveField(field, '');
+    }
+  };
+
   const currentOrgans = HAND_REFLEXOLOGY[pulseSide][pulseDepth];
 
   return (
@@ -162,7 +181,8 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
             <div className="flex items-center justify-between">
               <h4 className="text-[11px] font-semibold uppercase tracking-wider">Harmonic Rocking</h4>
               <Checkbox 
-                checked={!!appointment.harmonic_rocking_notes}
+                checked={harmonicRockingDone}
+                onCheckedChange={() => toggleCompletion(harmonicRockingDone, setHarmonicRockingDone, 'harmonic_rocking_notes')}
                 className="border-black rounded-none data-[state=checked]:bg-black" 
               />
             </div>
@@ -179,7 +199,8 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
             <div className="flex items-center justify-between">
               <h4 className="text-[11px] font-semibold uppercase tracking-wider">T1 Sympathetic Reset</h4>
               <Checkbox 
-                checked={!!appointment.t1_reset_notes}
+                checked={t1ResetDone}
+                onCheckedChange={() => toggleCompletion(t1ResetDone, setT1ResetDone, 't1_reset_notes')}
                 className="border-black rounded-none data-[state=checked]:bg-black" 
               />
             </div>
@@ -196,7 +217,8 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
             <div className="flex items-center justify-between">
               <h4 className="text-[11px] font-semibold uppercase tracking-wider">Lymphatic Cranial Reflex Zone</h4>
               <Checkbox 
-                checked={!!appointment.lymphatic_notes}
+                checked={lymphaticDone}
+                onCheckedChange={() => toggleCompletion(lymphaticDone, setLymphaticDone, 'lymphatic_notes')}
                 className="border-black rounded-none data-[state=checked]:bg-black" 
               />
             </div>
@@ -216,7 +238,8 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
             <div className="flex items-center justify-between">
               <h4 className="text-[11px] font-semibold uppercase tracking-wider">Diaphragm Reset</h4>
               <Checkbox 
-                checked={!!appointment.diaphragm_reset_notes}
+                checked={diaphragmResetDone}
+                onCheckedChange={() => toggleCompletion(diaphragmResetDone, setDiaphragmResetDone, 'diaphragm_reset_notes')}
                 className="border-black rounded-none data-[state=checked]:bg-black" 
               />
             </div>
@@ -241,7 +264,8 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
                   Reset
                 </button>
                 <Checkbox 
-                  checked={!!appointment.vagus_nerve_notes}
+                  checked={vagusNerveDone}
+                  onCheckedChange={() => toggleCompletion(vagusNerveDone, setVagusNerveDone, 'vagus_nerve_notes')}
                   className="border-black rounded-none data-[state=checked]:bg-black" 
                 />
               </div>

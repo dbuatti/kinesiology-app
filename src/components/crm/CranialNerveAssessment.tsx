@@ -89,7 +89,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
       !isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') ? "bg-emerald-50/30 border-emerald-200" :
       "border-border bg-white"
     )}>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-border/50 pb-2">
+      <div className={cn("flex flex-col md:flex-row md:items-center justify-between gap-2 pb-2", !compact && "border-b border-border/50")}>
         <div className="flex items-center gap-3">
           <div 
             className="flex items-center gap-2 cursor-pointer group/title"

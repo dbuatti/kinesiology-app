@@ -31,10 +31,11 @@ interface ReflexTestItemProps {
   statusMidline?: 'Clear' | 'Inhibited';
   isLateralized: boolean;
   images: { primary: string | null, secondary: string | null } | undefined;
+  compact?: boolean;
   onUpdate: (reflexId: string, updates: Partial<PrimitiveReflexTest>, side?: 'L' | 'R', reflexName?: string) => Promise<void>;
 }
 
-const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLateralized, images, onUpdate }: ReflexTestItemProps) => {
+const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLateralized, images, compact, onUpdate }: ReflexTestItemProps) => {
   const [localNotes, setLocalNotes] = useState(test.notes || "");
   const saveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -109,30 +110,34 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
             )}
           </div>
           
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] leading-tight">
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <Zap size={10} className="text-chart-primary shrink-0" />
-              <span className="font-medium">{reflex.stimulus}</span>
+          {!compact && (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] leading-tight">
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <Zap size={10} className="text-chart-primary shrink-0" />
+                <span className="font-medium">{reflex.stimulus}</span>
+              </div>
+              <div className="flex items-center gap-1 text-rose-600/70 font-medium">
+                <Activity size={10} className="shrink-0" />
+                <span className="">{reflex.inhibitionPattern}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1 text-rose-600/70 font-medium">
-              <Activity size={10} className="shrink-0" />
-              <span className="">{reflex.inhibitionPattern}</span>
-            </div>
-          </div>
+          )}
         </div>
 
-        <div className="hidden md:flex items-center gap-1.5 shrink-0">
-          {images?.primary && (
-            <div className="h-8 w-12 rounded border border-border overflow-hidden bg-muted">
-              <img src={images.primary} alt="P" className="w-full h-full object-cover opacity-80" />
-            </div>
-          )}
-          {images?.secondary && (
-            <div className="h-8 w-12 rounded border border-border overflow-hidden bg-muted">
-              <img src={images.secondary} alt="S" className="w-full h-full object-cover opacity-80" />
-            </div>
-          )}
-        </div>
+        {!compact && (
+          <div className="hidden md:flex items-center gap-1.5 shrink-0">
+            {images?.primary && (
+              <div className="h-8 w-12 rounded border border-border overflow-hidden bg-muted">
+                <img src={images.primary} alt="P" className="w-full h-full object-cover opacity-80" />
+              </div>
+            )}
+            {images?.secondary && (
+              <div className="h-8 w-12 rounded border border-border overflow-hidden bg-muted">
+                <img src={images.secondary} alt="S" className="w-full h-full object-cover opacity-80" />
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="flex items-center gap-3 shrink-0 print:hidden">
           <div className="flex items-center gap-3 border-r border-border pr-3">
@@ -220,15 +225,17 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
         </div>
       </div>
 
-      <div className="mt-1.5 pt-1.5 border-t border-border/50 flex items-center gap-2">
-        <FileText size={10} className="text-muted-foreground/60 shrink-0" />
-        <input 
-          value={localNotes}
-          onChange={(e) => handleNotesChange(e.target.value)}
-          className="flex-1 bg-transparent border-none p-0 text-[10px] font-medium focus:ring-0 placeholder:text-muted-foreground/60"
-          placeholder="Add assessment findings..."
-        />
-      </div>
+      {!compact && (
+        <div className="mt-1.5 pt-1.5 border-t border-border/50 flex items-center gap-2">
+          <FileText size={10} className="text-muted-foreground/60 shrink-0" />
+          <input 
+            value={localNotes}
+            onChange={(e) => handleNotesChange(e.target.value)}
+            className="flex-1 bg-transparent border-none p-0 text-[10px] font-medium focus:ring-0 placeholder:text-muted-foreground/60"
+            placeholder="Add assessment findings..."
+          />
+        </div>
+      )}
     </section>
   );
 };
@@ -338,33 +345,20 @@ export function PrimitiveReflexAssessment({
         </div>
       </div>
 
-      {compactMode ? (
-        <div className="flex flex-wrap gap-2">
-          {sortedReflexes.map((reflex) => (
-            <Badge 
-              key={reflex.id}
-              variant="outline"
-              className="text-xs font-medium text-foreground border-border px-3 py-1.5 rounded-lg"
-            >
-              {reflex.name}
-            </Badge>
-          ))}
-        </div>
-      ) : (
-        sortedReflexes.map((reflex) => (
-          <ReflexTestItem 
-            key={reflex.id}
-            reflex={reflex}
-            test={tests.find(t => t.reflex_id === reflex.id) || {}}
-            statusL={reflexPattern[`${reflex.name} (L)`]}
-            statusR={reflexPattern[`${reflex.name} (R)`]}
-            statusMidline={reflexPattern[reflex.name]}
-            isLateralized={reflex.isLateralized}
-            images={customImages[reflex.id]}
-            onUpdate={updateTest}
-          />
-        ))
-      )}
+      {sortedReflexes.map((reflex) => (
+        <ReflexTestItem 
+          key={reflex.id}
+          reflex={reflex}
+          test={tests.find(t => t.reflex_id === reflex.id) || {}}
+          statusL={reflexPattern[`${reflex.name} (L)`]}
+          statusR={reflexPattern[`${reflex.name} (R)`]}
+          statusMidline={reflexPattern[reflex.name]}
+          isLateralized={reflex.isLateralized}
+          images={customImages[reflex.id]}
+          compact={compactMode}
+          onUpdate={updateTest}
+        />
+      ))}
     </div>
   );
 }

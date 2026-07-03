@@ -90,6 +90,7 @@ interface VoiceLesson {
   studentName: string | null;
   studentEmail: string | null;
   paymentStatus: string | null;
+  cost: number | null;
   priceAmount: number | null;
 }
 
@@ -316,7 +317,8 @@ const UnifiedCalendarPage = () => {
     staleTime: 60_000,
   });
 
-  // Merge voice_bookings cost into voice lessons for the Week Overview price display.
+  // Merge cost into voice lessons for the Week Overview price display.
+  // Preference: Notion Cost property > voice_bookings.cost > null
   const voiceLessonsWithPrice = useMemo(() => {
     if (!voiceLessons) return [];
     const costByNotionId = new Map<string, number>();
@@ -324,10 +326,14 @@ const UnifiedCalendarPage = () => {
       const nid = vb.notion_lesson_id_1?.replace(/-/g, "").toLowerCase();
       if (nid && vb.cost != null) costByNotionId.set(nid, vb.cost);
     }
-    return voiceLessons.map((l) => ({
-      ...l,
-      priceAmount: costByNotionId.get(l.id?.replace(/-/g, "").toLowerCase()) ?? null,
-    }));
+    return voiceLessons.map((l) => {
+      const notionCost = l.cost;
+      const bookingCost = costByNotionId.get(l.id?.replace(/-/g, "").toLowerCase()) ?? null;
+      return {
+        ...l,
+        priceAmount: notionCost ?? bookingCost ?? null,
+      };
+    });
   }, [voiceLessons, voiceBookings]);
 
   // Voice prices come from the editable event_pricing table (Settings → Pricing),

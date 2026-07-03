@@ -48,6 +48,7 @@ interface VoiceLesson {
   time: string | null;
   studentName: string | null;
   studentEmail: string | null;
+  cost: number | null;
   priceAmount: number | null;
 }
 

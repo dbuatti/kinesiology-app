@@ -62,6 +62,7 @@ serve(async (req) => {
             time: props.Breakthroughs?.rich_text?.map((t) => t.plain_text).join("") || null,
             studentIds: (props["Client CRM"]?.relation || []).map((r) => r.id),
             paymentStatus: props.Payment?.select?.name || null,
+            cost: props.Cost?.number ?? null,
             studentName: null,
             studentEmail: null,
           });

@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,8 +19,19 @@ interface WebhookFailure {
   created_at: string;
 }
 
-// Surfaces Stripe payments that completed but couldn't be matched to a booking,
-// so money-in events are never silently lost. "Resolve" = you've handled it.
+// Friendly label + category per webhook source, so a Stripe-payment issue and a
+// Cal.com calendar-sync issue are clearly distinguished.
+const SOURCE_META: Record<string, { label: string; kind: "payment" | "sync" }> = {
+  "voice-stripe-webhook": { label: "Voice payment", kind: "payment" },
+  "stripe-webhook": { label: "FNH payment", kind: "payment" },
+  "calcom-voice-webhook": { label: "Voice sync", kind: "sync" },
+  "calcom-webhook": { label: "FNH sync", kind: "sync" },
+  "reconcile-calcom": { label: "Reconcile", kind: "sync" },
+};
+const metaFor = (s: string) => SOURCE_META[s] || { label: s || "Unknown", kind: "sync" as const };
+
+// Surfaces Stripe payments that couldn't be matched AND Cal.com syncs that failed,
+// so neither money nor calendar drift is ever silently lost. "Resolve" = handled.
 const UnmatchedPayments = () => {
   const queryClient = useQueryClient();
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -57,14 +69,14 @@ const UnmatchedPayments = () => {
     <Card className="border-2 border-amber-100 dark:border-amber-900/30 shadow-xl rounded-[2.5rem] bg-card overflow-hidden">
       <CardHeader className="p-8 pb-4 bg-amber-50/50 dark:bg-amber-950/10">
         <CardTitle className="text-xl font-black flex items-center gap-3 text-amber-900 dark:text-amber-200">
-          <AlertTriangle size={24} /> Unmatched Payments
+          <AlertTriangle size={24} /> Payment &amp; Sync Issues
           {count > 0 && (
             <Badge className="bg-amber-500 text-white border-none text-xs font-black">{count}</Badge>
           )}
         </CardTitle>
         <CardDescription className="text-amber-700 dark:text-amber-300/80 font-medium">
-          Stripe payments that came in but couldn’t be auto-linked to a booking (e.g. the
-          client paid from a different email). Resolve them once you’ve matched the money up.
+          Stripe payments that couldn’t be auto-linked to a booking, and Cal.com calendar
+          syncs that failed. Each is tagged by type below — resolve once you’ve handled it.
         </CardDescription>
       </CardHeader>
       <CardContent className="p-8 pt-6">
@@ -77,21 +89,28 @@ const UnmatchedPayments = () => {
             <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center">
               <Inbox size={22} className="text-chart-emerald" />
             </div>
-            <p className="text-sm font-semibold text-foreground">All payments matched</p>
-            <p className="text-xs text-muted-foreground">Nothing needs your attention.</p>
+            <p className="text-sm font-semibold text-foreground">All clear</p>
+            <p className="text-xs text-muted-foreground">Payments matched and calendar in sync.</p>
           </div>
         ) : (
           <div className="space-y-2">
-            {rows.map((r) => (
+            {rows.map((r) => {
+              const meta = metaFor(r.source);
+              return (
               <div key={r.id} className="flex items-center gap-3 p-4 rounded-2xl border border-amber-100 dark:border-amber-900/30 bg-amber-50/40 dark:bg-amber-950/10">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-foreground tabular-nums">
-                      {r.amount != null ? `$${r.amount}` : "—"}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className={cn(
+                      "text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full",
+                      meta.kind === "payment"
+                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                        : "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400"
+                    )}>
+                      {meta.label}
                     </span>
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      {r.source === "voice-stripe-webhook" ? "Voice" : "FNH"}
-                    </span>
+                    {meta.kind === "payment" && r.amount != null && (
+                      <span className="font-bold text-foreground tabular-nums">${r.amount}</span>
+                    )}
                     <span className="text-[11px] text-muted-foreground">{format(new Date(r.created_at), "d MMM, h:mma")}</span>
                   </div>
                   <div className="text-xs text-muted-foreground truncate mt-0.5">{r.detail || r.reference}</div>
@@ -107,7 +126,8 @@ const UnmatchedPayments = () => {
                   Resolve
                 </Button>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </CardContent>

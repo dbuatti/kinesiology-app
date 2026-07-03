@@ -86,7 +86,7 @@ interface WeekByWeekOverviewProps {
 
 const NUM_WEEKS = 6;
 const DAY_START_HOUR = 9;
-const DAY_END_HOUR = 17;
+const DAY_END_HOUR = 19;
 
 function parseTimeToMin(timeStr: string): number | null {
   const m = timeStr.match(/^(\d+):(\d+)\s*(AM|PM)/i);

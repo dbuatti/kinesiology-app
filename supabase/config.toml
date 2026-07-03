@@ -60,3 +60,6 @@ verify_jwt = false
 
 [functions.merge-voice-clients]
 verify_jwt = false
+
+[functions.cleanup-stale-appointments]
+verify_jwt = false

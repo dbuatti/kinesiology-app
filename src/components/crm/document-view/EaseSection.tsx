@@ -191,6 +191,23 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
               onChange={handleFieldChange}
             />
           </div>
+
+          <div className="p-6 border border-black space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="text-[11px] font-semibold uppercase tracking-wider">Lymphatic Cranial Reflex Zone</h4>
+              <Checkbox 
+                checked={!!appointment.lymphatic_notes}
+                className="border-black rounded-none data-[state=checked]:bg-black" 
+              />
+            </div>
+            <DocInput 
+              label="Notes" 
+              value={appointment.lymphatic_notes} 
+              field="lymphatic_notes" 
+              placeholder="Suture side, priority zones, tenderness reduction..." 
+              onChange={handleFieldChange}
+            />
+          </div>
         </div>
 
         {/* Right Column: Diaphragm Reset & Vagus Nerve Process */}

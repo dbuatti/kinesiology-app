@@ -25,54 +25,40 @@ interface LymphaticAssessmentProps {
   onSaveField: (field: string, value: string | null) => Promise<void>;
 }
 
-const RELEASE_INSTRUCTIONS: Record<string, { position: string; pearl?: string; image?: string; category: 'Primary' | 'Secondary' }> = {
+const LYMPH_ZONES: string[] = ['Cervical', 'Thoracic (L)', 'Thoracic (R)', 'Cisterna Chyli', 'Inguinal', 'Popliteal'];
+const PRIMARY_ZONES = ['Cervical', 'Thoracic (L)', 'Thoracic (R)', 'Cisterna Chyli'];
+const SECONDARY_ZONES = ['Inguinal', 'Popliteal'];
+
+const ZONE_INSTRUCTIONS: Record<string, { position: string; pearl?: string; image?: string }> = {
   'Cervical': { 
-    category: 'Primary',
     position: "C4 level, slightly anterior. Feel for nodule. Move tissue towards spine or slightly up to find 'Position of Ease'.",
     pearl: "The 'Brain Drain' — essential for clearing neural inflammation and brain fog.",
     image: "/images/lymphatic/cervical.png"
   },
   'Thoracic (L)': { 
-    category: 'Primary',
     position: "Shorten the Pec Minor. Bring the left arm into a position of ease (usually across the chest or slightly elevated) to soften the duct.",
     pearl: "The Left Thoracic Duct drains the entire left side of the body and the brain.",
     image: "/images/lymphatic/thoracic-l.png"
   },
   'Thoracic (R)': { 
-    category: 'Primary',
     position: "Shorten the Pec Minor. Bring the right arm into a position of ease to soften the duct.",
     pearl: "Drains the right upper quadrant of the body.",
     image: "/images/lymphatic/thoracic-r.png"
   },
   'Cisterna Chyli': { 
-    category: 'Primary',
     position: "Central abdominal release. Shorten the abdominals by bending the client's knees or gently moving tissue up towards the head.",
     pearl: "The central reservoir for all lymph from the lower body. Often pulses strongly.",
     image: "/images/lymphatic/cisterna-chyli.png"
   },
   'Inguinal': { 
-    category: 'Secondary',
     position: "Find the ASIS (pelvic bone). Hold the position next to the bone where you feel the tissue soften.",
     pearl: "Key for lower extremity drainage and pelvic congestion.",
     image: "/images/lymphatic/inguinal.png"
   },
   'Popliteal': { 
-    category: 'Secondary',
     position: "Shorten the muscle (top of calves or bottom of hamstrings). Wait for the tissue to soften.",
     pearl: "Releasing popliteal tension often resolves long-term chronic headaches.",
     image: "/images/lymphatic/popliteal.png"
-  },
-  'Maxillary': { 
-    category: 'Secondary',
-    position: "Gentle traction along the jawline and facial nodes to find the position of maximum softening.",
-    pearl: "Often improves once the Cervical and Thoracic ducts are cleared.",
-    image: "/images/lymphatic/maxillary.png"
-  },
-  'Axillary': { 
-    category: 'Secondary',
-    position: "Shorten the shoulder girdle. Usually self-corrects once Thoracic ducts are opened.",
-    pearl: "Secondary to Thoracic duct clearance.",
-    image: "/images/lymphatic/axillary.png"
   }
 };
 
@@ -158,12 +144,12 @@ const LymphaticAssessment = ({
     if (priorityZones.length === 0) return;
     
     const reduction = 100 - (tenderness[0] * 10);
-    const summaryHeader = `LYMPHATIC ASSESSMENT:`;
+    const summaryHeader = `CRANIAL REFLEX ZONE (Lymphatic):`;
 
-    let summary = `${summaryHeader}\n- Suture Side: ${sutureSide || 'Not set'}\n- Priority Zones: ${priorityZones.join(', ')}\n- Tenderness Reduction: ${reduction}% (Level ${tenderness[0]}/10)`;
+    let summary = `${summaryHeader}\n- Temporal-Parietal Suture: ${sutureSide || 'Not set'}\n- Priority Zones: ${priorityZones.join(', ')}\n- Tenderness Reduction: ${reduction}% (Level ${tenderness[0]}/10)`;
     
     if (prescribeHomework) {
-      summary += `\n- HOMEWORK: Prescribed 5 mins/day of lymphatic movement for: ${priorityZones.join(', ')}.`;
+      summary += `\n- HOMEWORK: Prescribed 5 mins/day of lymphatic self-care for: ${priorityZones.join(', ')}.`;
     }
     
     const currentNotes = notes ? `${notes}\n\n${summary}` : summary;
@@ -171,9 +157,8 @@ const LymphaticAssessment = ({
     await onSaveField('lymphatic_notes', currentNotes);
   };
 
-  const zones = Object.keys(RELEASE_INSTRUCTIONS);
-  const primaryZones = zones.filter(z => RELEASE_INSTRUCTIONS[z].category === 'Primary');
-  const secondaryZones = zones.filter(z => RELEASE_INSTRUCTIONS[z].category === 'Secondary');
+  const primaryZones = PRIMARY_ZONES;
+  const secondaryZones = SECONDARY_ZONES;
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
@@ -189,8 +174,8 @@ const LymphaticAssessment = ({
                 <Droplets size={18} />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-foreground tracking-tight">Lymphatic System</h3>
-                <p className="text-sm text-muted-foreground">Drainage Precedes Supply</p>
+                <h3 className="text-base font-semibold text-foreground tracking-tight">Lymphatic Cranial Reflex Zone</h3>
+                <p className="text-sm text-muted-foreground">FNH Foundations · Ease the System</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -216,8 +201,14 @@ const LymphaticAssessment = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-4">
                     <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                      <Search size={14} className="text-chart-primary" /> 1. Suture Side (Hologram)
+                      <Search size={14} className="text-chart-primary" /> 1. Temporal-Parietal Suture (Glide Test)
                     </label>
+                    <p className="text-xs text-muted-foreground font-medium leading-relaxed -mt-2">
+                      Landmark: halfway between top of ear and top of head. Glide tissue up and down — <span className="text-foreground">healthy slides freely</span>, <span className="text-amber-500">congested feels stuck/tender</span>.
+                    </p>
+                    <p className="text-[10px] text-muted-foreground/60 font-medium italic -mt-1">
+                      This suture acts as a hologram of the lymphatic system — the side that's stuck flags congestion on that same side.
+                    </p>
                     <ToggleGroup type="single" value={sutureSide || ""} onValueChange={handleSutureSideChange} className="justify-start gap-3">
                       <ToggleGroupItem value="Left" className="rounded-xl px-8 py-3 h-12 font-medium text-xs uppercase tracking-wider data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-2 border-border">Left</ToggleGroupItem>
                       <ToggleGroupItem value="Right" className="rounded-xl px-8 py-3 h-12 font-medium text-xs uppercase tracking-wider data-[state=on]:bg-primary data-[state=on]:text-primary-foreground border-2 border-border">Right</ToggleGroupItem>
@@ -226,11 +217,14 @@ const LymphaticAssessment = ({
 
                   <div className="space-y-4">
                     <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                      <Zap size={14} className="text-amber-500" /> 2. Priority Node Zones
+                      <Zap size={14} className="text-amber-500" /> 2. Circuit-Locate Lymph Zones
                     </label>
+                    <p className="text-xs text-muted-foreground font-medium leading-relaxed -mt-2">
+                      Client places fingertips on the tender suture point (same-side hand). You therapy-localize zones neck-down — watch for indicator inhibition.
+                    </p>
                     <div className="space-y-4">
                       <div>
-                        <p className="text-[10px] font-medium text-muted-foreground/50 uppercase mb-2">Primary (Drainage First)</p>
+                        <p className="text-[10px] font-medium text-muted-foreground/50 uppercase mb-2">Primary (Neck-down)</p>
                         <div className="flex flex-wrap gap-2">
                           {primaryZones.map(zone => (
                             <Button 
@@ -248,7 +242,7 @@ const LymphaticAssessment = ({
                         </div>
                       </div>
                       <div>
-                        <p className="text-[10px] font-medium text-muted-foreground/50 uppercase mb-2">Secondary</p>
+                        <p className="text-[10px] font-medium text-muted-foreground/50 uppercase mb-2">Secondary (Lower Body)</p>
                         <div className="flex flex-wrap gap-2">
                           {secondaryZones.map(zone => (
                             <Button 
@@ -273,7 +267,7 @@ const LymphaticAssessment = ({
                   <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
                     {/* Zone Focus Switcher */}
                     <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                      <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mr-2">Focus Instruction:</span>
+                      <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mr-2">Zone Correction:</span>
                       {priorityZones.map(zone => (
                         <Badge 
                           key={zone}
@@ -292,7 +286,7 @@ const LymphaticAssessment = ({
                     <div className="p-6 bg-chart-primary/10 rounded-[2rem] border-2 border-chart-primary/20 space-y-6">
                       <div className="flex items-center justify-between">
                         <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                          <Thermometer size={14} /> 3. Tenderness Reduction (Counterstrain)
+                          <Thermometer size={14} /> 3. Tenderness Reduction (Position of Ease)
                         </label>
                         <Badge className={cn(
                           "font-medium text-[10px] uppercase tracking-wider px-3 py-1",
@@ -332,22 +326,22 @@ const LymphaticAssessment = ({
                             </div>
                           </div>
                           <p className="text-sm font-medium text-foreground leading-relaxed bg-card/40 p-4 rounded-xl border border-chart-primary/20">
-                            {RELEASE_INSTRUCTIONS[focusedZone].position}
+                            {ZONE_INSTRUCTIONS[focusedZone].position}
                           </p>
-                          {RELEASE_INSTRUCTIONS[focusedZone].pearl && (
+                          {ZONE_INSTRUCTIONS[focusedZone].pearl && (
                             <div className="flex items-start gap-3 p-4 bg-primary text-primary-foreground rounded-xl shadow-sm">
                               <Brain size={20} className="shrink-0 mt-0.5" />
                               <div>
                                 <p className="text-[10px] font-medium uppercase tracking-wider opacity-70 mb-1">Clinical Pearl</p>
                                 <p className="text-xs font-medium leading-relaxed">
-                                  {RELEASE_INSTRUCTIONS[focusedZone].pearl}
+                                  {ZONE_INSTRUCTIONS[focusedZone].pearl}
                                 </p>
                               </div>
                             </div>
                           )}
                         </div>
 
-                        {RELEASE_INSTRUCTIONS[focusedZone].image && (
+                        {ZONE_INSTRUCTIONS[focusedZone].image && (
                           <div className="bg-card rounded-xl border-2 border-chart-primary/20 p-4 overflow-hidden flex flex-col shadow-sm">
                             <div className="flex items-center gap-2 px-4 py-2 border-b border-border mb-4">
                               <ImageIcon size={16} className="text-chart-primary" />
@@ -355,7 +349,7 @@ const LymphaticAssessment = ({
                             </div>
                             <div className="flex-1 flex items-center justify-center p-4 bg-muted rounded-3xl">
                               <img 
-                                src={RELEASE_INSTRUCTIONS[focusedZone].image} 
+                                src={ZONE_INSTRUCTIONS[focusedZone].image} 
                                 alt={`${focusedZone} Release Position`}
                                 className="max-w-full h-auto rounded-xl"
                               />
@@ -376,7 +370,7 @@ const LymphaticAssessment = ({
                         <Timer size={24} />
                       </div>
                       <div>
-                        <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Counterstrain Timer</span>
+                        <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Hold Timer</span>
                         <p className="text-xs font-medium text-muted-foreground">Hold position for 45-90 seconds</p>
                       </div>
                     </div>
@@ -406,7 +400,7 @@ const LymphaticAssessment = ({
                       </div>
                       <div>
                         <p className="text-[10px] font-medium text-chart-emerald uppercase tracking-wider">Verification</p>
-                        <span className="text-sm font-medium text-foreground">Re-test suture glide & tenderness</span>
+                        <span className="text-sm font-medium text-foreground">Re-test suture for restored glide</span>
                       </div>
                     </div>
                     <Button 
@@ -432,9 +426,9 @@ const LymphaticAssessment = ({
                   <CardContent className="p-6 pt-0 space-y-6">
                     <div className="p-5 bg-card rounded-xl border border-border shadow-sm">
                       <p className="text-sm font-medium text-foreground leading-relaxed">
-                        Touch <span className="text-chart-primary font-semibold">Kidney 27</span> points while client touches the node.
+                        When a zone inhibits the indicator, therapy-localize <span className="text-chart-primary font-semibold">Kidney 27</span> (at the SC joints).
                       </p>
-                      <p className="text-[10px] text-muted-foreground mt-3 font-medium italic">If the indicator muscle locks, you've found the priority.</p>
+                      <p className="text-[10px] text-muted-foreground mt-3 font-medium italic">If the muscle re-facilitates (locks again), that zone is the priority pathway.</p>
                     </div>
                     <Button variant="ghost" size="sm" onClick={() => setShowGuide(!showGuide)} className="w-full h-10 rounded-xl text-[10px] font-medium uppercase tracking-wider text-chart-primary hover:bg-muted border border-chart-primary/20">
                       {showGuide ? "Hide Protocol" : "View Full Protocol"}
@@ -447,13 +441,13 @@ const LymphaticAssessment = ({
                     <h4 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Step-by-Step</h4>
                     <div className="space-y-3">
                       {[
-                        "Palpate suture (glide/tenderness)",
-                        "Client holds tender point",
-                        "Test IM (should inhibit)",
-                        "Work neck down to find priority",
-                        "Confirm with K27 priority check",
+                        "Palpate temporal-parietal suture — glide test",
+                        "Client places fingertips on tender/stuck point",
+                        "Test indicator muscle (facilitated in the clear)",
+                        "Therapy-localize lymph zones neck-down",
+                        "Confirm priority via K27 (muscle re-facilitates)",
                         "Ask permission to correct",
-                        "Correct only the priority point",
+                        "Correct only the priority zone",
                         "Re-test suture for restored glide"
                       ].map((step, i) => (
                         <div key={i} className="flex gap-4 items-start">
@@ -482,7 +476,7 @@ const LymphaticAssessment = ({
                     </Button>
                   </div>
                   <p className="text-[10px] text-muted-foreground font-medium leading-relaxed italic">
-                    If this keeps coming up, prescribe 5 mins/day of specific lymphatic movement.
+                    If this keeps coming up, prescribe 5 mins/day of specific lymphatic self-care.
                   </p>
                 </div>
               </div>
@@ -490,13 +484,13 @@ const LymphaticAssessment = ({
 
             <div className="space-y-4 pt-8 border-t border-border">
               <div className="flex items-center justify-between">
-                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Assessment Notes</label>
+                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Cranial Reflex Zone Notes</label>
                 <Button 
                   variant="ghost" 
                   size="sm" 
                   onClick={() => {
                     if (priorityZones.length === 0) return;
-                    if (notes?.includes("LYMPHATIC ASSESSMENT:")) {
+                    if (notes?.includes("CRANIAL REFLEX ZONE (Lymphatic):")) {
                       setShowAppendConfirm(true);
                     } else {
                       executeAppend();
@@ -522,8 +516,8 @@ const LymphaticAssessment = ({
       <ConfirmDialog
         open={showAppendConfirm}
         onOpenChange={setShowAppendConfirm}
-        title="Append lymphatic summary?"
-        description="A lymphatic summary already exists in your notes. Append another one?"
+        title="Append cranial reflex zone summary?"
+        description="A cranial reflex zone summary already exists in your notes. Append another one?"
         confirmLabel="Append"
         onConfirm={executeAppend}
       />

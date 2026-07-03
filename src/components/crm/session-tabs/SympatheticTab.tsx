@@ -1,4 +1,5 @@
 
+import LymphaticAssessment from '../LymphaticAssessment';
 import SympatheticDownRegulation from '../SympatheticDownRegulation';
 import T1SympatheticReset from '../T1SympatheticReset';
 import DiaphragmReset from '../DiaphragmReset';
@@ -17,6 +18,13 @@ interface SympatheticTabProps {
 const SympatheticTab = ({ appointment, onUpdate, saveField }: SympatheticTabProps) => {
   return (
     <div className="space-y-6">
+      <LymphaticAssessment
+        appointmentId={appointment.id}
+        initialSutureSide={appointment.lymphatic_suture_side}
+        initialPriorityZone={appointment.lymphatic_priority_zone}
+        initialNotes={appointment.lymphatic_notes}
+        onSaveField={saveField}
+      />
       <SympatheticDownRegulation 
         appointmentId={appointment.id} 
         initialNotes={appointment.harmonic_rocking_notes} 

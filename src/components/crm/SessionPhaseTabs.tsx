@@ -59,7 +59,7 @@ const SessionPhaseTabs = ({
   
   const tabStatus = {
     baseline: !!(appointment.goal && appointment.issue && (appointment.bolt_score || appointment.coherence_score)),
-    sympathetic: !!(appointment.harmonic_rocking_notes || appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes),
+    sympathetic: !!(appointment.lymphatic_notes || appointment.harmonic_rocking_notes || appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes),
     pathway: !!appointment.priority_pattern && appointment.priority_pattern !== "{}",
     calibration: !!appointment.modes_balances,
     reassessment: !!appointment.session_north_star

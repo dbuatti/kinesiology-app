@@ -71,20 +71,20 @@ export const generateSessionSummary = (appointment: AppointmentWithClient): stri
     summary += `\n`;
   }
 
-  if (appointment.lymphatic_priority_zone || appointment.lymphatic_notes) {
-    summary += `[4] LYMPHATIC SYSTEM\n`;
-    if (appointment.lymphatic_suture_side) summary += `- Suture Side: ${appointment.lymphatic_suture_side}\n`;
-    if (appointment.lymphatic_priority_zone) summary += `- Priority Zones: ${appointment.lymphatic_priority_zone}\n`;
-    if (appointment.lymphatic_notes) summary += `- Lymphatic Notes: ${appointment.lymphatic_notes}\n`;
-    summary += `\n`;
-  }
-
   if (appointment.harmonic_rocking_notes || appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes) {
-    summary += `[5] SNS DOWN-REGULATION\n`;
+    summary += `[4] SNS DOWN-REGULATION\n`;
     if (appointment.harmonic_rocking_notes) summary += `- Harmonic Rocking: ${appointment.harmonic_rocking_notes}\n`;
     if (appointment.t1_reset_notes) summary += `- T1 Reset: ${appointment.t1_reset_notes}\n`;
     if (appointment.diaphragm_reset_notes) summary += `- Diaphragm Reset: ${appointment.diaphragm_reset_notes}\n`;
     if (appointment.vagus_nerve_notes) summary += `- Vagus Nerve Process: ${appointment.vagus_nerve_notes}\n`;
+    summary += `\n`;
+  }
+
+  if (appointment.lymphatic_priority_zone || appointment.lymphatic_notes) {
+    summary += `[5] LYMPHATIC CRANIAL REFLEX ZONE\n`;
+    if (appointment.lymphatic_suture_side) summary += `- Temporal-Parietal Suture: ${appointment.lymphatic_suture_side}\n`;
+    if (appointment.lymphatic_priority_zone) summary += `- Priority Zones: ${appointment.lymphatic_priority_zone}\n`;
+    if (appointment.lymphatic_notes) summary += `- Cranial Reflex Notes: ${appointment.lymphatic_notes}\n`;
     summary += `\n`;
   }
 

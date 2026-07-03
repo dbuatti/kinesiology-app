@@ -4,7 +4,6 @@ import BoltTestSection from '../BoltTestSection';
 import CoherenceAssessment from '../CoherenceAssessment';
 import CogsAssessment from '../CogsAssessment';
 import NeurologicalAssessments from '../NeurologicalAssessments';
-import LymphaticAssessment from '../LymphaticAssessment';
 import IntrinsicMusclesAssessment from '../IntrinsicMusclesAssessment';
 import EditableField from '@/components/shared/EditableField';
 import { AppointmentWithClient } from '@/types/crm';
@@ -127,13 +126,6 @@ const BaselineTab = ({ appointment, history = [], onUpdate, saveField }: Baselin
             initialFrontalLobeNotes={appointment.frontal_lobe_notes} 
             initialRightingReflexNotes={appointment.righting_reflex_notes}
             onUpdate={onUpdate} 
-          />
-          <LymphaticAssessment
-            appointmentId={appointment.id}
-            initialSutureSide={appointment.lymphatic_suture_side}
-            initialPriorityZone={appointment.lymphatic_priority_zone}
-            initialNotes={appointment.lymphatic_notes}
-            onSaveField={saveField}
           />
         </div>
       </div>

@@ -77,6 +77,18 @@ export const CORRECTIONS_GUIDE = [
     ]
   },
   {
+    title: "Lymphatic Cranial Reflex Zone",
+    icon: Droplets,
+    accentClass: "bg-teal-50 dark:bg-teal-950/30 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800/40",
+    dotClass: "bg-teal-500",
+    steps: [
+      "Palpate temporal-parietal suture halfway between top of ear and top of head. Glide test.",
+      "Client places fingertips on tender/stuck point. Test indicator muscle (facilitated in clear).",
+      "Therapy-localize lymph zones neck-down: cervical, thoracic ducts, cisterna chyli, inguinal, popliteal.",
+      "Confirm priority via K27 (muscle re-facilitates). Correct only priority zone. Re-test suture glide.",
+    ]
+  },
+  {
     title: "Emotional Protocol (9 Steps)",
     icon: Sparkles,
     accentClass: "bg-pink-50 dark:bg-pink-950/30 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-800/40",

@@ -54,3 +54,9 @@ verify_jwt = false
 
 [functions.voice-stripe-webhook]
 verify_jwt = false
+
+[functions.sync-calcom-bookings]
+verify_jwt = false
+
+[functions.merge-voice-clients]
+verify_jwt = false

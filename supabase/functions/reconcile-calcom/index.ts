@@ -15,6 +15,9 @@ const corsHeaders = {
 
 const GRACE_MS = 15 * 60 * 1000; // don't touch rows created in the last 15 min (avoid racing a fresh booking)
 
+const VOICE_EVENT_IDS = new Set([1945081, 5925021]);
+const FNH_EVENT_IDS = new Set([4279898, 5302336, 5927215]);
+
 async function archiveNotionPages(notionKey: string, pageIds: (string | null | undefined)[]) {
   if (!notionKey) return;
   for (const id of pageIds.filter(Boolean)) {
@@ -30,8 +33,8 @@ async function archiveNotionPages(notionKey: string, pageIds: (string | null | u
   }
 }
 
-async function fetchLiveUids(calKey: string): Promise<Set<string>> {
-  const uids = new Set<string>();
+async function fetchLiveBookings(calKey: string): Promise<any[]> {
+  const all: any[] = [];
   const headers = { Authorization: `Bearer ${calKey}`, "cal-api-version": "2024-08-13", "Content-Type": "application/json" };
   let skip = 0;
   const take = 100;
@@ -47,14 +50,11 @@ async function fetchLiveUids(calKey: string): Promise<Set<string>> {
     }
     const data = await res.json();
     const rows = data.data || [];
-    for (const b of rows) {
-      if (b.uid) uids.add(String(b.uid));
-      if (b.id) uids.add(String(b.id));
-    }
+    all.push(...rows);
     if (rows.length < take) break;
     skip += take;
   }
-  return uids;
+  return all;
 }
 
 serve(async (req) => {
@@ -71,7 +71,9 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const live = await fetchLiveUids(CAL_KEY);
+    const liveBookings = await fetchLiveBookings(CAL_KEY);
+    const live = new Set<string>();
+    for (const b of liveBookings) { if (b.uid) live.add(String(b.uid)); if (b.id) live.add(String(b.id)); }
     const nowIso = new Date().toISOString();
     const graceIso = new Date(Date.now() - GRACE_MS).toISOString();
     const todayStr = new Date().toISOString().split("T")[0];
@@ -115,7 +117,85 @@ serve(async (req) => {
       else console.error(`[${fn}] delete voice_booking ${b.calcom_booking_id} failed:`, error.message);
     }
 
-    const summary = { success: true, liveBookings: live.size, removedAppointments: removed.appointments.length, removedVoice: removed.voice.length };
+    // ---- ADD missing: any live Cal.com booking absent from the app gets replayed
+    // through its normal create webhook (self-heals a missed BOOKING_CREATED). ----
+    const added = { appointments: 0, voice: 0 };
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+    const { data: apptUids } = await supabase.from("appointments").select("calcom_booking_id").not("calcom_booking_id", "is", null);
+    const { data: vbUids } = await supabase.from("voice_bookings").select("calcom_booking_id").not("calcom_booking_id", "is", null);
+    const known = new Set<string>();
+    for (const r of apptUids || []) known.add(String(r.calcom_booking_id));
+    for (const r of vbUids || []) known.add(String(r.calcom_booking_id));
+
+    const voiceDebug: any[] = [];
+    for (const b of liveBookings) {
+      const uid = String(b.uid || b.id || "");
+      const etidDbg = Number(b.eventTypeId);
+      if (VOICE_EVENT_IDS.has(etidDbg)) {
+        voiceDebug.push({ uid, name: b.attendees?.[0]?.name || null, email: b.attendees?.[0]?.email || null, etid: etidDbg, known: known.has(uid), status: b.status });
+      }
+      if (!uid || known.has(uid)) continue;
+      if ((b.status || "").toLowerCase() === "cancelled") continue;
+      // Let the normal webhook handle very fresh bookings (avoid racing it).
+      if (b.createdAt && (Date.now() - new Date(b.createdAt).getTime()) < GRACE_MS) continue;
+      const etid = Number(b.eventTypeId);
+      const isVoice = VOICE_EVENT_IDS.has(etid);
+      const isFnh = FNH_EVENT_IDS.has(etid);
+      if (!isVoice && !isFnh) continue; // ignore generic (non-clinical/non-voice) event types
+
+      const target = isVoice ? "calcom-voice-webhook" : "calcom-webhook";
+      const replay = {
+        triggerEvent: "BOOKING_CREATED",
+        payload: { uid, startTime: b.start, endTime: b.end, eventTypeId: b.eventTypeId, attendees: b.attendees, responses: b.responses, metadata: b.metadata },
+      };
+      try {
+        const r = await fetch(`${SUPABASE_URL}/functions/v1/${target}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${SERVICE}`, apikey: SERVICE },
+          body: JSON.stringify(replay),
+        });
+        if (r.ok) { if (isVoice) added.voice++; else added.appointments++; known.add(uid); }
+        else console.error(`[${fn}] replay ${uid} → ${target} failed: ${r.status}`);
+      } catch (e) {
+        console.error(`[${fn}] replay ${uid} error:`, e.message);
+      }
+    }
+
+    // Attach the actual voice_bookings row for each live voice uid (diagnostics).
+    const vUids = voiceDebug.map((v) => v.uid);
+    if (vUids.length) {
+      const { data: vrows } = await supabase
+        .from("voice_bookings")
+        .select("calcom_booking_id, student_name, student_email, lesson_date, status, notion_lesson_id_1, notion_lesson_id_2")
+        .in("calcom_booking_id", vUids);
+      const byUid: Record<string, any> = {};
+      for (const r of vrows || []) byUid[String(r.calcom_booking_id)] = r;
+      for (const v of voiceDebug) v.row = byUid[v.uid] || null;
+
+      // Inspect the linked Notion lesson page(s) to see why voice-lessons may drop it.
+      if (NOTION_KEY) {
+        for (const v of voiceDebug) {
+          const pid = v.row?.notion_lesson_id_1;
+          if (!pid) continue;
+          try {
+            const pr = await fetch(`https://api.notion.com/v1/pages/${pid}`, {
+              headers: { Authorization: `Bearer ${NOTION_KEY}`, "Notion-Version": "2022-06-28" },
+            });
+            const p = await pr.json();
+            v.notion = {
+              ok: pr.ok,
+              archived: p.archived,
+              date: p.properties?.Date?.date?.start ?? null,
+              clientCrm: (p.properties?.["Client CRM"]?.relation || []).length,
+            };
+          } catch (e) { v.notion = { error: e.message }; }
+        }
+      }
+    }
+
+    const summary = { success: true, liveBookings: live.size, removedAppointments: removed.appointments.length, removedVoice: removed.voice.length, addedAppointments: added.appointments, addedVoice: added.voice, voiceDebug };
     console.log(`[${fn}] ${JSON.stringify(summary)}`);
     return new Response(JSON.stringify(summary), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {

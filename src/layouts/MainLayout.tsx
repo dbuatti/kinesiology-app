@@ -106,7 +106,7 @@ const MainLayout = () => {
           {/* Content */}
           <div className="flex flex-col flex-1 overflow-hidden">
             <main id="main-scroll-container" className="flex-1 flex flex-col overflow-auto relative">
-              <div className="flex-1 p-0">
+              <div key={location.pathname + location.search} className="flex-1 p-0 animate-in fade-in duration-500">
                 <Outlet />
               </div>
               {!shouldHideHeader && <FooterLinks />}

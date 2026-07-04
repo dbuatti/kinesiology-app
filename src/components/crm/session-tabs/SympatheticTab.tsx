@@ -18,59 +18,71 @@ interface SympatheticTabProps {
 const SympatheticTab = ({ appointment, onUpdate, saveField }: SympatheticTabProps) => {
   return (
     <div className="space-y-6">
-      <LymphaticAssessment
-        appointmentId={appointment.id}
-        initialSutureSide={appointment.lymphatic_suture_side}
-        initialPriorityZone={appointment.lymphatic_priority_zone}
-        initialNotes={appointment.lymphatic_notes}
-        onSaveField={saveField}
-      />
-      <SympatheticDownRegulation 
-        appointmentId={appointment.id} 
-        initialNotes={appointment.harmonic_rocking_notes} 
-        onSaveField={saveField} 
-        onUpdate={onUpdate} 
-      />
-      <T1SympatheticReset 
-        appointmentId={appointment.id} 
-        initialNotes={appointment.t1_reset_notes} 
-        onSaveField={saveField} 
-        onUpdate={onUpdate} 
-      />
-      <DiaphragmReset 
-        appointmentId={appointment.id} 
-        initialNotes={appointment.diaphragm_reset_notes} 
-        onSaveField={saveField} 
-        onUpdate={onUpdate} 
-      />
-      <VagusNerveProcess 
-        appointmentId={appointment.id} 
-        initialNotes={appointment.vagus_nerve_notes} 
-        onSaveField={saveField} 
-        onUpdate={onUpdate} 
-      />
-      <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
-              <Sparkles size={20} className="text-muted-foreground" />
+      <div className="animate-in fade-in slide-in-from-bottom-3 duration-500">
+        <LymphaticAssessment
+          appointmentId={appointment.id}
+          initialSutureSide={appointment.lymphatic_suture_side}
+          initialPriorityZone={appointment.lymphatic_priority_zone}
+          initialNotes={appointment.lymphatic_notes}
+          onSaveField={saveField}
+        />
+      </div>
+      <div className="animate-in fade-in slide-in-from-bottom-3 duration-500" style={{ animationDelay: '60ms' }}>
+        <SympatheticDownRegulation 
+          appointmentId={appointment.id} 
+          initialNotes={appointment.harmonic_rocking_notes} 
+          onSaveField={saveField} 
+          onUpdate={onUpdate} 
+        />
+      </div>
+      <div className="animate-in fade-in slide-in-from-bottom-3 duration-500" style={{ animationDelay: '120ms' }}>
+        <T1SympatheticReset 
+          appointmentId={appointment.id} 
+          initialNotes={appointment.t1_reset_notes} 
+          onSaveField={saveField} 
+          onUpdate={onUpdate} 
+        />
+      </div>
+      <div className="animate-in fade-in slide-in-from-bottom-3 duration-500" style={{ animationDelay: '180ms' }}>
+        <DiaphragmReset 
+          appointmentId={appointment.id} 
+          initialNotes={appointment.diaphragm_reset_notes} 
+          onSaveField={saveField} 
+          onUpdate={onUpdate} 
+        />
+      </div>
+      <div className="animate-in fade-in slide-in-from-bottom-3 duration-500" style={{ animationDelay: '240ms' }}>
+        <VagusNerveProcess 
+          appointmentId={appointment.id} 
+          initialNotes={appointment.vagus_nerve_notes} 
+          onSaveField={saveField} 
+          onUpdate={onUpdate} 
+        />
+      </div>
+      <div className="animate-in fade-in slide-in-from-bottom-3 duration-500" style={{ animationDelay: '300ms' }}>
+        <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+                <Sparkles size={20} className="text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-foreground">Other SNS Techniques</h3>
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">ESR, Vagus Nerve, etc.</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-sm font-medium text-foreground">Other SNS Techniques</h3>
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">ESR, Vagus Nerve, etc.</p>
-            </div>
-          </div>
-          <EditableField 
-            field="additional_notes" 
-            label="" 
-            value={appointment.additional_notes} 
-            multiline 
-            placeholder="Document any additional SNS techniques used..." 
-            onSave={saveField} 
-            className="border border-border p-0 shadow-none bg-transparent rounded-2xl" 
-          />
-        </CardContent>
-      </Card>
+            <EditableField 
+              field="additional_notes" 
+              label="" 
+              value={appointment.additional_notes} 
+              multiline 
+              placeholder="Document any additional SNS techniques used..." 
+              onSave={saveField} 
+              className="border border-border p-0 shadow-none bg-transparent rounded-2xl" 
+            />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

@@ -81,8 +81,9 @@ const SessionPhaseTabs = ({
                 value={tab.id} 
                 className={cn(
                   "flex flex-col items-center gap-3 pb-6 px-4 rounded-2xl border-b-4 transition-all duration-500 relative group min-w-0",
+                  "hover:-translate-y-0.5 active:scale-[0.97]",
                   isActive 
-                    ? "border-chart-primary text-chart-primary bg-chart-primary/5" 
+                    ? "border-chart-primary text-chart-primary bg-chart-primary/5 shadow-sm" 
                     : "border-transparent text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -115,50 +116,56 @@ const SessionPhaseTabs = ({
         </TabsList>
       </div>
 
-      <div className="mt-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <TabsContent value="baseline" className="focus-visible:ring-0">
-          <BaselineTab appointment={appointment} history={history} onUpdate={onUpdate} saveField={saveField} />
-        </TabsContent>
-
-        <TabsContent value="sympathetic" className="focus-visible:ring-0">
-          <SympatheticTab appointment={appointment} onUpdate={onUpdate} saveField={saveField} />
-        </TabsContent>
-
-        <TabsContent value="pathway" className="focus-visible:ring-0">
-          <PathwayAssessment 
-            appointmentId={appointment.id}
-            initialValue={appointment.priority_pattern || undefined} 
-            previousValue={history.length > 1 ? history[1]?.priority_pattern : undefined}
-            history={history}
-            onSave={(s) => saveField('priority_pattern', s)} 
-            onUpdateItem={(cat, item, status, side) => updatePriorityPattern(cat, item, status, side)}
-            onJumpToCalibrate={(itemName) => {
-              onTabChange('calibration');
-            }}
-            nucleiFilter={nucleiFilter}
-          />
-        </TabsContent>
-
-        <TabsContent value="calibration" className="focus-visible:ring-0">
-          <div ref={wizardRef}>
-            <PathwayLogicWizard
-              onSave={(summary) => saveField('modes_balances', summary)}
-              onClearItem={onClearItem}
-              priorityPattern={appointment.priority_pattern}
-              initialFinding={preselectedFinding}
+      <div className="mt-10">
+        {activeTab === 'baseline' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <BaselineTab appointment={appointment} history={history} onUpdate={onUpdate} saveField={saveField} />
+          </div>
+        )}
+        {activeTab === 'sympathetic' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <SympatheticTab appointment={appointment} onUpdate={onUpdate} saveField={saveField} />
+          </div>
+        )}
+        {activeTab === 'pathway' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <PathwayAssessment 
               appointmentId={appointment.id}
+              initialValue={appointment.priority_pattern || undefined} 
+              previousValue={history.length > 1 ? history[1]?.priority_pattern : undefined}
+              history={history}
+              onSave={(s) => saveField('priority_pattern', s)} 
+              onUpdateItem={(cat, item, status, side) => updatePriorityPattern(cat, item, status, side)}
+              onJumpToCalibrate={(itemName) => {
+                onTabChange('calibration');
+              }}
+              nucleiFilter={nucleiFilter}
             />
           </div>
-        </TabsContent>
-
-        <TabsContent value="reassessment" className="focus-visible:ring-0">
-          <EmbedTab 
-            appointment={appointment} 
-            onUpdate={onUpdate} 
-            saveField={saveField} 
-            updatePriorityPattern={updatePriorityPattern} 
-          />
-        </TabsContent>
+        )}
+        {activeTab === 'calibration' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ animationDelay: '50ms' }}>
+            <div ref={wizardRef}>
+              <PathwayLogicWizard
+                onSave={(summary) => saveField('modes_balances', summary)}
+                onClearItem={onClearItem}
+                priorityPattern={appointment.priority_pattern}
+                initialFinding={preselectedFinding}
+                appointmentId={appointment.id}
+              />
+            </div>
+          </div>
+        )}
+        {activeTab === 'reassessment' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ animationDelay: '100ms' }}>
+            <EmbedTab 
+              appointment={appointment} 
+              onUpdate={onUpdate} 
+              saveField={saveField} 
+              updatePriorityPattern={updatePriorityPattern} 
+            />
+          </div>
+        )}
       </div>
     </Tabs>
   );

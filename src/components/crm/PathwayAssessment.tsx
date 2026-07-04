@@ -189,29 +189,30 @@ const PathwayAssessment = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
-          {[
-            { id: 'primitive', label: 'Reflexes', icon: Baby, count: getCounts('primitiveReflexes').inhibitedCount, color: 'text-chart-primary' },
-            { id: 'cranial', label: 'Nerves', icon: Zap, count: getCounts('cranialNerves').inhibitedCount, color: 'text-chart-destructive' },
-            { id: 'brain', label: 'Zones', icon: Brain, count: getCounts('brainZones').inhibitedCount, color: 'text-chart-primary' },
-            { id: 'muscles', label: 'Muscles', icon: Dumbbell, count: getCounts('muscles').inhibitedCount, color: 'text-chart-emerald' },
-          ].map((cat) => (
-            <Button
-              key={cat.id}
-              variant="outline"
-              onClick={() => scrollToSection(cat.id)}
-              className="rounded-2xl h-12 px-6 bg-card border-border hover:bg-accent transition-all group shrink-0"
-            >
-              <cat.icon size={18} className={cn("mr-3 transition-transform group-hover:scale-110", cat.color)} />
-              <span className="font-medium text-[10px] uppercase tracking-wider mr-3">{cat.label}</span>
-              {cat.count > 0 && (
-                <Badge className="bg-chart-destructive text-destructive-foreground border-none font-medium text-[10px] h-5 min-w-[20px] flex items-center justify-center px-1 rounded-full">
-                  {cat.count}
-                </Badge>
-              )}
-            </Button>
-          ))}
-        </div>
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+            {[
+              { id: 'primitive', label: 'Reflexes', icon: Baby, count: getCounts('primitiveReflexes').inhibitedCount, color: 'text-chart-primary' },
+              { id: 'cranial', label: 'Nerves', icon: Zap, count: getCounts('cranialNerves').inhibitedCount, color: 'text-chart-destructive' },
+              { id: 'brain', label: 'Zones', icon: Brain, count: getCounts('brainZones').inhibitedCount, color: 'text-chart-primary' },
+              { id: 'muscles', label: 'Muscles', icon: Dumbbell, count: getCounts('muscles').inhibitedCount, color: 'text-chart-emerald' },
+            ].map((cat, i) => (
+              <Button
+                key={cat.id}
+                variant="outline"
+                onClick={() => scrollToSection(cat.id)}
+                className="rounded-2xl h-12 px-6 bg-card border-border hover:bg-accent hover:-translate-y-0.5 active:scale-[0.97] transition-all group shrink-0"
+                style={{ animationDelay: `${i * 60}ms` }}
+              >
+                <cat.icon size={18} className={cn("mr-3 transition-transform group-hover:scale-110", cat.color)} />
+                <span className="font-medium text-[10px] uppercase tracking-wider mr-3">{cat.label}</span>
+                {cat.count > 0 && (
+                  <Badge className="bg-chart-destructive text-destructive-foreground border-none font-medium text-[10px] h-5 min-w-[20px] flex items-center justify-center px-1 rounded-full">
+                    {cat.count}
+                  </Badge>
+                )}
+              </Button>
+            ))}
+          </div>
       </div>
 
       {fractalAlert && (
@@ -271,66 +272,74 @@ const PathwayAssessment = ({
         </Card>
       )}
 
-      <AssessmentSection 
-        id="primitive"
-        title="Primitive Reflex Assessment" 
-        description="Check foundational movement patterns." 
-        icon={Baby} 
-        {...getCounts('primitiveReflexes')}
-      >
-        <PrimitiveReflexAssessment 
-          appointmentId={appointmentId} 
-          priorityPattern={initialValue}
-          updatePriorityPattern={onUpdateItem}
-          compactMode={compactMode}
-        />
-      </AssessmentSection>
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ animationDelay: '60ms' }}>
+        <AssessmentSection 
+          id="primitive"
+          title="Primitive Reflex Assessment" 
+          description="Check foundational movement patterns." 
+          icon={Baby} 
+          {...getCounts('primitiveReflexes')}
+        >
+          <PrimitiveReflexAssessment 
+            appointmentId={appointmentId} 
+            priorityPattern={initialValue}
+            updatePriorityPattern={onUpdateItem}
+            compactMode={compactMode}
+          />
+        </AssessmentSection>
+      </div>
 
-      <AssessmentSection 
-        id="cranial"
-        title="Cranial Nerve Assessment" 
-        description="Test direct pathways from the brainstem." 
-        icon={Activity} 
-        {...getCounts('cranialNerves')}
-      >
-        <CranialNerveAssessment 
-          appointmentId={appointmentId} 
-          priorityPattern={initialValue}
-          updatePriorityPattern={onUpdateItem}
-          showImages={showImages}
-          compactMode={compactMode}
-        />
-      </AssessmentSection>
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ animationDelay: '120ms' }}>
+        <AssessmentSection 
+          id="cranial"
+          title="Cranial Nerve Assessment" 
+          description="Test direct pathways from the brainstem." 
+          icon={Activity} 
+          {...getCounts('cranialNerves')}
+        >
+          <CranialNerveAssessment 
+            appointmentId={appointmentId} 
+            priorityPattern={initialValue}
+            updatePriorityPattern={onUpdateItem}
+            showImages={showImages}
+            compactMode={compactMode}
+          />
+        </AssessmentSection>
+      </div>
 
-      <AssessmentSection 
-        id="brain"
-        title="Brain Zone Assessment" 
-        description="Challenge specific cortical and subcortical regions." 
-        icon={Brain} 
-        {...getCounts('brainZones')}
-      >
-        <BrainZoneAssessment 
-          priorityPattern={initialValue}
-          updatePriorityPattern={onUpdateItem}
-          showImages={showImages}
-          compactMode={compactMode}
-        />
-      </AssessmentSection>
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ animationDelay: '180ms' }}>
+        <AssessmentSection 
+          id="brain"
+          title="Brain Zone Assessment" 
+          description="Challenge specific cortical and subcortical regions." 
+          icon={Brain} 
+          {...getCounts('brainZones')}
+        >
+          <BrainZoneAssessment 
+            priorityPattern={initialValue}
+            updatePriorityPattern={onUpdateItem}
+            showImages={showImages}
+            compactMode={compactMode}
+          />
+        </AssessmentSection>
+      </div>
 
-      <AssessmentSection 
-        id="muscles" 
-        title="Muscle Assessment" 
-        description="Log individual muscle facilitation/inhibition." 
-        icon={Dumbbell} 
-        {...getCounts('muscles')}
-      >
-        <MuscleAssessment 
-          priorityPattern={initialValue}
-          updatePriorityPattern={onUpdateItem}
-          showImages={showImages}
-          compactMode={compactMode}
-        />
-      </AssessmentSection>
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-500" style={{ animationDelay: '240ms' }}>
+        <AssessmentSection 
+          id="muscles" 
+          title="Muscle Assessment" 
+          description="Log individual muscle facilitation/inhibition." 
+          icon={Dumbbell} 
+          {...getCounts('muscles')}
+        >
+          <MuscleAssessment 
+            priorityPattern={initialValue}
+            updatePriorityPattern={onUpdateItem}
+            showImages={showImages}
+            compactMode={compactMode}
+          />
+        </AssessmentSection>
+      </div>
       <ConfirmDialog
         open={!!confirmAction}
         onOpenChange={(open) => { if (!open) setConfirmAction(null); }}

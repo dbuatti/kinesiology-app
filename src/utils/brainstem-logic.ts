@@ -28,6 +28,7 @@ export const FINDING_TO_NUCLEI: Record<string, { nuclei: Nuclei, tone: 'Flexors'
   'Psoas': { nuclei: 'Medulla', tone: 'Flexors' },
   'Supraspinatus': { nuclei: 'Pons', tone: 'Extensors' },
   'Upper Trapezius': { nuclei: 'Medulla', tone: 'Flexors' },
+  'Sternocleidomastoid (SCM)': { nuclei: 'Medulla', tone: 'Flexors' },
   'SCM': { nuclei: 'Medulla', tone: 'Flexors' },
   'Gluteus Medius': { nuclei: 'Pons', tone: 'Extensors' },
   'Latissimus Dorsi': { nuclei: 'Pons', tone: 'Extensors' },

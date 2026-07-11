@@ -118,7 +118,7 @@ export const TCM_CHANNELS: TcmChannel[] = [
     peakTime: "3pm - 5pm",
     oppositeId: "LU",
     emotions: ['Control', 'Drive', 'Invisible', 'Withdrawn', 'Unsafe', 'Knowledge', 'Cleverness', 'Will', 'Safety', 'Security', 'Impatient', 'Can’t Rest', 'Disconnected From Others'],
-    muscles: ['Sacrospinalis', 'Multifidi', 'Pelvic Floor (Anterior)', 'Pelvic Floor (Posterior)', 'Erector Spinae', 'Hamstrings', 'Soleus', 'Gastrocnemius', 'Popliteus', 'Gluteus Maximus', 'Tibialis Anterior', 'Fibularis Longus'],
+    muscles: ['Sacrospinalis', 'Multifidi', 'Pelvic Floor (Anterior)', 'Pelvic Floor (Posterior)', 'Erector Spinae', 'Hamstrings', 'Soleus', 'Gastrocnemius', 'Popliteus', 'Gluteus Maximus', 'Peroneus Longus', 'Fibularis Longus'],
     description: "Governs the storage and excretion of fluids. The longest meridian, running down the entire back.",
     color: "bg-blue-700 text-white",
     hexColor: "#1d4ed8",

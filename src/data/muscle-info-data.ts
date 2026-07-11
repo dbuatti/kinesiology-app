@@ -64,7 +64,7 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     myotome: 'L2, L3',
     nerveSupply: 'Lumbar Plexus (L1-L3)',
     organGland: 'Kidney',
-    spinalFixation: 'T10-T1',
+    spinalFixation: 'T12-L1',
     testingPosition: 'Client supine, leg flexed to 45°, abducted and externally rotated. Pressure applied into extension and slight adduction. The higher the leg position, the more iliacus is tested; lower positions target more psoas fibers. Also testable seated with hip flexion against resistance.',
     description: 'The "Muscle of the Soul". Deeply connected to the fight-or-flight response and diaphragmatic breathing.',
     videoUrl: "https://embed-ssl.wistia.com/deliveries/364abce3a360a7845926d9d775c0b462.mp4"
@@ -241,6 +241,12 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     nerveSupply: 'Ulnar Nerve (C8-T1)',
     testingPosition: 'Adduct the thumb against resistance toward the palm.',
     description: 'Deep thenar muscle innervated by the ulnar nerve. Tests lower brachial plexus integrity.'
+  },
+  'Dorsal Interossei': {
+    name: 'Dorsal Interossei',
+    meridian: 'Small Intestine',
+    testingPosition: 'See First Dorsal Interossei — same muscle, alternate naming.',
+    description: 'Also known as First Dorsal Interossei. Key intrinsic hand muscle innervated by the ulnar nerve.'
   },
   'First Dorsal Interossei': {
     name: 'First Dorsal Interossei',
@@ -467,6 +473,174 @@ export const MUSCLE_INFO_DETAILS: Record<string, MuscleInfo> = {
     nerveSupply: 'Trigeminal Nerve (CN V)',
     testingPosition: 'Client seated. Bite down. Practitioner can palpate the masseter belly. For indicator testing: have the client bite down on one side, then the other, and test an indicator muscle. Also accessible via direct muscle palpation.',
     description: 'Primary muscle of mastication. Chronic hypertonicity drives TMJ disorders, headaches, and clenching patterns.'
+  },
+  'Erector Spinae': {
+    name: 'Erector Spinae',
+    meridian: 'Bladder',
+    myotome: 'C1-L5',
+    nerveSupply: 'Spinal Nerves (Dorsal Rami)',
+    testingPosition: 'Client prone, lift upper body. Also testable seated with forward lean against resistance.',
+    description: 'Group of deep back muscles (iliocostalis, longissimus, spinalis) running the full length of the spine. Key postural extensor.'
+  },
+  'Subscapularis': {
+    name: 'Subscapularis',
+    meridian: 'Circulation',
+    myotome: 'C5, C6',
+    nerveSupply: 'Subscapular Nerve (C5-C7)',
+    testingPosition: 'Client seated, arm internally rotated with hand behind back. Practitioner applies pressure into external rotation.',
+    description: 'Medial rotator of the shoulder. Part of the rotator cuff. Often hypertonic in frozen shoulder patterns.'
+  },
+  'Teres Major': {
+    name: 'Teres Major',
+    meridian: 'Small Intestine',
+    myotome: 'C5-C7',
+    nerveSupply: 'Lower Subscapular Nerve (C5-C7)',
+    testingPosition: 'Client seated, arm adducted and internally rotated. Practitioner applies pressure into abduction and external rotation.',
+    description: 'Adducts and internally rotates the shoulder. Works with latissimus dorsi as part of the posterior axillary fold.'
+  },
+  'Teres Minor': {
+    name: 'Teres Minor',
+    meridian: 'Small Intestine',
+    myotome: 'C5, C6',
+    nerveSupply: 'Axillary Nerve (C5-C6)',
+    testingPosition: 'Client seated, arm abducted to 90° with elbow flexed. Practitioner applies pressure into internal rotation.',
+    description: 'External rotator of the shoulder. Part of the rotator cuff. Often found inhibited alongside infraspinatus.'
+  },
+  'Infraspinatus': {
+    name: 'Infraspinatus',
+    meridian: 'Small Intestine',
+    myotome: 'C5, C6',
+    nerveSupply: 'Suprascapular Nerve (C5-C6)',
+    testingPosition: 'Client seated, arm at side with elbow bent to 90°. Practitioner applies pressure into internal rotation.',
+    description: 'Primary external rotator of the shoulder. Key rotator cuff muscle for posterior shoulder stability.'
+  },
+  'Rhomboids': {
+    name: 'Rhomboids',
+    meridian: 'Lung',
+    myotome: 'C5',
+    nerveSupply: 'Dorsal Scapular Nerve (C4-C5)',
+    testingPosition: 'Client seated, arm abducted to 90° with palm down. Practitioner applies pressure forward while palpating the rhomboid belly between the scapula and spine.',
+    description: 'Retracts and stabilises the scapula. Essential for postural shoulder girdle alignment.'
+  },
+  'Coracobrachialis': {
+    name: 'Coracobrachialis',
+    meridian: 'Pericardium',
+    myotome: 'C6, C7',
+    nerveSupply: 'Musculocutaneous Nerve (C5-C7)',
+    testingPosition: 'Client seated, arm flexed forward and slightly adducted. Practitioner applies pressure into extension.',
+    description: 'Flexes and adducts the shoulder. Runs from coracoid process to mid-humerus.'
+  },
+  'Brachioradialis': {
+    name: 'Brachioradialis',
+    meridian: 'Stomach',
+    myotome: 'C5, C6',
+    nerveSupply: 'Radial Nerve (C5-C7)',
+    testingPosition: 'Client seated, elbow flexed to 90° in neutral (thumb-up) position. Practitioner applies pressure into extension.',
+    description: 'Elbow flexor most active when the forearm is in neutral position. Key radial nerve indicator muscle.'
+  },
+  'Buccinator': {
+    name: 'Buccinator',
+    meridian: 'Stomach',
+    myotome: 'C5, C6',
+    nerveSupply: 'Facial Nerve (CN VII)',
+    testingPosition: 'Client puffs out the cheek. Practitioner applies gentle pressure against the cheek. Can also test via indicator muscle during cheek puff.',
+    description: 'Deep facial muscle of the cheek. Compresses the cheek against the teeth during chewing and blowing.'
+  },
+  'External Pterygoid': {
+    name: 'External Pterygoid',
+    meridian: 'Pericardium',
+    myotome: 'C5, C6',
+    nerveSupply: 'Trigeminal Nerve (CN V)',
+    testingPosition: 'Client protrudes the jaw forward and slightly to the opposite side. Practitioner applies pressure to retract the jaw.',
+    description: 'Protracts the mandible and assists in jaw opening. Key muscle in TMJ dysfunction patterns.'
+  },
+  'Orbicularis Oris': {
+    name: 'Orbicularis Oris',
+    meridian: 'Stomach',
+    myotome: 'C5, C6',
+    nerveSupply: 'Facial Nerve (CN VII)',
+    testingPosition: 'Client purses the lips as if to whistle. Practitioner attempts to part the lips.',
+    description: 'Sphincter muscle around the mouth. Essential for speech, eating, and facial expression.'
+  },
+  'Occipitalis': {
+    name: 'Occipitalis',
+    meridian: 'Bladder',
+    myotome: 'C1-C3',
+    nerveSupply: 'Facial Nerve (CN VII) — Posterior Auricular Branch',
+    testingPosition: 'Client raises the eyebrows (scalp retraction). Practitioner palpates the occipital belly and can test via indicator muscle.',
+    description: 'Posterior belly of the occipitofrontalis muscle. Retracts the scalp and works with the galea aponeurotica.'
+  },
+  'Vastus Lateralis': {
+    name: 'Vastus Lateralis',
+    meridian: 'Heart',
+    myotome: 'L3, L4',
+    nerveSupply: 'Femoral Nerve (L2-L4)',
+    testingPosition: 'Client seated, knee extended. Practitioner applies pressure into flexion while palpating the lateral quadriceps.',
+    description: 'Largest of the quadriceps group. Extends the knee. Commonly inhibited in patellofemoral tracking disorders.'
+  },
+  'Sartorius': {
+    name: 'Sartorius',
+    meridian: 'Spleen',
+    myotome: 'L2, L3',
+    nerveSupply: 'Femoral Nerve (L2-L4)',
+    testingPosition: 'Client seated or supine, hip flexed, abducted, and externally rotated with knee flexed. Practitioner applies pressure into extension and adduction.',
+    description: 'The longest muscle in the body. Flexes, abducts, and externally rotates the hip. The "tailor\'s muscle."'
+  },
+  'Gracilis': {
+    name: 'Gracilis',
+    meridian: 'Kidney',
+    myotome: 'L2-L4',
+    nerveSupply: 'Obturator Nerve (L2-L4)',
+    testingPosition: 'Client supine, leg adducted with knee extended. Practitioner applies pressure into abduction.',
+    description: 'Long adductor of the hip. Crosses both the hip and knee joints. Part of the medial thigh compartment.'
+  },
+  'Soleus': {
+    name: 'Soleus',
+    meridian: 'Bladder',
+    myotome: 'L5, S1, S2',
+    nerveSupply: 'Tibial Nerve (L5-S2)',
+    testingPosition: 'Client prone or seated, knee bent to 90° to eliminate gastrocnemius. Practitioner applies pressure into dorsiflexion.',
+    description: 'Deep plantar flexor of the ankle. Does not cross the knee joint — tested with bent knee to isolate from gastrocnemius.'
+  },
+  'Popliteus': {
+    name: 'Popliteus',
+    meridian: 'Bladder',
+    myotome: 'L4, L5, S1',
+    nerveSupply: 'Tibial Nerve (L4-S1)',
+    testingPosition: 'Client seated with knee bent. Practitioner internally rotates the tibia and applies pressure into external rotation.',
+    description: 'Unlocks the knee by internally rotating the tibia on the femur. Essential for knee flexion initiation.'
+  },
+  'Extensor Hallucis Longus': {
+    name: 'Extensor Hallucis Longus',
+    meridian: 'Stomach',
+    myotome: 'L5, S1',
+    nerveSupply: 'Deep Peroneal Nerve (L4-S1)',
+    testingPosition: 'Client seated or supine. Extend the big toe upward. Practitioner applies pressure into flexion.',
+    description: 'Extends the great toe and assists in ankle dorsiflexion. Key muscle for gait toe-clearance.'
+  },
+  'Flexor Digitorum Longus': {
+    name: 'Flexor Digitorum Longus',
+    meridian: 'Spleen',
+    myotome: 'L5, S1, S2',
+    nerveSupply: 'Tibial Nerve (L5-S2)',
+    testingPosition: 'Client seated. Flex the lateral four toes. Practitioner applies pressure into toe extension.',
+    description: 'Flexes the lateral four toes. Supports the longitudinal arch and contributes to plantar flexion.'
+  },
+  'Extensor Digitorum Longus': {
+    name: 'Extensor Digitorum Longus',
+    meridian: 'Stomach',
+    myotome: 'L5, S1',
+    nerveSupply: 'Deep Peroneal Nerve (L4-S1)',
+    testingPosition: 'Client seated. Extend the lateral four toes. Practitioner applies pressure into toe flexion.',
+    description: 'Extends the lateral four toes and assists in ankle dorsiflexion. Part of the anterior compartment.'
+  },
+  'Fibularis Longus': {
+    name: 'Fibularis Longus',
+    meridian: 'Gall Bladder',
+    myotome: 'L5, S1',
+    nerveSupply: 'Superficial Peroneal Nerve (L4-S1)',
+    testingPosition: 'Client seated. Evert the foot. Practitioner applies pressure into inversion. (Same muscle as Peroneus Longus — modern anatomical name.)',
+    description: 'Lateral compartment muscle that everts the foot. Also known as Peroneus Longus. Essential for lateral ankle stability.'
   }
 };
 

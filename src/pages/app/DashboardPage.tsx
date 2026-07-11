@@ -1,13 +1,15 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutDashboard } from "lucide-react";
+import { LayoutDashboard, Zap } from "lucide-react";
 import { format, isToday, differenceInMinutes, subDays, startOfWeek } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { AppointmentWithClient } from "@/types/crm";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import ClinicalDashboard from "../../components/crm/dashboards/ClinicalDashboard";
+import { QuickSessionDialog } from "@/components/crm/QuickSessionDialog";
 
 const Index = () => {
   const [stats, setStats] = useState({
@@ -25,6 +27,7 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [morningProgress, setMorningProgress] = useState(0);
+  const [quickSessionOpen, setQuickSessionOpen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -163,6 +166,14 @@ const Index = () => {
           }
         />
 
+        <Button
+          onClick={() => setQuickSessionOpen(true)}
+          className="w-full bg-amber-500 hover:bg-amber-600 h-16 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-amber-100 flex items-center justify-center gap-3"
+        >
+          <Zap size={22} />
+          Quick Session — Start instantly, no booking needed
+        </Button>
+
         <ClinicalDashboard
           stats={stats}
           todaySessions={todaySessions}
@@ -170,6 +181,8 @@ const Index = () => {
           morningProgress={morningProgress}
         />
       </div>
+
+      <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} />
     </AppLayout>
   );
 };

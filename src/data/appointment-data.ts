@@ -4,6 +4,7 @@ export const APPOINTMENT_TAGS = [
   "Consultation",
   "Initial Session",
   "Follow-up",
+  "Quick Session",
 ];
 
 export const APPOINTMENT_STATUSES = [

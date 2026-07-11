@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, UserPlus, Calendar, CalendarPlus, Target, Upload, HelpCircle, Zap, StickyNote } from "lucide-react";
+import { Plus, UserPlus, Calendar, CalendarPlus, Target, Upload, HelpCircle, Zap, StickyNote, Bolt } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/tooltip";
 import ClientForm from "./ClientForm";
 import AppointmentForm from "./AppointmentForm";
+import { QuickSessionDialog } from "./QuickSessionDialog";
 import { useNavigate } from "react-router-dom";
 import HelpModal from "./HelpModal";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,7 @@ import { cn } from "@/lib/utils";
 const QuickActions = () => {
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appointmentDialogOpen, setAppointmentDialogOpen] = useState(false);
+  const [quickSessionOpen, setQuickSessionOpen] = useState(false);
   const [prefilledClientId, setPrefilledClientId] = useState<string | undefined>();
   const [helpOpen, setHelpOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -56,6 +58,11 @@ const QuickActions = () => {
           if (isTyping) return;
           e.preventDefault();
           setClientDialogOpen(true);
+          break;
+        case "S":
+          if (isTyping) return;
+          e.preventDefault();
+          setQuickSessionOpen(true);
           break;
         case "b":
           if (isTyping) return;
@@ -145,6 +152,22 @@ const QuickActions = () => {
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator className="my-2 md:my-3 bg-muted" />
+
+                <DropdownMenuItem 
+                  onClick={() => { setQuickSessionOpen(true); setIsOpen(false); }} 
+                  className="rounded-xl py-4 px-5 md:py-5 md:px-6 cursor-pointer group transition-all hover:bg-muted"
+                >
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-amber-100 flex items-center justify-center mr-4 md:mr-5 group-hover:bg-amber-100/80 transition-colors shadow-inner">
+                    <Bolt size={20} className="text-amber-600 md:w-6 md:h-6" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-semibold text-sm md:text-base block text-foreground truncate">Quick Session</span>
+                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider truncate block">Instant — no booking needed</span>
+                  </div>
+                  <kbd className="hidden md:inline-flex ml-auto pointer-events-none h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-semibold text-muted-foreground">
+                    ⌘⇧S
+                  </kbd>
+                </DropdownMenuItem>
 
                 <DropdownMenuItem 
                   onClick={() => { setClientDialogOpen(true); setIsOpen(false); }} 
@@ -266,6 +289,8 @@ const QuickActions = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} />
 
       <HelpModal open={helpOpen} onOpenChange={setHelpOpen} />
     </>

@@ -9,8 +9,6 @@ import {
   MessageCircle,
   CalendarPlus,
   Plus,
-  Search,
-  Check,
   Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -21,14 +19,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
 import { supabase } from '@/integrations/supabase/client';
 import { useSessionDocumentState } from '@/hooks/useSessionDocumentState';
 import { QuickSessionDialog } from './QuickSessionDialog';
@@ -134,49 +124,36 @@ const SessionDocumentView = ({
   // Quick Session dialog state
   const [quickSessionOpen, setQuickSessionOpen] = useState(false);
 
-  // Client session switcher state
-  const [clientSearchOpen, setClientSearchOpen] = useState(false);
-  const [clientSearchValue, setClientSearchValue] = useState("");
-  const [allClients, setAllClients] = useState<{ id: string; name: string }[]>([]);
-  const [loadingClients, setLoadingClients] = useState(false);
+  // Session switcher state — shows recent appointments in chronological order
+  const [sessionSearchOpen, setSessionSearchOpen] = useState(false);
+  const [recentSessions, setRecentSessions] = useState<{ id: string; date: string; client_name: string }[]>([]);
+  const [loadingSessions, setLoadingSessions] = useState(false);
 
   useEffect(() => {
-    if (clientSearchOpen && allClients.length === 0) {
-      setLoadingClients(true);
+    if (sessionSearchOpen && recentSessions.length === 0) {
+      setLoadingSessions(true);
       supabase
-        .from("clients")
-        .select("id, name")
-        .or('is_practitioner.eq.false,is_practitioner.is.null')
-        .order("name")
+        .from("appointments")
+        .select("id, date, clients!inner(name)")
+        .order("date", { ascending: false })
+        .limit(50)
         .then(({ data, error }) => {
-          if (!error && data) setAllClients(data);
-          setLoadingClients(false);
+          if (!error && data) {
+            const mapped = data.map((a: any) => ({
+              id: a.id,
+              date: a.date,
+              client_name: a.clients?.name || "Unknown",
+            }));
+            setRecentSessions(mapped);
+          }
+          setLoadingSessions(false);
         });
     }
-  }, [clientSearchOpen, allClients.length]);
+  }, [sessionSearchOpen, recentSessions.length]);
 
-  const filteredClients = useMemo(() =>
-    allClients.filter(c =>
-      c.name.toLowerCase().includes(clientSearchValue.toLowerCase())
-    ),
-    [allClients, clientSearchValue]
-  );
-
-  const handleClientSelect = useCallback(async (clientId: string) => {
-    setClientSearchOpen(false);
-    setClientSearchValue("");
-    const { data } = await supabase
-      .from("appointments")
-      .select("id")
-      .eq("client_id", clientId)
-      .order("date", { ascending: false })
-      .limit(1)
-      .single();
-    if (data) {
-      navigate(`/appointments/${data.id}`);
-    } else {
-      navigate(`/schedule?view=list&clientId=${clientId}`);
-    }
+  const handleSessionSelect = useCallback(async (appointmentId: string) => {
+    setSessionSearchOpen(false);
+    navigate(`/appointments/${appointmentId}`);
   }, [navigate]);
 
   // Extract all currently and historically inhibited findings from the unified pattern
@@ -203,52 +180,43 @@ const SessionDocumentView = ({
             <Button variant="ghost" size="sm" onClick={onClose} className="rounded-none h-9 px-3 font-medium text-[10px] uppercase tracking-wider border border-black hover:bg-black hover:text-white transition-all shrink-0">
               <ArrowLeft size={14} className="mr-1" /> Exit
             </Button>
-            <Popover open={clientSearchOpen} onOpenChange={setClientSearchOpen}>
+            <Popover open={sessionSearchOpen} onOpenChange={setSessionSearchOpen}>
               <PopoverTrigger asChild>
                 <button className="text-xs font-semibold text-foreground truncate hover:underline underline-offset-4 transition-all shrink-0">
                   {appointment.clients.name}
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-[280px] p-0" align="start">
-                <Command>
-                  <CommandInput
-                    placeholder="Search clients..."
-                    value={clientSearchValue}
-                    onValueChange={setClientSearchValue}
-                  />
-                  <CommandList>
-                    <CommandEmpty className="py-4 text-center text-sm text-slate-500">
-                      <div className="flex flex-col items-center gap-2">
-                        <Search size={20} className="text-slate-300" />
-                        <p className="text-xs">No clients found</p>
-                      </div>
-                    </CommandEmpty>
-                    <CommandGroup>
-                      {loadingClients ? (
-                        <div className="flex items-center justify-center py-4">
-                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                        </div>
-                      ) : (
-                        filteredClients.map((client) => (
-                          <CommandItem
-                            key={client.id}
-                            value={client.name}
-                            onSelect={() => handleClientSelect(client.id)}
-                            className="flex items-center gap-2 py-2 px-3 cursor-pointer"
-                          >
-                            <Check
-                              className={cn(
-                                "h-4 w-4 shrink-0",
-                                appointment.clients.id === client.id ? "opacity-100 text-primary" : "opacity-0"
-                              )}
-                            />
-                            <span className="truncate">{client.name}</span>
-                          </CommandItem>
-                        ))
-                      )}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
+              <PopoverContent className="w-[320px] p-0 max-h-[400px] overflow-y-auto" align="start">
+                <div className="p-3 border-b border-border">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Recent Sessions</p>
+                </div>
+                <div className="py-1">
+                  {loadingSessions ? (
+                    <div className="flex items-center justify-center py-6">
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : recentSessions.length === 0 ? (
+                    <div className="py-6 text-center text-xs text-muted-foreground">
+                      No sessions found
+                    </div>
+                  ) : (
+                    recentSessions.map((session) => (
+                      <button
+                        key={session.id}
+                        onClick={() => handleSessionSelect(session.id)}
+                        className={cn(
+                          "w-full text-left px-3 py-2.5 flex items-center gap-3 hover:bg-muted transition-colors text-xs border-b border-border/50 last:border-0",
+                          session.id === appointment.id && "bg-muted/60"
+                        )}
+                      >
+                        <span className="font-medium text-foreground truncate flex-1">{session.client_name}</span>
+                        <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums">
+                          {format(new Date(session.date), "MMM d, yyyy")}
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
               </PopoverContent>
             </Popover>
             <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60 shrink-0">{appointment.status}</span>

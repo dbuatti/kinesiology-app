@@ -92,7 +92,6 @@ const MechanoMasteryModule = () => {
 
   const lessonDetails = [
     { id: '1', title: "Demystifying Ligaments (The Unconscious GPS)", desc: "Learn why ligaments are your body's silent sensors." },
-    { id: '2', title: "Demystifying Tendons (The Tension Scales)", desc: "Understand how GTOs monitor muscle force." },
     { id: '3', title: "The 3-Step Mechano Process Demystified", desc: "Master the simple, repeatable clinical loop." },
     { id: '4', title: "Overcoming Clinical Intimidation", desc: "Mindset shifts and safety guarantees." },
     { id: '5', title: "The Lovett-Brother Spinal Engine", desc: "Understand how spinal segments work in pairs." },
@@ -248,38 +247,19 @@ const MechanoMasteryModule = () => {
                   </div>
                 </div>
 
-                {/* Conscious vs Unconscious Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white overflow-hidden">
-                    <CardHeader className="p-6 pb-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 flex items-center justify-center mb-3">
-                        <Brain size={20} />
-                      </div>
-                      <CardTitle className="text-lg font-bold text-slate-900">Conscious (DCML)</CardTitle>
-                      <CardDescription className="text-xs font-medium text-slate-500">15% of afferent input. Contralateral logic.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-6 pt-0 space-y-3">
-                      <ul className="space-y-2.5">
-                        {["Targets S1 Sensory Cortex", "Uses Isometric Contractions", "30-40% Effort / 60-90s", "Nasal Breathing Required"].map(item => (
-                          <li key={item} className="flex items-center gap-2.5 text-xs font-medium text-slate-600">
-                            <CheckCircle2 size={15} className="text-slate-900 shrink-0" /> {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                  </Card>
-
+                {/* Unconscious Mechanoreceptive Card */}
+                <div className="max-w-md mx-auto">
                   <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white overflow-hidden">
                     <CardHeader className="p-6 pb-3">
                       <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 flex items-center justify-center mb-3">
                         <Activity size={20} />
                       </div>
-                      <CardTitle className="text-lg font-bold text-slate-900">Unconscious (SC)</CardTitle>
-                      <CardDescription className="text-xs font-medium text-slate-500">85% of afferent input. Ipsilateral logic.</CardDescription>
+                      <CardTitle className="text-lg font-bold text-slate-900">Unconscious Mechanoreceptive</CardTitle>
+                      <CardDescription className="text-xs font-medium text-slate-500">85% of afferent input. Ipsilateral logic. GV16 / Cerebellum.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-6 pt-0 space-y-3">
                       <ul className="space-y-2.5">
-                        {["Targets Cerebellum (GV16)", "Uses Ligament/Tendon Stretch", "Tuning Fork or Quick Tap", "Ipsilateral Brainstem Logic"].map(item => (
+                        {["Targets Cerebellum (GV16)", "Uses Ligament Stretch", "Tuning Fork or Quick Tap", "Ipsilateral Brainstem Logic"].map(item => (
                           <li key={item} className="flex items-center gap-2.5 text-xs font-medium text-slate-600">
                             <CheckCircle2 size={15} className="text-slate-900 shrink-0" /> {item}
                           </li>
@@ -331,7 +311,7 @@ const MechanoMasteryModule = () => {
                       { label: "Localization Hierarchy", desc: "Axial vs Appendicular logic." },
                       { label: "Planes of Motion", desc: "Sagittal, Frontal, Transverse." },
                       { label: "Joint Actions", desc: "Mastering the Action Table." },
-                      { label: "Correction Protocols", desc: "Conscious vs Unconscious." }
+                      { label: "Correction Protocols", desc: "Unconscious Mechanoreceptive." }
                     ].map((item, i) => (
                       <div key={i} className="flex gap-3">
                         <div className="w-5 h-5 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0 mt-0.5">

@@ -64,7 +64,6 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
     const saved = localStorage.getItem('rk_mechano_lessons_progress');
     return saved ? JSON.parse(saved) : {
       '1': false,
-      '2': false,
       '3': false,
       '4': false,
       '5': false,

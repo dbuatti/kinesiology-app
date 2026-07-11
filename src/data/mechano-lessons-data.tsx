@@ -104,77 +104,6 @@ export const lessons: Lesson[] = [
     }
   },
   {
-    id: '2',
-    title: "Demystifying Tendons (The Tension Scales)",
-    description: "Understand how tendons monitor muscle force and how to reset their threshold.",
-    duration: "5 mins",
-    icon: LinkIcon,
-    difficulty: "Beginner",
-    content: (
-      <div className="space-y-6 text-slate-700">
-        <div className="p-5 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-md">
-            <LinkIcon size={20} />
-          </div>
-          <div>
-            <h4 className="font-bold text-slate-900 text-sm uppercase tracking-tight">The Core Concept</h4>
-            <p className="text-xs text-slate-600 font-medium mt-1">
-              Tendons connect <strong>muscle to bone</strong>. They house the Golgi Tendon Organs (GTOs), which act as springy tension scales. If a muscle pulls too hard, the GTO inhibits the muscle to prevent it from tearing.
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <h4 className="font-bold text-slate-900 text-base">Why You Shouldn't Be Intimidated:</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-              <p className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                <Smile className="text-slate-900" size={16} /> They are Active Regulators
-              </p>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Tendons respond to active muscle contraction. When a tendon's threshold is "smudged," the brain keeps the muscle weak or chronically tight to protect it.
-              </p>
-            </div>
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-              <p className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                <CheckCircle className="text-slate-900" size={16} /> The Correction is Active
-              </p>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                To reset the GTO threshold, we perform a light, pain-free <strong>isometric contraction (30-40% effort)</strong> in the restricted action while holding the contralateral sensory cortex.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-5 bg-slate-900 text-white rounded-xl space-y-3">
-          <p className="text-xs font-bold text-slate-300 uppercase tracking-wider">The Neural Pathway</p>
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-bold">
-            <div className="px-3 py-2 bg-white/10 rounded-lg border border-white/10 text-center w-full md:w-auto">Isometric Hold</div>
-            <ChevronRight className="text-slate-500 hidden md:block" />
-            <div className="px-3 py-2 bg-white/10 rounded-lg border border-white/10 text-center w-full md:w-auto">DCML Pathway</div>
-            <ChevronRight className="text-slate-500 hidden md:block" />
-            <div className="px-3 py-2 bg-white/10 rounded-lg border border-white/10 text-center w-full md:w-auto">Contralateral S1 Cortex</div>
-            <ChevronRight className="text-slate-500 hidden md:block" />
-            <div className="px-3 py-2 bg-slate-800 rounded-lg text-center w-full md:w-auto">30-40% Effort Reset</div>
-          </div>
-        </div>
-
-        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-3">
-          <Lightbulb className="text-slate-900 shrink-0 mt-0.5" size={18} />
-          <p className="text-xs text-slate-600 font-medium leading-relaxed">
-            <strong>Confidence Tip:</strong> If a client has pain during the isometric hold, you are pushing too hard! Back off to 10% or 20% effort. The brain learns from clear, pain-free signals, not from force.
-          </p>
-        </div>
-      </div>
-    ),
-    quiz: {
-      question: "What effort level is recommended for a Conscious GTO tendon correction?",
-      options: ["100% maximum effort", "70-80% moderate effort", "30-40% light effort", "5% micro effort"],
-      correctAnswer: "30-40% light effort",
-      explanation: "A light, pain-free isometric contraction of 30-40% effort is optimal for resetting the GTO threshold without triggering protective muscle guarding."
-    }
-  },
-  {
     id: '3',
     title: "The 3-Step Mechano Process Demystified",
     description: "Master the simple, repeatable loop that guarantees clinical success.",
@@ -201,7 +130,7 @@ export const lessons: Lesson[] = [
             },
             {
               step: "Step 3: Calibrate (Apply the Correction)",
-              desc: "Apply the specific correction. For Unconscious (ligaments), hold GV16 and stretch. For Conscious (tendons), hold contralateral S1 and perform a light isometric hold.",
+              desc: "Apply the specific correction. Hold GV16 and stretch the priority ligament, then apply a tuning fork to the cranium or tap for 3-5 seconds.",
               color: "border-slate-200 bg-slate-50/50 text-slate-900"
             }
           ].map((item, i) => (

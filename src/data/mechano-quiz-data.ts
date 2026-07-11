@@ -3,7 +3,7 @@ export interface MechanoFlashcard {
   id: string;
   question: string;
   answer: string;
-  category: 'Theory' | 'Conscious' | 'Unconscious' | 'Clinical';
+  category: 'Theory' | 'Unconscious' | 'Clinical';
 }
 
 export interface MechanoResource {
@@ -28,22 +28,10 @@ export const MECHANO_FLASHCARDS: MechanoFlashcard[] = [
     answer: "The DCML (Dorsal Column Medial Lemniscus) pathway, projecting to the contralateral Sensory Cortex (S1)."
   },
   {
-    id: '3',
-    category: 'Conscious',
-    question: "What is the lateralization logic for a Conscious Mechanoreceptive correction?",
-    answer: "Contralateral. If the left side is dysfunctional, you hold the right-side brain representations (M1/S1)."
-  },
-  {
     id: '4',
     category: 'Unconscious',
     question: "What is the primary reflex point used for Unconscious Mechanoreceptive corrections?",
     answer: "GV16 (base of the skull/cerebellum). It follows Ipsilateral logic."
-  },
-  {
-    id: '5',
-    category: 'Clinical',
-    question: "What effort level and duration is required for a Conscious isometric correction?",
-    answer: "30-40% effort for 30-90 seconds, always with nasal breathing."
   },
   {
     id: '6',

@@ -40,7 +40,7 @@ const DailyMechanoChallenge = () => {
 
   const handleSelectAnswer = (field: string, value: string) => {
     setUserAnswers(prev => ({ ...prev, [field]: value }));
-    if (challengeStep < 6) {
+    if (challengeStep < 5) {
       setChallengeStep(prev => (prev + 1) as any);
     }
   };
@@ -48,13 +48,12 @@ const DailyMechanoChallenge = () => {
   const checkAnswer = () => {
     if (!currentCase) return;
     
-    const pathCorrect = userAnswers.path === currentCase.correctPath;
     const skeletonCorrect = userAnswers.skeleton === currentCase.localization.skeleton;
     const regionCorrect = userAnswers.region === currentCase.localization.region;
     const jointCorrect = userAnswers.joint === currentCase.localization.joint;
     const planeCorrect = userAnswers.plane === currentCase.localization.plane;
 
-    const correct = pathCorrect && skeletonCorrect && regionCorrect && jointCorrect && planeCorrect;
+    const correct = skeletonCorrect && regionCorrect && jointCorrect && planeCorrect;
     
     setIsCorrect(correct);
     setShowResult(true);
@@ -73,7 +72,7 @@ const DailyMechanoChallenge = () => {
 
   if (!currentCase) return null;
 
-  const progress = (challengeStep / 6) * 100;
+  const progress = (challengeStep / 5) * 100;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700">
@@ -124,33 +123,10 @@ const DailyMechanoChallenge = () => {
                 <Progress value={progress} className="h-1.5 bg-muted [&>div]:bg-chart-primary" />
               </div>
 
-              {/* Step 1: Pathway */}
+              {/* Step 1: Skeleton Type */}
               {challengeStep === 1 && (
                 <div className="space-y-4 animate-in fade-in duration-300">
-                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">1. Identify the Pathway</p>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => handleSelectAnswer('path', 'Conscious')}
-                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs uppercase tracking-wider"
-                    >
-                      <Brain size={18} className="mr-2 text-chart-primary" /> Conscious (DCML)
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => handleSelectAnswer('path', 'Unconscious')}
-                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs uppercase tracking-wider"
-                    >
-                      <Activity size={18} className="mr-2 text-chart-emerald" /> Unconscious (SC)
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Step 2: Skeleton Type */}
-              {challengeStep === 2 && (
-                <div className="space-y-4 animate-in fade-in duration-300">
-                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">2. Identify the Skeleton Type</p>
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">1. Identify the Skeleton Type</p>
                   <div className="grid grid-cols-2 gap-4">
                     <Button 
                       variant="outline" 
@@ -170,10 +146,10 @@ const DailyMechanoChallenge = () => {
                 </div>
               )}
 
-              {/* Step 3: Region */}
-              {challengeStep === 3 && (
+              {/* Step 2: Region */}
+              {challengeStep === 2 && (
                 <div className="space-y-4 animate-in fade-in duration-300">
-                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">3. Identify the Body Region</p>
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">2. Identify the Body Region</p>
                   <div className="grid grid-cols-2 gap-4">
                     <Button 
                       variant="outline" 
@@ -193,10 +169,10 @@ const DailyMechanoChallenge = () => {
                 </div>
               )}
 
-              {/* Step 4: Joint */}
-              {challengeStep === 4 && (
+              {/* Step 3: Joint */}
+              {challengeStep === 3 && (
                 <div className="space-y-4 animate-in fade-in duration-300">
-                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">4. Localize the Joint</p>
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">3. Localize the Joint</p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {["Shoulder (GH Joint)", "Foot/Ankle", "Lumbar Spine", "Cervical Spine", "Hip", "Knee", "Jaw (TMJ)", "Pelvis"].map(joint => (
                       <Button 
@@ -212,10 +188,10 @@ const DailyMechanoChallenge = () => {
                 </div>
               )}
 
-              {/* Step 5: Plane of Motion */}
-              {challengeStep === 5 && (
+              {/* Step 4: Plane of Motion */}
+              {challengeStep === 4 && (
                 <div className="space-y-4 animate-in fade-in duration-300">
-                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">5. Identify the Plane of Motion</p>
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">4. Identify the Plane of Motion</p>
                   <div className="grid grid-cols-3 gap-4">
                     {["Sagittal", "Frontal", "Transverse"].map(plane => (
                       <Button 
@@ -231,15 +207,11 @@ const DailyMechanoChallenge = () => {
                 </div>
               )}
 
-              {/* Step 6: Review & Submit */}
-              {challengeStep === 6 && (
+              {/* Step 5: Review & Submit */}
+              {challengeStep === 5 && (
                 <div className="space-y-6 animate-in fade-in duration-300">
-                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">6. Review Your Clinical Logic</p>
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">5. Review Your Clinical Logic</p>
                   <div className="grid grid-cols-2 gap-4 text-xs">
-                    <div className="p-4 bg-muted rounded-xl border border-border">
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">Pathway</span>
-                      <p className="font-medium text-sm mt-1">{userAnswers.path}</p>
-                    </div>
                     <div className="p-4 bg-muted rounded-xl border border-border">
                       <span className="text-[10px] font-semibold text-muted-foreground uppercase">Skeleton</span>
                       <p className="font-medium text-sm mt-1">{userAnswers.skeleton}</p>
@@ -261,7 +233,7 @@ const DailyMechanoChallenge = () => {
                   <div className="flex gap-3">
                     <Button 
                       variant="ghost" 
-                      onClick={() => setChallengeStep(5)}
+                      onClick={() => setChallengeStep(4)}
                       className="flex-1 h-14 rounded-xl text-muted-foreground hover:text-foreground"
                     >
                       <ChevronLeft size={18} className="mr-2" /> Back
@@ -291,13 +263,7 @@ const DailyMechanoChallenge = () => {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
-                <div className="p-4 bg-muted rounded-xl border border-border">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Correct Pathway</p>
-                  <Badge className={cn("border-none font-semibold rounded-full", currentCase.correctPath === 'Conscious' ? "bg-primary" : "bg-primary")}>
-                    {currentCase.correctPath}
-                  </Badge>
-                </div>
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 text-xs">
                 <div className="p-4 bg-muted rounded-xl border border-border">
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Correct Joint</p>
                   <p className="text-sm font-medium">{currentCase.localization.joint}</p>

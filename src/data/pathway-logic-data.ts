@@ -39,7 +39,6 @@ export const AFFERENT_PATHWAYS: PathwayOption[] = [
     description: 'Physical input from joints, muscles, and skin receptors. 15% conscious (DCML to S1), 85% unconscious (Spinocerebellar to Cerebellum).',
     confirmationTest: 'X-pattern facilitates → Mechanoreceptive confirmed',
     protocols: [
-      'CONSCIOUS: TL opposing sensory cortex → Isometric contraction (30-40%, 3-5s) + Nasal breathing',
       'UNCONSCIOUS: Hold GV16 → Locate ligament → Stretch + Tuning fork on cranium (3-5s)',
       'Re-test original pathway after each layer'
     ]

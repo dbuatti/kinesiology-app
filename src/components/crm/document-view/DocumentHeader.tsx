@@ -12,8 +12,7 @@ const DocumentHeader = ({ clientName, date, displayId, id }: DocumentHeaderProps
   return (
     <div className="flex justify-between items-end border-b-4 border-black pb-10">
       <div className="space-y-1">
-        <h1 className="text-5xl font-black tracking-tighter uppercase leading-none">Session Log</h1>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.5em]">Resonance Clinical Infrastructure • v2.4</p>
+        <h1 className="text-5xl font-black tracking-tighter uppercase leading-none">Session Notes</h1>
       </div>
       <div className="text-right space-y-1">
         <p className="text-xl font-black">{clientName}</p>

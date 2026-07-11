@@ -1,22 +1,37 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { format } from 'date-fns';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
-  FileText,
   Printer,
   ArrowLeft,
-  ChevronRight,
   ExternalLink,
-  Zap,
-  ChevronUp,
   MessageCircle,
   CalendarPlus,
+  Plus,
+  Search,
+  Check,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppointmentWithClient } from '@/types/crm';
 import { Button } from '@/components/ui/button';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { supabase } from '@/integrations/supabase/client';
 import { useSessionDocumentState } from '@/hooks/useSessionDocumentState';
+import { QuickSessionDialog } from './QuickSessionDialog';
 
 // Modular Sub-components
 import DocumentSidebar, { OUTLINE_ITEMS } from './document-view/DocumentSidebar';
@@ -103,6 +118,8 @@ const SessionDocumentView = ({
     updatePriorityPattern
   });
 
+  const navigate = useNavigate();
+
   // Bulletproof JS-based media query to prevent sidebars from rendering on mobile/tablet
   const [isDesktop, setIsDesktop] = useState(false);
 
@@ -113,6 +130,54 @@ const SessionDocumentView = ({
     media.addEventListener("change", listener);
     return () => media.removeEventListener("change", listener);
   }, []);
+
+  // Quick Session dialog state
+  const [quickSessionOpen, setQuickSessionOpen] = useState(false);
+
+  // Client session switcher state
+  const [clientSearchOpen, setClientSearchOpen] = useState(false);
+  const [clientSearchValue, setClientSearchValue] = useState("");
+  const [allClients, setAllClients] = useState<{ id: string; name: string }[]>([]);
+  const [loadingClients, setLoadingClients] = useState(false);
+
+  useEffect(() => {
+    if (clientSearchOpen && allClients.length === 0) {
+      setLoadingClients(true);
+      supabase
+        .from("clients")
+        .select("id, name")
+        .or('is_practitioner.eq.false,is_practitioner.is.null')
+        .order("name")
+        .then(({ data, error }) => {
+          if (!error && data) setAllClients(data);
+          setLoadingClients(false);
+        });
+    }
+  }, [clientSearchOpen, allClients.length]);
+
+  const filteredClients = useMemo(() =>
+    allClients.filter(c =>
+      c.name.toLowerCase().includes(clientSearchValue.toLowerCase())
+    ),
+    [allClients, clientSearchValue]
+  );
+
+  const handleClientSelect = useCallback(async (clientId: string) => {
+    setClientSearchOpen(false);
+    setClientSearchValue("");
+    const { data } = await supabase
+      .from("appointments")
+      .select("id")
+      .eq("client_id", clientId)
+      .order("date", { ascending: false })
+      .limit(1)
+      .single();
+    if (data) {
+      navigate(`/appointments/${data.id}`);
+    } else {
+      navigate(`/schedule?view=list&clientId=${clientId}`);
+    }
+  }, [navigate]);
 
   // Extract all currently and historically inhibited findings from the unified pattern
   const activeInhibitedFindings = useMemo(() => {
@@ -138,8 +203,54 @@ const SessionDocumentView = ({
             <Button variant="ghost" size="sm" onClick={onClose} className="rounded-none h-9 px-3 font-medium text-[10px] uppercase tracking-wider border border-black hover:bg-black hover:text-white transition-all shrink-0">
               <ArrowLeft size={14} className="mr-1" /> Exit
             </Button>
-            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60 shrink-0">Clinical Record</span>
-            <span className="text-xs font-semibold text-foreground truncate">{appointment.clients.name}</span>
+            <Popover open={clientSearchOpen} onOpenChange={setClientSearchOpen}>
+              <PopoverTrigger asChild>
+                <button className="text-xs font-semibold text-foreground truncate hover:underline underline-offset-4 transition-all shrink-0">
+                  {appointment.clients.name}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[280px] p-0" align="start">
+                <Command>
+                  <CommandInput
+                    placeholder="Search clients..."
+                    value={clientSearchValue}
+                    onValueChange={setClientSearchValue}
+                  />
+                  <CommandList>
+                    <CommandEmpty className="py-4 text-center text-sm text-slate-500">
+                      <div className="flex flex-col items-center gap-2">
+                        <Search size={20} className="text-slate-300" />
+                        <p className="text-xs">No clients found</p>
+                      </div>
+                    </CommandEmpty>
+                    <CommandGroup>
+                      {loadingClients ? (
+                        <div className="flex items-center justify-center py-4">
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        </div>
+                      ) : (
+                        filteredClients.map((client) => (
+                          <CommandItem
+                            key={client.id}
+                            value={client.name}
+                            onSelect={() => handleClientSelect(client.id)}
+                            className="flex items-center gap-2 py-2 px-3 cursor-pointer"
+                          >
+                            <Check
+                              className={cn(
+                                "h-4 w-4 shrink-0",
+                                appointment.clients.id === client.id ? "opacity-100 text-primary" : "opacity-0"
+                              )}
+                            />
+                            <span className="truncate">{client.name}</span>
+                          </CommandItem>
+                        ))
+                      )}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
             <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60 shrink-0">{appointment.status}</span>
             <button
               onClick={async () => {
@@ -173,6 +284,11 @@ const SessionDocumentView = ({
             </div>
             
             <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm"
+                onClick={() => setQuickSessionOpen(true)}
+                className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
+                <Plus size={12} className="mr-1" /> New Session
+              </Button>
               {appointment.clients.phone && (
                 <Button variant="outline" size="sm"
                   onClick={() => window.open(`imessage:${appointment.clients.phone}`, '_blank')}
@@ -280,7 +396,7 @@ const SessionDocumentView = ({
               <div className="flex items-center gap-2"><div className="w-2 h-2 bg-black" /> Integrated</div>
               <div className="flex items-center gap-2"><div className="w-2 h-2 bg-black" /> Encrypted</div>
             </div>
-            <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">Fractal Resolution OS • Resonance Clinical Infrastructure</p>
+            <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">Session Complete</p>
           </div>
         </div>
 
@@ -298,6 +414,8 @@ const SessionDocumentView = ({
           />
         )}
       </div>
+
+      <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} />
     </div>
   );
 };

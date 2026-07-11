@@ -360,7 +360,7 @@ const PracticeNotes = () => {
  {loading && (
  <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-4">
  <Loader2 className="w-10 h-10 text-chart-primary animate-spin" />
- <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Loading Clinical Data...</p>
+  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Loading...</p>
  </div>
  )}
 

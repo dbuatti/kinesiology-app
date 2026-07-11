@@ -110,7 +110,7 @@ const PathwayAssessment = ({
       return { title: "Fear Paralysis Active", desc: "This is the Master Reflex. It is likely driving Moro and Startle. Clear this first to potentially resolve the whole chain." };
     }
     if (inhibited['Moro Reflex'] === 'Inhibited' || inhibited['Moro Reflex (L)'] === 'Inhibited' || inhibited['Moro Reflex (R)'] === 'Inhibited') {
-      return { title: "Moro Reflex Active", desc: "Moro is tied to TLR, ATNR, and STNR. Check these for automatic resolution after correcting Moro." };
+      return { title: "Moro Reflex Active", desc: "Moro is tied to TLR (Extension/Flexion), ATNR, and STNR (Extension/Flexion). Check these for automatic resolution after correcting Moro." };
     }
     return null;
   }, [results.primitiveReflexes]);

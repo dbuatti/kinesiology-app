@@ -92,7 +92,7 @@ const PrimitiveReflexWorksheet = () => {
             <p>• Fear Paralysis → Moro → Startle</p>
             <p>• ATNR → Babinski → Palmar</p>
             <p>• Rooting → Sucking</p>
-            <p>• TLR → ATNR → STNR</p>
+            <p>• TLR (Extension / Flexion) → ATNR → STNR (Extension / Flexion)</p>
           </div>
         </div>
         <div className="space-y-1 flex-[2]">

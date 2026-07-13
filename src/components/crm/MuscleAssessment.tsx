@@ -95,13 +95,13 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
                 <Checkbox 
                   id={`inhib-l-${name}`}
                   checked={statusL === 'Inhibited'}
-                  onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Inhibited' : 'Clear', 'L')}
+                  onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Inhibited' : null, 'L')}
                   className="h-3.5 w-3.5 border-slate-400 rounded-none"
                 />
                 <Checkbox 
                   id={`inhib-r-${name}`}
                   checked={statusR === 'Inhibited'}
-                  onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Inhibited' : 'Clear', 'R')}
+                  onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Inhibited' : null, 'R')}
                   className="h-3.5 w-3.5 border-slate-400 rounded-none"
                 />
               </div>
@@ -109,7 +109,7 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
               <Checkbox 
                 id={`inhib-mid-${name}`}
                 checked={statusMidline === 'Inhibited'}
-                onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Inhibited' : 'Clear')}
+                onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Inhibited' : null)}
                 className="h-3.5 w-3.5 border-slate-400 rounded-none"
               />
             )}
@@ -123,13 +123,13 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
                 <Checkbox 
                   id={`hyper-l-${name}`}
                   checked={statusL === 'Hypertonic'}
-                  onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Hypertonic' : 'Clear', 'L')}
+                  onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Hypertonic' : null, 'L')}
                   className="h-3.5 w-3.5 border-amber-400 rounded-none data-[state=checked]:bg-amber-500"
                 />
                 <Checkbox 
                   id={`hyper-r-${name}`}
                   checked={statusR === 'Hypertonic'}
-                  onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Hypertonic' : 'Clear', 'R')}
+                  onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Hypertonic' : null, 'R')}
                   className="h-3.5 w-3.5 border-amber-400 rounded-none data-[state=checked]:bg-amber-500"
                 />
               </div>
@@ -137,20 +137,39 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
               <Checkbox 
                 id={`hyper-mid-${name}`}
                 checked={statusMidline === 'Hypertonic'}
-                onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Hypertonic' : 'Clear')}
+                onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Hypertonic' : null)}
                 className="h-3.5 w-3.5 border-amber-400 rounded-none data-[state=checked]:bg-amber-500"
               />
             )}
           </div>
 
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => isLateralized ? (onUpdate('muscles', name, 'Clear', 'L'), onUpdate('muscles', name, 'Clear', 'R')) : onUpdate('muscles', name, 'Clear')}
-            className="h-5 px-1.5 text-[7px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 rounded"
-          >
-            <CheckCircle2 size={10} className="mr-1" /> Clear
-          </Button>
+          {/* Normotonic Controls */}
+          <div className="flex items-center gap-2 pr-2">
+            <span className="text-[7px] font-black text-slate-300 uppercase tracking-widest">Norm</span>
+            {isLateralized ? (
+              <div className="flex items-center gap-1.5">
+                <Checkbox 
+                  id={`norm-l-${name}`}
+                  checked={statusL === 'Clear'}
+                  onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Clear' : null, 'L')}
+                  className="h-3.5 w-3.5 border-emerald-400 rounded-none data-[state=checked]:bg-emerald-500"
+                />
+                <Checkbox 
+                  id={`norm-r-${name}`}
+                  checked={statusR === 'Clear'}
+                  onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Clear' : null, 'R')}
+                  className="h-3.5 w-3.5 border-emerald-400 rounded-none data-[state=checked]:bg-emerald-500"
+                />
+              </div>
+            ) : (
+              <Checkbox 
+                id={`norm-mid-${name}`}
+                checked={statusMidline === 'Clear'}
+                onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Clear' : null)}
+                className="h-3.5 w-3.5 border-emerald-400 rounded-none data-[state=checked]:bg-emerald-500"
+              />
+            )}
+          </div>
         </div>
       </div>
     </section>

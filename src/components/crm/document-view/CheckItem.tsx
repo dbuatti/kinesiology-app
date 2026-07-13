@@ -38,9 +38,12 @@ const CheckItem = ({ category, name, side, pattern, onToggle }: CheckItemProps) 
     if (isMuscle) {
       if (status === 'Clear') nextStatus = 'Inhibited';
       else if (status === 'Inhibited' && !isCleared) nextStatus = 'Hypertonic';
+      else if (status === 'Hypertonic' && !isCleared) nextStatus = 'Inhibited_Cleared';
       else nextStatus = 'Clear';
     } else {
-      nextStatus = (status === 'Clear' || isCleared) ? 'Inhibited' : 'Clear';
+      if (status === 'Clear') nextStatus = 'Inhibited';
+      else if (status === 'Inhibited' && !isCleared) nextStatus = 'Inhibited_Cleared';
+      else nextStatus = 'Clear';
     }
 
     onToggle(category, name, nextStatus, side);

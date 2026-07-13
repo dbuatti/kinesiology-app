@@ -262,7 +262,7 @@ export function useSessionDocumentState({
     const fullName = side ? `${name} (${side})` : name;
 
     if (category === 'muscles') {
-      const dbStatus = nextStatus === 'Clear' ? 'Normotonic' : nextStatus === 'Inhibited' ? 'Inhibition' : 'Hypertonic';
+      const dbStatus = nextStatus === 'Clear' || nextStatus.endsWith('_Cleared') ? 'Normotonic' : nextStatus === 'Inhibited' ? 'Inhibition' : 'Hypertonic';
       const existing = currentMuscleTests.find(t => t.muscle_name === fullName);
       
       const runUpdate = async () => {
@@ -296,7 +296,8 @@ export function useSessionDocumentState({
       runUpdate();
     } else {
       const runUpdatePattern = async () => {
-        await updatePriorityPattern(category, name, nextStatus === 'Clear' ? 'Clear' : 'Inhibited', side);
+        const patternStatus = nextStatus === 'Clear' ? 'Clear' : nextStatus.endsWith('_Cleared') ? nextStatus : 'Inhibited';
+        await updatePriorityPattern(category, name, patternStatus, side);
         setLastSaved(new Date());
         onUpdate();
       };

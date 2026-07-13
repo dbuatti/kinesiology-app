@@ -19,11 +19,12 @@ export function formatVoiceTime(date: string, time: string): string | null {
   const [year, month, day] = date.split("-").map(Number);
   if (!year || !month || !day) return null;
 
+  const stripTz = (s: string) => s.replace(/(?:UTC|AEST|AEDT|GMT[+-]\d+|EST|EDST?|ACST|ACDT|AWST|AWDT)\b/gi, "").trim();
   const isUTC = /UTC/i.test(time);
 
   const parts = time.split("–").map((s) => s.trim());
   if (parts.length !== 2) {
-    const cleaned = time.replace(/UTC/i, "").trim();
+    const cleaned = stripTz(time);
     const m = cleaned.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
     if (!m) return null;
     let h = parseInt(m[1]);
@@ -37,7 +38,7 @@ export function formatVoiceTime(date: string, time: string): string | null {
   }
 
   const parseTime = (s: string) => {
-    const cleaned = s.replace(/UTC/i, "").trim();
+    const cleaned = stripTz(s);
     const match = cleaned.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
     if (!match) return null;
     let h = parseInt(match[1]);

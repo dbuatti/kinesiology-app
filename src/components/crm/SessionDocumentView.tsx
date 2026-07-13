@@ -241,7 +241,7 @@ const SessionDocumentView = ({
               )}
               title="Click to cycle: Free → Due → Paid"
             >
-              {!appointment.is_paid ? 'Free' : appointment.payment_received ? 'Paid' : `Due $${appointment.price_amount || 50}`}
+              {!appointment.is_paid ? 'Free' : appointment.payment_received ? 'Paid' : `Due $${appointment.clients.standard_rate || appointment.price_amount || 50}`}
             </button>
           </div>
 

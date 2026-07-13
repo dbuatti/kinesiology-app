@@ -250,12 +250,6 @@ serve(async (req) => {
     const lessonTime = endTimeStr ? `${startTimeStr} – ${endTimeStr}` : startTimeStr;
 
     // Find the student in Notion Voice Clients DB by email
-    const notionHeaders = {
-      Authorization: `Bearer ${NOTION_KEY}`,
-      "Content-Type": "application/json",
-      "Notion-Version": "2022-06-28",
-    };
-
     console.log(`[${functionName}] Searching for student by email: ${attendeeEmail}`);
 
     const queryRes = await fetch(

@@ -180,6 +180,21 @@ const Index = () => {
           activeSession={activeSession}
           morningProgress={morningProgress}
         />
+
+        <div className="p-5 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl shadow-sm">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0 text-lg">
+              💬
+            </div>
+            <div className="space-y-1">
+              <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Client Love</p>
+              <p className="text-sm text-emerald-900/80 font-medium leading-relaxed italic">
+                "Thank you for your valuable work yesterday — I slept well and now feeling relaxed and balanced today!!"
+              </p>
+              <p className="text-[10px] font-semibold text-emerald-500 uppercase tracking-wider">— Client (Jul 14)</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} />

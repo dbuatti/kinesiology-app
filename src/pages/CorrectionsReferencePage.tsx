@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Zap,
@@ -14,7 +14,10 @@ import {
   ArrowUp,
   ArrowDown,
   ShieldCheck,
-  BookOpen
+  BookOpen,
+  MessageCircle,
+  RefreshCw,
+  Search
 } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
 import { AFFERENT_PATHWAYS, EFFERENT_PATHWAYS, CORRECTION_METHODS } from "@/data/pathway-logic-data";
@@ -28,7 +31,7 @@ const CorrectionsReferencePage = () => {
         <div className="relative rounded-xl overflow-hidden bg-card border border-border p-8 shadow-sm group">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-card to-muted/40" />
           <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
-            <Target size={200} />
+            <Search size={200} />
           </div>
           <div className="relative z-10 flex flex-col items-start space-y-6">
             <Badge className="bg-muted/20 text-chart-primary border-primary/30 font-semibold text-[10px] uppercase tracking-wider px-4 py-1">
@@ -36,7 +39,7 @@ const CorrectionsReferencePage = () => {
             </Badge>
             <h1 className="text-5xl md:text-6xl font-semibold tracking-tighter">Corrections</h1>
             <p className="text-xl text-muted-foreground/60 font-medium max-w-2xl leading-relaxed">
-              A correction is any input the nervous system uses to reorganise itself. The framework is universal — the same logic applies whether you are working with primitive reflexes, cranial nerves, muscles, or brain zones.
+              The glue of the methodology. The full reference framework with the practical in-between knowledge that bridges foundational teaching and real-world application.
             </p>
             <div className="p-6 bg-card/5 border border-white/10 rounded-3xl mt-4 max-w-3xl backdrop-blur-md">
               <p className="text-lg italic font-medium text-muted-foreground/40">
@@ -62,7 +65,7 @@ const CorrectionsReferencePage = () => {
           </div>
         </div>
 
-        {/* Determining the Direction */}
+        {/* Step 1: Determine Afferent or Efferent */}
         <div className="space-y-6">
           <div className="flex items-center gap-4 px-2">
             <div className="w-12 h-12 rounded-xl bg-card text-card-foreground border border-border flex items-center justify-center shadow-sm">
@@ -132,12 +135,21 @@ const CorrectionsReferencePage = () => {
 
           <div className="p-6 bg-card border border-border rounded-lg">
             <div className="flex items-start gap-4">
-              <Lightbulb size={20} className="text-amber-500 shrink-0 mt-0.5" />
-              <div>
-                <h4 className="font-semibold text-sm mb-1">Working within a narrow testing window</h4>
+              <MessageCircle size={20} className="text-chart-primary shrink-0 mt-0.5" />
+              <div className="space-y-3">
+                <h4 className="font-semibold text-sm">Working within a narrow testing window</h4>
                 <p className="text-sm text-muted-foreground font-medium">
-                  For primitive reflexes where the inhibition pattern only appears with the head in a specific position (ATNR, STNR, TLR), you have a 5&ndash;10 second window after positioning the head. State afferent or efferent within that window. Whichever direction locks the inhibited muscle determines the pathway. You can then switch to an indicator muscle and continue testing.
+                  For primitive reflexes where the inhibition pattern only appears with the head in a specific position (ATNR, STNR, TLR), you have a 5&ndash;10 second window after positioning the head. You can still state afferent or efferent against the inhibition pattern within that window. Whichever direction locks the inhibited muscle determines the pathway.
                 </p>
+                <div className="p-3 rounded-lg bg-muted/30 border border-border">
+                  <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Nick Moss</p>
+                  <p className="text-sm text-muted-foreground font-medium italic mt-1">
+                    "Yeah exactly."
+                  </p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">
+                    Once you establish the direction, you can switch to an indicator muscle and continue testing.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -155,7 +167,6 @@ const CorrectionsReferencePage = () => {
             </div>
           </div>
 
-          {/* Afferent Systems */}
           <div className="space-y-3">
             <h3 className="text-lg font-semibold text-blue-500 flex items-center gap-2 px-2">
               <ArrowDown size={18} /> Afferent Systems
@@ -197,7 +208,6 @@ const CorrectionsReferencePage = () => {
             </div>
           </div>
 
-          {/* Efferent Systems */}
           <div className="space-y-3 pt-4">
             <h3 className="text-lg font-semibold text-purple-500 flex items-center gap-2 px-2">
               <ArrowUp size={18} /> Efferent Systems
@@ -235,7 +245,7 @@ const CorrectionsReferencePage = () => {
           </div>
         </div>
 
-        {/* Step 3: Coordinates, Polarity, Method */}
+        {/* Step 3: Apply the Correction */}
         <div className="space-y-6">
           <div className="flex items-center gap-4 px-2">
             <div className="w-12 h-12 rounded-xl bg-card text-card-foreground border border-border flex items-center justify-center shadow-sm">
@@ -340,7 +350,7 @@ const CorrectionsReferencePage = () => {
               </CardContent>
             </Card>
 
-            {/* Verification */}
+            {/* Verification Step */}
             <Card className="border border-border shadow-sm rounded-xl bg-card">
               <CardHeader className="p-5 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
@@ -373,63 +383,138 @@ const CorrectionsReferencePage = () => {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="w-4 h-4 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold shrink-0 mt-0.5">5</span>
-                    <span>If still inhibited, apply the full correction method (tapping, holding, or tuning fork) and reassess</span>
+                    <span>If still inhibited, apply the full correction method and reassess</span>
                   </li>
                 </ol>
-                <p className="text-xs text-muted-foreground/60 italic border-t border-border pt-2">
-                  This is not a shortcut — it is a precision check to confirm you have the right target before investing in the full correction sequence.
+                <div className="p-3 rounded-lg bg-muted/30 border border-border space-y-1">
+                  <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Nick Moss</p>
+                  <p className="text-xs text-muted-foreground font-medium italic">
+                    "Yep, that is a valid approach and one I use also. What we are trying to do is have a few ways in so we can verify and cross reference."
+                  </p>
+                </div>
+                <p className="text-xs text-muted-foreground/60 italic">
+                  This is not a shortcut — it is a precision check to confirm the right target before investing in the full correction sequence.
                 </p>
               </CardContent>
             </Card>
           </div>
         </div>
 
-        {/* Special Case: Primitive Reflexes */}
-        <div className="space-y-6 pt-4">
+        {/* After Determining Direction */}
+        <div className="space-y-4 pt-4">
           <div className="flex items-center gap-4 px-2">
             <div className="w-12 h-12 rounded-xl bg-card text-card-foreground border border-border flex items-center justify-center shadow-sm">
-              <BookOpen size={24} />
+              <RefreshCw size={24} className="text-chart-primary" />
             </div>
             <div>
-              <h2 className="text-3xl font-semibold text-foreground">Primitive Reflexes & Corrections</h2>
-              <p className="text-muted-foreground font-medium">Head-position-dependent reflexes require working within a narrow window.</p>
+              <h2 className="text-3xl font-semibold text-foreground">After Determining Direction</h2>
+              <p className="text-muted-foreground font-medium">Once you know whether the finding is afferent or efferent, switch to an indicator muscle.</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="border border-border shadow-sm rounded-xl bg-card">
-              <CardContent className="p-5 space-y-2">
-                <h4 className="font-semibold text-sm">ATNR</h4>
-                <p className="text-xs text-muted-foreground font-medium">Inhibition pattern appears when the head is rotated. Test afferent/efferent within that window, then switch to an indicator muscle.</p>
-              </CardContent>
-            </Card>
-            <Card className="border border-border shadow-sm rounded-xl bg-card">
-              <CardContent className="p-5 space-y-2">
-                <h4 className="font-semibold text-sm">STNR</h4>
-                <p className="text-xs text-muted-foreground font-medium">Inhibition pattern appears with the head in flexion or extension. Same approach — state direction while the head is held in position.</p>
-              </CardContent>
-            </Card>
-            <Card className="border border-border shadow-sm rounded-xl bg-card">
-              <CardContent className="p-5 space-y-2">
-                <h4 className="font-semibold text-sm">TLR</h4>
-                <p className="text-xs text-muted-foreground font-medium">Inhibition pattern appears with the head in flexion or extension. If efferent is the correction, repeat the stimulus and use an indicator to identify the relevant brain zones.</p>
-              </CardContent>
-            </Card>
+          <Card className="border border-border shadow-sm rounded-xl bg-card">
+            <CardContent className="p-6 space-y-4">
+              <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                When you are working with a primitive reflex and the inhibition only appears with the head in position, you have two options once you have determined the direction:
+              </p>
+              <div className="space-y-3">
+                <div className="p-4 rounded-lg bg-muted/30 border border-border">
+                  <h4 className="font-semibold text-sm mb-2">Option 1: Switch to an indicator muscle</h4>
+                  <p className="text-sm text-muted-foreground font-medium">
+                    Repeat the stimulus, reposition the head, and reproduce the inhibition. This time, instead of testing further on the inhibited muscle, use the indicator to identify the relevant brain zones, coordinates, or other information needed for the correction.
+                  </p>
+                </div>
+                <div className="p-4 rounded-lg bg-muted/30 border border-border">
+                  <h4 className="font-semibold text-sm mb-2">Option 2: Continue testing brain zones directly</h4>
+                  <p className="text-sm text-muted-foreground font-medium">
+                    Once you know the direction (e.g., efferent), repeat the stimulus, reposition the head, and state the relevant subcortical structures or continue through the full testing sequence while the inhibition is present.
+                  </p>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground/60 italic">
+                Nick recommends Option 1: "Once you have established whether the finding is afferent or efferent, I generally recommend switching to an indicator muscle."
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Multiple Layers */}
+        <div className="space-y-4 pt-4">
+          <div className="flex items-center gap-4 px-2">
+            <div className="w-12 h-12 rounded-xl bg-card text-card-foreground border border-border flex items-center justify-center shadow-sm">
+              <Layers size={24} className="text-chart-primary" />
+            </div>
+            <div>
+              <h2 className="text-3xl font-semibold text-foreground">Multiple Layers</h2>
+              <p className="text-muted-foreground font-medium">Why reflexes do not always clear after one correction.</p>
+            </div>
           </div>
 
-          <div className="p-6 bg-card border border-border rounded-lg">
-            <div className="flex items-start gap-3">
-              <Lightbulb size={18} className="text-amber-500 shrink-0 mt-0.5" />
-              <div className="space-y-2 text-sm text-muted-foreground font-medium">
-                <p>
-                  <strong>Multiple layers:</strong> If a reflex remains inhibited after correction, it does not necessarily mean the correction was wrong. Primitive reflexes that have been active for years may require multiple correction sessions to fully integrate.
-                </p>
-                <p>
-                  <strong>Fractal cascade:</strong> Correcting a higher-priority reflex (e.g., Fear Paralysis) may automatically resolve lower-priority reflexes (e.g., Moro, Startle). Always re-test after each correction.
+          <Card className="border border-border shadow-sm rounded-xl bg-card">
+            <CardContent className="p-6 space-y-4">
+              <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                If you apply a correction to a primitive reflex and it remains inhibited, it does not necessarily mean the correction was wrong. There can be more than one layer to correct.
+              </p>
+              <div className="p-4 rounded-lg bg-muted/30 border border-border space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Nick Moss</p>
+                <p className="text-sm text-muted-foreground font-medium leading-relaxed italic">
+                  "It could simply mean there are more than one layer to correct. It is best to do longer corrections for reflexes especially since a client may never have had them on, so one quick correction would not be enough."
                 </p>
               </div>
+              <ul className="space-y-1.5 text-sm text-muted-foreground font-medium">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 size={16} className="text-chart-emerald shrink-0 mt-0.5" />
+                  <span>A correction for a reflex is always instant. But just because it does not fully integrate does not mean it was the wrong correction.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 size={16} className="text-chart-emerald shrink-0 mt-0.5" />
+                  <span>Clients who have had a reflex off for years may need multiple sessions to fully integrate.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 size={16} className="text-chart-emerald shrink-0 mt-0.5" />
+                  <span>If it still does not clear after a proper correction, there is likely a deeper layer beneath it.</span>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Fractal Cascade */}
+        <div className="space-y-4 pt-4">
+          <div className="flex items-center gap-4 px-2">
+            <div className="w-12 h-12 rounded-xl bg-card text-card-foreground border border-border flex items-center justify-center shadow-sm">
+              <Zap size={24} className="text-chart-primary" />
+            </div>
+            <div>
+              <h2 className="text-3xl font-semibold text-foreground">Fractal Cascade</h2>
+              <p className="text-muted-foreground font-medium">Correcting one reflex may automatically resolve others.</p>
             </div>
           </div>
+
+          <Card className="border border-border shadow-sm rounded-xl bg-card">
+            <CardContent className="p-6 space-y-4">
+              <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                Primitive reflexes exist in a hierarchy. Correcting a higher-priority reflex can automatically resolve lower-priority reflexes without having to correct each one individually.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="p-4 rounded-lg bg-muted/30 border border-border">
+                  <h4 className="font-semibold text-sm text-chart-destructive">Fear Paralysis</h4>
+                  <p className="text-xs text-muted-foreground font-medium mt-1">The master reflex. If active, it is likely driving Moro and Startle.</p>
+                </div>
+                <div className="p-4 rounded-lg bg-muted/30 border border-border">
+                  <h4 className="font-semibold text-sm text-amber-500">Moro Reflex</h4>
+                  <p className="text-xs text-muted-foreground font-medium mt-1">When inhibited, check TLR, ATNR, and STNR for automatic resolution after correction.</p>
+                </div>
+                <div className="p-4 rounded-lg bg-muted/30 border border-border">
+                  <h4 className="font-semibold text-sm text-chart-primary">ATNR, STNR, TLR</h4>
+                  <p className="text-xs text-muted-foreground font-medium mt-1">Lower priority. Often resolve once the higher-level reflex is cleared.</p>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground font-medium">
+                Always re-test lower-priority reflexes after correcting a higher-priority one. If they are still inhibited, they may be independently active and need their own correction.
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Clinical Pearls */}
@@ -445,16 +530,16 @@ const CorrectionsReferencePage = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 rounded-lg bg-muted/30 border border-border">
-              <p className="text-sm font-medium">Expect 5&ndash;15+ layers in complex cases. Each layer reveals deeper compensation patterns.</p>
+              <p className="text-sm font-medium">Always re-test the original stimulus after a correction. If still inhibited, there is a deeper layer.</p>
             </div>
             <div className="p-4 rounded-lg bg-muted/30 border border-border">
-              <p className="text-sm font-medium">Always re-test the original stimulus. If still inhibited, there is a deeper layer.</p>
+              <p className="text-sm font-medium">A correction is a correction. The same structure applies no matter the pathway.</p>
             </div>
             <div className="p-4 rounded-lg bg-muted/30 border border-border">
-              <p className="text-sm font-medium">Never suggest memories or emotions. Let the nervous system guide you.</p>
+              <p className="text-sm font-medium">Never suggest memories or emotions to the client. Let the nervous system guide you.</p>
             </div>
             <div className="p-4 rounded-lg bg-muted/30 border border-border">
-              <p className="text-sm font-medium">The joint may not be related to the symptom site — it is where the brain needs proprioceptive input to reduce threat.</p>
+              <p className="text-sm font-medium">Have a few ways in. Verify and cross-reference your findings before committing.</p>
             </div>
           </div>
         </div>

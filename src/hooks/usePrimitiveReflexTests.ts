@@ -54,6 +54,8 @@ export function usePrimitiveReflexTests(
           latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : 'Clear', 'R');
         } else if (side) {
           latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
+        } else {
+          latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : 'Clear');
         }
         
         // Determine if the reflex is still inhibited globally (either L or R) using the latest pattern

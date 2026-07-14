@@ -113,12 +113,6 @@ const QuickActions = () => {
             <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
               <DropdownMenuTrigger asChild>
                 <div className="flex items-center gap-3 md:gap-4 group cursor-pointer">
-                  <span className={cn(
-                    "hidden md:inline-block bg-card border border-border text-foreground px-4 py-2 md:px-6 md:py-3 rounded-xl text-[10px] font-semibold uppercase tracking-[0.3em] shadow-3xl transition-all duration-700",
-                    isOpen ? "opacity-0 translate-x-6" : "opacity-100 translate-x-0"
-                  )}>
-                    Quick Actions
-                  </span>
                   <Button
                     size="lg"
                     className={cn(
@@ -131,10 +125,6 @@ const QuickActions = () => {
                 </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-72 md:w-80 p-3 md:p-4 rounded-xl shadow-3xl border mb-4 md:mb-8 animate-in slide-in-from-bottom-4 duration-500 bg-background dark:bg-card">
-                <div className="px-3 py-1.5 md:py-2 mb-2 md:mb-4">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.4em]">Quick Actions</p>
-                </div>
-                
                 <DropdownMenuItem 
                   onClick={() => { navigate("/practice/calibrate"); setIsOpen(false); }} 
                   className="rounded-xl py-4 px-5 md:py-5 md:px-6 cursor-pointer group transition-all hover:bg-muted"

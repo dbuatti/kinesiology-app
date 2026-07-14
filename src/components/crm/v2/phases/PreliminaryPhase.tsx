@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import {
   Compass, ClipboardList, Activity, ShieldAlert, AlertTriangle,
-  Dumbbell, Baby, Zap, Brain, Dumbbell as MusclesIcon,
+  Dumbbell, Baby, Zap, Brain,
 } from "lucide-react";
 import { differenceInDays } from "date-fns";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import EditableField from "@/components/shared/EditableField";
+import BoltTestSection from "@/components/crm/BoltTestSection";
+import CoherenceAssessment from "@/components/crm/CoherenceAssessment";
 import IntrinsicMusclesAssessment from "@/components/crm/IntrinsicMusclesAssessment";
+import NeurologicalAssessments from "@/components/crm/NeurologicalAssessments";
 import { MuscleAssessment } from "@/components/crm/MuscleAssessment";
 import { CranialNerveAssessment } from "@/components/crm/CranialNerveAssessment";
 import { PrimitiveReflexAssessment } from "@/components/crm/PrimitiveReflexAssessment";
@@ -117,6 +119,44 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                   className="border-none p-0 shadow-none bg-transparent"
                 />
               </div>
+            </div>
+
+            {/* Baseline Vitals */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 pb-3 border-b border-border">
+                <Activity size={18} className="text-muted-foreground" />
+                <h3 className="text-xs font-bold text-foreground tracking-tight uppercase tracking-wider">Baseline Vitals</h3>
+              </div>
+              <BoltTestSection
+                appointmentId={appointment.id}
+                initialBoltScore={appointment.bolt_score}
+                onUpdate={onUpdate}
+                history={history}
+              />
+              <CoherenceAssessment
+                appointmentId={appointment.id}
+                initialHeartRate={appointment.heart_rate}
+                initialBreathRate={appointment.breath_rate}
+                initialCoherenceScore={appointment.coherence_score}
+                onUpdate={onUpdate}
+                history={history}
+              />
+            </div>
+
+            {/* Neurological Baseline */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 pb-3 border-b border-border">
+                <ShieldAlert size={18} className="text-muted-foreground" />
+                <h3 className="text-xs font-bold text-foreground tracking-tight uppercase tracking-wider">Neurological Baseline</h3>
+              </div>
+              <NeurologicalAssessments
+                appointmentId={appointment.id}
+                initialFakudaNotes={appointment.fakuda_notes}
+                initialRhombergsNotes={appointment.sharpened_rhombergs_notes}
+                initialFrontalLobeNotes={appointment.frontal_lobe_notes}
+                initialRightingReflexNotes={appointment.righting_reflex_notes}
+                onUpdate={onUpdate}
+              />
             </div>
           </div>
         )}

@@ -1,13 +1,15 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   Activity, Zap, GitBranch, Target, ClipboardCheck,
-  ChevronLeft, ChevronRight, CheckCircle2
+  ChevronLeft, ChevronRight, CheckCircle2, Heart
 } from "lucide-react";
 import { AppointmentWithClient } from "@/types/crm";
-import { Nuclei } from "@/utils/brainstem-logic";
-import { useRef } from "react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
+import EmotionsProtocolSimple from "@/components/crm/v2/EmotionsProtocolSimple";
 
 import PreliminaryPhase from "./phases/PreliminaryPhase";
 import EasePhase from "./phases/EasePhase";
@@ -33,12 +35,12 @@ interface PeaceWizardProps {
 
 const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriorityPattern }: PeaceWizardProps) => {
   const [activePhase, setActivePhase] = useState(0);
+  const [emotionsOpen, setEmotionsOpen] = useState(false);
   const wizardRef = useRef<HTMLDivElement>(null);
 
   const phaseStatus = useMemo(() => ({
     p: !!(appointment.goal && appointment.issue),
-    e1: !!(appointment.bolt_score || appointment.coherence_score ||
-           appointment.lymphatic_notes || appointment.harmonic_rocking_notes ||
+    e1: !!(appointment.lymphatic_notes || appointment.harmonic_rocking_notes ||
            appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes),
     a: !!(appointment.priority_pattern && appointment.priority_pattern !== "{}"),
     c: !!(appointment.modes_balances),
@@ -46,7 +48,8 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
   }), [appointment]);
 
   const scrollToTop = useCallback(() => {
-    wizardRef.current?.scrollIntoView({ behavior: "smooth" });
+    wizardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   const goNext = useCallback(() => {
@@ -77,6 +80,49 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
 
   return (
     <div ref={wizardRef} className="space-y-8">
+      {/* Top Navigation */}
+      <div className="flex items-center justify-between gap-4">
+        <Button
+          variant="outline"
+          onClick={goBack}
+          disabled={activePhase === 0}
+          className="rounded-xl h-10 px-5 font-medium"
+        >
+          <ChevronLeft size={18} className="mr-1.5" /> Back
+        </Button>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setEmotionsOpen(true)}
+            className="rounded-xl h-10 px-3 text-rose-500 hover:bg-rose-50"
+            title="Emotions Protocol Reference"
+          >
+            <Heart size={16} />
+          </Button>
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider text-center">
+            Step {activePhase + 1} of {PEACE_PHASES.length} · {PEACE_PHASES[activePhase].fullLabel}
+          </span>
+        </div>
+
+        {activePhase < PEACE_PHASES.length - 1 ? (
+          <Button
+            onClick={goNext}
+            className="rounded-xl h-10 px-5 font-medium"
+          >
+            Next <ChevronRight size={18} className="ml-1.5" />
+          </Button>
+        ) : (
+          <Button
+            onClick={onUpdate}
+            className="rounded-xl h-10 px-5 font-medium bg-chart-emerald hover:bg-chart-emerald/90"
+          >
+            <CheckCircle2 size={18} className="mr-1.5" /> Finalise
+          </Button>
+        )}
+      </div>
+
       {/* Progress + Phase Stepper */}
       <div className="space-y-4">
         {/* Progress bar */}
@@ -154,46 +200,21 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
         </div>
       </div>
 
-      {/* Navigation */}
-      <div className="flex items-center justify-between pb-8">
-        <Button
-          variant="outline"
-          onClick={goBack}
-          disabled={activePhase === 0}
-          className="rounded-xl h-12 px-6 font-medium"
-        >
-          <ChevronLeft size={18} className="mr-1.5" /> Back
-        </Button>
-
-        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-          Step {activePhase + 1} of {PEACE_PHASES.length} · {PEACE_PHASES[activePhase].fullLabel}
-        </div>
-
-        {activePhase < PEACE_PHASES.length - 1 ? (
-          <Button
-            onClick={goNext}
-            className="rounded-xl h-12 px-6 font-medium"
-          >
-            Next <ChevronRight size={18} className="ml-1.5" />
-          </Button>
-        ) : (
-          <Button
-            onClick={() => {
-              onUpdate();
-              showSuccessLite();
-            }}
-            className="rounded-xl h-12 px-6 font-medium bg-chart-emerald hover:bg-chart-emerald/90"
-          >
-            <CheckCircle2 size={18} className="mr-1.5" /> Finalise
-          </Button>
-        )}
-      </div>
+      {/* Emotions Protocol Modal */}
+      <Dialog open={emotionsOpen} onOpenChange={setEmotionsOpen}>
+        <DialogContent className="sm:max-w-[700px] rounded-xl p-0 mx-4 w-[calc(100%-2rem)] flex flex-col max-h-[85vh]">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
+            <DialogTitle className="text-lg font-semibold flex items-center gap-2">
+              <Heart size={20} className="text-rose-500" /> Emotions Protocol
+            </DialogTitle>
+          </DialogHeader>
+          <div className="overflow-y-auto flex-1 px-6 py-4">
+            <EmotionsProtocolSimple />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
-
-function showSuccessLite() {
-  // noop — auto-save handles persistence
-}
 
 export default PeaceWizard;

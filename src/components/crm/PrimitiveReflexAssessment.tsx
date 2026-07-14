@@ -23,6 +23,24 @@ import { Label } from "@/components/ui/label";
 import { safeParse } from "@/utils/safe-json";
 import { PrimitiveReflexTest } from "@/types/crm";
 
+function HighlightPattern({ text }: { text: string }) {
+  const parts = text.split(/(flexors|extensors|flexor|extensor)/gi);
+  return (
+    <>
+      {parts.map((part, i) => {
+        const lower = part.toLowerCase();
+        if (lower === 'flexors' || lower === 'flexor') {
+          return <span key={i} className="font-bold text-blue-600">{part}</span>;
+        }
+        if (lower === 'extensors' || lower === 'extensor') {
+          return <span key={i} className="font-bold text-amber-600">{part}</span>;
+        }
+        return <span key={i}>{part}</span>;
+      })}
+    </>
+  );
+}
+
 interface ReflexTestItemProps {
   reflex: PrimitiveReflex;
   test: Partial<PrimitiveReflexTest>;
@@ -118,7 +136,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
               </div>
               <div className="flex items-center gap-1 text-rose-600/70 font-medium">
                 <Activity size={10} className="shrink-0" />
-                <span className="">{reflex.inhibitionPattern}</span>
+                <span className=""><HighlightPattern text={reflex.inhibitionPattern} /></span>
               </div>
             </div>
           )}

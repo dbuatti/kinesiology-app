@@ -257,6 +257,70 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField, updatePriorityPattern 
         </div>
       </div>
 
+      {/* Rebook */}
+      <div className="p-6 bg-primary rounded-xl text-primary-foreground relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none"><CalendarPlus size={150} /></div>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-inner shrink-0">
+              <CalendarPlus size={28} />
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold">Schedule Follow-up</h3>
+              <p className="text-primary-foreground/80 text-sm font-medium">Lock in the next session for {appointment.clients?.name}.</p>
+            </div>
+          </div>
+          <Dialog open={bookNextOpen} onOpenChange={(open) => { setBookNextOpen(open); if (!open) setSelectedSlot(null); }}>
+            <DialogTrigger asChild>
+              <Button className="bg-white/20 backdrop-blur-md text-primary-foreground hover:bg-white/30 border-none rounded-xl h-12 px-8 font-medium text-xs uppercase tracking-wider">
+                <Plus size={18} className="mr-2" /> Book Next Session
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px] rounded-xl p-0 mx-4 w-[calc(100%-2rem)] flex flex-col max-h-[90vh]">
+              <div className="px-8 pt-8 pb-5 border-b border-border shrink-0">
+                <DialogHeader>
+                  <DialogTitle className="text-xl font-semibold">
+                    {selectedSlot ? "Confirm Booking" : "Select Available Time"}
+                  </DialogTitle>
+                  <DialogDescription className="text-sm font-medium">
+                    {selectedSlot ? `Finalise details for ${appointment.clients?.name}.` : `Live availability for ${appointment.clients?.name}.`}
+                  </DialogDescription>
+                </DialogHeader>
+              </div>
+              <div className="overflow-y-auto flex-1 px-8 py-6">
+                {selectedSlot ? (
+                  <div className="space-y-6">
+                    <div className="p-4 bg-card rounded-xl border border-border flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Calendar size={20} className="text-muted-foreground" />
+                        <div>
+                          <p className="text-[10px] text-muted-foreground">Selected Slot</p>
+                          <p className="text-sm font-medium text-foreground">
+                            {format(selectedSlot.date, "EEEE, MMM do")} @ {format(selectedSlot.date, "h:mm a")}
+                          </p>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedSlot(null)} className="text-xs text-muted-foreground">
+                        Change
+                      </Button>
+                    </div>
+                    <AppointmentForm
+                      initialClientId={appointment.clients?.id}
+                      initialDate={selectedSlot.date}
+                      initialTime={selectedSlot.time}
+                      slotTime={selectedSlot.slotTime}
+                      onSuccess={() => { setBookNextOpen(false); setSelectedSlot(null); onUpdate(); }}
+                    />
+                  </div>
+                ) : (
+                  <CompactAvailabilityPicker onSlotSelect={(date, time, slotTime) => setSelectedSlot({ date, time, slotTime })} />
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
       {/* Notes */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div className="space-y-4">

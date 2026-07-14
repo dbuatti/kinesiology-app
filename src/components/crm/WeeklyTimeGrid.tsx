@@ -374,7 +374,7 @@ const WeeklyTimeGrid = ({
   onNextWeek,
   onToday,
   minHour = 9,
-  maxHour = 17,
+  maxHour = 21,
   voiceRatePerHour = DEFAULT_VOICE_RATE,
   fnhRatePerHour = DEFAULT_FNH_RATE,
   onSlotClick,

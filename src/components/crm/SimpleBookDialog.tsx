@@ -63,6 +63,8 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
 
   useEffect(() => {
     if (!open) {
+      createBooking.reset();
+      forceBooking.reset();
       setStep("details");
       setSelectedStudent(null);
       setStudentSearch("");

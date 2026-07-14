@@ -473,6 +473,12 @@ const UnifiedCalendarPage = () => {
 
     // Fallback: include voice_bookings that don't have a matching Notion lesson
     const practitionerEmail = session?.user?.email || "";
+    const notionNamesOnDate = new Set<string>();
+    (voiceLessons || []).forEach((l) => {
+      if (l.date && l.studentName) {
+        notionNamesOnDate.add(`${l.date}|${l.studentName.trim().toLowerCase()}`);
+      }
+    });
     (voiceBookings || []).forEach((vb) => {
     if (!vb.lesson_date) return;
     // Skip practitioner self-bookings
@@ -484,6 +490,8 @@ const UnifiedCalendarPage = () => {
     if (vb.notion_lesson_id_2 && notionLessonIds.has(vb.notion_lesson_id_2)) return;
     // Skip if already matched by email+date
     if (matchedEmail.has(`${vb.lesson_date}|${vb.student_email}`)) return;
+    // Skip if a Notion lesson already exists for this student on this date by name
+    if (notionNamesOnDate.has(`${vb.lesson_date}|${vb.student_name.trim().toLowerCase()}`)) return;
     // Skip cancelled
     if (vb.status === "cancelled") return;
     const dur = vb.lesson_time ? voiceTimeDuration(vb.lesson_time) : null;
@@ -958,7 +966,7 @@ const UnifiedCalendarPage = () => {
       onNextWeek={nextWeek}
       onToday={() => { goToToday(); }}
       minHour={9}
-      maxHour={17}
+      maxHour={21}
       fnhRatePerHour={50}
       onSlotClick={(date, hour) => setBookSlot({ date, hour })}
     />

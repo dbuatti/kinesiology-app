@@ -759,7 +759,7 @@ const VoiceCalendarPage = () => {
             onNextWeek={nextWeek}
             onToday={goToToday}
             minHour={9}
-            maxHour={17}
+            maxHour={21}
             availableSlots={availableSlots}
             onSlotClick={(day, hour) => {
               setBookPrefillDate(format(day, "yyyy-MM-dd"));

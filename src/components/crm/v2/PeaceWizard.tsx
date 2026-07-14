@@ -1,0 +1,199 @@
+import { useState, useMemo, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  Activity, Zap, GitBranch, Target, ClipboardCheck,
+  ChevronLeft, ChevronRight, CheckCircle2
+} from "lucide-react";
+import { AppointmentWithClient } from "@/types/crm";
+import { Nuclei } from "@/utils/brainstem-logic";
+import { useRef } from "react";
+
+import PreliminaryPhase from "./phases/PreliminaryPhase";
+import EasePhase from "./phases/EasePhase";
+import AlignPhase from "./phases/AlignPhase";
+import CorrectPhase from "./phases/CorrectPhase";
+import EmbedPhaseV2 from "./phases/EmbedPhaseV2";
+
+export const PEACE_PHASES = [
+  { id: "p", label: "P", fullLabel: "Preliminary", icon: Activity },
+  { id: "e1", label: "E", fullLabel: "Ease", icon: Zap },
+  { id: "a", label: "A", fullLabel: "Align", icon: GitBranch },
+  { id: "c", label: "C", fullLabel: "Correct", icon: Target },
+  { id: "e2", label: "E", fullLabel: "Embed", icon: ClipboardCheck },
+] as const;
+
+interface PeaceWizardProps {
+  appointment: AppointmentWithClient;
+  history: any[];
+  onUpdate: () => void;
+  saveField: (field: string, value: any) => Promise<void>;
+  updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | null, side?: 'L' | 'R') => Promise<void>;
+}
+
+const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriorityPattern }: PeaceWizardProps) => {
+  const [activePhase, setActivePhase] = useState(0);
+  const wizardRef = useRef<HTMLDivElement>(null);
+
+  const phaseStatus = useMemo(() => ({
+    p: !!(appointment.goal && appointment.issue),
+    e1: !!(appointment.bolt_score || appointment.coherence_score ||
+           appointment.lymphatic_notes || appointment.harmonic_rocking_notes ||
+           appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes),
+    a: !!(appointment.priority_pattern && appointment.priority_pattern !== "{}"),
+    c: !!(appointment.modes_balances),
+    e2: !!(appointment.session_north_star),
+  }), [appointment]);
+
+  const scrollToTop = useCallback(() => {
+    wizardRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
+  const goNext = useCallback(() => {
+    setActivePhase(prev => Math.min(prev + 1, PEACE_PHASES.length - 1));
+    scrollToTop();
+  }, [scrollToTop]);
+
+  const goBack = useCallback(() => {
+    setActivePhase(prev => Math.max(prev - 1, 0));
+    scrollToTop();
+  }, [scrollToTop]);
+
+  const jumpTo = useCallback((index: number) => {
+    setActivePhase(index);
+    scrollToTop();
+  }, [scrollToTop]);
+
+  const completedCount = Object.values(phaseStatus).filter(Boolean).length;
+  const progress = (completedCount / PEACE_PHASES.length) * 100;
+
+  const phaseProps = {
+    appointment,
+    history,
+    onUpdate,
+    saveField,
+    updatePriorityPattern,
+  };
+
+  return (
+    <div ref={wizardRef} className="space-y-8">
+      {/* Progress + Phase Stepper */}
+      <div className="space-y-4">
+        {/* Progress bar */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-primary to-chart-primary rounded-full transition-all duration-700"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider tabular-nums">
+            {completedCount}/{PEACE_PHASES.length}
+          </span>
+        </div>
+
+        {/* Phase steps */}
+        <div className="flex items-center justify-between gap-2">
+          {PEACE_PHASES.map((phase, index) => {
+            const isCompleted = (phaseStatus as any)[phase.id];
+            const isActive = activePhase === index;
+            const isPast = index < activePhase;
+            const canJump = isCompleted || isPast || index === 0 || (phaseStatus as any)[PEACE_PHASES[index - 1]?.id];
+
+            return (
+              <button
+                key={phase.id}
+                onClick={() => canJump && jumpTo(index)}
+                disabled={!canJump}
+                className={cn(
+                  "flex flex-col items-center gap-2 transition-all group flex-1",
+                  !canJump && "opacity-40 cursor-not-allowed",
+                  canJump && "cursor-pointer hover:scale-105"
+                )}
+              >
+                <div className={cn(
+                  "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 border-2",
+                  isActive
+                    ? "bg-primary text-primary-foreground border-primary shadow-lg scale-110"
+                    : isCompleted
+                      ? "bg-chart-emerald/10 text-chart-emerald border-chart-emerald/30"
+                      : "bg-muted text-muted-foreground border-transparent"
+                )}>
+                  {isCompleted && !isActive
+                    ? <CheckCircle2 size={22} />
+                    : <phase.icon size={22} />}
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className={cn(
+                    "text-base font-bold tracking-tight",
+                    isActive ? "text-primary" : isCompleted ? "text-chart-emerald" : "text-muted-foreground"
+                  )}>
+                    {phase.label}
+                  </span>
+                  <span className={cn(
+                    "hidden md:block text-[9px] font-medium uppercase tracking-wider",
+                    isActive ? "text-primary/70" : "text-muted-foreground/60"
+                  )}>
+                    {phase.fullLabel}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Phase content */}
+      <div className="bg-card border border-border rounded-2xl shadow-sm">
+        <div className="p-6 md:p-10">
+          {activePhase === 0 && <PreliminaryPhase {...phaseProps} />}
+          {activePhase === 1 && <EasePhase {...phaseProps} />}
+          {activePhase === 2 && <AlignPhase {...phaseProps} />}
+          {activePhase === 3 && <CorrectPhase {...phaseProps} />}
+          {activePhase === 4 && <EmbedPhaseV2 {...phaseProps} />}
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <div className="flex items-center justify-between pb-8">
+        <Button
+          variant="outline"
+          onClick={goBack}
+          disabled={activePhase === 0}
+          className="rounded-xl h-12 px-6 font-medium"
+        >
+          <ChevronLeft size={18} className="mr-1.5" /> Back
+        </Button>
+
+        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+          Step {activePhase + 1} of {PEACE_PHASES.length} · {PEACE_PHASES[activePhase].fullLabel}
+        </div>
+
+        {activePhase < PEACE_PHASES.length - 1 ? (
+          <Button
+            onClick={goNext}
+            className="rounded-xl h-12 px-6 font-medium"
+          >
+            Next <ChevronRight size={18} className="ml-1.5" />
+          </Button>
+        ) : (
+          <Button
+            onClick={() => {
+              onUpdate();
+              showSuccessLite();
+            }}
+            className="rounded-xl h-12 px-6 font-medium bg-chart-emerald hover:bg-chart-emerald/90"
+          >
+            <CheckCircle2 size={18} className="mr-1.5" /> Finalise
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+function showSuccessLite() {
+  // noop — auto-save handles persistence
+}
+
+export default PeaceWizard;

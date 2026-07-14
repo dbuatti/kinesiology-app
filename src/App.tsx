@@ -26,6 +26,7 @@ const ClientsPage = lazy(() => import("./pages/ClientsPage"));
 const ClientDetailPage = lazy(() => import("./pages/ClientDetailPage"));
 const SchedulePage = lazy(() => import("./pages/SchedulePage"));
 const AppointmentDetailPage = lazy(() => import("./pages/AppointmentDetailPage"));
+const AppointmentV2Page = lazy(() => import("./pages/AppointmentV2Page"));
 const ClinicalProtocolsPage = lazy(() => import("./pages/ClinicalProtocolsPage"));
 const ClinicalOversightPage = lazy(() => import("./pages/ClinicalOversightPage"));
 const FollowUpPage = lazy(() => import("./pages/FollowUpPage"));
@@ -150,6 +151,7 @@ const AppRoutes = () => {
           {/* Consolidated: sessions now live in the unified Calendar */}
           <Route path="/schedule" element={<Navigate to="/calendar" replace />} />
           <Route path="/appointments/:id" element={<AppointmentDetailPage />} />
+          <Route path="/appointments/:id/v2" element={<AppointmentV2Page />} />
           <Route path="/appointments/:id/protocols" element={<ClinicalProtocolsPage />} />
           <Route path="/oversight" element={<ClinicalOversightPage />} />
           <Route path="/oversight/follow-up" element={<FollowUpPage />} />

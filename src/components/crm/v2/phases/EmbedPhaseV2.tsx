@@ -1,0 +1,301 @@
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  ClipboardCheck, RefreshCw, CheckCircle2, Loader2, ShieldCheck,
+  CalendarPlus, Plus, Calendar, Sun, Target, GitBranch, Sparkles,
+  Heart, Zap, FileText, Brain, Dumbbell, Baby
+} from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { safeParse } from "@/utils/safe-json";
+import { showSuccess, showError } from "@/utils/toast";
+import EditableField from "@/components/shared/EditableField";
+import PathwayFindingsList from "@/components/crm/PathwayFindingsList";
+import {
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import AppointmentForm from "@/components/crm/AppointmentForm";
+import CompactAvailabilityPicker from "@/components/crm/CompactAvailabilityPicker";
+import { AppointmentWithClient } from "@/types/crm";
+
+interface PhaseProps {
+  appointment: AppointmentWithClient;
+  history: any[];
+  onUpdate: () => void;
+  saveField: (field: string, value: any) => Promise<void>;
+  updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | null, side?: 'L' | 'R') => Promise<void>;
+}
+
+const EmbedPhaseV2 = ({ appointment, onUpdate, saveField, updatePriorityPattern }: PhaseProps) => {
+  const [muscleTests, setMuscleTests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [clearingId, setClearingId] = useState<string | null>(null);
+  const [bookNextOpen, setBookNextOpen] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<{ date: Date; time: string; slotTime: string } | null>(null);
+
+  const fetchMuscleTests = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('muscle_tests')
+        .select('*')
+        .eq('appointment_id', appointment.id);
+      if (!error) setMuscleTests(data || []);
+    } catch (err) {
+      console.error("Error fetching muscle tests:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [appointment.id]);
+
+  useEffect(() => {
+    fetchMuscleTests();
+  }, [fetchMuscleTests]);
+
+  const inhibitedItems = useMemo(() => {
+    const items: { id: string; name: string; category: string; type: 'pattern' | 'muscle'; status: string; side?: 'L' | 'R' }[] = [];
+    const pattern = safeParse(appointment.priority_pattern, {} as any);
+    Object.entries(pattern).forEach(([catKey, categoryItems]: [string, any]) => {
+      Object.entries(categoryItems).forEach(([name, status]) => {
+        if (status === 'Inhibited' || status === 'Inhibition' || status === 'Hypertonic') {
+          const sideMatch = name.match(/\(([LR])\)$/);
+          const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
+          const baseName = name.replace(/ \([LR]\)$/, '');
+          items.push({ id: `${catKey}-${name}`, name: baseName, category: catKey, type: 'pattern', status: status as string, side });
+        }
+      });
+    });
+    muscleTests.forEach(test => {
+      if (test.status !== 'Normotonic') {
+        const sideMatch = test.muscle_name.match(/\(([LR])\)$/);
+        const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
+        const baseName = test.muscle_name.replace(/ \([LR]\)$/, '').trim();
+        if (!items.find(i => i.name === baseName && i.side === side)) {
+          items.push({ id: test.id, name: baseName, category: 'Muscles', type: 'muscle', status: test.status, side });
+        }
+      }
+    });
+    return items;
+  }, [appointment.priority_pattern, muscleTests]);
+
+  const handleClearItem = async (item: any) => {
+    setClearingId(item.id);
+    try {
+      if (item.type === 'pattern') {
+        await updatePriorityPattern(item.category, item.name, 'Clear', item.side);
+      } else {
+        const { error } = await supabase.from('muscle_tests').update({ status: 'Normotonic' }).eq('id', item.id);
+        if (error) throw error;
+        await fetchMuscleTests();
+      }
+      showSuccess(`${item.name} marked as Clear.`);
+      onUpdate();
+    } catch {
+      showError("Failed to clear item.");
+    } finally {
+      setClearingId(null);
+    }
+  };
+
+  const getIcon = (category: string) => {
+    const cat = category.toLowerCase();
+    if (cat.includes('reflex')) return Baby;
+    if (cat.includes('nerve')) return Zap;
+    if (cat.includes('muscle')) return Dumbbell;
+    return Brain;
+  };
+
+  const hasSnsResets = !!(appointment.harmonic_rocking_notes || appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes);
+
+  return (
+    <div className="space-y-12">
+      {/* Intro */}
+      <div className="flex items-start gap-4">
+        <div className="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm shrink-0">
+          <ClipboardCheck size={24} />
+        </div>
+        <div className="space-y-1">
+          <h2 className="text-2xl font-bold tracking-tight">Embed</h2>
+          <p className="text-sm text-muted-foreground font-medium max-w-2xl leading-relaxed">
+            Re-challenge all inhibited findings, confirm integration, document homework, and schedule the follow-up session.
+          </p>
+        </div>
+      </div>
+
+      {/* Clinical Verification (Re-challenge) */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between px-2">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center">
+              <RefreshCw size={20} />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-foreground">Clinical Verification</h3>
+              <p className="text-xs text-muted-foreground font-medium">Re-challenge all inhibited findings to confirm integration.</p>
+            </div>
+          </div>
+          <Badge variant="outline" className="bg-muted border-border text-muted-foreground font-medium">
+            {inhibitedItems.length} Items
+          </Badge>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-12"><Loader2 className="animate-spin text-muted-foreground" /></div>
+        ) : inhibitedItems.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {inhibitedItems.map((item) => {
+              const Icon = getIcon(item.category);
+              const isClearing = clearingId === item.id;
+              return (
+                <div key={item.id} className="bg-card border border-border rounded-xl p-5 flex items-center justify-between gap-4 hover:shadow-md transition-all">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center shrink-0">
+                      <Icon size={20} />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-foreground truncate">{item.name}</p>
+                        {item.side && (
+                          <Badge variant="outline" className="text-[10px] font-medium px-1.5 py-0 border-border text-muted-foreground">
+                            {item.side}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-[10px] font-medium text-muted-foreground">{item.status}</p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={() => handleClearItem(item)}
+                    disabled={isClearing}
+                    className="bg-muted text-muted-foreground hover:bg-muted/80 rounded-xl h-10 px-4 font-medium text-[10px] border border-border"
+                  >
+                    {isClearing ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} className="mr-2" />}
+                    Mark Clear
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-16 bg-muted rounded-xl border border-dashed border-border">
+            <div className="w-16 h-16 bg-card rounded-xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+              <ShieldCheck size={32} className="text-chart-emerald" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground">All Findings Integrated</h3>
+            <p className="text-muted-foreground font-medium text-sm max-w-xs mx-auto mt-1">
+              No active inhibitions detected. The system is balanced and ready for embedding.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Session Summary */}
+      <div className="space-y-6">
+        <div className="flex items-center gap-3 pb-3 border-b border-border">
+          <FileText size={18} className="text-muted-foreground" />
+          <h3 className="text-sm font-bold text-foreground">Session Summary</h3>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Intake & Vitals */}
+          <div className="space-y-6">
+            <div>
+              <p className="text-[10px] font-medium text-muted-foreground mb-1">Goal</p>
+              <p className="text-xs font-medium text-foreground leading-relaxed">{appointment.goal || 'Not set'}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 bg-muted rounded-xl border border-border text-center">
+                <p className="text-[10px] font-medium text-muted-foreground mb-1">BOLT</p>
+                <p className="text-lg font-semibold text-chart-primary">{appointment.bolt_score ? `${appointment.bolt_score}s` : '—'}</p>
+              </div>
+              <div className="p-3 bg-muted rounded-xl border border-border text-center">
+                <p className="text-[10px] font-medium text-muted-foreground mb-1">COH</p>
+                <p className="text-lg font-semibold text-chart-destructive">{appointment.coherence_score ? appointment.coherence_score.toFixed(2) : '—'}</p>
+              </div>
+            </div>
+            {hasSnsResets && (
+              <div className="space-y-2">
+                <p className="text-[10px] font-medium text-muted-foreground">SNS Resets</p>
+                {appointment.harmonic_rocking_notes && <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1"><CheckCircle2 size={12} className="text-chart-emerald" /> Harmonic Rocking</p>}
+                {appointment.t1_reset_notes && <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1"><CheckCircle2 size={12} className="text-chart-emerald" /> T1 Reset</p>}
+                {appointment.diaphragm_reset_notes && <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1"><CheckCircle2 size={12} className="text-chart-emerald" /> Diaphragm Reset</p>}
+                {appointment.vagus_nerve_notes && <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1"><CheckCircle2 size={12} className="text-chart-emerald" /> Vagus Process</p>}
+              </div>
+            )}
+          </div>
+
+          {/* Findings */}
+          <div>
+            <PathwayFindingsList
+              priorityPattern={appointment.priority_pattern}
+              showOnlyInhibited={false}
+              className="max-h-[300px] overflow-y-auto pr-2"
+            />
+          </div>
+
+          {/* Corrections */}
+          <div className="space-y-4">
+            <div>
+              <p className="text-[10px] font-medium text-muted-foreground mb-1">Corrections & Balances</p>
+              <p className="text-xs font-medium text-muted-foreground italic leading-relaxed">{appointment.modes_balances || 'No specific corrections logged.'}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-medium text-muted-foreground mb-1">Acupoints</p>
+              <p className="text-xs font-medium text-chart-primary">{appointment.acupoints || 'None recorded'}</p>
+            </div>
+            {appointment.emotion_primary_selection && (
+              <div>
+                <p className="text-[10px] font-medium text-muted-foreground mb-1">Emotional Context</p>
+                <Badge className="bg-primary text-primary-foreground border-none font-medium text-[10px]">{appointment.emotion_primary_selection}</Badge>
+                {appointment.emotion_notes && <p className="text-xs text-muted-foreground italic mt-1">"{appointment.emotion_notes}"</p>}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Notes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 px-2">
+            <div className="w-8 h-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center">
+              <ClipboardCheck size={16} />
+            </div>
+            <h4 className="text-sm font-medium text-muted-foreground">Integration Notes</h4>
+          </div>
+          <EditableField
+            field="session_north_star"
+            label=""
+            value={appointment.session_north_star}
+            multiline
+            placeholder="Document final re-test results and prescribed homework..."
+            onSave={saveField}
+            className="bg-card p-6 rounded-xl border border-border shadow-sm min-h-[200px]"
+          />
+        </div>
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 px-2">
+            <div className="w-8 h-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center">
+              <Target size={16} />
+            </div>
+            <h4 className="text-sm font-medium text-muted-foreground">Next Session Focus</h4>
+          </div>
+          <EditableField
+            field="next_session_note"
+            label=""
+            value={appointment.next_session_note}
+            multiline
+            placeholder="What to check at the next session? (e.g. Re-check Moro, sleep quality...)"
+            onSave={saveField}
+            className="bg-card border border-border p-6 rounded-xl border shadow-sm min-h-[200px]"
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default EmbedPhaseV2;

@@ -49,8 +49,8 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
   return (
     <section className={cn(
       "p-2 px-3 rounded-xl border transition-all",
-      isInhibited ? "bg-rose-50 border-rose-200" : 
-      isHypertonic ? "bg-amber-50 border-amber-200" :
+      isInhibited ? "bg-amber-50 border-amber-200" : 
+      isHypertonic ? "bg-rose-50 border-rose-200" :
       isClear ? "bg-emerald-50/50 border-emerald-200" :
       "border-slate-100 bg-white"
     )}>

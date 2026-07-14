@@ -2,7 +2,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   Compass, ClipboardList, Activity, ShieldAlert, AlertTriangle,
-  Dumbbell, Baby, Zap, Brain,
+  Dumbbell, Baby, Zap, Brain, RotateCcw, Eye,
 } from "lucide-react";
 import { differenceInDays } from "date-fns";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -11,10 +11,12 @@ import BoltTestSection from "@/components/crm/BoltTestSection";
 import CoherenceAssessment from "@/components/crm/CoherenceAssessment";
 import IntrinsicMusclesAssessment from "@/components/crm/IntrinsicMusclesAssessment";
 import NeurologicalAssessments from "@/components/crm/NeurologicalAssessments";
+import CogsAssessment from "@/components/crm/CogsAssessment";
 import { MuscleAssessment } from "@/components/crm/MuscleAssessment";
 import { CranialNerveAssessment } from "@/components/crm/CranialNerveAssessment";
 import { PrimitiveReflexAssessment } from "@/components/crm/PrimitiveReflexAssessment";
 import { BrainZoneAssessment } from "@/components/crm/BrainZoneAssessment";
+import RecheckTabV2 from "@/components/crm/v2/RecheckTabV2";
 import { AppointmentWithClient } from "@/types/crm";
 
 interface PhaseProps {
@@ -22,12 +24,14 @@ interface PhaseProps {
   history: any[];
   onUpdate: () => void;
   saveField: (field: string, value: any) => Promise<void>;
-  updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | null, side?: 'L' | 'R') => Promise<void>;
+  updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | 'Unsure' | null, side?: 'L' | 'R') => Promise<void>;
+  onJumpToPhase: (index: number) => void;
 }
 
-type SubTab = 'intake' | 'intrinsic' | 'muscles' | 'reflexes' | 'nerves' | 'zones';
+type SubTab = 'recheck' | 'intake' | 'intrinsic' | 'muscles' | 'reflexes' | 'nerves' | 'zones';
 
 const SUB_TABS: { id: SubTab; label: string; icon: any }[] = [
+  { id: 'recheck', label: 'Recheck', icon: RotateCcw },
   { id: 'intake', label: 'Intake & Vitals', icon: Activity },
   { id: 'intrinsic', label: 'Intrinsic', icon: ShieldAlert },
   { id: 'muscles', label: 'Muscles', icon: Dumbbell },
@@ -36,8 +40,8 @@ const SUB_TABS: { id: SubTab; label: string; icon: any }[] = [
   { id: 'zones', label: 'Brain Zones', icon: Brain },
 ];
 
-const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePriorityPattern }: PhaseProps) => {
-  const [subTab, setSubTab] = useState<SubTab>('intake');
+const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePriorityPattern, onJumpToPhase }: PhaseProps) => {
+  const [subTab, setSubTab] = useState<SubTab>('recheck');
 
   const previousSession = history.length >= 2 ? history[1] : null;
   const lastSessionDate = previousSession?.date;
@@ -76,6 +80,17 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
 
       {/* Sub-tab content */}
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+        {subTab === 'recheck' && (
+          <RecheckTabV2
+            appointment={appointment}
+            history={history}
+            onUpdate={onUpdate}
+            updatePriorityPattern={updatePriorityPattern}
+            saveField={saveField}
+            onJumpToPhase={onJumpToPhase}
+          />
+        )}
+
         {subTab === 'intake' && (
           <div className="space-y-8">
             {/* Goal & Concern */}
@@ -143,6 +158,21 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
               />
             </div>
 
+            {/* COGS — Visual Assessment */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 pb-3 border-b border-border">
+                <Eye size={18} className="text-muted-foreground" />
+                <h3 className="text-xs font-bold text-foreground tracking-tight uppercase tracking-wider">COGS — Visual Assessment</h3>
+              </div>
+              <CogsAssessment
+                appointmentId={appointment.id}
+                initialSagittalNotes={appointment.sagittal_plane_notes}
+                initialFrontalNotes={appointment.frontal_plane_notes}
+                initialTransverseNotes={appointment.transverse_plane_notes}
+                onUpdate={onUpdate}
+              />
+            </div>
+
             {/* Neurological Baseline */}
             <div className="space-y-4">
               <div className="flex items-center gap-3 pb-3 border-b border-border">
@@ -165,6 +195,10 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
           <IntrinsicMusclesAssessment
             findings={appointment.intrinsic_muscle_findings}
             onSave={(json) => saveField('intrinsic_muscle_findings', json)}
+            syncIntrinsicToMuscles={async (name, status, side) => {
+              const finalStatus = status === 'Inhibited' ? 'Inhibited' : status === 'Hypertonic' ? 'Hypertonic' : null;
+              await updatePriorityPattern('muscles', name, finalStatus, side);
+            }}
           />
         )}
 

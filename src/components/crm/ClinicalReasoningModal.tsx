@@ -121,7 +121,7 @@ const ClinicalReasoningModal = ({ muscleName, status, open, onOpenChange }: Clin
           <div className="flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/10">
             <Badge className={cn(
               "border-none font-black text-[10px] uppercase tracking-widest px-3 py-1",
-              status === 'Inhibition' ? "bg-red-500" : status === 'Hypertonic' ? "bg-amber-500" : "bg-purple-500"
+              status === 'Inhibition' ? "bg-amber-500" : status === 'Hypertonic' ? "bg-red-500" : "bg-purple-500"
             )}>
               {status}
             </Badge>

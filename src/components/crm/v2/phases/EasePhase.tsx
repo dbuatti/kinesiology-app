@@ -7,7 +7,8 @@ interface PhaseProps {
   history: any[];
   onUpdate: () => void;
   saveField: (field: string, value: any) => Promise<void>;
-  updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | null, side?: 'L' | 'R') => Promise<void>;
+  updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | 'Unsure' | null, side?: 'L' | 'R') => Promise<void>;
+  onJumpToPhase: (index: number) => void;
 }
 
 const EasePhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {

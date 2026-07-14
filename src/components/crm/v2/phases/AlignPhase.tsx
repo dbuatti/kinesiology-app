@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
-import { GitBranch, Target, Eye, AlertCircle } from "lucide-react";
+import { GitBranch, Target, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import CogsAssessment from "@/components/crm/CogsAssessment";
 import PathwayFindingsList from "@/components/crm/PathwayFindingsList";
 import { AppointmentWithClient } from "@/types/crm";
 import { safeParse } from "@/utils/safe-json";
@@ -13,7 +12,8 @@ interface PhaseProps {
   history: any[];
   onUpdate: () => void;
   saveField: (field: string, value: any) => Promise<void>;
-  updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | null, side?: 'L' | 'R') => Promise<void>;
+  updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | 'Unsure' | null, side?: 'L' | 'R') => Promise<void>;
+  onJumpToPhase: (index: number) => void;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -30,8 +30,13 @@ const CATEGORY_ICONS: Record<string, string> = {
   brainZones: '🎯',
 };
 
-const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern }: PhaseProps) => {
+const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, onJumpToPhase }: PhaseProps) => {
   const pattern = safeParse(appointment.priority_pattern, {} as any);
+  const meta = useMemo(() => {
+    if (!appointment.metadata) return {};
+    if (typeof appointment.metadata === 'string') return safeParse(appointment.metadata, {});
+    return appointment.metadata;
+  }, [appointment.metadata]);
 
   // Extract all inhibited/hypertonic findings into a flat list
   const findings = useMemo(() => {
@@ -51,8 +56,14 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern }:
 
   const inhibitedCount = findings.length;
 
-  // Track which finding is set as the priority correction
-  const priorityCorrection = appointment.modes_balances || "";
+  // Track which finding is set as the priority pathway
+  const priorityPathway = (meta as any)?.priority_pathway || "";
+
+  const setPriorityPathway = async (pathway: string) => {
+    await saveField('metadata', { ...meta, priority_pathway: pathway });
+    onUpdate();
+    if (pathway) onJumpToPhase(3);
+  };
 
   return (
     <div className="space-y-8">
@@ -66,21 +77,6 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern }:
             Review what you found in Preliminary and choose the priority correction to work on.
           </p>
         </div>
-      </div>
-
-      {/* COGS */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3 pb-2 border-b border-border">
-          <Eye size={16} className="text-muted-foreground" />
-          <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">COGS — Visual Assessment</h3>
-        </div>
-        <CogsAssessment
-          appointmentId={appointment.id}
-          initialSagittalNotes={appointment.sagittal_plane_notes}
-          initialFrontalNotes={appointment.frontal_plane_notes}
-          initialTransverseNotes={appointment.transverse_plane_notes}
-          onUpdate={onUpdate}
-        />
       </div>
 
       {/* Inhibited Findings List */}
@@ -115,7 +111,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern }:
                   variant="ghost"
                   size="sm"
                   className="text-[10px] font-bold uppercase tracking-wider text-primary hover:bg-primary/10 rounded-lg"
-                  onClick={() => saveField('modes_balances', `${item.name}${item.side ? ` (${item.side})` : ''} — ${CATEGORY_LABELS[item.category] || item.category}`)}
+                  onClick={() => setPriorityPathway(`${item.name}${item.side ? ` (${item.side})` : ''} — ${CATEGORY_LABELS[item.category] || item.category}`)}
                 >
                   Set 1°
                 </Button>
@@ -130,19 +126,19 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern }:
         )}
       </div>
 
-      {/* Priority Correction */}
-      {priorityCorrection && (
+      {/* Priority Pathway */}
+      {priorityPathway && (
         <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg flex items-center gap-3">
           <Target size={18} className="text-primary shrink-0" />
           <div>
-            <p className="text-[10px] font-bold text-primary uppercase tracking-wider">Priority Correction</p>
-            <p className="text-sm font-semibold text-foreground">{priorityCorrection}</p>
+            <p className="text-[10px] font-bold text-primary uppercase tracking-wider">Priority Pathway</p>
+            <p className="text-sm font-semibold text-foreground">{priorityPathway}</p>
           </div>
           <Button
             variant="ghost"
             size="sm"
             className="ml-auto text-[10px] text-muted-foreground hover:bg-muted rounded-lg"
-            onClick={() => saveField('modes_balances', '')}
+            onClick={() => setPriorityPathway('')}
           >
             Clear
           </Button>

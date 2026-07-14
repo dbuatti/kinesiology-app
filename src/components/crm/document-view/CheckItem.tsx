@@ -72,11 +72,11 @@ const CheckItem = ({ category, name, side, pattern, onToggle }: CheckItemProps) 
           status === 'Inhibited' 
             ? isCleared 
               ? "bg-emerald-500 border-emerald-500 text-white" 
-              : "bg-rose-600 border-rose-600 text-white"
+              : "bg-amber-500 border-amber-500 text-white"
             : status === 'Hypertonic'
               ? isCleared
                 ? "bg-emerald-500 border-emerald-500 text-white"
-                : "bg-amber-500 border-amber-500 text-white"
+                : "bg-rose-600 border-rose-600 text-white"
               : "border-slate-300 group-hover:border-black bg-white"
         )}>
           {status === 'Inhibited' && (isCleared ? <Check size={10} strokeWidth={4} /> : <ArrowDown size={10} strokeWidth={4} />)}
@@ -85,8 +85,8 @@ const CheckItem = ({ category, name, side, pattern, onToggle }: CheckItemProps) 
 
         <span className={cn(
           "text-[10px] font-bold truncate",
-          status === 'Inhibited' && !isCleared && "text-rose-900",
-          status === 'Hypertonic' && !isCleared && "text-amber-900",
+          status === 'Inhibited' && !isCleared && "text-amber-900",
+          status === 'Hypertonic' && !isCleared && "text-rose-900",
           isCleared && "text-slate-500 line-through"
         )}>
           {side ? `${side}: ${name}` : name}

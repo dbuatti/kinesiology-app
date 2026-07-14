@@ -28,15 +28,26 @@ interface PhaseProps {
   history: any[];
   onUpdate: () => void;
   saveField: (field: string, value: any) => Promise<void>;
-  updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | null, side?: 'L' | 'R') => Promise<void>;
+  updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | 'Unsure' | null, side?: 'L' | 'R') => Promise<void>;
+  onJumpToPhase: (index: number) => void;
 }
 
-const EmbedPhaseV2 = ({ appointment, onUpdate, saveField, updatePriorityPattern }: PhaseProps) => {
+const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
   const [muscleTests, setMuscleTests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [clearingId, setClearingId] = useState<string | null>(null);
   const [bookNextOpen, setBookNextOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{ date: Date; time: string; slotTime: string } | null>(null);
+
+  const metadata = useMemo(() => {
+    if (!appointment.metadata) return {};
+    if (typeof appointment.metadata === 'string') return safeParse(appointment.metadata, {});
+    return appointment.metadata;
+  }, [appointment.metadata]);
+
+  const clearedFindings: Set<string> = useMemo(() => {
+    return new Set(metadata.cleared_findings || []);
+  }, [metadata]);
 
   const fetchMuscleTests = useCallback(async () => {
     try {
@@ -82,20 +93,42 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField, updatePriorityPattern 
     return items;
   }, [appointment.priority_pattern, muscleTests]);
 
+  const pendingItems = useMemo(() => {
+    return inhibitedItems.filter(item => !clearedFindings.has(item.id));
+  }, [inhibitedItems, clearedFindings]);
+
+  const clearedItems = useMemo(() => {
+    return inhibitedItems.filter(item => clearedFindings.has(item.id));
+  }, [inhibitedItems, clearedFindings]);
+
   const handleClearItem = async (item: any) => {
     setClearingId(item.id);
     try {
-      if (item.type === 'pattern') {
-        await updatePriorityPattern(item.category, item.name, 'Clear', item.side);
-      } else {
+      if (item.type === 'muscle') {
         const { error } = await supabase.from('muscle_tests').update({ status: 'Normotonic' }).eq('id', item.id);
         if (error) throw error;
         await fetchMuscleTests();
       }
+      const newCleared = [...(metadata.cleared_findings || []), item.id];
+      await saveField('metadata', { ...metadata, cleared_findings: newCleared });
       showSuccess(`${item.name} marked as Clear.`);
       onUpdate();
     } catch {
       showError("Failed to clear item.");
+    } finally {
+      setClearingId(null);
+    }
+  };
+
+  const handleUndoClear = async (item: any) => {
+    setClearingId(item.id);
+    try {
+      const newCleared = (metadata.cleared_findings || []).filter((id: string) => id !== item.id);
+      await saveField('metadata', { ...metadata, cleared_findings: newCleared });
+      showSuccess(`${item.name} restored.`);
+      onUpdate();
+    } catch {
+      showError("Failed to restore item.");
     } finally {
       setClearingId(null);
     }
@@ -139,15 +172,15 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField, updatePriorityPattern 
             </div>
           </div>
           <Badge variant="outline" className="bg-muted border-border text-muted-foreground font-medium">
-            {inhibitedItems.length} Items
+            {pendingItems.length} Items
           </Badge>
         </div>
 
         {loading ? (
           <div className="flex justify-center py-12"><Loader2 className="animate-spin text-muted-foreground" /></div>
-        ) : inhibitedItems.length > 0 ? (
+        ) : pendingItems.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {inhibitedItems.map((item) => {
+            {pendingItems.map((item) => {
               const Icon = getIcon(item.category);
               const isClearing = clearingId === item.id;
               return (
@@ -171,7 +204,7 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField, updatePriorityPattern 
                   <Button
                     onClick={() => handleClearItem(item)}
                     disabled={isClearing}
-                    className="bg-muted text-muted-foreground hover:bg-muted/80 rounded-xl h-10 px-4 font-medium text-[10px] border border-border"
+                    className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl h-10 px-4 font-medium text-[10px] border border-emerald-200"
                   >
                     {isClearing ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} className="mr-2" />}
                     Mark Clear
@@ -180,15 +213,70 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField, updatePriorityPattern 
               );
             })}
           </div>
-        ) : (
+        ) : inhibitedItems.length > 0 ? (
           <div className="text-center py-16 bg-muted rounded-xl border border-dashed border-border">
             <div className="w-16 h-16 bg-card rounded-xl flex items-center justify-center mx-auto mb-4 shadow-sm">
               <ShieldCheck size={32} className="text-chart-emerald" />
             </div>
             <h3 className="text-lg font-semibold text-foreground">All Findings Integrated</h3>
             <p className="text-muted-foreground font-medium text-sm max-w-xs mx-auto mt-1">
-              No active inhibitions detected. The system is balanced and ready for embedding.
+              No pending inhibitions. The system is balanced and ready for embedding.
             </p>
+          </div>
+        ) : (
+          <div className="text-center py-16 bg-muted rounded-xl border border-dashed border-border">
+            <div className="w-16 h-16 bg-card rounded-xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+              <ClipboardCheck size={32} className="text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground">No Items to Verify</h3>
+            <p className="text-muted-foreground font-medium text-sm max-w-xs mx-auto mt-1">
+              No inhibited findings recorded in the preliminary phase.
+            </p>
+          </div>
+        )}
+
+        {clearedItems.length > 0 && (
+          <div className="space-y-3 mt-6">
+            <div className="flex items-center gap-2 px-2">
+              <div className="w-5 h-5 rounded bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                <CheckCircle2 size={12} />
+              </div>
+              <p className="text-[10px] font-medium text-muted-foreground">Cleared Findings ({clearedItems.length})</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {clearedItems.map((item) => {
+                const Icon = getIcon(item.category);
+                const isClearing = clearingId === item.id;
+                return (
+                  <div key={item.id} className="bg-emerald-50/50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                        <Icon size={14} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs font-medium text-foreground truncate">{item.name}</p>
+                          {item.side && (
+                            <Badge variant="outline" className="text-[8px] font-medium px-1 py-0 border-emerald-200 text-emerald-700 bg-emerald-100/50">
+                              {item.side}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-[9px] font-medium text-emerald-600 flex items-center gap-1"><CheckCircle2 size={8} /> Cleared</p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => handleUndoClear(item)}
+                      disabled={isClearing}
+                      variant="ghost"
+                      className="h-7 px-2 text-[9px] text-muted-foreground hover:text-foreground rounded-lg"
+                    >
+                      {isClearing ? <Loader2 size={10} className="animate-spin" /> : 'Undo'}
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

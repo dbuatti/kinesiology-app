@@ -11,12 +11,13 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { getMuscleInfo } from "@/data/muscle-info-data";
 
-type Status = 'Clear' | 'Inhibited' | 'Hypertonic';
+type Status = 'Clear' | 'Inhibited' | 'Hypertonic' | 'Normotonic';
 type Side = 'L' | 'R';
 
 interface IntrinsicMusclesAssessmentProps {
   findings?: string | null;
   onSave: (json: string) => Promise<void>;
+  syncIntrinsicToMuscles?: (itemName: string, status: string | null, side?: 'L' | 'R') => Promise<void>;
 }
 
 interface MuscleFindings {
@@ -42,12 +43,13 @@ const MuscleTestItem = ({
 
   const isInhibited = statusL === 'Inhibited' || statusR === 'Inhibited' || statusMidline === 'Inhibited';
   const isHypertonic = statusL === 'Hypertonic' || statusR === 'Hypertonic' || statusMidline === 'Hypertonic';
+  const checkNorm = (s?: Status) => s === 'Normotonic';
 
   return (
     <div className={cn(
       "p-2 px-3 rounded-xl border transition-all",
-      isInhibited ? "bg-rose-50 border-rose-200" :
-      isHypertonic ? "bg-amber-50 border-amber-200" :
+      isInhibited ? "bg-amber-50 border-amber-200" :
+      isHypertonic ? "bg-rose-50 border-rose-200" :
       "border-slate-100 bg-white"
     )}>
       <div className="flex items-center justify-between gap-4">
@@ -121,24 +123,39 @@ const MuscleTestItem = ({
             )}
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => isLateralized
-              ? (onUpdate(name, 'Clear', 'L'), onUpdate(name, 'Clear', 'R'))
-              : onUpdate(name, 'Clear')
-            }
-            className="h-5 px-1.5 text-[7px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 rounded"
-          >
-            <CheckCircle2 size={10} className="mr-1" /> Clear
-          </Button>
+          <div className="flex items-center gap-2 pr-2">
+            <span className="text-[7px] font-black text-slate-300 uppercase tracking-widest">Norm</span>
+            {isLateralized ? (
+              <div className="flex items-center gap-1.5">
+                <Checkbox
+                  id={`prelim-norm-l-${name}`}
+                  checked={checkNorm(statusL)}
+                  onCheckedChange={(checked) => onUpdate(name, checked ? 'Normotonic' : 'Clear', 'L')}
+                  className="h-3.5 w-3.5 border-emerald-400 rounded-none data-[state=checked]:bg-emerald-500"
+                />
+                <Checkbox
+                  id={`prelim-norm-r-${name}`}
+                  checked={checkNorm(statusR)}
+                  onCheckedChange={(checked) => onUpdate(name, checked ? 'Normotonic' : 'Clear', 'R')}
+                  className="h-3.5 w-3.5 border-emerald-400 rounded-none data-[state=checked]:bg-emerald-500"
+                />
+              </div>
+            ) : (
+              <Checkbox
+                id={`prelim-norm-mid-${name}`}
+                checked={checkNorm(statusMidline)}
+                onCheckedChange={(checked) => onUpdate(name, checked ? 'Normotonic' : 'Clear')}
+                className="h-3.5 w-3.5 border-emerald-400 rounded-none data-[state=checked]:bg-emerald-500"
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-const IntrinsicMusclesAssessment = ({ findings, onSave }: IntrinsicMusclesAssessmentProps) => {
+const IntrinsicMusclesAssessment = ({ findings, onSave, syncIntrinsicToMuscles }: IntrinsicMusclesAssessmentProps) => {
   const parsed = useMemo(() => {
     try {
       return findings ? JSON.parse(findings) : {} as MuscleFindings;
@@ -162,10 +179,23 @@ const IntrinsicMusclesAssessment = ({ findings, onSave }: IntrinsicMusclesAssess
     if (status === null || status === 'Clear') {
       delete next[key];
     } else {
+      // Setting Inhib or Hyper clears Norm for that side; setting Norm clears Inhib/Hyper
+      if (status === 'Normotonic' && next[key] && next[key] !== 'Normotonic') {
+        delete next[key];
+      }
+      if ((status === 'Inhibited' || status === 'Hypertonic') && next[key] === 'Normotonic') {
+        delete next[key];
+      }
       next[key] = status;
     }
 
     await onSave(JSON.stringify(next));
+
+    // Sync to priority_pattern so Muscles tab reflects the same status
+    if (syncIntrinsicToMuscles) {
+      const priorityStatus = status === 'Normotonic' ? null : status;
+      await syncIntrinsicToMuscles(name, priorityStatus, side);
+    }
   };
 
   const countFindings = useMemo(() => {

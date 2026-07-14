@@ -107,9 +107,9 @@ serve(async (req) => {
     if (calcomBookingUid && studentEmail && result1.success) {
       try {
         const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
-        const { error: insertError } = await supabase
+        const { error: upsertError } = await supabase
           .from("voice_bookings")
-          .insert({
+          .upsert({
             calcom_booking_id: calcomBookingUid,
             student_id: studentId,
             student_name: studentName || null,
@@ -120,13 +120,13 @@ serve(async (req) => {
             cost: cost || null,
             notion_lesson_id_1: result1.id || null,
             notion_lesson_id_2: result2.id || null,
-          });
-        if (insertError && !insertError.message?.includes('duplicate key')) {
-          console.error(`[${functionName}] voice_bookings insert error:`, insertError.message);
+          }, { onConflict: 'calcom_booking_id' });
+        if (upsertError) {
+          console.error(`[${functionName}] voice_bookings upsert error:`, upsertError.message);
         }
         console.log(`[${functionName}] voice_bookings record saved for ${calcomBookingUid}`);
       } catch (dbErr) {
-        console.error(`[${functionName}] voice_bookings insert error (non-fatal):`, dbErr.message);
+        console.error(`[${functionName}] voice_bookings upsert error (non-fatal):`, dbErr.message);
       }
     }
 

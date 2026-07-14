@@ -300,7 +300,7 @@ export function PrimitiveReflexAssessment({
         const scoreB = (testB?.is_primary_priority ? 1000 : 0) + (testB?.is_priority ? 500 : 0) + (isAnyInhibB ? 100 : 0) + (isAnyClearB ? -100 : 0);
         
         if (scoreA !== scoreB) return scoreB - scoreA;
-        return a.name.localeCompare(b.name);
+        return PRIMITIVE_REFLEXES.indexOf(a) - PRIMITIVE_REFLEXES.indexOf(b);
       });
   }, [tests, searchQuery, showOnlyInhibited, reflexPattern]);
 

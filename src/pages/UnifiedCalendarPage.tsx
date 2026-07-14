@@ -555,22 +555,46 @@ const UnifiedCalendarPage = () => {
   });
  });
 
-  items.sort((a, b) => {
-  const dateCmp = a.date.localeCompare(b.date);
-  if (dateCmp !== 0) return dateCmp;
-  const parseStart = (t: string) => {
-  const m = t.match(/^(\d+):(\d+)\s*(AM|PM)/i);
-  if (!m) return 0;
-  let h = parseInt(m[1]);
-  const min = parseInt(m[2]);
-  if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
-  if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
-  return h * 60 + min;
-  };
-  return parseStart(a.time || "") - parseStart(b.time || "");
-  });
-  return items;
-  }, [voiceLessons, kinesiologyAppts, voiceBookings, pricing, session]);
+   // Final dedup: same student+date+similar start time = keep the one with richer time
+   const seen = new Map<string, CalendarItem>();
+   for (const item of items) {
+     const name = item.subtitle || item.title;
+     const startMin = parseStartTime(item.time || "");
+     const dedupKey = `${item.date}|${name?.toLowerCase().trim()}|${startMin}`;
+     if (seen.has(dedupKey)) {
+       const existing = seen.get(dedupKey)!;
+       const existingHasEnd = (existing.time || "").includes("–");
+       const itemHasEnd = (item.time || "").includes("–");
+       const itemHasId = !!item.lessonId || !!item.appointmentId;
+       const existingHasId = !!existing.lessonId || !!existing.appointmentId;
+       if (itemHasEnd && !existingHasEnd) {
+         seen.set(dedupKey, item);
+       } else if (itemHasId && !existingHasId) {
+         seen.set(dedupKey, item);
+       }
+     } else {
+       seen.set(dedupKey, item);
+     }
+   }
+   const deduped = Array.from(seen.values());
+
+   deduped.sort((a, b) => {
+   const dateCmp = a.date.localeCompare(b.date);
+   if (dateCmp !== 0) return dateCmp;
+   return parseStartTime(a.time || "") - parseStartTime(b.time || "");
+   });
+   return deduped;
+   }, [voiceLessons, kinesiologyAppts, voiceBookings, pricing, session]);
+
+   function parseStartTime(t: string): number {
+     const m = t.match(/^(\d+):(\d+)\s*(AM|PM)/i);
+     if (!m) return 0;
+     let h = parseInt(m[1]);
+     const min = parseInt(m[2]);
+     if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
+     if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
+     return h * 60 + min;
+   }
 
   const weeklyEvents: CalendarEvent[] = useMemo(() => {
   const ws = startOfWeek(weekStart);

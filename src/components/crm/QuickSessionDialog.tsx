@@ -170,7 +170,7 @@ export function QuickSessionDialog({ open, onOpenChange }: QuickSessionDialogPro
           .insert({
             user_id: session.user.id,
             name: values.clientName.trim(),
-            email: values.email || null,
+            email: (values.email || '').toLowerCase().trim() || null,
             phone: values.phone || null,
           })
           .select("id")

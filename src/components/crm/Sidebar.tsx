@@ -18,6 +18,7 @@ import {
   GraduationCap,
   Zap,
   CalendarDays,
+  CalendarCheck,
   BarChart3,
   DollarSign,
   Target,
@@ -59,6 +60,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "Dashboard", icon: LayoutDashboard, path: "/" },
       { label: "Calendar", icon: CalendarDays, path: "/calendar" },
+      { label: "Appointments", icon: CalendarCheck, path: "/appointments" },
       { label: "Availability", icon: Calendar, path: "/availability" },
       { label: "Clients", icon: Users, path: "/clients" },
       { label: "Oversight", icon: TrendingUp, path: "/oversight" },

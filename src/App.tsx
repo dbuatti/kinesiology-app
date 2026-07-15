@@ -31,6 +31,7 @@ const ClinicalProtocolsPage = lazy(() => import("./pages/ClinicalProtocolsPage")
 const ClinicalOversightPage = lazy(() => import("./pages/ClinicalOversightPage"));
 const FollowUpPage = lazy(() => import("./pages/FollowUpPage"));
 const AiPromptPage = lazy(() => import("./pages/AiPromptPage"));
+const AllAppointmentsPage = lazy(() => import("./pages/AllAppointmentsPage"));
 
 // --- Practitioner Pages ---
 const LabPage = lazy(() => import("./pages/LabPage"));
@@ -210,8 +211,9 @@ const AppRoutes = () => {
           <Route path="/settings/audit" element={<SiteAuditPage />} />
           <Route path="/settings/workflows" element={<WorkflowDebuggerPage />} />
 
+          <Route path="/appointments" element={<AllAppointmentsPage />} />
+
           {/* Legacy Redirects */}
-          <Route path="/appointments" element={<Navigate to="/schedule?view=list" replace />} />
 
           <Route path="/resources/worksheets" element={<Navigate to="/resources?tab=worksheets" replace />} />
           <Route path="/lab" element={<Navigate to="/identity-map" replace />} />

@@ -85,6 +85,7 @@ const ClientDetailPage = () => {
         .from('appointments')
         .select('*')
         .eq('client_id', id)
+        .neq('status', 'Cancelled')
         .order('date', { ascending: false });
 
       if (appError) throw appError;

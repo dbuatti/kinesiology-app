@@ -91,6 +91,59 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
     }
   }
 
+  // Guard against duplicates: before creating, query Notion for existing pages
+  // matching this date + client relation. If found, adopt and update that page
+  // instead of creating a new one.
+  if (!mainPageId) {
+    const dedupFilters = [];
+    if (appointment.date) {
+      dedupFilters.push({
+        property: "Date",
+        date: { equals: appointment.date.split("T")[0] }
+      });
+    }
+    if (clientPageId) {
+      const relProp = Object.keys(mainSchema).find(k => {
+        const p = mainSchema[k];
+        return p.type === 'relation' && p.relation?.database_id && normalizeId(p.relation.database_id) === normalizeId(CLIENTS_DB_ID);
+      });
+      if (relProp) {
+        dedupFilters.push({
+          property: relProp,
+          relation: { contains: clientPageId }
+        });
+      }
+    }
+    if (dedupFilters.length >= 2) {
+      const dedupRes = await fetchWithRetry(`https://api.notion.com/v1/databases/${MAIN_DB_ID}/query`, {
+        method: 'POST',
+        headers: notionHeaders,
+        body: JSON.stringify({ filter: { and: dedupFilters }, page_size: 5 })
+      });
+      if (dedupRes.ok) {
+        const dedupData = await dedupRes.json();
+        if (dedupData.results?.length > 0) {
+          const existing = dedupData.results[0];
+          console.log(`[appointment-sync] Dedup match — updating existing Main page: ${existing.id}`);
+          mainPageId = existing.id;
+          mainPageUrl = existing.url;
+          const updRes = await fetchWithRetry(`https://api.notion.com/v1/pages/${mainPageId}`, {
+            method: 'PATCH',
+            headers: notionHeaders,
+            body: JSON.stringify({ properties: mainProps })
+          });
+          if (!updRes.ok) {
+            console.warn(`[appointment-sync] Dedup update failed, will try creating:`, await updRes.json());
+            mainPageId = null;
+          } else {
+            const updData = await updRes.json();
+            mainPageUrl = updData.url;
+          }
+        }
+      }
+    }
+  }
+
   // Create new Main page if not exists or update failed
   if (!mainPageId) {
     console.log(`[appointment-sync] Creating new Main page in DB: ${MAIN_DB_ID}`);

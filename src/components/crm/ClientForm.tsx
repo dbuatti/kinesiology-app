@@ -99,7 +99,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
       const payload = {
         user_id: session.user.id,
         name: values.name,
-        email: values.email || null,
+        email: (values.email || '').toLowerCase().trim() || null,
         phone: values.phone || null,
         pronouns: values.pronouns || null,
         born: values.born ? new Date(values.born).toISOString() : null,

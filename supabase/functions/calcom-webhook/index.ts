@@ -68,7 +68,12 @@ serve(async (req) => {
         }
       }
 
-      const { error } = await supabase.from('appointments').delete().eq('calcom_booking_id', calcomId);
+      // IMPORTANT: We preserve the appointment row (clinical data survives),
+      // only unlink from Cal.com and mark as Cancelled. Notion pages are
+      // archived above so they don't clutter the DB view.
+      const { error } = await supabase.from('appointments')
+        .update({ calcom_booking_id: null, status: 'Cancelled' })
+        .eq('calcom_booking_id', calcomId);
       
       // Also try to match by time window if calcom_booking_id didn't match
       if (!error) {
@@ -83,7 +88,7 @@ serve(async (req) => {
             const startDate = new Date(startTime);
             const wStart = new Date(startDate.getTime() - 300000).toISOString();
             const wEnd = new Date(startDate.getTime() + 300000).toISOString();
-            await supabase.from('appointments').delete()
+            await supabase.from('appointments').update({ calcom_booking_id: null, status: 'Cancelled' })
               .eq('client_id', client.id)
               .gte('date', wStart)
               .lte('date', wEnd);

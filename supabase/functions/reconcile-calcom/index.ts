@@ -9,8 +9,11 @@ const corsHeaders = {
 };
 
 // Cal.com is the single source of truth. This sweep pulls the full set of upcoming
-// bookings and removes any app/Notion records whose Cal.com booking no longer exists
+// bookings and unlinks app/Notion records whose Cal.com booking no longer exists
 // (deleted or cancelled) — the safety net that catches missed webhooks + deletions.
+// IMPORTANT: We NEVER delete appointment rows (that would destroy clinical notes,
+// assessments, and session data). We only unlink calcom_booking_id and archive
+// Notion pages so the data survives in both systems.
 // Runs on a schedule (pg_cron) and can be triggered manually.
 
 const GRACE_MS = 15 * 60 * 1000; // don't touch rows created in the last 15 min (avoid racing a fresh booking)
@@ -83,6 +86,9 @@ serve(async (req) => {
     const removed = { appointments: [] as string[], voice: [] as string[] };
 
     // ---- FNH appointments (future, not brand-new) ----
+    // NOTE: We NEVER delete appointment rows — that would destroy clinical notes,
+    // assessments, and session data. Instead we unlink the Cal.com booking and
+    // archive the Notion pages so the data survives in both systems.
     const { data: appts } = await supabase
       .from("appointments")
       .select("id, calcom_booking_id, notion_page_id, notion_planner_id, status, date, created_at")
@@ -94,9 +100,9 @@ serve(async (req) => {
       if ((a.status || "").toLowerCase() === "cancelled") continue;
       if (!isGhost(a.calcom_booking_id)) continue;
       await archiveNotionPages(NOTION_KEY, [a.notion_page_id, a.notion_planner_id]);
-      const { error } = await supabase.from("appointments").delete().eq("id", a.id);
+      const { error } = await supabase.from("appointments").update({ calcom_booking_id: null, status: "Cancelled" }).eq("id", a.id);
       if (!error) removed.appointments.push(a.id);
-      else console.error(`[${fn}] delete appointment ${a.id} failed:`, error.message);
+      else console.error(`[${fn}] unlink appointment ${a.id} failed:`, error.message);
     }
 
     // ---- Voice bookings (upcoming, not superseded/cancelled) ----
@@ -112,9 +118,9 @@ serve(async (req) => {
       if (st === "cancelled" || st === "rescheduled") continue;
       if (!isGhost(b.calcom_booking_id)) continue;
       await archiveNotionPages(NOTION_KEY, [b.notion_lesson_id_1, b.notion_lesson_id_2]);
-      const { error } = await supabase.from("voice_bookings").delete().eq("calcom_booking_id", b.calcom_booking_id);
+      const { error } = await supabase.from("voice_bookings").update({ status: "cancelled" }).eq("calcom_booking_id", b.calcom_booking_id);
       if (!error) removed.voice.push(b.calcom_booking_id);
-      else console.error(`[${fn}] delete voice_booking ${b.calcom_booking_id} failed:`, error.message);
+      else console.error(`[${fn}] cancel voice_booking ${b.calcom_booking_id} failed:`, error.message);
     }
 
     // ---- ADD missing: any live Cal.com booking absent from the app gets replayed
@@ -195,7 +201,21 @@ serve(async (req) => {
       }
     }
 
-    const summary = { success: true, liveBookings: live.size, removedAppointments: removed.appointments.length, removedVoice: removed.voice.length, addedAppointments: added.appointments, addedVoice: added.voice, voiceDebug };
+    // ---- Archive any Cancelled appointment's Notion pages that are still active ----
+    // This catches manual cancellations made in the app (not via Cal.com webhook)
+    // where the Notion page wasn't archived.
+    const { data: cancelledNeedingArchive } = await supabase
+      .from("appointments")
+      .select("notion_page_id, notion_planner_id")
+      .eq("status", "Cancelled")
+      .not("notion_page_id", "is", null);
+    let archivedCancelled = 0;
+    for (const c of cancelledNeedingArchive || []) {
+      const toArchive = [c.notion_page_id, c.notion_planner_id].filter(Boolean);
+      if (toArchive.length) { await archiveNotionPages(NOTION_KEY, toArchive); archivedCancelled += toArchive.length; }
+    }
+
+    const summary = { success: true, liveBookings: live.size, removedAppointments: removed.appointments.length, removedVoice: removed.voice.length, addedAppointments: added.appointments, addedVoice: added.voice, archivedCancelled, voiceDebug };
     console.log(`[${fn}] ${JSON.stringify(summary)}`);
     return new Response(JSON.stringify(summary), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {

@@ -261,7 +261,8 @@ export default function ClientAuditPage() {
       // Fetch appointments
       const { data: appointmentsData, error: appointmentsError } = await supabase
         .from("appointments")
-        .select("id, client_id, date, price_amount, is_paid, payment_received")
+        .select("id, client_id, date, status, price_amount, is_paid, payment_received")
+        .neq("status", "Cancelled")
         .order("date", { ascending: false });
 
       if (appointmentsError) throw appointmentsError;

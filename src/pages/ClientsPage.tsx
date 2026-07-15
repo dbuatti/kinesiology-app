@@ -44,14 +44,15 @@ const ClientsPage = () => {
     try {
       const { data, error } = await supabase
         .from('clients')
-        .select('*, appointments(date, bolt_score)')
+        .select('*, appointments(date, bolt_score, status)')
         .or('is_practitioner.eq.false,is_practitioner.is.null')
         .order('name', { ascending: true });
       
       if (error) throw error;
       
       const mapped = (data || []).map(c => {
-        const sortedApps = (c.appointments || [])
+        const activeApps = (c.appointments || []).filter((a: any) => a.status !== 'Cancelled');
+        const sortedApps = [...activeApps]
           .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
         
         const latestBoltApp = (c.appointments || [])
@@ -62,7 +63,7 @@ const ClientsPage = () => {
           ...c,
           born: c.born ? new Date(c.born) : null,
           suburbs: c.suburbs || [],
-          session_count: c.appointments?.length || 0,
+          session_count: activeApps.length,
           last_session_at: sortedApps.length > 0 ? sortedApps[0].date : null,
           latest_bolt: latestBoltApp ? latestBoltApp.bolt_score : null
         };

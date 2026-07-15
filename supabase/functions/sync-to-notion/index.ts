@@ -3,7 +3,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 import { syncClientToNotion } from "./client-sync.ts";
 import { syncSingleAppointment } from "./appointment-sync.ts";
-import { fetchWithRetry, CLIENTS_DB_ID, fetchDatabaseSchema, findSchemaProperty, extractNotionPropertyValue } from "./notion-api.ts";
+import { fetchWithRetry, CLIENTS_DB_ID, fetchDatabaseSchema, findSchemaProperty, extractNotionPropertyValue, normalizeId } from "./notion-api.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -193,6 +193,211 @@ serve(async (req) => {
       }), { 
         status: 200, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      });
+    }
+
+    // Flow: Audit Notion vs Supabase — report mismatches without modifying anything
+    if (action === 'audit-notion-appointments') {
+      console.log(`[${functionName}] Auditing Notion Appointments DB vs Supabase...`);
+
+      // Build Supabase lookup: notion_page_id → appointment
+      const { data: allAppts } = await supabase.from('appointments').select('id, client_id, date, name, notion_page_id, status');
+      const supabaseByNotionId: Record<string, any> = {};
+      const supabaseByClientDate: Record<string, string[]> = {};
+      for (const a of allAppts || []) {
+        if (a.notion_page_id) supabaseByNotionId[a.notion_page_id] = a;
+        const key = `${a.client_id}|${(a.date || '').split('T')[0]}`;
+        if (!supabaseByClientDate[key]) supabaseByClientDate[key] = [];
+        supabaseByClientDate[key].push(a.id);
+      }
+
+      // Build Notion lookup: client notion_id → client supabase_id
+      const { data: allClients } = await supabase.from('clients').select('id, name, notion_page_id');
+      const clientByNid: Record<string, any> = {};
+      for (const c of allClients || []) {
+        if (c.notion_page_id) clientByNid[c.notion_page_id] = c;
+      }
+
+      const schema = await fetchDatabaseSchema(MAIN_DB_ID, notionHeaders);
+      const missing: any[] = [];
+      const matched = { count: 0 };
+      let total = 0;
+
+      let hasMore = true;
+      let startCursor = undefined;
+      while (hasMore) {
+        const qb: any = { page_size: 100 };
+        if (startCursor) qb.start_cursor = startCursor;
+        const res = await fetchWithRetry(`https://api.notion.com/v1/databases/${MAIN_DB_ID}/query`, {
+          method: 'POST', headers: notionHeaders, body: JSON.stringify(qb)
+        });
+        if (!res.ok) throw new Error(`Notion query failed: ${await res.text()}`);
+        const data = await res.json();
+        for (const page of (data.results || [])) {
+          total++;
+          if (supabaseByNotionId[page.id]) { matched.count++; continue; }
+          const props = page.properties;
+          const dateProp = findSchemaProperty(schema, ['Date']);
+          const dateVal = dateProp ? extractNotionPropertyValue(props[dateProp.name]) : null;
+          const nameProp = findSchemaProperty(schema, ['Name', 'Title']);
+          const nameVal = nameProp ? extractNotionPropertyValue(props[nameProp.name]) : null;
+          const relProp = Object.keys(schema).find(k => {
+            const p = schema[k];
+            return p.type === 'relation' && p.relation?.database_id && normalizeId(p.relation.database_id) === normalizeId(CLIENTS_DB_ID);
+          });
+          const notionClientId = relProp && props[relProp]?.relation?.[0]?.id;
+
+          missing.push({
+            notion_page_id: page.id,
+            notion_url: page.url,
+            archived: page.archived || false,
+            name: nameVal,
+            date: dateVal,
+            notion_client_id: notionClientId,
+            supabase_client: notionClientId ? (clientByNid[notionClientId]?.name || null) : null,
+            supabase_client_id: notionClientId ? (clientByNid[notionClientId]?.id || null) : null,
+            reason: !dateVal ? 'no_date' : (!notionClientId ? 'no_client_relation' : (!clientByNid[notionClientId] ? 'client_not_in_supabase' : 'unknown'))
+          });
+        }
+        hasMore = data.has_more;
+        startCursor = data.next_cursor;
+      }
+
+      const summary = {
+        total_notion_pages: total,
+        matched_in_supabase: matched.count,
+        missing_from_supabase: missing.length,
+        missing_details: missing
+      };
+      console.log(`[${functionName}] Audit: ${JSON.stringify(summary, null, 2)}`);
+      return new Response(JSON.stringify(summary), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Flow: Pull all appointments from Notion into Supabase
+    if (action === 'pull-from-notion-appointments') {
+      console.log(`[${functionName}] Pulling all appointments from Notion Database: ${MAIN_DB_ID}`);
+
+      let hasMore = true;
+      let startCursor = undefined;
+      let importedCount = 0;
+      let skippedCount = 0;
+
+      // Pre-fetch all Supabase clients indexed by notion_page_id for fast lookups
+      const { data: allClients } = await supabase.from('clients').select('id, name, notion_page_id');
+      const clientByNotionId: Record<string, any> = {};
+      for (const c of allClients || []) {
+        if (c.notion_page_id) clientByNotionId[c.notion_page_id] = c;
+      }
+
+      // Pre-fetch all existing appointment notion_page_ids to skip duplicates
+      const { data: existingApps } = await supabase.from('appointments').select('notion_page_id');
+      const existingPageIds = new Set<string>();
+      for (const a of existingApps || []) {
+        if (a.notion_page_id) existingPageIds.add(a.notion_page_id);
+      }
+
+      const schema = await fetchDatabaseSchema(MAIN_DB_ID, notionHeaders);
+
+      while (hasMore) {
+        const queryBody: any = { page_size: 100 };
+        if (startCursor) queryBody.start_cursor = startCursor;
+
+        const res = await fetchWithRetry(`https://api.notion.com/v1/databases/${MAIN_DB_ID}/query`, {
+          method: 'POST',
+          headers: notionHeaders,
+          body: JSON.stringify(queryBody)
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(`Failed to query Notion Appointments DB: ${JSON.stringify(err)}`);
+        }
+
+        const data = await res.json();
+
+        for (const page of (data.results || [])) {
+          try {
+            const props = page.properties;
+
+            if (existingPageIds.has(page.id)) {
+              skippedCount++;
+              continue;
+            }
+
+            const titleProp = findSchemaProperty(schema, ['Name', 'Title']);
+            const nameValue = titleProp ? extractNotionPropertyValue(props[titleProp.name]) : null;
+            const dateProp = findSchemaProperty(schema, ['Date']);
+            const dateValue = dateProp ? extractNotionPropertyValue(props[dateProp.name]) : null;
+            const goalProp = findSchemaProperty(schema, ['Goal']);
+            const goalValue = goalProp ? extractNotionPropertyValue(props[goalProp.name]) : null;
+            const notesProp = findSchemaProperty(schema, ['Notes']);
+            const notesValue = notesProp ? extractNotionPropertyValue(props[notesProp.name]) : null;
+            const issueProp = findSchemaProperty(schema, ['Issue', 'Tag', 'Category']);
+            const issueValue = issueProp ? extractNotionPropertyValue(props[issueProp.name]) : null;
+            const tagValue = Array.isArray(issueValue) ? issueValue[0] || "Kinesiology" : (issueValue || "Kinesiology");
+
+            // Extract the client relation from the page
+            const clientRelationProp = Object.keys(schema).find(k => {
+              const p = schema[k];
+              return p.type === 'relation' && p.relation?.database_id && normalizeId(p.relation.database_id) === normalizeId(CLIENTS_DB_ID);
+            });
+            let notionClientId: string | null = null;
+            if (clientRelationProp && props[clientRelationProp]?.relation?.length > 0) {
+              notionClientId = props[clientRelationProp].relation[0].id;
+            }
+
+            // If no date, skip
+            if (!dateValue) {
+              console.warn(`[${functionName}] Skipping Notion page ${page.id}: No date`);
+              skippedCount++;
+              continue;
+            }
+
+            // Find the Supabase client by notion_page_id
+            const supabaseClient = notionClientId ? clientByNotionId[notionClientId] : null;
+            if (!supabaseClient) {
+              console.warn(`[${functionName}] Skipping Notion page ${page.id}: No client match in Supabase for Notion page ${notionClientId}`);
+              skippedCount++;
+              continue;
+            }
+
+            const appointmentPayload: any = {
+              user_id: PRACTITIONER_ID,
+              client_id: supabaseClient.id,
+              date: dateValue,
+              name: nameValue || `Session with ${supabaseClient.name}`,
+              goal: goalValue || null,
+              issue: Array.isArray(issueValue) ? issueValue.join(', ') : (issueValue || null),
+              tag: tagValue,
+              notes: notesValue || null,
+              status: dateValue < new Date().toISOString().split('T')[0] ? 'Completed' : 'Scheduled',
+              notion_page_id: page.id,
+              notion_link: page.url
+            };
+
+            const { error: insertError } = await supabase.from('appointments').insert(appointmentPayload);
+            if (insertError) {
+              console.error(`[${functionName}] Failed to insert appointment from Notion page ${page.id}:`, insertError.message);
+            } else {
+              importedCount++;
+            }
+          } catch (itemErr) {
+            console.error(`[${functionName}] Error processing Notion page ${page.id}:`, itemErr.message);
+          }
+        }
+
+        hasMore = data.has_more;
+        startCursor = data.next_cursor;
+      }
+
+      return new Response(JSON.stringify({
+        success: true,
+        message: `Imported ${importedCount} appointments from Notion (${skippedCount} already existed).`
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
@@ -421,6 +626,231 @@ serve(async (req) => {
       }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Flow: Retitle all 2026+ Notion pages to "FNH · Client · Day Month DayNum, Time"
+    if (action === 'retitle-notion-pages') {
+      console.log(`[${functionName}] Retitling 2026+ Notion pages in ${MAIN_DB_ID}`);
+
+      // Build client name cache from Supabase (notion_page_id → name)
+      const { data: allClients } = await supabase.from('clients').select('name, notion_page_id');
+      const clientNameByNid: Record<string, string> = {};
+      for (const c of allClients || []) {
+        if (c.notion_page_id) clientNameByNid[c.notion_page_id] = c.name;
+      }
+
+      const schema = await fetchDatabaseSchema(MAIN_DB_ID, notionHeaders);
+      const titleProp = findSchemaProperty(schema, ['Name', 'Title']);
+      if (!titleProp) throw new Error('No title property found in schema');
+
+      const dateProp = findSchemaProperty(schema, ['Date']);
+      if (!dateProp) throw new Error('No date property found in schema');
+
+      const relProp = Object.keys(schema).find(k => {
+        const p = schema[k];
+        return p.type === 'relation' && p.relation?.database_id && normalizeId(p.relation.database_id) === normalizeId(CLIENTS_DB_ID);
+      });
+
+      function formatTitle(dateStr: string, clientName: string): string {
+        const d = new Date(dateStr);
+        const tz = 'Australia/Sydney';
+        const weekday = d.toLocaleDateString('en-US', { timeZone: tz, weekday: 'short' });
+        const month = d.toLocaleDateString('en-US', { timeZone: tz, month: 'short' });
+        const day = d.toLocaleDateString('en-US', { timeZone: tz, day: 'numeric' });
+        if (!dateStr.includes('T')) return `FNH · ${clientName} · ${weekday} ${month} ${day}`;
+        const time = d.toLocaleTimeString('en-US', { timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: true });
+        return `FNH · ${clientName} · ${weekday} ${month} ${day}, ${time}`;
+      }
+
+      function extractClientNameFromTitle(title: string): string | null {
+        // "Jacqui Dwyer - Kinesiology (Jul 8, 2026)" → "Jacqui Dwyer"
+        const dash = title.split(' - ')[0]?.trim();
+        if (dash && dash !== 'Appointment' && dash !== 'Session' && dash !== 'Follow Up' && dash !== 'Self Practice' && dash !== 'Initial Checkup' && dash !== 'VHS balance') {
+          // Check if dash contains a date pattern (old Notion auto-title), skip those
+          if (!/202\d/.test(dash)) return dash;
+        }
+        // "Session with Jacqui Dwyer" → "Jacqui Dwyer"
+        const sw = title.match(/^Session with (.+)$/);
+        if (sw) return sw[1].trim();
+        return null;
+      }
+
+      let hasMore = true;
+      let startCursor = undefined;
+      let updated = 0;
+      let skipped = 0;
+
+      while (hasMore) {
+        const qb: any = {
+          page_size: 100,
+          filter: {
+            property: dateProp.name,
+            date: { on_or_after: '2026-01-01' }
+          }
+        };
+        if (startCursor) qb.start_cursor = startCursor;
+
+        const res = await fetchWithRetry(`https://api.notion.com/v1/databases/${MAIN_DB_ID}/query`, {
+          method: 'POST', headers: notionHeaders, body: JSON.stringify(qb)
+        });
+        if (!res.ok) throw new Error(`Notion query failed: ${await res.text()}`);
+        const data = await res.json();
+
+        for (const page of (data.results || [])) {
+          try {
+            const props = page.properties;
+            const currentName = extractNotionPropertyValue(props[titleProp.name]);
+            const dateVal = extractNotionPropertyValue(props[dateProp.name]);
+            if (!currentName || !dateVal) { skipped++; continue; }
+
+            // Resolve client name
+            let clientName: string | null = null;
+            const notionClientId = relProp && props[relProp]?.relation?.[0]?.id;
+            if (notionClientId) clientName = clientNameByNid[notionClientId] || null;
+            if (!clientName) clientName = extractClientNameFromTitle(currentName);
+            if (!clientName) clientName = 'Unknown Client';
+
+            const newTitle = formatTitle(dateVal, clientName);
+            if (currentName === newTitle) { skipped++; continue; }
+
+            await fetchWithRetry(`https://api.notion.com/v1/pages/${page.id}`, {
+              method: 'PATCH',
+              headers: notionHeaders,
+              body: JSON.stringify({
+                properties: { [titleProp.name]: { title: [{ text: { content: newTitle } }] } }
+              })
+            });
+            updated++;
+          } catch (e) {
+            console.error(`[${functionName}] Failed to retitle ${page.id}:`, e.message);
+          }
+        }
+
+        hasMore = data.has_more;
+        startCursor = data.next_cursor;
+      }
+
+      const msg = `Renamed ${updated} pages (${skipped} skipped).`;
+      console.log(`[${functionName}] ${msg}`);
+      return new Response(JSON.stringify({ success: true, updated, skipped }), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Flow: Sync Notion titles back to Supabase appointment names
+    if (action === 'sync-names-from-notion') {
+      console.log(`[${functionName}] Syncing Notion titles to Supabase names...`);
+
+      const schema = await fetchDatabaseSchema(MAIN_DB_ID, notionHeaders);
+      const titleProp = findSchemaProperty(schema, ['Name', 'Title']);
+      if (!titleProp) throw new Error('No title property found');
+
+      // Pre-fetch all appointments indexed by notion_page_id
+      const { data: allAppts } = await supabase.from('appointments').select('id, notion_page_id');
+      const apptByNid: Record<string, string> = {};
+      for (const a of allAppts || []) {
+        if (a.notion_page_id) apptByNid[a.notion_page_id] = a.id;
+      }
+
+      let hasMore = true;
+      let startCursor = undefined;
+      let updated = 0;
+      let skipped = 0;
+
+      while (hasMore) {
+        const qb: any = { page_size: 100 };
+        if (startCursor) qb.start_cursor = startCursor;
+        const res = await fetchWithRetry(`https://api.notion.com/v1/databases/${MAIN_DB_ID}/query`, {
+          method: 'POST', headers: notionHeaders, body: JSON.stringify(qb)
+        });
+        if (!res.ok) throw new Error(`Notion query failed: ${await res.text()}`);
+        const data = await res.json();
+
+        for (const page of (data.results || [])) {
+          const props = page.properties;
+          const title = extractNotionPropertyValue(props[titleProp.name]);
+          const apptId = apptByNid[page.id];
+          if (!title || !apptId) { skipped++; continue; }
+          const { error } = await supabase.from('appointments').update({ name: title }).eq('id', apptId);
+          if (error) { skipped++; continue; }
+          updated++;
+        }
+
+        hasMore = data.has_more;
+        startCursor = data.next_cursor;
+      }
+
+      console.log(`[${functionName}] Updated ${updated} names (${skipped} skipped).`);
+      return new Response(JSON.stringify({ success: true, updated, skipped }), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Flow: Cancel appointments whose Notion pages are archived (ghost bookings)
+    if (action === 'cancel-ghost-appointments') {
+      console.log(`[${functionName}] Looking for archived Notion pages with active Supabase rows...`);
+      const schema = await fetchDatabaseSchema(MAIN_DB_ID, notionHeaders);
+      let totalArchived = 0;
+      let cancelled = 0;
+      let hasMore = true;
+      let startCursor = undefined;
+
+      const { data: allAppts } = await supabase.from('appointments').select('id, notion_page_id, status');
+      const apptByNid: Record<string, any> = {};
+      for (const a of allAppts || []) {
+        if (a.notion_page_id) apptByNid[a.notion_page_id] = { id: a.id, status: a.status };
+      }
+
+      while (hasMore) {
+        const qb: any = { page_size: 100 };
+        if (startCursor) qb.start_cursor = startCursor;
+        const res = await fetchWithRetry(`https://api.notion.com/v1/databases/${MAIN_DB_ID}/query`, {
+          method: 'POST', headers: notionHeaders, body: JSON.stringify(qb)
+        });
+        if (!res.ok) throw new Error(`Notion query failed: ${await res.text()}`);
+        const data = await res.json();
+
+        for (const page of (data.results || [])) {
+          if (!page.archived) continue;
+          totalArchived++;
+          const match = apptByNid[page.id];
+          if (!match || match.status === 'Cancelled') continue;
+          await supabase.from('appointments').update({ status: 'Cancelled', calcom_booking_id: null }).eq('id', match.id);
+          cancelled++;
+        }
+        hasMore = data.has_more;
+        startCursor = data.next_cursor;
+      }
+
+      const msg = `Cancelled ${cancelled} ghost appointments (${totalArchived} total archived Notion pages found).`;
+      console.log(`[${functionName}] ${msg}`);
+      return new Response(JSON.stringify({ success: true, cancelled, totalArchived }), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Flow: Remove orphan Notion client + session (no matching Supabase client)
+    if (action === 'remove-orphan') {
+      console.log(`[${functionName}] Archiving orphan pages...`);
+      const sessionPageId = '39aaad21-cd09-81d8-a346-ee99c06b9ab6';
+      const clientPageId = '39aaad21-cd09-813d-b151-c0ce9c5e072a';
+      let archived = 0;
+
+      for (const pid of [sessionPageId, clientPageId]) {
+        const res = await fetchWithRetry(`https://api.notion.com/v1/pages/${pid}`, {
+          method: 'PATCH',
+          headers: notionHeaders,
+          body: JSON.stringify({ archived: true }),
+        });
+        if (res.ok) archived++;
+        else console.error(`[${functionName}] Failed to archive ${pid}: ${await res.text()}`);
+      }
+
+      const msg = `Archived ${archived}/2 orphan Notion pages.`;
+      console.log(`[${functionName}] ${msg}`);
+      return new Response(JSON.stringify({ success: true, archived }), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 

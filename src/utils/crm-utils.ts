@@ -33,12 +33,13 @@ export const formatDuration = (seconds: number): string => {
 };
 
 export const getClientRollups = (appointments: Appointment[]) => {
-  const sorted = [...appointments].sort((a, b) => b.date.getTime() - a.date.getTime());
+  const active = appointments.filter(a => a.status !== 'Cancelled');
+  const sorted = [...active].sort((a, b) => b.date.getTime() - a.date.getTime());
   
   return {
-    allAppointmentDates: appointments.map(a => format(a.date, "MMM d, yyyy")),
+    allAppointmentDates: active.map(a => format(a.date, "MMM d, yyyy")),
     lastAppointment: sorted[0]?.date ? format(sorted[0].date, "MMM d, yyyy") : "No sessions yet",
-    totalSessions: appointments.length
+    totalSessions: active.length
   };
 };
 

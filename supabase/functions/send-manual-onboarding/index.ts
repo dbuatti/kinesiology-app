@@ -1,7 +1,6 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import Stripe from 'https://esm.sh/stripe@14.25.0'
 import { requireUser } from "../_shared/auth.ts"
 
 const corsHeaders = {
@@ -91,120 +90,25 @@ serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const { clientId, appointmentId, force = false } = body;
+    const { clientId } = body;
     
     if (!clientId) throw new Error("Missing clientId");
 
-    const STRIPE_KEY = Deno.env.get('STRIPE_SECRET_KEY');
     const GMAIL_CLIENT_ID = Deno.env.get('GMAIL_CLIENT_ID');
     const GMAIL_CLIENT_SECRET = Deno.env.get('GMAIL_CLIENT_SECRET');
     const GMAIL_REFRESH_TOKEN = Deno.env.get('GMAIL_REFRESH_TOKEN');
     const SENDER_EMAIL = Deno.env.get('GMAIL_USER_EMAIL');
 
-    const stripe = new Stripe(STRIPE_KEY, {
-      apiVersion: '2023-10-16',
-      httpClient: Stripe.createFetchHttpClient(),
-    });
-
     const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
 
-    // 1. Fetch Client & Appointment
     const { data: client } = await supabase.from('clients').select('*').eq('id', clientId).single();
     if (!client?.email) throw new Error("Client email missing");
 
-    let targetApp = null;
-    if (appointmentId) {
-      const { data: app } = await supabase.from('appointments').select('*').eq('id', appointmentId).single();
-      targetApp = app;
-    } else {
-      const { data: apps } = await supabase.from('appointments').select('*').eq('client_id', clientId).order('date', { ascending: false }).limit(1);
-      targetApp = apps?.[0];
-    }
-
-    // 2. Generate Stripe Link — always send for any non-free session.
-    let stripeUrl = null;
-    const priceAmount = client?.standard_rate || targetApp?.price_amount || 50;
-
-    if (targetApp && priceAmount > 0) {
-      console.log(`[send-manual-onboarding] Generating Stripe link for app: ${targetApp.id} at $${priceAmount}`);
-      
-      const session = await stripe.checkout.sessions.create({
-        customer: client.stripe_customer_id || undefined,
-        customer_email: client.stripe_customer_id ? undefined : client.email,
-        line_items: [{
-          price_data: {
-            currency: 'aud',
-            product_data: {
-              name: 'FNH Clinical Assessment',
-              description: `Session on ${new Date(targetApp.date).toLocaleDateString("en-AU", { timeZone: "Australia/Melbourne", month: "short", day: "numeric", year: "numeric" })}`
-            },
-            unit_amount: priceAmount * 100,
-          },
-          quantity: 1,
-        }],
-        mode: 'payment',
-        payment_intent_data: {
-          statement_descriptor: 'FNH ASSESSMENT',
-        },
-        success_url: `${Deno.env.get('SITE_URL') || req.headers.get('origin') || 'https://kinesiology-app.vercel.app'}/onboarding/success`,
-        cancel_url: `${Deno.env.get('SITE_URL') || req.headers.get('origin') || 'https://kinesiology-app.vercel.app'}/onboarding/${client.id}`,
-        metadata: {
-          appointment_id: targetApp.id,
-          client_id: client.id
-        }
-      });
-      
-      stripeUrl = session.url;
-      await supabase.from('appointments').update({ payment_link: stripeUrl }).eq('id', targetApp.id);
-    }
-
-    // 3. Check if intake form is filled enough (skip CTA if >= 50% complete).
+    // Build intake form URL (onboarding form only — no appointment/payment details).
     const intakeFilled = isIntakeFormFilled(client);
     const intakeUrl = `${Deno.env.get('SITE_URL') || req.headers.get('origin') || 'https://kinesiology-app.vercel.app'}/onboarding/${client.id}`;
 
-    const appDate = targetApp?.date
-      ? new Date(targetApp.date).toLocaleString("en-AU", {
-          timeZone: "Australia/Melbourne",
-          weekday: "long",
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-        })
-      : null;
-
-    const appointmentSection = appDate ? `
-      <div style="text-align: center; padding: 24px 0; border-bottom: 1px solid #F1F5F9;">
-        <div style="font-size: 13px; color: #64748B; margin-bottom: 8px;">Appointment</div>
-        <div style="font-size: 18px; font-weight: 700; color: #1E3261;">${appDate}</div>
-      </div>
-    ` : '';
-
-    const paymentSection = stripeUrl ? `
-      <div style="background-color: #F8FAFC; border-radius: 24px; padding: 32px; margin: 32px 0; border: 1px solid #E2E8F0; text-align: center;">
-        <div style="font-size: 11px; font-weight: 800; color: #1E3261; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px;">Secure Payment ($${priceAmount})</div>
-        <p style="margin: 0 0 24px 0; font-size: 16px; color: #475569; line-height: 1.6;">This session is a paid clinical assessment. You can settle the fee securely via Stripe using the button below:</p>
-        <div style="text-align: center;"><a href="${stripeUrl}" style="display: inline-block; background-color: #4F46E5; color: #ffffff; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; shadow: 0 4px 6px rgba(79, 70, 229, 0.2);">Pay via Stripe</a></div>
-        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #E2E8F0;">
-          <p style="font-size: 12px; color: #94a3b8; margin-bottom: 8px;">Alternatively, via PayID / Bank Transfer:</p>
-          <div style="font-family: monospace; font-size: 14px; color: #1E3261; font-weight: 700;">
-            PayID: 0424174067<br/>
-            BSB: 923100 | ACC: 301110875
-          </div>
-        </div>
-      </div>
-    ` : '';
-
-    const intakeSection = intakeFilled ? '' : `
-      <div style="text-align: center; padding: 32px 0;">
-        <a href="${intakeUrl}" style="display: inline-block; background-color: #1E3261; color: #ffffff; padding: 20px 48px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 16px;">Complete Intake Form</a>
-      </div>
-    `;
-
-    const subject = stripeUrl
-      ? `Your FNH Session is Confirmed`
-      : `Your FNH Session is Confirmed`;
+    const subject = `Please Complete Your Functional Neuro Health Intake Form`;
 
     const htmlBody = `
       <!DOCTYPE html>
@@ -222,18 +126,19 @@ serve(async (req) => {
                 
                 <div style="text-align: left; margin-top: 48px; line-height: 1.8; font-size: 17px; color: #334155;">
                   <p>Hi ${client.name.split(' ')[0]},</p>
-                  <p>Your Functional Neuro Health session has been booked.</p>
+                  <p>Welcome to Resonance Kinesiology! We're looking forward to working with you.</p>
+                  <p>Before your first session, please complete your clinical intake form. This helps us understand your health history and prepare a personalised approach.</p>
                   
-                  ${appointmentSection}
-
-                  ${paymentSection}
-
                   ${!intakeFilled ? `
-                    <div style="margin-top: 32px; padding: 24px; background-color: #F8FAFC; border-radius: 16px; border: 1px solid #E2E8F0; text-align: center;">
-                      <p style="margin: 0 0 12px 0; font-size: 14px; color: #64748B;">If you haven't already, please also complete your clinical intake form so we can prepare for your session.</p>
-                      <div style="text-align: center;"><a href="${intakeUrl}" style="display: inline-block; background-color: #1E3261; color: #ffffff; padding: 12px 32px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 14px;">Complete Intake Form</a></div>
+                    <div style="margin-top: 40px; text-align: center;">
+                      <a href="${intakeUrl}" style="display: inline-block; background-color: #D46A9B; color: #ffffff; padding: 18px 48px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 16px; letter-spacing: 0.02em;">Complete Intake Form</a>
                     </div>
-                  ` : ''}
+                    <div style="margin-top: 24px; padding: 20px; background-color: #F8FAFC; border-radius: 16px; border: 1px solid #E2E8F0;">
+                      <p style="margin: 0; font-size: 14px; color: #64748B;">The form takes about 10 minutes and covers your health background, current concerns, and goals. Your information is kept confidential.</p>
+                    </div>
+                  ` : `
+                    <p>If you have any questions before your session, please don't hesitate to reach out.</p>
+                  `}
                 </div>
                 
                 <div style="border-top: 1px solid #F1F5F9; margin-top: 40px; padding-top: 32px; text-align: left;">
@@ -253,7 +158,6 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ 
       success: true, 
-      paymentLinkSent: !!stripeUrl,
       intakeFormSent: !intakeFilled,
     }), { 
       status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

@@ -67,10 +67,11 @@ interface ClientRowProps {
  onSetTargetRate: (clientId: string, rate: number) => void;
  onSetRateUpdatedDate: (clientId: string, dateStr: string) => void;
  onSetReengagementTag: (clientId: string, tag: 'warm' | 'cold' | 'lost' | null) => void;
- isLapsedSection: boolean;
- onQuickBook: (clientId: string) => void;
- onRefresh: () => void;
- averageSessionRate?: number;
+  isLapsedSection: boolean;
+  onQuickBook: (clientId: string) => void;
+  onRefresh: () => void;
+  averageSessionRate?: number;
+  compact?: boolean;
 }
 
 const RATE_OPTIONS = [
@@ -500,19 +501,20 @@ function AvailabilityPopover({
 // ────────────────────────────────────────────────────────────────────────────
 
 export const ClientRow = ({
- client,
- calculateAge,
- handleRateChange,
- handleOpenOverrideModal,
- selectedWeeklyClients,
- onToggleWeeklyClient,
- onSetTargetRate,
- onSetRateUpdatedDate,
- onSetReengagementTag,
- isLapsedSection,
- onQuickBook,
- onRefresh,
- averageSessionRate,
+  client,
+  calculateAge,
+  handleRateChange,
+  handleOpenOverrideModal,
+  selectedWeeklyClients,
+  onToggleWeeklyClient,
+  onSetTargetRate,
+  onSetRateUpdatedDate,
+  onSetReengagementTag,
+  isLapsedSection,
+  onQuickBook,
+  onRefresh,
+  averageSessionRate,
+  compact = false,
 }: ClientRowProps) => {
  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
  const [isReengagementEmailModalOpen, setIsReengagementEmailModalOpen] = useState(false);
@@ -834,10 +836,11 @@ Daniele`;
   "hover:bg-muted/10 transition-colors group",
   isSelectedInSimulator ? "bg-muted/20" : "",
   journalData.reengagement_status === 'booked' ? "bg-chart-emerald/[0.02]" : "",
-  journalData.reengagement_status === 'sent' ? "bg-chart-primary/[0.02]" : ""
+  journalData.reengagement_status === 'sent' ? "bg-chart-primary/[0.02]" : "",
+  compact && "text-xs"
   )}>
- {/* Simulator Checkbox */}
- <td className="p-4 pl-6">
+  {/* Simulator Checkbox */}
+  <td className={cn("pl-6", compact ? "py-1.5" : "p-4")}>
  <button
  onClick={() => onToggleWeeklyClient(client.id)}
  className="text-muted-foreground/60 hover:text-chart-primary transition-colors"
@@ -851,12 +854,12 @@ Daniele`;
  </td>
 
   {/* Client */}
-  <td className="p-4">
-  <div className="space-y-1">
+  <td className={cn(compact ? "py-1.5" : "p-4")}>
+  <div className={cn(compact ? "space-y-0" : "space-y-1")}>
   <div className="flex items-center gap-1.5">
   <Link 
   to={`/clients/${client.id}`}
-  className="font-semibold text-foreground text-sm hover:underline hover:text-chart-primary transition-colors flex items-center gap-1.5"
+  className={cn("font-semibold text-foreground hover:underline hover:text-chart-primary transition-colors flex items-center gap-1.5", compact ? "text-xs" : "text-sm")}
   >
   {client.name}
   {journalData.reengagement_status === 'sent' && <span className="w-1.5 h-1.5 rounded-full bg-chart-primary shrink-0" title="Nudge sent" />}
@@ -865,36 +868,36 @@ Daniele`;
   <ArrowRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity text-chart-primary" />
   </Link>
   </div>
- <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium flex-wrap">
- {client.pronouns && <span>{client.pronouns}</span>}
- {client.pronouns && <span>•</span>}
- <span>Age: {calculateAge(client.born)}</span>
- <span>•</span>
- <span>{client.appointments.length} sessions</span>
- <span>•</span>
- <span className="text-chart-primary font-medium">Upgrades: {journalData.upgrade_count || 0}</span>
- {(journalData.upgrade_count || 0) >= 4 && (
- <span className="flex items-center gap-1 text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
- <span className="w-1.5 h-1.5 rounded-full bg-muted0 animate-pulse" />
- Due
- </span>
- )}
- </div>
- {client.phone && (
- <div className="flex items-center gap-1.5 mt-0.5">
- <Phone size={10} className="text-muted-foreground shrink-0" />
- <span className="text-[11px] text-muted-foreground font-medium tracking-wide">{client.phone}</span>
- </div>
- )}
+  <div className={cn("flex items-center gap-2 text-muted-foreground font-medium flex-wrap", compact ? "text-[10px]" : "text-xs")}>
+  {client.pronouns && <span>{client.pronouns}</span>}
+  {client.pronouns && <span>•</span>}
+  <span>Age: {calculateAge(client.born)}</span>
+  <span>•</span>
+  <span>{client.appointments.length} sessions</span>
+  <span>•</span>
+  <span className="text-chart-primary font-medium">Upgrades: {journalData.upgrade_count || 0}</span>
+  {(journalData.upgrade_count || 0) >= 4 && (
+  <span className="flex items-center gap-1 text-[10px] font-semibold text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
+  <span className="w-1.5 h-1.5 rounded-full bg-muted0 animate-pulse" />
+  Due
+  </span>
+  )}
+  </div>
+  {client.phone && (
+  <div className={cn("flex items-center gap-1.5", compact ? "mt-0" : "mt-0.5")}>
+  <Phone size={10} className="text-muted-foreground shrink-0" />
+  <span className="text-[11px] text-muted-foreground font-medium tracking-wide">{client.phone}</span>
+  </div>
+  )}
  </div>
  </td>
 
- {/* Last Seen / Next Booked */}
- <td className="p-4">
- <div className="space-y-1">
- <div className="flex flex-col">
- <span className="text-xs text-muted-foreground font-medium">Last Seen:</span>
- <span className="text-sm font-medium text-foreground">{lastSeenText}</span>
+  {/* Last Seen / Next Booked */}
+  <td className={cn(compact ? "py-1.5" : "p-4")}>
+  <div className="space-y-0.5">
+  <div className="flex flex-col">
+  <span className="text-xs text-muted-foreground font-medium">Last Seen:</span>
+  <span className={cn("font-medium text-foreground", compact ? "text-xs" : "text-sm")}>{lastSeenText}</span>
  {relativeTime && (
  <span className="text-[10px] text-muted-foreground font-medium">
  ({relativeTime})
@@ -915,11 +918,11 @@ Daniele`;
  </div>
  </td>
 
- {/* Rate Ladder (Current vs Target) */}
- <td className="p-4">
- <div className="space-y-1.5">
- <div className="flex items-center gap-2">
- <Select
+  {/* Rate Ladder (Current vs Target) */}
+  <td className={cn(compact ? "py-1.5" : "p-4")}>
+  <div className={cn(compact ? "space-y-0.5" : "space-y-1.5")}>
+  <div className="flex items-center gap-2">
+  <Select
  value={currentRateValue.toString()}
  onValueChange={(val) => handleRateChange(client.id, parseInt(val))}
  >
@@ -981,10 +984,10 @@ Daniele`;
  </div>
  </td>
 
- {/* Preferred Time OR Re-engagement Priority */}
- <td className="p-4">
- {isLapsedSection ? (
- <div className="space-y-2">
+  {/* Preferred Time OR Re-engagement Priority */}
+  <td className={cn(compact ? "py-1.5" : "p-4")}>
+  {isLapsedSection ? (
+  <div className={cn(compact ? "space-y-1" : "space-y-2")}>
  {/* Priority Score & Tag */}
  <div className="flex items-center gap-3">
  {/* Priority Score */}
@@ -1091,10 +1094,10 @@ Daniele`;
  )}
  </td>
 
- {/* Follow-up Status */}
- <td className="p-4">
- <div className="space-y-1.5">
- {(() => {
+  {/* Follow-up Status */}
+  <td className={cn(compact ? "py-1.5" : "p-4")}>
+  <div className={cn(compact ? "space-y-0.5" : "space-y-1.5")}>
+  {(() => {
  const lastContactedAt = journalData.last_contacted_at;
  const recentlyContacted = lastContactedAt
  ? (new Date().getTime() - new Date(lastContactedAt).getTime()) / (1000 * 60 * 60 * 24) < 14
@@ -1146,10 +1149,10 @@ Daniele`;
  </div>
  </td>
 
- {/* Row Actions */}
- <td className="p-4 pr-6 text-right">
- <div className="flex items-center justify-end gap-2">
- {/* Rate Increase Follow-up Action */}
+  {/* Row Actions */}
+  <td className={cn("pr-6 text-right", compact ? "py-1.5" : "p-4")}>
+  <div className="flex items-center justify-end gap-1">
+  {/* Rate Increase Follow-up Action */}
  {client.standard_rate !== targetRate && (
  <div className="flex items-center gap-1.5">
 <Tooltip>

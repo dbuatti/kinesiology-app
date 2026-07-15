@@ -67,7 +67,8 @@ serve(async (req) => {
 
   try {
     const NOTION_KEY = Deno.env.get("NOTION_API_KEY");
-    const STRIPE_KEY = Deno.env.get('STRIPE_SECRET_KEY');
+    const STRIPE_KEY = Deno.env.get('STRIPE_SECRET_KEY_VOICE');
+    if (!STRIPE_KEY) throw new Error("Missing STRIPE_SECRET_KEY_VOICE");
     const GMAIL_CLIENT_ID = Deno.env.get("GMAIL_CLIENT_ID");
     const GMAIL_CLIENT_SECRET = Deno.env.get("GMAIL_CLIENT_SECRET");
     const GMAIL_REFRESH_TOKEN = Deno.env.get("GMAIL_REFRESH_TOKEN");

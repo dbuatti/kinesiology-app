@@ -71,6 +71,8 @@ import {
   Brain,
   Zap,
   Edit3,
+  Columns,
+  Inbox,
 } from "lucide-react";
 import { format, formatDistanceToNow, differenceInMonths, startOfWeek, endOfWeek, startOfMonth } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -164,6 +166,7 @@ export default function ClientAuditPage() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [filterRate, setFilterRate] = useState<string>("all");
   const [filterFollowUp, setFilterFollowUp] = useState<string>("all");
+  const [compactRows, setCompactRows] = useState(false);
   
   // Collapsible sections state
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
@@ -864,6 +867,32 @@ export default function ClientAuditPage() {
 
   const maxDistributionCount = Math.max(...Object.values(rateDistribution), 1);
 
+  // Monthly Revenue Data for Chart (last 6 months)
+  const monthlyRevenueData = useMemo(() => {
+    const months: Record<string, { label: string; revenue: number; sessions: number }> = {};
+    const nowDate = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(nowDate.getFullYear(), nowDate.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const label = d.toLocaleDateString("en-AU", { month: "short", timeZone: "Australia/Melbourne" });
+      months[key] = { label, revenue: 0, sessions: 0 };
+    }
+    clients.forEach(c => {
+      c.appointments.forEach(app => {
+        if (!app.is_paid && !app.payment_received) return;
+        const appDate = new Date(app.date);
+        const key = `${appDate.getFullYear()}-${String(appDate.getMonth() + 1).padStart(2, '0')}`;
+        if (months[key]) {
+          months[key].revenue += Number(app.price_amount) || 0;
+          months[key].sessions += 1;
+        }
+      });
+    });
+    return Object.values(months);
+  }, [clients]);
+
+  const maxMonthlyRevenue = Math.max(...monthlyRevenueData.map(m => m.revenue), 1);
+
   // Simulator Calculations
   const currentProjectedRevenue = totalActiveClients * averageSessionRate * simulatorFrequency;
   const targetProjectedRevenue = simulatorClients * targetRate * simulatorFrequency;
@@ -1191,18 +1220,24 @@ export default function ClientAuditPage() {
           {/* ── Persistent summary strip ── */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: "Active Clients", value: totalActiveClients.toString(), sub: "seen last 90 days", colour: "text-chart-primary", icon: Users },
-              { label: "Avg Session Rate", value: `$${averageSessionRate.toFixed(0)}`, sub: `target $150`, colour: "text-muted-foreground", icon: DollarSign },
-              { label: "This Week", value: `$${thisWeekRevenue.toLocaleString()}`, sub: `${thisWeekSessions} sessions · $${weeklyTarget} target`, colour: thisWeekRevenue >= weeklyTarget ? "text-chart-emerald" : "text-chart-destructive", icon: Calendar },
-              { label: "Proj. Monthly", value: `$${Math.round(projectedMonthlyRevenue).toLocaleString()}`, sub: "FNH only · current rates", colour: "text-primary", icon: TrendingUp },
-            ].map(({ label, value, sub, colour, icon: Icon }) => (
-              <div key={label} className="bg-card rounded-xl border border-border px-5 py-4 space-y-1.5">
-                <div className="flex items-center justify-between">
+              { label: "Active Clients", value: totalActiveClients.toString(), sub: "seen last 90 days", colour: "text-chart-primary", icon: Users, gradient: "from-chart-primary/5 to-transparent" },
+              { label: "Avg Session Rate", value: `$${averageSessionRate.toFixed(0)}`, sub: `target $150`, colour: "text-foreground", icon: DollarSign, gradient: "from-muted to-transparent" },
+              { label: "This Week", value: `$${thisWeekRevenue.toLocaleString()}`, sub: `${thisWeekSessions} sessions · $${weeklyTarget} target`, colour: thisWeekRevenue >= weeklyTarget ? "text-chart-emerald" : "text-chart-destructive", icon: Calendar, gradient: thisWeekRevenue >= weeklyTarget ? "from-chart-emerald/5 to-transparent" : "from-chart-destructive/5 to-transparent" },
+              { label: "Proj. Monthly", value: `$${Math.round(projectedMonthlyRevenue).toLocaleString()}`, sub: "FNH only · current rates", colour: "text-primary", icon: TrendingUp, gradient: "from-primary/5 to-transparent" },
+            ].map(({ label, value, sub, colour, gradient, icon: Icon }) => (
+              <div key={label} className={`relative bg-card rounded-xl border border-border px-5 py-4 space-y-1.5 overflow-hidden bg-gradient-to-br ${gradient} transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 group`}>
+                <div className="absolute inset-0 bg-grid-white/[0.02] pointer-events-none" />
+                <div className="flex items-center justify-between relative z-10">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
-                  <Icon size={16} className="text-muted-foreground/30" />
+                  <Icon size={18} className="text-muted-foreground/20 group-hover:text-muted-foreground/40 transition-colors" />
                 </div>
-                <p className={`text-2xl font-bold ${colour}`}>{value}</p>
-                <p className="text-[11px] text-muted-foreground font-medium">{sub}</p>
+                <p className={`text-2xl font-bold relative z-10 ${colour}`}>{value}</p>
+                <p className="text-[11px] text-muted-foreground font-medium relative z-10">{sub}</p>
+                {(label === "Avg Session Rate") && (
+                  <div className="mt-1.5 h-1 rounded-full bg-muted overflow-hidden relative z-10">
+                    <div className="h-full rounded-full bg-chart-primary transition-all duration-500" style={{ width: `${Math.min(100, (averageSessionRate / 150) * 100)}%` }} />
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -1351,8 +1386,9 @@ export default function ClientAuditPage() {
                 </CardContent>
               </Card>
 
-              {/* Controls Card */}
-              <Card className="border-none shadow-sm rounded-xl bg-card">
+              {/* Controls Card — Sticky */}
+              <Card className="border-none shadow-sm rounded-xl bg-card/80 backdrop-blur-md sticky top-0 z-20 border-b border-primary/10">
+                <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent pointer-events-none" />
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
                     {/* Search & Filter Indicator */}
@@ -1441,6 +1477,20 @@ export default function ClientAuditPage() {
                       >
                         <ArrowUpDown size={16} />
                       </Button>
+
+                      {/* Compact Toggle */}
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setCompactRows(prev => !prev)}
+                        className={cn(
+                          "rounded-xl border-border/60 bg-muted/30 hover:bg-muted/50",
+                          compactRows && "bg-primary/10 border-primary/30 text-primary"
+                        )}
+                        title={compactRows ? "Compact view" : "Normal view"}
+                      >
+                        <Columns size={16} />
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -1521,6 +1571,7 @@ export default function ClientAuditPage() {
                                   onQuickBook={(id) => { setBookingClientId(id); setIsBookingModalOpen(true); }}
                                   onRefresh={fetchData}
                                   averageSessionRate={averageSessionRate}
+                                  compact={compactRows}
                                 />
                               ))}
                             </tbody>
@@ -1570,8 +1621,11 @@ export default function ClientAuditPage() {
                   {!collapsedSections.oneToThreeMonths && (
                     <CardContent className="p-0 border-t border-border/40">
                       {groups.oneToThreeMonths.length === 0 ? (
-                        <div className="p-8 text-center text-muted-foreground text-sm font-medium">
-                          No clients in this section.
+                        <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
+                          <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center">
+                            <Inbox size={20} className="text-muted-foreground/40" />
+                          </div>
+                          <p className="text-sm font-medium text-muted-foreground">All clients are staying active — great retention!</p>
                         </div>
                       ) : (
                         <div className="overflow-x-auto">
@@ -1604,6 +1658,7 @@ export default function ClientAuditPage() {
                                   onQuickBook={(id) => { setBookingClientId(id); setIsBookingModalOpen(true); }}
                                   onRefresh={fetchData}
                                   averageSessionRate={averageSessionRate}
+                                  compact={compactRows}
                                 />
                               ))}
                             </tbody>
@@ -1653,8 +1708,11 @@ export default function ClientAuditPage() {
                   {!collapsedSections.threePlusMonths && (
                     <CardContent className="p-0 border-t border-border/40">
                       {groups.threePlusMonths.length === 0 ? (
-                        <div className="p-8 text-center text-muted-foreground text-sm font-medium">
-                          No clients in this section.
+                        <div className="flex flex-col items-center justify-center py-12 text-center space-y-3">
+                          <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center">
+                            <CheckCircle2 size={20} className="text-muted-foreground/40" />
+                          </div>
+                          <p className="text-sm font-medium text-muted-foreground">Every client has visited in the last 90 days — well done!</p>
                         </div>
                       ) : (
                         <div className="overflow-x-auto">
@@ -1687,6 +1745,7 @@ export default function ClientAuditPage() {
                                   onQuickBook={(id) => { setBookingClientId(id); setIsBookingModalOpen(true); }}
                                   onRefresh={fetchData}
                                   averageSessionRate={averageSessionRate}
+                                  compact={compactRows}
                                 />
                               ))}
                             </tbody>
@@ -2321,6 +2380,52 @@ export default function ClientAuditPage() {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Revenue Over Time Chart */}
+              <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+                <CardHeader className="p-8 pb-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
+                        <TrendingUp className="text-chart-primary" size={20} />
+                        Revenue Over Time
+                      </CardTitle>
+                      <CardDescription className="text-sm text-muted-foreground font-medium mt-1">
+                        Paid appointment revenue for the last 6 months.
+                      </CardDescription>
+                    </div>
+                    <div className="flex items-center gap-4 text-right">
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total (6mo)</p>
+                        <p className="text-lg font-semibold text-foreground">${monthlyRevenueData.reduce((s, m) => s + m.revenue, 0).toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Avg / Month</p>
+                        <p className="text-lg font-semibold text-chart-primary">${Math.round(monthlyRevenueData.reduce((s, m) => s + m.revenue, 0) / Math.max(monthlyRevenueData.length, 1)).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-8 pt-0">
+                  <div className="flex items-end justify-between gap-4 pt-6" style={{ height: 200 }}>
+                    {monthlyRevenueData.map((month) => {
+                      const pct = month.revenue / maxMonthlyRevenue;
+                      return (
+                        <div key={month.label} className="flex-1 flex flex-col items-center justify-end h-full space-y-2 group relative">
+                          <div className="absolute bottom-full mb-2 bg-card text-foreground text-[10px] font-medium px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap border border-border shadow-sm">
+                            ${month.revenue.toLocaleString()} · {month.sessions} session{month.sessions !== 1 ? 's' : ''}
+                          </div>
+                          <div
+                            className="w-full max-w-[48px] rounded-lg bg-gradient-to-t from-chart-primary/80 to-chart-primary/30 transition-all duration-500 group-hover:brightness-110"
+                            style={{ height: `${Math.max(pct * 160, 6)}px` }}
+                          />
+                          <span className="text-[10px] font-medium text-muted-foreground">{month.label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Rate Distribution Chart */}
               <Card className="border-none shadow-sm rounded-xl bg-card">

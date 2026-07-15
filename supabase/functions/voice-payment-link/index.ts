@@ -14,8 +14,8 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const STRIPE_KEY = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!STRIPE_KEY) throw new Error("Missing STRIPE_SECRET_KEY");
+    const STRIPE_KEY = Deno.env.get("STRIPE_SECRET_KEY_VOICE");
+    if (!STRIPE_KEY) throw new Error("Missing STRIPE_SECRET_KEY_VOICE");
 
     const { amount, lessonTitle, email, lessonId, studentName } = await req.json();
 

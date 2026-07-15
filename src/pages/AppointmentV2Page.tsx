@@ -145,6 +145,13 @@ const AppointmentV2Page = () => {
             onUpdate={refresh}
             saveField={saveField}
             updatePriorityPattern={updatePriorityPattern}
+            onFinalise={async () => {
+              await supabase
+                .from('appointments')
+                .update({ status: 'Completed' })
+                .eq('id', id);
+              navigate(`/appointments/${id}`);
+            }}
           />
         </ErrorBoundary>
       </div>

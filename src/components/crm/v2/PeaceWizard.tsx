@@ -32,9 +32,10 @@ interface PeaceWizardProps {
   saveField: (field: string, value: any) => Promise<void>;
   updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | 'Unsure' | null, side?: 'L' | 'R') => Promise<void>;
   onJumpToPhase: (index: number) => void;
+  onFinalise?: () => void;
 }
 
-const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriorityPattern }: PeaceWizardProps) => {
+const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriorityPattern, onFinalise }: PeaceWizardProps) => {
   const [activePhase, setActivePhase] = useState(0);
   const [emotionsOpen, setEmotionsOpen] = useState(false);
   const wizardRef = useRef<HTMLDivElement>(null);
@@ -117,7 +118,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
           </Button>
         ) : (
           <Button
-            onClick={onUpdate}
+            onClick={onFinalise || onUpdate}
             className="rounded-xl h-10 px-5 font-medium bg-chart-emerald hover:bg-chart-emerald/90"
           >
             <CheckCircle2 size={18} className="mr-1.5" /> Finalise

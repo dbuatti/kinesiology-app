@@ -90,19 +90,22 @@ const LimitingBeliefsTool = () => {
       .eq('id', beliefId);
     if (error) console.error('Save error:', error);
     setSaving(false);
-  }, [beliefId, saveToDb]);
+  }, [beliefId]);
+
+  const debouncedSave = useCallback((data: RoundData[], belief: string) => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => saveToDb(data, belief), 600);
+  }, [saveToDb]);
 
   const updateResponse = useCallback((stepId: number, value: string) => {
-    setRounds(prev => {
-      const next = [...prev];
-      next[activeRound] = {
-        ...next[activeRound],
-        responses: { ...next[activeRound].responses, [stepId]: value },
-      };
-      debouncedSave(next, limitingBelief);
-      return next;
-    });
-  }, [activeRound, debouncedSave, limitingBelief]);
+    const next = rounds.map((r, i) =>
+      i === activeRound
+        ? { ...r, responses: { ...r.responses, [stepId]: value } }
+        : r
+    );
+    setRounds(next);
+    debouncedSave(next, limitingBelief);
+  }, [rounds, activeRound, debouncedSave, limitingBelief]);
 
   const updateBelief = useCallback((value: string) => {
     setLimitingBelief(value);

@@ -9,22 +9,32 @@ import { useAuth } from '@/components/AuthProvider';
 import { showSuccess, showError } from '@/utils/toast';
 import { cn } from '@/lib/utils';
 
-const STEPS = [
-  { id: 'A', label: 'Feel the belief in your body',     prompt: 'What do you notice? Where is it in the body? What sensation?' },
-  { id: 'B', label: 'Follow the sensation deeper',       prompt: 'What do you notice now? Is it changing, moving, shifting?' },
-  { id: 'C', label: 'Identify the desired state',         prompt: 'What would you rather feel instead?' },
-  { id: 'D', label: 'Embody the alternative',             prompt: 'Feel that new state. What do you notice in the body now?' },
-  { id: 'E', label: 'Deepen the new feeling',             prompt: 'Let that feeling expand. What do you notice?' },
-  { id: 'F', label: 'Check if the belief still holds',   prompt: 'Does the original belief still feel true? What do you notice?' },
-];
+const STEP_IDS = [0, 1, 2, 3, 4, 5] as const;
+const STEP_LABELS: Record<number, string> = {
+  0: 'Feel the belief in your body',
+  1: 'Follow the sensation deeper',
+  2: 'Identify the desired state',
+  3: 'Embody the alternative',
+  4: 'Deepen the new feeling',
+  5: 'Check if the belief still holds',
+};
+const STEP_PROMPTS: Record<number, string> = {
+  0: 'What do you notice? Where is it in the body? What sensation?',
+  1: 'What do you notice now? Is it changing, moving, shifting?',
+  2: 'What would you rather feel instead?',
+  3: 'Feel that new state. What do you notice in the body now?',
+  4: 'Let that feeling expand. What do you notice?',
+  5: 'Does the original belief still feel true? What do you notice?',
+};
+const STEP_LETTERS: Record<number, string> = { 0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F' };
 
 interface RoundData {
-  responses: Record<string, string>;
+  responses: Record<number, string>;
   loopCount: number;
 }
 
 const EMPTY_ROUND = (loopCount = 0): RoundData => ({
-  responses: { 'A': '', 'B': '', 'C': '', 'D': '', 'E': '', 'F': '' },
+  responses: { 0: '', 1: '', 2: '', 3: '', 4: '', 5: '' },
   loopCount,
 });
 
@@ -40,7 +50,7 @@ const LimitingBeliefsTool = () => {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const current = rounds[activeRound];
-  const isComplete = rounds.some(r => r.responses['F']?.trim().length > 0);
+  const isComplete = rounds.some(r => r.responses[5]?.trim().length > 0);
 
   const buildDissolveLog = useCallback(() => ({
     responses: current.responses,
@@ -69,7 +79,7 @@ const LimitingBeliefsTool = () => {
     if (!beliefId) return;
     setSaving(true);
     const latest = roundsData[roundsData.length - 1];
-    const isCompleteCheck = roundsData.some(r => r.responses['F']?.trim().length > 0);
+    const isCompleteCheck = roundsData.some(r => r.responses[5]?.trim().length > 0);
     const { error } = await supabase
       .from('limiting_belief_sessions')
       .update({
@@ -82,7 +92,7 @@ const LimitingBeliefsTool = () => {
     setSaving(false);
   }, [beliefId, saveToDb]);
 
-  const updateResponse = useCallback((stepId: string, value: string) => {
+  const updateResponse = useCallback((stepId: number, value: string) => {
     setRounds(prev => {
       const next = [...prev];
       next[activeRound] = {
@@ -202,17 +212,17 @@ const LimitingBeliefsTool = () => {
 
           {/* A-F Steps */}
           <div className="space-y-3">
-            {STEPS.map(step => {
-              const val = current.responses[step.id];
+            {STEP_IDS.map(stepIdx => {
+              const val = current.responses[stepIdx];
               return (
-                <div key={step.id} className="bg-card border border-border rounded-xl overflow-hidden">
+                <div key={stepIdx} className="bg-card border border-border rounded-xl overflow-hidden">
                   <div className="flex items-center gap-3 px-4 py-2.5 bg-muted/20 border-b border-border/40">
                     <div className="w-6 h-6 rounded-md bg-violet-500/10 text-violet-600 flex items-center justify-center text-[11px] font-bold shrink-0">
-                      {step.id}
+                      {STEP_LETTERS[stepIdx]}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-foreground">{step.label}</p>
-                      <p className="text-[10px] text-muted-foreground">{step.prompt}</p>
+                      <p className="text-xs font-semibold text-foreground">{STEP_LABELS[stepIdx]}</p>
+                      <p className="text-[10px] text-muted-foreground">{STEP_PROMPTS[stepIdx]}</p>
                     </div>
                     {val?.trim() && (
                       <Check size={14} className="text-chart-emerald shrink-0 ml-auto" />
@@ -222,7 +232,7 @@ const LimitingBeliefsTool = () => {
                     <Textarea
                       placeholder="Client's response..."
                       value={val || ''}
-                      onChange={e => updateResponse(step.id, e.target.value)}
+                      onChange={e => updateResponse(stepIdx, e.target.value)}
                       className="min-h-[48px] text-sm rounded-lg border-border/40 bg-muted/10 resize-none"
                       rows={2}
                     />

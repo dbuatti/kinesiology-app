@@ -16,7 +16,7 @@ const STEPS = [
   { id: 'D', label: 'Embody the alternative',             prompt: 'Feel that new state. What do you notice in the body now?' },
   { id: 'E', label: 'Deepen the new feeling',             prompt: 'Let that feeling expand. What do you notice?' },
   { id: 'F', label: 'Check if the belief still holds',   prompt: 'Does the original belief still feel true? What do you notice?' },
-] as const;
+];
 
 interface RoundData {
   responses: Record<string, string>;
@@ -24,7 +24,7 @@ interface RoundData {
 }
 
 const EMPTY_ROUND = (loopCount = 0): RoundData => ({
-  responses: { A: '', B: '', C: '', D: '', E: '', F: '' },
+  responses: { 'A': '', 'B': '', 'C': '', 'D': '', 'E': '', 'F': '' },
   loopCount,
 });
 
@@ -40,7 +40,7 @@ const LimitingBeliefsTool = () => {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const current = rounds[activeRound];
-  const isComplete = rounds.some(r => r.responses.F?.trim().length > 0);
+  const isComplete = rounds.some(r => r.responses['F']?.trim().length > 0);
 
   const buildDissolveLog = useCallback(() => ({
     responses: current.responses,
@@ -69,7 +69,7 @@ const LimitingBeliefsTool = () => {
     if (!beliefId) return;
     setSaving(true);
     const latest = roundsData[roundsData.length - 1];
-    const isCompleteCheck = roundsData.some(r => r.responses.F?.trim().length > 0);
+    const isCompleteCheck = roundsData.some(r => r.responses['F']?.trim().length > 0);
     const { error } = await supabase
       .from('limiting_belief_sessions')
       .update({

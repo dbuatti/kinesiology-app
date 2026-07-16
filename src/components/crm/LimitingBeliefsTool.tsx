@@ -4,8 +4,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Mic, MicOff, RefreshCw, Loader2, Check, X, Plus, Brain, ChevronDown, ChevronUp } from 'lucide-react';
+import { Mic, MicOff, RefreshCw, Loader2, Check, Plus, Brain } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/components/AuthProvider';
 import { showSuccess, showError } from '@/utils/toast';
 import { cn } from '@/lib/utils';
 
@@ -42,6 +43,7 @@ const EMPTY_SESSION: LimitingBeliefSession = {
 };
 
 const LimitingBeliefsTool = () => {
+  const { session: authSession } = useAuth();
   const [session, setSession] = useState<LimitingBeliefSession>(EMPTY_SESSION);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState<Record<string, boolean>>({});
@@ -52,9 +54,11 @@ const LimitingBeliefsTool = () => {
   const hasSession = !!session.id;
 
   const createSession = useCallback(async () => {
+    if (!authSession?.user?.id) { showError('Not authenticated'); return; }
     const { data, error } = await supabase
       .from('limiting_belief_sessions')
       .insert({
+        user_id: authSession.user.id,
         problem: '',
         felt_sense: '',
         limiting_belief: '',
@@ -72,7 +76,7 @@ const LimitingBeliefsTool = () => {
     if (error) { showError('Failed to create session'); return; }
     setSession({ ...EMPTY_SESSION, ...data });
     showSuccess('Session started');
-  }, []);
+  }, [authSession]);
 
   const saveField = useCallback(async (field: string, value: any) => {
     if (!session.id) return;

@@ -56,8 +56,7 @@ const LimitingBeliefsTool = () => {
         user_id: authSession.user.id,
         problem: limitingBelief,
         limiting_belief: limitingBelief,
-        dissolve_log: buildDissolveLog(),
-        current_step: 0,
+        dissolve_log: JSON.stringify(buildDissolveLog()),
       })
       .select()
       .single();
@@ -75,19 +74,12 @@ const LimitingBeliefsTool = () => {
       .from('limiting_belief_sessions')
       .update({
         limiting_belief: belief,
-        dissolve_log: { responses: latest.responses, loopCount: roundsData.length - 1, history: roundsData },
-        current_step: isCompleteCheck ? 99 : roundsData.length - 1,
+        dissolve_log: JSON.stringify({ responses: latest.responses, loopCount: roundsData.length - 1, history: roundsData }),
         is_complete: isCompleteCheck,
       })
       .eq('id', beliefId);
     if (error) console.error('Save error:', error);
     setSaving(false);
-  }, [beliefId]);
-
-  const debouncedSave = useCallback((roundsData: RoundData[], belief: string) => {
-    if (!beliefId) return;
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => saveToDb(roundsData, belief), 600);
   }, [beliefId, saveToDb]);
 
   const updateResponse = useCallback((stepId: string, value: string) => {

@@ -12,11 +12,15 @@ import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft, Loader2, Printer, FileText, Activity, Zap, GitBranch,
   Target, ClipboardCheck, CheckCircle2, ChevronRight, ChevronLeft,
-  Maximize2, Minimize2, Calendar, Clock, User
+  Maximize2, Minimize2, Calendar, Clock, User, BookOpen
 } from "lucide-react";
+import {
+  HoverCard, HoverCardContent, HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import PeaceWizard from "@/components/crm/v2/PeaceWizard";
 import AppointmentV2DocView from "@/components/crm/v2/AppointmentV2DocView";
+import { parseClientJournal } from "@/utils/journal-helper";
 
 const AppointmentV2Page = () => {
   const { id } = useParams<{ id: string }>();
@@ -104,7 +108,27 @@ const AppointmentV2Page = () => {
                 <User size={18} className="text-primary" />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">{appointment.clients?.name || "Unknown"}</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm font-semibold text-foreground truncate">{appointment.clients?.name || "Unknown"}</p>
+                  {(() => {
+                    const notes = appointment.clients?.journal ? parseClientJournal(appointment.clients.journal).notes : null;
+                    if (!notes) return null;
+                    return (
+                      <HoverCard openDelay={200} closeDelay={100}>
+                        <HoverCardTrigger asChild>
+                          <button className="shrink-0 text-amber-500 hover:text-amber-600 transition-colors" title="View practitioner notes">
+                            <BookOpen size={14} />
+                          </button>
+                        </HoverCardTrigger>
+                        <HoverCardContent side="bottom" align="start" className="w-80 rounded-xl p-4 border-amber-200/50">
+                          <p className="text-xs text-muted-foreground whitespace-pre-wrap italic leading-relaxed">
+                            "{notes}"
+                          </p>
+                        </HoverCardContent>
+                      </HoverCard>
+                    );
+                  })()}
+                </div>
                 <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium">
                   <Calendar size={10} />
                   <span>{format(new Date(appointment.date), "EEE, MMM d")}</span>

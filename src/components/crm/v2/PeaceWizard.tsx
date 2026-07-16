@@ -3,13 +3,17 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   Activity, Zap, GitBranch, Target, ClipboardCheck,
-  ChevronLeft, ChevronRight, CheckCircle2, Heart
+  ChevronLeft, ChevronRight, CheckCircle2, Heart, Brain
 } from "lucide-react";
 import { AppointmentWithClient } from "@/types/crm";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Sheet, SheetContent, SheetHeader, SheetTitle,
+} from "@/components/ui/sheet";
 import EmotionsProtocolSimple from "@/components/crm/v2/EmotionsProtocolSimple";
+import LimitingBeliefsTool from "@/components/crm/LimitingBeliefsTool";
 
 import PreliminaryPhase from "./phases/PreliminaryPhase";
 import EasePhase from "./phases/EasePhase";
@@ -38,6 +42,7 @@ interface PeaceWizardProps {
 const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriorityPattern, onFinalise }: PeaceWizardProps) => {
   const [activePhase, setActivePhase] = useState(0);
   const [emotionsOpen, setEmotionsOpen] = useState(false);
+  const [limitingBeliefsOpen, setLimitingBeliefsOpen] = useState(false);
   const wizardRef = useRef<HTMLDivElement>(null);
 
   const phaseStatus = useMemo(() => ({
@@ -95,6 +100,15 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
         </Button>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setLimitingBeliefsOpen(true)}
+            className="rounded-xl h-10 px-3 text-violet-500 hover:bg-violet-50"
+            title="Limiting Beliefs Procedure"
+          >
+            <Brain size={16} />
+          </Button>
           <Button
             variant="ghost"
             size="sm"
@@ -202,6 +216,20 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
           {activePhase === 4 && <EmbedPhaseV2 {...phaseProps} />}
         </div>
       </div>
+
+      {/* Limiting Beliefs Sheet */}
+      <Sheet open={limitingBeliefsOpen} onOpenChange={setLimitingBeliefsOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto p-0">
+          <SheetHeader className="px-6 pt-6 pb-4 border-b border-border sticky top-0 bg-card z-10">
+            <SheetTitle className="text-lg font-semibold flex items-center gap-2">
+              <Brain size={20} className="text-violet-500" /> Limiting Beliefs
+            </SheetTitle>
+          </SheetHeader>
+          <div className="p-6">
+            <LimitingBeliefsTool />
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Emotions Protocol Modal */}
       <Dialog open={emotionsOpen} onOpenChange={setEmotionsOpen}>

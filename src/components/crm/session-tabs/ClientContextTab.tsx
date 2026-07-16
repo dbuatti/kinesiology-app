@@ -4,9 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { 
   User, Activity, ShieldAlert, Heart, 
   Briefcase, MapPin, Calendar, Info,
-  AlertCircle, Zap, Brain, Wind
+  AlertCircle, Zap, Brain, Wind, BookOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { parseClientJournal } from "@/utils/journal-helper";
 
 interface ClientContextTabProps {
   appointment: any;
@@ -14,6 +15,7 @@ interface ClientContextTabProps {
 
 const ClientContextTab = ({ appointment }: ClientContextTabProps) => {
   const client = appointment.clients;
+  const journalNotes = client?.journal ? parseClientJournal(client.journal).notes : null;
   
   // Prioritize appointment-specific data, fallback to client profile
   const stressLevel = appointment.current_stress_level ?? client.current_stress_level;
@@ -90,6 +92,14 @@ const ClientContextTab = ({ appointment }: ClientContextTabProps) => {
               </div>
             </div>
           </Section>
+
+          {journalNotes && (
+            <Section icon={BookOpen} title="Practitioner Notes" color="text-chart-primary">
+              <p className="text-sm font-medium text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                {journalNotes}
+              </p>
+            </Section>
+          )}
 
           <div className="p-6 bg-foreground/10 text-foreground rounded-xl shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 p-6 opacity-10"><Brain size={80} /></div>

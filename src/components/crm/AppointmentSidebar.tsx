@@ -2,13 +2,14 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Activity, PanelRightClose } from "lucide-react";
+import { Brain, Activity, PanelRightClose, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import BrainstemToneMap from "./BrainstemToneMap";
 import AppointmentContextCards from "./AppointmentContextCards";
 import { Nuclei } from "@/utils/brainstem-logic";
 import { AppointmentWithClient } from "@/types/crm";
+import { parseClientJournal } from "@/utils/journal-helper";
 
 interface AppointmentSidebarProps {
   appointment: AppointmentWithClient;
@@ -104,6 +105,29 @@ const AppointmentSidebar = ({
           </CardContent>
         </Card>
       )}
+
+      {/* CLIENT NOTES */}
+      {(() => {
+        const notes = appointment.clients?.journal ? parseClientJournal(appointment.clients.journal).notes : null;
+        if (!notes) return null;
+        return (
+          <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
+            <CardHeader className="p-6 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center">
+                  <BookOpen size={20} />
+                </div>
+                <h3 className="text-sm font-semibold text-foreground">Client Notes</h3>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6 pt-0">
+              <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap italic">
+                "{notes}"
+              </p>
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {/* CONTEXT CARDS */}
       <AppointmentContextCards

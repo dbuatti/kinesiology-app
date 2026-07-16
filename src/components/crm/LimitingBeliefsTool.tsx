@@ -66,7 +66,8 @@ const LimitingBeliefsTool = () => {
         user_id: authSession.user.id,
         problem: limitingBelief,
         limiting_belief: limitingBelief,
-        dissolve_log: JSON.stringify(buildDissolveLog()),
+        positive_belief: limitingBelief,
+        dissolve_log: buildDissolveLog(),
       })
       .select()
       .single();
@@ -84,7 +85,8 @@ const LimitingBeliefsTool = () => {
       .from('limiting_belief_sessions')
       .update({
         limiting_belief: belief,
-        dissolve_log: JSON.stringify({ responses: latest.responses, loopCount: roundsData.length - 1, history: roundsData }),
+        positive_belief: belief,
+        dissolve_log: { responses: latest.responses, loopCount: roundsData.length - 1, history: roundsData },
         is_complete: isCompleteCheck,
       })
       .eq('id', beliefId);

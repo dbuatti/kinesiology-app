@@ -145,15 +145,15 @@ const MechanoreceptiveProcess = ({
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 text-sm font-bold">1</div>
               <div>
-                <p className="font-semibold text-blue-900">State <strong>&quot;Afferent&quot;</strong></p>
-                <p className="text-sm text-blue-700">The inhibited muscle facilitates (locks). This confirms the problem is afferent — but not yet which type.</p>
+                <p className="font-semibold text-blue-900">State <strong>&quot;Afferent&quot;</strong> in the mind</p>
+                <p className="text-sm text-blue-700">The inhibited muscle facilitates (locks). <strong>Thought is a stim:</strong> stating &quot;afferent&quot; locks it; an unrelated thought unlocks it. The X card is the objective way to hold the indication.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 text-sm font-bold">2</div>
               <div>
                 <p className="font-semibold text-blue-900">Show the <strong>X card</strong> for 5–10 seconds</p>
-                <p className="text-sm text-blue-700">The inhibited muscle facilitates → <strong>afferent unconscious mechanoreception confirmed</strong>. (TL of GV16 facilitates too — same test.)</p>
+                <p className="text-sm text-blue-700">The inhibited muscle facilitates → <strong>afferent unconscious mechanoreception confirmed</strong>. (TL of GV16 facilitates too — same test, same result.)</p>
               </div>
             </div>
           </div>
@@ -163,7 +163,7 @@ const MechanoreceptiveProcess = ({
               <Info size={18} className="text-blue-600 shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-foreground">The X card is your mechanoreception check</p>
-                <p className="text-xs text-muted-foreground">Viewing an X-pattern (two crossed lines) for 5–10s while testing an inhibited direct muscle is the quick confirmation. If it facilitates, it&apos;s unconscious mechanoreception via the spinocerebellar tract. TL of GV16 (the cerebellum point) confirms the same thing.</p>
+                <p className="text-xs text-muted-foreground">Viewing an X-pattern for 5–10s while testing an inhibited direct muscle is the quick confirmation. If it facilitates, it&apos;s unconscious mechanoreception via the spinocerebellar tract. The X card is <strong>more objective</strong> than stating it in the mind — use it as your primary confirm.</p>
               </div>
             </div>
           </div>
@@ -246,10 +246,21 @@ const MechanoreceptiveProcess = ({
             )}
           </div>
 
-          <div className="p-4 rounded-xl bg-muted border border-border">
-            <p className="text-xs text-muted-foreground font-medium">
-              <strong>You don&apos;t need to memorise the map.</strong> Touch the suspected ligament — if the indicator momentarily facilitates, that&apos;s the one. The testing finds it for you.
-            </p>
+          <div className="space-y-3 p-4 rounded-xl bg-muted border border-border">
+            <div className="flex items-start gap-3">
+              <Info size={16} className="text-blue-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">Rub to confirm, stretch to correct</p>
+                <p className="text-xs text-muted-foreground"><strong>Rubbing/compressing</strong> the tissue down-regulates the signal → the indicator momentarily facilitates (use this to confirm the spot). <strong>Stretching</strong> aggravates it → the indicator inhibits (this held with GV16 drives the correction). Same tissue, opposite readings.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <Info size={16} className="text-blue-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">Golgi receptors are everywhere</p>
+                <p className="xs text-muted-foreground">They sit in ligaments, tendons <strong>and fascia</strong>. That&apos;s why the tissue can be close (e.g. SC ligament → neck flexors) or distant and contralateral (e.g. anterior oblique sling → glute medius). When it doesn&apos;t &quot;make sense,&quot; follow the process anyway — it finds the tissue.</p>
+              </div>
+            </div>
           </div>
 
           <div className="flex gap-3">
@@ -270,14 +281,23 @@ const MechanoreceptiveProcess = ({
             </p>
           </div>
 
-          <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 text-center space-y-3">
-            <Move size={40} className="text-blue-600 mx-auto" />
-            <p className="text-lg font-semibold text-blue-900">
-              Stretch {side} {joint} in different directions
-            </p>
-            <p className="text-sm text-blue-700">
-              Place your hand over the ligament area and stretch through it. Ligaments and fascia wrap around each other — it needn&apos;t be pinpoint. The direction that inhibits the indicator muscle is the correction direction.
-            </p>
+          <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 space-y-4">
+            <div className="text-center space-y-3">
+              <Move size={40} className="text-blue-600 mx-auto" />
+              <p className="text-lg font-semibold text-blue-900">
+                Stretch {side} {joint} in different directions
+              </p>
+              <p className="text-sm text-blue-700">
+                Place your hand over the tissue and stretch through it. The direction that <strong>inhibits</strong> the indicator is the one to correct.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-white border border-blue-200">
+              <p className="text-sm font-semibold text-blue-900 mb-1">Rubbing vs stretching — same tissue, opposite readings</p>
+              <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
+                <li><strong>Rub / compress</strong> → down-regulates → muscle momentarily <strong>facilitates</strong> → use to <strong>confirm</strong> the spot</li>
+                <li><strong>Stretch</strong> → aggravates → indicator <strong>inhibits</strong> → held with GV16, this <strong>drives the correction</strong></li>
+              </ul>
+            </div>
           </div>
 
           <div className="flex gap-3">

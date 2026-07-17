@@ -492,7 +492,7 @@ Correction Method: ${method}`;
                 <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Specific System</label>
                 {metadata.wizard_direction === 'Afferent' ? (
                   <div className="grid grid-cols-2 gap-2">
-                    {['Mechanoreceptor', 'Vestibular/Ocular', 'Physiological', 'Nociceptive'].map(sys => (
+                    {['Mechanoreceptor', 'Nociceptive', 'Physiological'].map(sys => (
                       <div key={sys} className="flex items-center gap-2">
                         <Checkbox 
                           id={`sys-${sys}`}

@@ -288,7 +288,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
   const renderStep = () => {
     switch (step) {
       case 'SELECT_START':
-        if (inhibitedItems.length === 0 && !isSandbox) {
+        if (inhibitedItems.length === 0 && !isSandbox && selectedFinding !== 'CUSTOM') {
           return (
             <div className="py-12 flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in zoom-in-95 duration-500">
               <div className={cn(

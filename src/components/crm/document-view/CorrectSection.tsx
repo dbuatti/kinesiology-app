@@ -1,7 +1,7 @@
 
 import { useMemo, useState, useEffect, useRef } from 'react'; import type { ReactNode } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Zap, BookOpen, ExternalLink, Info, CheckCircle2, Sparkles, Brain, Activity, Heart, ShieldAlert, Wind, Droplets, ArrowDownCircle, ArrowUpCircle, Layers, Eye, Copy, Check, History, Trash2, ArrowLeftRight } from 'lucide-react';
+import { Zap, BookOpen, ExternalLink, Info, CheckCircle2, Sparkles, Brain, Activity, Heart, ShieldAlert, Wind, Droplets, ArrowDownCircle, ArrowUpCircle, Layers, Copy, Check, History, Trash2, ArrowLeftRight } from 'lucide-react';
 import DocInput from './DocInput';
 import { cn } from '@/lib/utils';
 import { AFFERENT_PATHWAYS, EFFERENT_PATHWAYS } from '@/data/pathway-logic-data';
@@ -699,21 +699,6 @@ Correction Method: ${method}`;
                 "CONSCIOUS: TL opposing sensory cortex → Isometric contraction (30-40%, 3-5s) + Nasal breathing",
                 "UNCONSCIOUS: Hold GV16 → Locate ligament → Stretch + Tuning fork on cranium (3-5s)",
                 "Re-test original pathway after each layer"
-              ]}
-            />
-          </div>
-
-          <div id="c-vestibular">
-            <ProtocolBlock 
-              title="Vestibular / Ocular"
-              icon={Eye}
-              color="bg-cyan-500"
-              desc="Balance and visual system inputs to the cerebellum. Critical for spatial orientation and postural control."
-              steps={[
-                "Perform VOR (Vestibulo-Ocular Reflex) or saccadic eye movements",
-                "Use head rotations or balance challenges",
-                "Integrate with specific eye positions",
-                "Hold correction with nasal breathing"
               ]}
             />
           </div>

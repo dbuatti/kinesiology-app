@@ -455,8 +455,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
             </div>
             {[
               { type: 'Mechanoreceptive', icon: Activity, color: 'blue', step: 'MECHANO_PROCESS', desc: 'Joint and muscle receptor calibration.' },
-              { type: 'Vestibular', icon: Eye, color: 'cyan', step: 'VESTIBULAR_PROCESS', desc: 'Balance and visual system integration.' },
-              { type: 'Nociceptive', icon: AlertTriangle, color: 'orange', step: 'NOCICEPTIVE_PROCESS', desc: 'Clearing threat from scars or old injuries.' }
+              { type: 'Nociceptive', icon: AlertTriangle, color: 'orange', step: 'NOCICEPTIVE_PROCESS', desc: 'Threat detection via the spinothalamic tract. Known sites, scars, old injuries.' }
             ].map(item => (
               <button key={item.type} onClick={() => goToStep(item.step as Step)} className="p-6 rounded-xl border border-border bg-card hover:bg-muted transition-all duration-300 text-left group w-full">
                 <div className="flex items-center justify-between">
@@ -531,7 +530,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
         );
 
       case 'NOCICEPTIVE_PROCESS':
-        return <NociceptiveThreatAssessment onSave={handleSave} onInhibited={handleInhibited} onCancel={goBack} />;
+        return <NociceptiveThreatAssessment onSave={handleSave} onInhibited={handleInhibited} onCancel={goBack} initialValue={effectiveItem} />;
       
       case 'EFFERENT_PROCESS':
         return <EfferentBrainIntegration initialEntryPoint={effectiveItem} onSave={handleSave} onInhibited={handleInhibited} onCancel={goBack} />;

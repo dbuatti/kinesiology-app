@@ -1,7 +1,6 @@
 
 import { 
   Activity, 
-  Eye, 
   Droplets, 
   Brain, 
   Zap, 
@@ -46,17 +45,19 @@ export const AFFERENT_PATHWAYS: PathwayOption[] = [
     ]
   },
   {
-    id: 'Vestibular/Ocular',
-    label: 'Vestibular / Ocular',
+    id: 'Nociceptive',
+    label: 'Nociceptive (Threat Detection)',
     direction: 'Afferent (Bottom-Up)',
-    icon: Eye,
-    color: 'text-cyan-500',
-    description: 'Balance and visual system inputs to the cerebellum. Critical for spatial orientation and postural control.',
+    icon: AlertTriangle,
+    color: 'text-orange-500',
+    description: 'Threat detection via the spinothalamic tract (anterolateral system). Nociceptors are threat receptors in every tissue, terminating at the thalamus. A-delta (fast) and C-fibre (slow) pathways.',
+    confirmationTest: 'Compression over site → muscle locks (5-10s) confirms nociception',
     protocols: [
-      'Perform VOR (Vestibulo-Ocular Reflex) or saccadic eye movements',
-      'Use head rotations or balance challenges',
-      'Integrate with specific eye positions',
-      'Hold correction with nasal breathing'
+      'Hold thalamus point (Bl9 / occipitalis)',
+      'Re-apply aggravating stimulus (light crude touch, joint impact, or pinch)',
+      'Stack collateral inputs: look at site + breathe fast (sympathetics) + think of the suffering',
+      'Tuning fork + rocking to integrate (piezoelectric reset)',
+      'Reassess: site no longer inhibits, associated muscle restored'
     ]
   },
   {
@@ -71,22 +72,6 @@ export const AFFERENT_PATHWAYS: PathwayOption[] = [
       'Check for nutritional or hydration priorities',
       'Use specific neurolymphatic or neurovascular points',
       'Consider meridian-based corrections'
-    ]
-  },
-  {
-    id: 'Nociceptive',
-    label: 'Nociceptive (Threat Detection)',
-    direction: 'Afferent (Bottom-Up)',
-    icon: AlertTriangle,
-    color: 'text-orange-500',
-    description: 'Threat detection via the spinothalamic tract (anterolateral system). Nociceptors are threat receptors in every tissue, terminating at the thalamus. A-delta (fast) and C-fibre (slow) pathways.',
-    confirmationTest: 'Compression over site → muscle locks (5-10s) confirms nociception',
-    protocols: [
-      'Hold thalamus point (Bl9 / occipitalis)',
-      'Re-apply aggravating stimulus (light crude touch, joint impact, or pinch)',
-      'Stack collateral inputs: look at site + breathe fast (sympathetics) + think of the suffering',
-      'Tuning fork + rocking to integrate (piezoelectric reset)',
-      'Reassess: site no longer inhibits, associated muscle restored'
     ]
   }
 ];

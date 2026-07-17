@@ -95,7 +95,7 @@ const CorrectionsReferencePage = () => {
                   The body is sending threat signals <em>to</em> the brain. The correction targets mechanoreceptors, vestibular/ocular input, nociceptive threat sites, or physiological/biochemical signals.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {['Mechanoreceptor', 'Vestibular / Ocular', 'Nociceptive', 'Physiological'].map(s => (
+                  {['Mechanoreceptor', 'Nociceptive', 'Physiological'].map(s => (
                     <Badge key={s} variant="outline" className="text-blue-500 border-blue-500/30">{s}</Badge>
                   ))}
                 </div>

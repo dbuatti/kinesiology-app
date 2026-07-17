@@ -72,23 +72,14 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
   const nextStep = (step: Step) => setCurrentStep(step);
   const prevStep = (step: Step) => setCurrentStep(step);
 
-  const handleAddLayer = () => {
-    const finalLayers = [...layers];
-    if (currentLayer.cleared) {
-      finalLayers.push({ ...currentLayer, cleared: true } as Layer);
-    }
-    const summary = finalLayers.map(l => {
-      return `Layer ${l.id}: ${l.site} (${stimulusLabel(l.stimulus)})`;
-    }).join(' -> ');
+  const handleAddLayer = (layer: Layer) => {
+    const summary = `Layer ${layer.id}: ${layer.site} (${stimulusLabel(layer.stimulus)})`;
     onInhibited?.(`Nociceptive (STILL INHIBITED): ${summary}`);
   };
 
   const handleFinish = () => {
-    const finalLayers = [...layers];
-    if (currentLayer.cleared) {
-      finalLayers.push({ ...currentLayer, cleared: true } as Layer);
-    }
-    const summaryParts = finalLayers.map(l => {
+    const pushedLayers = [...layers, currentLayer as Layer];
+    const summaryParts = pushedLayers.map(l => {
       return `Layer ${l.id}: ${l.site} | Stimulus: ${stimulusLabel(l.stimulus)} | Correction: Thalamus + ${stimulusLabel(l.stimulus)} + Look + Fast Breath + Think of Suffering -> Tuning Fork + Rocking`;
     });
     onSave(`Nociceptive Correction: ${summaryParts.join(' -> ')}`);
@@ -455,10 +446,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
             <div className="grid grid-cols-1 gap-4">
               <Button
                 className="h-16 rounded-xl bg-chart-emerald hover:bg-chart-emerald/90 text-xl font-semibold shadow-sm"
-                onClick={() => {
-                  setCurrentLayer({ ...currentLayer, cleared: true });
-                  handleFinish();
-                }}
+                onClick={handleFinish}
               >
                 Site is Clear — Muscle Restored <CheckCircle2 size={24} className="ml-2" />
               </Button>
@@ -466,11 +454,8 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
                 variant="outline"
                 className="h-16 rounded-xl border-2 border-orange-200 text-orange-700 hover:bg-orange-50 font-medium text-lg"
                 onClick={() => {
-                  const finalLayers = [...layers];
-                  if (currentLayer.cleared) {
-                    finalLayers.push({ ...currentLayer, cleared: true } as Layer);
-                  }
-                  setLayers(finalLayers);
+                  handleAddLayer(currentLayer as Layer);
+                  setLayers([...layers, currentLayer as Layer]);
                   resetLayerControls();
                   setCurrentStep('SITE');
                 }}

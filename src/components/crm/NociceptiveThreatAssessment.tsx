@@ -563,7 +563,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
 
       <div className={cn(
         "lg:col-span-4 space-y-6 transition-all duration-300",
-        !showHistory && "hidden lg:block opacity-50 grayscale pointer-events-none"
+        !showHistory && "hidden"
       )}>
         <div className="p-6 rounded-xl bg-muted border border-border h-full flex flex-col">
           <div className="flex items-center justify-between mb-6">

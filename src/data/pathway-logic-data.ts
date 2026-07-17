@@ -5,7 +5,8 @@ import {
   Droplets, 
   Brain, 
   Zap, 
-  Heart 
+  Heart,
+  AlertTriangle
 } from 'lucide-react';
 
 export type DirectionType = 'Afferent (Bottom-Up)' | 'Efferent (Top-Down)';
@@ -14,6 +15,7 @@ export type SpecificCorrectionType =
   | 'Mechanoreceptor' 
   | 'Vestibular/Ocular' 
   | 'Physiological'
+  | 'Nociceptive'
   | 'Cortical' 
   | 'Subcortical' 
   | 'Emotional';
@@ -69,6 +71,22 @@ export const AFFERENT_PATHWAYS: PathwayOption[] = [
       'Check for nutritional or hydration priorities',
       'Use specific neurolymphatic or neurovascular points',
       'Consider meridian-based corrections'
+    ]
+  },
+  {
+    id: 'Nociceptive',
+    label: 'Nociceptive (Threat Detection)',
+    direction: 'Afferent (Bottom-Up)',
+    icon: AlertTriangle,
+    color: 'text-orange-500',
+    description: 'Threat detection via the spinothalamic tract (anterolateral system). Nociceptors are threat receptors in every tissue, terminating at the thalamus. A-delta (fast) and C-fibre (slow) pathways.',
+    confirmationTest: 'Compression over site → muscle locks (5-10s) confirms nociception',
+    protocols: [
+      'Hold thalamus point (Bl9 / occipitalis)',
+      'Re-apply aggravating stimulus (light crude touch, joint impact, or pinch)',
+      'Stack collateral inputs: look at site + breathe fast (sympathetics) + think of the suffering',
+      'Tuning fork + rocking to integrate (piezoelectric reset)',
+      'Reassess: site no longer inhibits, associated muscle restored'
     ]
   }
 ];
@@ -152,6 +170,13 @@ export const CLINICAL_PEARLS = {
     cortical: "Contralateral logic: Right cortex controls left body. If left side dysfunctional, check right cortex.",
     subcortical: "Ipsilateral logic: Left cerebellum controls left body. If left side dysfunctional, check left cerebellum.",
     limbic: "Left limbic = historical/past trauma. Right limbic = current emotional processing."
+  },
+  nociceptive: {
+    pathway: "Spinothalamic tract (anterolateral system). Sensory, ascending. Terminates at thalamus.",
+    fiberTypes: "A-delta (fast, myelinated, sharp — neospinothalamic) and C-fibres (slow, dull ache — paleospinothalamic).",
+    confirmation: "Compression down-regulates signal (5-10s). Thalamus point (Bl9) locks the muscle.",
+    correction: "Stimulus + thalamus + look/sound + fast breath + think of suffering → tuning fork + rocking.",
+    scarRule: "Stretch = mechanoreception. Light/crude touch = nociception. A scar can carry both."
   },
   mechanoreceptive: {
     conscious: "15% of afferent input. DCML pathway to contralateral sensory cortex (S1). Use isometric contractions.",

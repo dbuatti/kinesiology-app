@@ -16,51 +16,45 @@ import {
   X, 
   Wind, 
   RefreshCw, 
-  Timer,
   Plus,
   Layers,
-  Brain,
-  Sparkles,
   Eye,
-  Droplets,
-  Heart
+  Brain,
+  Fingerprint
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  AFFERENT_PATHWAYS, 
-  EFFERENT_PATHWAYS, 
-  getPathwayById, 
-  SpecificCorrectionType, 
-  DirectionType 
-} from '@/data/pathway-logic-data';
-import EfferentBrainIntegration from './EfferentBrainIntegration';
 
 type Step = 
-  | 'THREAT_DEFINITION'
-  | 'STIMULATION'
-  | 'IM_TEST'
-  | 'SELECT_DIRECTION'
-  | 'SELECT_SPECIFIC'
-  | 'MECHANO_DETAIL'
-  | 'EFFERENT_INTEGRATION'
-  | 'CORRECTION_ACTION'
-  | 'REASSESSMENT';
+  | 'SITE'
+  | 'CONFIRM'
+  | 'CORRECT'
+  | 'REASSESS';
 
 interface Layer {
   id: number;
-  threat: string;
-  response: 'Clear' | 'Inhibited' | null;
-  direction: DirectionType | null;
-  specific: SpecificCorrectionType | null;
-  joint?: string;
-  plane?: string;
-  action?: string;
+  site: string;
+  stimulus: string;
   cleared: boolean;
 }
 
-const JOINTS = ["Foot", "Ankle", "Knee", "Hip", "Pelvis", "Lumbar", "Thoracic", "Cervical", "Shoulder", "Elbow", "Wrist"];
-const PLANES = ["Sagittal", "Frontal", "Transverse"];
+const SITE_PRESETS = [
+  'Surgical Scar',
+  'Old Injury',
+  'Head Knock / Concussion',
+  'Coccyx Injury',
+  'Ankle / Inversion Strain',
+  'Stubbed Toe / Impact',
+  'C-Section Scar',
+  'Joint Impact (Jam)',
+  'Whiplash',
+  'Spinal Impact'
+];
+
+const STIMULUS_TYPES = [
+  { id: 'crude_touch', label: 'Light Crude Touch', desc: 'Very light touch over the site — C-fibre slow pathway' },
+  { id: 'joint_impact', label: 'Joint Impact / Blunt', desc: 'Compressing the joint — paleospinothalamic' },
+  { id: 'pinch', label: 'Pinch / Squeeze', desc: 'Prickling or squeezing — A-delta fast pathway' }
+];
 
 interface NociceptiveThreatAssessmentProps {
   onSave: (summary: string) => void;
@@ -71,13 +65,11 @@ interface NociceptiveThreatAssessmentProps {
 
 const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCancel }: NociceptiveThreatAssessmentProps) => {
   const [layers, setLayers] = useState<Layer[]>([]);
-  const [currentStep, setCurrentStep] = useState<Step>('THREAT_DEFINITION');
+  const [currentStep, setCurrentStep] = useState<Step>('SITE');
   const [currentLayer, setCurrentLayer] = useState<Partial<Layer>>({
     id: 1,
-    threat: '',
-    response: null,
-    direction: null,
-    specific: null,
+    site: initialValue || '',
+    stimulus: '',
     cleared: false
   });
   const [showHistory, setShowHistory] = useState(false);
@@ -87,149 +79,330 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
 
   const handleAddLayer = () => {
     const finalLayers = [...layers];
-    if (currentLayer.cleared || currentLayer.response === 'Clear') {
+    if (currentLayer.cleared) {
       finalLayers.push({ ...currentLayer, cleared: true } as Layer);
     }
     const summary = finalLayers.map(l => {
-      let detail = l.specific || 'Cleared';
-      if (l.specific === 'Mechanoreceptor' && l.joint) detail = `${l.joint} ${l.plane} ${l.action}`;
-      return `Layer ${l.id}: ${l.threat} (${detail})`;
+      return `Layer ${l.id}: ${l.site} (${l.stimulus})`;
     }).join(' -> ');
     
-    onInhibited?.(`Nociceptive Threat Assessment (STILL INHIBITED): ${summary}`);
+    onInhibited?.(`Nociceptive (STILL INHIBITED): ${summary}`);
   };
 
   const handleFinish = () => {
     const finalLayers = [...layers];
-    if (currentLayer.cleared || currentLayer.response === 'Clear') {
+    if (currentLayer.cleared) {
       finalLayers.push({ ...currentLayer, cleared: true } as Layer);
     }
     const summary = finalLayers.map(l => {
-      let detail = l.specific || 'Cleared';
-      if (l.specific === 'Mechanoreceptor' && l.joint) detail = `${l.joint} ${l.plane} ${l.action}`;
-      return `Layer ${l.id}: ${l.threat} (${detail})`;
+      return `Layer ${l.id}: ${l.site} (${l.stimulus})`;
     }).join(' -> ');
-    onSave(`Nociceptive Threat Assessment: ${summary}`);
+    onSave(`Nociceptive Correction: ${summary}`);
     setLayers([]);
-    setCurrentLayer({ id: 1, threat: '', response: null, direction: null, specific: null, cleared: false });
-    setCurrentStep('THREAT_DEFINITION');
+    setCurrentLayer({ id: 1, site: '', stimulus: '', cleared: false });
+    setCurrentStep('SITE');
   };
+
+  const resetLayerControls = () => {
+    setCurrentLayer({
+      id: layers.length + 2,
+      site: currentLayer.site,
+      stimulus: currentLayer.stimulus,
+      cleared: false
+    });
+  };
+
+  const stimulusLabel = (id: string) => STIMULUS_TYPES.find(s => s.id === id)?.label || id;
 
   const renderStep = () => {
     switch (currentStep) {
-      case 'THREAT_DEFINITION':
+      case 'SITE':
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="space-y-2"><h3 className="text-xl font-semibold text-foreground">Define the Threat</h3><p className="text-sm text-muted-foreground">Identify the area of increased nociception.</p></div>
-            <div className="grid grid-cols-1 gap-4">
-              <div className="relative"><AlertTriangle className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500" size={20} /><Input placeholder="e.g. C-Section Scar, Walking Downstairs..." className="h-14 pl-12 rounded-xl border-2 border-border focus:border-orange-500 transition-all text-lg font-medium" value={currentLayer.threat} onChange={(e) => setCurrentLayer({ ...currentLayer, threat: e.target.value })} /></div>
-              <div className="flex flex-wrap gap-2">{["Old Injury", "Surgical Scar", "Specific Movement", "Chronic Pain"].map(tag => (<button key={tag} onClick={() => setCurrentLayer({ ...currentLayer, threat: tag })} className="px-3 py-1.5 rounded-lg bg-muted hover:bg-orange-100 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-orange-600 transition-all">+ {tag}</button>))}</div>
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold text-foreground">Known Site of Suspected Nociception</h3>
+              <p className="text-sm text-muted-foreground">
+                The quick screen works from a known area — a scar, old injury, or previous impact. 
+                Nociception can sit silently without felt pain.
+              </p>
             </div>
-            <div className="flex gap-3"><Button disabled={!currentLayer.threat} onClick={() => nextStep('STIMULATION')} className="w-full h-14 rounded-xl bg-orange-600 hover:bg-orange-700 text-lg font-medium shadow-sm shadow-orange-200">Begin Assessment <ChevronRight size={20} className="ml-2" /></Button></div>
-          </div>
-        );
 
-      case 'STIMULATION':
-        return (
-          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="bg-orange-50 p-6 rounded-xl border-2 border-orange-100"><h3 className="text-lg font-medium text-orange-900 mb-3 flex items-center gap-2"><Zap size={20} className="text-orange-600" /> Aggravate & Challenge</h3><div className="space-y-4 text-orange-800"><p className="font-medium leading-relaxed">Stimulate the threat: <span className="text-orange-600 font-semibold underline">"{currentLayer.threat}"</span></p><ul className="list-disc list-inside text-sm space-y-2 opacity-90"><li><strong>Physical:</strong> Prod or rub the area/scar.</li><li><strong>Functional:</strong> Perform the threatening movement.</li><li><strong>Mental:</strong> Visualize the injury or movement.</li></ul></div></div>
-            <div className="flex gap-3"><Button variant="ghost" onClick={() => prevStep('THREAT_DEFINITION')} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button><Button onClick={() => nextStep('IM_TEST')} className="flex-[2] h-12 rounded-xl bg-orange-600 hover:bg-orange-700 font-medium">Stimulation Complete <ChevronRight size={18} className="ml-2" /></Button></div>
-          </div>
-        );
-
-      case 'IM_TEST':
-        return (
-          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="space-y-2 text-center"><h3 className="text-xl font-semibold text-foreground">Indicator Muscle (IM) Test</h3><p className="text-sm text-muted-foreground">Test the IM while the system is "irritated" by the threat.</p></div>
-            <div className="grid grid-cols-2 gap-4">
-              <Button variant="outline" className={cn("h-40 flex-col gap-4 rounded-3xl border-2 transition-all", currentLayer.response === 'Clear' ? "border-green-600 bg-green-50 text-green-700" : "border-border hover:border-green-200")} onClick={() => { setCurrentLayer({ ...currentLayer, response: 'Clear' }); nextStep('REASSESSMENT'); }}><div className="w-16 h-16 rounded-xl bg-white shadow-sm flex items-center justify-center"><CheckCircle2 size={32} className="text-green-500" /></div><span className="font-semibold text-lg">CLEAR</span></Button>
-              <Button variant="outline" className={cn("h-40 flex-col gap-4 rounded-3xl border-2 transition-all", currentLayer.response === 'Inhibited' ? "border-red-600 bg-red-50 text-red-700" : "border-border hover:border-red-200")} onClick={() => { setCurrentLayer({ ...currentLayer, response: 'Inhibited' }); nextStep('SELECT_DIRECTION'); }}><div className="w-16 h-16 rounded-xl bg-white shadow-sm flex items-center justify-center"><Zap size={32} className="text-red-500" /></div><span className="font-semibold text-lg">INHIBITED</span></Button>
+            <div className="space-y-2">
+              <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Enter the site</label>
+              <div className="relative">
+                <AlertTriangle className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500" size={20} />
+                <Input 
+                  placeholder="e.g. C-Section Scar, Left Ankle Inversion, Surgical Scar on Knee..." 
+                  className="h-14 pl-12 rounded-xl border-2 border-border focus:border-orange-500 transition-all text-lg font-medium"
+                  value={currentLayer.site} 
+                  onChange={(e) => setCurrentLayer({ ...currentLayer, site: e.target.value })} 
+                />
+              </div>
             </div>
-            <div className="flex gap-3"><Button variant="ghost" onClick={() => prevStep('STIMULATION')} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button></div>
-          </div>
-        );
 
-      case 'SELECT_DIRECTION':
-        return (
-          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="space-y-2"><h3 className="text-xl font-semibold text-foreground">Correction Direction</h3><p className="text-sm text-muted-foreground">Determine if the system needs bottom-up or top-down input.</p></div>
-            <div className="grid grid-cols-1 gap-4">
-              <Button variant="outline" className={cn("h-24 justify-between px-8 rounded-xl border-2 transition-all group", currentLayer.direction === 'Afferent (Bottom-Up)' ? "border-primary bg-muted text-foreground" : "border-border hover:border-primary")} onClick={() => { setCurrentLayer({ ...currentLayer, direction: 'Afferent (Bottom-Up)' }); nextStep('SELECT_SPECIFIC'); }}><div className="text-left"><div className="font-semibold text-xl">Afferent</div><div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Bottom-Up Processing</div></div><div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:translate-x-1 transition-all"><ChevronRight size={24} className="text-chart-primary" /></div></Button>
-              <Button variant="outline" className={cn("h-24 justify-between px-8 rounded-xl border-2 transition-all group", currentLayer.direction === 'Efferent (Top-Down)' ? "border-primary bg-muted text-foreground" : "border-border hover:border-primary")} onClick={() => { setCurrentLayer({ ...currentLayer, direction: 'Efferent (Top-Down)' }); nextStep('SELECT_SPECIFIC'); }}><div className="text-left"><div className="font-semibold text-xl">Efferent</div><div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Top-Down Processing</div></div><div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:translate-x-1 transition-all"><ChevronRight size={24} className="text-chart-primary" /></div></Button>
+            <div className="space-y-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Common sites</p>
+              <div className="flex flex-wrap gap-2">
+                {SITE_PRESETS.map(tag => (
+                  <button
+                    key={tag}
+                    onClick={() => setCurrentLayer({ ...currentLayer, site: tag })}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all",
+                      currentLayer.site === tag 
+                        ? "bg-orange-100 text-orange-700 border border-orange-300" 
+                        : "bg-muted hover:bg-orange-50 text-muted-foreground hover:text-orange-600 border border-transparent"
+                    )}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
             </div>
-            <Button variant="ghost" onClick={() => prevStep('IM_TEST')} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
-          </div>
-        );
 
-      case 'SELECT_SPECIFIC':
-        const options = currentLayer.direction === 'Afferent (Bottom-Up)' ? AFFERENT_PATHWAYS : EFFERENT_PATHWAYS;
-        return (
-          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="space-y-2"><h3 className="text-xl font-semibold text-foreground">Specific Correction</h3><p className="text-sm text-muted-foreground">Identify the precise system requiring calibration.</p></div>
-            <div className="grid grid-cols-1 gap-3">
-              {options.map((opt) => (
-                <Button key={opt.id} variant="outline" className={cn("h-20 justify-start gap-4 px-6 rounded-xl border-2 transition-all group", currentLayer.specific === opt.id ? "border-primary bg-muted text-foreground" : "border-border hover:border-primary")} onClick={() => { setCurrentLayer({ ...currentLayer, specific: opt.id as SpecificCorrectionType }); if (opt.id === 'Mechanoreceptor') nextStep('MECHANO_DETAIL'); else if (opt.direction === 'Efferent (Top-Down)' && (opt.id === 'Cortical' || opt.id === 'Subcortical')) nextStep('EFFERENT_INTEGRATION'); else nextStep('CORRECTION_ACTION'); }}>
-                  <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform"><opt.icon size={20} className={opt.color} /></div>
-                  <div className="text-left"><span className="font-semibold text-lg block">{opt.label}</span><span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Correction Pathway</span></div>
-                </Button>
-              ))}
+            <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-2">
+              <div className="flex items-center gap-2 text-amber-800">
+                <Info size={16} />
+                <span className="font-semibold text-xs uppercase tracking-wider">Scar rule</span>
+              </div>
+              <p className="text-sm text-amber-700 font-medium">
+                Stretch the scar → muscle locks = <strong>mechanoreception</strong>. 
+                Light crude touch → body flinches/moves away = <strong>nociception</strong>. 
+                A scar can carry both.
+              </p>
             </div>
-            <Button variant="ghost" onClick={() => prevStep('SELECT_DIRECTION')} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+
+            <Button
+              disabled={!currentLayer.site}
+              onClick={() => nextStep('CONFIRM')}
+              className="w-full h-14 rounded-xl bg-orange-600 hover:bg-orange-700 text-lg font-medium shadow-sm shadow-orange-200"
+            >
+              Confirm Nociception <ChevronRight size={20} className="ml-2" />
+            </Button>
           </div>
         );
 
-      case 'MECHANO_DETAIL':
+      case 'CONFIRM':
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="space-y-2"><h3 className="text-xl font-semibold text-foreground">Mechanical Specifics</h3><p className="text-sm text-muted-foreground">Identify the joint and plane of motion.</p></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2"><label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Joint</label><Select value={currentLayer.joint} onValueChange={(v) => setCurrentLayer({ ...currentLayer, joint: v })}><SelectTrigger className="rounded-xl h-12 font-medium"><SelectValue placeholder="Select Joint" /></SelectTrigger><SelectContent>{JOINTS.map(j => <SelectItem key={j} value={j}>{j}</SelectItem>)}</SelectContent></Select></div>
-              <div className="space-y-2"><label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Plane</label><Select value={currentLayer.plane} onValueChange={(v) => setCurrentLayer({ ...currentLayer, plane: v })}><SelectTrigger className="rounded-xl h-12 font-medium"><SelectValue placeholder="Select Plane" /></SelectTrigger><SelectContent>{PLANES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent></Select></div>
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold text-foreground">Confirm Nociception</h3>
+              <p className="text-sm text-muted-foreground">
+                Verify the site carries nociceptive charge and identify the aggravating stimulus.
+              </p>
             </div>
-            <div className="space-y-2"><label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Action</label><Input placeholder="Enter specific action..." className="h-12 rounded-xl font-medium" value={currentLayer.action || ""} onChange={(e) => setCurrentLayer({ ...currentLayer, action: e.target.value })} /></div>
-            <div className="flex gap-3"><Button variant="ghost" onClick={() => prevStep('SELECT_SPECIFIC')} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button><Button disabled={!currentLayer.joint || !currentLayer.plane || !currentLayer.action} onClick={() => nextStep('CORRECTION_ACTION')} className="flex-[2] h-12 rounded-xl bg-primary hover:bg-primary/90 font-medium">Continue <ChevronRight size={18} className="ml-2" /></Button></div>
+
+            <div className="bg-orange-50 p-6 rounded-xl border-2 border-orange-100 space-y-4">
+              <div className="flex items-center gap-2 text-orange-900">
+                <Fingerprint size={20} className="text-orange-600" />
+                <h4 className="font-semibold">Compression Confirmation Test</h4>
+              </div>
+              <p className="text-sm text-orange-800 font-medium leading-relaxed">
+                Test the associated muscle (DM or IM) in the clear — it should be inhibited. 
+                Then <strong>compress over the suspected site</strong>. Compression down-regulates 
+                the nociceptive signal momentarily (5-10 second window). If the muscle locks, 
+                the site is confirmed as nociceptive.
+              </p>
+              <div className="p-3 rounded-lg bg-white border border-orange-200">
+                <p className="text-xs font-medium text-orange-700">
+                  Alternatively: state afferent → client holds thalamus point (Bl9 / occipitalis) 
+                  → test muscle. If it locks, it's nociceptive.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                What is the aggravating stimulus?
+              </label>
+              <div className="grid grid-cols-1 gap-2">
+                {STIMULUS_TYPES.map(stimulus => (
+                  <button
+                    key={stimulus.id}
+                    onClick={() => setCurrentLayer({ ...currentLayer, stimulus: stimulus.id })}
+                    className={cn(
+                      "p-4 rounded-xl border-2 text-left transition-all",
+                      currentLayer.stimulus === stimulus.id
+                        ? "border-orange-500 bg-orange-50"
+                        : "border-border hover:border-orange-200"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-10 h-10 rounded-lg flex items-center justify-center",
+                        currentLayer.stimulus === stimulus.id ? "bg-orange-600 text-white" : "bg-muted text-muted-foreground"
+                      )}>
+                        {stimulus.id === 'crude_touch' && <Fingerprint size={20} />}
+                        {stimulus.id === 'joint_impact' && <Zap size={20} />}
+                        {stimulus.id === 'pinch' && <AlertTriangle size={20} />}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm">{stimulus.label}</p>
+                        <p className="text-xs text-muted-foreground">{stimulus.desc}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <div className="p-3 rounded-lg bg-muted border border-border">
+                <p className="text-xs text-muted-foreground font-medium">
+                  <strong>Not stretch:</strong> If stretch is the aggravator, that's unconscious mechanoreception, not nociception.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Button variant="ghost" onClick={() => prevStep('SITE')} className="flex-1 h-12 rounded-xl">
+                <ChevronLeft size={18} className="mr-2" /> Back
+              </Button>
+              <Button
+                disabled={!currentLayer.stimulus}
+                onClick={() => nextStep('CORRECT')}
+                className="flex-[2] h-12 rounded-xl bg-orange-600 hover:bg-orange-700 font-medium"
+              >
+                Begin Correction <ChevronRight size={18} className="ml-2" />
+              </Button>
+            </div>
           </div>
         );
 
-      case 'EFFERENT_INTEGRATION':
-        return (
-          <div className="animate-in fade-in zoom-in-95 duration-300">
-            <EfferentBrainIntegration initialEntryPoint={currentLayer.threat || ""} onSave={(summary) => { setCurrentLayer({ ...currentLayer, cleared: true }); nextStep('REASSESSMENT'); }} onCancel={() => nextStep('SELECT_SPECIFIC')} />
-          </div>
-        );
-
-      case 'CORRECTION_ACTION':
-        const pathway = getPathwayById(currentLayer.specific!);
+      case 'CORRECT':
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="bg-muted p-8 rounded-xl border-2 border-border relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none"><Wind size={120} /></div>
-              <h3 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-3"><CheckCircle2 size={24} className="text-chart-primary" /> {currentLayer.specific === 'Mechanoreceptor' ? `Correct ${currentLayer.joint}` : 'Apply Correction'}</h3>
-              <div className="space-y-6 relative z-10">
-                <div className="p-5 bg-white rounded-xl border border-border shadow-sm"><p className="text-lg font-medium text-foreground leading-tight">{currentLayer.specific === 'Mechanoreceptor' ? `Perform ${currentLayer.action} in the ${currentLayer.plane} plane.` : `Apply the ${currentLayer.specific} protocol.`}</p></div>
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="flex items-start gap-4"><div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-sm"><Sparkles size={20} /></div><div><p className="text-sm font-semibold text-foreground uppercase tracking-tight">The Protocol</p><div className="text-sm text-foreground font-medium leading-relaxed"><ul className="list-disc list-inside space-y-1">{pathway?.protocols.map((p, i) => <li key={i}>{p}</li>)}</ul></div></div></div>
-                  <div className="flex items-start gap-4"><div className="w-10 h-10 rounded-xl bg-teal-500 text-white flex items-center justify-center shrink-0 shadow-sm"><Wind size={20} /></div><div><p className="text-sm font-semibold text-teal-900 uppercase tracking-tight">Nasal Breathing</p><p className="text-sm text-teal-700 font-medium leading-relaxed">Instruct client to breathe <span className="font-semibold">in and out through the nose</span>.</p></div></div>
+            <div className="space-y-2">
+              <h3 className="text-xl font-semibold text-foreground">Nociception Correction Stack</h3>
+              <p className="text-sm text-muted-foreground">
+                Bring the threat signal up so the system registers it — then calibrate it down.
+              </p>
+            </div>
+
+            <div className="relative overflow-hidden rounded-xl border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50">
+              <div className="p-6 space-y-6">
+                <div className="flex items-center gap-2">
+                  <Brain size={18} className="text-orange-600" />
+                  <h4 className="font-semibold text-orange-900 text-sm">
+                    Thalamus Point (Bl9 / Occipitalis)
+                  </h4>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-orange-600 text-white flex items-center justify-center shrink-0 text-sm font-bold">1</div>
+                    <div>
+                      <p className="font-semibold text-sm text-orange-900">Client holds thalamus point</p>
+                      <p className="text-xs text-orange-700">The termination of the spinothalamic tract. You or the client hold Bl9 (over occipitalis). Mechano → cerebellum (GV16). Nociception → thalamus (Bl9).</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-orange-600 text-white flex items-center justify-center shrink-0 text-sm font-bold">2</div>
+                    <div>
+                      <p className="font-semibold text-sm text-orange-900">Re-apply the aggravating stimulus</p>
+                      <p className="text-xs text-orange-700">{stimulusLabel(currentLayer.stimulus || 'crude_touch')} on the site — activating the receptor level of the pathway.</p>
+                    </div>
+                  </div>
+
+                  <div className="pl-11 space-y-3">
+                    <p className="text-xs font-semibold text-orange-800 uppercase tracking-wider">Stack the collateral inputs</p>
+                    
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-white/70 border border-orange-200">
+                      <Eye size={16} className="text-orange-600 mt-0.5" />
+                      <div>
+                        <p className="font-semibold text-xs text-orange-900">Look at the site</p>
+                        <p className="text-[11px] text-orange-700">Eyes toward the site (head stays neutral) — activates the spinotectal tract. Alternative: practitioner makes sound over the site.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-white/70 border border-orange-200">
+                      <Wind size={16} className="text-orange-600 mt-0.5" />
+                      <div>
+                        <p className="font-semibold text-xs text-orange-900">Breathe fast</p>
+                        <p className="text-[11px] text-orange-700">Activates the sympathetics — spino-hypothalamic pathway.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-white/70 border border-orange-200">
+                      <AlertTriangle size={16} className="text-orange-600 mt-0.5" />
+                      <div>
+                        <p className="font-semibold text-xs text-orange-900">Think of the suffering</p>
+                        <p className="text-[11px] text-orange-700">The unease or memory around the site — activates the spino-mesencephalic pathway (limbic nociceptive).</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-orange-200 pt-4 mt-2">
+                    <div className="flex items-center gap-3 p-4 rounded-lg bg-orange-600 text-white">
+                      <RefreshCw size={20} />
+                      <div>
+                        <p className="font-semibold text-sm">Tuning Fork + Rocking</p>
+                        <p className="text-xs text-orange-100">Calibrate and down-regulate. The piezoelectric reset integrates the circuit. Tapping on the cranium works too.</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="flex gap-3"><Button variant="ghost" onClick={() => prevStep(currentLayer.specific === 'Mechanoreceptor' ? 'MECHANO_DETAIL' : 'SELECT_SPECIFIC')} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button><Button onClick={() => nextStep('REASSESSMENT')} className="flex-[2] h-12 rounded-xl bg-primary hover:bg-primary/90 font-medium">Correction Applied <ChevronRight size={18} className="ml-2" /></Button></div>
+
+            <div className="p-4 rounded-xl bg-muted border border-border">
+              <p className="text-xs text-muted-foreground font-medium text-center">
+                Hold all inputs for a few seconds — the system will build a crescendo — then tuning fork + rock to complete.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <Button variant="ghost" onClick={() => prevStep('CONFIRM')} className="flex-1 h-12 rounded-xl">
+                <ChevronLeft size={18} className="mr-2" /> Back
+              </Button>
+              <Button
+                onClick={() => nextStep('REASSESS')}
+                className="flex-[2] h-12 rounded-xl bg-orange-600 hover:bg-orange-700 font-medium"
+              >
+                Correction Applied <ChevronRight size={18} className="ml-2" />
+              </Button>
+            </div>
           </div>
         );
 
-      case 'REASSESSMENT':
+      case 'REASSESS':
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="bg-muted p-8 rounded-xl border-2 border-border text-center">
-              <div className="w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-6"><RefreshCw size={48} className="text-chart-emerald" /></div>
-              <h3 className="text-2xl font-semibold text-foreground mb-2">Final Re-assessment</h3>
-              <p className="text-foreground font-medium">Re-stimulate <span className="font-semibold underline">"{currentLayer.threat}"</span> and test the IM.</p>
+              <div className="w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-6">
+                <RefreshCw size={48} className="text-chart-emerald" />
+              </div>
+              <h3 className="text-2xl font-semibold text-foreground mb-2">Re-assess</h3>
+              <p className="text-foreground font-medium">
+                Re-test: strong indicator → hand over thalamus → look away → then re-aggravate the site.
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                If clear: the site no longer inhibits — the associated muscle is restored. 
+                Change happens at the speed of the nervous system.
+              </p>
             </div>
+
             <div className="grid grid-cols-1 gap-4">
-              <Button className="h-16 rounded-xl bg-primary hover:bg-primary/90 text-xl font-semibold shadow-sm" onClick={handleFinish}>Threat is Clear <CheckCircle2 size={24} className="ml-2" /></Button>
-              <Button variant="outline" className="h-16 rounded-xl border-2 border-orange-200 text-orange-700 hover:bg-orange-50 font-medium text-lg" onClick={handleAddLayer}>Still Inhibited - Add Layer <Plus size={20} className="ml-2" /></Button>
+              <Button
+                className="h-16 rounded-xl bg-chart-emerald hover:bg-chart-emerald/90 text-xl font-semibold shadow-sm"
+                onClick={handleFinish}
+              >
+                Site is Clear <CheckCircle2 size={24} className="ml-2" />
+              </Button>
+              <Button
+                variant="outline"
+                className="h-16 rounded-xl border-2 border-orange-200 text-orange-700 hover:bg-orange-50 font-medium text-lg"
+                onClick={() => {
+                  const finalLayers = [...layers];
+                  if (currentLayer.cleared) {
+                    finalLayers.push({ ...currentLayer, cleared: true } as Layer);
+                  }
+                  setLayers(finalLayers);
+                  resetLayerControls();
+                  nextStep('SITE');
+                }}
+              >
+                Still Inhibited — Add Layer <Plus size={20} className="ml-2" />
+              </Button>
             </div>
-            <Button variant="ghost" onClick={() => prevStep(currentLayer.response === 'Clear' ? 'IM_TEST' : 'CORRECTION_ACTION')} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
           </div>
         );
 
@@ -243,13 +416,18 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
       <div className="lg:col-span-8 relative overflow-hidden">
         <div className="flex items-center justify-between mb-8 mt-6">
           <div className="flex items-center gap-4">
-            <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center text-white shadow-sm", currentStep === 'THREAT_DEFINITION' || currentStep === 'STIMULATION' ? "bg-orange-600" : "bg-primary")}>
+            <div className="w-14 h-14 rounded-xl bg-orange-600 flex items-center justify-center text-white shadow-sm">
               <AlertTriangle size={28} />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-foreground leading-none">Nociceptive Threat</h2>
+              <h2 className="text-xl font-semibold text-foreground leading-none">Nociception — Quick Screen</h2>
               <div className="flex items-center gap-2 mt-2">
-                <Badge variant="outline" className="bg-muted text-muted-foreground border-border font-medium px-2 py-0.5 rounded-lg text-[10px] uppercase tracking-wider">Layer {layers.length + 1}</Badge>
+                <Badge variant="outline" className="bg-muted text-muted-foreground border-border font-medium px-2 py-0.5 rounded-lg text-[10px] uppercase tracking-wider">
+                  Afferent — Spinothalamic
+                </Badge>
+                <Badge variant="outline" className="bg-muted text-muted-foreground border-border font-medium px-2 py-0.5 rounded-lg text-[10px] uppercase tracking-wider">
+                  Layer {layers.length + 1}
+                </Badge>
               </div>
             </div>
           </div>
@@ -259,14 +437,85 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
                 <X size={20} className="text-muted-foreground" />
               </Button>
             )}
-            <Button variant="ghost" size="icon" className={cn("rounded-full hover:bg-muted", showHistory && "bg-muted")} onClick={() => setShowHistory(!showHistory)}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn("rounded-full hover:bg-muted", showHistory && "bg-muted")}
+              onClick={() => setShowHistory(!showHistory)}
+            >
               <History size={20} className="text-muted-foreground" />
             </Button>
           </div>
         </div>
+
+        <div className="flex items-center gap-2 mb-6">
+          {['SITE', 'CONFIRM', 'CORRECT', 'REASSESS'].map((step, i) => (
+            <div key={step} className="flex items-center gap-2">
+              <div className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all",
+                currentStep === step
+                  ? "bg-orange-600 text-white shadow-sm shadow-orange-200"
+                  : "bg-muted text-muted-foreground"
+              )}>
+                {i + 1}
+              </div>
+              <span className={cn(
+                "text-[10px] font-semibold uppercase tracking-wider hidden sm:block",
+                currentStep === step ? "text-orange-600" : "text-muted-foreground"
+              )}>
+                {step === 'SITE' ? 'Known Site' : step === 'CONFIRM' ? 'Confirm' : step === 'CORRECT' ? 'Correct' : 'Reassess'}
+              </span>
+              {i < 3 && <div className="w-6 h-px bg-border" />}
+            </div>
+          ))}
+        </div>
+
         <div className="flex flex-col justify-center">{renderStep()}</div>
       </div>
-      <div className={cn("lg:col-span-4 space-y-6 transition-all duration-300", !showHistory && "hidden lg:block opacity-50 grayscale pointer-events-none")}><Card className="p-6 bg-muted border-border shadow-sm rounded-xl h-full flex flex-col"><div className="flex items-center justify-between mb-6"><h3 className="text-lg font-semibold text-foreground flex items-center gap-2"><Layers size={20} className="text-chart-primary" /> Layer History</h3><Badge className="bg-primary text-primary-foreground border-none font-semibold">{layers.length} Cleared</Badge></div><ScrollArea className="flex-1 pr-4">{layers.length === 0 ? (<div className="flex flex-col items-center justify-center py-12 text-center space-y-4"><div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground"><History size={24} /></div><p className="text-sm text-muted-foreground font-medium">No layers cleared yet.</p></div>) : (<div className="space-y-4">{layers.map((layer, idx) => (<div key={idx} className="p-4 bg-white rounded-xl border border-border shadow-sm relative overflow-hidden"><div className="absolute left-0 top-0 w-1 h-full bg-green-500" /><div className="flex justify-between items-start mb-2"><span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Layer {layer.id}</span><CheckCircle2 size={14} className="text-green-500" /></div><h4 className="font-medium text-foreground text-sm mb-1">{layer.threat}</h4><div className="flex flex-wrap gap-1 mt-2"><Badge variant="secondary" className="text-[10px] bg-muted text-chart-primary border-none">{layer.specific === 'Mechanoreceptor' ? layer.joint : layer.specific}</Badge>{layer.action && (<Badge variant="secondary" className="text-[10px] bg-muted text-muted-foreground border-none">{layer.action}</Badge>)}</div></div>))}</div>)}</ScrollArea></Card></div>
+
+      <div className={cn(
+        "lg:col-span-4 space-y-6 transition-all duration-300",
+        !showHistory && "hidden lg:block opacity-50 grayscale pointer-events-none"
+      )}>
+        <Card className="p-6 bg-muted border-border shadow-sm rounded-xl h-full flex flex-col">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <Layers size={20} className="text-chart-primary" /> Layer History
+            </h3>
+            <Badge className="bg-primary text-primary-foreground border-none font-semibold">
+              {layers.length} Cleared
+            </Badge>
+          </div>
+          <ScrollArea className="flex-1 pr-4">
+            {layers.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+                  <History size={24} />
+                </div>
+                <p className="text-sm text-muted-foreground font-medium">No layers cleared yet.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {layers.map((layer, idx) => (
+                  <div key={idx} className="p-4 bg-white rounded-xl border border-border shadow-sm relative overflow-hidden">
+                    <div className="absolute left-0 top-0 w-1 h-full bg-orange-500" />
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Layer {layer.id}</span>
+                      <CheckCircle2 size={14} className="text-orange-500" />
+                    </div>
+                    <h4 className="font-medium text-foreground text-sm mb-1">{layer.site}</h4>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      <Badge variant="secondary" className="text-[10px] bg-muted text-chart-primary border-none">
+                        {stimulusLabel(layer.stimulus)}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </Card>
+      </div>
     </div>
   );
 };

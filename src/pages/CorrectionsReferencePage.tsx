@@ -92,10 +92,10 @@ const CorrectionsReferencePage = () => {
               </CardHeader>
               <CardContent className="p-6 space-y-3">
                 <p className="text-sm text-muted-foreground font-medium">
-                  The body is sending threat signals <em>to</em> the brain. The correction will target mechanoreceptors, vestibular/ocular input, or physiological/biochemical signals.
+                  The body is sending threat signals <em>to</em> the brain. The correction targets mechanoreceptors, vestibular/ocular input, nociceptive threat sites, or physiological/biochemical signals.
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {['Mechanoreceptor', 'Vestibular / Ocular', 'Physiological'].map(s => (
+                  {['Mechanoreceptor', 'Vestibular / Ocular', 'Nociceptive', 'Physiological'].map(s => (
                     <Badge key={s} variant="outline" className="text-blue-500 border-blue-500/30">{s}</Badge>
                   ))}
                 </div>

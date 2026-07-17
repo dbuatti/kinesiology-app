@@ -26,14 +26,15 @@ const NOCICEPTIVE_PROTOCOL = {
   direction: 'Afferent (Bottom-Up)',
   icon: ShieldAlert,
   color: 'text-orange-500',
-  description: 'Clearing threat from scars, old injuries, or specific movements.',
+  description: 'Clearing threat from scars, old injuries, or specific movements via the spinothalamic tract to the thalamus.',
   protocols: [
-    'Identify the threat (scar, old injury, movement, or visualization).',
-    'Stimulate/irritate the threat (prod, rub, perform movement, or visualize).',
-    'Test Indicator Muscle (IM) — should inhibit under threat.',
-    'Find correction direction (Afferent vs Efferent) and specific system.',
-    'Apply correction + Nasal breathing.',
-    'Re-assess: Re-stimulate threat and test IM (should be clear).'
+    'Identify the known site (scar, old injury, impact, or surgical site).',
+    'Confirm nociception: compression over site down-regulates the signal momentarily (5-10s), muscle locks.',
+    'Distinguish from mechano: stretch = mechanoreception, light/crude touch = nociception.',
+    'Client holds thalamus point (Bl9/occipitalis) + practitioner re-applies the aggravating stimulus.',
+    'Stack collateral inputs: look at the site + breathe fast (sympathetics) + think of the suffering.',
+    'Tuning fork + rocking to integrate (piezoelectric reset).',
+    'Reassess: site no longer inhibits, associated muscle restored.'
   ]
 };
 
@@ -737,14 +738,14 @@ Correction Method: ${method}`;
               title="Nociceptive Threat"
               icon={ShieldAlert}
               color="bg-orange-500"
-              desc="Clearing threat from scars, old injuries, or specific movements."
+              desc="Threat detection via the spinothalamic tract (anterolateral system). Nociceptors are threat receptors in every tissue, terminating at the thalamus. A-delta (fast) and C-fibre (slow) pathways."
               steps={[
-                "Identify the threat (scar, old injury, movement, or visualization).",
-                "Stimulate/irritate the threat (prod, rub, perform movement, or visualize).",
-                "Test Indicator Muscle (IM) — should inhibit under threat.",
-                "Find correction direction (Afferent vs Efferent) and specific system.",
-                "Apply correction + Nasal breathing.",
-                "Re-assess: Re-stimulate threat and test IM (should be clear)."
+                "Identify the known site (scar, old injury, impact, or surgical site).",
+                "Confirm nociception: compression over site down-regulates the signal momentarily (5-10s), muscle locks.",
+                "Hold thalamus point (Bl9/occipitalis) + re-apply the aggravating stimulus (light crude touch, joint impact, or pinch).",
+                "Stack collateral inputs: look at the site + breathe fast (sympathetics) + think of the suffering.",
+                "Tuning fork + rocking to integrate (piezoelectric reset).",
+                "Reassess: site no longer inhibits, associated muscle restored."
               ]}
             />
           </div>

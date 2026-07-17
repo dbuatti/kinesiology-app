@@ -111,7 +111,7 @@ const MechanoreceptiveProcess = ({
           <div key={s} className="flex items-center">
             <div className={cn(
               "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all shrink-0",
-              currentStep === s
+              step === s
                 ? "bg-blue-600 text-white shadow-sm shadow-blue-200"
                 : i < currentIndex
                   ? "bg-blue-200 text-blue-700"
@@ -121,7 +121,7 @@ const MechanoreceptiveProcess = ({
             </div>
             <span className={cn(
               "text-[9px] font-semibold uppercase tracking-wider mx-1.5 hidden sm:block",
-              currentStep === s ? "text-blue-600" : i < currentIndex ? "text-blue-500" : "text-muted-foreground"
+              step === s ? "text-blue-600" : i < currentIndex ? "text-blue-500" : "text-muted-foreground"
             )}>
               {stepNames[s]}
             </span>

@@ -27,7 +27,7 @@ import MechanoreceptiveProcess from './MechanoreceptiveProcess';
 import EmotionalIntegrationProcess from './EmotionalIntegrationProcess';
 import VestibularProcess from './VestibularProcess';
 import { supabase } from "@/integrations/supabase/client";
-import JointActionTableModal from './JointActionTableModal';
+
 import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';
 import { getMuscleInfo } from '@/data/muscle-info-data';
 import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
@@ -67,10 +67,8 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
   
   const [ligamentImages, setLigamentImages] = useState<Record<string, (string | null)[]>>({});
   const [ligamentModalOpen, setLigamentModalOpen] = useState(false);
-  const [actionTableOpen, setActionTableOpen] = useState(false);
   const [correctionSummary, setCorrectionSummary] = useState<string>("");
 
-  const onOpenActionTable = () => setActionTableOpen(true);
   const onOpenLigamentCharts = () => setLigamentModalOpen(true);
 
   const isSandbox = !appointmentId || appointmentId.includes('00000000');
@@ -524,7 +522,6 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
             onInhibited={handleInhibited}
             onCancel={goBack} 
             ligamentImages={ligamentImages}
-            onOpenActionTable={onOpenActionTable}
             onOpenLigamentCharts={onOpenLigamentCharts}
           />
         );
@@ -662,7 +659,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
           </ScrollArea>
         </DialogContent>
       </Dialog>
-      <JointActionTableModal open={actionTableOpen} onOpenChange={setActionTableOpen} />
+
     </>
   );
 };

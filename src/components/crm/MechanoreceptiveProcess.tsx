@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -11,25 +11,16 @@ import {
   CheckCircle2, 
   Zap, 
   RefreshCw, 
-  Sparkles,
   Info,
-  Loader2,
   Move
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import CalibrationTimer from './CalibrationTimer';
-import { JOINT_ACTION_LIBRARY } from '@/data/joint-action-data';
 
 type MechanoStep = 
-  | 'TYPE_SELECT'
-  | 'LOCALIZE_REGION'
-  | 'LOCALIZE_SIDE'
-  | 'LOCALIZE_SKELETON'
-  | 'LOCALIZE_JOINT'
-  | 'CONSCIOUS_ACTION'
-  | 'UNCONSCIOUS_LIGAMENT'
-  | 'CORRECTION'
+  | 'CONFIRM'
+  | 'LOCALIZE'
+  | 'STRETCH'
+  | 'CORRECT'
   | 'REASSESS';
 
 interface MechanoreceptiveProcessProps {
@@ -37,29 +28,36 @@ interface MechanoreceptiveProcessProps {
   onInhibited?: (summary: string) => void;
   onCancel: () => void;
   ligamentImages: Record<string, (string | null)[]>;
-  onOpenActionTable: () => void;
   onOpenLigamentCharts: () => void;
 }
+
+const REGIONS = ['Upper Body (above T12)', 'Lower Body (below T12)'];
+const SIDES = ['Left', 'Right'];
+
+interface JointGroup {
+  label: string;
+  joints: string[];
+}
+
+const JOINT_GROUPS: JointGroup[] = [
+  { label: 'Lower', joints: ['Hip', 'Knee', 'Foot/Ankle', 'Pelvis', 'Sacrum'] },
+  { label: 'Spine', joints: ['Lumbar', 'Thoracic', 'Cervical', 'Cranium', 'Jaw'] },
+  { label: 'Upper', joints: ['Shoulder (GH Joint)', 'Scapula', 'Elbow', 'Wrist', 'Hand/Fingers'] }
+];
 
 const MechanoreceptiveProcess = ({ 
   onSave, 
   onInhibited,
   onCancel, 
   ligamentImages, 
-  onOpenActionTable,
   onOpenLigamentCharts
 }: MechanoreceptiveProcessProps) => {
-  const [step, setStep] = useState<MechanoStep>('TYPE_SELECT');
+  const [step, setStep] = useState<MechanoStep>('CONFIRM');
   const [history, setHistory] = useState<MechanoStep[]>([]);
-  
-  const [type, setType] = useState<'Conscious' | 'Unconscious' | null>(null);
-  const [region, setRegion] = useState<'Upper' | 'Lower' | null>(null);
-  const [side, setSide] = useState<'Left' | 'Right' | 'Midline' | null>(null);
-  const [skeletonType, setSkeletonType] = useState<'Axial' | 'Appendicular' | null>(null);
-  const [selectedJoint, setSelectedJoint] = useState('');
-  
-  const [plane, setPlane] = useState('');
-  const [action, setAction] = useState('');
+
+  const [region, setRegion] = useState('');
+  const [side, setSide] = useState('');
+  const [joint, setJoint] = useState('');
   const [ligament, setLigament] = useState('');
 
   const goToStep = (nextStep: MechanoStep) => {
@@ -77,352 +75,303 @@ const MechanoreceptiveProcess = ({
     }
   };
 
-  const filteredJoints = useMemo(() => {
-    return JOINT_ACTION_LIBRARY.filter(j => 
-      j.type === skeletonType && 
-      j.region === region
-    );
-  }, [skeletonType, region]);
-
-  const availableActions = useMemo(() => {
-    if (!selectedJoint || !plane) return [];
-    const jointData = JOINT_ACTION_LIBRARY.find(j => j.name === selectedJoint);
-    if (!jointData) return [];
-    return jointData.actions[plane as keyof typeof jointData.actions] || [];
-  }, [selectedJoint, plane]);
-
-  const movementClue = useMemo(() => {
-    if (type !== 'Conscious' || !selectedJoint || !plane || !action) return null;
-    const actionData = availableActions.find(a => a.label === action);
-    return actionData?.howTo || null;
-  }, [type, selectedJoint, plane, action, availableActions]);
-
   const handleFinish = () => {
-    const detail = type === 'Conscious' 
-      ? `${plane} - ${action}` 
-      : (ligament || 'General Tissue');
-    const summary = `Mechanoreceptive ${type}: ${side} ${selectedJoint} (${detail})`;
+    const summary = `Mechanoreceptive Unconscious: ${side} ${joint} (${ligament || 'priority ligament'}) -> Stretch + GV16 + Tuning Fork + Rocking`;
     onSave(summary);
   };
 
   const handleInhibited = () => {
-    const detail = type === 'Conscious' 
-      ? `${plane} - ${action}` 
-      : (ligament || 'General Tissue');
-    const summary = `Mechanoreceptive ${type} (STILL INHIBITED): ${side} ${selectedJoint} (${detail})`;
+    const summary = `Mechanoreceptive Unconscious (STILL INHIBITED): ${side} ${joint} (${ligament || 'priority ligament'})`;
     onInhibited?.(summary);
   };
 
-  const StepHeader = ({ title, sub }: { title: string, sub: string }) => (
-    <div className="space-y-2 mb-6">
-      <h3 className="text-xl font-black text-slate-900">{title}</h3>
-      <p className="text-sm text-slate-500 font-medium">{sub}</p>
-    </div>
-  );
+  const stepNames: Record<MechanoStep, string> = {
+    CONFIRM: 'Confirm',
+    LOCALIZE: 'Localize',
+    STRETCH: 'Stretch',
+    CORRECT: 'Correct',
+    REASSESS: 'Reassess'
+  };
+
+  const stepOrder: MechanoStep[] = ['CONFIRM', 'LOCALIZE', 'STRETCH', 'CORRECT', 'REASSESS'];
+  const currentIndex = stepOrder.indexOf(step);
+
+  const jointToCategoryMap: Record<string, string> = {
+    "Hip": "hip_shoulder", "Shoulder (GH Joint)": "hip_shoulder", "Scapula": "hip_shoulder",
+    "Knee": "knee_elbow", "Elbow": "knee_elbow",
+    "Foot/Ankle": "ankle_wrist", "Wrist": "ankle_wrist", "Hand/Fingers": "ankle_wrist",
+    "Cranium": "spinal", "Jaw": "spinal", "Cervical Spine": "spinal", "Thoracic Spine": "spinal", "Lumbar Spine": "spinal", "Pelvis": "spinal", "Sacrum": "spinal"
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-      {step === 'TYPE_SELECT' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          <div className="lg:col-span-5 space-y-6">
-            <div className="p-5 bg-blue-50 border border-blue-100 rounded-2xl text-xs text-blue-800 space-y-3">
-              <p className="font-black uppercase tracking-widest flex items-center gap-2">
-                <Info size={14} /> Diagnostic Check:
-              </p>
-              <div className="space-y-1.5 font-medium">
-                <p>1. X-pattern facilitates → <span className="font-bold">Mechanoreceptive</span></p>
-                <p>2. TL opposite S1 facilitates → <span className="font-bold">Conscious</span></p>
-                <p>3. TL GV16 facilitates → <span className="font-bold">Unconscious</span></p>
-              </div>
+
+      <div className="flex items-center gap-0 mb-6">
+        {stepOrder.map((s, i) => (
+          <div key={s} className="flex items-center">
+            <div className={cn(
+              "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all shrink-0",
+              currentStep === s
+                ? "bg-blue-600 text-white shadow-sm shadow-blue-200"
+                : i < currentIndex
+                  ? "bg-blue-200 text-blue-700"
+                  : "bg-muted text-muted-foreground"
+            )}>
+              {i < currentIndex ? <CheckCircle2 size={14} /> : i + 1}
             </div>
-
-            <div className="space-y-3">
-              <button 
-                onClick={() => { setType('Conscious'); goToStep('LOCALIZE_REGION'); }} 
-                className="p-6 rounded-2xl border-2 border-blue-100 bg-blue-50/50 hover:border-blue-300 hover:bg-blue-50 transition-all text-left group w-full shadow-sm"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Brain size={24} className="text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="font-black text-lg text-slate-900">Conscious</p>
-                      <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest">DCML Pathway</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={20} className="text-slate-300 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
-                </div>
-              </button>
-
-              <button 
-                onClick={() => { setType('Unconscious'); goToStep('LOCALIZE_REGION'); }} 
-                className="p-6 rounded-2xl border-2 border-emerald-100 bg-emerald-50/50 hover:border-emerald-300 hover:bg-emerald-50 transition-all text-left group w-full shadow-sm"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Activity size={24} className="text-emerald-600" />
-                    </div>
-                    <div>
-                      <p className="font-black text-lg text-slate-900">Unconscious</p>
-                      <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest">Spinocerebellar Pathway</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={20} className="text-slate-300 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
-                </div>
-              </button>
-            </div>
-            
-            <Button variant="ghost" onClick={onCancel} className="w-full h-12 rounded-xl font-bold text-slate-400 hover:text-slate-600">
-              Cancel Assessment
-            </Button>
+            <span className={cn(
+              "text-[9px] font-semibold uppercase tracking-wider mx-1.5 hidden sm:block",
+              currentStep === s ? "text-blue-600" : i < currentIndex ? "text-blue-500" : "text-muted-foreground"
+            )}>
+              {stepNames[s]}
+            </span>
+            {i < stepOrder.length - 1 && (
+              <div className={cn("w-6 h-px mx-0.5", i < currentIndex ? "bg-blue-300" : "bg-border")} />
+            )}
           </div>
+        ))}
+      </div>
 
-          <div className="lg:col-span-7">
-            <div className="bg-white rounded-[2.5rem] border-2 border-slate-100 p-6 overflow-hidden shadow-sm relative group">
-              <div className="absolute top-4 right-4">
-                <Badge variant="outline" className="bg-white/80 backdrop-blur-sm border-slate-200 text-slate-400 font-black text-[8px] uppercase tracking-widest">
-                  Reference Chart
-                </Badge>
-              </div>
-              <img 
-                src="/images/mechanoreceptive/homunculus.png" 
-                alt="Cortical Homunculus Reference" 
-                className="w-full h-auto rounded-2xl transition-transform duration-700 group-hover:scale-[1.02]"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {step === 'LOCALIZE_REGION' && (
-        <div className="space-y-4">
-          <StepHeader title="1. Region" sub="Test top or bottom of the body." />
-          <div className="grid grid-cols-1 gap-3">
-            <Button variant="outline" className="h-20 justify-between px-8 rounded-2xl border-2 border-slate-100 hover:border-indigo-200" onClick={() => { setRegion('Upper'); goToStep('LOCALIZE_SIDE'); }}>
-              <div className="text-left"><div className="font-black text-lg">Upper Body</div><div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Above T12</div></div>
-              <ChevronRight size={20} />
-            </Button>
-            <Button variant="outline" className="h-20 justify-between px-8 rounded-2xl border-2 border-slate-100 hover:border-indigo-200" onClick={() => { setRegion('Lower'); goToStep('LOCALIZE_SIDE'); }}>
-              <div className="text-left"><div className="font-black text-lg">Lower Body</div><div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Below T12</div></div>
-              <ChevronRight size={20} />
-            </Button>
-          </div>
-          <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl"><ChevronLeft size={16} className="mr-2" /> Back</Button>
-        </div>
-      )}
-
-      {step === 'LOCALIZE_SIDE' && (
-        <div className="space-y-4">
-          <StepHeader title="2. Laterality" sub="Test left or right side." />
-          <div className="grid grid-cols-1 gap-3">
-            {['Left', 'Right', 'Midline'].map(s => (
-              <Button key={s} variant="outline" className="h-16 justify-between px-8 rounded-2xl border-2 border-slate-100 hover:border-indigo-200" onClick={() => { setSide(s as any); goToStep('LOCALIZE_SKELETON'); }}>
-                <span className="font-black text-lg">{s}</span>
-                <ChevronRight size={20} />
-              </Button>
-            ))}
-          </div>
-          <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl"><ChevronLeft size={16} className="mr-2" /> Back</Button>
-        </div>
-      )}
-
-      {step === 'LOCALIZE_SKELETON' && (
-        <div className="space-y-4">
-          <StepHeader title="3. Skeleton Type" sub="Test spine (Axial) or outside of body (Appendicular)." />
-          <div className="grid grid-cols-1 gap-3">
-            <Button variant="outline" className="h-20 justify-between px-8 rounded-2xl border-2 border-slate-100 hover:border-indigo-200" onClick={() => { setSkeletonType('Axial'); goToStep('LOCALIZE_JOINT'); }}>
-              <div className="text-left"><div className="font-black text-lg">Axial (Spine/Skull)</div><div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Central Axis</div></div>
-              <ChevronRight size={20} />
-            </Button>
-            <Button variant="outline" className="h-20 justify-between px-8 rounded-2xl border-2 border-slate-100 hover:border-indigo-200" onClick={() => { setSkeletonType('Appendicular'); goToStep('LOCALIZE_JOINT'); }}>
-              <div className="text-left"><div className="font-black text-lg">Appendicular (Limbs)</div><div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Shoulders, Hips, Extremities</div></div>
-              <ChevronRight size={20} />
-            </Button>
-          </div>
-          <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl"><ChevronLeft size={16} className="mr-2" /> Back</Button>
-        </div>
-      )}
-
-      {step === 'LOCALIZE_JOINT' && (
-        <div className="space-y-4">
-          <StepHeader title="4. Find Joint" sub="Select the specific joint from the filtered list." />
-          <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto p-1 custom-scrollbar">
-            {filteredJoints.map(j => (
-              <Button key={j.name} variant="outline" className="h-12 justify-start px-6 rounded-xl border-slate-100 hover:border-indigo-200 font-bold" onClick={() => { setSelectedJoint(j.name); goToStep(type === 'Conscious' ? 'CONSCIOUS_ACTION' : 'UNCONSCIOUS_LIGAMENT'); }}>
-                {j.name}
-              </Button>
-            ))}
-            {filteredJoints.length === 0 && <p className="text-center py-8 text-slate-400 italic">No joints match this hierarchy.</p>}
-          </div>
-          <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl"><ChevronLeft size={16} className="mr-2" /> Back</Button>
-        </div>
-      )}
-
-      {step === 'CONSCIOUS_ACTION' && (
+      {step === 'CONFIRM' && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <StepHeader title="Conscious Action" sub="Find joint action and perform isometric correction." />
-            <Button variant="ghost" size="icon" onClick={onOpenActionTable} className="h-10 w-10 rounded-xl text-indigo-600 hover:bg-indigo-50"><Info size={24} /></Button>
-          </div>
-          
-          <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100 flex items-center justify-between">
-            <div>
-              <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Selected Joint</p>
-              <p className="text-lg font-black text-indigo-900">{side} {selectedJoint}</p>
-            </div>
-            <Badge className="bg-indigo-600 text-white border-none font-black text-[8px] uppercase tracking-widest">{skeletonType}</Badge>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Plane</label>
-              <Select value={plane} onValueChange={(v) => { setPlane(v); setAction(''); }}>
-                <SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Plane" /></SelectTrigger>
-                <SelectContent>{["Sagittal", "Frontal", "Transverse"].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Action</label>
-              <Select value={action} onValueChange={setAction} disabled={!plane || availableActions.length === 0}>
-                <SelectTrigger className="rounded-xl h-12 font-bold"><SelectValue placeholder="Select Action" /></SelectTrigger>
-                <SelectContent>{availableActions.map(a => <SelectItem key={a.label} value={a.label}>{a.label}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-800 space-y-3">
-            <p className="font-bold">Correction Protocol:</p>
-            <ul className="list-disc list-inside space-y-1 text-xs">
-              <li>Place joint into priority action.</li>
-              <li>Hold associated M1/S1 representations.</li>
-              <li>Perform 30-40% isometric contraction for 30-90s.</li>
-              <li>Maintain nasal breathing throughout.</li>
-            </ul>
-          </div>
-
-          <div className="flex gap-3">
-            <Button variant="ghost" onClick={goBack} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
-            <Button disabled={!plane || !action} onClick={() => goToStep('CORRECTION')} className="flex-[2] h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold">Start Correction <ChevronRight size={18} className="ml-2" /></Button>
-          </div>
-        </div>
-      )}
-
-      {step === 'UNCONSCIOUS_LIGAMENT' && (
-        <div className="space-y-6">
-          <StepHeader title="5. Find Ligament" sub="Localize the specific ligament or tendon." />
-          
-          <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center justify-between">
-            <div>
-              <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Selected Joint</p>
-              <p className="text-lg font-black text-emerald-900">{side} {selectedJoint}</p>
-            </div>
-            <Badge className="bg-emerald-600 text-white border-none font-black text-[8px] uppercase tracking-widest">GV16 Priority</Badge>
-          </div>
-
           <div className="space-y-2">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ligament / Tendon Name (Optional)</label>
-            <Input placeholder="e.g. ATFL, MCL, Biceps Tendon..." className="h-12 rounded-xl font-bold" value={ligament} onChange={(e) => setLigament(e.target.value)} />
+            <h3 className="text-xl font-semibold text-foreground">1. Confirm Unconscious Mechanoreception</h3>
+            <p className="text-sm text-muted-foreground">
+              Work from an inhibited direct muscle in the clear (e.g. quadriceps).
+            </p>
           </div>
 
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-            <div className="flex items-center justify-between mb-3">
-              <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Reference Images</h5>
-              <Button variant="link" size="sm" className="text-[10px] h-auto p-0" onClick={onOpenLigamentCharts}>View All Charts</Button>
+          <div className="p-5 rounded-xl bg-blue-50 border border-blue-200 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 text-sm font-bold">1</div>
+              <div>
+                <p className="font-semibold text-blue-900">State <strong>&quot;Afferent&quot;</strong></p>
+                <p className="text-sm text-blue-700">The inhibited muscle facilitates (locks). This confirms the problem is afferent — but not yet which type.</p>
+              </div>
             </div>
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 text-sm font-bold">2</div>
+              <div>
+                <p className="font-semibold text-blue-900">Show the <strong>X card</strong> for 5–10 seconds</p>
+                <p className="text-sm text-blue-700">The inhibited muscle facilitates → <strong>afferent unconscious mechanoreception confirmed</strong>. (TL of GV16 facilitates too — same test.)</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl bg-muted border border-border">
+            <div className="flex items-start gap-3">
+              <Info size={18} className="text-blue-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-foreground">The X card is your mechanoreception check</p>
+                <p className="text-xs text-muted-foreground">Viewing an X-pattern (two crossed lines) for 5–10s while testing an inhibited direct muscle is the quick confirmation. If it facilitates, it&apos;s unconscious mechanoreception via the spinocerebellar tract. TL of GV16 (the cerebellum point) confirms the same thing.</p>
+              </div>
+            </div>
+          </div>
+
+          <Button onClick={() => goToStep('LOCALIZE')} className="w-full h-14 rounded-xl bg-blue-600 hover:bg-blue-700 text-lg font-medium">
+            Confirmed — Localise the Ligament <ChevronRight size={20} className="ml-2" />
+          </Button>
+        </div>
+      )}
+
+      {step === 'LOCALIZE' && (
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <h3 className="text-xl font-semibold text-foreground">2. Localise the Ligament</h3>
+            <p className="text-sm text-muted-foreground">
+              Switch to a strong indicator muscle. The client TLs <strong>GV16 (cerebellum point)</strong> — the indicator stays facilitated. Then bracket in binaries.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-xl bg-blue-50 border border-blue-200">
+            <p className="text-sm text-blue-800 font-medium text-center">
+              Client: hold GV16 (midline hollow below the occiput). Strong indicator → stays clear.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Region</p>
             <div className="grid grid-cols-2 gap-3">
-              {(ligamentImages[jointToCategoryMap[selectedJoint]] || []).slice(0, 2).map((url, i) => url && (
-                <div key={i} className="aspect-video rounded-lg overflow-hidden border bg-white shadow-sm">
-                  <img src={url} alt="Reference" className="w-full h-full object-cover" />
-                </div>
+              {REGIONS.map(r => (
+                <Button key={r} variant="outline" className={cn("h-16 rounded-xl border-2 font-medium", region === r ? "border-blue-500 bg-blue-50" : "border-border")} onClick={() => setRegion(r)}>
+                  {r}
+                </Button>
               ))}
             </div>
           </div>
 
+          <div className="space-y-3">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Side</p>
+            <div className="grid grid-cols-2 gap-3">
+              {SIDES.map(s => (
+                <Button key={s} variant="outline" className={cn("h-14 rounded-xl border-2 font-medium", side === s ? "border-blue-500 bg-blue-50" : "border-border")} onClick={() => setSide(s)}>
+                  {s}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Joint</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {JOINT_GROUPS.flatMap(g => g.joints).map(j => (
+                <Button key={j} variant="outline" className={cn("h-12 rounded-xl text-xs font-medium", joint === j ? "border-blue-500 bg-blue-50" : "border-border")} onClick={() => setJoint(j)}>
+                  {j}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Ligament (specific)</p>
+              <Button variant="link" size="sm" className="text-[10px] h-auto p-0 text-blue-600" onClick={onOpenLigamentCharts}>
+                View Charts
+              </Button>
+            </div>
+            <Input
+              placeholder="Lightly rub over the suspected ligament — if it momentarily facilitates, that's the one. Enter name or leave blank."
+              className="h-12 rounded-xl font-medium"
+              value={ligament}
+              onChange={(e) => setLigament(e.target.value)}
+            />
+            {joint && (
+              <div className="grid grid-cols-2 gap-2">
+                {(ligamentImages[jointToCategoryMap[joint]] || []).slice(0, 2).map((url, i) => url && (
+                  <div key={i} className="aspect-video rounded-lg overflow-hidden border bg-white shadow-sm">
+                    <img src={url} alt="Ligament reference" className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="p-4 rounded-xl bg-muted border border-border">
+            <p className="text-xs text-muted-foreground font-medium">
+              <strong>You don&apos;t need to memorise the map.</strong> Touch the suspected ligament — if the indicator momentarily facilitates, that&apos;s the one. The testing finds it for you.
+            </p>
+          </div>
+
           <div className="flex gap-3">
             <Button variant="ghost" onClick={goBack} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
-            <Button onClick={() => goToStep('CORRECTION')} className="flex-[2] h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-bold">Start Correction <ChevronRight size={18} className="ml-2" /></Button>
+            <Button disabled={!region || !side || !joint} onClick={() => goToStep('STRETCH')} className="flex-[2] h-12 rounded-xl bg-blue-600 hover:bg-blue-700 font-medium">
+              Ligament Found <ChevronRight size={18} className="ml-2" />
+            </Button>
           </div>
         </div>
       )}
 
-      {step === 'CORRECTION' && (
+      {step === 'STRETCH' && (
         <div className="space-y-6">
-          <div className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none"><Zap size={150} /></div>
-            <h3 className="text-2xl font-black mb-6 flex items-center gap-3 text-amber-400"><Zap size={28} /> Calibration Phase</h3>
-            
-            <div className="space-y-6 relative z-10">
-              <div className="p-5 bg-white/10 rounded-2xl border border-white/10 backdrop-blur-sm space-y-4">
-                <p className="text-lg font-bold leading-tight">
-                  {type === 'Conscious' 
-                    ? `Perform ${action} in the ${plane} plane.` 
-                    : `Stretch the ${ligament || 'priority tissue'} while holding GV16.`}
-                </p>
-                
-                {movementClue && (
-                  <div className="p-4 bg-indigo-500/20 rounded-xl border border-indigo-500/30 flex items-start gap-3 animate-in fade-in slide-in-from-top-1">
-                    <Move size={18} className="text-indigo-300 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-[8px] font-black text-indigo-300 uppercase tracking-widest mb-1">Movement Clue</p>
-                      <p className="text-sm font-medium text-indigo-100 leading-relaxed italic">
-                        "{movementClue}"
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              <div className="grid grid-cols-1 gap-4">
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-lg"><Sparkles size={20} /></div>
-                  <div>
-                    <p className="text-sm font-black uppercase tracking-tight">The Protocol</p>
-                    <p className="text-xs text-slate-300 leading-relaxed">
-                      {type === 'Conscious' 
-                        ? "Hold contralateral M1/S1. 30-40% effort. 30-90 seconds." 
-                        : "Hold GV16 (Cerebellum). Apply tuning fork or tap for 3-5 seconds."}
-                    </p>
-                  </div>
+          <div className="space-y-2">
+            <h3 className="text-xl font-semibold text-foreground">3. Find the Direction of Stretch</h3>
+            <p className="text-sm text-muted-foreground">
+              On a strong indicator, stretch the ligament in different directions. The direction that <strong>inhibits</strong> the indicator is the one to correct.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 text-center space-y-3">
+            <Move size={40} className="text-blue-600 mx-auto" />
+            <p className="text-lg font-semibold text-blue-900">
+              Stretch {side} {joint} in different directions
+            </p>
+            <p className="text-sm text-blue-700">
+              Place your hand over the ligament area and stretch through it. Ligaments and fascia wrap around each other — it needn&apos;t be pinpoint. The direction that inhibits the indicator muscle is the correction direction.
+            </p>
+          </div>
+
+          <div className="flex gap-3">
+            <Button variant="ghost" onClick={goBack} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
+            <Button onClick={() => goToStep('CORRECT')} className="flex-[2] h-12 rounded-xl bg-blue-600 hover:bg-blue-700 font-medium">
+              Direction Found <ChevronRight size={18} className="ml-2" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {step === 'CORRECT' && (
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <h3 className="text-xl font-semibold text-foreground">4. Correction</h3>
+            <p className="text-sm text-muted-foreground">
+              Connect the ligament and the cerebellum point — then reset the circuit.
+            </p>
+          </div>
+
+          <div className="rounded-xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden">
+            <div className="p-6 space-y-4">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white border border-blue-200">
+                <div className="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-sm">1</div>
+                <Brain size={20} className="text-blue-600 shrink-0" />
+                <div>
+                  <p className="font-semibold text-sm text-blue-900">Hold GV16 (cerebellum point)</p>
+                  <p className="text-xs text-blue-700">Client or practitioner holds the point below the occiput. This is the cerebellum relay — the top of the spinocerebellar pathway.</p>
                 </div>
               </div>
 
-              <div className="pt-4">
-                <CalibrationTimer duration={type === 'Conscious' ? 60 : 5} />
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white border border-blue-200">
+                <div className="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-sm">2</div>
+                <Activity size={20} className="text-blue-600 shrink-0" />
+                <div>
+                  <p className="font-semibold text-sm text-blue-900">Take the ligament into the stretch</p>
+                  <p className="text-xs text-blue-700">The direction you found in step 3 — the one that inhibits the indicator.</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white border border-blue-200">
+                <div className="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-sm">3</div>
+                <Zap size={20} className="text-blue-600 shrink-0" />
+                <div>
+                  <p className="font-semibold text-sm text-blue-900">Tuning fork on bone + Rocking</p>
+                  <p className="text-xs text-blue-700">Strike the tuning fork and rest it on a bony surface (head, sternum, or sacrum). Add rocking afterwards. This creates a piezoelectric effect that normalises the charge between the cerebellum and the ligament.</p>
+                </div>
               </div>
             </div>
           </div>
+
+          <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
+            <p className="text-xs text-amber-800 font-medium text-center">
+              Hold GV16, maintain the stretch, apply the tuning fork — then rock. Retest the original muscle — it now facilitates. Done.
+            </p>
+          </div>
+
           <div className="flex gap-3">
             <Button variant="ghost" onClick={goBack} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
-            <Button onClick={() => goToStep('REASSESS')} className="flex-[2] h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-bold">Correction Applied <ChevronRight size={18} className="ml-2" /></Button>
+            <Button onClick={() => goToStep('REASSESS')} className="flex-[2] h-12 rounded-xl bg-blue-600 hover:bg-blue-700 font-medium">
+              Correction Applied <ChevronRight size={18} className="ml-2" />
+            </Button>
           </div>
         </div>
       )}
 
       {step === 'REASSESS' && (
         <div className="space-y-6">
-          <div className="bg-emerald-50 p-8 rounded-[2.5rem] border-2 border-emerald-100 text-center">
-            <div className="w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-6"><RefreshCw size={48} className="text-emerald-500" /></div>
-            <h3 className="text-2xl font-black text-emerald-900 mb-2">Final Re-assessment</h3>
-            <p className="text-emerald-700 font-medium">Re-test the original stimulus and check the IM.</p>
+          <div className="bg-muted p-8 rounded-xl border-2 border-border text-center">
+            <div className="w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-6">
+              <RefreshCw size={48} className="text-chart-emerald" />
+            </div>
+            <h3 className="text-2xl font-semibold text-foreground mb-2">5. Re-assess</h3>
+            <p className="text-foreground font-medium">
+              Retest the original inhibited muscle — it now facilitates. The ligament signal is restored.
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              The cerebellum can now &quot;see&quot; the joint again. Movement rate, rhythm and accuracy are back online.
+            </p>
           </div>
+
           <div className="grid grid-cols-1 gap-4">
-            <Button className="h-16 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-xl font-black shadow-lg shadow-emerald-100" onClick={handleFinish}>Pathway is Clear <CheckCircle2 size={24} className="ml-2" /></Button>
-            <Button variant="outline" className="h-16 rounded-2xl border-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-bold text-lg" onClick={handleInhibited}>Still Inhibited - Add Layer</Button>
+            <Button className="h-16 rounded-xl bg-chart-emerald hover:bg-chart-emerald/90 text-xl font-semibold shadow-sm" onClick={handleFinish}>
+              Pathway is Clear <CheckCircle2 size={24} className="ml-2" />
+            </Button>
+            <Button variant="outline" className="h-16 rounded-xl border-2 border-blue-200 text-blue-700 hover:bg-blue-50 font-medium text-lg" onClick={handleInhibited}>
+              Still Inhibited — Add Layer
+            </Button>
           </div>
-          <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
         </div>
       )}
+
     </div>
   );
-};
-
-const jointToCategoryMap: Record<string, string> = {
-  "Hip": "hip_shoulder", "Shoulder (GH Joint)": "hip_shoulder", "Scapula": "hip_shoulder",
-  "Knee": "knee_elbow", "Elbow": "knee_elbow",
-  "Foot/Ankle": "ankle_wrist", "Wrist": "ankle_wrist", "Hand/Fingers": "ankle_wrist",
-  "Cranium": "spinal", "Jaw": "spinal", "Cervical Spine": "spinal", "Thoracic Spine": "spinal", "Lumbar Spine": "spinal", "Pelvis": "spinal", "Sacrum": "spinal"
 };
 
 export default MechanoreceptiveProcess;

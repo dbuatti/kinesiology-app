@@ -33,15 +33,18 @@ export interface PathwayOption {
 export const AFFERENT_PATHWAYS: PathwayOption[] = [
   {
     id: 'Mechanoreceptor',
-    label: 'Mechanoreceptor (Joint/Muscle)',
+    label: 'Mechanoreceptor (Unconscious)',
     direction: 'Afferent (Bottom-Up)',
     icon: Activity,
     color: 'text-blue-500',
-    description: 'Physical input from joints, muscles, and skin receptors. 15% conscious (DCML to S1), 85% unconscious (Spinocerebellar to Cerebellum).',
-    confirmationTest: 'X-pattern facilitates → Mechanoreceptive confirmed',
+    description: 'Unconscious mechanoreception — Golgi receptors in ligaments, tendons and fascia report joint stretch to the cerebellum via the spinocerebellar tract (~85% of unconscious input).',
+    confirmationTest: 'Inhibited DM → state afferent (facilitates) → X card 5-10s (facilitates) → Unconscious mechanoreception confirmed',
     protocols: [
-      'UNCONSCIOUS: Hold GV16 → Locate ligament → Stretch + Tuning fork on cranium (3-5s)',
-      'Re-test original pathway after each layer'
+      'Confirm: inhibited DM → state afferent → X card or GV16 TL facilitates',
+      'Localise: strong indicator + GV16 TL → bracket region → side → joint → touch ligament',
+      'Find stretch direction: stretch ligament in different directions, one inhibits the indicator',
+      'Correct: hold GV16 + stretch ligament + tuning fork on bone (+ rocking)',
+      'Re-test original muscle → facilitates ✓'
     ]
   },
   {

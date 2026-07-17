@@ -691,14 +691,16 @@ Correction Method: ${method}`;
         <div className="grid grid-cols-1 gap-4">
           <div id="c-mechano">
             <ProtocolBlock 
-              title="Mechanoreceptor (Joint/Muscle)"
+              title="Mechanoreceptor (Unconscious)"
               icon={Activity}
               color="bg-blue-500"
-              desc="Physical input from joints, muscles, and skin receptors. 15% conscious (DCML to S1), 85% unconscious (Spinocerebellar to Cerebellum)."
+              desc="Unconscious mechanoreception — Golgi receptors in ligaments, tendons and fascia report joint stretch to the cerebellum via the spinocerebellar tract (~85% of unconscious input)."
               steps={[
-                "CONSCIOUS: TL opposing sensory cortex → Isometric contraction (30-40%, 3-5s) + Nasal breathing",
-                "UNCONSCIOUS: Hold GV16 → Locate ligament → Stretch + Tuning fork on cranium (3-5s)",
-                "Re-test original pathway after each layer"
+                "Confirm: inhibited DM → state afferent (facilitates) → X card 5-10s (facilitates) → GV16 TL confirms",
+                "Localise: strong indicator + GV16 TL → bracket region → side → joint → touch ligament",
+                "Find stretch direction: stretch ligament in different directions — the one that inhibits the indicator",
+                "Correct: hold GV16 + stretch in direction + tuning fork on bone (+ rocking) — piezoelectric reset",
+                "Re-test original muscle → facilitates ✓"
               ]}
             />
           </div>

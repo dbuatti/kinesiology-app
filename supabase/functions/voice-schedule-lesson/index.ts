@@ -21,7 +21,7 @@ serve(async (req) => {
     const NOTION_KEY = Deno.env.get("NOTION_API_KEY");
     if (!NOTION_KEY) throw new Error("Missing NOTION_API_KEY in Supabase Secrets.");
 
-    const { studentId, date, time, cost, studentName, studentEmail, calcomBookingUid } = await req.json();
+    const { studentId, date, time, cost, studentName, studentEmail, calcomBookingUid, discipline } = await req.json();
 
     if (!studentId || !date || !time) {
       throw new Error("Missing required fields: studentId, date, time");
@@ -33,8 +33,10 @@ serve(async (req) => {
       "Notion-Version": "2022-06-28",
     };
 
+    const isPiano = discipline === "piano";
+    const lessonType = isPiano ? "Piano Lesson" : "Voice Lesson";
     const namePart = studentName ? ` ${studentName} —` : '';
-    const title = `Voice Lesson —${namePart} ${date}`;
+    const title = `${lessonType} —${namePart} ${date}`;
 
     const db1Properties = {
       Name: { title: [{ text: { content: title } }] },
@@ -118,6 +120,7 @@ serve(async (req) => {
             lesson_time: time,
             duration: null,
             cost: cost || null,
+            discipline: discipline || "voice",
             notion_lesson_id_1: result1.id || null,
             notion_lesson_id_2: result2.id || null,
           }, { onConflict: 'calcom_booking_id' });

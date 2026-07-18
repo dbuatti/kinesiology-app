@@ -63,6 +63,7 @@ serve(async (req) => {
             studentIds: (props["Client CRM"]?.relation || []).map((r) => r.id),
             paymentStatus: props.Payment?.select?.name || null,
             cost: props.Cost?.number ?? null,
+            discipline: props.Discipline?.select?.name?.toLowerCase() || null,
             studentName: null,
             studentEmail: null,
           });

@@ -27,19 +27,20 @@ import NewInfoBadge from "@/components/crm/NewInfoBadge";
 import { cn } from "@/lib/utils";
 
 interface VoiceStudent {
- id: string;
- notionUrl: string | null;
- archived: boolean;
- name: string | null;
- email: string | null;
- phone: string | null;
- notes: string | null;
- tags: string[];
- latestDate: string | null;
- allDates: string | null;
- lastCommunication: string | null;
- createdAt: string;
- updatedAt: string;
+  id: string;
+  notionUrl: string | null;
+  archived: boolean;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  notes: string | null;
+  tags: string[];
+  discipline?: string | null;
+  latestDate: string | null;
+  allDates: string | null;
+  lastCommunication: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface VoiceLesson {
@@ -60,8 +61,9 @@ threeMonthsAgo.setDate(now.getDate() - 90);
 const VoiceClientsPage = () => {
  const navigate = useNavigate();
  const queryClient = useQueryClient();
- const [search, setSearch] = useState("");
- const [onboardOpen, setOnboardOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [disciplineFilter, setDisciplineFilter] = useState<"all" | "voice" | "piano">("all");
+  const [onboardOpen, setOnboardOpen] = useState(false);
  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
  const [selectedIds, setSelectedIds] = useState<string[]>([]);
  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -158,17 +160,21 @@ const VoiceClientsPage = () => {
  });
  }, [students, lessons]);
 
- const filtered = useMemo(() => {
- if (!search) return enriched;
- const q = search.toLowerCase();
- return enriched.filter(
- (s) =>
- (s.name || "").toLowerCase().includes(q) ||
- (s.email || "").toLowerCase().includes(q) ||
- (s.phone || "").toLowerCase().includes(q) ||
- s.tags.some((t) => t.toLowerCase().includes(q))
- );
- }, [enriched, search]);
+  const filtered = useMemo(() => {
+    let result = enriched;
+    if (disciplineFilter !== "all") {
+      result = result.filter((s) => (s.discipline || "voice") === disciplineFilter);
+    }
+    if (!search) return result;
+    const q = search.toLowerCase();
+    return result.filter(
+      (s) =>
+      (s.name || "").toLowerCase().includes(q) ||
+      (s.email || "").toLowerCase().includes(q) ||
+      (s.phone || "").toLowerCase().includes(q) ||
+      s.tags.some((t) => t.toLowerCase().includes(q))
+    );
+  }, [enriched, search, disciplineFilter]);
 
  const sortByLastSeen = (a: typeof filtered[0], b: typeof filtered[0]) => {
  if (a.hasUpcoming && !b.hasUpcoming) return -1;
@@ -334,8 +340,26 @@ const VoiceClientsPage = () => {
  }
  />
 
- {/* Summary strip */}
- <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+  {/* Discipline filter */}
+  <div className="flex bg-muted rounded-xl p-0.5 border border-border w-fit">
+    {(["all", "voice", "piano"] as const).map((f) => (
+      <button
+        key={f}
+        onClick={() => setDisciplineFilter(f)}
+        className={cn(
+          "px-4 py-2 rounded-[10px] text-xs font-semibold transition-all capitalize",
+          disciplineFilter === f
+            ? "bg-card text-foreground shadow-sm"
+            : "text-muted-foreground hover:text-foreground"
+        )}
+      >
+        {f === "all" ? "All" : f}
+      </button>
+    ))}
+  </div>
+
+  {/* Summary strip */}
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
  <div className="bg-card rounded-xl border border-border p-5 flex flex-col gap-1">
  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Students</span>
  <span className="text-3xl font-semibold text-foreground">{students.length}</span>
@@ -459,11 +483,21 @@ const VoiceClientsPage = () => {
  Booked
  </Badge>
  )}
- {student.tags.length > 0 && student.tags.slice(0, 2).map((tag) => (
- <Badge key={tag} className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-chart-destructive/10 text-chart-destructive border-none shrink-0">
- {tag}
- </Badge>
- ))}
+                  {(student.discipline || "voice") && (
+                    <Badge className={cn(
+                      "text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border-none shrink-0",
+                      (student.discipline || "voice") === "piano"
+                        ? "bg-chart-primary/10 text-chart-primary"
+                        : "bg-chart-destructive/10 text-chart-destructive"
+                    )}>
+                      {student.discipline || "voice"}
+                    </Badge>
+                  )}
+                  {student.tags.length > 0 && student.tags.slice(0, 2).map((tag) => (
+                      <Badge key={tag} className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-chart-destructive/10 text-chart-destructive border-none shrink-0">
+                        {tag}
+                      </Badge>
+                    ))}
  </div>
  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-muted-foreground mt-0.5">
  {student.email && (

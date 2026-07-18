@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 interface VoiceBooking {
   id: string; student_name: string | null; student_email: string | null;
   lesson_date: string; lesson_time: string | null;
-  cost: number | null; status: string;
+  cost: number | null; status: string; discipline?: string | null;
 }
 interface KineAppt {
   id: string; client_id: string; date: string;

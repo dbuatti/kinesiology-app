@@ -47,6 +47,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
   const [date, setDate] = useState(prefillDate || format(addDays(new Date(), 1), "yyyy-MM-dd"));
   const [time, setTime] = useState(prefillTime || "10:00");
   const [duration, setDuration] = useState(prefillDuration || "60");
+  const [discipline, setDiscipline] = useState<"voice" | "piano">("voice");
   const [sendOnboarding, setSendOnboarding] = useState(true);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -71,11 +72,11 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
       setDate(prefillDate || format(addDays(new Date(), 1), "yyyy-MM-dd"));
       setTime(prefillTime || "10:00");
       setDuration(prefillDuration || "60");
+      setDiscipline("voice");
       setSendOnboarding(true);
       setSendingEmail(false);
       setEmailSent(false);
     } else if (prefillDuration) {
-      // Apply the chosen duration when opened from the "New Booking" menu.
       setDuration(prefillDuration);
     }
   }, [open, prefillDate, prefillTime, prefillDuration]);
@@ -138,15 +139,17 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
     const dateStr = format(new Date(date + "T" + time), "yyyy-MM-dd");
     const timeStr = format(new Date(date + "T" + time), "h:mm a");
 
+    const lessonType = discipline === "piano" ? "Piano Lesson" : "Voice Lesson";
     const { data: bookingData, error: bookingError } = await supabase.functions.invoke("voice-create-booking", {
       body: {
-        studentName: selectedStudent.name || "Voice Student",
+        studentName: selectedStudent.name || lessonType,
         studentEmail: selectedStudent.email || "",
         startTime: startTimeIso,
         eventTypeId: eventType.eventTypeId,
-        title: `Voice Lesson — ${dateStr}`,
+        title: `${lessonType} — ${dateStr}`,
         notes: `Booked via Simple Book (${duration} min)`,
         force: forceBooking,
+        discipline,
       },
     });
     if (bookingError) throw bookingError;
@@ -160,6 +163,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
         studentName: selectedStudent.name,
         studentEmail: selectedStudent.email,
         calcomBookingUid: bookingData?.uid,
+        discipline,
       },
     });
     if (lessonError) throw lessonError;
@@ -209,6 +213,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
           duration,
           cost: costVal,
           calcomBookingUid,
+          discipline,
         },
       });
       if (error) throw error;
@@ -292,6 +297,19 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Discipline */}
+          <div className="space-y-2">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Lesson Type</p>
+            <select
+              value={discipline}
+              onChange={(e) => setDiscipline(e.target.value as "voice" | "piano")}
+              className="w-full h-12 px-4 rounded-xl border border-border bg-card text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500"
+            >
+              <option value="voice">Voice</option>
+              <option value="piano">Piano</option>
+            </select>
           </div>
 
           {/* Duration */}
@@ -450,13 +468,14 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                 <Clock size={14} className="text-rose-500" />
                 {format(new Date(date + "T" + time), "h:mm a")} · {eventType.label} · ${costVal}
               </div>
+              <div className="text-xs font-semibold text-muted-foreground capitalize">{discipline} lesson</div>
             </div>
           )}
         </div>
 
         {/* Footer */}
         <div className="px-8 py-4 border-t border-border shrink-0 flex justify-between items-center">
-          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Voice Studio</p>
+          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{discipline === "piano" ? "Piano Studio" : "Voice Studio"}</p>
           <div className="flex gap-2">
             {!bookingDone ? (
               <>

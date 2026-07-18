@@ -88,6 +88,7 @@ serve(async (req) => {
         phone: extractPhone(props.Phone),
         notes: extractRichText(props["Additional Notes"]),
         tags: extractMultiSelect(props.Tags || props.Streams || props["Voice Stream"]),
+        discipline: props.Discipline?.select?.name?.toLowerCase() || null,
         latestDate: extractRollupDate(props["Latest Date"]),
         allDates: extractRollupDate(props["All Dates"]),
         lastCommunication: extractDate(props["Last communication"]),

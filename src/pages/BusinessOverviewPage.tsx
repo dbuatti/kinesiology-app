@@ -11,7 +11,7 @@ import PageHeader from '@/components/shared/PageHeader';
 interface VoiceBooking {
   id: string; student_name: string | null; student_email: string | null;
   lesson_date: string; lesson_time: string | null;
-  cost: number | null; duration: string | null; status: string; source?: string | null;
+  cost: number | null; duration: string | null; status: string; source?: string | null; discipline?: string | null;
 }
 interface KineAppt {
   id: string; client_id: string; date: string;

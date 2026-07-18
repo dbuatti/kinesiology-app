@@ -1,10 +1,10 @@
 import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
- ArrowLeft, Mic, Calendar as CalendarIcon, Clock, 
- ChevronLeft, ChevronRight, Loader2, ExternalLink, RefreshCw,
- CreditCard, Copy, Check, DollarSign, Trash2, CalendarSync,
-  XCircle, Search, ChevronDown, CalendarPlus
+  ArrowLeft, Mic, BookOpen, Calendar as CalendarIcon, Clock, 
+  ChevronLeft, ChevronRight, Loader2, ExternalLink, RefreshCw,
+  CreditCard, Copy, Check, DollarSign, Trash2, CalendarSync,
+   XCircle, Search, ChevronDown, CalendarPlus
 } from "lucide-react";
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, 
   startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, 
@@ -48,29 +48,31 @@ import {
 } from "@/components/ui/popover";
 
 interface VoiceLesson {
- id: string;
- notionUrl: string | null;
- name: string | null;
- date: string | null;
- time: string | null;
- studentIds: string[];
- paymentStatus: string | null;
- studentName: string | null;
- studentEmail: string | null;
+  id: string;
+  notionUrl: string | null;
+  name: string | null;
+  date: string | null;
+  time: string | null;
+  studentIds: string[];
+  paymentStatus: string | null;
+  studentName: string | null;
+  studentEmail: string | null;
+  discipline?: string | null;
 }
 
 interface VoiceBooking {
- calcom_booking_id: string;
- student_id: string;
- student_name: string;
- student_email: string;
- lesson_date: string;
- lesson_time: string;
- duration: string;
- cost: number | null;
- status: string;
- notion_lesson_id_1: string | null;
- notion_lesson_id_2: string | null;
+  calcom_booking_id: string;
+  student_id: string;
+  student_name: string;
+  student_email: string;
+  lesson_date: string;
+  lesson_time: string;
+  duration: string;
+  cost: number | null;
+  status: string;
+  discipline?: string | null;
+  notion_lesson_id_1: string | null;
+  notion_lesson_id_2: string | null;
 }
 
 const EVENT_TYPES = [
@@ -645,10 +647,19 @@ const VoiceCalendarPage = () => {
     href={lesson.notionUrl || "#"}
     target="_blank"
     rel="noopener noreferrer"
-    className="block p-1.5 rounded-lg text-[10px] font-medium truncate transition-all hover:scale-[1.02] bg-chart-destructive/10 text-chart-destructive border border-border "
+    className={cn(
+      "block p-1.5 rounded-lg text-[10px] font-medium truncate transition-all hover:scale-[1.02] border border-border",
+      (lesson.discipline || "voice") === "piano"
+        ? "bg-chart-primary/10 text-chart-primary"
+        : "bg-chart-destructive/10 text-chart-destructive"
+    )}
     >
     <div className="flex items-center gap-1">
-    <Clock size={9} className="shrink-0 opacity-60" />
+    {(lesson.discipline || "voice") === "piano" ? (
+      <BookOpen size={9} className="shrink-0 opacity-60" />
+    ) : (
+      <Mic size={9} className="shrink-0 opacity-60" />
+    )}
     <span className="truncate">{lesson.name || "Lesson"}</span>
     </div>
     </a>
@@ -671,13 +682,21 @@ const VoiceCalendarPage = () => {
     <span className="font-medium">Email:</span> {lesson.studentEmail}
     </div>
     )}
+    <div className="flex items-center gap-1.5 flex-wrap">
+    <Badge className={cn(
+      "text-[10px] font-semibold border-none capitalize",
+      (lesson.discipline || "voice") === "piano"
+        ? "bg-chart-primary/10 text-chart-primary"
+        : "bg-chart-destructive/10 text-chart-destructive"
+    )}>
+    {lesson.discipline || "voice"}
+    </Badge>
     {lesson.paymentStatus && (
-    <div className="flex items-center gap-1.5">
     <Badge className={cn("text-[10px] font-semibold border-none", paymentBadge(lesson.paymentStatus))}>
     {lesson.paymentStatus}
     </Badge>
-    </div>
     )}
+    </div>
     <div className="flex flex-wrap gap-1 pt-1">
     {lesson.notionUrl && (
     <a

@@ -83,10 +83,11 @@ serve(async (req) => {
       throw new Error("Missing Gmail credentials in Supabase Secrets.");
     }
 
-    const { studentName, studentEmail, date, time, duration, cost, calcomBookingUid } = await req.json();
+    const { studentName, studentEmail, date, time, duration, cost, calcomBookingUid, discipline } = await req.json();
     if (!studentName || !studentEmail || !date || !time) {
       throw new Error("Missing required fields: studentName, studentEmail, date, time");
     }
+    const isPiano = discipline === "piano";
 
     // 1. Create Notion record if not already there (deduplicate by email)
     if (NOTION_KEY) {
@@ -206,6 +207,16 @@ serve(async (req) => {
       </div>
     ` : '';
 
+    const pianoTitle = "Piano Lesson";
+    const voiceTitle = "Voice Lesson";
+    const lessonTitle = isPiano ? pianoTitle : voiceTitle;
+    const studioName = isPiano ? "Piano Studio" : "Voice Studio";
+    const coachTitle = isPiano ? "Piano Coach" : "Voice Coach";
+    const emoji = isPiano ? "🎹" : "🎵";
+    const subjectLine = isPiano
+      ? `Welcome to Piano Studio! 🎹 — Your Lesson Booking`
+      : `Welcome to Voice Studio! 🎵 — Your Lesson Booking`;
+
     const htmlBody = `
       <!DOCTYPE html>
       <html>
@@ -215,13 +226,13 @@ serve(async (req) => {
             <tr><td style="height: 6px; background-color: #E11D48;"></td></tr>
             <tr>
               <td style="padding: 56px 40px; text-align: center;">
-                <div style="font-size: 48px; margin-bottom: 16px;">🎵</div>
-                <div style="color: #1E293B; font-size: 28px; font-weight: 700;">Welcome to Voice Studio</div>
+                <div style="font-size: 48px; margin-bottom: 16px;">${emoji}</div>
+                <div style="color: #1E293B; font-size: 28px; font-weight: 700;">Welcome to ${studioName}</div>
                 <div style="color: #E11D48; font-size: 11px; font-weight: 900; letter-spacing: 0.4em; margin-top: 12px; text-transform: uppercase;">Lesson Confirmed</div>
 
                 <div style="text-align: left; margin-top: 40px; line-height: 1.8; font-size: 16px; color: #475569;">
                   <p>Hi ${studentName.split(' ')[0]},</p>
-                  <p>Thanks for booking a voice lesson! Here's your session details:</p>
+                  <p>Thanks for booking a ${isPiano ? "piano" : "voice"} lesson! Here's your session details:</p>
 
                   <div style="background-color: #F8FAFC; border-radius: 24px; padding: 28px; margin: 28px 0; border: 1px solid #E2E8F0;">
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -252,7 +263,7 @@ serve(async (req) => {
 
                 <div style="border-top: 1px solid #F1F5F9; margin-top: 40px; padding-top: 32px; text-align: left;">
                   <div style="font-weight: 700; color: #1E293B; font-size: 18px;">Daniele Buatti</div>
-                  <div style="color: #E11D48; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">Voice Coach</div>
+                  <div style="color: #E11D48; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">${coachTitle}</div>
                 </div>
               </td>
             </tr>
@@ -262,7 +273,7 @@ serve(async (req) => {
       </html>
     `;
 
-    await sendGmail(accessToken, SENDER_EMAIL, studentEmail, "Welcome to Voice Studio! 🎵 — Your Lesson Booking", htmlBody);
+    await sendGmail(accessToken, SENDER_EMAIL, studentEmail, subjectLine, htmlBody);
 
     console.log(`[${functionName}] Onboarding email sent to ${studentEmail}`);
 

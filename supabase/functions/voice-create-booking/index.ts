@@ -22,7 +22,7 @@ serve(async (req) => {
 
     const body = await req.json();
     let { studentName, studentEmail } = body;
-    const { startTime, eventTypeId, title, notes, bookingUid, notionLessonId1, notionLessonId2, force } = body;
+    const { startTime, eventTypeId, title, notes, bookingUid, notionLessonId1, notionLessonId2, force, discipline } = body;
 
     if (!startTime) throw new Error("Missing startTime.");
 
@@ -144,6 +144,7 @@ serve(async (req) => {
               student_name: studentName,
               lesson_date: cleanStartTime.split("T")[0],
               status: "scheduled",
+              discipline: discipline || "voice",
               notion_lesson_id_1: notionLessonId1 || null,
               notion_lesson_id_2: notionLessonId2 || null,
             });
@@ -189,6 +190,7 @@ serve(async (req) => {
           crm_title: title || "Voice Lesson",
           crm_notes: notes || "",
           source: "Voice Studio CRM",
+          discipline: discipline || "voice",
         },
       }),
     });

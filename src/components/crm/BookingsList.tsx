@@ -48,6 +48,7 @@ export interface BookingListItem {
   appointmentId?: string | null;
   eventTypeId?: string | null;
   notionLink?: string | null;
+  discipline?: string | null;
 }
 
 type Tab = "upcoming" | "past" | "cancelled";
@@ -562,6 +563,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
           const isVoice = item.source === "voice";
           const person = isVoice ? item.subtitle || item.studentName || "—" : item.title;
           const eventLabel = isVoice ? item.title : "FNH Neuro-Health Assessment";
+          const discipline = isVoice ? item.discipline || "voice" : null;
           const busy = busyId === item.id;
           return (
             <div
@@ -615,7 +617,19 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                     <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-none text-[10px] font-semibold">Unpaid</Badge>
                   ) : null}
                 </div>
-                <div className="text-xs text-muted-foreground truncate">{eventLabel}</div>
+                <div className="flex items-center gap-1.5">
+                  {discipline && (
+                    <Badge className={cn(
+                      "text-[9px] font-semibold uppercase tracking-wider border-none px-1.5 py-0",
+                      discipline === "piano"
+                        ? "bg-chart-primary/10 text-chart-primary"
+                        : "bg-chart-destructive/10 text-chart-destructive"
+                    )}>
+                      {discipline}
+                    </Badge>
+                  )}
+                  <span className="text-xs text-muted-foreground truncate">{eventLabel}</span>
+                </div>
               </div>
 
               {/* Charge — at-a-glance pricing */}

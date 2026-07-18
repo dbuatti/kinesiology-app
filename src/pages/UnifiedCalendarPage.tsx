@@ -92,6 +92,7 @@ interface VoiceLesson {
   paymentStatus: string | null;
   cost: number | null;
   priceAmount: number | null;
+  discipline?: string | null;
 }
 
 interface VoiceBookingRow {
@@ -102,6 +103,7 @@ interface VoiceBookingRow {
   lesson_time: string | null;
   cost: number | null;
   status: string;
+  discipline?: string | null;
   notion_lesson_id_1: string | null;
   notion_lesson_id_2: string | null;
 }
@@ -124,14 +126,15 @@ interface KinesiologyAppt {
 }
 
 interface CalendarItem {
- id: string;
- source: "kinesiology" | "voice";
- date: string;
- time: string | null;
- title: string;
- subtitle: string | null;
- url: string | null;
- tag: string | null;
+  id: string;
+  source: "kinesiology" | "voice";
+  date: string;
+  time: string | null;
+  title: string;
+  subtitle: string | null;
+  url: string | null;
+  tag: string | null;
+  discipline?: string | null;
  priceAmount?: number | null;
  standardRate?: number | null;
  // payment + action payload (used by the compact Bookings list)
@@ -452,7 +455,8 @@ const UnifiedCalendarPage = () => {
     title: l.name || "Voice Lesson",
     subtitle: l.studentName || null,
     url: l.notionUrl || null,
-    tag: "voice",
+    tag: l.discipline || "voice",
+    discipline: l.discipline || "voice",
     status: booking?.status ?? null,
     cancelled: booking?.status === "cancelled",
     paid: voicePaid,
@@ -505,7 +509,8 @@ const UnifiedCalendarPage = () => {
     title: vb.student_name,
     subtitle: null,
     url: null,
-    tag: "voice",
+    tag: vb.discipline || "voice",
+    discipline: vb.discipline || "voice",
     status: vb.status ?? null,
     cancelled: false,
     paid: vb.status === "paid",
@@ -755,10 +760,14 @@ const UnifiedCalendarPage = () => {
    <div className="w-3 h-3 rounded-full bg-primary" />
    <span className="text-[10px] font-medium text-muted-foreground">Kinesiology</span>
    </div>
-   <div className="flex items-center gap-2">
-   <div className="w-3 h-3 rounded-full bg-destructive" />
-   <span className="text-[10px] font-medium text-muted-foreground">Voice Studio</span>
-   </div>
+    <div className="flex items-center gap-2">
+    <div className="w-3 h-3 rounded-full bg-destructive" />
+    <span className="text-[10px] font-medium text-muted-foreground">Voice</span>
+    </div>
+    <div className="flex items-center gap-2">
+    <div className="w-3 h-3 rounded-full bg-chart-primary" />
+    <span className="text-[10px] font-medium text-muted-foreground">Piano</span>
+    </div>
    <div className="w-px h-3 bg-border" />
    <div className="flex items-center gap-1.5">
    <span className="w-2 h-2 rounded-full bg-chart-emerald" />
@@ -878,54 +887,62 @@ const UnifiedCalendarPage = () => {
      target={item.source === "voice" ? "_blank" : undefined}
      rel={item.source === "voice" ? "noopener noreferrer" : undefined}
      onClick={!item.source || item.source === "kinesiology" ? (e) => { e.preventDefault(); navigate(item.url!); } : undefined}
-     className={cn(
-    "block p-1.5 rounded-lg text-[10px] font-medium truncate transition-all hover:scale-[1.02] border",
-    item.source === "voice"
-    ? "bg-chart-destructive/10 text-chart-destructive border-border "
-    : "bg-chart-primary/10 text-chart-primary border-border "
-    )}
-    >
-    <div className="flex items-center gap-1">
-    <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", item.isFree ? "bg-slate-400" : item.paid ? "bg-chart-emerald" : "bg-amber-500")} />
-    {item.source === "voice" ? (
-    <Mic size={9} className="shrink-0 opacity-60" />
-    ) : (
-    <User size={9} className="shrink-0 opacity-60" />
-    )}
-    {item.source === "kinesiology" && item.clientId ? (
-    <span
-      className="truncate cursor-pointer hover:underline"
-      onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/clients/${item.clientId}`); }}
-    >
-      {item.title}
-    </span>
-    ) : (
-    <span className="truncate">{item.title}</span>
-    )}
-    {item.time && <span className="text-[9px] opacity-60 shrink-0 ml-0.5">{item.time}</span>}
-    </div>
-    </a>
-    ) : (
-    <div
     className={cn(
-    "block p-1.5 rounded-lg text-[10px] font-medium truncate border",
-    item.source === "voice"
-    ? "bg-chart-destructive/10 text-chart-destructive border-border "
-    : "bg-chart-primary/10 text-chart-primary border-border "
-    )}
-    >
-    <div className="flex items-center gap-1">
-    <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", item.isFree ? "bg-slate-400" : item.paid ? "bg-chart-emerald" : "bg-amber-500")} />
-    {item.source === "voice" ? (
-    <Mic size={9} className="shrink-0 opacity-60" />
-    ) : (
-    <User size={9} className="shrink-0 opacity-60" />
-    )}
-    <span className="truncate">{item.title}</span>
-    {item.time && <span className="text-[9px] opacity-60 shrink-0 ml-0.5">{item.time}</span>}
-    </div>
-    </div>
-    )}
+   "block p-1.5 rounded-lg text-[10px] font-medium truncate transition-all hover:scale-[1.02] border",
+   item.source === "voice" && item.discipline === "piano"
+   ? "bg-chart-primary/10 text-chart-primary border-border "
+   : item.source === "voice"
+   ? "bg-chart-destructive/10 text-chart-destructive border-border "
+   : "bg-chart-primary/10 text-chart-primary border-border "
+   )}
+   >
+   <div className="flex items-center gap-1">
+   <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", item.isFree ? "bg-slate-400" : item.paid ? "bg-chart-emerald" : "bg-amber-500")} />
+   {item.source === "voice" && item.discipline === "piano" ? (
+   <BookOpen size={9} className="shrink-0 opacity-60" />
+     ) : item.source === "voice" ? (
+     <Mic size={9} className="shrink-0 opacity-60" />
+     ) : (
+     <User size={9} className="shrink-0 opacity-60" />
+     )}
+     {item.source === "kinesiology" && item.clientId ? (
+     <span
+       className="truncate cursor-pointer hover:underline"
+       onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/clients/${item.clientId}`); }}
+     >
+       {item.title}
+     </span>
+     ) : (
+     <span className="truncate">{item.title}</span>
+     )}
+     {item.time && <span className="text-[9px] opacity-60 shrink-0 ml-0.5">{item.time}</span>}
+     </div>
+     </a>
+     ) : (
+     <div
+     className={cn(
+     "block p-1.5 rounded-lg text-[10px] font-medium truncate border",
+     item.source === "voice" && item.discipline === "piano"
+     ? "bg-chart-primary/10 text-chart-primary border-border "
+     : item.source === "voice"
+     ? "bg-chart-destructive/10 text-chart-destructive border-border "
+     : "bg-chart-primary/10 text-chart-primary border-border "
+     )}
+     >
+     <div className="flex items-center gap-1">
+     <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", item.isFree ? "bg-slate-400" : item.paid ? "bg-chart-emerald" : "bg-amber-500")} />
+     {item.source === "voice" && item.discipline === "piano" ? (
+     <BookOpen size={9} className="shrink-0 opacity-60" />
+     ) : item.source === "voice" ? (
+     <Mic size={9} className="shrink-0 opacity-60" />
+     ) : (
+     <User size={9} className="shrink-0 opacity-60" />
+     )}
+     <span className="truncate">{item.title}</span>
+     {item.time && <span className="text-[9px] opacity-60 shrink-0 ml-0.5">{item.time}</span>}
+     </div>
+     </div>
+     )}
     </TooltipTrigger>
    <TooltipContent className="rounded-xl p-3 shadow-sm border-none w-64 bg-popover">
    <div className="space-y-2">
@@ -946,17 +963,19 @@ const UnifiedCalendarPage = () => {
    {item.source === "voice" ? "Student" : "Client"}: {item.subtitle}
    </div>
    )}
-   <div className="flex items-center gap-1.5 flex-wrap">
-   <Badge
-   className={cn(
-   "text-[10px] font-semibold border-none",
-   item.source === "voice"
-   ? "bg-chart-destructive/10 text-chart-destructive "
-   : "bg-chart-primary/10 text-chart-primary "
-   )}
-   >
-   {item.source === "voice" ? "Voice" : item.tag || "Kinesiology"}
-   </Badge>
+    <div className="flex items-center gap-1.5 flex-wrap">
+    <Badge
+    className={cn(
+    "text-[10px] font-semibold border-none capitalize",
+    item.source === "voice" && item.discipline === "piano"
+    ? "bg-chart-primary/10 text-chart-primary "
+    : item.source === "voice"
+    ? "bg-chart-destructive/10 text-chart-destructive "
+    : "bg-chart-primary/10 text-chart-primary "
+    )}
+    >
+    {item.source === "voice" ? (item.discipline || "Voice") : item.tag || "Kinesiology"}
+    </Badge>
    <Badge className={cn("text-[10px] font-semibold border-none",
      item.isFree ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
      : item.paid ? "bg-chart-emerald/10 text-chart-emerald"

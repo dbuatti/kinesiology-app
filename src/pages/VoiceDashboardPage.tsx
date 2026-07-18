@@ -27,15 +27,16 @@ interface VoiceStudent {
 }
 
 interface VoiceLesson {
- id: string;
- name: string | null;
- date: string | null;
- time: string | null;
- studentIds: string[];
- paymentStatus: string | null;
- studentName: string | null;
- studentEmail: string | null;
- notionUrl: string | null;
+  id: string;
+  name: string | null;
+  date: string | null;
+  time: string | null;
+  studentIds: string[];
+  paymentStatus: string | null;
+  studentName: string | null;
+  studentEmail: string | null;
+  notionUrl: string | null;
+  discipline?: string | null;
 }
 
 const now = new Date();
@@ -43,8 +44,11 @@ const threeMonthsAgo = new Date();
 threeMonthsAgo.setDate(now.getDate() - 90);
 const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
+type DisciplineFilter = "all" | "voice" | "piano";
+
 const VoiceDashboardPage = () => {
- const navigate = useNavigate();
+  const navigate = useNavigate();
+  const [disciplineFilter, setDisciplineFilter] = useState<DisciplineFilter>("all");
 
  const { data: students = [], isLoading: studentsLoading } = useQuery<VoiceStudent[]>({
  queryKey: ["voice-students"],
@@ -66,22 +70,27 @@ const VoiceDashboardPage = () => {
  staleTime: 2 * 60 * 1000,
  });
 
- const isLoading = studentsLoading || lessonsLoading;
+  const isLoading = studentsLoading || lessonsLoading;
 
- const stats = useMemo(() => {
- const thisMonthLessons = lessons.filter(
- (l) => l.date && new Date(l.date) >= monthStart && new Date(l.date) <= now
- );
- const unpaid = lessons.filter((l) => l.paymentStatus === "Unpaid");
- const futureLessons = lessons
- .filter((l) => l.date && new Date(l.date) > now)
- .sort((a, b) => (a.date || "").localeCompare(b.date || ""))
- .slice(0, 5);
- const pastDue = students.filter(
- (s) => s.latestDate && new Date(s.latestDate) < threeMonthsAgo
- );
- return { thisMonthLessons, unpaid, futureLessons, pastDue };
- }, [lessons, students]);
+  const filteredLessons = useMemo(() => {
+    if (disciplineFilter === "all") return lessons;
+    return lessons.filter((l) => (l.discipline || "voice") === disciplineFilter);
+  }, [lessons, disciplineFilter]);
+
+  const stats = useMemo(() => {
+    const thisMonthLessons = filteredLessons.filter(
+      (l) => l.date && new Date(l.date) >= monthStart && new Date(l.date) <= now
+    );
+    const unpaid = filteredLessons.filter((l) => l.paymentStatus === "Unpaid");
+    const futureLessons = filteredLessons
+    .filter((l) => l.date && new Date(l.date) > now)
+    .sort((a, b) => (a.date || "").localeCompare(b.date || ""))
+    .slice(0, 5);
+    const pastDue = students.filter(
+      (s) => s.latestDate && new Date(s.latestDate) < threeMonthsAgo
+    );
+    return { thisMonthLessons, unpaid, futureLessons, pastDue };
+  }, [filteredLessons, students]);
 
  const quickActions = [
  { label: "Add Student", icon: Plus, path: "/voice/clients", color: "bg-destructive", onClick: () => navigate("/voice/clients") },
@@ -101,17 +110,41 @@ const VoiceDashboardPage = () => {
  );
  }
 
- return (
- <AppLayout>
- <div className="space-y-8 pb-32">
- <PageHeader
- title="Voice Studio"
- subtitle="Your studio at a glance — students, lessons, and actions."
- icon={Mic}
-   iconClassName="bg-destructive text-white "
-  />
+  const DISCIPLINE_FILTERS: { key: DisciplineFilter; label: string }[] = [
+    { key: "all", label: "All" },
+    { key: "voice", label: "Voice" },
+    { key: "piano", label: "Piano" },
+  ];
 
- {/* KPI Cards */}
+  return (
+    <AppLayout>
+      <div className="space-y-8 pb-32">
+        <PageHeader
+          title="Voice Studio"
+          subtitle="Your studio at a glance — students, lessons, and actions."
+          icon={Mic}
+          iconClassName="bg-destructive text-white "
+        />
+
+      {/* Discipline filter */}
+      <div className="flex bg-muted rounded-xl p-0.5 border border-border w-fit">
+        {DISCIPLINE_FILTERS.map((f) => (
+          <button
+            key={f.key}
+            onClick={() => setDisciplineFilter(f.key)}
+            className={cn(
+              "px-4 py-2 rounded-[10px] text-xs font-semibold transition-all",
+              disciplineFilter === f.key
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {/* KPI Cards */}
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
  {[
  { label: "Students", value: students.length, icon: Users, color: "text-chart-destructive", bg: "bg-chart-destructive/10 " },
@@ -264,10 +297,10 @@ const VoiceDashboardPage = () => {
  <p className="text-xs text-muted-foreground text-center py-6">No lessons yet.</p>
  ) : (
  <div className="space-y-1">
- {[...lessons]
- .filter((l) => l.date && new Date(l.date) <= now)
- .sort((a, b) => (b.date || "").localeCompare(a.date || ""))
- .slice(0, 10)
+                {[...filteredLessons]
+              .filter((l) => l.date && new Date(l.date) <= now)
+              .sort((a, b) => (b.date || "").localeCompare(a.date || ""))
+              .slice(0, 10)
  .map((lesson) => (
  <div key={lesson.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/30 transition-colors">
  <div className="w-9 h-9 rounded-lg bg-chart-primary/10 flex items-center justify-center shrink-0">

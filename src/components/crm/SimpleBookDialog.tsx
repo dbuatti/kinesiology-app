@@ -107,8 +107,11 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
       setSendOnboarding(true);
       setSendingEmail(false);
       setEmailSent(false);
-    } else if (prefillDuration) {
-      setDuration(prefillDuration);
+    } else {
+      createBooking.reset();
+      forceBooking.reset();
+      setStep("details");
+      if (prefillDuration) setDuration(prefillDuration);
     }
   }, [open, prefillDate, prefillTime, prefillDuration]);
 

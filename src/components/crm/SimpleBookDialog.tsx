@@ -46,6 +46,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
   const [step, setStep] = useState<"details" | "confirm">("details");
   const [studentSearch, setStudentSearch] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<VoiceStudent | null>(null);
+  const [manualEmail, setManualEmail] = useState("");
   const [date, setDate] = useState(prefillDate || format(addDays(new Date(), 1), "yyyy-MM-dd"));
   const [time, setTime] = useState(prefillTime || "10:00");
   const [duration, setDuration] = useState(prefillDuration || "60");
@@ -100,6 +101,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
       setStep("details");
       setSelectedStudent(null);
       setStudentSearch("");
+      setManualEmail("");
       setDate(prefillDate || format(addDays(new Date(), 1), "yyyy-MM-dd"));
       setTime(prefillTime || "10:00");
       setDuration(prefillDuration || "60");
@@ -130,6 +132,8 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
            (s.email || "").toLowerCase().includes(q)
     );
   }, [students, studentSearch]);
+
+  const studentEmail = selectedStudent?.email || manualEmail || null;
 
   const eventType = EVENT_TYPES.find(e => e.key === duration)!;
   const { priceFor } = useEventPricing();
@@ -169,11 +173,11 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
   /** Ensure the selected student exists in Notion. Returns the Notion page ID. */
   const ensureNotionStudent = async (): Promise<string> => {
     if (selectedStudent?._source === "notion") return selectedStudent.id;
-    if (!selectedStudent?.name || !selectedStudent?.email) throw new Error("Name and email required to create student in Notion");
+    if (!selectedStudent?.name || !studentEmail) throw new Error("Name and email required to create student in Notion");
     setCreatingNotion(true);
     try {
       const { data, error } = await supabase.functions.invoke("voice-onboard", {
-        body: { name: selectedStudent.name, email: selectedStudent.email },
+        body: { name: selectedStudent.name, email: studentEmail },
       });
       if (error) throw error;
       if (!data?.notionPageId) throw new Error("Failed to create student in Notion");
@@ -197,7 +201,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
     const { data: bookingData, error: bookingError } = await supabase.functions.invoke("voice-create-booking", {
       body: {
         studentName: selectedStudent.name || lessonType,
-        studentEmail: selectedStudent.email || "",
+        studentEmail: studentEmail || "",
         startTime: startTimeIso,
         eventTypeId: eventType.eventTypeId,
         title: `${lessonType} — ${dateStr}`,
@@ -215,7 +219,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
         time: timeStr,
         cost: costVal,
         studentName: selectedStudent.name,
-        studentEmail: selectedStudent.email,
+        studentEmail: studentEmail || selectedStudent.email,
         calcomBookingUid: bookingData?.uid,
         discipline,
       },
@@ -261,7 +265,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
       const { error } = await supabase.functions.invoke("voice-send-onboarding", {
         body: {
           studentName: selectedStudent.name,
-          studentEmail: selectedStudent.email,
+          studentEmail: studentEmail || selectedStudent.email,
           date: dateStr,
           time: timeStr,
           duration,
@@ -308,24 +312,35 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
           <div className="space-y-2">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Student</p>
             {selectedStudent ? (
-              <div className="flex items-center justify-between bg-muted/40 rounded-xl p-3">
-                <div className="flex items-center gap-2">
-                  <div>
-                    <p className="font-bold text-sm">{selectedStudent.name || "Unnamed"}</p>
-                    {selectedStudent.email && (
-                      <p className="text-xs text-muted-foreground">{selectedStudent.email}</p>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between bg-muted/40 rounded-xl p-3">
+                  <div className="flex items-center gap-2">
+                    <div>
+                      <p className="font-bold text-sm">{selectedStudent.name || "Unnamed"}</p>
+                      {selectedStudent.email && (
+                        <p className="text-xs text-muted-foreground">{selectedStudent.email}</p>
+                      )}
+                    </div>
+                    {selectedStudent._source === "kinesiology" && (
+                      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0 self-start">FNH</span>
                     )}
                   </div>
-                  {selectedStudent._source === "kinesiology" && (
-                    <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0 self-start">FNH</span>
-                  )}
+                  <button
+                    onClick={() => { setSelectedStudent(null); }}
+                    className="text-xs font-bold text-rose-600 hover:underline"
+                  >
+                    Change
+                  </button>
                 </div>
-                <button
-                  onClick={() => { setSelectedStudent(null); }}
-                  className="text-xs font-bold text-rose-600 hover:underline"
-                >
-                  Change
-                </button>
+                {!selectedStudent.email && (
+                  <Input
+                    placeholder="Enter email address..."
+                    value={manualEmail}
+                    onChange={(e) => setManualEmail(e.target.value)}
+                    className="h-10 rounded-xl text-sm"
+                    type="email"
+                  />
+                )}
               </div>
             ) : (
               <div className="space-y-2">
@@ -553,7 +568,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                 </Button>
                 <Button
                   onClick={handleConfirm}
-                  disabled={bookingPending || creatingNotion || !selectedStudent || !date || !time}
+                  disabled={bookingPending || creatingNotion || !selectedStudent || !date || !time || (selectedStudent._source === "kinesiology" && !selectedStudent.email && !manualEmail)}
                   className="bg-rose-500 hover:bg-rose-600 rounded-xl font-bold text-xs gap-2"
                 >
                   {bookingPending ? (

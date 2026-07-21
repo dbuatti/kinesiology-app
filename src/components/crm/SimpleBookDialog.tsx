@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEventPricing } from "@/hooks/useEventPricing";
 import { cn } from "@/lib/utils";
 import {
-  Loader2, Calendar, Clock, Check, Music, Search, Mail, CalendarPlus, CheckCircle2
+  Loader2, Calendar, Clock, Check, Music, Search, Mail, CalendarPlus, CheckCircle2, User
 } from "lucide-react";
 
 
@@ -23,6 +23,8 @@ interface VoiceStudent {
   name: string | null;
   email: string | null;
   phone: string | null;
+  /** "notion" = from Voice Clients DB, "kinesiology" = from clients table */
+  _source?: "notion" | "kinesiology";
 }
 
 interface SimpleBookDialogProps {
@@ -51,16 +53,45 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
   const [sendOnboarding, setSendOnboarding] = useState(true);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [creatingNotion, setCreatingNotion] = useState(false);
 
-  const { data: students = [] } = useQuery<VoiceStudent[]>({
+  const { data: voiceStudents = [] } = useQuery<VoiceStudent[]>({
     queryKey: ["voice-students"],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke("voice-clients");
       if (error) throw error;
-      return data?.students || [];
+      return (data?.students || []).map((s: any) => ({ ...s, _source: "notion" as const }));
     },
     staleTime: 5 * 60 * 1000,
   });
+
+  const { data: kineClients = [] } = useQuery<VoiceStudent[]>({
+    queryKey: ["kinesiology-clients"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("clients")
+        .select("id, name, email, phone")
+        .eq("user_id", (await supabase.auth.getUser()).data.user?.id)
+        .not("is_practitioner", "eq", true);
+      if (error) throw error;
+      return (data || []).map((c) => ({ id: c.id, name: c.name, email: c.email, phone: c.phone, _source: "kinesiology" as const }));
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const students = useMemo(() => {
+    const byEmail = new Set<string>();
+    const merged: VoiceStudent[] = [];
+    for (const s of voiceStudents) {
+      if (s.email) byEmail.add(s.email.toLowerCase());
+      merged.push(s);
+    }
+    for (const c of kineClients) {
+      if (c.email && byEmail.has(c.email.toLowerCase())) continue;
+      merged.push(c);
+    }
+    return merged;
+  }, [voiceStudents, kineClients]);
 
   useEffect(() => {
     if (!open) {
@@ -132,12 +163,32 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
     }
   }, [calSlots, time]);
 
+  /** Ensure the selected student exists in Notion. Returns the Notion page ID. */
+  const ensureNotionStudent = async (): Promise<string> => {
+    if (selectedStudent?._source === "notion") return selectedStudent.id;
+    if (!selectedStudent?.name || !selectedStudent?.email) throw new Error("Name and email required to create student in Notion");
+    setCreatingNotion(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("voice-onboard", {
+        body: { name: selectedStudent.name, email: selectedStudent.email },
+      });
+      if (error) throw error;
+      if (!data?.notionPageId) throw new Error("Failed to create student in Notion");
+      return data.notionPageId;
+    } finally {
+      setCreatingNotion(false);
+    }
+  };
+
   const bookLesson = async (forceBooking: boolean) => {
     if (!selectedStudent || !date || !time) throw new Error("Missing booking details");
 
     const startTimeIso = new Date(date + "T" + time).toISOString();
     const dateStr = format(new Date(date + "T" + time), "yyyy-MM-dd");
     const timeStr = format(new Date(date + "T" + time), "h:mm a");
+
+    // If the student is from kinesiology clients, create them in Notion first
+    const notionStudentId = await ensureNotionStudent();
 
     const lessonType = discipline === "piano" ? "Piano Lesson" : "Voice Lesson";
     const { data: bookingData, error: bookingError } = await supabase.functions.invoke("voice-create-booking", {
@@ -156,7 +207,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
 
     const { data: lessonData, error: lessonError } = await supabase.functions.invoke("voice-schedule-lesson", {
       body: {
-        studentId: selectedStudent.id,
+        studentId: notionStudentId,
         date: dateStr,
         time: timeStr,
         cost: costVal,
@@ -255,10 +306,15 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Student</p>
             {selectedStudent ? (
               <div className="flex items-center justify-between bg-muted/40 rounded-xl p-3">
-                <div>
-                  <p className="font-bold text-sm">{selectedStudent.name || "Unnamed"}</p>
-                  {selectedStudent.email && (
-                    <p className="text-xs text-muted-foreground">{selectedStudent.email}</p>
+                <div className="flex items-center gap-2">
+                  <div>
+                    <p className="font-bold text-sm">{selectedStudent.name || "Unnamed"}</p>
+                    {selectedStudent.email && (
+                      <p className="text-xs text-muted-foreground">{selectedStudent.email}</p>
+                    )}
+                  </div>
+                  {selectedStudent._source === "kinesiology" && (
+                    <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0 self-start">FNH</span>
                   )}
                 </div>
                 <button
@@ -287,7 +343,12 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                       onClick={() => { setSelectedStudent(s); setStudentSearch(""); }}
                       className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-muted transition-colors"
                     >
-                      <p className="font-semibold text-sm">{s.name || "Unnamed"}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-sm">{s.name || "Unnamed"}</p>
+                        {s._source === "kinesiology" && (
+                          <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground">FNH</span>
+                        )}
+                      </div>
                       {s.email && <p className="text-xs text-muted-foreground">{s.email}</p>}
                     </button>
                   ))}
@@ -489,7 +550,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                 </Button>
                 <Button
                   onClick={handleConfirm}
-                  disabled={bookingPending || !selectedStudent || !date || !time}
+                  disabled={bookingPending || creatingNotion || !selectedStudent || !date || !time}
                   className="bg-rose-500 hover:bg-rose-600 rounded-xl font-bold text-xs gap-2"
                 >
                   {bookingPending ? (

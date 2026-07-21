@@ -518,7 +518,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
           )}
 
           {/* Confirmation summary */}
-          {!bookingDone && selectedStudent && (
+          {!bookingDone && selectedStudent && date && time && (
             <div className="bg-muted/50 rounded-xl p-5 space-y-2">
               <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Summary</p>
               <div className="flex items-center gap-2 text-sm font-bold">

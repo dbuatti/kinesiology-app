@@ -568,7 +568,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                 </Button>
                 <Button
                   onClick={handleConfirm}
-                  disabled={bookingPending || creatingNotion || !selectedStudent || !date || !time || (selectedStudent._source === "kinesiology" && !selectedStudent.email && !manualEmail)}
+                  disabled={bookingPending || creatingNotion || !selectedStudent || !date || !time || (!studentEmail)}
                   className="bg-rose-500 hover:bg-rose-600 rounded-xl font-bold text-xs gap-2"
                 >
                   {bookingPending ? (

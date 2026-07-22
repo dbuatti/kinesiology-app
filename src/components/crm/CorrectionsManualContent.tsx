@@ -159,7 +159,7 @@ const heartWallContent: Record<string, { title: string; steps: string[] }> = {
 
 const limitingBeliefContent: Record<string, { title: string; steps: string[] }> = {
   "lb-process": {
-    title: "A-F Process",
+    title: "A-H Somatic Inquiry Process",
     steps: [
       "A — Feel the belief in your body. Ask: 'What do you notice? Where is it? What sensation?'",
       "B — Follow the sensation deeper. Ask: 'What do you notice now? Is it changing, moving, shifting?'",
@@ -167,6 +167,8 @@ const limitingBeliefContent: Record<string, { title: string; steps: string[] }> 
       "D — Embody the alternative. Ask: 'Feel that new state. What do you notice in the body?'",
       "E — Deepen the new feeling. Ask: 'Let that feeling expand. What do you notice?'",
       "F — Check if the belief still holds. Ask: 'Does the original belief still feel true? What do you notice?'",
+      "G — Future check. Ask: 'Do you see yourself believing this in the future?'",
+      "H — Scenario check. Ask: 'Is there any scenario where this belief might still feel true?'",
     ],
   },
 };

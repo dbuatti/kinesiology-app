@@ -8,7 +8,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { showSuccess, showError } from '@/utils/toast';
 import { cn } from '@/lib/utils';
 
-const STEP_IDS = [0, 1, 2, 3, 4, 5] as const;
+const STEP_IDS = [0, 1, 2, 3, 4, 5, 6, 7] as const;
 const STEP_LABELS: Record<number, string> = {
   0: 'Feel the belief in your body',
   1: 'Follow the sensation deeper',
@@ -16,6 +16,8 @@ const STEP_LABELS: Record<number, string> = {
   3: 'Embody the alternative',
   4: 'Deepen the new feeling',
   5: 'Check if the belief still holds',
+  6: 'Future check',
+  7: 'Scenario check',
 };
 const STEP_PROMPTS: Record<number, string> = {
   0: 'What do you notice? Where is it in the body? What sensation?',
@@ -24,8 +26,10 @@ const STEP_PROMPTS: Record<number, string> = {
   3: 'Feel that new state. What do you notice in the body now?',
   4: 'Let that feeling expand. What do you notice?',
   5: 'Does the original belief still feel true? What do you notice?',
+  6: 'Do you see yourself believing this in the future?',
+  7: 'Is there any scenario where this belief might still feel true?',
 };
-const STEP_LETTERS: Record<number, string> = { 0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F' };
+const STEP_LETTERS: Record<number, string> = { 0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H' };
 
 interface RoundData {
   responses: Record<number, string>;
@@ -33,7 +37,7 @@ interface RoundData {
 }
 
 const EMPTY_ROUND = (loopCount = 0): RoundData => ({
-  responses: { 0: '', 1: '', 2: '', 3: '', 4: '', 5: '' },
+  responses: { 0: '', 1: '', 2: '', 3: '', 4: '', 5: '', 6: '', 7: '' },
   loopCount,
 });
 
@@ -49,7 +53,7 @@ const LimitingBeliefsTool = () => {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const current = rounds[activeRound];
-  const isComplete = rounds.some(r => r.responses[5]?.trim().length > 0);
+  const isComplete = rounds.some(r => r.responses[7]?.trim().length > 0);
 
   const buildDissolveLog = useCallback(() => ({
     responses: current.responses,
@@ -79,7 +83,7 @@ const LimitingBeliefsTool = () => {
     if (!beliefId) return;
     setSaving(true);
     const latest = roundsData[roundsData.length - 1];
-    const isCompleteCheck = roundsData.some(r => r.responses[5]?.trim().length > 0);
+    const isCompleteCheck = roundsData.some(r => r.responses[7]?.trim().length > 0);
     const { error } = await supabase
       .from('limiting_belief_sessions')
       .update({

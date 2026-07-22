@@ -173,16 +173,14 @@ const heartWallContent: Record<string, { title: string; steps: string[] }> = {
 
 const limitingBeliefContent: Record<string, { title: string; steps: string[] }> = {
   "lb-process": {
-    title: "Limiting Belief Process",
+    title: "A-F Process",
     steps: [
-      "Identify the limiting belief from client speech: listen for 'I am...', 'People will...', 'If I... then...', 'I must...', 'I can't...', 'They make me...'.",
-      "Challenge with indicator: state the belief → muscle inhibits if the belief is active.",
-      "Ask: 'What is the positive alternative?' E.g. 'I am not good enough' → 'I am worthy and capable.'",
-      "Challenge the positive alternative: state it → muscle locks if the system accepts it.",
-      "Create cognitive flexibility: state both identities back and forth, testing which has more charge.",
-      "Dissolve the limiting identity: hold ESR points + state the belief + intention to release.",
-      "Install the positive identity: hold ESR points + state the positive alternative + tap the associated brain zones.",
-      "Re-test: state the original limiting belief → muscle should now lock (no longer active). State the positive alternative → muscle locks (integrated).",
+      "A — Feel the belief in your body. Ask: 'What do you notice? Where is it? What sensation?'",
+      "B — Follow the sensation deeper. Ask: 'What do you notice now? Is it changing, moving, shifting?'",
+      "C — Identify the desired state. Ask: 'What would you rather feel instead?'",
+      "D — Embody the alternative. Ask: 'Feel that new state. What do you notice in the body?'",
+      "E — Deepen the new feeling. Ask: 'Let that feeling expand. What do you notice?'",
+      "F — Check if the belief still holds. Ask: 'Does the original belief still feel true? What do you notice?'",
     ],
   },
 };

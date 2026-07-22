@@ -46,6 +46,11 @@ const FooterLinks = () => {
                   Corrections Manual
                 </Link>
               </li>
+              <li>
+                <Link to="/practice/clinical-hub" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  Clinical Hub
+                </Link>
+              </li>
             </ul>
           </div>
 

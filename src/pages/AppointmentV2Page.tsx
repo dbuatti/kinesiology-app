@@ -8,11 +8,11 @@ import { showSuccess, showError } from "@/utils/toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft, Loader2, Printer, FileText, Activity, Zap, GitBranch,
   Target, ClipboardCheck, CheckCircle2, ChevronRight, ChevronLeft,
-  Maximize2, Minimize2, Calendar, Clock, User, BookOpen
+  Maximize2, Minimize2, Calendar, Clock, User, BookOpen,
+  Plus, BookMarked
 } from "lucide-react";
 import {
   HoverCard, HoverCardContent, HoverCardTrigger,
@@ -20,6 +20,8 @@ import {
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import PeaceWizard from "@/components/crm/v2/PeaceWizard";
 import AppointmentV2DocView from "@/components/crm/v2/AppointmentV2DocView";
+import CorrectionsManualContent from "@/components/crm/CorrectionsManualContent";
+import { QuickSessionDialog } from "@/components/crm/QuickSessionDialog";
 import { parseClientJournal } from "@/utils/journal-helper";
 
 const AppointmentV2Page = () => {
@@ -36,8 +38,9 @@ const AppointmentV2Page = () => {
     refresh
   } = useAppointment(id);
 
-  const [isDocView, setIsDocView] = useState(false);
+  const [viewMode, setViewMode] = useState<'peace' | 'doc' | 'manual'>('peace');
   const [isFullScreen, setIsFullScreen] = useState(() => localStorage.getItem('rk_v2_fullscreen') === 'true');
+  const [quickSessionOpen, setQuickSessionOpen] = useState(false);
 
   useEffect(() => {
     const handler = () => setIsFullScreen(localStorage.getItem('rk_v2_fullscreen') === 'true');
@@ -65,7 +68,7 @@ const AppointmentV2Page = () => {
       <div className="flex flex-col items-center justify-center min-h-screen bg-background space-y-4">
         <p className="text-muted-foreground font-medium">Session not found.</p>
         <Button asChild variant="outline" className="rounded-xl">
-          <Link to="/schedule?view=list"><ArrowLeft size={16} className="mr-2" /> Back to Schedule</Link>
+          <Link to="/practice/clinical-hub"><ArrowLeft size={16} className="mr-2" /> Back to Hub</Link>
         </Button>
       </div>
     );
@@ -76,17 +79,11 @@ const AppointmentV2Page = () => {
     return null;
   }
 
-  if (isDocView) {
-    return (
-      <AppointmentV2DocView
-        appointment={appointment}
-        history={history}
-        onBack={() => setIsDocView(false)}
-        saveField={saveField}
-        updatePriorityPattern={updatePriorityPattern}
-      />
-    );
-  }
+  const MODE_TABS = [
+    { id: 'peace' as const, label: 'PEACE', icon: Activity },
+    { id: 'doc' as const, label: 'DOC', icon: FileText },
+    { id: 'manual' as const, label: 'MANUAL', icon: BookMarked },
+  ];
 
   return (
     <div className={cn("min-h-screen bg-background", isFullScreen && "fixed inset-0 z-50 overflow-y-auto")}>
@@ -97,7 +94,7 @@ const AppointmentV2Page = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate('/schedule?view=list')}
+              onClick={() => navigate('/practice/clinical-hub')}
               className="rounded-xl text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft size={16} className="mr-1.5" /> Back
@@ -139,15 +136,36 @@ const AppointmentV2Page = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsDocView(true)}
-              className="rounded-xl text-muted-foreground hover:text-foreground"
+          <div className="flex items-center gap-1 shrink-0">
+            <div className="flex items-center gap-0.5 mr-3 border-r border-border pr-3">
+              {MODE_TABS.map(tab => {
+                const Icon = tab.icon;
+                const isActive = viewMode === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setViewMode(tab.id)}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 h-8 text-[10px] font-bold uppercase tracking-wider transition-colors rounded-lg",
+                      isActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    )}
+                  >
+                    <Icon size={13} />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => setQuickSessionOpen(true)}
+              className="flex items-center gap-1.5 px-3 h-8 text-[10px] font-bold uppercase tracking-wider border border-black hover:bg-black hover:text-white transition-colors rounded-lg"
+              title="FILE > NEW — Create a new session"
             >
-              <FileText size={16} className="mr-1.5" /> Doc View
-            </Button>
+              <Plus size={13} /> New
+            </button>
+            <div className="w-px h-6 bg-border mx-1" />
             <Button
               variant="ghost"
               size="sm"
@@ -160,25 +178,45 @@ const AppointmentV2Page = () => {
         </div>
       </header>
 
-      {/* Wizard */}
-      <div className="px-4 md:px-8 py-6 max-w-6xl mx-auto">
-        <ErrorBoundary>
-          <PeaceWizard
-            appointment={appointment}
-            history={history}
-            onUpdate={refresh}
-            saveField={saveField}
-            updatePriorityPattern={updatePriorityPattern}
-            onFinalise={async () => {
-              await supabase
-                .from('appointments')
-                .update({ status: 'Completed' })
-                .eq('id', id);
-              navigate(`/appointments/${id}`);
-            }}
-          />
-        </ErrorBoundary>
-      </div>
+      {/* Content */}
+      {viewMode === 'peace' && (
+        <div className="px-4 md:px-8 py-6 max-w-6xl mx-auto">
+          <ErrorBoundary>
+            <PeaceWizard
+              appointment={appointment}
+              history={history}
+              onUpdate={refresh}
+              saveField={saveField}
+              updatePriorityPattern={updatePriorityPattern}
+              onFinalise={async () => {
+                await supabase
+                  .from('appointments')
+                  .update({ status: 'Completed' })
+                  .eq('id', id);
+                navigate(`/appointments/${id}`);
+              }}
+            />
+          </ErrorBoundary>
+        </div>
+      )}
+
+      {viewMode === 'doc' && (
+        <AppointmentV2DocView
+          appointment={appointment}
+          history={history}
+          onBack={() => setViewMode('peace')}
+          saveField={saveField}
+          updatePriorityPattern={updatePriorityPattern}
+        />
+      )}
+
+      {viewMode === 'manual' && (
+        <div className="h-[calc(100vh-3.5rem)]">
+          <CorrectionsManualContent />
+        </div>
+      )}
+
+      <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} v2 />
     </div>
   );
 };

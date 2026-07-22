@@ -14,6 +14,7 @@ import {
   Activity,
   Heart,
   ShieldAlert,
+  Printer,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { showSuccess, showError } from '@/utils/toast';
@@ -228,8 +229,72 @@ const EmbedSection = ({
 
   const handleFieldChange = (field: string, value: string) => { saveField(field, value); };
 
+  const printHomework = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    const clientName = appointment.clients?.name || 'Client';
+    const dateStr = appointment.date
+      ? new Date(appointment.date).toLocaleDateString('en-AU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+      : new Date().toLocaleDateString('en-AU');
+    const findingsHtml = inhibitedItems.map(item => `
+      <tr>
+        <td>${item.name}${item.side ? ` (${item.side})` : ''}</td>
+        <td>${item.isCleared ? '✓ Cleared' : item.status}</td>
+        <td>${item.category.replace(/([A-Z])/g, ' $1').trim()}</td>
+      </tr>
+    `).join('');
+    const homework = appointment.session_north_star || 'No homework prescribed.';
+    printWindow.document.write(`
+      <html>
+        <head><title>Session Summary — ${clientName}</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: system-ui, -apple-system, sans-serif; padding: 2rem 2.5rem; max-width: 700px; margin: 0 auto; color: #1a1a1a; }
+            h1 { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 0.2rem; }
+            .meta { font-size: 0.7rem; color: #888; margin-bottom: 2rem; border-bottom: 1px solid #eee; padding-bottom: 1rem; }
+            table { width: 100%; border-collapse: collapse; font-size: 0.75rem; margin-bottom: 2rem; }
+            th { text-align: left; padding: 0.4rem 0.5rem; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: #888; border-bottom: 1px solid #ddd; font-weight: 600; }
+            td { padding: 0.4rem 0.5rem; border-bottom: 1px solid #f0f0f0; }
+            .homework { margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid #000; }
+            .homework h2 { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem; }
+            .homework p { font-size: 0.8rem; line-height: 1.6; white-space: pre-wrap; color: #333; }
+            .footer { margin-top: 3rem; font-size: 0.6rem; color: #bbb; text-align: center; text-transform: uppercase; letter-spacing: 0.1em; border-top: 1px solid #f0f0f0; padding-top: 1rem; }
+            .cleared { color: #888; }
+            @media print { body { padding: 0; } }
+          </style>
+        </head>
+        <body>
+          <h1>Session Summary — ${clientName}</h1>
+          <p class="meta">${dateStr} · Resonance Kinesiology</p>
+          ${inhibitedItems.length > 0 ? `
+          <table>
+            <thead><tr><th>Finding</th><th>Status</th><th>Category</th></tr></thead>
+            <tbody>${findingsHtml}</tbody>
+          </table>` : '<p style="font-size:0.75rem;color:#888;margin-bottom:2rem">No findings recorded this session.</p>'}
+          <div class="homework">
+            <h2>Prescribed Homework</h2>
+            <p>${homework}</p>
+          </div>
+          <p class="footer">${new Date().toLocaleDateString('en-AU')}</p>
+          <script>window.print();<\/script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   return (
     <div className="space-y-12">
+
+      {/* Print Homework — opens a clean print window with findings + homework for client handouts */}
+      <div className="flex justify-end -mb-4 print:hidden">
+        <button
+          onClick={printHomework}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider border border-black hover:bg-black hover:text-white transition-colors"
+        >
+          <Printer size={12} /> Print Homework
+        </button>
+      </div>
 
       {/* 1. Clinical Verification */}
       <div className="space-y-4">

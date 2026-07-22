@@ -10,6 +10,7 @@ import {
   CalendarPlus,
   Plus,
   Loader2,
+  Minimize2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppointmentWithClient } from '@/types/crm';
@@ -120,6 +121,12 @@ const SessionDocumentView = ({
     media.addEventListener("change", listener);
     return () => media.removeEventListener("change", listener);
   }, []);
+
+  // Weekend Mode — hides sidebars and toolbar clutter for focused client work
+  const [weekendMode, setWeekendMode] = useState(() => localStorage.getItem('doc_weekend_mode') === 'true');
+  useEffect(() => {
+    localStorage.setItem('doc_weekend_mode', String(weekendMode));
+  }, [weekendMode]);
 
   // Quick Session dialog state
   const [quickSessionOpen, setQuickSessionOpen] = useState(false);
@@ -252,33 +259,49 @@ const SessionDocumentView = ({
             </div>
             
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm"
-                onClick={() => setQuickSessionOpen(true)}
-                className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
-                <Plus size={12} className="mr-1" /> New Session
-              </Button>
-              {appointment.clients.phone && (
-                <Button variant="outline" size="sm"
-                  onClick={() => window.open(`imessage:${appointment.clients.phone}`, '_blank')}
-                  className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
-                  <MessageCircle size={12} className="mr-1" /> Message
-                </Button>
-              )}
-              {appointment.notion_link && (
-                <Button asChild variant="outline" size="sm" className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
-                  <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink size={12} className="mr-1" /> Notion
-                  </a>
-                </Button>
+              {!weekendMode && (
+                <>
+                  <Button variant="outline" size="sm"
+                    onClick={() => setQuickSessionOpen(true)}
+                    className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
+                    <Plus size={12} className="mr-1" /> New Session
+                  </Button>
+                  {appointment.clients.phone && (
+                    <Button variant="outline" size="sm"
+                      onClick={() => window.open(`imessage:${appointment.clients.phone}`, '_blank')}
+                      className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
+                      <MessageCircle size={12} className="mr-1" /> Message
+                    </Button>
+                  )}
+                  {appointment.notion_link && (
+                    <Button asChild variant="outline" size="sm" className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
+                      <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink size={12} className="mr-1" /> Notion
+                      </a>
+                    </Button>
+                  )}
+                  <Link to={`/schedule?view=list&clientId=${appointment.clients.id}`} className="no-underline">
+                    <Button variant="outline" size="sm" className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
+                      <CalendarPlus size={12} className="mr-1" /> Book Next
+                    </Button>
+                  </Link>
+                </>
               )}
               <Button variant="outline" size="sm" onClick={() => window.print()} className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
                 <Printer size={12} className="mr-1" /> Print
               </Button>
-              <Link to={`/schedule?view=list&clientId=${appointment.clients.id}`} className="no-underline">
-                <Button variant="outline" size="sm" className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
-                  <CalendarPlus size={12} className="mr-1" /> Book Next
-                </Button>
-              </Link>
+              <button
+                onClick={() => setWeekendMode(v => !v)}
+                className={cn(
+                  "h-8 px-3 text-[10px] font-bold uppercase tracking-wider border transition-colors",
+                  weekendMode
+                    ? "bg-black text-white border-black"
+                    : "border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600"
+                )}
+                title={weekendMode ? "Exit Weekend Mode — show full interface" : "Weekend Mode — hide sidebars and focus on the session"}
+              >
+                <Minimize2 size={12} className={cn("transition-transform", weekendMode && "rotate-45")} />
+              </button>
             </div>
           </div>
         </div>
@@ -288,7 +311,7 @@ const SessionDocumentView = ({
       <div className="w-full px-4 md:px-6 flex flex-col lg:flex-row gap-6 lg:gap-12 items-start justify-start pt-8 print:block print:p-0">
         
         {/* Left Sidebar: Outline & Corrections Guide (Only rendered on Desktop) */}
-        {isDesktop && (
+        {isDesktop && !weekendMode && (
           <DocumentSidebar 
             activeSection={activeSection} 
             scrollTo={scrollTo} 
@@ -298,7 +321,10 @@ const SessionDocumentView = ({
         )}
 
         {/* Center: The Document */}
-        <div className="flex-1 w-full max-w-[850px] mx-auto bg-white border-none md:border md:border-slate-200 md:shadow-sm p-3 sm:p-6 md:p-8 min-h-[900px] print:border-none print:p-0">
+        <div className={cn(
+          "flex-1 w-full mx-auto bg-white border-none md:border md:border-slate-200 md:shadow-sm p-3 sm:p-6 md:p-8 min-h-[900px] print:border-none print:p-0",
+          weekendMode ? "max-w-[1100px]" : "max-w-[850px]"
+        )}>
           {/* Header */}
           <DocumentHeader 
             clientName={appointment.clients.name} 
@@ -369,7 +395,7 @@ const SessionDocumentView = ({
         </div>
 
         {/* Right Sidebar: Timers + Clinical Reference (Only rendered on Desktop) */}
-        {isDesktop && (
+        {isDesktop && !weekendMode && (
           <DocumentRightSidebar
             activeTimerDuration={activeTimerDuration}
             timeLeft={timeLeft}

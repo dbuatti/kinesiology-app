@@ -4,31 +4,10 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
 import { BrainReflexPoint } from "@/data/brain-reflex-data";
-import { 
-  Brain, 
-  Zap, 
-  Info, 
-  Target, 
-  Sparkles, 
-  Activity, 
-  Layers,
-  MapPin,
-  MousePointer2,
-  ShieldAlert,
-  Hand,
-  PlayCircle,
-  AlertCircle,
-  ListChecks,
-  CheckCircle2,
-  ArrowRight,
-  ImageIcon
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface BrainReflexModalProps {
   point: BrainReflexPoint | null;
@@ -49,159 +28,119 @@ const BrainReflexModal = ({
 }: BrainReflexModalProps) => {
   if (!point) return null;
 
-  const SectionHeader = ({ icon: Icon, title, color }: { icon: any, title: string, color: string }) => (
-    <h4 className={cn("text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2 mb-3", color)}>
-      <Icon size={14} /> {title}
-    </h4>
-  );
+  const categoryAccent = point.category === 'Cortical' 
+    ? 'text-violet-600 bg-violet-50 border-violet-200' 
+    : point.category === 'Subcortical'
+    ? 'text-indigo-600 bg-indigo-50 border-indigo-200'
+    : 'text-emerald-600 bg-emerald-50 border-emerald-200';
+
+  const showImages = primaryUrl || secondaryUrl || tertiaryUrl;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[900px] max-h-[95vh] rounded-[3rem] overflow-hidden p-0 border-none shadow-2xl">
-        <DialogHeader className="p-0">
-          <div className={cn(
-            "p-10 text-white transition-colors relative",
-            point.category === 'Cortical' ? "bg-purple-600" :
-            point.category === 'Subcortical' ? "bg-indigo-600" :
-            "bg-emerald-600"
-          )}>
-            <div className="flex items-center gap-6">
-              <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-[2rem] flex items-center justify-center shadow-xl">
-                {point.category === 'Cortical' ? <Brain size={40} /> : 
-                 point.category === 'Subcortical' ? <Layers size={40} /> : 
-                 <Zap size={40} />}
+      <DialogContent className="sm:max-w-[640px] max-h-[85vh] rounded-xl p-0 gap-0 overflow-hidden">
+        <DialogHeader className="px-5 pt-5 pb-3 border-b border-border shrink-0">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 space-y-1.5">
+              <div className="flex items-center gap-2">
+                <Badge className={cn("text-[10px] font-semibold px-2 py-0 border", categoryAccent)}>
+                  {point.category}
+                </Badge>
+                <Badge variant="outline" className="text-[10px] font-medium text-muted-foreground px-2 py-0 border-border">
+                  {point.lateralization}
+                </Badge>
               </div>
-              <div className="space-y-2">
-                <div className="flex gap-2">
-                  <Badge className="bg-white/20 text-white border-none font-black text-[10px] uppercase tracking-widest">
-                    {point.category}
-                  </Badge>
-                  <Badge variant="outline" className="border-white/40 text-white font-black text-[10px] uppercase tracking-widest">
-                    {point.lateralization} Logic
-                  </Badge>
-                </div>
-                <DialogTitle className="text-4xl font-black tracking-tight">{point.name}</DialogTitle>
-                <DialogDescription className="text-white/80 font-medium text-lg">
-                  Neurological Assessment Protocol
-                </DialogDescription>
-              </div>
+              <DialogTitle className="text-lg font-semibold tracking-tight">{point.name}</DialogTitle>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="p-10 space-y-12 overflow-y-auto max-h-[calc(95vh-180px)]">
-          {/* Assessment Protocol - Highlighted */}
-          {point.assessmentProtocol && (
-            <section className="p-8 bg-indigo-50 rounded-[2.5rem] border-2 border-indigo-100 space-y-4 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none"><ListChecks size={100} /></div>
-              <SectionHeader icon={ListChecks} title="Assessment Protocol" color="text-indigo-600" />
-              <p className="text-xl font-black text-indigo-900 leading-tight relative z-10">
-                {point.assessmentProtocol}
-              </p>
-            </section>
-          )}
-
-          {/* Delineated Reflex vs Stimulus */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="p-8 bg-slate-50 rounded-[2.5rem] border-2 border-slate-100 space-y-4 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none"><Hand size={100} /></div>
-              <SectionHeader icon={Hand} title="Reflex Point (Touch)" color="text-slate-600" />
-              <p className="text-lg font-bold text-slate-900 leading-tight relative z-10">
-                {point.location}
-              </p>
-            </div>
-
-            <div className="p-8 bg-amber-50 rounded-[2.5rem] border-2 border-amber-100 space-y-4 relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none"><PlayCircle size={100} /></div>
-              <SectionHeader icon={PlayCircle} title="Stimulus (Action)" color="text-amber-600" />
-              <p className="text-lg font-bold text-amber-900 leading-tight relative z-10">
-                {point.stimulus || point.technique || ""}
-              </p>
-            </div>
-          </div>
-
-          {/* Image Showcase - Three in a row */}
-          <section className="space-y-4">
-            <SectionHeader icon={ImageIcon} title="Visual References" color="text-slate-600" />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="aspect-video rounded-[2rem] bg-slate-50 border-2 border-slate-100 overflow-hidden flex items-center justify-center group relative shadow-inner">
-                {primaryUrl ? (
-                  <img src={primaryUrl} alt="Primary" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                ) : (
-                  <div className="text-center p-4">
-                    <Brain size={32} className="mx-auto text-slate-200 mb-2" />
-                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">No Primary Image</p>
-                  </div>
-                )}
+        <div className="overflow-y-auto flex-1">
+          <div className="divide-y divide-border">
+            {/* Location & Stimulus */}
+            <div className="grid grid-cols-2 divide-x divide-border">
+              <div className="px-5 py-3.5 space-y-1">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Location</p>
+                <p className="text-xs text-foreground leading-relaxed">{point.location}</p>
               </div>
-
-              <div className="aspect-video rounded-[2rem] bg-slate-50 border-2 border-slate-100 overflow-hidden flex items-center justify-center group relative shadow-inner">
-                {secondaryUrl ? (
-                  <img src={secondaryUrl} alt="Secondary" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                ) : (
-                  <div className="text-center p-4">
-                    <Target size={32} className="mx-auto text-slate-200 mb-2" />
-                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">No Secondary Image</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="aspect-video rounded-[2rem] bg-slate-50 border-2 border-slate-100 overflow-hidden flex items-center justify-center group relative shadow-inner">
-                {tertiaryUrl ? (
-                  <img src={tertiaryUrl} alt="Tertiary" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                ) : (
-                  <div className="text-center p-4">
-                    <Zap size={32} className="mx-auto text-slate-200 mb-2" />
-                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">No Tertiary Image</p>
-                  </div>
-                )}
+              <div className="px-5 py-3.5 space-y-1">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Stimulus</p>
+                <p className="text-xs text-foreground leading-relaxed">{point.stimulus || point.technique || '—'}</p>
               </div>
             </div>
-          </section>
 
-          {/* Functions & Dysfunction Signs */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            {point.functions && (
-              <section className="space-y-4">
-                <SectionHeader icon={Activity} title="Key Functions" color="text-emerald-600" />
-                <ul className="space-y-3">
-                  {point.functions.map((f, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm font-medium text-slate-600">
-                      <CheckCircle2 size={18} className="text-emerald-500 shrink-0 mt-0.5" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </section>
+            {/* Assessment Protocol */}
+            {point.assessmentProtocol && (
+              <div className="px-5 py-3.5 space-y-1 bg-muted/30">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Assessment</p>
+                <p className="text-xs text-foreground leading-relaxed">{point.assessmentProtocol}</p>
+              </div>
             )}
 
-            {point.dysfunctionSigns && (
-              <section className="space-y-4">
-                <SectionHeader icon={AlertCircle} title="Dysfunction Signs" color="text-rose-600" />
-                <ul className="space-y-3">
-                  {point.dysfunctionSigns.map((s, i) => (
-                    <li key={i} className="flex items-start gap-3 text-sm font-medium text-slate-600">
-                      <ArrowRight size={18} className="text-rose-500 shrink-0 mt-0.5" />
-                      {s}
-                    </li>
-                  ))}
-                </ul>
-              </section>
+            {/* Functions & Dysfunction */}
+            <div className="grid grid-cols-2 divide-x divide-border">
+              {point.functions && (
+                <div className="px-5 py-3.5 space-y-1.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600">Functions</p>
+                  <ul className="space-y-1">
+                    {point.functions.map((f, i) => (
+                      <li key={i} className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                        <span className="w-1 h-1 rounded-full bg-emerald-400 mt-1.5 shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {point.dysfunctionSigns && (
+                <div className="px-5 py-3.5 space-y-1.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-rose-600">Dysfunction</p>
+                  <ul className="space-y-1">
+                    {point.dysfunctionSigns.map((s, i) => (
+                      <li key={i} className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                        <span className="w-1 h-1 rounded-full bg-rose-400 mt-1.5 shrink-0" />
+                        {s}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* Clinical Note */}
+            {point.clinicalNote && (
+              <div className="px-5 py-3.5 space-y-1">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Note</p>
+                <p className="text-xs text-muted-foreground italic leading-relaxed">{point.clinicalNote}</p>
+              </div>
+            )}
+
+            {/* Images */}
+            {showImages && (
+              <div className="px-5 py-3.5 space-y-2">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">References</p>
+                <div className="flex gap-2">
+                  {primaryUrl && (
+                    <img src={primaryUrl} alt="Primary" className="w-20 h-14 rounded object-cover border border-border" />
+                  )}
+                  {secondaryUrl && (
+                    <img src={secondaryUrl} alt="Secondary" className="w-20 h-14 rounded object-cover border border-border" />
+                  )}
+                  {tertiaryUrl && (
+                    <img src={tertiaryUrl} alt="Tertiary" className="w-20 h-14 rounded object-cover border border-border" />
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Pearl */}
+            {point.pearl && (
+              <div className="px-5 py-3.5 bg-amber-50/50 space-y-1">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-700">Pearl</p>
+                <p className="text-xs text-amber-900 leading-relaxed">{point.pearl}</p>
+              </div>
             )}
           </div>
-
-          {/* Clinical Pearl */}
-          {point.pearl && (
-            <section>
-              <div className="p-8 bg-slate-900 text-white rounded-[2.5rem] shadow-xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-6 opacity-10"><Sparkles size={80} /></div>
-                <SectionHeader icon={Sparkles} title="Clinical Pearl" color="text-purple-400" />
-                <p className="text-lg font-medium leading-relaxed relative z-10">
-                  "{point.pearl}"
-                </p>
-              </div>
-            </section>
-          )}
         </div>
       </DialogContent>
     </Dialog>

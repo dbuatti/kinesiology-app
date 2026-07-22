@@ -2,42 +2,50 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Mic, MicOff, RefreshCw, Loader2, Check, Brain, RotateCcw, ArrowRight } from 'lucide-react';
+import { Mic, MicOff, RefreshCw, Loader2, Check, Brain, RotateCcw, ArrowRight, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { showSuccess, showError } from '@/utils/toast';
 import { cn } from '@/lib/utils';
 
-const STEP_IDS = [0, 1, 2, 3, 4, 5, 6, 7] as const;
-const STEP_LABELS: Record<number, string> = {
+// Core A-E cycle steps
+const CYCLE_IDS = [0, 1, 2, 3, 4] as const;
+const CYCLE_LABELS: Record<number, string> = {
   0: 'Feel the belief in your body',
   1: 'Follow the sensation deeper',
   2: 'Identify the desired state',
   3: 'Embody the alternative',
   4: 'Deepen the new feeling',
-  5: 'Check if the belief still holds',
-  6: 'Future check',
-  7: 'Scenario check',
 };
-const STEP_PROMPTS: Record<number, string> = {
+const CYCLE_PROMPTS: Record<number, string> = {
   0: 'What do you notice? Where is it in the body? What sensation?',
   1: 'What do you notice now? Is it changing, moving, shifting?',
   2: 'What would you rather feel instead?',
   3: 'Feel that new state. What do you notice in the body now?',
   4: 'Let that feeling expand. What do you notice?',
-  5: 'Does the original belief still feel true? What do you notice?',
-  6: 'Do you see yourself believing this in the future?',
-  7: 'Is there any scenario where this belief might still feel true?',
 };
-const STEP_LETTERS: Record<number, string> = { 0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H' };
+const CYCLE_LETTERS: Record<number, string> = { 0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E' };
+
+// Checkpoints after each A-E cycle
+const CHECKPOINTS = ['f', 'g', 'h'] as const;
+type CheckpointId = typeof CHECKPOINTS[number];
+const CHECKPOINT_QUESTIONS: Record<CheckpointId, string> = {
+  f: 'Does the original belief still feel true?',
+  g: 'Do you see yourself believing this in the future?',
+  h: 'Is there any scenario where this belief might still feel true?',
+};
 
 interface RoundData {
   responses: Record<number, string>;
+  checkpoint: CheckpointId | null;
+  checkpointResult: 'Yes' | 'No' | null;
   loopCount: number;
 }
 
 const EMPTY_ROUND = (loopCount = 0): RoundData => ({
-  responses: { 0: '', 1: '', 2: '', 3: '', 4: '', 5: '', 6: '', 7: '' },
+  responses: { 0: '', 1: '', 2: '', 3: '', 4: '' },
+  checkpoint: null,
+  checkpointResult: null,
   loopCount,
 });
 
@@ -47,19 +55,26 @@ const LimitingBeliefsTool = () => {
   const [limitingBelief, setLimitingBelief] = useState('');
   const [rounds, setRounds] = useState<RoundData[]>([EMPTY_ROUND(0)]);
   const [activeRound, setActiveRound] = useState(0);
+  // Session-level checkpoint tracking: which checkpoint to show next after an A-E cycle
+  // Starts at 'f', advances to 'g' after F resolves, then 'h' after G, stays on 'h' for H loops
+  const [nextCheckpoint, setNextCheckpoint] = useState<CheckpointId>('f');
+  const [phase, setPhase] = useState<'cycle' | 'checkpoint' | 'complete'>('cycle');
   const [saving, setSaving] = useState(false);
   const [voiceVisible, setVoiceVisible] = useState(false);
   const [voiceInput, setVoiceInput] = useState('');
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const current = rounds[activeRound];
-  const isComplete = rounds.some(r => r.responses[7]?.trim().length > 0);
+  const allCycleFilled = CYCLE_IDS.every(i => current.responses[i]?.trim().length > 0);
 
   const buildDissolveLog = useCallback(() => ({
     responses: current.responses,
+    checkpoint: current.checkpoint,
+    checkpointResult: current.checkpointResult,
     loopCount: activeRound,
+    nextCheckpoint,
     history: rounds,
-  }), [current.responses, activeRound, rounds]);
+  }), [current.responses, current.checkpoint, current.checkpointResult, activeRound, nextCheckpoint, rounds]);
 
   const createSession = useCallback(async () => {
     if (!authSession?.user?.id) { showError('Not authenticated'); return; }
@@ -79,27 +94,34 @@ const LimitingBeliefsTool = () => {
     showSuccess('Session started');
   }, [authSession, limitingBelief, buildDissolveLog]);
 
-  const saveToDb = useCallback(async (roundsData: RoundData[], belief: string) => {
+  const saveToDb = useCallback(async (roundsData: RoundData[], belief: string, cp: CheckpointId) => {
     if (!beliefId) return;
     setSaving(true);
     const latest = roundsData[roundsData.length - 1];
-    const isCompleteCheck = roundsData.some(r => r.responses[7]?.trim().length > 0);
+    const isCompleteCheck = phase === 'complete';
     const { error } = await supabase
       .from('limiting_belief_sessions')
       .update({
         limiting_belief: belief,
         positive_belief: belief,
-        dissolve_log: { responses: latest.responses, loopCount: roundsData.length - 1, history: roundsData },
+        dissolve_log: {
+          responses: latest.responses,
+          checkpoint: latest.checkpoint,
+          checkpointResult: latest.checkpointResult,
+          loopCount: roundsData.length - 1,
+          nextCheckpoint: cp,
+          history: roundsData,
+        },
         is_complete: isCompleteCheck,
       })
       .eq('id', beliefId);
     if (error) console.error('Save error:', error);
     setSaving(false);
-  }, [beliefId]);
+  }, [beliefId, phase]);
 
-  const debouncedSave = useCallback((data: RoundData[], belief: string) => {
+  const debouncedSave = useCallback((data: RoundData[], belief: string, cp: CheckpointId) => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => saveToDb(data, belief), 600);
+    saveTimer.current = setTimeout(() => saveToDb(data, belief, cp), 600);
   }, [saveToDb]);
 
   const updateResponse = useCallback((stepId: number, value: string) => {
@@ -109,21 +131,75 @@ const LimitingBeliefsTool = () => {
         : r
     );
     setRounds(next);
-    debouncedSave(next, limitingBelief);
-  }, [rounds, activeRound, debouncedSave, limitingBelief]);
+    debouncedSave(next, limitingBelief, nextCheckpoint);
+    // Auto-advance to checkpoint when all A-E are filled
+    if (CYCLE_IDS.every(s => (s === stepId ? value : next[activeRound].responses[s])?.trim().length > 0)) {
+      setPhase('checkpoint');
+    }
+  }, [rounds, activeRound, debouncedSave, limitingBelief, nextCheckpoint]);
 
-  const updateBelief = useCallback((value: string) => {
-    setLimitingBelief(value);
-    debouncedSave(rounds, value);
-  }, [rounds, debouncedSave]);
+  const handleCheckpoint = useCallback(async (result: 'Yes' | 'No') => {
+    // Record the checkpoint result on the current round
+    const updatedRounds = rounds.map((r, i) =>
+      i === activeRound
+        ? { ...r, checkpoint: nextCheckpoint, checkpointResult: result }
+        : r
+    );
 
-  const addRound = useCallback(() => {
-    setRounds(prev => [...prev, EMPTY_ROUND(prev.length)]);
-    setActiveRound(prev => prev + 1);
-  }, []);
+    if (result === 'No') {
+      // Passed this checkpoint — advance to next or complete
+      if (nextCheckpoint === 'f') {
+        setNextCheckpoint('g');
+        setPhase('cycle');
+        setRounds(updatedRounds);
+        debouncedSave(updatedRounds, limitingBelief, 'g');
+      } else if (nextCheckpoint === 'g') {
+        setNextCheckpoint('h');
+        setPhase('cycle');
+        setRounds(updatedRounds);
+        debouncedSave(updatedRounds, limitingBelief, 'h');
+      } else if (nextCheckpoint === 'h') {
+        // All checkpoints passed — complete!
+        setPhase('complete');
+        setRounds(updatedRounds);
+        const finalLog = {
+          responses: updatedRounds[updatedRounds.length - 1].responses,
+          checkpoint: 'h',
+          checkpointResult: 'No',
+          loopCount: updatedRounds.length - 1,
+          nextCheckpoint: 'h',
+          history: updatedRounds,
+        };
+        if (beliefId) {
+          setSaving(true);
+          await supabase
+            .from('limiting_belief_sessions')
+            .update({
+              dissolve_log: finalLog,
+              is_complete: true,
+            })
+            .eq('id', beliefId);
+          setSaving(false);
+        }
+        showSuccess('Belief resolved');
+      }
+    } else {
+      // Yes — loop back to A-E cycle
+      // Advance to next checkpoint for next time (except H which stays)
+      const nextCp = nextCheckpoint === 'f' ? 'g' : nextCheckpoint === 'g' ? 'h' : 'h';
+      setNextCheckpoint(nextCp);
+      const newRound = EMPTY_ROUND(rounds.length);
+      const allRounds = [...updatedRounds, newRound];
+      setRounds(allRounds);
+      setActiveRound(rounds.length);
+      setPhase('cycle');
+      debouncedSave(allRounds, limitingBelief, nextCp);
+    }
+  }, [rounds, activeRound, nextCheckpoint, limitingBelief, debouncedSave, beliefId]);
 
   const goToRound = useCallback((index: number) => {
     setActiveRound(index);
+    setPhase('cycle'); // Re-enter cycle view for historical rounds
   }, []);
 
   const resetSession = useCallback(async () => {
@@ -134,6 +210,8 @@ const LimitingBeliefsTool = () => {
     setLimitingBelief('');
     setRounds([EMPTY_ROUND(0)]);
     setActiveRound(0);
+    setNextCheckpoint('f');
+    setPhase('cycle');
     setVoiceInput('');
   }, [beliefId]);
 
@@ -142,6 +220,36 @@ const LimitingBeliefsTool = () => {
   useEffect(() => {
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
   }, []);
+
+  const renderCheckpoint = () => {
+    if (phase !== 'checkpoint') return null;
+    const question = CHECKPOINT_QUESTIONS[nextCheckpoint];
+    return (
+      <div className="bg-card border-2 border-violet-500/30 rounded-xl p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <Brain size={16} className="text-violet-500" />
+          <p className="text-xs font-semibold text-foreground">Checkpoint {nextCheckpoint.toUpperCase()}</p>
+        </div>
+        <p className="text-sm font-medium text-center leading-relaxed">"{question}"</p>
+        <div className="flex justify-center gap-4">
+          <Button
+            onClick={() => handleCheckpoint('Yes')}
+            variant="outline"
+            className="flex-1 max-w-[140px] h-10 rounded-xl border-rose-300 bg-rose-50/50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 font-semibold text-xs uppercase tracking-wider"
+          >
+            <ThumbsUp size={14} className="mr-1.5" /> Yes
+          </Button>
+          <Button
+            onClick={() => handleCheckpoint('No')}
+            variant="outline"
+            className="flex-1 max-w-[140px] h-10 rounded-xl border-emerald-300 bg-emerald-50/50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 font-semibold text-xs uppercase tracking-wider"
+          >
+            <ThumbsDown size={14} className="mr-1.5" /> No
+          </Button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -154,9 +262,9 @@ const LimitingBeliefsTool = () => {
         <div className="flex items-center gap-2">
           {hasSession && (
             <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full",
-              isComplete ? "bg-chart-emerald/10 text-chart-emerald" : "bg-amber-500/10 text-amber-500"
+              phase === 'complete' ? "bg-chart-emerald/10 text-chart-emerald" : "bg-amber-500/10 text-amber-500"
             )}>
-              {isComplete ? "Resolved" : `Round ${activeRound + 1}`}
+              {phase === 'complete' ? "Resolved" : `Round ${activeRound + 1}`}
             </span>
           )}
           <Button variant="ghost" size="icon" onClick={resetSession} className="h-8 w-8 rounded-xl text-muted-foreground">
@@ -201,7 +309,7 @@ const LimitingBeliefsTool = () => {
           {rounds.length > 1 && (
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Rounds:</span>
-              {rounds.map((_, i) => (
+              {rounds.map((r, i) => (
                 <button
                   key={i}
                   onClick={() => goToRound(i)}
@@ -209,30 +317,44 @@ const LimitingBeliefsTool = () => {
                     "w-8 h-8 rounded-xl text-xs font-semibold transition-all",
                     i === activeRound
                       ? "bg-violet-500/10 text-violet-600 border border-violet-500/30"
-                      : "bg-muted text-muted-foreground hover:bg-muted/70"
+                      : "bg-muted text-muted-foreground hover:bg-muted/70",
+                    r.checkpointResult === 'No' && i !== activeRound && "border-l-2 border-l-emerald-400",
+                    r.checkpointResult === 'Yes' && i !== activeRound && "border-l-2 border-l-amber-400",
                   )}
                 >
                   {i + 1}
                 </button>
               ))}
+              {phase === 'complete' && (
+                <span className="text-[10px] text-chart-emerald font-semibold ml-2">✓ Complete</span>
+              )}
             </div>
           )}
 
-          {/* A-F Steps */}
+          {/* A-E Cycle Steps */}
           <div className="space-y-3">
-            {STEP_IDS.map(stepIdx => {
+            {CYCLE_IDS.map(stepIdx => {
               const val = current.responses[stepIdx];
+              const filled = val?.trim().length > 0;
               return (
-                <div key={stepIdx} className="bg-card border border-border rounded-xl overflow-hidden">
+                <div key={stepIdx} className={cn(
+                  "bg-card border rounded-xl overflow-hidden transition-all",
+                  filled ? "border-violet-200" : "border-border"
+                )}>
                   <div className="flex items-center gap-3 px-4 py-2.5 bg-muted/20 border-b border-border/40">
-                    <div className="w-6 h-6 rounded-md bg-violet-500/10 text-violet-600 flex items-center justify-center text-[11px] font-bold shrink-0">
-                      {STEP_LETTERS[stepIdx]}
+                    <div className={cn(
+                      "w-6 h-6 rounded-md flex items-center justify-center text-[11px] font-bold shrink-0",
+                      filled
+                        ? "bg-violet-500/10 text-violet-600"
+                        : "bg-muted-foreground/10 text-muted-foreground"
+                    )}>
+                      {CYCLE_LETTERS[stepIdx]}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-foreground">{STEP_LABELS[stepIdx]}</p>
-                      <p className="text-[10px] text-muted-foreground">{STEP_PROMPTS[stepIdx]}</p>
+                      <p className="text-xs font-semibold text-foreground">{CYCLE_LABELS[stepIdx]}</p>
+                      <p className="text-[10px] text-muted-foreground">{CYCLE_PROMPTS[stepIdx]}</p>
                     </div>
-                    {val?.trim() && (
+                    {filled && (
                       <Check size={14} className="text-chart-emerald shrink-0 ml-auto" />
                     )}
                   </div>
@@ -249,6 +371,9 @@ const LimitingBeliefsTool = () => {
               );
             })}
           </div>
+
+          {/* Checkpoint (shown after A-E cycle is filled) */}
+          {renderCheckpoint()}
 
           {/* Actions */}
           <div className="flex items-center justify-between pt-2">
@@ -269,18 +394,6 @@ const LimitingBeliefsTool = () => {
                   onChange={e => setVoiceInput(e.target.value)}
                   className="w-48 h-8 rounded-xl text-xs"
                 />
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              {!isComplete && (
-                <Button variant="outline" size="sm" onClick={addRound} className="rounded-xl text-xs">
-                  <RotateCcw size={14} className="mr-1" /> New Round
-                </Button>
-              )}
-              {isComplete && (
-                <span className="text-xs text-chart-emerald font-semibold flex items-center gap-1.5">
-                  <Check size={14} /> Belief resolved
-                </span>
               )}
             </div>
           </div>

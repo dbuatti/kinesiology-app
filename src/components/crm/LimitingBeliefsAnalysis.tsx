@@ -36,7 +36,7 @@ interface PastSession {
   created_at: string;
 }
 
-const BELIEF_STEPS = ["A", "B", "C", "D", "E", "F"];
+const BELIEF_STEPS = ["A", "B", "C", "D", "E", "F", "G", "H"];
 const STEP_LABELS: Record<string, string> = {
   A: "Feel the belief in your body",
   B: "Follow the sensation deeper",
@@ -44,6 +44,8 @@ const STEP_LABELS: Record<string, string> = {
   D: "Embody the alternative",
   E: "Deepen the new feeling",
   F: "Check if the belief still holds",
+  G: "Future check",
+  H: "Scenario check",
 };
 
 const buildTranscript = (session: PastSession): string => {

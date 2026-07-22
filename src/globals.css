@@ -126,6 +126,43 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* ── Consistent UI surface patterns ── */
+  .panel {
+    @apply bg-card border border-border rounded-xl shadow-sm;
+  }
+  .panel-muted {
+    @apply bg-muted/30 border border-border rounded-xl;
+  }
+  .surface {
+    @apply bg-muted/50 rounded-lg;
+  }
+  .surface-hover {
+    @apply hover:bg-muted/80 transition-colors;
+  }
+  .badge-step {
+    @apply inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold shrink-0;
+  }
+  .txt-muted {
+    @apply text-muted-foreground;
+  }
+  .divider {
+    @apply border-t border-border;
+  }
+
+  /* ── Dialog/modal consistency ── */
+  .modal-base {
+    @apply bg-background border border-border shadow-xl;
+  }
+  .modal-header {
+    @apply px-5 py-4 border-b border-border;
+  }
+  .modal-body {
+    @apply px-5 py-4;
+  }
+  .modal-footer {
+    @apply px-5 py-4 border-t border-border bg-muted/20;
+  }
 }
 
 /* Custom Animations */

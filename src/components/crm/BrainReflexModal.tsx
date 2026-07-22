@@ -29,10 +29,10 @@ const BrainReflexModal = ({
   if (!point) return null;
 
   const categoryAccent = point.category === 'Cortical' 
-    ? 'text-violet-600 bg-violet-50 border-violet-200' 
+    ? 'text-violet-600 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/50 border-violet-200 dark:border-violet-800' 
     : point.category === 'Subcortical'
-    ? 'text-indigo-600 bg-indigo-50 border-indigo-200'
-    : 'text-emerald-600 bg-emerald-50 border-emerald-200';
+    ? 'text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50 border-indigo-200 dark:border-indigo-800'
+    : 'text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800';
 
   const showImages = primaryUrl || secondaryUrl || tertiaryUrl;
 
@@ -81,11 +81,11 @@ const BrainReflexModal = ({
             <div className="grid grid-cols-2 divide-x divide-border">
               {point.functions && (
                 <div className="px-5 py-3.5 space-y-1.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600">Functions</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Functions</p>
                   <ul className="space-y-1">
                     {point.functions.map((f, i) => (
                       <li key={i} className="flex items-start gap-1.5 text-xs text-muted-foreground">
-                        <span className="w-1 h-1 rounded-full bg-emerald-400 mt-1.5 shrink-0" />
+                        <span className="w-1 h-1 rounded-full bg-emerald-400 dark:bg-emerald-500 mt-1.5 shrink-0" />
                         {f}
                       </li>
                     ))}
@@ -94,11 +94,11 @@ const BrainReflexModal = ({
               )}
               {point.dysfunctionSigns && (
                 <div className="px-5 py-3.5 space-y-1.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-rose-600">Dysfunction</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-400">Dysfunction</p>
                   <ul className="space-y-1">
                     {point.dysfunctionSigns.map((s, i) => (
                       <li key={i} className="flex items-start gap-1.5 text-xs text-muted-foreground">
-                        <span className="w-1 h-1 rounded-full bg-rose-400 mt-1.5 shrink-0" />
+                        <span className="w-1 h-1 rounded-full bg-rose-400 dark:bg-rose-500 mt-1.5 shrink-0" />
                         {s}
                       </li>
                     ))}
@@ -135,9 +135,9 @@ const BrainReflexModal = ({
 
             {/* Pearl */}
             {point.pearl && (
-              <div className="px-5 py-3.5 bg-amber-50/50 space-y-1">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-700">Pearl</p>
-                <p className="text-xs text-amber-900 leading-relaxed">{point.pearl}</p>
+              <div className="px-5 py-3.5 bg-amber-50/50 dark:bg-amber-950/30 space-y-1">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">Pearl</p>
+                <p className="text-xs text-amber-900 dark:text-amber-100 leading-relaxed">{point.pearl}</p>
               </div>
             )}
           </div>

@@ -191,11 +191,11 @@ const CorrectionsManualContent = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const tabAccent = activeTab === "afferent"
-    ? "text-blue-600 bg-blue-50 border-blue-200"
+    ? "text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800"
     : activeTab === "efferent"
-    ? "text-purple-600 bg-purple-50 border-purple-200"
+    ? "text-purple-600 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 border-purple-200 dark:border-purple-800"
     : activeTab === "heart-wall"
-    ? "text-rose-600 bg-rose-50 border-rose-200"
+    ? "text-rose-600 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-800"
     : "text-destructive bg-destructive/10 border-destructive/20";
 
   const filteredBrainZones = (points: BrainReflexPoint[]) => {
@@ -242,9 +242,9 @@ const CorrectionsManualContent = () => {
         <div key={i} className="flex gap-3 px-3 py-2 rounded-lg hover:bg-muted/40 transition-colors">
           <span className={cn(
             "flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold shrink-0 mt-0.5",
-            accent === "text-blue-600" ? "bg-blue-100 text-blue-700" :
-            accent === "text-purple-600" ? "bg-purple-100 text-purple-700" :
-            accent === "text-rose-600" ? "bg-rose-100 text-rose-700" :
+            accent === "text-blue-600" ? "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300" :
+            accent === "text-purple-600" ? "bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300" :
+            accent === "text-rose-600" ? "bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300" :
             "bg-destructive/10 text-destructive"
           )}>
             {i + 1}

@@ -57,9 +57,9 @@ const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
   const correctionsHistory = metadata?.corrections || [];
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
+    <div className="min-h-screen bg-background">
       {/* Sticky toolbar */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200 print:hidden shadow-sm">
+      <header className="sticky top-0 z-40 bg-card/95 backdrop-blur-md border-b border-border print:hidden shadow-sm">
         <div className="px-4 md:px-8 h-12 flex items-center justify-between gap-4">
           <Button variant="ghost" size="sm" onClick={onBack} className="rounded-lg text-muted-foreground h-8">
             <ArrowLeft size={15} className="mr-1.5" /> Back to Session
@@ -72,23 +72,23 @@ const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
 
       {/* Document page */}
       <div className="max-w-[210mm] mx-auto px-8 md:px-12 py-12 print:py-8">
-        <div className="bg-white shadow-sm border border-gray-200 rounded-xl print:rounded-none print:shadow-none print:border-none p-10 md:p-14 print:p-8 space-y-2">
+        <div className="bg-card shadow-sm border border-border rounded-xl print:rounded-none print:shadow-none print:border-none p-10 md:p-14 print:p-8 space-y-2">
 
           {/* ── DOCUMENT HEADER ── */}
-          <div className="pb-8 border-b-2 border-gray-900">
+          <div className="pb-8 border-b-2 border-foreground/20">
             <div className="flex items-start justify-between">
               <div className="space-y-3">
                 <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-muted-foreground">Clinical Session Notes</p>
-                <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+                <h1 className="text-2xl font-bold tracking-tight text-foreground">
                   {appointment.clients?.name || "Client Session"}
                 </h1>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <span>{format(new Date(appointment.date), "EEEE, MMMM d, yyyy")}</span>
-                  <span className="text-gray-300">|</span>
+                  <span className="text-border">|</span>
                   <span>{format(new Date(appointment.date), "h:mm a")}</span>
                   {appointment.display_id && (
                     <>
-                      <span className="text-gray-300">|</span>
+                      <span className="text-border">|</span>
                       <span className="font-mono text-[10px]">#{appointment.display_id}</span>
                     </>
                   )}
@@ -106,7 +106,7 @@ const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
           <div className="pt-6">
             <div className="flex items-center gap-1 mb-6">
               <SectionNumber num="P" />
-              <h2 className="text-sm font-bold tracking-tight text-gray-900">Preliminary Assessment</h2>
+              <h2 className="text-sm font-bold tracking-tight text-foreground">Preliminary Assessment</h2>
             </div>
 
             {/* Intake */}
@@ -126,27 +126,27 @@ const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
                 <FieldLabel label="Baseline Vitals" />
                 <div className="grid grid-cols-4 gap-3">
                   {appointment.bolt_score != null && (
-                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-center">
+                    <div className="p-3 bg-muted/50 rounded-lg border border-border text-center">
                       <p className="text-[9px] font-semibold text-muted-foreground">BOLT</p>
-                      <p className="text-lg font-bold text-gray-900">{appointment.bolt_score}s</p>
+                      <p className="text-lg font-bold text-foreground">{appointment.bolt_score}s</p>
                     </div>
                   )}
                   {appointment.coherence_score != null && (
-                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-center">
+                    <div className="p-3 bg-muted/50 rounded-lg border border-border text-center">
                       <p className="text-[9px] font-semibold text-muted-foreground">Coherence</p>
-                      <p className="text-lg font-bold text-gray-900">{appointment.coherence_score.toFixed(2)}</p>
+                      <p className="text-lg font-bold text-foreground">{appointment.coherence_score.toFixed(2)}</p>
                     </div>
                   )}
                   {appointment.heart_rate != null && (
-                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-center">
+                    <div className="p-3 bg-muted/50 rounded-lg border border-border text-center">
                       <p className="text-[9px] font-semibold text-muted-foreground">HR</p>
-                      <p className="text-lg font-bold text-gray-900">{appointment.heart_rate} bpm</p>
+                      <p className="text-lg font-bold text-foreground">{appointment.heart_rate} bpm</p>
                     </div>
                   )}
                   {appointment.breath_rate != null && (
-                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 text-center">
+                    <div className="p-3 bg-muted/50 rounded-lg border border-border text-center">
                       <p className="text-[9px] font-semibold text-muted-foreground">Breath</p>
-                      <p className="text-lg font-bold text-gray-900">{appointment.breath_rate} rpm</p>
+                      <p className="text-lg font-bold text-foreground">{appointment.breath_rate} rpm</p>
                     </div>
                   )}
                 </div>
@@ -161,19 +161,19 @@ const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
                   {appointment.sagittal_plane_notes && (
                     <div className="flex gap-2 text-xs">
                       <span className="font-semibold text-muted-foreground w-20 shrink-0">Sagittal:</span>
-                      <span className="text-gray-700">{appointment.sagittal_plane_notes}</span>
+                      <span className="text-foreground/85">{appointment.sagittal_plane_notes}</span>
                     </div>
                   )}
                   {appointment.frontal_plane_notes && (
                     <div className="flex gap-2 text-xs">
                       <span className="font-semibold text-muted-foreground w-20 shrink-0">Frontal:</span>
-                      <span className="text-gray-700">{appointment.frontal_plane_notes}</span>
+                      <span className="text-foreground/85">{appointment.frontal_plane_notes}</span>
                     </div>
                   )}
                   {appointment.transverse_plane_notes && (
                     <div className="flex gap-2 text-xs">
                       <span className="font-semibold text-muted-foreground w-20 shrink-0">Transverse:</span>
-                      <span className="text-gray-700">{appointment.transverse_plane_notes}</span>
+                      <span className="text-foreground/85">{appointment.transverse_plane_notes}</span>
                     </div>
                   )}
                 </div>
@@ -188,25 +188,25 @@ const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
                   {appointment.fakuda_notes && (
                     <div className="flex gap-2 text-xs">
                       <span className="font-semibold text-muted-foreground w-28 shrink-0">Fukuda Step Test:</span>
-                      <span className="text-gray-700">{appointment.fakuda_notes}</span>
+                      <span className="text-foreground/85">{appointment.fakuda_notes}</span>
                     </div>
                   )}
                   {appointment.sharpened_rhombergs_notes && (
                     <div className="flex gap-2 text-xs">
                       <span className="font-semibold text-muted-foreground w-28 shrink-0">Sharpened Rhomberg's:</span>
-                      <span className="text-gray-700">{appointment.sharpened_rhombergs_notes}</span>
+                      <span className="text-foreground/85">{appointment.sharpened_rhombergs_notes}</span>
                     </div>
                   )}
                   {appointment.frontal_lobe_notes && (
                     <div className="flex gap-2 text-xs">
                       <span className="font-semibold text-muted-foreground w-28 shrink-0">Frontal Lobe Signs:</span>
-                      <span className="text-gray-700">{appointment.frontal_lobe_notes}</span>
+                      <span className="text-foreground/85">{appointment.frontal_lobe_notes}</span>
                     </div>
                   )}
                   {appointment.righting_reflex_notes && (
                     <div className="flex gap-2 text-xs">
                       <span className="font-semibold text-muted-foreground w-28 shrink-0">Righting Reflex:</span>
-                      <span className="text-gray-700">{appointment.righting_reflex_notes}</span>
+                      <span className="text-foreground/85">{appointment.righting_reflex_notes}</span>
                     </div>
                   )}
                 </div>
@@ -217,8 +217,8 @@ const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
             {appointment.intrinsic_muscle_findings && appointment.intrinsic_muscle_findings !== "{}" && (
               <div className="mb-8">
                 <FieldLabel label="Intrinsic Muscle Findings" />
-                <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <p className="text-xs text-gray-700 whitespace-pre-wrap font-mono">{appointment.intrinsic_muscle_findings}</p>
+                <div className="p-3 surface">
+                  <p className="text-xs text-foreground/85 whitespace-pre-wrap font-mono">{appointment.intrinsic_muscle_findings}</p>
                 </div>
               </div>
             )}
@@ -231,38 +231,38 @@ const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
             <>
               <div className="flex items-center gap-1 mb-6">
                 <SectionNumber num="E" />
-                <h2 className="text-sm font-bold tracking-tight text-gray-900">Ease — SNS Down-Regulation</h2>
+                <h2 className="text-sm font-bold tracking-tight text-foreground">Ease — SNS Down-Regulation</h2>
               </div>
 
               <div className="space-y-2 mb-8">
                 {appointment.lymphatic_notes && (
                   <div className="flex gap-2 text-xs">
                     <span className="font-semibold text-muted-foreground w-28 shrink-0">Lymphatic:</span>
-                    <span className="text-gray-700">{appointment.lymphatic_notes}</span>
+                    <span className="text-foreground/85">{appointment.lymphatic_notes}</span>
                   </div>
                 )}
                 {appointment.harmonic_rocking_notes && (
                   <div className="flex gap-2 text-xs">
                     <span className="font-semibold text-muted-foreground w-28 shrink-0">Harmonic Rocking:</span>
-                    <span className="text-gray-700">{appointment.harmonic_rocking_notes}</span>
+                    <span className="text-foreground/85">{appointment.harmonic_rocking_notes}</span>
                   </div>
                 )}
                 {appointment.t1_reset_notes && (
                   <div className="flex gap-2 text-xs">
                     <span className="font-semibold text-muted-foreground w-28 shrink-0">T1 Reset:</span>
-                    <span className="text-gray-700">{appointment.t1_reset_notes}</span>
+                    <span className="text-foreground/85">{appointment.t1_reset_notes}</span>
                   </div>
                 )}
                 {appointment.diaphragm_reset_notes && (
                   <div className="flex gap-2 text-xs">
                     <span className="font-semibold text-muted-foreground w-28 shrink-0">Diaphragm Reset:</span>
-                    <span className="text-gray-700">{appointment.diaphragm_reset_notes}</span>
+                    <span className="text-foreground/85">{appointment.diaphragm_reset_notes}</span>
                   </div>
                 )}
                 {appointment.vagus_nerve_notes && (
                   <div className="flex gap-2 text-xs">
                     <span className="font-semibold text-muted-foreground w-28 shrink-0">Vagus Nerve:</span>
-                    <span className="text-gray-700">{appointment.vagus_nerve_notes}</span>
+                    <span className="text-foreground/85">{appointment.vagus_nerve_notes}</span>
                   </div>
                 )}
               </div>
@@ -276,15 +276,15 @@ const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
             <>
               <div className="flex items-center gap-1 mb-6">
                 <SectionNumber num="A" />
-                <h2 className="text-sm font-bold tracking-tight text-gray-900">Align — Findings</h2>
+                <h2 className="text-sm font-bold tracking-tight text-foreground">Align — Findings</h2>
               </div>
 
               {priorityPathway && (
                 <div className="mb-4">
                   <FieldLabel label="Priority Pathway" />
-                  <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <Target size={14} className="text-red-500 shrink-0" />
-                    <p className="text-xs font-semibold text-red-800">{priorityPathway}</p>
+                  <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                    <Target size={14} className="text-destructive shrink-0" />
+                    <p className="text-xs font-semibold text-destructive">{priorityPathway}</p>
                   </div>
                 </div>
               )}
@@ -338,26 +338,26 @@ const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
             <>
               <div className="flex items-center gap-1 mb-6">
                 <SectionNumber num="C" />
-                <h2 className="text-sm font-bold tracking-tight text-gray-900">Correct — Corrections Applied</h2>
+                <h2 className="text-sm font-bold tracking-tight text-foreground">Correct — Corrections Applied</h2>
               </div>
 
               {/* Pathway corrections history */}
               {correctionsHistory.length > 0 && (
                 <div className="mb-6 space-y-3">
                   {correctionsHistory.map((c: any, i: number) => (
-                    <div key={i} className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div key={i} className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-amber-700">Correction #{i + 1}</span>
-                        <span className="text-[9px] text-amber-600/60">·</span>
-                        <span className="text-[9px] font-medium text-amber-700 truncate">{c.pathway}</span>
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Correction #{i + 1}</span>
+                        <span className="text-[9px] text-amber-600/60 dark:text-amber-400/60">·</span>
+                        <span className="text-[9px] font-medium text-amber-700 dark:text-amber-400 truncate">{c.pathway}</span>
                         {c.timestamp && (
                           <>
-                            <span className="text-[9px] text-amber-600/60">·</span>
-                            <span className="text-[9px] text-amber-600/60">{format(new Date(c.timestamp), "h:mm a")}</span>
+                            <span className="text-[9px] text-amber-600/60 dark:text-amber-400/60">·</span>
+                            <span className="text-[9px] text-amber-600/60 dark:text-amber-400/60">{format(new Date(c.timestamp), "h:mm a")}</span>
                           </>
                         )}
                       </div>
-                      <p className="text-xs text-amber-900 leading-relaxed whitespace-pre-wrap">{c.summary}</p>
+                      <p className="text-xs text-amber-900 dark:text-amber-100 leading-relaxed whitespace-pre-wrap">{c.summary}</p>
                     </div>
                   ))}
                 </div>
@@ -366,8 +366,8 @@ const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
               {appointment.modes_balances && (
                 <div className="mb-6">
                   <FieldLabel label="Corrections Summary" />
-                  <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                    <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap">{appointment.modes_balances}</p>
+                  <div className="p-3 surface">
+                    <p className="text-xs text-foreground/85 leading-relaxed whitespace-pre-wrap">{appointment.modes_balances}</p>
                   </div>
                 </div>
               )}
@@ -375,7 +375,7 @@ const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
               {appointment.acupoints && (
                 <div className="mb-8">
                   <FieldLabel label="Acupoints" />
-                  <p className="text-xs text-gray-700 font-medium whitespace-pre-wrap">{appointment.acupoints}</p>
+                  <p className="text-xs text-foreground/85 font-medium whitespace-pre-wrap">{appointment.acupoints}</p>
                 </div>
               )}
             </>
@@ -388,7 +388,7 @@ const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
             <>
               <div className="flex items-center gap-1 mb-6">
                 <SectionNumber num="E" />
-                <h2 className="text-sm font-bold tracking-tight text-gray-900">Embed — Integration & Planning</h2>
+                <h2 className="text-sm font-bold tracking-tight text-foreground">Embed — Integration & Planning</h2>
               </div>
 
               {/* Cleared findings from verification */}
@@ -397,7 +397,7 @@ const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
                   <FieldLabel label="Verified Clear" />
                   <div className="flex flex-wrap gap-1.5">
                     {metadata.cleared_findings.map((id: string, i: number) => (
-                      <Badge key={i} variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[9px] font-medium">
+                      <Badge key={i} variant="outline" className="bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 text-[9px] font-medium">
                         <CheckCircle2 size={10} className="mr-1" /> {id}
                       </Badge>
                     ))}
@@ -408,8 +408,8 @@ const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
               {appointment.session_north_star && (
                 <div className="mb-6">
                   <FieldLabel label="Integration Notes / Homework" />
-                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-                    <p className="text-xs text-emerald-900 leading-relaxed whitespace-pre-wrap">{appointment.session_north_star}</p>
+                  <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg">
+                    <p className="text-xs text-emerald-900 dark:text-emerald-100 leading-relaxed whitespace-pre-wrap">{appointment.session_north_star}</p>
                   </div>
                 </div>
               )}
@@ -417,8 +417,8 @@ const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
               {appointment.next_session_note && (
                 <div className="mb-8">
                   <FieldLabel label="Next Session Focus" />
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-xs text-blue-900 leading-relaxed whitespace-pre-wrap">{appointment.next_session_note}</p>
+                  <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <p className="text-xs text-blue-900 dark:text-blue-100 leading-relaxed whitespace-pre-wrap">{appointment.next_session_note}</p>
                   </div>
                 </div>
               )}
@@ -432,10 +432,10 @@ const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
             <>
               <div className="flex items-center gap-1 mb-6">
                 <SectionNumber num="J" />
-                <h2 className="text-sm font-bold tracking-tight text-gray-900">Practitioner Journal</h2>
+                <h2 className="text-sm font-bold tracking-tight text-foreground">Practitioner Journal</h2>
               </div>
               <div className="mb-8">
-                <p className="text-xs text-gray-700 leading-relaxed whitespace-pre-wrap italic">{appointment.journal}</p>
+                <p className="text-xs text-foreground/85 leading-relaxed whitespace-pre-wrap italic">{appointment.journal}</p>
               </div>
             </>
           )}
@@ -443,19 +443,19 @@ const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
           {/* ════════════════════════════════════════
              SESSION SUMMARY STRIP
              ════════════════════════════════════════ */}
-          <div className="pt-6 border-t border-gray-300">
+          <div className="pt-6 border-t border-border">
             <div className="grid grid-cols-3 gap-4 text-center text-[10px]">
               <div>
                 <p className="font-bold text-muted-foreground uppercase tracking-wider">Findings</p>
-                <p className="text-sm font-semibold text-gray-900 mt-1">{inhibitedCount} active</p>
+                <p className="text-sm font-semibold text-foreground mt-1">{inhibitedCount} active</p>
               </div>
               <div>
                 <p className="font-bold text-muted-foreground uppercase tracking-wider">Corrections</p>
-                <p className="text-sm font-semibold text-gray-900 mt-1">{correctionsHistory.length || (appointment.modes_balances ? 1 : 0)} applied</p>
+                <p className="text-sm font-semibold text-foreground mt-1">{correctionsHistory.length || (appointment.modes_balances ? 1 : 0)} applied</p>
               </div>
               <div>
                 <p className="font-bold text-muted-foreground uppercase tracking-wider">Status</p>
-                <p className="text-sm font-semibold text-gray-900 mt-1">
+                <p className="text-sm font-semibold text-foreground mt-1">
                   {appointment.status === "Completed" ? "Complete" : appointment.status}
                 </p>
               </div>

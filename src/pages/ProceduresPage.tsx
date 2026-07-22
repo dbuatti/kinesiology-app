@@ -204,10 +204,10 @@ const ProceduresPage = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex justify-center mb-4">
             <TabsList className="grid w-full grid-cols-2 h-14 bg-muted p-1.5 rounded-xl">
-              <TabsTrigger value="mastery" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
+              <TabsTrigger value="mastery" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
                 <TrendingUp size={14} /> Clinical Mastery
               </TabsTrigger>
-              <TabsTrigger value="reference" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
+              <TabsTrigger value="reference" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
                 <Zap size={14} /> Protocol Reference
               </TabsTrigger>
             </TabsList>
@@ -397,56 +397,56 @@ const ProceduresPage = () => {
                   <TabsList className="inline-flex h-12 items-center rounded-xl bg-muted p-1 text-muted-foreground border border-border">
                     <TabsTrigger 
                       value="cranial-nerves" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
                       <Brain className="h-4 w-4 mr-1.5" />
                       Nerves
                     </TabsTrigger>
                     <TabsTrigger 
                       value="primitive-reflexes" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
                       <Zap className="h-4 w-4 mr-1.5" />
                       Reflexes
                     </TabsTrigger>
                     <TabsTrigger 
                       value="brain-zones" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
                       <Activity className="h-4 w-4 mr-1.5" />
                       Brain Zones
                     </TabsTrigger>
                     <TabsTrigger 
                       value="muscles" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
                       <Dumbbell className="h-4 w-4 mr-1.5" />
                       Muscles
                     </TabsTrigger>
                     <TabsTrigger 
                       value="mechanoreceptive" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
                       <Activity className="h-4 w-4 mr-1.5" />
                       Mechano
                     </TabsTrigger>
                     <TabsTrigger 
                       value="emotions" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
                       <Heart className="h-4 w-4 mr-1.5" />
                       Emotions
                     </TabsTrigger>
                     <TabsTrigger 
                       value="heart-wall" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
                       <Shield className="h-4 w-4 mr-1.5" />
                       Heart Wall
                     </TabsTrigger>
                     <TabsTrigger 
                       value="trauma-clearing" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
                       <Wind className="h-4 w-4 mr-1.5" />
                       Trauma

@@ -62,6 +62,7 @@ const QuickCalibratePage = lazy(() => import("./pages/QuickCalibratePage"));
 const CorrectionsReferencePage = lazy(() => import("./pages/CorrectionsReferencePage"));
 const CorrectionsManualPage = lazy(() => import("./pages/CorrectionsManualPage"));
 const ClinicalHubPage = lazy(() => import("./pages/ClinicalHubPage"));
+const SandboxV2Page = lazy(() => import("./pages/SandboxV2Page"));
 const PracticeNotes = lazy(() => import("./pages/PracticeNotes"));
 
 // --- Print & Reference Sheets ---
@@ -143,6 +144,8 @@ const AppRoutes = () => {
         <Route path="/resources/print" element={session ? <PrintHubPage /> : <Navigate to="/login" replace />} />
         <Route path="/practice/corrections-manual" element={session ? <CorrectionsManualPage /> : <Navigate to="/login" replace />} />
         <Route path="/practice/clinical-hub" element={session ? <ClinicalHubPage /> : <Navigate to="/login" replace />} />
+        <Route path="/practice/trial/peace" element={session ? <SandboxV2Page /> : <Navigate to="/login" replace />} />
+        <Route path="/practice/trial/doc" element={session ? <SandboxV2Page /> : <Navigate to="/login" replace />} />
 
         <Route
           element={session ? <MainLayout /> : <Navigate to="/login" replace />}

@@ -38,7 +38,10 @@ const AppointmentV2Page = () => {
     refresh
   } = useAppointment(id);
 
-  const [viewMode, setViewMode] = useState<'peace' | 'doc' | 'manual'>('peace');
+  const [viewMode, setViewMode] = useState<'peace' | 'doc' | 'manual'>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('view') === 'doc' ? 'doc' : 'peace';
+  });
   const [isFullScreen, setIsFullScreen] = useState(() => localStorage.getItem('rk_v2_fullscreen') === 'true');
   const [quickSessionOpen, setQuickSessionOpen] = useState(false);
 

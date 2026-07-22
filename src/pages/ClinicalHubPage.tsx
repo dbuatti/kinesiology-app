@@ -4,6 +4,9 @@ import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { QuickSessionDialog } from "@/components/crm/QuickSessionDialog";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import {
   Activity, FileText, BookMarked, Plus, Loader2, Zap, Clock, User, Calendar
@@ -23,6 +26,7 @@ const ClinicalHubPage = () => {
   const [quickSessionOpen, setQuickSessionOpen] = useState(false);
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedSession, setSelectedSession] = useState<RecentSession | null>(null);
 
   useEffect(() => {
     if (!session) return;
@@ -33,7 +37,7 @@ const ClinicalHubPage = () => {
       .limit(10)
       .then(({ data, error }) => {
         if (!error && data) {
-          setRecentSessions(data.map((a: any) => ({
+          setRecentSessions(data.map((a: { id: string; date: string; clients?: { name: string | null } | null; tag?: string | null }) => ({
             id: a.id,
             date: a.date,
             client_name: a.clients?.name || "Unknown",
@@ -56,7 +60,6 @@ const ClinicalHubPage = () => {
       accent: 'text-blue-600 dark:text-blue-400',
       iconBg: 'bg-blue-100 dark:bg-blue-950/50',
       badge: 'Interactive',
-      path: (sessionId: string) => `/appointments/${sessionId}/v2`,
     },
     {
       id: 'doc',
@@ -67,7 +70,6 @@ const ClinicalHubPage = () => {
       accent: 'text-emerald-600 dark:text-emerald-400',
       iconBg: 'bg-emerald-100 dark:bg-emerald-950/50',
       badge: 'Print',
-      path: (sessionId: string) => `/appointments/${sessionId}/v2`,
     },
     {
       id: 'manual',
@@ -78,19 +80,8 @@ const ClinicalHubPage = () => {
       accent: 'text-amber-600 dark:text-amber-400',
       iconBg: 'bg-amber-100 dark:bg-amber-950/50',
       badge: 'Reference',
-      path: () => '/practice/corrections-manual',
     },
   ];
-
-  const handleModeClick = (mode: typeof MODES[number], sessionId?: string) => {
-    if (mode.id === 'manual') {
-      navigate('/practice/corrections-manual');
-      return;
-    }
-    if (sessionId) {
-      navigate(mode.path(sessionId));
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -119,7 +110,7 @@ const ClinicalHubPage = () => {
                   if (mode.id === 'manual') {
                     navigate('/practice/corrections-manual');
                   } else {
-                    setQuickSessionOpen(true);
+                    navigate(`/practice/trial/${mode.id}`);
                   }
                 }}
                 className={cn(
@@ -167,7 +158,7 @@ const ClinicalHubPage = () => {
               {recentSessions.map((s) => (
                 <button
                   key={s.id}
-                  onClick={() => navigate(`/appointments/${s.id}/v2`)}
+                  onClick={() => setSelectedSession(s)}
                   className="w-full flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-muted/50 transition-colors text-left group"
                 >
                   <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
@@ -191,6 +182,36 @@ const ClinicalHubPage = () => {
           )}
         </div>
       </div>
+
+      {/* Session Modal */}
+      <Dialog open={!!selectedSession} onOpenChange={(open) => { if (!open) setSelectedSession(null); }}>
+        <DialogContent className="sm:max-w-sm rounded-xl">
+          <DialogHeader>
+            <DialogTitle className="text-base">{selectedSession?.client_name}</DialogTitle>
+            <DialogDescription className="text-xs">
+              {selectedSession && format(new Date(selectedSession.date), "EEEE, MMMM d, yyyy · h:mm a")}
+              {selectedSession?.tag && (
+                <span className="ml-2 text-muted-foreground">— {selectedSession.tag}</span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2">
+            <Button
+              onClick={() => { setSelectedSession(null); navigate(`/appointments/${selectedSession?.id}/v2`); }}
+              className="w-full rounded-xl h-11 gap-2"
+            >
+              <Activity size={16} /> Open in PEACE V2
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => { setSelectedSession(null); navigate(`/appointments/${selectedSession?.id}/v2?view=doc`); }}
+              className="w-full rounded-xl h-11 gap-2"
+            >
+              <FileText size={16} /> Open in DOC V2
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} v2 />
     </div>

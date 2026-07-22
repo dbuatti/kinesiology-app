@@ -150,9 +150,6 @@
 }
 
 @media print {
-  body * { visibility: hidden; }
-  .bg-card, .bg-card * { visibility: visible; }
-  .bg-card { position: absolute; left: 0; top: 0; width: 100%; border: none !important; box-shadow: none !important; }
   .print\:hidden { display: none !important; }
   .overflow-y-auto { overflow: visible !important; max-height: none !important; }
   .border-l, .border-r, .border-b, .border-t { border-color: #ccc !important; }

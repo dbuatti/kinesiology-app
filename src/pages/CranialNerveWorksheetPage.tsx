@@ -28,7 +28,7 @@ const CranialNerveWorksheetPage = () => {
         </div>
       </div>
 
-      <div className="bg-white shadow-2xl print:shadow-none min-h-[210mm] w-full">
+      <div className="bg-white shadow-2xl print:shadow-none min-h-[210mm] w-full print:min-h-0">
         <CranialNerveWorksheet />
       </div>
     </div>

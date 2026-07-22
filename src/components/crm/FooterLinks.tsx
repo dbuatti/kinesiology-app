@@ -37,8 +37,13 @@ const FooterLinks = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/resources/ai-prompt" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                  AI Session Prompt
+                <Link to="/practice/corrections" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  Corrections Reference
+                </Link>
+              </li>
+              <li>
+                <Link to="/practice/corrections-manual" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  Corrections Manual
                 </Link>
               </li>
             </ul>

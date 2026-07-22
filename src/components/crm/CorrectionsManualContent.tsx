@@ -292,16 +292,58 @@ const CorrectionsManualContent = () => {
         const content = efferentContent[efferentActive];
         if (!content) return null;
         const showZones = efferentActive === "cortical" || efferentActive === "subcortical";
+        const isEmotional = efferentActive === "emotional";
         return (
-          <div className="space-y-4">
-            <h2 className="text-base font-bold tracking-tight">{content.title}</h2>
-            {renderSteps(content.steps, "text-purple-600")}
-            {showZones && (
-              <div className="mt-6 pt-4 border-t space-y-4">
-                <h3 className="text-xs font-semibold text-muted-foreground">Brain Zone Reference</h3>
-                <div className="space-y-4">
-                  <BrainZoneList points={filteredBrainZones(corticalPoints)} label="Cortical" accent="text-blue-600" />
-                  <BrainZoneList points={filteredBrainZones(subcorticalPoints)} label="Subcortical" accent="text-amber-600" />
+          <div className={isEmotional ? "grid grid-cols-1 lg:grid-cols-5 gap-8" : "space-y-4"}>
+            <div className={isEmotional ? "lg:col-span-3 space-y-4" : "space-y-4"}>
+              <h2 className="text-base font-bold tracking-tight">{content.title}</h2>
+              {renderSteps(content.steps, "text-purple-600")}
+            </div>
+            {isEmotional && (
+              <div className="lg:col-span-2 space-y-6">
+                {/* NLP Eye Position Reference */}
+                <div className="panel p-4">
+                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 mb-3">NLP Eye Accessing Cues</h3>
+                  <div className="space-y-2">
+                    {[
+                      { pos: "Up & Left", label: "Visual Memory", desc: "Seeing a scene from the past" },
+                      { pos: "Up & Right", label: "Visual Constructed", desc: "Imagining something you haven't seen" },
+                      { pos: "Horizontal L", label: "Auditory Memory", desc: "Hearing sounds or words from the past" },
+                      { pos: "Horizontal R", label: "Auditory Constructed", desc: "Hearing sounds you haven't heard" },
+                      { pos: "Down & Left", label: "Internal Monologue", desc: "Talking to yourself" },
+                      { pos: "Down & Right", label: "Kinesthetic", desc: "Physical sensation or felt sense" },
+                    ].map(row => (
+                      <div key={row.pos} className="flex items-start gap-2 text-[10px]">
+                        <span className="font-bold text-foreground shrink-0 w-16">{row.pos}</span>
+                        <span className="font-semibold text-foreground/80 shrink-0 w-22">{row.label}</span>
+                        <span className="text-muted-foreground">{row.desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Organ Pulse Point Reference */}
+                <div className="panel p-4">
+                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-3">Organ Pulse Points</h3>
+                  <div className="space-y-2">
+                    {[
+                      { element: "Wood", emotion: "Anger", organ: "Liver / GB", note: "Left guan (deep)" },
+                      { element: "Fire", emotion: "Hurt", organ: "Heart / SI", note: "Left cun (deep)" },
+                      { element: "Earth", emotion: "Worry", organ: "Spleen / Stom.", note: "Right guan (deep)" },
+                      { element: "Metal", emotion: "Sadness", organ: "Lung / LI", note: "Left cun (superficial)" },
+                      { element: "Water", emotion: "Fear", organ: "Kidney / BL", note: "Left chi (deep)" },
+                    ].map(row => (
+                      <div key={row.element} className="flex items-start gap-2 text-[10px]">
+                        <span className="w-12 shrink-0 font-bold text-foreground">{row.element}</span>
+                        <span className="w-10 shrink-0 text-muted-foreground">{row.emotion}</span>
+                        <span className="font-semibold text-foreground/80 shrink-0 w-18">{row.organ}</span>
+                        <span className="text-muted-foreground">{row.note}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[9px] text-muted-foreground mt-3 italic leading-relaxed">
+                    Light pressure = Yang (superficial pulse). Deep pressure = Yin (deep pulse). Hold until therapeutic shift.
+                  </p>
                 </div>
               </div>
             )}

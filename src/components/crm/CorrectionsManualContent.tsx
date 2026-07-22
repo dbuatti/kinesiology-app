@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
-  ArrowDownCircle, ArrowUpCircle, Shield, ShieldAlert,
+  ArrowDownCircle, ArrowUpCircle, ArrowRightCircle, ArrowDown,
+  Shield, ShieldAlert,
   Activity, AlertTriangle, Droplets, Brain, Zap, Heart,
   Search, Layers, Hand, RefreshCw, Eye, MessageSquare,
-  BookOpen, Printer
+  Printer
 } from "lucide-react";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
 import type { BrainReflexPoint } from "@/data/brain-reflex-data";
@@ -97,12 +98,18 @@ const efferentContent: Record<string, { title: string; steps: string[] }> = {
     ],
   },
   emotional: {
-    title: "Emotional",
+    title: "Emotional (Pulse Point Protocol)",
     steps: [
-      "Apply ESR (Emotional Stress Release) points while client focuses on the stressor.",
-      "Acknowledge and release associated stressors through intention.",
-      "Complete the full process before re-assessing — allow time for the shift.",
-      "Re-test: original inhibition should now clear.",
+      "ESR Check — Hold frontal lobe (GB14) ESR points. Test indicator muscle — should weaken with stressor.",
+      "Permission — Ask 'Do we have permission to correct this?' If denied, do Harmonic Rocking first.",
+      "Timeline — Determine if the stress is Current or Historic. If historic, narrow to specific age/month.",
+      "Primary Emotion — Identify the core feeling: Hurt (Fire), Worry (Earth), Sadness (Metal), Fear (Water), Anger (Wood).",
+      "Priority Organ — Find the organ surrogate via pulse point. Match its element to the emotion.",
+      "Energy Polarity — Challenge for Energy IN (+) or Energy OUT (−). Usually OUT to release.",
+      "Eye Position — Identify NLP sensory access (visual/auditory/kinesthetic) for the stress memory.",
+      "Correction — Hold ESR + Pulse Point + Eye Position simultaneously. Replay stress until therapeutic shift (yawn, sigh, swallow, gurgle, deep breath).",
+      "Upload — Once shift occurs, upload a positive/neutral state over the same access point.",
+      "Re-test — Re-challenge ESR points and original stimulus. Muscle should now lock.",
     ],
   },
 };
@@ -159,27 +166,19 @@ const heartWallContent: Record<string, { title: string; steps: string[] }> = {
   },
 };
 
-const limitingBeliefContent: Record<string, { title: string; steps: string[] }> = {
-  "lb-process": {
-    title: "A-E Cycle + F/G/H Checkpoints",
-    steps: [
-      "A — Feel the belief in your body. Ask: 'What do you notice? Where is it? What sensation?'",
-      "B — Follow the sensation deeper. Ask: 'What do you notice now? Is it changing, moving, shifting?'",
-      "C — Identify the desired state. Ask: 'What would you rather feel instead?'",
-      "D — Embody the alternative. Ask: 'Feel that new state. What do you notice in the body?'",
-      "E — Deepen the new feeling. Ask: 'Let that feeling expand. What do you notice?'",
-      "After E, show Checkpoint F: 'Does the original belief still feel true?'",
-      "  → YES → start a new A-E cycle. Next time skip F and show G.",
-      "  → NO → advance to G.",
-      "Checkpoint G: 'Do you see yourself believing this in the future?'",
-      "  → YES → start a new A-E cycle. Next time skip F + G and show H.",
-      "  → NO → advance to H.",
-      "Checkpoint H: 'Is there any scenario where this belief might still feel true?'",
-      "  → YES → start a new A-E cycle. Stay on H and retry.",
-      "  → NO → session complete — belief resolved.",
-    ],
-  },
-};
+const lbAE = [
+  { step: "A", label: "Feel the belief in your body", prompt: "What do you notice? Where is it? What sensation?" },
+  { step: "B", label: "Follow the sensation deeper", prompt: "What do you notice now? Is it changing, moving, shifting?" },
+  { step: "C", label: "Identify the desired state", prompt: "What would you rather feel instead?" },
+  { step: "D", label: "Embody the alternative", prompt: "Feel that new state. What do you notice in the body?" },
+  { step: "E", label: "Deepen the new feeling", prompt: "Let that feeling expand. What do you notice?" },
+];
+
+const lbCheckpoints = [
+  { id: "F", question: "Does the original belief still feel true?", noAdvance: "Advance to G" },
+  { id: "G", question: "Do you see yourself believing this in the future?", noAdvance: "Advance to H" },
+  { id: "H", question: "Is there any scenario where this belief might still feel true?", noAdvance: "Session complete — belief resolved" },
+];
 
 const CorrectionsManualContent = () => {
   const [activeTab, setActiveTab] = useState("afferent");
@@ -241,7 +240,7 @@ const CorrectionsManualContent = () => {
       {steps.map((step, i) => (
         <div key={i} className="flex gap-3 px-3 py-2 rounded-lg hover:bg-muted/40 transition-colors">
           <span className={cn(
-            "flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold shrink-0 mt-0.5",
+            "badge-step mt-0.5",
             accent === "text-blue-600" ? "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300" :
             accent === "text-purple-600" ? "bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300" :
             accent === "text-rose-600" ? "bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300" :
@@ -320,12 +319,84 @@ const CorrectionsManualContent = () => {
         );
       }
       case "limiting-beliefs": {
-        const content = limitingBeliefContent[limitingBeliefActive];
-        if (!content) return null;
         return (
-          <div className="space-y-4">
-            <h2 className="text-base font-bold tracking-tight">{content.title}</h2>
-            {renderSteps(content.steps, "text-destructive")}
+          <div className="space-y-8">
+            {/* A-E Core Cycle */}
+            <div>
+              <h2 className="text-base font-bold tracking-tight mb-4">A-E Core Cycle</h2>
+              <div className="space-y-0">
+                {lbAE.map((item, i) => (
+                  <div key={item.step}>
+                    <div className="flex gap-3 px-3 py-3 rounded-lg hover:bg-muted/40 transition-colors">
+                      <span className="flex items-center justify-center w-6 h-6 rounded-md bg-destructive/10 text-destructive text-[11px] font-bold shrink-0 mt-0.5">
+                        {item.step}
+                      </span>
+                      <div className="space-y-0.5">
+                        <p className="text-xs font-semibold text-foreground">{item.label}</p>
+                        <p className="text-[11px] text-muted-foreground italic">{item.prompt}</p>
+                      </div>
+                    </div>
+                    {i < lbAE.length - 1 && (
+                      <div className="flex justify-center py-0.5">
+                        <div className="w-px h-3 bg-border" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Divider with arrow */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-dashed border-border" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-card px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Then Check</span>
+              </div>
+            </div>
+
+            {/* F/G/H Checkpoints */}
+            <div className="space-y-6">
+              <h2 className="text-base font-bold tracking-tight">Decision Checkpoints</h2>
+              {lbCheckpoints.map((cp, i) => (
+                <div key={cp.id} className="space-y-2">
+                  <div className="p-4 border-2 border-destructive/20 bg-destructive/5 rounded-xl">
+                    <div className="flex items-start gap-3">
+                      <span className="flex items-center justify-center w-7 h-7 rounded-full bg-destructive/10 text-destructive text-xs font-bold shrink-0">
+                        {cp.id}
+                      </span>
+                      <div className="space-y-3 flex-1">
+                        <p className="text-sm font-semibold text-foreground">{cp.question}</p>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800">
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">YES</span>
+                              <ArrowRightCircle size={12} className="text-rose-500" />
+                            </div>
+                            <p className="text-[10px] text-rose-800 dark:text-rose-200 leading-relaxed">
+                              Restart A-E cycle {i === 2 ? '(stay on H)' : `(skip to next checkpoint after)`}
+                            </p>
+                          </div>
+                          <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">NO</span>
+                              <ArrowRightCircle size={12} className="text-emerald-500" />
+                            </div>
+                            <p className="text-[10px] text-emerald-800 dark:text-emerald-200 leading-relaxed">{cp.noAdvance}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {i < lbCheckpoints.length - 1 && (
+                    <div className="flex justify-center py-1">
+                      <ArrowDown size={14} className="text-muted-foreground/40" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         );
       }

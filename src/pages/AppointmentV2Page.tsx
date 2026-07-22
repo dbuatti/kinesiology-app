@@ -117,7 +117,7 @@ const AppointmentV2Page = () => {
                             <BookOpen size={14} />
                           </button>
                         </HoverCardTrigger>
-                        <HoverCardContent side="bottom" align="start" className="w-80 rounded-xl p-4 border-amber-200/50">
+                        <HoverCardContent side="bottom" align="start" className="w-80 rounded-xl p-4 border-border">
                           <p className="text-xs text-muted-foreground whitespace-pre-wrap italic leading-relaxed">
                             "{notes}"
                           </p>
@@ -160,7 +160,7 @@ const AppointmentV2Page = () => {
             </div>
             <button
               onClick={() => setQuickSessionOpen(true)}
-              className="flex items-center gap-1.5 px-3 h-8 text-[10px] font-bold uppercase tracking-wider border border-black hover:bg-black hover:text-white transition-colors rounded-lg"
+              className="flex items-center gap-1.5 px-3 h-8 text-[10px] font-bold uppercase tracking-wider border border-foreground/20 hover:bg-foreground hover:text-background transition-colors rounded-lg"
               title="FILE > NEW — Create a new session"
             >
               <Plus size={13} /> New

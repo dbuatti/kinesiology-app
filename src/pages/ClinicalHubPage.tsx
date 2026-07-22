@@ -52,8 +52,9 @@ const ClinicalHubPage = () => {
       label: 'PEACE V2',
       description: 'Full session wizard — Preliminary → Ease → Align → Correct → Embed',
       icon: Activity,
-      color: 'border-l-blue-500 hover:bg-blue-50/30',
-      accent: 'text-blue-600',
+      color: 'border-l-blue-500 hover:bg-blue-50/30 dark:hover:bg-blue-950/30',
+      accent: 'text-blue-600 dark:text-blue-400',
+      iconBg: 'bg-blue-100 dark:bg-blue-950/50',
       badge: 'Interactive',
       path: (sessionId: string) => `/appointments/${sessionId}/v2`,
     },
@@ -62,8 +63,9 @@ const ClinicalHubPage = () => {
       label: 'DOC V2',
       description: 'Printable session notes — findings, corrections, homework summary',
       icon: FileText,
-      color: 'border-l-emerald-500 hover:bg-emerald-50/30',
-      accent: 'text-emerald-600',
+      color: 'border-l-emerald-500 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/30',
+      accent: 'text-emerald-600 dark:text-emerald-400',
+      iconBg: 'bg-emerald-100 dark:bg-emerald-950/50',
       badge: 'Print',
       path: (sessionId: string) => `/appointments/${sessionId}/v2`,
     },
@@ -72,8 +74,9 @@ const ClinicalHubPage = () => {
       label: 'Corrections Manual',
       description: 'Reference — afferent, efferent, heart wall & limiting beliefs protocols',
       icon: BookMarked,
-      color: 'border-l-amber-500 hover:bg-amber-50/30',
-      accent: 'text-amber-600',
+      color: 'border-l-amber-500 hover:bg-amber-50/30 dark:hover:bg-amber-950/30',
+      accent: 'text-amber-600 dark:text-amber-400',
+      iconBg: 'bg-amber-100 dark:bg-amber-950/50',
       badge: 'Reference',
       path: () => '/practice/corrections-manual',
     },
@@ -125,7 +128,7 @@ const ClinicalHubPage = () => {
                 )}
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", mode.accent, "bg-current/10")}>
+                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", mode.iconBg)}>
                     <Icon size={16} className={mode.accent} />
                   </div>
                   <span className={cn("text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border", mode.accent, "border-current/20 bg-current/5")}>

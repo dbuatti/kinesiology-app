@@ -192,6 +192,9 @@ const CranialNerveWorksheet = () => {
             background: white;
             -webkit-print-color-adjust: exact;
           }
+          body * {
+            visibility: visible !important;
+          }
           .no-print {
             display: none;
           }

@@ -155,8 +155,11 @@ const HeartWallPrintable = () => {
             margin: 5mm;
           }
           body {
-            background: white;
+            background: white !important;
             -webkit-print-color-adjust: exact;
+          }
+          body * {
+            visibility: visible !important;
           }
         }
       `}</style>

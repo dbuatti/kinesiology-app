@@ -134,6 +134,9 @@ const CranialNervePrintable = () => {
             background: white;
             -webkit-print-color-adjust: exact;
           }
+          body * {
+            visibility: visible !important;
+          }
         }
       `}</style>
     </div>

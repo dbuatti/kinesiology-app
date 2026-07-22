@@ -159,6 +159,9 @@ const JointActionPrintable = () => {
             background: white;
             -webkit-print-color-adjust: exact;
           }
+          body * {
+            visibility: visible !important;
+          }
           .print\\:hidden {
             display: none !important;
           }

@@ -22,6 +22,9 @@ import {
   BookOpen,
   MessageSquare,
 } from "lucide-react";
+import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
+import type { BrainReflexPoint } from "@/data/brain-reflex-data";
+import BrainReflexModal from "@/components/crm/BrainReflexModal";
 
 type SidebarItem = {
   id: string;
@@ -52,6 +55,9 @@ const HEART_WALL_ITEMS: SidebarItem[] = [
 const LIMITING_BELIEF_ITEMS: SidebarItem[] = [
   { id: "lb-process", label: "Process", icon: MessageSquare },
 ];
+
+const corticalPoints = BRAIN_REFLEX_POINTS.filter(p => p.category === "Cortical");
+const subcorticalPoints = BRAIN_REFLEX_POINTS.filter(p => p.category === "Subcortical");
 
 const afferentContent: Record<string, { title: string; steps: string[] }> = {
   mechanoreceptor: {
@@ -193,6 +199,7 @@ const CorrectionsManualPage = () => {
   const [efferentActive, setEfferentActive] = useState("cortical");
   const [heartWallActive, setHeartWallActive] = useState("hw-screen");
   const [limitingBeliefActive, setLimitingBeliefActive] = useState("lb-process");
+  const [modalPoint, setModalPoint] = useState<BrainReflexPoint | null>(null);
 
   if (!session) return <Navigate to="/login" replace />;
 
@@ -251,6 +258,31 @@ const CorrectionsManualPage = () => {
     </ol>
   );
 
+  const BrainZoneList = ({
+    points,
+    label,
+    accent,
+  }: {
+    points: BrainReflexPoint[];
+    label: string;
+    accent: string;
+  }) => (
+    <div>
+      <h4 className={cn("text-xs font-semibold mb-2", accent)}>{label}</h4>
+      <div className="space-y-0.5">
+        {points.map((p) => (
+          <button
+            key={p.id}
+            onClick={() => setModalPoint(p)}
+            className="w-full text-left text-xs px-3 py-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+          >
+            {p.name}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   const renderContent = () => {
     switch (activeTab) {
       case "afferent": {
@@ -266,10 +298,20 @@ const CorrectionsManualPage = () => {
       case "efferent": {
         const content = efferentContent[efferentActive];
         if (!content) return null;
+        const showZones = efferentActive === "cortical" || efferentActive === "subcortical";
         return (
           <div className="space-y-4">
             <h2 className="text-2xl font-serif font-bold tracking-tight">{content.title}</h2>
             {renderSteps(content.steps, "text-purple-500")}
+            {showZones && (
+              <div className="mt-8 pt-6 border-t">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-4">Brain Zone Reference</h3>
+                <div className="grid grid-cols-2 gap-6">
+                  <BrainZoneList points={corticalPoints} label="Cortical" accent="text-blue-600" />
+                  <BrainZoneList points={subcorticalPoints} label="Subcortical" accent="text-amber-600" />
+                </div>
+              </div>
+            )}
           </div>
         );
       }
@@ -369,6 +411,14 @@ const CorrectionsManualPage = () => {
           {renderContent()}
         </main>
       </div>
+
+      <BrainReflexModal
+        point={modalPoint}
+        open={!!modalPoint}
+        onOpenChange={(open) => { if (!open) setModalPoint(null); }}
+        primaryUrl={null}
+        secondaryUrl={null}
+      />
     </div>
   );
 };

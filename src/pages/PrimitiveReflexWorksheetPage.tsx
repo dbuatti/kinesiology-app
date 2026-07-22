@@ -26,7 +26,7 @@ const PrimitiveReflexWorksheetPage = () => {
         </Button>
       </div>
 
-      <div className="bg-white shadow-2xl print:shadow-none min-h-[210mm] w-full">
+      <div className="bg-white shadow-2xl print:shadow-none min-h-[0] w-full">
         <PrimitiveReflexWorksheet />
       </div>
     </div>

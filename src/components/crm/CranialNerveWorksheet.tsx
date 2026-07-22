@@ -44,7 +44,7 @@ const NERVE_CHECKS: Record<number, NerveCheckGroup> = {
 
 const CranialNerveWorksheet = () => {
   return (
-    <div className="bg-white text-black p-4 max-w-[297mm] mx-auto font-sans print:p-0 print:m-0 h-full overflow-hidden">
+    <div className="bg-white text-black p-4 max-w-[297mm] mx-auto font-sans print:p-0 print:m-0">
       {/* Header Section */}
       <div className="border-b-2 border-slate-900 pb-1 mb-2 flex justify-between items-end">
         <div>
@@ -194,10 +194,6 @@ const CranialNerveWorksheet = () => {
           }
           .no-print {
             display: none;
-          }
-          html, body, #root {
-            height: 100%;
-            overflow: hidden;
           }
         }
       `}</style>

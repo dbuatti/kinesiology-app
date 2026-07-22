@@ -86,7 +86,7 @@ const CranialNervePrintable = () => {
   };
 
   return (
-    <div className="bg-white text-black p-4 sm:p-6 max-w-[297mm] mx-auto font-sans print:p-0 print:m-0">
+    <div className="bg-white text-black p-4 sm:p-6 max-w-[297mm] mx-auto font-sans print:p-0 print:m-0 print:max-w-none">
       {/* Header */}
       <div className="border-b-2 border-black pb-1.5 mb-4 flex justify-between items-end">
         <div className="space-y-0.5">

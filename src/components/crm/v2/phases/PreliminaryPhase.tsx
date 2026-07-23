@@ -9,10 +9,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import EditableField from "@/components/shared/EditableField";
 import BoltTestSection from "@/components/crm/BoltTestSection";
 import CoherenceAssessment from "@/components/crm/CoherenceAssessment";
-import IntrinsicMusclesAssessment from "@/components/crm/IntrinsicMusclesAssessment";
 import NeurologicalAssessments from "@/components/crm/NeurologicalAssessments";
 import CogsAssessment from "@/components/crm/CogsAssessment";
-import { MuscleAssessment } from "@/components/crm/MuscleAssessment";
 import { CranialNerveAssessment } from "@/components/crm/CranialNerveAssessment";
 import { PrimitiveReflexAssessment } from "@/components/crm/PrimitiveReflexAssessment";
 import { BrainZoneAssessment } from "@/components/crm/BrainZoneAssessment";
@@ -20,7 +18,7 @@ import RecheckTabV2 from "@/components/crm/v2/RecheckTabV2";
 import CheckItem from "@/components/crm/document-view/CheckItem";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
-import { PRIMARY_14_MUSCLES } from "@/data/muscle-data";
+import { PRIMARY_14_MUSCLES, MUSCLE_GROUPS, MIDLINE_MUSCLES } from "@/data/muscle-data";
 import { AppointmentWithClient } from "@/types/crm";
 import { safeParse } from "@/utils/safe-json";
 
@@ -200,8 +198,7 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
         {subTab === 'quick' && (() => {
           const pattern = safeParse(appointment.priority_pattern, {} as any);
           const quickToggle = (cat: string, name: string, nextStatus: string, side?: 'L' | 'R') => {
-            const preserved = nextStatus === 'Clear' ? 'Inhibited_Cleared' : nextStatus;
-            updatePriorityPattern(cat, name, preserved, side);
+            updatePriorityPattern(cat, name, nextStatus === 'Clear' ? null : nextStatus, side);
           };
           return (
             <div className="space-y-6">
@@ -251,24 +248,56 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
           );
         })()}
 
-        {subTab === 'intrinsic' && (
-          <IntrinsicMusclesAssessment
-            findings={appointment.intrinsic_muscle_findings}
-            onSave={(json) => saveField('intrinsic_muscle_findings', json)}
-            syncIntrinsicToMuscles={async (name, status, side) => {
-              const finalStatus = status === 'Inhibited' ? 'Inhibited' : status === 'Hypertonic' ? 'Hypertonic' : null;
-              await updatePriorityPattern('muscles', name, finalStatus, side);
-            }}
-          />
-        )}
+        {subTab === 'intrinsic' && (() => {
+          const pattern = safeParse(appointment.priority_pattern, {} as any);
+          const toggle = (cat: string, name: string, nextStatus: string, side?: 'L' | 'R') => {
+            updatePriorityPattern(cat, name, nextStatus === 'Clear' ? null : nextStatus, side);
+          };
+          const intrinsicMuscles = MUSCLE_GROUPS['Intrinsic Stabilisation'] || [];
+          return (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Intrinsic Stabilisation</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
+                  {intrinsicMuscles.map(m => MIDLINE_MUSCLES.includes(m) ? (
+                    <CheckItem key={m} category="muscles" name={m} pattern={pattern} onToggle={toggle} />
+                  ) : (
+                    <React.Fragment key={m}>
+                      <CheckItem category="muscles" name={m} side="L" pattern={pattern} onToggle={toggle} />
+                      <CheckItem category="muscles" name={m} side="R" pattern={pattern} onToggle={toggle} />
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
-        {subTab === 'muscles' && (
-          <MuscleAssessment
-            priorityPattern={appointment.priority_pattern}
-            updatePriorityPattern={updatePriorityPattern}
-            showImages
-          />
-        )}
+        {subTab === 'muscles' && (() => {
+          const pattern = safeParse(appointment.priority_pattern, {} as any);
+          const toggle = (cat: string, name: string, nextStatus: string, side?: 'L' | 'R') => {
+            updatePriorityPattern(cat, name, nextStatus === 'Clear' ? null : nextStatus, side);
+          };
+          return (
+            <div className="space-y-6">
+              {Object.entries(MUSCLE_GROUPS).map(([groupName, muscles]) => (
+                <div key={groupName}>
+                  <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">{groupName}</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
+                    {muscles.map(m => MIDLINE_MUSCLES.includes(m) ? (
+                      <CheckItem key={m} category="muscles" name={m} pattern={pattern} onToggle={toggle} />
+                    ) : (
+                      <React.Fragment key={m}>
+                        <CheckItem category="muscles" name={m} side="L" pattern={pattern} onToggle={toggle} />
+                        <CheckItem category="muscles" name={m} side="R" pattern={pattern} onToggle={toggle} />
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
 
         {subTab === 'reflexes' && (
           <PrimitiveReflexAssessment

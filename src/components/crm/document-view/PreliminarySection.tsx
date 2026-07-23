@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,24 @@ interface PreliminarySectionProps {
   appointment: any;
   saveField: (field: string, value: any) => Promise<void>;
 }
+
+const DocToggle = ({ options, value, onChange }: { options: { label: string, value: string }[], value: string, onChange: (val: string) => void }) => (
+  <div className="flex gap-1 bg-muted p-0.5 rounded-md border border-border w-fit">
+    {options.map(opt => (
+      <button
+        key={opt.value}
+        type="button"
+        onClick={() => onChange(opt.value)}
+        className={cn(
+          "px-2 py-1 text-[10px] font-semibold uppercase rounded-sm transition-all",
+          value === opt.value ? "bg-foreground text-background" : "text-muted-foreground hover:text-black"
+        )}
+      >
+        {opt.label}
+      </button>
+    ))}
+  </div>
+);
 
 const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps) => {
   // BOLT Local State
@@ -149,25 +167,6 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
   };
 
   const isCoherent = coherenceScore !== null && Math.abs(coherenceScore - Math.round(coherenceScore)) < 0.01;
-
-  // Elegant Custom Toggle Component for Document View
-  const DocToggle = ({ options, value, onChange }: { options: { label: string, value: string }[], value: string, onChange: (val: string) => void }) => (
-    <div className="flex gap-1 bg-muted p-0.5 rounded-md border border-border w-fit">
-      {options.map(opt => (
-        <button
-          key={opt.value}
-          type="button"
-          onClick={() => onChange(opt.value)}
-          className={cn(
-            "px-2 py-1 text-[10px] font-semibold uppercase rounded-sm transition-all",
-            value === opt.value ? "bg-foreground text-background" : "text-muted-foreground hover:text-black"
-          )}
-        >
-          {opt.label}
-        </button>
-      ))}
-    </div>
-  );
 
   return (
     <div className="space-y-12">

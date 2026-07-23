@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { MUSCLE_GROUPS, MIDLINE_MUSCLES } from "@/data/muscle-data";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,13 +8,10 @@ import {
   Zap, 
   ImageIcon, 
   Loader2, 
-  Hand, 
   FileText,
   CheckCircle2,
   Dumbbell,
-  Search,
-  ArrowUpCircle,
-  ArrowDownCircle
+  Search
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";

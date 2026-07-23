@@ -365,7 +365,7 @@ Correction Method: ${method}`;
             {pastCorrections.length > 0 ? (
               <div className="divide-y divide-slate-100 border border-black">
                 {pastCorrections.map((correction, idx) => (
-                  <div key={idx} className="p-4 flex items-center justify-between gap-4 hover:bg-muted transition-colors">
+                  <div key={`${idx}-${correction.slice(0, 40)}`} className="p-4 flex items-center justify-between gap-4 hover:bg-muted transition-colors">
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-mono font-medium text-slate-800 leading-relaxed break-words">
                         {correction.replace(/^[-*\s]+/, '')}

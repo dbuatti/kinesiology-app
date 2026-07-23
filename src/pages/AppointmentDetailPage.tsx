@@ -2,27 +2,18 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useAppointment } from "@/hooks/useAppointment";
-import { CranialNerveAssessment } from "@/components/crm/CranialNerveAssessment";
-import { PrimitiveReflexAssessment } from "@/components/crm/PrimitiveReflexAssessment";
-import { BrainZoneAssessment } from "@/components/crm/BrainZoneAssessment";
-import { MuscleAssessment } from "@/components/crm/MuscleAssessment";
-import EmotionsProtocolReference from "@/components/crm/EmotionsProtocolReference";
-import MechanoreceptiveAssessment from "@/components/crm/MechanoreceptiveAssessment";
-import HeartWallProtocol from "@/components/crm/HeartWallProtocol";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  ChevronLeft, Brain, Loader2, Zap, FileText, Heart,
-  Activity, Shield, Layers, Dumbbell, RefreshCw,
-  Eye, EyeOff, Save, ShieldCheck, LayoutGrid,
-  ChevronRight, Settings2, Sparkles, Globe, ExternalLink,
-  PanelLeftClose, PanelLeftOpen, ClipboardCheck, MoreHorizontal, Printer,
+  Loader2, Zap, FileText, Sparkles, Shield,
+  RefreshCw,
+  PanelLeftClose, PanelLeftOpen, MoreHorizontal, Printer,
   ArrowLeft, Calendar, Clock, Link as LinkIcon, Maximize2, Minimize2, Trash2,
-  ChevronDown, ChevronUp, AlertCircle, Plus, Droplets, CreditCard, ShieldAlert, MessageCircle
+  ChevronDown, ChevronUp, AlertCircle, ExternalLink,
+  Droplets, CreditCard, ShieldAlert, MessageCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { isToday, format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";

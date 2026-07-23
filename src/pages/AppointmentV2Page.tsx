@@ -1,16 +1,13 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAppointment } from "@/hooks/useAppointment";
-import { useSessionDocumentState } from "@/hooks/useSessionDocumentState";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
-import { showSuccess, showError } from "@/utils/toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowLeft, Loader2, Printer, FileText, Activity, Zap, GitBranch,
-  Target, ClipboardCheck, CheckCircle2, ChevronRight, ChevronLeft,
+  ArrowLeft, Loader2, Activity, FileText,
   Maximize2, Minimize2, Calendar, Clock, User, BookOpen,
   Plus, BookMarked
 } from "lucide-react";

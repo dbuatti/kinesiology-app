@@ -402,11 +402,11 @@ const EmbedSection = ({
             All findings recorded and their final status.
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {allFindings.map((finding, idx) => {
+            {allFindings.map((finding) => {
               const isClear = finding.status === 'Clear' || finding.status === 'Normotonic' || finding.status.endsWith('_Cleared');
               return (
                 <div
-                  key={idx}
+                  key={`${finding.category}-${finding.name}`}
                   className={cn(
                     "p-2.5 border text-[10px] font-medium flex items-center justify-between gap-1",
                     isClear ? "bg-emerald-50/30 border-emerald-100 text-emerald-800" : "bg-rose-50/30 border-rose-100 text-rose-800"

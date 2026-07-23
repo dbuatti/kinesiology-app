@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { 
-  Target, 
   TrendingUp, 
   Loader2, 
   Activity, 
@@ -9,7 +8,6 @@ import {
   Trophy, 
   Sparkles, 
   Search,
-  GraduationCap, 
   ShieldCheck,
   AlertCircle, 
   RefreshCw,
@@ -18,10 +16,8 @@ import {
   CheckCircle2,
   Brain,
   Heart,
-  Info,
   Shield,
   Dumbbell,
-  Baby,
   Wind
 } from "lucide-react";
 import { Input } from "@/components/ui/input";

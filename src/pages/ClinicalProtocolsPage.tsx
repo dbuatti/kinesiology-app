@@ -12,11 +12,11 @@ import HeartWallProtocol from "@/components/crm/HeartWallProtocol";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
-  ChevronLeft, Brain, Loader2, Zap, FileText, Heart, 
-  Activity, Shield, Layers, Dumbbell, RefreshCw,
-  Eye, EyeOff, Save, ShieldCheck, LayoutGrid,
-  ChevronRight, Settings2, Sparkles, Globe, ExternalLink,
-  PanelLeftClose, PanelLeftOpen, ClipboardCheck
+  ChevronLeft, Brain, Loader2, Zap, Heart, 
+  Activity, Shield, Dumbbell, RefreshCw,
+  Eye, EyeOff, Save,
+  Settings2, Sparkles, Globe, ExternalLink,
+  ClipboardCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";

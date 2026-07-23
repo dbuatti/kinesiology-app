@@ -148,8 +148,7 @@ const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = fal
   const sb = useCallback((field: string, value: any) => saveField?.(field, value), [saveField]);
 
   const handleAssessmentToggle = useCallback((category: string, name: string, nextStatus: string, side?: 'L' | 'R') => {
-    const preserved = nextStatus === 'Clear' ? 'Inhibited_Cleared' : nextStatus;
-    updatePriorityPattern(category, name, preserved, side);
+    updatePriorityPattern(category, name, nextStatus === 'Clear' ? null : nextStatus, side);
   }, [updatePriorityPattern]);
 
   const hasPatternCategory = (cat: string) => {

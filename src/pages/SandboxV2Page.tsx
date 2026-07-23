@@ -112,7 +112,6 @@ const SandboxV2Page = () => {
   }));
 
   const saveField = useCallback(async (field: string, value: any) => {
-    console.log(`[sandbox] ${field} =`, value);
     setAppointmentData(prev => ({ ...prev, [field]: value }));
   }, []);
 
@@ -121,9 +120,11 @@ const SandboxV2Page = () => {
       const current = safeParse(prev.priority_pattern, {});
       if (!current[_category]) current[_category] = {};
       const finalName = _side ? `${_itemName} (${_side})` : _itemName;
-      // Never delete — "Clear"/null becomes "Inhibited_Cleared" to preserve findings
-      const preservedStatus = _status === null || _status === 'Clear' ? 'Inhibited_Cleared' : _status;
-      current[_category][finalName] = preservedStatus;
+      if (_status === null || _status === 'Clear') {
+        delete current[_category][finalName];
+      } else {
+        current[_category][finalName] = _status;
+      }
       return { ...prev, priority_pattern: safeStringify(current) };
     });
   }, []);

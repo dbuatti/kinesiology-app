@@ -1,5 +1,5 @@
  
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { 
@@ -8,7 +8,6 @@ import {
   CalendarPlus, 
   Clock, 
   CreditCard, 
-  ArrowRight,
   Loader2 
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";

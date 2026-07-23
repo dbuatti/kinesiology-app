@@ -45,10 +45,10 @@ const CATEGORY_MAP: Record<string, string> = {
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  primitiveReflexes: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-  cranialNerves: 'bg-amber-50 text-amber-700 border-amber-200',
-  muscles: 'bg-rose-50 text-rose-700 border-rose-200',
-  brainZones: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  primitiveReflexes: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20',
+  cranialNerves: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+  muscles: 'bg-rose-500/10 text-rose-600 border-rose-500/20',
+  brainZones: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
 };
 
 const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, saveField, onJumpToPhase }: RecheckTabV2Props) => {
@@ -194,7 +194,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
           className={cn(
             "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-all",
             onlyInhibited
-              ? "bg-rose-50 text-rose-700 border-rose-200"
+              ? "bg-rose-500/10 text-rose-600 border-rose-500/20"
               : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
           )}
         >
@@ -242,8 +242,8 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
                   <span className={cn(
                     "text-[9px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full border",
                     item.status === 'Hypertonic'
-                      ? "bg-amber-50 text-amber-700 border-amber-200"
-                      : "bg-rose-50 text-rose-700 border-rose-200"
+                      ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                      : "bg-rose-500/10 text-rose-600 border-rose-500/20"
                   )}>
                     {item.status === 'Inhibition' ? 'Inhib' : item.status}
                   </span>
@@ -283,7 +283,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
                 </div>
               )}
               {act === 'unsure' && (
-                <div className="flex items-center gap-1.5 text-xs font-medium text-amber-600">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
                   <HelpCircle size={13} /> Flagged as Unsure
                 </div>
               )}
@@ -317,7 +317,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
                     onClick={() => handleAction(item, 'unsure')}
                     disabled={isSaving}
                     label="Unsure"
-                    className="text-amber-600 border-amber-200 hover:bg-amber-50"
+                    className="text-amber-600 dark:text-amber-400 border-amber-500/20 hover:bg-amber-500/10"
                   />
                 </div>
               )}
@@ -345,7 +345,7 @@ const ActionButton = ({
     size="sm"
     variant="outline"
     className={cn(
-      "h-7 px-3 rounded-md text-[10px] font-bold uppercase tracking-wider border-slate-200 text-slate-600 hover:bg-slate-50",
+      "h-7 px-3 rounded-md text-[10px] font-bold uppercase tracking-wider border-border text-muted-foreground hover:bg-muted",
       className
     )}
   >

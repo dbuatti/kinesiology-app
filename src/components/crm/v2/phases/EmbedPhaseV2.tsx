@@ -204,7 +204,7 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
                   <Button
                     onClick={() => handleClearItem(item)}
                     disabled={isClearing}
-                    className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl h-10 px-4 font-medium text-[10px] border border-emerald-200"
+                    className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 rounded-xl h-10 px-4 font-medium text-[10px] border border-emerald-500/20"
                   >
                     {isClearing ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} className="mr-2" />}
                     Mark Clear
@@ -238,7 +238,7 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
         {clearedItems.length > 0 && (
           <div className="space-y-3 mt-6">
             <div className="flex items-center gap-2 px-2">
-              <div className="w-5 h-5 rounded bg-emerald-100 text-emerald-700 flex items-center justify-center">
+              <div className="w-5 h-5 rounded bg-emerald-500/15 text-emerald-600 flex items-center justify-center">
                 <CheckCircle2 size={12} />
               </div>
               <p className="text-[10px] font-medium text-muted-foreground">Cleared Findings ({clearedItems.length})</p>
@@ -248,21 +248,21 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
                 const Icon = getIcon(item.category);
                 const isClearing = clearingId === item.id;
                 return (
-                  <div key={item.id} className="bg-emerald-50/50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between gap-3">
+                  <div key={item.id} className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-3 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-600 flex items-center justify-center shrink-0">
                         <Icon size={14} />
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="text-xs font-medium text-foreground truncate">{item.name}</p>
                           {item.side && (
-                            <Badge variant="outline" className="text-[8px] font-medium px-1 py-0 border-emerald-200 text-emerald-700 bg-emerald-100/50">
+                            <Badge variant="outline" className="text-[8px] font-medium px-1 py-0 border-emerald-500/20 text-emerald-600 bg-emerald-500/10">
                               {item.side}
                             </Badge>
                           )}
                         </div>
-                        <p className="text-[9px] font-medium text-emerald-600 flex items-center gap-1"><CheckCircle2 size={8} /> Cleared</p>
+                        <p className="text-[9px] font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1"><CheckCircle2 size={8} /> Cleared</p>
                       </div>
                     </div>
                     <Button
@@ -350,7 +350,7 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
         <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none"><CalendarPlus size={150} /></div>
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-inner shrink-0">
+            <div className="w-14 h-14 rounded-xl bg-background/20 backdrop-blur-md flex items-center justify-center shadow-inner shrink-0">
               <CalendarPlus size={28} />
             </div>
             <div>
@@ -360,7 +360,7 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
           </div>
           <Dialog open={bookNextOpen} onOpenChange={(open) => { setBookNextOpen(open); if (!open) setSelectedSlot(null); }}>
             <DialogTrigger asChild>
-              <Button className="bg-white/20 backdrop-blur-md text-primary-foreground hover:bg-white/30 border-none rounded-xl h-12 px-8 font-medium text-xs uppercase tracking-wider">
+              <Button className="bg-background/20 backdrop-blur-md text-primary-foreground hover:bg-background/30 border-none rounded-xl h-12 px-8 font-medium text-xs uppercase tracking-wider">
                 <Plus size={18} className="mr-2" /> Book Next Session
               </Button>
             </DialogTrigger>

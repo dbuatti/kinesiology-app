@@ -58,9 +58,9 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
     <div className="space-y-8">
       {/* Stale alert */}
       {isStale && (
-        <Alert className="bg-amber-50 border-amber-200 rounded-xl animate-in slide-in-from-top-2 duration-500">
+        <Alert className="bg-amber-500/10 border-amber-500/20 rounded-xl animate-in slide-in-from-top-2 duration-500">
           <AlertTriangle className="h-5 w-5 text-amber-500" />
-          <AlertDescription className="text-sm text-amber-900 font-medium">
+          <AlertDescription className="text-sm text-amber-600 dark:text-amber-300 font-medium">
             It has been over {Math.floor(daysSinceLast / 30)} months since the last session. Baseline findings and CO₂ tolerance may have shifted significantly.
           </AlertDescription>
         </Alert>

@@ -46,7 +46,7 @@ const SandboxV2Page = () => {
   const [useNewClient, setUseNewClient] = useState(false);
 
   const [appointmentData, setAppointmentData] = useState<AppointmentWithClient>(() => ({
-    id: `sandbox-${Date.now()}`,
+    id: `ffffffff-ffff-ffff-ffff-${Date.now().toString(16).padStart(12, '0')}`,
     user_id: userId,
     client_id: "sandbox",
     date: new Date(),

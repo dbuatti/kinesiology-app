@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -39,6 +39,14 @@ const EditableField = ({ label, value, field, onSave, editable = false }: {
   editable?: boolean;
 }) => {
   const [draft, setDraft] = useState(value || "");
+  const taRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (editable && taRef.current) {
+      taRef.current.style.height = 'auto';
+      taRef.current.style.height = taRef.current.scrollHeight + 'px';
+    }
+  }, [editable, draft]);
 
   if (!editable) {
     return (
@@ -53,11 +61,16 @@ const EditableField = ({ label, value, field, onSave, editable = false }: {
     <div className="mb-4 pb-4 border-b border-border/30 last:border-b-0">
       <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-1">{label}</p>
       <textarea
+        ref={taRef}
         value={draft}
-        onChange={(e) => setDraft(e.target.value)}
+        onChange={(e) => {
+          setDraft(e.target.value);
+          e.target.style.height = 'auto';
+          e.target.style.height = e.target.scrollHeight + 'px';
+        }}
         onBlur={() => onSave?.(field, draft)}
-        rows={2}
-        className="w-full bg-transparent text-[12.5px] text-foreground leading-relaxed border border-dashed border-border/40 rounded px-2 py-1.5 focus:outline-none focus:border-primary/50 focus:bg-muted/20 resize-none hover:border-border/80 transition-colors"
+        rows={1}
+        className="w-full bg-transparent text-[12.5px] text-foreground leading-relaxed border border-dashed border-border/40 rounded px-2 py-1.5 focus:outline-none focus:border-primary/50 focus:bg-muted/20 resize-none hover:border-border/80 transition-colors overflow-hidden"
         placeholder="Type here..."
       />
     </div>
@@ -103,6 +116,52 @@ const EditableNumberField = ({ label, value, field, onSave, editable = false, su
   );
 };
 
+const EditableMetaField = ({ label, metaKey, metadata, onSave, editable = false }: {
+  label: string;
+  metaKey: string;
+  metadata: any;
+  onSave: (field: string, value: any) => Promise<void>;
+  editable?: boolean;
+}) => {
+  const [draft, setDraft] = useState(metadata?.[metaKey] || "");
+  const taRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (editable && taRef.current) {
+      taRef.current.style.height = 'auto';
+      taRef.current.style.height = taRef.current.scrollHeight + 'px';
+    }
+  }, [editable, draft]);
+
+  if (!editable) {
+    return (
+      <div className="mb-4 pb-4 border-b border-border/30 last:border-b-0">
+        <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-1">{label}</p>
+        <p className="text-[12.5px] text-foreground leading-relaxed whitespace-pre-wrap">{metadata?.[metaKey] || "—"}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mb-4 pb-4 border-b border-border/30 last:border-b-0">
+      <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-1">{label}</p>
+      <textarea
+        ref={taRef}
+        value={draft}
+        onChange={(e) => {
+          setDraft(e.target.value);
+          e.target.style.height = 'auto';
+          e.target.style.height = e.target.scrollHeight + 'px';
+        }}
+        onBlur={() => onSave?.("metadata", { ...metadata, [metaKey]: draft })}
+        rows={1}
+        className="w-full bg-transparent text-[12.5px] text-foreground leading-relaxed border border-dashed border-border/40 rounded px-2 py-1.5 focus:outline-none focus:border-primary/50 focus:bg-muted/20 resize-none hover:border-border/80 transition-colors overflow-hidden"
+        placeholder="Type here..."
+      />
+    </div>
+  );
+};
+
 const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = false, saveField }: DocViewProps) => {
   const handlePrint = () => window.print();
 
@@ -125,6 +184,8 @@ const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = fal
   const priorityPathway = metadata?.priority_pathway || "";
   const correctionsHistory = metadata?.corrections || [];
 
+  const hasAnyCranial = !!metadata.cranial_assessment_notes;
+  const hasAnyReflex = !!metadata.reflex_assessment_notes;
   const hasAnyAlign = inhibitedCount > 0 || clearedCount > 0 || !!priorityPathway || !!appointment.emotion_primary_selection;
   const hasAnyCorrect = !!appointment.modes_balances || !!appointment.acupoints || correctionsHistory.length > 0;
   const hasAnyEmbed = !!appointment.session_north_star || !!appointment.next_session_note || (metadata?.cleared_findings?.length > 0);
@@ -224,10 +285,24 @@ const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = fal
               </div>
             )}
 
-            {/* Intrinsic Muscles */}
+            {/* Cranial Nerve Assessment */}
+            {(hasAnyCranial || editable) && (
+              <div className="mb-4 pb-4 border-b border-border/30">
+                <EditableMetaField label="Cranial Nerve Assessment" metaKey="cranial_assessment_notes" metadata={metadata} onSave={sb} editable={editable} />
+              </div>
+            )}
+
+            {/* Primitive Reflex Assessment */}
+            {(hasAnyReflex || editable) && (
+              <div className="mb-4 pb-4 border-b border-border/30">
+                <EditableMetaField label="Primitive Reflex Assessment" metaKey="reflex_assessment_notes" metadata={metadata} onSave={sb} editable={editable} />
+              </div>
+            )}
+
+            {/* Muscles */}
             {(appointment.intrinsic_muscle_findings || editable) && (
               <div className="mb-4 pb-4 border-b border-border/30">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Intrinsic Muscle Findings</p>
+                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Muscle Assessment</p>
                 {editable ? (
                   <EditableField label="" value={appointment.intrinsic_muscle_findings} field="intrinsic_muscle_findings" onSave={sb} editable={editable} />
                 ) : appointment.intrinsic_muscle_findings && appointment.intrinsic_muscle_findings !== "{}" ? (

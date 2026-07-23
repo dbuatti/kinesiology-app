@@ -15,7 +15,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import { safeParse, safeStringify } from "@/utils/safe-json";
 import {
-  ArrowLeft, Activity, FileText, Maximize2, Minimize2, Zap, Save
+  ArrowLeft, Activity, FileText, Maximize2, Minimize2, Save
 } from "lucide-react";
 
 const EMPTY_CLIENT: AppointmentWithClient["clients"] = {
@@ -383,6 +383,7 @@ const SandboxV2Page = () => {
           {/* Data preview */}
           {(() => {
             const filled: string[] = [];
+            const patternData = safeParse(appointmentData.priority_pattern, {});
             if (appointmentData.goal) filled.push("Goal");
             if (appointmentData.issue) filled.push("Issue");
             if (appointmentData.bolt_score != null) filled.push("Vitals");
@@ -393,6 +394,7 @@ const SandboxV2Page = () => {
             if (appointmentData.modes_balances || appointmentData.acupoints) filled.push("Corrections");
             if (appointmentData.session_north_star || appointmentData.next_session_note) filled.push("Embed");
             if (appointmentData.intrinsic_muscle_findings) filled.push("Muscles");
+            if (Object.keys(patternData).length > 0) filled.push("Findings");
             if (appointmentData.journal) filled.push("Journal");
             if (filled.length === 0) return null;
             return (

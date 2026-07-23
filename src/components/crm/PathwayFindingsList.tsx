@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Baby, Zap, Brain } from "lucide-react";
+import { Baby, Zap, Brain, Dumbbell } from "lucide-react";
 import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
 import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';
 import { safeParse } from '@/utils/safe-json';
@@ -83,7 +83,7 @@ const PathwayFindingsList = ({ priorityPattern, className, showOnlyInhibited = t
   }, [priorityPattern, showOnlyInhibited]);
 
   if (findings.length === 0) {
-    return <p className="text-xs text-slate-400 italic">No active priorities recorded.</p>;
+    return <p className="text-xs text-muted-foreground italic">No active priorities recorded.</p>;
   }
 
   return (
@@ -98,15 +98,16 @@ const PathwayFindingsList = ({ priorityPattern, className, showOnlyInhibited = t
             className={cn(
               "flex items-center justify-between p-2 rounded-lg border text-[10px] font-bold transition-all",
               isCleared 
-                ? "bg-emerald-50 border-emerald-100 text-emerald-700"
-                : "bg-rose-50 border-rose-100 text-rose-700"
+                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
+                : "bg-destructive/10 border-destructive/30 text-destructive"
             )}
           >
             <div className="flex items-center gap-2 truncate mr-2">
               {finding.category.toLowerCase().includes('primitive') ? <Baby size={12} /> :
                finding.category.toLowerCase().includes('cranial') ? <Zap size={12} /> :
+               finding.category.toLowerCase().includes('muscle') ? <Dumbbell size={12} /> :
                <Brain size={12} />}
-              <span className={cn("truncate", isCleared && "line-through text-slate-400")}>{finding.name}</span>
+              <span className={cn("truncate", isCleared && "line-through text-muted-foreground")}>{finding.name}</span>
             </div>
             <Badge 
               variant="outline" 

@@ -1,12 +1,15 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
-  ArrowLeft, Printer, CheckCircle2, Target, Save, BookOpen
+  ArrowLeft, Printer, Target
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import PathwayFindingsList from "@/components/crm/PathwayFindingsList";
+import CheckItem from "@/components/crm/document-view/CheckItem";
+import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
+import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
+import { PRIMARY_14_MUSCLES } from "@/data/muscle-data";
 import { AppointmentWithClient } from "@/types/crm";
 import { safeParse } from "@/utils/safe-json";
 
@@ -116,53 +119,7 @@ const EditableNumberField = ({ label, value, field, onSave, editable = false, su
   );
 };
 
-const EditableMetaField = ({ label, metaKey, metadata, onSave, editable = false }: {
-  label: string;
-  metaKey: string;
-  metadata: any;
-  onSave: (field: string, value: any) => Promise<void>;
-  editable?: boolean;
-}) => {
-  const [draft, setDraft] = useState(metadata?.[metaKey] || "");
-  const taRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    if (editable && taRef.current) {
-      taRef.current.style.height = 'auto';
-      taRef.current.style.height = taRef.current.scrollHeight + 'px';
-    }
-  }, [editable, draft]);
-
-  if (!editable) {
-    return (
-      <div className="mb-4 pb-4 border-b border-border/30 last:border-b-0">
-        <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-1">{label}</p>
-        <p className="text-[12.5px] text-foreground leading-relaxed whitespace-pre-wrap">{metadata?.[metaKey] || "—"}</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="mb-4 pb-4 border-b border-border/30 last:border-b-0">
-      <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-1">{label}</p>
-      <textarea
-        ref={taRef}
-        value={draft}
-        onChange={(e) => {
-          setDraft(e.target.value);
-          e.target.style.height = 'auto';
-          e.target.style.height = e.target.scrollHeight + 'px';
-        }}
-        onBlur={() => onSave?.("metadata", { ...metadata, [metaKey]: draft })}
-        rows={1}
-        className="w-full bg-transparent text-[12.5px] text-foreground leading-relaxed border border-dashed border-border/40 rounded px-2 py-1.5 focus:outline-none focus:border-primary/50 focus:bg-muted/20 resize-none hover:border-border/80 transition-colors overflow-hidden"
-        placeholder="Type here..."
-      />
-    </div>
-  );
-};
-
-const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = false, saveField }: DocViewProps) => {
+const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = false, saveField, updatePriorityPattern }: DocViewProps) => {
   const handlePrint = () => window.print();
 
   const pattern = safeParse(appointment.priority_pattern, {} as any);
@@ -184,13 +141,21 @@ const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = fal
   const priorityPathway = metadata?.priority_pathway || "";
   const correctionsHistory = metadata?.corrections || [];
 
-  const hasAnyCranial = !!metadata.cranial_assessment_notes;
-  const hasAnyReflex = !!metadata.reflex_assessment_notes;
   const hasAnyAlign = inhibitedCount > 0 || clearedCount > 0 || !!priorityPathway || !!appointment.emotion_primary_selection;
   const hasAnyCorrect = !!appointment.modes_balances || !!appointment.acupoints || correctionsHistory.length > 0;
   const hasAnyEmbed = !!appointment.session_north_star || !!appointment.next_session_note || (metadata?.cleared_findings?.length > 0);
 
   const sb = useCallback((field: string, value: any) => saveField?.(field, value), [saveField]);
+
+  const handleAssessmentToggle = useCallback((category: string, name: string, nextStatus: string, side?: 'L' | 'R') => {
+    const preserved = nextStatus === 'Clear' ? 'Inhibited_Cleared' : nextStatus;
+    updatePriorityPattern(category, name, preserved, side);
+  }, [updatePriorityPattern]);
+
+  const hasPatternCategory = (cat: string) => {
+    const entries = pattern?.[cat];
+    return entries && typeof entries === 'object' && Object.keys(entries).length > 0;
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -286,28 +251,51 @@ const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = fal
             )}
 
             {/* Cranial Nerve Assessment */}
-            {(hasAnyCranial || editable) && (
+            {(editable || hasPatternCategory('cranial_nerves')) && (
               <div className="mb-4 pb-4 border-b border-border/30">
-                <EditableMetaField label="Cranial Nerve Assessment" metaKey="cranial_assessment_notes" metadata={metadata} onSave={sb} editable={editable} />
+                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Cranial Nerve Assessment</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
+                  {CRANIAL_NERVES.map(n => n.isLateralized ? (
+                    <React.Fragment key={n.name}>
+                      <CheckItem category="cranial_nerves" name={n.name} side="L" pattern={pattern} onToggle={handleAssessmentToggle} />
+                      <CheckItem category="cranial_nerves" name={n.name} side="R" pattern={pattern} onToggle={handleAssessmentToggle} />
+                    </React.Fragment>
+                  ) : (
+                    <CheckItem key={n.name} category="cranial_nerves" name={n.name} pattern={pattern} onToggle={handleAssessmentToggle} />
+                  ))}
+                </div>
               </div>
             )}
 
             {/* Primitive Reflex Assessment */}
-            {(hasAnyReflex || editable) && (
+            {(editable || hasPatternCategory('primitive_reflexes')) && (
               <div className="mb-4 pb-4 border-b border-border/30">
-                <EditableMetaField label="Primitive Reflex Assessment" metaKey="reflex_assessment_notes" metadata={metadata} onSave={sb} editable={editable} />
+                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Primitive Reflex Assessment</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
+                  {PRIMITIVE_REFLEXES.map(r => r.isLateralized ? (
+                    <React.Fragment key={r.id}>
+                      <CheckItem category="primitive_reflexes" name={r.name} side="L" pattern={pattern} onToggle={handleAssessmentToggle} />
+                      <CheckItem category="primitive_reflexes" name={r.name} side="R" pattern={pattern} onToggle={handleAssessmentToggle} />
+                    </React.Fragment>
+                  ) : (
+                    <CheckItem key={r.id} category="primitive_reflexes" name={r.name} pattern={pattern} onToggle={handleAssessmentToggle} />
+                  ))}
+                </div>
               </div>
             )}
 
-            {/* Muscles */}
-            {(appointment.intrinsic_muscle_findings || editable) && (
+            {/* Muscle Assessment — Primary 14 */}
+            {(editable || hasPatternCategory('muscles')) && (
               <div className="mb-4 pb-4 border-b border-border/30">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Muscle Assessment</p>
-                {editable ? (
-                  <EditableField label="" value={appointment.intrinsic_muscle_findings} field="intrinsic_muscle_findings" onSave={sb} editable={editable} />
-                ) : appointment.intrinsic_muscle_findings && appointment.intrinsic_muscle_findings !== "{}" ? (
-                  <p className="text-[12px] text-foreground/85 whitespace-pre-wrap font-mono">{appointment.intrinsic_muscle_findings}</p>
-                ) : null}
+                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Muscle Assessment — Primary 14</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
+                  {PRIMARY_14_MUSCLES.map(m => (
+                    <React.Fragment key={m}>
+                      <CheckItem category="muscles" name={m} side="L" pattern={pattern} onToggle={handleAssessmentToggle} />
+                      <CheckItem category="muscles" name={m} side="R" pattern={pattern} onToggle={handleAssessmentToggle} />
+                    </React.Fragment>
+                  ))}
+                </div>
               </div>
             )}
           </div>

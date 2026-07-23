@@ -1,8 +1,8 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   Compass, ClipboardList, Activity, ShieldAlert, AlertTriangle,
-  Dumbbell, Baby, Zap, Brain, RotateCcw, Eye,
+  Dumbbell, Baby, Zap, Brain, RotateCcw, Eye, CheckCircle2,
 } from "lucide-react";
 import { differenceInDays } from "date-fns";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -17,7 +17,12 @@ import { CranialNerveAssessment } from "@/components/crm/CranialNerveAssessment"
 import { PrimitiveReflexAssessment } from "@/components/crm/PrimitiveReflexAssessment";
 import { BrainZoneAssessment } from "@/components/crm/BrainZoneAssessment";
 import RecheckTabV2 from "@/components/crm/v2/RecheckTabV2";
+import CheckItem from "@/components/crm/document-view/CheckItem";
+import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
+import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
+import { PRIMARY_14_MUSCLES } from "@/data/muscle-data";
 import { AppointmentWithClient } from "@/types/crm";
+import { safeParse } from "@/utils/safe-json";
 
 interface PhaseProps {
   appointment: AppointmentWithClient;
@@ -28,11 +33,12 @@ interface PhaseProps {
   onJumpToPhase: (index: number) => void;
 }
 
-type SubTab = 'recheck' | 'intake' | 'intrinsic' | 'muscles' | 'reflexes' | 'nerves' | 'zones';
+type SubTab = 'recheck' | 'intake' | 'quick' | 'intrinsic' | 'muscles' | 'reflexes' | 'nerves' | 'zones';
 
 const SUB_TABS: { id: SubTab; label: string; icon: any }[] = [
   { id: 'recheck', label: 'Recheck', icon: RotateCcw },
   { id: 'intake', label: 'Intake & Vitals', icon: Activity },
+  { id: 'quick', label: 'Quick Assess', icon: CheckCircle2 },
   { id: 'intrinsic', label: 'Intrinsic', icon: ShieldAlert },
   { id: 'muscles', label: 'Muscles', icon: Dumbbell },
   { id: 'reflexes', label: 'Primitive Reflexes', icon: Baby },
@@ -190,6 +196,60 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
             </div>
           </div>
         )}
+
+        {subTab === 'quick' && (() => {
+          const pattern = safeParse(appointment.priority_pattern, {} as any);
+          const quickToggle = (cat: string, name: string, nextStatus: string, side?: 'L' | 'R') => {
+            const preserved = nextStatus === 'Clear' ? 'Inhibited_Cleared' : nextStatus;
+            updatePriorityPattern(cat, name, preserved, side);
+          };
+          return (
+            <div className="space-y-6">
+              {/* Cranial Nerves */}
+              <div>
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Cranial Nerves</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
+                  {CRANIAL_NERVES.map(n => n.isLateralized ? (
+                    <React.Fragment key={n.name}>
+                      <CheckItem category="cranial_nerves" name={n.name} side="L" pattern={pattern} onToggle={quickToggle} />
+                      <CheckItem category="cranial_nerves" name={n.name} side="R" pattern={pattern} onToggle={quickToggle} />
+                    </React.Fragment>
+                  ) : (
+                    <CheckItem key={n.name} category="cranial_nerves" name={n.name} pattern={pattern} onToggle={quickToggle} />
+                  ))}
+                </div>
+              </div>
+
+              {/* Primitive Reflexes */}
+              <div>
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Primitive Reflexes</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
+                  {PRIMITIVE_REFLEXES.map(r => r.isLateralized ? (
+                    <React.Fragment key={r.id}>
+                      <CheckItem category="primitive_reflexes" name={r.name} side="L" pattern={pattern} onToggle={quickToggle} />
+                      <CheckItem category="primitive_reflexes" name={r.name} side="R" pattern={pattern} onToggle={quickToggle} />
+                    </React.Fragment>
+                  ) : (
+                    <CheckItem key={r.id} category="primitive_reflexes" name={r.name} pattern={pattern} onToggle={quickToggle} />
+                  ))}
+                </div>
+              </div>
+
+              {/* Muscles — Primary 14 */}
+              <div>
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Muscles — Primary 14</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
+                  {PRIMARY_14_MUSCLES.map(m => (
+                    <React.Fragment key={m}>
+                      <CheckItem category="muscles" name={m} side="L" pattern={pattern} onToggle={quickToggle} />
+                      <CheckItem category="muscles" name={m} side="R" pattern={pattern} onToggle={quickToggle} />
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {subTab === 'intrinsic' && (
           <IntrinsicMusclesAssessment

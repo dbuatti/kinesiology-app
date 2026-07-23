@@ -55,13 +55,13 @@ const CheckItem = ({ category, name, side, pattern, onToggle }: CheckItemProps) 
         "flex items-center justify-between p-1.5 transition-all cursor-pointer group border rounded-md",
         status === 'Inhibited' 
           ? isCleared 
-            ? "bg-emerald-50/30 border-emerald-200 text-slate-700" 
-            : "bg-rose-50 border-rose-200 text-rose-900"
+            ? "bg-emerald-500/10 border-emerald-500/30 text-foreground/80" 
+            : "bg-destructive/10 border-destructive/30 text-destructive"
           : status === 'Hypertonic'
             ? isCleared
-              ? "bg-emerald-50/30 border-emerald-200 text-slate-700"
-              : "bg-amber-50 border-amber-200 text-amber-900"
-            : "hover:bg-slate-50 border-transparent text-slate-600"
+              ? "bg-emerald-500/10 border-emerald-500/30 text-foreground/80"
+              : "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-300"
+            : "hover:bg-muted/50 border-transparent text-muted-foreground"
       )}
       onClick={handleCycle}
     >
@@ -77,7 +77,7 @@ const CheckItem = ({ category, name, side, pattern, onToggle }: CheckItemProps) 
               ? isCleared
                 ? "bg-emerald-500 border-emerald-500 text-white"
                 : "bg-rose-600 border-rose-600 text-white"
-              : "border-slate-300 group-hover:border-black bg-white"
+              : "border-border group-hover:border-foreground bg-background"
         )}>
           {status === 'Inhibited' && (isCleared ? <Check size={10} strokeWidth={4} /> : <ArrowDown size={10} strokeWidth={4} />)}
           {status === 'Hypertonic' && (isCleared ? <Check size={10} strokeWidth={4} /> : <ArrowUp size={10} strokeWidth={4} />)}
@@ -85,9 +85,9 @@ const CheckItem = ({ category, name, side, pattern, onToggle }: CheckItemProps) 
 
         <span className={cn(
           "text-[10px] font-bold truncate",
-          status === 'Inhibited' && !isCleared && "text-amber-900",
-          status === 'Hypertonic' && !isCleared && "text-rose-900",
-          isCleared && "text-slate-500 line-through"
+          status === 'Inhibited' && !isCleared && "text-amber-600 dark:text-amber-300",
+          status === 'Hypertonic' && !isCleared && "text-destructive",
+          isCleared && "text-muted-foreground line-through"
         )}>
           {side ? `${side}: ${name}` : name}
         </span>

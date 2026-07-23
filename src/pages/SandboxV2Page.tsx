@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { AppointmentWithClient } from "@/types/crm";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
+import { safeParse, safeStringify } from "@/utils/safe-json";
 import {
   ArrowLeft, Activity, FileText, Maximize2, Minimize2, Zap, Save
 } from "lucide-react";
@@ -116,7 +117,15 @@ const SandboxV2Page = () => {
   }, []);
 
   const updatePriorityPattern = useCallback(async (_category: string, _itemName: string, _status: any, _side?: string) => {
-    console.log(`[sandbox] priority`, _category, _itemName, _status, _side);
+    setAppointmentData(prev => {
+      const current = safeParse(prev.priority_pattern, {});
+      if (!current[_category]) current[_category] = {};
+      const finalName = _side ? `${_itemName} (${_side})` : _itemName;
+      // Never delete — "Clear"/null becomes "Inhibited_Cleared" to preserve findings
+      const preservedStatus = _status === null || _status === 'Clear' ? 'Inhibited_Cleared' : _status;
+      current[_category][finalName] = preservedStatus;
+      return { ...prev, priority_pattern: safeStringify(current) };
+    });
   }, []);
 
   const searchClients = async (q: string) => {

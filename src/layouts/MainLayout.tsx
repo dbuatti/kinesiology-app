@@ -78,21 +78,18 @@ const MainLayout = () => {
   const shouldHideSidebar = shouldHideHeader || isDocView;
 
   return (
-    <div className={cn(
-      "flex h-screen transition-all duration-1000 relative overflow-hidden",
-      mode === 'clinical' ? "bg-white dark:bg-slate-950" : "bg-slate-50/50 dark:bg-slate-950"
-    )}>
-      {/* SOPHISTICATED BACKGROUND ORBS */}
+    <div className="flex h-screen transition-all duration-1000 relative overflow-hidden bg-background">
+      {/* BACKGROUND ORBS */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
         <div className={cn(
-          "absolute top-[-10%] left-[-10%] w-[60%] h-[60%] blur-[160px] rounded-full transition-all duration-1000 opacity-20 dark:opacity-10",
-          mode === 'clinical' ? "bg-indigo-300" : mode === 'business' ? "bg-emerald-300" : "bg-amber-300"
+          "absolute top-[-10%] left-[-10%] w-[60%] h-[60%] blur-[160px] rounded-full transition-all duration-1000 opacity-15 dark:opacity-10",
+          mode === 'clinical' ? "bg-primary/15" : mode === 'business' ? "bg-chart-emerald/15" : "bg-chart-destructive/15"
         )} />
         <div className={cn(
-          "absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] blur-[140px] rounded-full transition-all duration-1000 opacity-20 dark:opacity-10 delay-500",
-          mode === 'clinical' ? "bg-blue-200" : mode === 'business' ? "bg-teal-200" : "bg-orange-200"
+          "absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] blur-[140px] rounded-full transition-all duration-1000 opacity-15 dark:opacity-10 delay-500",
+          mode === 'clinical' ? "bg-chart-primary/15" : mode === 'business' ? "bg-chart-emerald/15" : "bg-amber-500/15"
         )} />
-        <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-purple-200/10 blur-[120px] rounded-full animate-pulse-soft" />
+        <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-chart-primary/5 blur-[120px] rounded-full animate-pulse-soft" />
       </div>
 
       <div className="relative z-10 flex h-full w-full">

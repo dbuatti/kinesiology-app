@@ -281,7 +281,8 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
                   <span className="font-medium text-xs">Complete Session</span>
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem 
+              <DropdownMenuItem
+                onClick={() => navigate('/practice/clinical-hub')}
                 className="rounded-xl py-2.5 md:py-3 px-4 cursor-pointer flex items-center gap-3 text-chart-destructive focus:text-chart-destructive focus:bg-chart-destructive/10"
               >
                 <LogOut size={14} />

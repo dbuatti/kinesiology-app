@@ -147,8 +147,8 @@ const QuickActions = () => {
                   onClick={() => { setQuickSessionOpen(true); setIsOpen(false); }} 
                   className="rounded-xl py-4 px-5 md:py-5 md:px-6 cursor-pointer group transition-all hover:bg-muted"
                 >
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-amber-100 flex items-center justify-center mr-4 md:mr-5 group-hover:bg-amber-100/80 transition-colors shadow-inner">
-                    <Bolt size={20} className="text-amber-600 md:w-6 md:h-6" />
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary/10 flex items-center justify-center mr-4 md:mr-5 group-hover:bg-primary/15 transition-colors">
+                    <Bolt size={20} className="text-primary md:w-6 md:h-6" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <span className="font-semibold text-sm md:text-base block text-foreground truncate">Quick Session</span>

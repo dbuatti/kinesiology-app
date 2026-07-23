@@ -371,6 +371,34 @@ const SandboxV2Page = () => {
             )}
           </div>
 
+          {/* Data preview */}
+          {(() => {
+            const filled: string[] = [];
+            if (appointmentData.goal) filled.push("Goal");
+            if (appointmentData.issue) filled.push("Issue");
+            if (appointmentData.bolt_score != null) filled.push("Vitals");
+            if (appointmentData.sagittal_plane_notes || appointmentData.frontal_plane_notes || appointmentData.transverse_plane_notes) filled.push("COGS");
+            if (appointmentData.fakuda_notes || appointmentData.sharpened_rhombergs_notes || appointmentData.frontal_lobe_notes || appointmentData.righting_reflex_notes) filled.push("Neuro");
+            if (appointmentData.lymphatic_notes || appointmentData.harmonic_rocking_notes || appointmentData.t1_reset_notes || appointmentData.diaphragm_reset_notes || appointmentData.vagus_nerve_notes) filled.push("Ease");
+            if (appointmentData.emotion_primary_selection || appointmentData.emotion_notes) filled.push("Emotion");
+            if (appointmentData.modes_balances || appointmentData.acupoints) filled.push("Corrections");
+            if (appointmentData.session_north_star || appointmentData.next_session_note) filled.push("Embed");
+            if (appointmentData.intrinsic_muscle_findings) filled.push("Muscles");
+            if (appointmentData.journal) filled.push("Journal");
+            if (filled.length === 0) return null;
+            return (
+              <div className="px-0">
+                <div className="h-px bg-border/40 -mx-6 mb-4" />
+                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Data to save</p>
+                <div className="flex flex-wrap gap-1">
+                  {filled.map(s => (
+                    <span key={s} className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary">{s}</span>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setSaveOpen(false)} className="rounded-lg h-9 text-xs">
               Cancel

@@ -104,7 +104,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
             variant="ghost"
             size="sm"
             onClick={() => setLimitingBeliefsOpen(true)}
-            className="rounded-xl h-10 px-3 text-violet-500 hover:bg-violet-50"
+            className="rounded-xl h-10 px-3 text-violet-500 hover:bg-violet-500/10"
             title="Limiting Beliefs Procedure"
           >
             <Brain size={16} />
@@ -113,7 +113,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
             variant="ghost"
             size="sm"
             onClick={() => setEmotionsOpen(true)}
-            className="rounded-xl h-10 px-3 text-rose-500 hover:bg-rose-50"
+            className="rounded-xl h-10 px-3 text-rose-500 hover:bg-rose-500/10"
             title="Emotions Protocol Reference"
           >
             <Heart size={16} />

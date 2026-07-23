@@ -1,7 +1,8 @@
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  ArrowLeft, Printer, CheckCircle2, Target
+  ArrowLeft, Printer, CheckCircle2, Target, Save, BookOpen
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -15,25 +16,94 @@ interface DocViewProps {
   onBack: () => void;
   saveField: (field: string, value: any) => Promise<void>;
   updatePriorityPattern: (category: string, itemName: string, status: any, side?: 'L' | 'R') => Promise<void>;
+  hideToolbar?: boolean;
+  editable?: boolean;
 }
 
-const SectionNumber = ({ num }: { num: string }) => (
-  <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-primary text-primary-foreground text-[10px] font-bold mr-2 shrink-0">
-    {num}
-  </span>
+const SectionHeading = ({ num, label }: { num: string; label: string }) => (
+  <div className="flex items-baseline gap-2 mb-5">
+    <span className="text-[13px] font-bold text-foreground">{num}.</span>
+    <h2 className="text-[13px] font-bold text-foreground">{label}</h2>
+  </div>
 );
 
-const FieldLabel = ({ label }: { label: string }) => (
-  <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-muted-foreground mb-1.5">{label}</p>
+const EmptySection = ({ message = "No data recorded" }: { message?: string }) => (
+  <p className="text-[11px] italic text-muted-foreground/50">{message}</p>
 );
 
-const FieldValue = ({ value, emptyText = "—" }: { value?: string | null; emptyText?: string }) => (
-  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{value || emptyText}</p>
-);
+const EditableField = ({ label, value, field, onSave, editable = false }: {
+  label: string;
+  value?: string | null;
+  field: string;
+  onSave?: (field: string, value: any) => Promise<void>;
+  editable?: boolean;
+}) => {
+  const [draft, setDraft] = useState(value || "");
 
-const Divider = () => <hr className="border-t border-border/60 my-10" />;
+  if (!editable) {
+    return (
+      <div className="mb-4 pb-4 border-b border-border/30 last:border-b-0">
+        <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-1">{label}</p>
+        <p className="text-[12.5px] text-foreground leading-relaxed whitespace-pre-wrap">{value || "—"}</p>
+      </div>
+    );
+  }
 
-const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
+  return (
+    <div className="mb-4 pb-4 border-b border-border/30 last:border-b-0">
+      <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-1">{label}</p>
+      <textarea
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => onSave?.(field, draft)}
+        rows={2}
+        className="w-full bg-transparent text-[12.5px] text-foreground leading-relaxed border border-dashed border-border/40 rounded px-2 py-1.5 focus:outline-none focus:border-primary/50 focus:bg-muted/20 resize-none hover:border-border/80 transition-colors"
+        placeholder="Type here..."
+      />
+    </div>
+  );
+};
+
+const EditableNumberField = ({ label, value, field, onSave, editable = false, suffix = "" }: {
+  label: string;
+  value?: number | null;
+  field: string;
+  onSave?: (field: string, value: any) => Promise<void>;
+  editable?: boolean;
+  suffix?: string;
+}) => {
+  const [draft, setDraft] = useState(value != null ? String(value) : "");
+
+  if (!editable || value == null) {
+    if (value == null && !editable) return null;
+    return (
+      <div className="p-2.5 bg-muted/50 rounded border border-border text-center">
+        <p className="text-[8px] font-semibold text-muted-foreground uppercase">{label}</p>
+        <p className="text-sm font-bold text-foreground">{value}{suffix}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-2.5 bg-muted/50 rounded border border-border text-center">
+      <p className="text-[8px] font-semibold text-muted-foreground uppercase">{label}</p>
+      <input
+        type="number"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={() => {
+          const num = draft === "" ? null : parseFloat(draft);
+          onSave?.(field, num);
+        }}
+        className="w-full bg-transparent text-sm font-bold text-foreground text-center border-b border-dashed border-border/40 focus:outline-none focus:border-primary/50"
+        placeholder="—"
+        step="any"
+      />
+    </div>
+  );
+};
+
+const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = false, saveField }: DocViewProps) => {
   const handlePrint = () => window.print();
 
   const pattern = safeParse(appointment.priority_pattern, {} as any);
@@ -50,412 +120,261 @@ const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
   const hasAnyCogs = appointment.sagittal_plane_notes || appointment.frontal_plane_notes || appointment.transverse_plane_notes;
   const hasAnyNeuro = appointment.fakuda_notes || appointment.sharpened_rhombergs_notes || appointment.frontal_lobe_notes || appointment.righting_reflex_notes;
   const hasAnySns = appointment.harmonic_rocking_notes || appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes || appointment.lymphatic_notes;
-  const hasAnyEmbed = appointment.session_north_star || appointment.next_session_note;
 
   const metadata = safeParse(appointment.metadata, {} as any);
   const priorityPathway = metadata?.priority_pathway || "";
   const correctionsHistory = metadata?.corrections || [];
 
+  const hasAnyAlign = inhibitedCount > 0 || clearedCount > 0 || !!priorityPathway || !!appointment.emotion_primary_selection;
+  const hasAnyCorrect = !!appointment.modes_balances || !!appointment.acupoints || correctionsHistory.length > 0;
+  const hasAnyEmbed = !!appointment.session_north_star || !!appointment.next_session_note || (metadata?.cleared_findings?.length > 0);
+
+  const sb = useCallback((field: string, value: any) => saveField?.(field, value), [saveField]);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Sticky toolbar */}
-      <header className="sticky top-0 z-40 bg-card/95 backdrop-blur-md border-b border-border print:hidden shadow-sm">
-        <div className="px-4 md:px-8 h-12 flex items-center justify-between gap-4">
-          <Button variant="ghost" size="sm" onClick={onBack} className="rounded-lg text-muted-foreground h-8">
-            <ArrowLeft size={15} className="mr-1.5" /> Back to Session
-          </Button>
-          <Button variant="outline" size="sm" onClick={handlePrint} className="rounded-lg h-8">
-            <Printer size={15} className="mr-1.5" /> Print Document
-          </Button>
-        </div>
-      </header>
+      {!hideToolbar && (
+        <header className="sticky top-0 z-40 bg-card/95 backdrop-blur-md border-b border-border print:hidden shadow-sm">
+          <div className="px-4 md:px-8 h-12 flex items-center justify-between gap-4">
+            <Button variant="ghost" size="sm" onClick={onBack} className="rounded-lg text-muted-foreground h-8">
+              <ArrowLeft size={15} className="mr-1.5" /> Back to Session
+            </Button>
+            <Button variant="outline" size="sm" onClick={handlePrint} className="rounded-lg h-8">
+              <Printer size={15} className="mr-1.5" /> Print Document
+            </Button>
+          </div>
+        </header>
+      )}
 
       {/* Document page */}
       <div className="max-w-[210mm] mx-auto px-8 md:px-12 py-12 print:py-8">
-        <div className="bg-card shadow-sm border border-border rounded-xl print:rounded-none print:shadow-none print:border-none p-10 md:p-14 print:p-8 space-y-2">
+        <div className="bg-card shadow-sm border border-border rounded-xl print:rounded-none print:shadow-none print:border-none p-10 md:p-14 print:p-8">
 
           {/* ── DOCUMENT HEADER ── */}
-          <div className="pb-8 border-b-2 border-foreground/20">
+          <div className="pb-6 mb-8 border-b-2 border-foreground/15">
             <div className="flex items-start justify-between">
-              <div className="space-y-3">
-                <p className="text-[9px] font-bold uppercase tracking-[0.25em] text-muted-foreground">Clinical Session Notes</p>
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              <div className="space-y-2">
+                <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-muted-foreground">Clinical Session Notes</p>
+                <h1 className="text-[22px] font-bold tracking-tight text-foreground leading-tight">
                   {appointment.clients?.name || "Client Session"}
                 </h1>
-                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                   <span>{format(new Date(appointment.date), "EEEE, MMMM d, yyyy")}</span>
-                  <span className="text-border">|</span>
+                  <span className="text-border/40">|</span>
                   <span>{format(new Date(appointment.date), "h:mm a")}</span>
                   {appointment.display_id && (
                     <>
-                      <span className="text-border">|</span>
-                      <span className="font-mono text-[10px]">#{appointment.display_id}</span>
+                      <span className="text-border/40">|</span>
+                      <span className="font-mono">#{appointment.display_id}</span>
                     </>
                   )}
                 </div>
               </div>
               <div className="hidden print:block text-right">
-                <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">Resonance Kinesiology</p>
+                <p className="text-[7px] font-bold uppercase tracking-wider text-muted-foreground">Resonance Kinesiology</p>
               </div>
             </div>
           </div>
 
           {/* ════════════════════════════════════════
-             P — PRELIMINARY
+             1 — PRELIMINARY ASSESSMENT
              ════════════════════════════════════════ */}
-          <div className="pt-6">
-            <div className="flex items-center gap-1 mb-6">
-              <SectionNumber num="P" />
-              <h2 className="text-sm font-bold tracking-tight text-foreground">Preliminary Assessment</h2>
-            </div>
+          <div className="mb-10">
+            <SectionHeading num="1" label="Preliminary Assessment" />
 
-            {/* Intake */}
-            <div className="mb-8">
-              <FieldLabel label="Session Goal" />
-              <FieldValue value={appointment.goal} emptyText="Not recorded" />
-            </div>
-
-            <div className="mb-8">
-              <FieldLabel label="Primary Concern" />
-              <FieldValue value={appointment.issue} emptyText="Not recorded" />
-            </div>
+            <EditableField label="Session Goal" value={appointment.goal} field="goal" onSave={sb} editable={editable} />
+            <EditableField label="Primary Concern" value={appointment.issue} field="issue" onSave={sb} editable={editable} />
 
             {/* Baseline Vitals */}
-            {hasAnyVitals && (
-              <div className="mb-8">
-                <FieldLabel label="Baseline Vitals" />
-                <div className="grid grid-cols-4 gap-3">
-                  {appointment.bolt_score != null && (
-                    <div className="p-3 bg-muted/50 rounded-lg border border-border text-center">
-                      <p className="text-[9px] font-semibold text-muted-foreground">BOLT</p>
-                      <p className="text-lg font-bold text-foreground">{appointment.bolt_score}s</p>
-                    </div>
-                  )}
-                  {appointment.coherence_score != null && (
-                    <div className="p-3 bg-muted/50 rounded-lg border border-border text-center">
-                      <p className="text-[9px] font-semibold text-muted-foreground">Coherence</p>
-                      <p className="text-lg font-bold text-foreground">{appointment.coherence_score.toFixed(2)}</p>
-                    </div>
-                  )}
-                  {appointment.heart_rate != null && (
-                    <div className="p-3 bg-muted/50 rounded-lg border border-border text-center">
-                      <p className="text-[9px] font-semibold text-muted-foreground">HR</p>
-                      <p className="text-lg font-bold text-foreground">{appointment.heart_rate} bpm</p>
-                    </div>
-                  )}
-                  {appointment.breath_rate != null && (
-                    <div className="p-3 bg-muted/50 rounded-lg border border-border text-center">
-                      <p className="text-[9px] font-semibold text-muted-foreground">Breath</p>
-                      <p className="text-lg font-bold text-foreground">{appointment.breath_rate} rpm</p>
-                    </div>
-                  )}
+            {(hasAnyVitals || editable) && (
+              <div className="mb-4 pb-4 border-b border-border/30">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Baseline Vitals</p>
+                <div className="grid grid-cols-4 gap-2">
+                  <EditableNumberField label="BOLT" value={appointment.bolt_score} field="bolt_score" onSave={sb} editable={editable} suffix="s" />
+                  <EditableNumberField label="Coherence" value={appointment.coherence_score} field="coherence_score" onSave={sb} editable={editable} />
+                  <EditableNumberField label="HR" value={appointment.heart_rate} field="heart_rate" onSave={sb} editable={editable} suffix=" bpm" />
+                  <EditableNumberField label="Breath" value={appointment.breath_rate} field="breath_rate" onSave={sb} editable={editable} suffix=" rpm" />
                 </div>
               </div>
             )}
 
             {/* COGS */}
-            {hasAnyCogs && (
-              <div className="mb-8">
-                <FieldLabel label="COGS — Visual Assessment" />
-                <div className="space-y-2">
-                  {appointment.sagittal_plane_notes && (
-                    <div className="flex gap-2 text-xs">
-                      <span className="font-semibold text-muted-foreground w-20 shrink-0">Sagittal:</span>
-                      <span className="text-foreground/85">{appointment.sagittal_plane_notes}</span>
-                    </div>
-                  )}
-                  {appointment.frontal_plane_notes && (
-                    <div className="flex gap-2 text-xs">
-                      <span className="font-semibold text-muted-foreground w-20 shrink-0">Frontal:</span>
-                      <span className="text-foreground/85">{appointment.frontal_plane_notes}</span>
-                    </div>
-                  )}
-                  {appointment.transverse_plane_notes && (
-                    <div className="flex gap-2 text-xs">
-                      <span className="font-semibold text-muted-foreground w-20 shrink-0">Transverse:</span>
-                      <span className="text-foreground/85">{appointment.transverse_plane_notes}</span>
-                    </div>
-                  )}
+            {(hasAnyCogs || editable) && (
+              <div className="mb-4 pb-4 border-b border-border/30">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">COGS — Visual Assessment</p>
+                <div className="space-y-1.5">
+                  <EditableField label="Sagittal" value={appointment.sagittal_plane_notes} field="sagittal_plane_notes" onSave={sb} editable={editable} />
+                  <EditableField label="Frontal" value={appointment.frontal_plane_notes} field="frontal_plane_notes" onSave={sb} editable={editable} />
+                  <EditableField label="Transverse" value={appointment.transverse_plane_notes} field="transverse_plane_notes" onSave={sb} editable={editable} />
                 </div>
               </div>
             )}
 
             {/* Neurological Baseline */}
-            {hasAnyNeuro && (
-              <div className="mb-8">
-                <FieldLabel label="Neurological Baseline" />
-                <div className="space-y-2">
-                  {appointment.fakuda_notes && (
-                    <div className="flex gap-2 text-xs">
-                      <span className="font-semibold text-muted-foreground w-28 shrink-0">Fukuda Step Test:</span>
-                      <span className="text-foreground/85">{appointment.fakuda_notes}</span>
-                    </div>
-                  )}
-                  {appointment.sharpened_rhombergs_notes && (
-                    <div className="flex gap-2 text-xs">
-                      <span className="font-semibold text-muted-foreground w-28 shrink-0">Sharpened Rhomberg's:</span>
-                      <span className="text-foreground/85">{appointment.sharpened_rhombergs_notes}</span>
-                    </div>
-                  )}
-                  {appointment.frontal_lobe_notes && (
-                    <div className="flex gap-2 text-xs">
-                      <span className="font-semibold text-muted-foreground w-28 shrink-0">Frontal Lobe Signs:</span>
-                      <span className="text-foreground/85">{appointment.frontal_lobe_notes}</span>
-                    </div>
-                  )}
-                  {appointment.righting_reflex_notes && (
-                    <div className="flex gap-2 text-xs">
-                      <span className="font-semibold text-muted-foreground w-28 shrink-0">Righting Reflex:</span>
-                      <span className="text-foreground/85">{appointment.righting_reflex_notes}</span>
-                    </div>
-                  )}
+            {(hasAnyNeuro || editable) && (
+              <div className="mb-4 pb-4 border-b border-border/30">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Neurological Baseline</p>
+                <div className="space-y-1.5">
+                  <EditableField label="Fukuda Step Test" value={appointment.fakuda_notes} field="fakuda_notes" onSave={sb} editable={editable} />
+                  <EditableField label="Sharpened Rhomberg's" value={appointment.sharpened_rhombergs_notes} field="sharpened_rhombergs_notes" onSave={sb} editable={editable} />
+                  <EditableField label="Frontal Lobe Signs" value={appointment.frontal_lobe_notes} field="frontal_lobe_notes" onSave={sb} editable={editable} />
+                  <EditableField label="Righting Reflex" value={appointment.righting_reflex_notes} field="righting_reflex_notes" onSave={sb} editable={editable} />
                 </div>
               </div>
             )}
 
             {/* Intrinsic Muscles */}
-            {appointment.intrinsic_muscle_findings && appointment.intrinsic_muscle_findings !== "{}" && (
-              <div className="mb-8">
-                <FieldLabel label="Intrinsic Muscle Findings" />
-                <div className="p-3 surface">
-                  <p className="text-xs text-foreground/85 whitespace-pre-wrap font-mono">{appointment.intrinsic_muscle_findings}</p>
-                </div>
+            {(appointment.intrinsic_muscle_findings || editable) && (
+              <div className="mb-4 pb-4 border-b border-border/30">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Intrinsic Muscle Findings</p>
+                {editable ? (
+                  <EditableField label="" value={appointment.intrinsic_muscle_findings} field="intrinsic_muscle_findings" onSave={sb} editable={editable} />
+                ) : appointment.intrinsic_muscle_findings && appointment.intrinsic_muscle_findings !== "{}" ? (
+                  <p className="text-[12px] text-foreground/85 whitespace-pre-wrap font-mono">{appointment.intrinsic_muscle_findings}</p>
+                ) : null}
               </div>
             )}
           </div>
 
           {/* ════════════════════════════════════════
-             E1 — EASE
+             2 — EASE (SNS DOWN-REGULATION)
              ════════════════════════════════════════ */}
-          {hasAnySns && (
-            <>
-              <div className="flex items-center gap-1 mb-6">
-                <SectionNumber num="E" />
-                <h2 className="text-sm font-bold tracking-tight text-foreground">Ease — SNS Down-Regulation</h2>
+          <div className="mb-10">
+            <SectionHeading num="2" label="Ease — SNS Down-Regulation" />
+            {(hasAnySns || editable) ? (
+              <div className="space-y-1.5">
+                <EditableField label="Lymphatic" value={appointment.lymphatic_notes} field="lymphatic_notes" onSave={sb} editable={editable} />
+                <EditableField label="Harmonic Rocking" value={appointment.harmonic_rocking_notes} field="harmonic_rocking_notes" onSave={sb} editable={editable} />
+                <EditableField label="T1 Reset" value={appointment.t1_reset_notes} field="t1_reset_notes" onSave={sb} editable={editable} />
+                <EditableField label="Diaphragm Reset" value={appointment.diaphragm_reset_notes} field="diaphragm_reset_notes" onSave={sb} editable={editable} />
+                <EditableField label="Vagus Nerve" value={appointment.vagus_nerve_notes} field="vagus_nerve_notes" onSave={sb} editable={editable} />
               </div>
-
-              <div className="space-y-2 mb-8">
-                {appointment.lymphatic_notes && (
-                  <div className="flex gap-2 text-xs">
-                    <span className="font-semibold text-muted-foreground w-28 shrink-0">Lymphatic:</span>
-                    <span className="text-foreground/85">{appointment.lymphatic_notes}</span>
-                  </div>
-                )}
-                {appointment.harmonic_rocking_notes && (
-                  <div className="flex gap-2 text-xs">
-                    <span className="font-semibold text-muted-foreground w-28 shrink-0">Harmonic Rocking:</span>
-                    <span className="text-foreground/85">{appointment.harmonic_rocking_notes}</span>
-                  </div>
-                )}
-                {appointment.t1_reset_notes && (
-                  <div className="flex gap-2 text-xs">
-                    <span className="font-semibold text-muted-foreground w-28 shrink-0">T1 Reset:</span>
-                    <span className="text-foreground/85">{appointment.t1_reset_notes}</span>
-                  </div>
-                )}
-                {appointment.diaphragm_reset_notes && (
-                  <div className="flex gap-2 text-xs">
-                    <span className="font-semibold text-muted-foreground w-28 shrink-0">Diaphragm Reset:</span>
-                    <span className="text-foreground/85">{appointment.diaphragm_reset_notes}</span>
-                  </div>
-                )}
-                {appointment.vagus_nerve_notes && (
-                  <div className="flex gap-2 text-xs">
-                    <span className="font-semibold text-muted-foreground w-28 shrink-0">Vagus Nerve:</span>
-                    <span className="text-foreground/85">{appointment.vagus_nerve_notes}</span>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
+            ) : (
+              <EmptySection />
+            )}
+          </div>
 
           {/* ════════════════════════════════════════
-             A — ALIGN
+             3 — ALIGN (FINDINGS)
              ════════════════════════════════════════ */}
-          {(inhibitedCount > 0 || clearedCount > 0) && (
-            <>
-              <div className="flex items-center gap-1 mb-6">
-                <SectionNumber num="A" />
-                <h2 className="text-sm font-bold tracking-tight text-foreground">Align — Findings</h2>
-              </div>
-
-              {priorityPathway && (
-                <div className="mb-4">
-                  <FieldLabel label="Priority Pathway" />
-                  <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                    <Target size={14} className="text-destructive shrink-0" />
-                    <p className="text-xs font-semibold text-destructive">{priorityPathway}</p>
-                  </div>
-                </div>
-              )}
-
-              {inhibitedCount > 0 && (
-                <div className="mb-4">
-                  <FieldLabel label={`Active Findings (${inhibitedCount})`} />
-                  <PathwayFindingsList
-                    priorityPattern={appointment.priority_pattern}
-                    showOnlyInhibited
-                  />
-                </div>
-              )}
-
-              {clearedCount > 0 && (
-                <div className="mb-8">
-                  <FieldLabel label={`Cleared Findings (${clearedCount})`} />
-                  <PathwayFindingsList
-                    priorityPattern={appointment.priority_pattern}
-                    showOnlyInhibited={false}
-                  />
-                </div>
-              )}
-
-              {/* Emotion Context */}
-              {appointment.emotion_primary_selection && (
-                <div className="mb-8">
-                  <FieldLabel label="Emotional Context" />
-                  <Badge className="bg-primary text-primary-foreground border-none font-medium text-[10px] mb-1">
-                    {appointment.emotion_primary_selection}
-                  </Badge>
-                  {appointment.emotion_secondary_selection && appointment.emotion_secondary_selection.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {appointment.emotion_secondary_selection.map((e, i) => (
-                        <Badge key={i} variant="outline" className="text-[9px] font-medium border-border text-muted-foreground">{e}</Badge>
-                      ))}
+          <div className="mb-10">
+            <SectionHeading num="3" label="Align — Findings & Emotional Context" />
+            {(hasAnyAlign || editable) ? (
+              <>
+                {priorityPathway && (
+                  <div className="mb-4 pb-4 border-b border-border/30">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-1">Priority Pathway</p>
+                    <div className="flex items-center gap-2 p-2.5 bg-destructive/10 border border-destructive/20 rounded">
+                      <Target size={13} className="text-destructive shrink-0" />
+                      <p className="text-[12px] font-semibold text-destructive">{priorityPathway}</p>
                     </div>
-                  )}
-                  {appointment.emotion_notes && (
-                    <p className="text-xs text-muted-foreground italic mt-1">"{appointment.emotion_notes}"</p>
-                  )}
-                </div>
-              )}
-            </>
-          )}
+                  </div>
+                )}
+
+                {inhibitedCount > 0 && (
+                  <div className="mb-4 pb-4 border-b border-border/30">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-1">Active Findings ({inhibitedCount})</p>
+                    <PathwayFindingsList priorityPattern={appointment.priority_pattern} showOnlyInhibited />
+                  </div>
+                )}
+
+                {clearedCount > 0 && (
+                  <div className="mb-4 pb-4 border-b border-border/30">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-1">Cleared Findings ({clearedCount})</p>
+                    <PathwayFindingsList priorityPattern={appointment.priority_pattern} showOnlyInhibited={false} />
+                  </div>
+                )}
+
+                <EditableField label="Emotion (Primary)" value={appointment.emotion_primary_selection} field="emotion_primary_selection" onSave={sb} editable={editable} />
+                <EditableField label="Emotion Notes" value={appointment.emotion_notes} field="emotion_notes" onSave={sb} editable={editable} />
+              </>
+            ) : (
+              <EmptySection />
+            )}
+          </div>
 
           {/* ════════════════════════════════════════
-             C — CORRECT
+             4 — CORRECT (CORRECTIONS APPLIED)
              ════════════════════════════════════════ */}
-          {(appointment.modes_balances || appointment.acupoints || correctionsHistory.length > 0) && (
-            <>
-              <div className="flex items-center gap-1 mb-6">
-                <SectionNumber num="C" />
-                <h2 className="text-sm font-bold tracking-tight text-foreground">Correct — Corrections Applied</h2>
-              </div>
-
-              {/* Pathway corrections history */}
-              {correctionsHistory.length > 0 && (
-                <div className="mb-6 space-y-3">
-                  {correctionsHistory.map((c: any, i: number) => (
-                    <div key={i} className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Correction #{i + 1}</span>
-                        <span className="text-[9px] text-amber-600/60 dark:text-amber-400/60">·</span>
-                        <span className="text-[9px] font-medium text-amber-700 dark:text-amber-400 truncate">{c.pathway}</span>
-                        {c.timestamp && (
-                          <>
-                            <span className="text-[9px] text-amber-600/60 dark:text-amber-400/60">·</span>
-                            <span className="text-[9px] text-amber-600/60 dark:text-amber-400/60">{format(new Date(c.timestamp), "h:mm a")}</span>
-                          </>
-                        )}
+          <div className="mb-10">
+            <SectionHeading num="4" label="Correct — Corrections Applied" />
+            {(hasAnyCorrect || editable) ? (
+              <>
+                {correctionsHistory.length > 0 && (
+                  <div className="mb-4 pb-4 border-b border-border/30 space-y-3">
+                    {correctionsHistory.map((c: any, i: number) => (
+                      <div key={i} className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="text-[8px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Correction #{i + 1}</span>
+                          <span className="text-[8px] text-amber-600/60 dark:text-amber-400/60">·</span>
+                          <span className="text-[8px] font-medium text-amber-700 dark:text-amber-400 truncate">{c.pathway}</span>
+                          {c.timestamp && (
+                            <>
+                              <span className="text-[8px] text-amber-600/60 dark:text-amber-400/60">·</span>
+                              <span className="text-[8px] text-amber-600/60 dark:text-amber-400/60">{format(new Date(c.timestamp), "h:mm a")}</span>
+                            </>
+                          )}
+                        </div>
+                        <p className="text-[12px] text-amber-900 dark:text-amber-100 leading-relaxed whitespace-pre-wrap">{c.summary}</p>
                       </div>
-                      <p className="text-xs text-amber-900 dark:text-amber-100 leading-relaxed whitespace-pre-wrap">{c.summary}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {appointment.modes_balances && (
-                <div className="mb-6">
-                  <FieldLabel label="Corrections Summary" />
-                  <div className="p-3 surface">
-                    <p className="text-xs text-foreground/85 leading-relaxed whitespace-pre-wrap">{appointment.modes_balances}</p>
-                  </div>
-                </div>
-              )}
-
-              {appointment.acupoints && (
-                <div className="mb-8">
-                  <FieldLabel label="Acupoints" />
-                  <p className="text-xs text-foreground/85 font-medium whitespace-pre-wrap">{appointment.acupoints}</p>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* ════════════════════════════════════════
-             E2 — EMBED
-             ════════════════════════════════════════ */}
-          {hasAnyEmbed && (
-            <>
-              <div className="flex items-center gap-1 mb-6">
-                <SectionNumber num="E" />
-                <h2 className="text-sm font-bold tracking-tight text-foreground">Embed — Integration & Planning</h2>
-              </div>
-
-              {/* Cleared findings from verification */}
-              {metadata?.cleared_findings && metadata.cleared_findings.length > 0 && (
-                <div className="mb-4">
-                  <FieldLabel label="Verified Clear" />
-                  <div className="flex flex-wrap gap-1.5">
-                    {metadata.cleared_findings.map((id: string, i: number) => (
-                      <Badge key={i} variant="outline" className="bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 text-[9px] font-medium">
-                        <CheckCircle2 size={10} className="mr-1" /> {id}
-                      </Badge>
                     ))}
                   </div>
-                </div>
-              )}
+                )}
 
-              {appointment.session_north_star && (
-                <div className="mb-6">
-                  <FieldLabel label="Integration Notes / Homework" />
-                  <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg">
-                    <p className="text-xs text-emerald-900 dark:text-emerald-100 leading-relaxed whitespace-pre-wrap">{appointment.session_north_star}</p>
-                  </div>
-                </div>
-              )}
-
-              {appointment.next_session_note && (
-                <div className="mb-8">
-                  <FieldLabel label="Next Session Focus" />
-                  <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
-                    <p className="text-xs text-blue-900 dark:text-blue-100 leading-relaxed whitespace-pre-wrap">{appointment.next_session_note}</p>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
+                <EditableField label="Corrections Summary" value={appointment.modes_balances} field="modes_balances" onSave={sb} editable={editable} />
+                <EditableField label="Acupoints" value={appointment.acupoints} field="acupoints" onSave={sb} editable={editable} />
+              </>
+            ) : (
+              <EmptySection />
+            )}
+          </div>
 
           {/* ════════════════════════════════════════
-             JOURNAL / PRACTITIONER NOTES
+             5 — EMBED (INTEGRATION & PLANNING)
              ════════════════════════════════════════ */}
-          {appointment.journal && (
-            <>
-              <div className="flex items-center gap-1 mb-6">
-                <SectionNumber num="J" />
-                <h2 className="text-sm font-bold tracking-tight text-foreground">Practitioner Journal</h2>
-              </div>
-              <div className="mb-8">
-                <p className="text-xs text-foreground/85 leading-relaxed whitespace-pre-wrap italic">{appointment.journal}</p>
-              </div>
-            </>
-          )}
+          <div className="mb-10">
+            <SectionHeading num="5" label="Embed — Integration & Planning" />
+            {(hasAnyEmbed || editable) ? (
+              <>
+                <EditableField label="Integration Notes / Homework" value={appointment.session_north_star} field="session_north_star" onSave={sb} editable={editable} />
+                <EditableField label="Next Session Focus" value={appointment.next_session_note} field="next_session_note" onSave={sb} editable={editable} />
+              </>
+            ) : (
+              <EmptySection />
+            )}
+          </div>
+
+          {/* ════════════════════════════════════════
+             6 — PRACTITIONER JOURNAL
+             ════════════════════════════════════════ */}
+          <div className="mb-10">
+            <SectionHeading num="6" label="Practitioner Journal" />
+            {editable ? (
+              <EditableField label="" value={appointment.journal} field="journal" onSave={sb} editable={editable} />
+            ) : appointment.journal ? (
+              <p className="text-[12px] text-foreground/85 leading-relaxed whitespace-pre-wrap italic">{appointment.journal}</p>
+            ) : (
+              <EmptySection />
+            )}
+          </div>
 
           {/* ════════════════════════════════════════
              SESSION SUMMARY STRIP
              ════════════════════════════════════════ */}
-          <div className="pt-6 border-t border-border">
-            <div className="grid grid-cols-3 gap-4 text-center text-[10px]">
+          <div className="pt-6 border-t border-border/40">
+            <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <p className="font-bold text-muted-foreground uppercase tracking-wider">Findings</p>
-                <p className="text-sm font-semibold text-foreground mt-1">{inhibitedCount} active</p>
+                <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">Findings</p>
+                <p className="text-[13px] font-bold text-foreground mt-0.5">{inhibitedCount} active</p>
               </div>
               <div>
-                <p className="font-bold text-muted-foreground uppercase tracking-wider">Corrections</p>
-                <p className="text-sm font-semibold text-foreground mt-1">{correctionsHistory.length || (appointment.modes_balances ? 1 : 0)} applied</p>
+                <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">Corrections</p>
+                <p className="text-[13px] font-bold text-foreground mt-0.5">{correctionsHistory.length || (appointment.modes_balances ? 1 : 0)} applied</p>
               </div>
               <div>
-                <p className="font-bold text-muted-foreground uppercase tracking-wider">Status</p>
-                <p className="text-sm font-semibold text-foreground mt-1">
+                <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">Status</p>
+                <p className="text-[13px] font-bold text-foreground mt-0.5">
                   {appointment.status === "Completed" ? "Complete" : appointment.status}
                 </p>
               </div>
@@ -464,10 +383,10 @@ const AppointmentV2DocView = ({ appointment, onBack }: DocViewProps) => {
 
           {/* Document footer */}
           <div className="pt-8 text-center">
-            <p className="text-[8px] font-medium text-muted-foreground/40 uppercase tracking-[0.3em]">
+            <p className="text-[7px] font-medium text-muted-foreground/30 uppercase tracking-[0.35em]">
               — End of Session Notes —
             </p>
-            <p className="text-[8px] text-muted-foreground/30 mt-2">
+            <p className="text-[7px] text-muted-foreground/25 mt-2">
               Generated by Resonance Kinesiology Practice Suite · {format(new Date(), "MMMM d, yyyy 'at' h:mm a")}
             </p>
           </div>

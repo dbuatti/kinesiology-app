@@ -209,8 +209,8 @@ const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = fal
       )}
 
       {/* Document page */}
-      <div className="max-w-[210mm] mx-auto px-8 md:px-12 py-12 print:py-8">
-        <div className="bg-card shadow-sm border border-border rounded-xl print:rounded-none print:shadow-none print:border-none p-10 md:p-14 print:p-8">
+      <div className="max-w-[210mm] mx-auto px-8 md:px-12 py-12 print:py-0">
+        <div className="bg-card shadow-sm border border-border rounded-xl print-doc p-10 md:p-14 print-doc-body">
 
           {/* ── DOCUMENT HEADER ── */}
           <div className="pb-6 mb-8 border-b-2 border-foreground/15">
@@ -241,7 +241,7 @@ const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = fal
           {/* ════════════════════════════════════════
              1 — PRELIMINARY ASSESSMENT
              ════════════════════════════════════════ */}
-          <div className="mb-10">
+          <div className="mb-10 no-break">
             <SectionHeading num="1" label="Preliminary Assessment" />
 
             <EditableField label="Session Goal" value={appointment.goal} field="goal" onSave={sb} editable={editable} />

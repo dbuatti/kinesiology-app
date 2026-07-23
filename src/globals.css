@@ -196,7 +196,18 @@
 }
 
 @media print {
+  @page { margin: 20mm 15mm; }
+
+  body { font-size: 11pt; line-height: 1.5; color: #000; background: #fff !important; }
+
   .print\:hidden { display: none !important; }
   .overflow-y-auto { overflow: visible !important; max-height: none !important; }
   .border-l, .border-r, .border-b, .border-t { border-color: #ccc !important; }
+
+  .no-break { page-break-inside: avoid; }
+  .break-before { page-break-before: always; }
+  .break-after { page-break-after: always; }
+
+  .print-doc { box-shadow: none !important; border: none !important; border-radius: 0 !important; background: #fff !important; }
+  .print-doc-body { padding: 0 !important; margin: 0 !important; }
 }

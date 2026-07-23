@@ -114,7 +114,7 @@ const SpaceHeader = () => {
             <span className="text-xs font-semibold tabular-nums font-mono">{sessionTimer.display}</span>
             <span className="w-px h-4 bg-current opacity-20" />
             <span className="text-xs font-medium truncate max-w-[100px]">{sessionTimer.clientName}</span>
-            <span className="text-[9px] font-semibold uppercase tracking-wider bg-white/10 px-1.5 py-0.5 rounded">{sessionTimer.stage}</span>
+            <span className="text-[9px] font-semibold uppercase tracking-wider bg-background/20 px-1.5 py-0.5 rounded">{sessionTimer.stage}</span>
           </Link>
         )}
       </div>

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { Clock, Zap } from 'lucide-react';
 import { format, differenceInMinutes } from 'date-fns';

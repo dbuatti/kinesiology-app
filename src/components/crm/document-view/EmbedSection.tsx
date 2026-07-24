@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { safeParse } from "@/utils/safe-json";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { GitBranch, Target, AlertCircle } from "lucide-react";
+import { GitBranch, Target, AlertCircle, Zap, Dumbbell, Baby, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PathwayFindingsList from "@/components/crm/PathwayFindingsList";
 import { AppointmentWithClient } from "@/types/crm";
@@ -23,11 +23,11 @@ const CATEGORY_LABELS: Record<string, string> = {
   brainZones: 'Brain Zone',
 };
 
-const CATEGORY_ICONS: Record<string, string> = {
-  primitiveReflexes: '🧠',
-  cranialNerves: '⚡',
-  muscles: '💪',
-  brainZones: '🎯',
+const CATEGORY_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+  primitiveReflexes: Baby,
+  cranialNerves: Zap,
+  muscles: Dumbbell,
+  brainZones: Brain,
 };
 
 const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, onJumpToPhase }: PhaseProps) => {
@@ -95,8 +95,11 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
           <div className="divide-y divide-border border border-border rounded-lg">
             {findings.map((item, i) => (
               <div key={`${item.category}-${item.name}-${item.side || ''}`} className="flex items-center justify-between gap-4 py-3 px-4 hover:bg-muted/30 transition-colors">
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-lg shrink-0">{CATEGORY_ICONS[item.category] || '•'}</span>
+                  <div className="flex items-center gap-3 min-w-0">
+                  {(() => {
+                    const Icon = CATEGORY_ICONS[item.category];
+                    return Icon ? <Icon size={16} className="shrink-0 text-muted-foreground" /> : <span className="text-lg shrink-0 text-muted-foreground">•</span>;
+                  })()}
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-foreground truncate">
                       {item.name}

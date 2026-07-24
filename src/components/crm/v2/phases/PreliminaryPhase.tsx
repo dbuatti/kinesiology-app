@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, Fragment } from "react";
 import { cn } from "@/lib/utils";
 import {
   Compass, ClipboardList, Activity, ShieldAlert, AlertTriangle,
@@ -83,7 +83,7 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
       </div>
 
       {/* Sub-tab content */}
-      <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div key={subTab} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
         {subTab === 'recheck' && (
           <RecheckTabV2
             appointment={appointment}
@@ -207,10 +207,10 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Cranial Nerves</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                   {CRANIAL_NERVES.map(n => n.isLateralized ? (
-                    <React.Fragment key={n.name}>
+                    <Fragment key={n.name}>
                       <CheckItem category="cranial_nerves" name={n.name} side="L" pattern={pattern} onToggle={quickToggle} />
                       <CheckItem category="cranial_nerves" name={n.name} side="R" pattern={pattern} onToggle={quickToggle} />
-                    </React.Fragment>
+                    </Fragment>
                   ) : (
                     <CheckItem key={n.name} category="cranial_nerves" name={n.name} pattern={pattern} onToggle={quickToggle} />
                   ))}
@@ -222,10 +222,10 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Primitive Reflexes</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                   {PRIMITIVE_REFLEXES.map(r => r.isLateralized ? (
-                    <React.Fragment key={r.id}>
+                    <Fragment key={r.id}>
                       <CheckItem category="primitive_reflexes" name={r.name} side="L" pattern={pattern} onToggle={quickToggle} />
                       <CheckItem category="primitive_reflexes" name={r.name} side="R" pattern={pattern} onToggle={quickToggle} />
-                    </React.Fragment>
+                    </Fragment>
                   ) : (
                     <CheckItem key={r.id} category="primitive_reflexes" name={r.name} pattern={pattern} onToggle={quickToggle} />
                   ))}
@@ -237,10 +237,10 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Muscles — Primary 14</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                   {PRIMARY_14_MUSCLES.map(m => (
-                    <React.Fragment key={m}>
+                    <Fragment key={m}>
                       <CheckItem category="muscles" name={m} side="L" pattern={pattern} onToggle={quickToggle} />
                       <CheckItem category="muscles" name={m} side="R" pattern={pattern} onToggle={quickToggle} />
-                    </React.Fragment>
+                    </Fragment>
                   ))}
                 </div>
               </div>
@@ -262,10 +262,10 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                   {intrinsicMuscles.map(m => MIDLINE_MUSCLES.includes(m) ? (
                     <CheckItem key={m} category="muscles" name={m} pattern={pattern} onToggle={toggle} />
                   ) : (
-                    <React.Fragment key={m}>
+                    <Fragment key={m}>
                       <CheckItem category="muscles" name={m} side="L" pattern={pattern} onToggle={toggle} />
                       <CheckItem category="muscles" name={m} side="R" pattern={pattern} onToggle={toggle} />
-                    </React.Fragment>
+                    </Fragment>
                   ))}
                 </div>
               </div>
@@ -287,10 +287,10 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                     {muscles.map(m => MIDLINE_MUSCLES.includes(m) ? (
                       <CheckItem key={m} category="muscles" name={m} pattern={pattern} onToggle={toggle} />
                     ) : (
-                      <React.Fragment key={m}>
+                      <Fragment key={m}>
                         <CheckItem category="muscles" name={m} side="L" pattern={pattern} onToggle={toggle} />
                         <CheckItem category="muscles" name={m} side="R" pattern={pattern} onToggle={toggle} />
-                      </React.Fragment>
+                      </Fragment>
                     ))}
                   </div>
                 </div>

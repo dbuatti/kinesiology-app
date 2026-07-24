@@ -41,6 +41,7 @@ interface PeaceWizardProps {
 
 const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriorityPattern, onFinalise }: PeaceWizardProps) => {
   const [activePhase, setActivePhase] = useState(0);
+  const [phaseDirection, setPhaseDirection] = useState<'forward' | 'backward'>('forward');
   const [emotionsOpen, setEmotionsOpen] = useState(false);
   const [limitingBeliefsOpen, setLimitingBeliefsOpen] = useState(false);
   const wizardRef = useRef<HTMLDivElement>(null);
@@ -60,19 +61,22 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
   }, []);
 
   const goNext = useCallback(() => {
+    setPhaseDirection('forward');
     setActivePhase(prev => Math.min(prev + 1, PEACE_PHASES.length - 1));
     scrollToTop();
   }, [scrollToTop]);
 
   const goBack = useCallback(() => {
+    setPhaseDirection('backward');
     setActivePhase(prev => Math.max(prev - 1, 0));
     scrollToTop();
   }, [scrollToTop]);
 
   const jumpTo = useCallback((index: number) => {
+    setPhaseDirection(index > activePhase ? 'forward' : 'backward');
     setActivePhase(index);
     scrollToTop();
-  }, [scrollToTop]);
+  }, [scrollToTop, activePhase]);
 
   const completedCount = Object.values(phaseStatus).filter(Boolean).length;
   const progress = (completedCount / PEACE_PHASES.length) * 100;
@@ -104,7 +108,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
             variant="ghost"
             size="sm"
             onClick={() => setLimitingBeliefsOpen(true)}
-            className="rounded-xl h-10 px-3 text-violet-500 hover:bg-violet-500/10"
+            className="rounded-xl h-10 px-3 text-chart-primary hover:bg-chart-primary/10"
             title="Limiting Beliefs Procedure"
           >
             <Brain size={16} />
@@ -113,7 +117,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
             variant="ghost"
             size="sm"
             onClick={() => setEmotionsOpen(true)}
-            className="rounded-xl h-10 px-3 text-rose-500 hover:bg-rose-500/10"
+            className="rounded-xl h-10 px-3 text-chart-destructive hover:bg-chart-destructive/10"
             title="Emotions Protocol Reference"
           >
             <Heart size={16} />
@@ -146,7 +150,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
         <div className="flex items-center gap-3">
           <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-primary to-chart-primary rounded-full transition-all duration-700"
+              className="h-full bg-gradient-to-r from-primary via-chart-primary to-chart-emerald rounded-full transition-all duration-700 ease-out"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -177,7 +181,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
                 <div className={cn(
                   "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 border-2",
                   isActive
-                    ? "bg-primary text-primary-foreground border-primary shadow-lg scale-110"
+                    ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-110 ring-2 ring-primary/20"
                     : isCompleted
                       ? "bg-chart-emerald/10 text-chart-emerald border-chart-emerald/30"
                       : "bg-muted text-muted-foreground border-transparent"
@@ -208,7 +212,14 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
 
       {/* Phase content */}
       <div className="bg-card border border-border rounded-2xl shadow-sm">
-        <div className="p-6 md:p-10">
+        <div
+          key={activePhase}
+          className={cn(
+            "p-6 md:p-10",
+            "animate-in fade-in duration-400",
+            phaseDirection === 'forward' ? 'slide-in-from-right-4' : 'slide-in-from-left-4'
+          )}
+        >
           {activePhase === 0 && <PreliminaryPhase {...phaseProps} />}
           {activePhase === 1 && <EasePhase {...phaseProps} />}
           {activePhase === 2 && <AlignPhase {...phaseProps} />}
@@ -222,7 +233,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
         <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto p-0">
           <SheetHeader className="px-6 pt-6 pb-4 border-b border-border sticky top-0 bg-card z-10">
             <SheetTitle className="text-lg font-semibold flex items-center gap-2">
-              <Brain size={20} className="text-violet-500" /> Limiting Beliefs
+              <Brain size={20} className="text-chart-primary" /> Limiting Beliefs
             </SheetTitle>
           </SheetHeader>
           <div className="p-6">
@@ -236,7 +247,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
         <DialogContent className="sm:max-w-[700px] rounded-xl p-0 mx-4 w-[calc(100%-2rem)] flex flex-col max-h-[85vh]">
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
             <DialogTitle className="text-lg font-semibold flex items-center gap-2">
-              <Heart size={20} className="text-rose-500" /> Emotions Protocol
+              <Heart size={20} className="text-chart-destructive" /> Emotions Protocol
             </DialogTitle>
           </DialogHeader>
           <div className="overflow-y-auto flex-1 px-6 py-4">

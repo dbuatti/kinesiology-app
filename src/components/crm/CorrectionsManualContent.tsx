@@ -207,38 +207,10 @@ const CorrectionsManualContent = () => {
     );
   };
 
-  const Sidebar = ({ items, activeId, setActiveId }: {
-    items: SidebarItem[]; activeId: string; setActiveId: (id: string) => void;
-  }) => (
-    <aside className="w-44 shrink-0 overflow-y-auto border-r max-h-[calc(100vh-140px)] sticky top-0 py-4">
-      <div className="space-y-0.5 px-2">
-        {items.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeId === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveId(item.id)}
-              className={cn(
-                "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all text-left group",
-                isActive
-                  ? cn("font-semibold shadow-sm", tabAccent)
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
-              )}
-            >
-              <Icon size={14} className={cn("shrink-0", isActive ? "" : "text-muted-foreground/60")} />
-              <span className="text-xs font-medium">{item.label}</span>
-            </button>
-          );
-        })}
-      </div>
-    </aside>
-  );
-
   const renderSteps = (steps: string[], accent: string) => (
     <div className="space-y-1.5">
       {steps.map((step, i) => (
-        <div key={i} className="flex gap-3 px-3 py-2 rounded-lg hover:bg-muted/40 transition-colors">
+        <div key={step} className="flex gap-3 px-3 py-2 rounded-lg hover:bg-muted/40 transition-colors">
           <span className={cn(
             "badge-step mt-0.5",
             accent === "text-blue-600" ? "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300" :
@@ -526,7 +498,7 @@ const CorrectionsManualContent = () => {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar items={getItems()} activeId={getActiveId()} setActiveId={setActiveId} />
+        <CorrectionsSidebar items={getItems()} activeId={getActiveId()} setActiveId={setActiveId} tabAccent={tabAccent} />
         <main className="flex-1 px-6 py-6 overflow-y-auto max-w-3xl">
           {getContent()}
         </main>

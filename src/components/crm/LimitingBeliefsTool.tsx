@@ -311,7 +311,7 @@ const LimitingBeliefsTool = () => {
               <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Rounds:</span>
               {rounds.map((r, i) => (
                 <button
-                  key={i}
+                  key={r.loopCount}
                   onClick={() => goToRound(i)}
                   className={cn(
                     "w-8 h-8 rounded-xl text-xs font-semibold transition-all",

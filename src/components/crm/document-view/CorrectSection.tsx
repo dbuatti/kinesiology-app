@@ -112,6 +112,27 @@ const parseCorrectionString = (str: string) => {
   };
 };
 
+const CorrectSectionProtocolBlock = ({ title, icon: Icon, color, steps, desc, children }: { title: string, icon: any, color: string, steps: string[], desc?: string, children?: ReactNode }) => (
+  <div className="p-5 bg-muted border border-border rounded-xl space-y-3">
+    <div className="flex items-center gap-2">
+      <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-white", color)}>
+        <Icon size={14} />
+      </div>
+      <h5 className="text-xs font-semibold uppercase tracking-tight">{title}</h5>
+    </div>
+    {desc && <p className="text-[11px] text-muted-foreground italic leading-relaxed">"{desc}"</p>}
+    <div className="space-y-1.5">
+      {steps.map((step, idx) => (
+        <div key={step} className="flex gap-2 items-start text-[11px] leading-relaxed text-slate-700">
+          <span className="font-semibold text-black shrink-0">{idx + 1}.</span>
+          <p className="font-medium">{step}</p>
+        </div>
+      ))}
+    </div>
+    {children}
+  </div>
+);
+
 const CorrectSection = ({ 
   metadata, 
   acupoints, 
@@ -302,27 +323,6 @@ Correction Method: ${method}`;
       showError("Failed to log correction.");
     }
   };
-
-  const ProtocolBlock = ({ title, icon: Icon, color, steps, desc, children }: { title: string, icon: any, color: string, steps: string[], desc?: string, children?: ReactNode }) => (
-    <div className="p-5 bg-muted border border-border rounded-xl space-y-3">
-      <div className="flex items-center gap-2">
-        <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-white", color)}>
-          <Icon size={14} />
-        </div>
-        <h5 className="text-xs font-semibold uppercase tracking-tight">{title}</h5>
-      </div>
-      {desc && <p className="text-[11px] text-muted-foreground italic leading-relaxed">"{desc}"</p>}
-      <div className="space-y-1.5">
-        {steps.map((step, idx) => (
-          <div key={idx} className="flex gap-2 items-start text-[11px] leading-relaxed text-slate-700">
-            <span className="font-semibold text-black shrink-0">{idx + 1}.</span>
-            <p className="font-medium">{step}</p>
-          </div>
-        ))}
-      </div>
-      {children}
-    </div>
-  );
 
   return (
     <div className="space-y-12">
@@ -690,7 +690,7 @@ Correction Method: ${method}`;
 
         <div className="grid grid-cols-1 gap-4">
           <div id="c-mechano">
-            <ProtocolBlock 
+            <CorrectSectionProtocolBlock 
               title="Mechanoreceptor (Unconscious)"
               icon={Activity}
               color="bg-blue-500"
@@ -706,7 +706,7 @@ Correction Method: ${method}`;
           </div>
 
           <div id="c-physiological">
-            <ProtocolBlock 
+            <CorrectSectionProtocolBlock 
               title="Physiological"
               icon={Droplets}
               color="bg-emerald-500"
@@ -721,7 +721,7 @@ Correction Method: ${method}`;
           </div>
 
           <div id="c-nociceptive">
-            <ProtocolBlock 
+            <CorrectSectionProtocolBlock 
               title="Nociceptive Threat"
               icon={ShieldAlert}
               color="bg-orange-500"
@@ -748,7 +748,7 @@ Correction Method: ${method}`;
 
         <div className="grid grid-cols-1 gap-4">
           <div id="c-cortical">
-            <ProtocolBlock 
+            <CorrectSectionProtocolBlock 
               title="Cortical (Top-Down)"
               icon={Brain}
               color="bg-purple-500"
@@ -763,7 +763,7 @@ Correction Method: ${method}`;
           </div>
 
           <div id="c-subcortical">
-            <ProtocolBlock 
+            <CorrectSectionProtocolBlock 
               title="Subcortical (Autonomic)"
               icon={Layers}
               color="bg-amber-500"
@@ -778,7 +778,7 @@ Correction Method: ${method}`;
           </div>
 
           <div id="c-emotional">
-            <ProtocolBlock 
+            <CorrectSectionProtocolBlock 
               title="Emotional (Neuro-Emotional Integration)"
               icon={Heart}
               color="bg-rose-500"
@@ -807,7 +807,7 @@ Correction Method: ${method}`;
                   <strong>Pulse Point Tip:</strong> Hold the pulse point corresponding to the priority organ identified in Step 6. Use light pressure for Yang organs and deep pressure for Yin organs.
                 </p>
               </div>
-            </ProtocolBlock>
+            </CorrectSectionProtocolBlock>
           </div>
         </div>
       </div>

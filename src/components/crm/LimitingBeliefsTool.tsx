@@ -24,6 +24,19 @@ const CYCLE_PROMPTS: Record<number, string> = {
   3: 'Feel that new state. What do you notice in the body now?',
   4: 'Let that feeling expand. What do you notice?',
 };
+
+const getCyclePrompt = (stepIdx: number, belief: string): string => {
+  const trimmed = belief.trim();
+  if (!trimmed) return CYCLE_PROMPTS[stepIdx];
+  switch (stepIdx) {
+    case 0: return `Feel yourself believing "${trimmed}". What do you notice? Where is it in the body? What sensation?`;
+    case 1: return `Stay with that. Follow the sensation deeper. What do you notice now? Is it changing, moving, shifting?`;
+    case 2: return `What would you rather feel instead of "${trimmed}"?`;
+    case 3: return `Now feel that new state. What do you notice in the body now?`;
+    case 4: return `Let that new feeling expand. What do you notice?`;
+    default: return CYCLE_PROMPTS[stepIdx];
+  }
+};
 const CYCLE_LETTERS: Record<number, string> = { 0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E' };
 
 // Checkpoints after each A-E cycle
@@ -396,7 +409,7 @@ const LimitingBeliefsTool = () => {
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-foreground">{CYCLE_LABELS[stepIdx]}</p>
-                      <p className="text-[10px] text-muted-foreground">{CYCLE_PROMPTS[stepIdx]}</p>
+                      <p className="text-[10px] text-muted-foreground">{getCyclePrompt(stepIdx, limitingBelief)}</p>
                     </div>
                     {filled && (
                       <Check size={14} className="text-chart-emerald shrink-0 ml-auto" />

@@ -19,7 +19,7 @@ import CheckItem from "@/components/crm/document-view/CheckItem";
 import { PhaseHeader } from "@/components/crm/v2/PhaseComponents";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
-import { PRIMARY_14_MUSCLES, MUSCLE_GROUPS, MIDLINE_MUSCLES } from "@/data/muscle-data";
+import { MUSCLE_GROUPS, MIDLINE_MUSCLES } from "@/data/muscle-data";
 import { getMuscleInfo } from "@/data/muscle-info-data";
 import { safeParse } from "@/utils/safe-json";
 import type { PhaseProps } from "@/components/crm/v2/v2-types";
@@ -230,11 +230,13 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                 </div>
               </div>
 
-              {/* Muscles — Primary 14 */}
+              {/* Muscles — Intrinsic Stabilisation */}
               <div>
-                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Muscles — Primary 14</h3>
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Intrinsic Stabilisation</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
-                  {PRIMARY_14_MUSCLES.map(m => (
+                  {(MUSCLE_GROUPS['Intrinsic Stabilisation'] || []).map(m => MIDLINE_MUSCLES.includes(m) ? (
+                    <CheckItem key={m} category="muscles" name={m} pattern={pattern} description={muscleDesc(m)} onToggle={quickToggle} />
+                  ) : (
                     <Fragment key={m}>
                       <CheckItem category="muscles" name={m} side="L" pattern={pattern} description={muscleDesc(m)} onToggle={quickToggle} />
                       <CheckItem category="muscles" name={m} side="R" pattern={pattern} description={muscleDesc(m)} onToggle={quickToggle} />

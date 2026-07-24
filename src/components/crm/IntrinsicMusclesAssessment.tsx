@@ -1,10 +1,9 @@
 
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { PRELIMINARY_MUSCLES, MIDLINE_MUSCLES } from "@/data/muscle-data";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  CheckCircle2,
   Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";

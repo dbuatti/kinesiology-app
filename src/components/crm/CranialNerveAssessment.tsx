@@ -1,12 +1,11 @@
 
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { CRANIAL_NERVES, CranialNerve } from "@/data/cranial-nerve-data";
 import { useCranialNerveTests } from "@/hooks/useCranialNerveTests";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { 
-  Zap, 
   ImageIcon, 
   Loader2, 
   Hand, 
@@ -42,7 +41,7 @@ interface NerveTestItemProps {
 
 const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateralized, images, showImage, compact, onUpdate, onShowInfo }: NerveTestItemProps) => {
   const [localNotes, setLocalNotes] = useState(test.notes || "");
-  const saveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (test.notes !== undefined && test.notes !== localNotes) {
@@ -88,7 +87,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
       test.is_primary_priority ? "bg-muted/30 border-indigo-200 ring-1 ring-indigo-100" : 
       test.is_priority ? "bg-muted/30 border-amber-200" : 
       !isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') ? "bg-emerald-50/30 border-emerald-200" :
-      "border-border bg-white"
+      "border-border bg-card"
     )}>
       <div className={cn("flex flex-col md:flex-row md:items-center justify-between gap-2", compact ? "pb-0" : "pb-2 border-b border-border/50")}>
         <div className="flex items-center gap-3">
@@ -339,7 +338,7 @@ export function CranialNerveAssessment({
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center p-12 gap-4">
-        <Loader2 className="animate-spin text-blue-600" size={32} />
+        <Loader2 className="animate-spin text-chart-primary" size={32} />
         <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Loading Assessment...</p>
       </div>
     );
@@ -353,7 +352,7 @@ export function CranialNerveAssessment({
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
             <Input
               placeholder="Search nerves..."
-              className="pl-8 h-7 rounded-lg border-border bg-white text-[10px]"
+              className="pl-8 h-7 rounded-lg border-border bg-card text-[10px]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -371,7 +370,7 @@ export function CranialNerveAssessment({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="bg-white border-border font-medium text-[7px] uppercase tracking-wider px-2 py-0.5 rounded-full">
+          <Badge variant="outline" className="bg-card border-border font-medium text-[7px] uppercase tracking-wider px-2 py-0.5 rounded-full">
             {tests.filter(t => t.is_inhibited).length} Active
           </Badge>
         </div>

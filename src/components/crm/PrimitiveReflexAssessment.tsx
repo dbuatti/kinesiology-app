@@ -1,15 +1,13 @@
 
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { PRIMITIVE_REFLEXES, PrimitiveReflex } from "@/data/primitive-reflex-data";
 import { usePrimitiveReflexTests } from "@/hooks/usePrimitiveReflexTests";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Zap, 
-  ImageIcon, 
   Loader2, 
   Activity, 
-  Hand, 
   FileText,
   Search,
   CheckCircle2
@@ -55,7 +53,7 @@ interface ReflexTestItemProps {
 
 const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLateralized, images, compact, onUpdate }: ReflexTestItemProps) => {
   const [localNotes, setLocalNotes] = useState(test.notes || "");
-  const saveTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (test.notes !== undefined && test.notes !== localNotes) {
@@ -73,8 +71,6 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
 
   const handleClear = async () => {
     if (isLateralized) {
-      await onUpdate(reflex.id, { is_inhibited: false }, 'L', reflex.name);
-      await onUpdate(reflex.id, { is_inhibited: false }, 'R', reflex.name);
       await onUpdate(reflex.id, { 
         is_inhibited: false, 
         is_priority: false, 
@@ -86,7 +82,6 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
         is_primary_priority: false 
       }, 'R', reflex.name);
     } else {
-      await onUpdate(reflex.id, { is_inhibited: false }, undefined, reflex.name);
       await onUpdate(reflex.id, { 
         is_inhibited: false, 
         is_priority: false, 
@@ -110,7 +105,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
       test.is_primary_priority ? "bg-indigo-50/40 border-indigo-300 ring-1 ring-indigo-100" : 
       test.is_priority ? "bg-amber-50/40 border-amber-200" : 
       !isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') ? "bg-emerald-50/30 border-emerald-200" :
-      "border-border bg-white"
+      "border-border bg-card"
     )}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1 min-w-0 space-y-1">
@@ -339,7 +334,7 @@ export function PrimitiveReflexAssessment({
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
             <Input
               placeholder="Search..."
-              className="pl-8 h-7 rounded-lg border-border bg-white text-[10px]"
+              className="pl-8 h-7 rounded-lg border-border bg-card text-[10px]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -349,7 +344,7 @@ export function PrimitiveReflexAssessment({
               id="inhibited-filter-reflex"
               checked={showOnlyInhibited}
               onCheckedChange={setShowOnlyInhibited}
-              className="data-[state=checked]:bg-rose-600 scale-[0.6]"
+              className="data-[state=checked]:bg-destructive scale-[0.6]"
             />
             <Label htmlFor="inhibited-filter-reflex" className="text-[8px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
               Only Inhibited
@@ -357,7 +352,7 @@ export function PrimitiveReflexAssessment({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="bg-white border-border font-medium text-[7px] uppercase tracking-wider px-2 py-0.5 rounded-full">
+          <Badge variant="outline" className="bg-card border-border font-medium text-[7px] uppercase tracking-wider px-2 py-0.5 rounded-full">
             {tests.filter(t => t.is_inhibited).length} Active
           </Badge>
         </div>

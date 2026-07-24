@@ -11,7 +11,7 @@ import { MUSCLE_INFO_DETAILS } from "@/data/muscle-info-data";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
 import { AppointmentWithClient } from "@/types/crm";
 import {
-  History, Search, HelpCircle, Target, CheckCircle2, RotateCcw
+  Search, HelpCircle, Target, CheckCircle2, RotateCcw
 } from "lucide-react";
 
 interface RecheckItemData {

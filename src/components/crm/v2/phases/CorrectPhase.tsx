@@ -1,4 +1,4 @@
-import { useRef, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Target, Activity, Info, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,6 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
-  const wizardRef = useRef<HTMLDivElement>(null);
   const [pathModalOpen, setPathModalOpen] = useState(false);
   const [customPathway, setCustomPathway] = useState("");
 
@@ -80,7 +79,7 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
         </div>
       )}
 
-      <div ref={wizardRef}>
+      <div>
         <PathwayLogicWizard
           onSave={async (summary) => {
             await saveField('modes_balances', summary);

@@ -233,6 +233,12 @@ const MuscleImageZone = ({
   );
 };
 
+const SectionHeader = ({ icon: Icon, title, color }: { icon: any, title: string, color: string }) => (
+  <h4 className={cn("text-[10px] font-semibold uppercase tracking-wider flex items-center gap-2 mb-3", color)}>
+    <Icon size={14} /> {title}
+  </h4>
+);
+
 const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProps) => {
   const [currentTime, setCurrentTime] = useState(new Date().getHours());
   const [customImages, setCustomImages] = useState<{ primaryUrl: string | null, secondaryUrl: string | null }>({ primaryUrl: null, secondaryUrl: null });
@@ -297,12 +303,6 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
   if (!muscleName || !info) return null;
 
   const isPeak = channel ? isMeridianPeakNow(channel.peakTime, currentTime) : false;
-
-  const SectionHeader = ({ icon: Icon, title, color }: { icon: any, title: string, color: string }) => (
-    <h4 className={cn("text-[10px] font-semibold uppercase tracking-wider flex items-center gap-2 mb-3", color)}>
-      <Icon size={14} /> {title}
-    </h4>
-  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

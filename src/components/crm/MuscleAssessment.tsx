@@ -6,11 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Zap, 
-  ImageIcon, 
-  Loader2, 
-  FileText,
-  CheckCircle2,
-  Dumbbell,
   Search
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -221,12 +216,12 @@ export function MuscleAssessment({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3 bg-slate-50/50 p-2 rounded-xl border border-slate-100 shadow-inner print:hidden mb-2">
+      <div className="flex items-center gap-3 bg-muted/50 p-2 rounded-xl border border-border shadow-inner print:hidden mb-2">
         <div className="relative w-full md:w-64">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <Input
             placeholder="Search muscles..."
-            className="pl-8 h-8 rounded-lg border-slate-200 bg-white text-[10px]"
+            className="pl-8 h-7 rounded-lg border-border bg-card text-[10px]"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />

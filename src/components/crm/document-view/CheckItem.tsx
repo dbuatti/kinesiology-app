@@ -1,6 +1,6 @@
 
 import type { MouseEvent } from 'react';
-import { Check, ArrowDown, ArrowUp } from 'lucide-react';
+import { Check, ArrowDown, ArrowUp, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
@@ -10,10 +10,11 @@ interface CheckItemProps {
   side?: 'L' | 'R';
   pattern: any;
   description?: string;
+  testingInstructions?: string;
   onToggle: (category: string, name: string, nextStatus: string, side?: 'L' | 'R') => void;
 }
 
-const CheckItem = ({ category, name, side, pattern, description, onToggle }: CheckItemProps) => {
+const CheckItem = ({ category, name, side, pattern, description, testingInstructions, onToggle }: CheckItemProps) => {
   const fullName = side ? `${name} (${side})` : name;
   let rawStatus = pattern[category]?.[fullName];
 
@@ -95,6 +96,11 @@ const CheckItem = ({ category, name, side, pattern, description, onToggle }: Che
           </span>
           {description && (
             <span className="text-[10px] text-muted-foreground/50 truncate leading-tight italic">{description}</span>
+          )}
+          {testingInstructions && (
+            <span className="text-[9px] text-indigo-400 dark:text-indigo-300/70 truncate leading-tight flex items-center gap-1">
+              <Zap size={8} className="shrink-0" />{testingInstructions}
+            </span>
           )}
         </div>
       </div>

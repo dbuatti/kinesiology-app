@@ -8,17 +8,9 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import EditableField from "@/components/shared/EditableField";
 import PathwayLogicWizard from "@/components/crm/PathwayLogicWizard";
-import { AppointmentWithClient } from "@/types/crm";
+import { PhaseHeader } from "@/components/crm/v2/PhaseComponents";
 import { safeParse } from "@/utils/safe-json";
-
-interface PhaseProps {
-  appointment: AppointmentWithClient;
-  history: any[];
-  onUpdate: () => void;
-  saveField: (field: string, value: any) => Promise<void>;
-  updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | 'Unsure' | null, side?: 'L' | 'R') => Promise<void>;
-  onJumpToPhase: (index: number) => void;
-}
+import type { PhaseProps } from "@/components/crm/v2/v2-types";
 
 const CATEGORY_LABELS: Record<string, string> = {
   primitiveReflexes: 'Primitive Reflex',
@@ -65,17 +57,7 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
 
   return (
     <div className="space-y-10">
-      <div className="flex items-start gap-4">
-        <div className="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm shrink-0">
-          <Target size={24} />
-        </div>
-        <div className="space-y-1">
-          <h2 className="text-2xl font-bold tracking-tight">Correct</h2>
-          <p className="text-sm text-muted-foreground font-medium max-w-2xl leading-relaxed">
-            Determine afferent vs efferent, identify coordinates, and apply the correction.
-          </p>
-        </div>
-      </div>
+      <PhaseHeader icon={Target} title="Correct" description="Determine afferent vs efferent, identify coordinates, and apply the correction." />
 
       {/* Priority Pathway Banner */}
       {priorityPathway && (

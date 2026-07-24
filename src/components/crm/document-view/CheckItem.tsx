@@ -9,10 +9,11 @@ interface CheckItemProps {
   name: string;
   side?: 'L' | 'R';
   pattern: any;
+  description?: string;
   onToggle: (category: string, name: string, nextStatus: string, side?: 'L' | 'R') => void;
 }
 
-const CheckItem = ({ category, name, side, pattern, onToggle }: CheckItemProps) => {
+const CheckItem = ({ category, name, side, pattern, description, onToggle }: CheckItemProps) => {
   const fullName = side ? `${name} (${side})` : name;
   let rawStatus = pattern[category]?.[fullName];
 
@@ -83,14 +84,19 @@ const CheckItem = ({ category, name, side, pattern, onToggle }: CheckItemProps) 
           {status === 'Hypertonic' && (isCleared ? <Check size={10} strokeWidth={4} /> : <ArrowUp size={10} strokeWidth={4} />)}
         </div>
 
-        <span className={cn(
-          "text-[10px] font-bold truncate",
-          status === 'Inhibited' && !isCleared && "text-amber-600 dark:text-amber-300",
-          status === 'Hypertonic' && !isCleared && "text-destructive",
-          isCleared && "text-muted-foreground line-through"
-        )}>
-          {side ? `${side}: ${name}` : name}
-        </span>
+        <div className="flex flex-col min-w-0">
+          <span className={cn(
+            "text-[10px] font-bold truncate",
+            status === 'Inhibited' && !isCleared && "text-amber-600 dark:text-amber-300",
+            status === 'Hypertonic' && !isCleared && "text-destructive",
+            isCleared && "text-muted-foreground line-through"
+          )}>
+            {side ? `${side}: ${name}` : name}
+          </span>
+          {description && (
+            <span className="text-[10px] text-muted-foreground/50 truncate leading-tight italic">{description}</span>
+          )}
+        </div>
       </div>
 
       {isCleared && (

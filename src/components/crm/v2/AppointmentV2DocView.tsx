@@ -10,6 +10,7 @@ import CheckItem from "@/components/crm/document-view/CheckItem";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { PRIMARY_14_MUSCLES } from "@/data/muscle-data";
+import { getMuscleInfo } from "@/data/muscle-info-data";
 import { AppointmentWithClient } from "@/types/crm";
 import { safeParse } from "@/utils/safe-json";
 
@@ -142,6 +143,11 @@ const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = fal
 
   const metadata = safeParse(appointment.metadata, {} as any);
   const priorityPathway = metadata?.priority_pathway || "";
+
+  const muscleDesc = (name: string) => {
+    const info = getMuscleInfo(name);
+    return info.meridian || undefined;
+  };
   const correctionsHistory = metadata?.corrections || [];
 
   const hasAnyAlign = inhibitedCount > 0 || clearedCount > 0 || !!priorityPathway || !!appointment.emotion_primary_selection;
@@ -293,8 +299,8 @@ const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = fal
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                   {PRIMARY_14_MUSCLES.map(m => (
                     <Fragment key={m}>
-                      <CheckItem category="muscles" name={m} side="L" pattern={pattern} onToggle={handleAssessmentToggle} />
-                      <CheckItem category="muscles" name={m} side="R" pattern={pattern} onToggle={handleAssessmentToggle} />
+                      <CheckItem category="muscles" name={m} side="L" pattern={pattern} description={muscleDesc(m)} onToggle={handleAssessmentToggle} />
+                      <CheckItem category="muscles" name={m} side="R" pattern={pattern} description={muscleDesc(m)} onToggle={handleAssessmentToggle} />
                     </Fragment>
                   ))}
                 </div>

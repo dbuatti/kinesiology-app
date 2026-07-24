@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   ClipboardCheck, RefreshCw, CheckCircle2, Loader2, ShieldCheck,
-  CalendarPlus, Plus, Calendar, Sun, Target, GitBranch, Sparkles,
+  CalendarPlus, Plus, Calendar, Target, GitBranch,
   Heart, Zap, FileText, Brain, Dumbbell, Baby
 } from "lucide-react";
 import { format } from "date-fns";
@@ -13,6 +13,7 @@ import { safeParse } from "@/utils/safe-json";
 import { showSuccess, showError } from "@/utils/toast";
 import EditableField from "@/components/shared/EditableField";
 import PathwayFindingsList from "@/components/crm/PathwayFindingsList";
+import { PhaseHeader } from "@/components/crm/v2/PhaseComponents";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -21,16 +22,7 @@ import {
 } from "@/components/ui/select";
 import AppointmentForm from "@/components/crm/AppointmentForm";
 import CompactAvailabilityPicker from "@/components/crm/CompactAvailabilityPicker";
-import { AppointmentWithClient } from "@/types/crm";
-
-interface PhaseProps {
-  appointment: AppointmentWithClient;
-  history: any[];
-  onUpdate: () => void;
-  saveField: (field: string, value: any) => Promise<void>;
-  updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | 'Unsure' | null, side?: 'L' | 'R') => Promise<void>;
-  onJumpToPhase: (index: number) => void;
-}
+import type { PhaseProps } from "@/components/crm/v2/v2-types";
 
 const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
   const [muscleTests, setMuscleTests] = useState<any[]>([]);
@@ -147,17 +139,7 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
   return (
     <div className="space-y-12">
       {/* Intro */}
-      <div className="flex items-start gap-4">
-        <div className="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm shrink-0">
-          <ClipboardCheck size={24} />
-        </div>
-        <div className="space-y-1">
-          <h2 className="text-2xl font-bold tracking-tight">Embed</h2>
-          <p className="text-sm text-muted-foreground font-medium max-w-2xl leading-relaxed">
-            Re-challenge all inhibited findings, confirm integration, document homework, and schedule the follow-up session.
-          </p>
-        </div>
-      </div>
+      <PhaseHeader icon={ClipboardCheck} title="Embed" description="Re-challenge all inhibited findings, confirm integration, document homework, and schedule the follow-up session." />
 
       {/* Clinical Verification (Re-challenge) */}
       <div className="space-y-6">
@@ -442,7 +424,7 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
             multiline
             placeholder="What to check at the next session? (e.g. Re-check Moro, sleep quality...)"
             onSave={saveField}
-            className="bg-card border border-border p-6 rounded-xl border shadow-sm min-h-[200px]"
+            className="bg-card border border-border p-6 rounded-xl shadow-sm min-h-[200px]"
           />
         </div>
       </div>

@@ -16,20 +16,13 @@ import { PrimitiveReflexAssessment } from "@/components/crm/PrimitiveReflexAsses
 import { BrainZoneAssessment } from "@/components/crm/BrainZoneAssessment";
 import RecheckTabV2 from "@/components/crm/v2/RecheckTabV2";
 import CheckItem from "@/components/crm/document-view/CheckItem";
+import { PhaseHeader } from "@/components/crm/v2/PhaseComponents";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { PRIMARY_14_MUSCLES, MUSCLE_GROUPS, MIDLINE_MUSCLES } from "@/data/muscle-data";
-import { AppointmentWithClient } from "@/types/crm";
+import { getMuscleInfo } from "@/data/muscle-info-data";
 import { safeParse } from "@/utils/safe-json";
-
-interface PhaseProps {
-  appointment: AppointmentWithClient;
-  history: any[];
-  onUpdate: () => void;
-  saveField: (field: string, value: any) => Promise<void>;
-  updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | 'Unsure' | null, side?: 'L' | 'R') => Promise<void>;
-  onJumpToPhase: (index: number) => void;
-}
+import type { PhaseProps } from "@/components/crm/v2/v2-types";
 
 type SubTab = 'recheck' | 'intake' | 'quick' | 'intrinsic' | 'muscles' | 'reflexes' | 'nerves' | 'zones';
 
@@ -51,6 +44,11 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
   const lastSessionDate = previousSession?.date;
   const daysSinceLast = lastSessionDate ? differenceInDays(new Date(), new Date(lastSessionDate)) : 0;
   const isStale = daysSinceLast > 30;
+
+  const muscleDesc = (name: string) => {
+    const info = getMuscleInfo(name);
+    return info.meridian || undefined;
+  };
 
   return (
     <div className="space-y-8">
@@ -238,8 +236,8 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                   {PRIMARY_14_MUSCLES.map(m => (
                     <Fragment key={m}>
-                      <CheckItem category="muscles" name={m} side="L" pattern={pattern} onToggle={quickToggle} />
-                      <CheckItem category="muscles" name={m} side="R" pattern={pattern} onToggle={quickToggle} />
+                      <CheckItem category="muscles" name={m} side="L" pattern={pattern} description={muscleDesc(m)} onToggle={quickToggle} />
+                      <CheckItem category="muscles" name={m} side="R" pattern={pattern} description={muscleDesc(m)} onToggle={quickToggle} />
                     </Fragment>
                   ))}
                 </div>
@@ -260,11 +258,11 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Intrinsic Stabilisation</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                   {intrinsicMuscles.map(m => MIDLINE_MUSCLES.includes(m) ? (
-                    <CheckItem key={m} category="muscles" name={m} pattern={pattern} onToggle={toggle} />
+                    <CheckItem key={m} category="muscles" name={m} pattern={pattern} description={muscleDesc(m)} onToggle={toggle} />
                   ) : (
                     <Fragment key={m}>
-                      <CheckItem category="muscles" name={m} side="L" pattern={pattern} onToggle={toggle} />
-                      <CheckItem category="muscles" name={m} side="R" pattern={pattern} onToggle={toggle} />
+                      <CheckItem category="muscles" name={m} side="L" pattern={pattern} description={muscleDesc(m)} onToggle={toggle} />
+                      <CheckItem category="muscles" name={m} side="R" pattern={pattern} description={muscleDesc(m)} onToggle={toggle} />
                     </Fragment>
                   ))}
                 </div>
@@ -285,11 +283,11 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">{groupName}</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                     {muscles.map(m => MIDLINE_MUSCLES.includes(m) ? (
-                      <CheckItem key={m} category="muscles" name={m} pattern={pattern} onToggle={toggle} />
+                      <CheckItem key={m} category="muscles" name={m} pattern={pattern} description={muscleDesc(m)} onToggle={toggle} />
                     ) : (
                       <Fragment key={m}>
-                        <CheckItem category="muscles" name={m} side="L" pattern={pattern} onToggle={toggle} />
-                        <CheckItem category="muscles" name={m} side="R" pattern={pattern} onToggle={toggle} />
+                        <CheckItem category="muscles" name={m} side="L" pattern={pattern} description={muscleDesc(m)} onToggle={toggle} />
+                        <CheckItem category="muscles" name={m} side="R" pattern={pattern} description={muscleDesc(m)} onToggle={toggle} />
                       </Fragment>
                     ))}
                   </div>

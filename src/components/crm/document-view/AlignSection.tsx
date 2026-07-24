@@ -3,12 +3,18 @@ import type { ReactNode } from 'react';
 import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
 import { CRANIAL_NERVES } from '@/data/cranial-nerve-data';
 import { MUSCLE_GROUPS, MIDLINE_MUSCLES } from '@/data/muscle-data';
+import { getMuscleInfo } from '@/data/muscle-info-data';
 import CheckItem from './CheckItem';
 
 interface AlignSectionProps {
   pattern: any;
   onToggle: (category: string, name: string, nextStatus: string, side?: 'L' | 'R') => void;
 }
+
+const muscleDesc = (name: string) => {
+  const info = getMuscleInfo(name);
+  return info.meridian || undefined;
+};
 
 const SubHeader = ({ id, children }: { id?: string; children: ReactNode }) => (
   <h3 id={id} className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 mt-10 border-l-4 border-slate-200 pl-3 scroll-mt-24">{children}</h3>
@@ -74,18 +80,18 @@ const AlignSection = ({ pattern, onToggle }: AlignSectionProps) => {
             <div key={group} id={getGroupId(group)} className="space-y-3 scroll-mt-24">
               <h4 className="text-[9px] font-black uppercase text-slate-400 border-l-2 border-slate-200 pl-2 tracking-widest">{group}</h4>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-0.5">
-                {muscles.map(muscle => (
-                  <div key={muscle} className="space-y-0.5">
-                    {MIDLINE_MUSCLES.includes(muscle) ? (
-                      <CheckItem category="muscles" name={muscle} pattern={pattern} onToggle={onToggle} />
-                    ) : (
-                      <>
-                        <CheckItem category="muscles" name={muscle} side="L" pattern={pattern} onToggle={onToggle} />
-                        <CheckItem category="muscles" name={muscle} side="R" pattern={pattern} onToggle={onToggle} />
-                      </>
-                    )}
-                  </div>
-                ))}
+                  {muscles.map(muscle => (
+                    <div key={muscle} className="space-y-0.5">
+                      {MIDLINE_MUSCLES.includes(muscle) ? (
+                        <CheckItem category="muscles" name={muscle} pattern={pattern} description={muscleDesc(muscle)} onToggle={onToggle} />
+                      ) : (
+                        <>
+                          <CheckItem category="muscles" name={muscle} side="L" pattern={pattern} description={muscleDesc(muscle)} onToggle={onToggle} />
+                          <CheckItem category="muscles" name={muscle} side="R" pattern={pattern} description={muscleDesc(muscle)} onToggle={onToggle} />
+                        </>
+                      )}
+                    </div>
+                  ))}
               </div>
             </div>
           ))}

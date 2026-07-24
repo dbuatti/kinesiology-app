@@ -1,20 +1,11 @@
 import { useState, useMemo } from "react";
 import { GitBranch, Target, AlertCircle, Zap, Dumbbell, Baby, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
-import PathwayFindingsList from "@/components/crm/PathwayFindingsList";
-import { AppointmentWithClient } from "@/types/crm";
 import { safeParse } from "@/utils/safe-json";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
-interface PhaseProps {
-  appointment: AppointmentWithClient;
-  history: any[];
-  onUpdate: () => void;
-  saveField: (field: string, value: any) => Promise<void>;
-  updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | 'Unsure' | null, side?: 'L' | 'R') => Promise<void>;
-  onJumpToPhase: (index: number) => void;
-}
+import { PhaseHeader } from "@/components/crm/v2/PhaseComponents";
+import type { PhaseProps } from "@/components/crm/v2/v2-types";
 
 const CATEGORY_LABELS: Record<string, string> = {
   primitiveReflexes: 'Primitive Reflex',
@@ -67,17 +58,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
 
   return (
     <div className="space-y-8">
-      <div className="flex items-start gap-4">
-        <div className="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm shrink-0">
-          <GitBranch size={24} />
-        </div>
-        <div className="space-y-1">
-          <h2 className="text-2xl font-bold tracking-tight">Align</h2>
-          <p className="text-sm text-muted-foreground font-medium max-w-2xl leading-relaxed">
-            Review what you found in Preliminary and choose the priority correction to work on.
-          </p>
-        </div>
-      </div>
+      <PhaseHeader icon={GitBranch} title="Align" description="Review what you found in Preliminary and choose the priority correction to work on." />
 
       {/* Inhibited Findings List */}
       <div className="space-y-4">

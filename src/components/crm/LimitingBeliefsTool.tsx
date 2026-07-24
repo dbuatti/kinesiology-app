@@ -221,31 +221,75 @@ const LimitingBeliefsTool = () => {
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
   }, []);
 
-  const renderCheckpoint = () => {
-    if (phase !== 'checkpoint') return null;
-    const question = CHECKPOINT_QUESTIONS[nextCheckpoint];
+  const activeCheckpoint = phase === 'checkpoint' ? nextCheckpoint : null;
+
+  const CHECKPOINT_DATA: { id: CheckpointId; label: string; question: string }[] = [
+    { id: 'f', label: 'F', question: 'Does the original belief still feel true?' },
+    { id: 'g', label: 'G', question: 'Do you see yourself believing this in the future?' },
+    { id: 'h', label: 'H', question: 'Is there any scenario where this belief might still feel true?' },
+  ];
+
+  const renderCheckpoints = () => {
     return (
-      <div className="bg-card border-2 border-violet-500/30 rounded-xl p-5 space-y-4">
+      <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Brain size={16} className="text-violet-500" />
-          <p className="text-xs font-semibold text-foreground">Checkpoint {nextCheckpoint.toUpperCase()}</p>
+          <p className="text-xs font-semibold text-foreground">Decision Checkpoints</p>
         </div>
-        <p className="text-sm font-medium text-center leading-relaxed">"{question}"</p>
-        <div className="flex justify-center gap-4">
-          <Button
-            onClick={() => handleCheckpoint('Yes')}
-            variant="outline"
-            className="flex-1 max-w-[140px] h-10 rounded-xl border-rose-300 bg-rose-50/50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 font-semibold text-xs uppercase tracking-wider"
-          >
-            <ThumbsUp size={14} className="mr-1.5" /> Yes
-          </Button>
-          <Button
-            onClick={() => handleCheckpoint('No')}
-            variant="outline"
-            className="flex-1 max-w-[140px] h-10 rounded-xl border-emerald-300 bg-emerald-50/50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 font-semibold text-xs uppercase tracking-wider"
-          >
-            <ThumbsDown size={14} className="mr-1.5" /> No
-          </Button>
+        <div className="space-y-2">
+          {CHECKPOINT_DATA.map((cp, i) => {
+            const isActive = activeCheckpoint === cp.id;
+            const isPast = phase === 'complete' || (nextCheckpoint === 'g' && cp.id === 'f') || (nextCheckpoint === 'h' && (cp.id === 'f' || cp.id === 'g'));
+            const isLocked = !isActive && !isPast && phase === 'cycle';
+            return (
+              <div key={cp.id} className={cn(
+                "border rounded-xl p-4 transition-all",
+                isActive ? "border-violet-500/30 bg-violet-500/5" :
+                isPast ? "border-emerald-500/20 bg-emerald-500/5" :
+                "border-border bg-muted/20"
+              )}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0",
+                      isActive ? "bg-violet-500/20 text-violet-600" :
+                      isPast ? "bg-emerald-500/20 text-emerald-600" :
+                      "bg-muted-foreground/10 text-muted-foreground"
+                    )}>
+                      {isPast ? <Check size={14} /> : cp.label}
+                    </div>
+                    <div>
+                      <p className={cn(
+                        "text-xs font-semibold",
+                        isPast ? "text-emerald-600" : isActive ? "text-violet-600" : "text-muted-foreground"
+                      )}>
+                        {cp.question}
+                      </p>
+                    </div>
+                  </div>
+                  {isLocked && <Lock size={14} className="text-muted-foreground/40 shrink-0" />}
+                </div>
+                {isActive && (
+                  <div className="flex justify-end gap-3 mt-4">
+                    <Button
+                      onClick={() => handleCheckpoint('Yes')}
+                      variant="outline"
+                      className="h-9 px-5 rounded-xl border-rose-300 bg-rose-50/50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 font-semibold text-[11px] uppercase tracking-wider"
+                    >
+                      <ThumbsUp size={13} className="mr-1.5" /> Yes — Loop
+                    </Button>
+                    <Button
+                      onClick={() => handleCheckpoint('No')}
+                      variant="outline"
+                      className="h-9 px-5 rounded-xl border-emerald-300 bg-emerald-50/50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 font-semibold text-[11px] uppercase tracking-wider"
+                    >
+                      <ThumbsDown size={13} className="mr-1.5" /> No — Advance
+                    </Button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     );
@@ -372,8 +416,8 @@ const LimitingBeliefsTool = () => {
             })}
           </div>
 
-          {/* Checkpoint (shown after A-E cycle is filled) */}
-          {renderCheckpoint()}
+          {/* Decision Checkpoints — always visible */}
+          {renderCheckpoints()}
 
           {/* Actions */}
           <div className="flex items-center justify-between pt-2">

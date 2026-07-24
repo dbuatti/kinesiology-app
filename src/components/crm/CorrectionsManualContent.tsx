@@ -12,6 +12,7 @@ import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
 import type { BrainReflexPoint } from "@/data/brain-reflex-data";
 import BrainReflexModal from "@/components/crm/BrainReflexModal";
 import { Input } from "@/components/ui/input";
+import CorrectionsSidebar from "@/components/crm/CorrectionsSidebar";
 
 type SidebarItem = { id: string; label: string; icon: typeof Activity };
 

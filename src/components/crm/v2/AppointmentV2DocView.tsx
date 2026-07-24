@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft, Printer, Target
@@ -31,7 +31,10 @@ const SectionHeading = ({ num, label }: { num: string; label: string }) => (
 );
 
 const EmptySection = ({ message = "No data recorded" }: { message?: string }) => (
-  <p className="text-[11px] italic text-muted-foreground/50">{message}</p>
+  <div className="flex items-center gap-2 py-3">
+    <div className="w-1 h-6 rounded-full bg-border" />
+    <p className="text-[11px] italic text-muted-foreground/40">{message}</p>
+  </div>
 );
 
 const EditableField = ({ label, value, field, onSave, editable = false }: {
@@ -174,7 +177,7 @@ const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = fal
 
       {/* Document page */}
       <div className="max-w-[210mm] mx-auto px-8 md:px-12 py-12 print:py-0">
-        <div className="bg-card shadow-sm border border-border rounded-xl print-doc p-10 md:p-14 print-doc-body">
+        <div className="bg-card shadow-sm border border-border rounded-xl print-doc p-10 md:p-14 print-doc-body animate-in fade-in duration-500">
 
           {/* ── DOCUMENT HEADER ── */}
           <div className="pb-6 mb-8 border-b-2 border-foreground/15">
@@ -255,10 +258,10 @@ const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = fal
                 <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Cranial Nerve Assessment</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                   {CRANIAL_NERVES.map(n => n.isLateralized ? (
-                    <React.Fragment key={n.name}>
+                    <Fragment key={n.name}>
                       <CheckItem category="cranial_nerves" name={n.name} side="L" pattern={pattern} onToggle={handleAssessmentToggle} />
                       <CheckItem category="cranial_nerves" name={n.name} side="R" pattern={pattern} onToggle={handleAssessmentToggle} />
-                    </React.Fragment>
+                    </Fragment>
                   ) : (
                     <CheckItem key={n.name} category="cranial_nerves" name={n.name} pattern={pattern} onToggle={handleAssessmentToggle} />
                   ))}
@@ -272,10 +275,10 @@ const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = fal
                 <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Primitive Reflex Assessment</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                   {PRIMITIVE_REFLEXES.map(r => r.isLateralized ? (
-                    <React.Fragment key={r.id}>
+                    <Fragment key={r.id}>
                       <CheckItem category="primitive_reflexes" name={r.name} side="L" pattern={pattern} onToggle={handleAssessmentToggle} />
                       <CheckItem category="primitive_reflexes" name={r.name} side="R" pattern={pattern} onToggle={handleAssessmentToggle} />
-                    </React.Fragment>
+                    </Fragment>
                   ) : (
                     <CheckItem key={r.id} category="primitive_reflexes" name={r.name} pattern={pattern} onToggle={handleAssessmentToggle} />
                   ))}
@@ -289,10 +292,10 @@ const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = fal
                 <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Muscle Assessment — Primary 14</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                   {PRIMARY_14_MUSCLES.map(m => (
-                    <React.Fragment key={m}>
+                    <Fragment key={m}>
                       <CheckItem category="muscles" name={m} side="L" pattern={pattern} onToggle={handleAssessmentToggle} />
                       <CheckItem category="muscles" name={m} side="R" pattern={pattern} onToggle={handleAssessmentToggle} />
-                    </React.Fragment>
+                    </Fragment>
                   ))}
                 </div>
               </div>
@@ -366,15 +369,15 @@ const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = fal
                 {correctionsHistory.length > 0 && (
                   <div className="mb-4 pb-4 border-b border-border/30 space-y-3">
                     {correctionsHistory.map((c: any, i: number) => (
-                      <div key={i} className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded">
+                      <div key={c.timestamp ? `${c.timestamp}-${i}` : `corr-${i}`} className="p-3 bg-amber-500/10 border border-amber-500/20 rounded transition-all hover:bg-amber-500/15 animate-in fade-in slide-in-from-top-2 duration-300" style={{ animationDelay: `${i * 60}ms` }}>
                         <div className="flex items-center gap-2 mb-1.5">
-                          <span className="text-[8px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Correction #{i + 1}</span>
-                          <span className="text-[8px] text-amber-600/60 dark:text-amber-400/60">·</span>
-                          <span className="text-[8px] font-medium text-amber-700 dark:text-amber-400 truncate">{c.pathway}</span>
+                          <span className="text-[8px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Correction #{i + 1}</span>
+                          <span className="text-[8px] text-amber-600/40">·</span>
+                          <span className="text-[8px] font-medium text-amber-600 dark:text-amber-400 truncate">{c.pathway}</span>
                           {c.timestamp && (
                             <>
-                              <span className="text-[8px] text-amber-600/60 dark:text-amber-400/60">·</span>
-                              <span className="text-[8px] text-amber-600/60 dark:text-amber-400/60">{format(new Date(c.timestamp), "h:mm a")}</span>
+                              <span className="text-[8px] text-amber-600/40">·</span>
+                              <span className="text-[8px] text-amber-600/40">{format(new Date(c.timestamp), "h:mm a")}</span>
                             </>
                           )}
                         </div>

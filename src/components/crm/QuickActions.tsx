@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -117,7 +117,7 @@ const QuickActions = () => {
                     size="lg"
                     className={cn(
                       "h-10 w-10 md:h-12 md:w-12 rounded-xl shadow-3xl bg-primary hover:bg-primary/90 transition-all duration-700",
-                      isOpen ? "rotate-45 scale-110" : "hover:scale-110 hover:rotate-90"
+                      isOpen ? "rotate-45 scale-110 shadow-primary/30" : "hover:scale-110 hover:rotate-90 hover:shadow-primary/20"
                     )}
                   >
                     <Plus size={20} className="md:w-6 md:h-6" strokeWidth={3} />

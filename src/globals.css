@@ -38,9 +38,9 @@
     --radius: 0.75rem;
 
     /* Chart accent colours (fixed, not theme-aware) */
-    --chart-primary: 244 44% 50%;
-    --chart-destructive: 345 56% 44%;
-    --chart-emerald: 161 54% 36%;
+    --chart-primary: 15 58% 49%;    /* warm terracotta (FNH) — was cool indigo */
+    --chart-destructive: 345 56% 44%; /* rose (voice) */
+    --chart-emerald: 161 54% 36%;   /* emerald (earnings) */
 
     /* Docs editor surface (Google Docs-style UI) */
     --docs-surface: 210 17% 98%;

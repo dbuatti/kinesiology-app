@@ -9,11 +9,10 @@ const corsHeaders = {
 };
 
 // Cal.com is the single source of truth. This sweep pulls the full set of upcoming
-// bookings and unlinks app/Notion records whose Cal.com booking no longer exists
-// (deleted or cancelled) — the safety net that catches missed webhooks + deletions.
-// IMPORTANT: We NEVER delete appointment rows (that would destroy clinical notes,
-// assessments, and session data). We only unlink calcom_booking_id and archive
-// Notion pages so the data survives in both systems.
+// bookings and reconciles the app + Notion to match:
+//   • REMOVE  — hard-delete app rows (+ archive Notion) whose booking is gone/cancelled
+//   • ADD     — replay any live booking missing from the app through its create webhook
+// The safety net that catches missed webhooks, deletions, and dropped creations.
 // Runs on a schedule (pg_cron) and can be triggered manually.
 
 const GRACE_MS = 15 * 60 * 1000; // don't touch rows created in the last 15 min (avoid racing a fresh booking)
@@ -67,89 +66,73 @@ serve(async (req) => {
   try {
     const CAL_KEY = Deno.env.get("CALCOM_API_KEY");
     const NOTION_KEY = Deno.env.get("NOTION_API_KEY") || "";
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     if (!CAL_KEY) throw new Error("Missing CALCOM_API_KEY");
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    const supabase = createClient(SUPABASE_URL ?? "", SERVICE);
 
     const liveBookings = await fetchLiveBookings(CAL_KEY);
     const live = new Set<string>();
     for (const b of liveBookings) { if (b.uid) live.add(String(b.uid)); if (b.id) live.add(String(b.id)); }
+
     const nowIso = new Date().toISOString();
     const graceIso = new Date(Date.now() - GRACE_MS).toISOString();
     const todayStr = new Date().toISOString().split("T")[0];
-    const isGhost = (uid: string | null) =>
-      uid && !uid.startsWith("force-") && !live.has(String(uid));
+    const isGhost = (uid: string | null) => uid && !uid.startsWith("force-") && !live.has(String(uid));
 
-    const removed = { appointments: [] as string[], voice: [] as string[] };
+    const removed = { appointments: 0, voice: 0 };
 
-    // ---- FNH appointments (future, not brand-new) ----
-    // NOTE: We NEVER delete appointment rows — that would destroy clinical notes,
-    // assessments, and session data. Instead we unlink the Cal.com booking and
-    // archive the Notion pages so the data survives in both systems.
+    // ---- REMOVE: FNH appointments whose Cal.com booking is gone ----
     const { data: appts } = await supabase
       .from("appointments")
       .select("id, calcom_booking_id, notion_page_id, notion_planner_id, status, date, created_at")
       .not("calcom_booking_id", "is", null)
       .gt("date", nowIso)
       .lt("created_at", graceIso);
-
     for (const a of appts || []) {
       if ((a.status || "").toLowerCase() === "cancelled") continue;
       if (!isGhost(a.calcom_booking_id)) continue;
       await archiveNotionPages(NOTION_KEY, [a.notion_page_id, a.notion_planner_id]);
-      const { error } = await supabase.from("appointments").update({ calcom_booking_id: null, status: "Cancelled" }).eq("id", a.id);
-      if (!error) removed.appointments.push(a.id);
-      else console.error(`[${fn}] unlink appointment ${a.id} failed:`, error.message);
+      const { error } = await supabase.from("appointments").delete().eq("id", a.id);
+      if (!error) removed.appointments++;
+      else console.error(`[${fn}] delete appointment ${a.id} failed:`, error.message);
     }
 
-    // ---- Voice bookings (upcoming, not superseded/cancelled) ----
+    // ---- REMOVE: voice bookings whose Cal.com booking is gone ----
     const { data: vb } = await supabase
       .from("voice_bookings")
       .select("calcom_booking_id, notion_lesson_id_1, notion_lesson_id_2, status, lesson_date, created_at")
       .not("calcom_booking_id", "is", null)
       .gte("lesson_date", todayStr)
       .lt("created_at", graceIso);
-
     for (const b of vb || []) {
       const st = (b.status || "").toLowerCase();
       if (st === "cancelled" || st === "rescheduled") continue;
       if (!isGhost(b.calcom_booking_id)) continue;
       await archiveNotionPages(NOTION_KEY, [b.notion_lesson_id_1, b.notion_lesson_id_2]);
-      const { error } = await supabase.from("voice_bookings").update({ status: "cancelled" }).eq("calcom_booking_id", b.calcom_booking_id);
-      if (!error) removed.voice.push(b.calcom_booking_id);
-      else console.error(`[${fn}] cancel voice_booking ${b.calcom_booking_id} failed:`, error.message);
+      const { error } = await supabase.from("voice_bookings").delete().eq("calcom_booking_id", b.calcom_booking_id);
+      if (!error) removed.voice++;
+      else console.error(`[${fn}] delete voice_booking ${b.calcom_booking_id} failed:`, error.message);
     }
 
-    // ---- ADD missing: any live Cal.com booking absent from the app gets replayed
-    // through its normal create webhook (self-heals a missed BOOKING_CREATED). ----
+    // ---- ADD: replay any live Cal.com booking missing from the app ----
     const added = { appointments: 0, voice: 0 };
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-    const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-
     const { data: apptUids } = await supabase.from("appointments").select("calcom_booking_id").not("calcom_booking_id", "is", null);
     const { data: vbUids } = await supabase.from("voice_bookings").select("calcom_booking_id").not("calcom_booking_id", "is", null);
     const known = new Set<string>();
     for (const r of apptUids || []) known.add(String(r.calcom_booking_id));
     for (const r of vbUids || []) known.add(String(r.calcom_booking_id));
 
-    const voiceDebug: any[] = [];
     for (const b of liveBookings) {
       const uid = String(b.uid || b.id || "");
-      const etidDbg = Number(b.eventTypeId);
-      if (VOICE_EVENT_IDS.has(etidDbg)) {
-        voiceDebug.push({ uid, name: b.attendees?.[0]?.name || null, email: b.attendees?.[0]?.email || null, etid: etidDbg, known: known.has(uid), status: b.status });
-      }
       if (!uid || known.has(uid)) continue;
       if ((b.status || "").toLowerCase() === "cancelled") continue;
-      // Let the normal webhook handle very fresh bookings (avoid racing it).
-      if (b.createdAt && (Date.now() - new Date(b.createdAt).getTime()) < GRACE_MS) continue;
+      if (b.createdAt && (Date.now() - new Date(b.createdAt).getTime()) < GRACE_MS) continue; // let the live webhook handle fresh ones
       const etid = Number(b.eventTypeId);
       const isVoice = VOICE_EVENT_IDS.has(etid);
       const isFnh = FNH_EVENT_IDS.has(etid);
-      if (!isVoice && !isFnh) continue; // ignore generic (non-clinical/non-voice) event types
+      if (!isVoice && !isFnh) continue;
 
       const target = isVoice ? "calcom-voice-webhook" : "calcom-webhook";
       const replay = {
@@ -169,53 +152,14 @@ serve(async (req) => {
       }
     }
 
-    // Attach the actual voice_bookings row for each live voice uid (diagnostics).
-    const vUids = voiceDebug.map((v) => v.uid);
-    if (vUids.length) {
-      const { data: vrows } = await supabase
-        .from("voice_bookings")
-        .select("calcom_booking_id, student_name, student_email, lesson_date, status, notion_lesson_id_1, notion_lesson_id_2")
-        .in("calcom_booking_id", vUids);
-      const byUid: Record<string, any> = {};
-      for (const r of vrows || []) byUid[String(r.calcom_booking_id)] = r;
-      for (const v of voiceDebug) v.row = byUid[v.uid] || null;
-
-      // Inspect the linked Notion lesson page(s) to see why voice-lessons may drop it.
-      if (NOTION_KEY) {
-        for (const v of voiceDebug) {
-          const pid = v.row?.notion_lesson_id_1;
-          if (!pid) continue;
-          try {
-            const pr = await fetch(`https://api.notion.com/v1/pages/${pid}`, {
-              headers: { Authorization: `Bearer ${NOTION_KEY}`, "Notion-Version": "2022-06-28" },
-            });
-            const p = await pr.json();
-            v.notion = {
-              ok: pr.ok,
-              archived: p.archived,
-              date: p.properties?.Date?.date?.start ?? null,
-              clientCrm: (p.properties?.["Client CRM"]?.relation || []).length,
-            };
-          } catch (e) { v.notion = { error: e.message }; }
-        }
-      }
-    }
-
-    // ---- Archive any Cancelled appointment's Notion pages that are still active ----
-    // This catches manual cancellations made in the app (not via Cal.com webhook)
-    // where the Notion page wasn't archived.
-    const { data: cancelledNeedingArchive } = await supabase
-      .from("appointments")
-      .select("notion_page_id, notion_planner_id")
-      .eq("status", "Cancelled")
-      .not("notion_page_id", "is", null);
-    let archivedCancelled = 0;
-    for (const c of cancelledNeedingArchive || []) {
-      const toArchive = [c.notion_page_id, c.notion_planner_id].filter(Boolean);
-      if (toArchive.length) { await archiveNotionPages(NOTION_KEY, toArchive); archivedCancelled += toArchive.length; }
-    }
-
-    const summary = { success: true, liveBookings: live.size, removedAppointments: removed.appointments.length, removedVoice: removed.voice.length, addedAppointments: added.appointments, addedVoice: added.voice, archivedCancelled, voiceDebug };
+    const summary = {
+      success: true,
+      liveBookings: liveBookings.length,
+      removedAppointments: removed.appointments,
+      removedVoice: removed.voice,
+      addedAppointments: added.appointments,
+      addedVoice: added.voice,
+    };
     console.log(`[${fn}] ${JSON.stringify(summary)}`);
     return new Response(JSON.stringify(summary), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {

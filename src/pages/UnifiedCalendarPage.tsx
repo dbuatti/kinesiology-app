@@ -429,7 +429,10 @@ const UnifiedCalendarPage = () => {
   const calendarItems: CalendarItem[] = useMemo(() => {
  const items: CalendarItem[] = [];
 
-    const notionLessonIds = new Set((voiceLessons || []).map((l) => l.id));
+    // Only dedup against lessons that actually RENDER (have a date). A lesson that
+    // was fetched but skipped below for a missing date must NOT suppress its
+    // voice_bookings fallback, or the booking vanishes from the calendar entirely.
+    const notionLessonIds = new Set((voiceLessons || []).filter((l) => l.date).map((l) => l.id));
     const matchedEmail = new Set<string>();
 
     (voiceLessons || []).forEach((l) => {

@@ -401,7 +401,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
   return (
     <div className="animate-in fade-in duration-300">
       {/* Consolidated filter bar: search, time-state pills, source toggle, new booking */}
-      <div className="bg-card border border-border rounded-xl p-3 mb-4 space-y-2.5">
+      <div className="bg-gradient-to-br from-amber-50/40 to-card dark:from-amber-950/10 border border-border/60 rounded-[1.5rem] p-3.5 mb-4 space-y-3 shadow-[0_2px_20px_-10px_rgba(120,90,40,0.15)]">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative flex-1 min-w-[140px] max-w-xs">
             <Input

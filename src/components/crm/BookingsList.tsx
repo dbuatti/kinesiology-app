@@ -425,7 +425,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
           {onNewBooking && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button className="rounded-lg font-semibold text-xs h-8 px-3">
+                <Button className="rounded-lg font-semibold text-xs h-8 px-3 bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white border-none active:scale-95 transition-transform">
                   <Plus size={14} className="mr-1" /> New
                 </Button>
               </DropdownMenuTrigger>
@@ -568,7 +568,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
           return (
             <div
               key={item.id}
-              className="flex items-center gap-3 px-5 py-3.5 border-b border-border/30 last:border-b-0 hover:bg-amber-50/40 dark:hover:bg-amber-950/10 transition-colors cursor-pointer"
+              className="flex items-center gap-3 px-5 py-3.5 border-b border-border/30 last:border-b-0 border-l-2 border-l-transparent hover:border-l-amber-400 hover:bg-amber-50/40 dark:hover:bg-amber-950/10 hover:pl-6 transition-all duration-200 cursor-pointer"
               onClick={() => {
                 if (item.source === "kinesiology" && item.url) {
                   navigate(item.url);

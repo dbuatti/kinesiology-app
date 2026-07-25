@@ -841,7 +841,7 @@ const CalcomSlotsView = () => {
 
                   return (
                     <Card key={date} className={cn(
-                      "border-none shadow-xl rounded-[2.5rem] overflow-hidden group hover:shadow-2xl transition-all duration-500 flex flex-col",
+                      "border-none shadow-xl rounded-[2.5rem] overflow-hidden group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col",
                       isBlocked ? "bg-slate-50/80 dark:bg-slate-900/50 border-2 border-dashed border-slate-200 dark:border-slate-800" : "bg-card"
                     )}>
                       <CardHeader className={cn(

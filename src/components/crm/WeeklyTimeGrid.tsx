@@ -431,7 +431,7 @@ const WeeklyTimeGrid = ({
     ((min - startHour * 60) / 60) * HOUR_HEIGHT;
 
   return (
-    <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden animate-in fade-in duration-500">
+    <div className="bg-card rounded-[1.75rem] border border-border/60 shadow-[0_4px_30px_-12px_rgba(120,90,40,0.18)] overflow-hidden animate-in fade-in duration-500">
       <div className="p-4 border-b border-border flex items-center justify-between bg-muted/30">
         <div className="flex items-center gap-3">
           <Button

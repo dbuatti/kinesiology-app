@@ -337,7 +337,7 @@ const WeekByWeekOverview = ({
 
   return (
     <div className="space-y-4">
-      <div className="bg-card rounded-xl border border-border shadow-sm p-4 flex items-center justify-between">
+      <div className="bg-gradient-to-br from-amber-50/40 to-card dark:from-amber-950/10 rounded-[1.5rem] border border-border/60 shadow-[0_2px_20px_-10px_rgba(120,90,40,0.15)] p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" onClick={onToday} className="rounded-lg h-8 text-xs font-medium">
             Today
@@ -396,7 +396,7 @@ const WeekByWeekOverview = ({
               <div
                 key={weekIdx}
                 className={cn(
-                  "bg-card rounded-xl border shadow-sm overflow-hidden animate-in fade-in duration-300",
+                  "bg-card rounded-[1.5rem] border border-border/60 shadow-[0_4px_30px_-14px_rgba(120,90,40,0.16)] overflow-hidden animate-in fade-in duration-300",
                   isCurrentWeek ? "border-destructive/30 ring-1 ring-destructive/20" : "border-border"
                 )}
               >

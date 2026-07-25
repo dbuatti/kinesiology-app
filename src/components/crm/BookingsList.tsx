@@ -536,13 +536,13 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
       )}
 
       {/* Date-grouped list with sticky headers */}
-      <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
+      <div className="bg-card rounded-[1.75rem] border border-border/60 shadow-[0_4px_30px_-12px_rgba(120,90,40,0.18)] overflow-hidden">
         {grouped.length === 0 && (
-          <div className="px-6 py-16 text-center text-sm text-muted-foreground">No {tab} bookings.</div>
+          <div className="px-6 py-20 text-center text-sm text-muted-foreground font-serif italic">No {tab} bookings.</div>
         )}
         {grouped.map(([dateLabel, dateItems]) => (
           <div key={dateLabel}>
-            <div className="sticky top-0 z-10 bg-card border-b border-border px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+            <div className="sticky top-0 z-10 bg-gradient-to-r from-amber-50/70 via-card to-card dark:from-amber-950/15 border-b border-border/50 px-5 py-3 flex items-center gap-3">
               <Checkbox
                 checked={dateItems.length > 0 && dateItems.every((i) => selectedIds.has(i.id))}
                 onCheckedChange={(checked) => {
@@ -556,8 +556,8 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                   });
                 }}
               />
-              <span>{format(new Date(dateLabel + "T12:00:00"), "EEEE, MMMM d, yyyy")}</span>
-              <span className="text-[10px] font-normal text-muted-foreground/60">{dateItems.length}</span>
+              <span className="font-serif text-sm font-semibold text-foreground/85 tracking-tight">{format(new Date(dateLabel + "T12:00:00"), "EEEE, MMMM d")}</span>
+              <span className="text-[10px] font-bold text-amber-700/70 dark:text-amber-500/70 bg-amber-100/60 dark:bg-amber-950/30 rounded-full px-1.5 py-0.5">{dateItems.length}</span>
             </div>
             {dateItems.map((item) => {
           const isVoice = item.source === "voice";
@@ -568,7 +568,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
           return (
             <div
               key={item.id}
-              className="flex items-center gap-3 px-4 py-3 hover:bg-muted/30 transition-colors cursor-pointer"
+              className="flex items-center gap-3 px-5 py-3.5 border-b border-border/30 last:border-b-0 hover:bg-amber-50/40 dark:hover:bg-amber-950/10 transition-colors cursor-pointer"
               onClick={() => {
                 if (item.source === "kinesiology" && item.url) {
                   navigate(item.url);
@@ -591,7 +591,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                 className="shrink-0"
               />
               <div
-                className={`${AVATAR_COLORS[nameHash(person) % AVATAR_COLORS.length]} w-9 h-9 rounded-lg flex items-center justify-center shrink-0 font-bold text-xs text-white`}
+                className={`${AVATAR_COLORS[nameHash(person) % AVATAR_COLORS.length]} w-9 h-9 rounded-full flex items-center justify-center shrink-0 font-bold text-xs text-white shadow-sm ring-2 ring-background`}
               >
                 {nameInitials(person)}
               </div>
@@ -610,11 +610,11 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                     {person}
                   </span>
                   {item.cancelled ? (
-                    <Badge className="bg-muted text-muted-foreground border-none text-[10px] font-semibold">Cancelled</Badge>
+                    <Badge className="bg-muted text-muted-foreground border-none text-[10px] font-semibold rounded-full px-2.5 py-0.5">Cancelled</Badge>
                   ) : item.isFree ? (
-                    <Badge className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border-none text-[10px] font-semibold">Free</Badge>
+                    <Badge className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border-none text-[10px] font-semibold rounded-full px-2.5 py-0.5">Free</Badge>
                   ) : !item.paid ? (
-                    <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-none text-[10px] font-semibold">Unpaid</Badge>
+                    <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-none text-[10px] font-semibold rounded-full px-2.5 py-0.5">Unpaid</Badge>
                   ) : null}
                 </div>
                 <div className="flex items-center gap-1.5">

@@ -15,7 +15,11 @@ import {
   ArrowRightLeft,
   Info,
   Search,
-  Activity
+  Activity,
+  ChevronDown,
+  ChevronRight,
+  AlertTriangle,
+  Stethoscope
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +45,8 @@ interface NerveTestItemProps {
 
 const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateralized, images, showImage, compact, onUpdate, onShowInfo }: NerveTestItemProps) => {
   const [localNotes, setLocalNotes] = useState(test.notes || "");
+  const [showDysfunction, setShowDysfunction] = useState(false);
+  const [showProtocol, setShowProtocol] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -218,12 +224,12 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
             </div>
 
             {nerve.delineationGuide && (
-              <div className="p-3 bg-muted/50 rounded-xl border border-indigo-100 animate-in fade-in slide-in-from-top-1 duration-300">
+              <div className="p-3 bg-muted/50 rounded-xl border border-border animate-in fade-in slide-in-from-top-1 duration-300">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <ArrowRightLeft size={12} className="text-indigo-50" />
+                  <ArrowRightLeft size={12} className="text-chart-primary" />
                   <span className="text-[10px] font-medium uppercase tracking-wider text-chart-primary">Delineation Guide</span>
                 </div>
-                <p className="text-[10px] font-medium text-indigo-900 leading-relaxed">
+                <p className="text-[10px] font-medium text-foreground leading-relaxed whitespace-pre-line">
                   {nerve.delineationGuide}
                 </p>
               </div>
@@ -240,6 +246,49 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
                 placeholder="Findings..."
               />
             </div>
+
+            {(nerve.dysfunctionConsequences || nerve.assessmentProtocol) && (
+              <div className="space-y-2 pt-2 border-t border-border/50 print:hidden">
+                {nerve.dysfunctionConsequences && (
+                  <>
+                    <button
+                      onClick={() => setShowDysfunction(!showDysfunction)}
+                      className="flex items-center gap-1.5 text-[9px] font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showDysfunction ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
+                      <AlertTriangle size={10} className="text-destructive" />
+                      Dysfunction Consequences
+                    </button>
+                    {showDysfunction && (
+                      <div className="p-3 bg-destructive/5 rounded-xl border border-destructive/10 animate-in fade-in duration-200">
+                        <p className="text-[10px] font-medium text-foreground/80 leading-relaxed whitespace-pre-line">
+                          {nerve.dysfunctionConsequences}
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
+                {nerve.assessmentProtocol && (
+                  <>
+                    <button
+                      onClick={() => setShowProtocol(!showProtocol)}
+                      className="flex items-center gap-1.5 text-[9px] font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showProtocol ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
+                      <Stethoscope size={10} className="text-chart-primary" />
+                      Assessment Protocol
+                    </button>
+                    {showProtocol && (
+                      <div className="p-3 bg-chart-primary/5 rounded-xl border border-chart-primary/10 animate-in fade-in duration-200">
+                        <p className="text-[10px] font-medium text-foreground/80 leading-relaxed whitespace-pre-line">
+                          {nerve.assessmentProtocol}
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="lg:col-span-4">
@@ -257,7 +306,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
                 )}
               </div>
             ) : showImage && (
-              <div className="h-full min-h-[60px] border border-dashed border-border rounded-xl flex items-center justify-center text-slate-200 bg-muted/20">
+              <div className="h-full min-h-[60px] border border-dashed border-border rounded-xl flex items-center justify-center text-muted-foreground bg-muted/20">
                 <ImageIcon size={16} className="opacity-10" />
               </div>
             )}

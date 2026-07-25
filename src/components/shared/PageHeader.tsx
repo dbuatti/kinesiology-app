@@ -39,18 +39,18 @@ const PageHeader = ({
           <div className="flex items-center gap-4 md:gap-6">
             {Icon && (
               <div className={cn(
-                "w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-[1rem] bg-slate-900 text-white flex items-center justify-center shrink-0 dark:bg-white dark:text-slate-900 shadow-xl transition-transform hover:scale-105 duration-500",
+                "w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-[1rem] bg-card text-white flex items-center justify-center shrink-0 dark:bg-white dark:text-foreground shadow-xl transition-transform hover:scale-105 duration-500",
                 iconClassName
               )}>
                 <Icon size={20} className="md:w-6 md:h-6" />
               </div>
             )}
-            <h1 className="text-2xl md:text-4xl font-serif font-bold text-slate-900 dark:text-white leading-none">
+            <h1 className="text-2xl md:text-4xl font-serif font-bold text-foreground dark:text-white leading-none">
               {title}
             </h1>
           </div>
           {subtitle && (
-            <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 font-medium max-w-3xl leading-relaxed">
+            <p className="text-sm md:text-base text-muted-foreground dark:text-muted-foreground font-medium max-w-3xl leading-relaxed">
               {subtitle}
             </p>
           )}

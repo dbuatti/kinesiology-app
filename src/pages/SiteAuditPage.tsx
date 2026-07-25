@@ -132,7 +132,7 @@ const SiteAuditPage = () => {
                 {copied ? <Check size={18} className="mr-2" /> : <Copy size={18} className="mr-2" />}
                 Copy Markdown
               </Button>
-              <Button onClick={() => window.print()} className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl h-12 px-6 font-bold">
+              <Button onClick={() => window.print()} className="bg-card hover:bg-card text-white rounded-xl h-12 px-6 font-bold">
                 <Printer size={18} className="mr-2" /> Print Audit
               </Button>
             </div>
@@ -227,7 +227,7 @@ const SiteAuditPage = () => {
                         page.category === 'Clinical' ? "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300" :
                         page.category === 'Practice' ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300" :
                         page.category === 'Business' ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" :
-                        "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                        "bg-muted text-muted-foreground dark:bg-card dark:text-foreground"
                       )}>
                         {page.category}
                       </Badge>

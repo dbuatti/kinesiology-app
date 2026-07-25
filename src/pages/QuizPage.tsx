@@ -127,7 +127,7 @@ const QuizPage = () => {
 
   if (status === 'setup') {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 md:p-12">
+      <div className="min-h-screen bg-background p-6 md:p-12">
         <div className="max-w-4xl mx-auto">
           <Button variant="ghost" onClick={() => navigate(-1)} className="mb-8 rounded-xl font-bold text-xs uppercase tracking-widest">
             <ChevronLeft size={16} className="mr-2" /> Back to Resources
@@ -140,7 +140,7 @@ const QuizPage = () => {
 
   if (status === 'finished') {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 md:p-12">
+      <div className="min-h-screen bg-background p-6 md:p-12">
         <QuizResults 
           score={score} 
           total={totalAnswered} 
@@ -155,23 +155,23 @@ const QuizPage = () => {
   if (!currentQuestion) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 pb-20">
+    <div className="min-h-screen bg-background pb-20">
       {/* Header */}
-      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
+      <div className="bg-background border-b border-border sticky top-0 z-50">
         <div className="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={finishQuiz}
-              className="rounded-xl text-slate-400 hover:text-rose-600"
+              className="rounded-xl text-muted-foreground hover:text-rose-600"
             >
               <X size={20} />
             </Button>
-            <div className="h-6 w-px bg-slate-100 dark:bg-slate-800" />
+            <div className="h-6 w-px bg-border" />
             <div className="flex flex-col">
-              <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Category</span>
-              <span className="text-xs font-black text-slate-900 dark:text-slate-100">{category}</span>
+              <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Category</span>
+              <span className="text-xs font-black text-foreground">{category}</span>
             </div>
           </div>
           
@@ -198,9 +198,9 @@ const QuizPage = () => {
           <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Question {totalAnswered + 1}</span>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 md:p-12 shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 relative overflow-hidden">
+        <div className="bg-card rounded-[2.5rem] p-8 md:p-12 shadow-xl shadow-slate-200/50 dark:shadow-none border border-border relative overflow-hidden">
           {isLoadingAi && (
-            <div className="absolute inset-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center gap-4">
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center gap-4">
               <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
               <p className="text-xs font-black uppercase tracking-widest text-primary animate-pulse">Consulting AI Oracle...</p>
             </div>
@@ -222,7 +222,7 @@ const QuizPage = () => {
                     <AlertTitle className={`font-black text-sm uppercase tracking-widest ${isCorrect ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>
                       {isCorrect ? "Correct!" : "Not quite..."}
                     </AlertTitle>
-                    <AlertDescription className="text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                    <AlertDescription className="text-muted-foreground mt-2 leading-relaxed">
                       {currentQuestion.explanation}
                     </AlertDescription>
                   </div>
@@ -232,7 +232,7 @@ const QuizPage = () => {
               <div className="mt-8 flex gap-3">
                 <Button 
                   onClick={() => loadNextQuestion()} 
-                  className="flex-1 h-14 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold shadow-lg shadow-slate-900/20"
+                  className="flex-1 h-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-slate-900/20"
                 >
                   Next Question <ArrowRight size={18} className="ml-2" />
                 </Button>
@@ -249,19 +249,19 @@ const QuizPage = () => {
         </div>
 
         <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 text-center">
+          <div className="bg-card p-6 rounded-3xl border border-border text-center">
             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Accuracy</p>
-            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">
+            <p className="text-2xl font-black text-foreground">
               {totalAnswered > 0 ? Math.round((score / totalAnswered) * 100) : 0}%
             </p>
           </div>
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 text-center">
+          <div className="bg-card p-6 rounded-3xl border border-border text-center">
             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Streak</p>
             <p className="text-2xl font-black text-primary">{streak}</p>
           </div>
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 text-center">
+          <div className="bg-card p-6 rounded-3xl border border-border text-center">
             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Total</p>
-            <p className="text-2xl font-black text-slate-900 dark:text-slate-100">{totalAnswered}</p>
+            <p className="text-2xl font-black text-foreground">{totalAnswered}</p>
           </div>
         </div>
       </main>

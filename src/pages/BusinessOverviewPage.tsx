@@ -233,7 +233,7 @@ const BusinessOverviewPage = () => {
       totalSessions: paidKineCount + paidVoiceCount,
       srcBreakdown: Object.entries(srcCount).map(([source, d]) => ({
         source, count: d.count, revenue: d.revenue,
-        color: SOURCE_COLORS[source] || 'bg-gray-500/10 text-gray-600 border-gray-200',
+        color: SOURCE_COLORS[source] || 'bg-muted text-muted-foreground border-border',
       })),
       monthlyRows, scheduledVoiceCount,
       recentTransactions: recent.slice(0, 10),

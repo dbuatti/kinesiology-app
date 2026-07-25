@@ -37,14 +37,14 @@ const QuickCalibratePage = () => {
           }} 
         />
 
-        <div className="p-6 bg-slate-900 dark:bg-slate-950 text-white rounded-xl shadow-lg relative overflow-hidden">
+        <div className="p-6 bg-card dark:bg-card text-white rounded-xl shadow-lg relative overflow-hidden">
           <div className="absolute top-0 right-0 p-8 opacity-10">
             <ShieldCheck size={100} />
           </div>
           <h4 className="text-lg font-black flex items-center gap-2 mb-2">
             <ShieldCheck size={20} className="text-emerald-400" /> Clinical Safety
           </h4>
-          <p className="text-sm text-slate-400 leading-relaxed relative z-10">
+          <p className="text-sm text-muted-foreground leading-relaxed relative z-10">
             Always ensure the system is in a receptive state before applying deep neurological corrections. If the IM remains inhibited after 3 layers, check for SNS dominance.
           </p>
         </div>

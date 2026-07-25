@@ -56,7 +56,7 @@ const OnboardingLookupPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
+    <div className="min-h-screen flex items-center justify-center bg-muted p-6">
       <Card className="max-w-md w-full border-none shadow-2xl rounded-[2.5rem] overflow-hidden">
         <div className="bg-indigo-600 p-8 text-center text-white">
           <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl border border-white/20">
@@ -70,22 +70,22 @@ const OnboardingLookupPage = () => {
           {loading ? (
             <div className="py-12 flex flex-col items-center gap-4">
               <Loader2 className="animate-spin text-indigo-600" size={32} />
-              <p className="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em]">
+              <p className="text-muted-foreground font-black text-[10px] uppercase tracking-[0.3em]">
                 Searching Database...
               </p>
             </div>
           ) : (
             <form onSubmit={handleManualSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">
                   Enter your booking email
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                   <Input 
                     type="email"
                     placeholder="email@example.com"
-                    className="h-14 pl-12 rounded-2xl border-2 border-slate-100 focus:border-indigo-500 transition-all text-lg font-medium"
+                    className="h-14 pl-12 rounded-2xl border-2 border-border focus:border-indigo-500 transition-all text-lg font-medium"
                     value={manualEmail}
                     onChange={(e) => setManualEmail(e.target.value)}
                     required
@@ -107,7 +107,7 @@ const OnboardingLookupPage = () => {
                 Access My Form <ArrowRight size={20} className="ml-2" />
               </Button>
 
-              <p className="text-center text-[10px] text-slate-400 font-medium leading-relaxed">
+              <p className="text-center text-[10px] text-muted-foreground font-medium leading-relaxed">
                 Note: Your form is created automatically when you book. If you just booked, it may take a few seconds to appear.
               </p>
             </form>

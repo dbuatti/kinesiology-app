@@ -905,7 +905,7 @@ const WorkflowDebuggerPage = () => {
       amber: "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
       emerald: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
       rose: "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300",
-      slate: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+      slate: "bg-muted text-muted-foreground dark:bg-card dark:text-foreground",
       purple: "bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300",
       cyan: "bg-cyan-100 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-300",
       default: "bg-muted text-muted-foreground",
@@ -1434,7 +1434,7 @@ const WorkflowDebuggerPage = () => {
                       <span className="font-semibold text-xs text-foreground">{ef.name}</span>
                       {ef.emailSubject && <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-none text-[9px] font-semibold">Email</Badge>}
                       {ef.authGuard.includes("webhook") && <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-none text-[9px] font-semibold">Webhook</Badge>}
-                      {ef.authGuard.includes("requireUser") && <Badge className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border-none text-[9px] font-semibold">Auth</Badge>}
+                      {ef.authGuard.includes("requireUser") && <Badge className="bg-muted text-muted-foreground dark:bg-card dark:text-foreground border-none text-[9px] font-semibold">Auth</Badge>}
                     </div>
                     {expandedFunctions.has(ef.name) ? <ChevronDown size={14} className="text-muted-foreground" /> : <ChevronRight size={14} className="text-muted-foreground" />}
                   </button>
@@ -1606,7 +1606,7 @@ const WorkflowDebuggerPage = () => {
                         </ul>
                       </div>
 
-                      <div className="p-3 bg-slate-50 dark:bg-slate-950/30 rounded-xl border border-border/50 overflow-x-auto">
+                      <div className="p-3 bg-muted dark:bg-card/30 rounded-xl border border-border/50 overflow-x-auto">
                         <div className="font-semibold text-foreground mb-2 flex items-center gap-1.5"><Code size={12} /> HTML Skeleton</div>
                         <pre className="text-[9px] text-muted-foreground font-mono leading-relaxed whitespace-pre-wrap break-all">{tmpl.htmlSkeleton}</pre>
                       </div>

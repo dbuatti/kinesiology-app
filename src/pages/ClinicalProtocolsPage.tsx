@@ -274,7 +274,7 @@ export default function ClinicalProtocolsPage() {
                 </Button>
               </div>
               <textarea 
-                className="w-full min-h-[250px] bg-white border-2 border-border rounded-xl p-10 text-lg font-medium leading-relaxed focus:ring-4 focus:ring-chart-primary/10 focus:border-chart-primary transition-all shadow-inner placeholder:text-muted-foreground/30"
+                className="w-full min-h-[250px] bg-background border-2 border-border rounded-xl p-10 text-lg font-medium leading-relaxed focus:ring-4 focus:ring-chart-primary/10 focus:border-chart-primary transition-all shadow-inner placeholder:text-muted-foreground/30"
                 placeholder="Document the primary correction and prescribed homework here..."
               />
               <div className="mt-6 flex justify-end">

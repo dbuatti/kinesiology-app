@@ -1,13 +1,13 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { 
   GitBranch, Sparkles, Brain, Activity, CheckCircle2, 
-  Zap, Info, List, RefreshCw, Eye, Dumbbell, Link as LinkIcon,
-  Workflow, Lightbulb, ChevronRight, ChevronLeft, Droplets, 
-  AlertTriangle, ArrowRight, Heart, ImageIcon, Loader2, Search,
-  ShieldAlert, Hand, PlayCircle, Baby, ClipboardCheck
+  Zap, RefreshCw, Eye, Dumbbell,
+  ChevronRight, ChevronLeft, Droplets, 
+  AlertTriangle, ArrowRight, Heart, ImageIcon,
+  ShieldAlert, Hand, PlayCircle, Baby, ClipboardCheck,
+  ChevronDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -57,6 +57,18 @@ interface PathwayLogicWizardProps {
 
 const DYSFUNCTIONAL_STATUSES = ['Inhibited', 'Hypertonic', 'Switching', 'Inhibition'];
 
+const STEP_LABELS: Record<Step, string> = {
+  SELECT_START: 'Select',
+  AFFERENT_SELECT: 'Afferent',
+  EFERENT_SELECT: 'Efferent',
+  MECHANO_PROCESS: 'Mechano',
+  VESTIBULAR_PROCESS: 'Vestibular',
+  NOCICEPTIVE_PROCESS: 'Nociceptive',
+  EFFERENT_PROCESS: 'Brain',
+  EMOTIONS_PROCESS: 'Emotion',
+  COMPLETION: 'Done',
+};
+
 const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, initialFinding, appointmentId }: PathwayLogicWizardProps) => {
   const [step, setStep] = useState<Step>('SELECT_START');
   const [history, setHistory] = useState<Step[]>([]);
@@ -64,6 +76,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
   const [customText, setCustomText] = useState<string>("");
   const [muscleFindings, setMuscleFindings] = useState<string[]>([]);
   const [loadingMuscles, setLoadingMuscles] = useState(false);
+  const [showClinicalTip, setShowClinicalTip] = useState(false);
   
   const [ligamentImages, setLigamentImages] = useState<Record<string, (string | null)[]>>({});
   const [ligamentModalOpen, setLigamentModalOpen] = useState(false);
@@ -81,18 +94,15 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
     }
   }, [initialFinding, isSandbox]);
 
-  // Fetch muscles from the separate muscle_tests table
   useEffect(() => {
     const fetchMuscles = async () => {
       if (isSandbox) return;
-      
       setLoadingMuscles(true);
       try {
         const { data, error } = await supabase
           .from('muscle_tests')
           .select('muscle_name, status')
           .eq('appointment_id', appointmentId);
-
         if (!error && data) {
           const dysfunctional = data
             .filter(m => DYSFUNCTIONAL_STATUSES.includes(m.status))
@@ -105,7 +115,6 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
         setLoadingMuscles(false);
       }
     };
-
     fetchMuscles();
   }, [appointmentId, isSandbox]);
 
@@ -116,7 +125,6 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
     const baseNames = new Map<string, Set<'L' | 'R'>>();
     let hasAnyTested = false;
     
-    // 1. Process Pattern (Reflexes, Nerves, Zones)
     if (priorityPattern) {
       try {
         const parsed = safeParse(priorityPattern, {});
@@ -138,7 +146,6 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
       } catch (e) {}
     }
 
-    // 2. Process Muscle Findings from separate table
     muscleFindings.forEach(name => {
       hasAnyTested = true;
       items.add(name);
@@ -151,7 +158,6 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
       }
     });
 
-    // 3. Handle Bilateral Logic
     baseNames.forEach((sides, base) => {
       if (sides.has('L') && sides.has('R')) {
         items.add(`${base} (Bilateral)`);
@@ -185,6 +191,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
   const goToStep = (nextStep: Step) => {
     setHistory([...history, step]);
     setStep(nextStep);
+    setShowClinicalTip(false);
   };
 
   const goBack = () => {
@@ -202,6 +209,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
     setHistory([]);
     setSelectedFinding(isSandbox ? 'CUSTOM' : "");
     setCustomText("");
+    setShowClinicalTip(false);
   };
 
   const handleSave = (summary: string) => {
@@ -234,7 +242,6 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
       cleanItem.toLowerCase().includes(r.name.toLowerCase()) || 
       r.name.toLowerCase().includes(cleanItem.toLowerCase())
     );
-
     if (primitive) {
       return {
         type: 'Primitive Reflex',
@@ -252,7 +259,6 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
       cleanItem.toLowerCase().includes(p.name.toLowerCase()) || 
       p.name.toLowerCase().includes(cleanItem.toLowerCase())
     );
-
     if (brainPoint) {
       return {
         type: brainPoint.category,
@@ -288,154 +294,137 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
       case 'SELECT_START':
         if (inhibitedItems.length === 0 && !isSandbox && selectedFinding !== 'CUSTOM') {
           return (
-            <div className="py-12 flex flex-col items-center justify-center text-center space-y-6 animate-in fade-in zoom-in-95 duration-500">
+            <div className="py-8 flex flex-col items-center justify-center text-center space-y-4 animate-in fade-in duration-300">
               <div className={cn(
-                "w-20 h-20 rounded-xl flex items-center justify-center shadow-xl",
+                "w-12 h-12 rounded-xl flex items-center justify-center",
                 hasAnyTested ? "bg-chart-emerald/10 text-chart-emerald" : "bg-muted text-muted-foreground"
               )}>
-                {hasAnyTested ? <CheckCircle2 size={40} /> : <ClipboardCheck size={40} />}
+                {hasAnyTested ? <CheckCircle2 size={24} /> : <ClipboardCheck size={24} />}
               </div>
-              <div className="space-y-2">
-                <h3 className="text-xl font-semibold text-foreground">
+              <div className="space-y-1">
+                <h3 className="text-sm font-medium text-foreground">
                   {hasAnyTested ? "All findings clear" : "Align phase pending"}
                 </h3>
-                <p className="text-muted-foreground max-w-xs mx-auto">
+                <p className="text-xs text-muted-foreground max-w-[240px]">
                   {hasAnyTested 
-                    ? `✓ All findings from this session tested clear — no corrections required. (${format(new Date(), "h:mm a")})`
+                    ? `All findings tested clear — no corrections required. (${format(new Date(), "h:mm a")})`
                     : "Complete the Align phase first to populate correction targets."}
                 </p>
               </div>
-              <div className="pt-4 border-t border-border w-full max-w-xs">
-                <Button 
-                  variant="ghost" 
-                  onClick={() => setSelectedFinding('CUSTOM')}
-                  className="w-full h-10 text-[10px] font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground"
-                >
-                  + Manual Correction Entry
-                </Button>
-              </div>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setSelectedFinding('CUSTOM')}
+                className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground"
+              >
+                + Manual Entry
+              </Button>
             </div>
           );
         }
 
         return (
-          <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-foreground">1. Select Finding to Correct</h3>
-                <p className="text-sm text-muted-foreground">Choose an inhibited item or enter a custom entry point.</p>
-              </div>
-              
-              <div className="grid grid-cols-1 gap-4">
-                <Select value={selectedFinding} onValueChange={(v) => setSelectedFinding(v)}>
-                  <SelectTrigger className="h-14 rounded-xl border border-border bg-card font-medium text-base">
-                    <SelectValue placeholder={loadingMuscles ? "Loading findings..." : "Select inhibited finding..."} />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl border-border bg-card p-1">
-                    {inhibitedItems.map(item => (
-                      <SelectItem key={item} value={item} className={cn(
-                        "rounded-xl py-3 font-medium",
-                        item.includes('(Bilateral)') && "text-chart-primary bg-chart-primary/5"
-                      )}>
-                        {item}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value="CUSTOM" className="rounded-xl py-3 font-medium text-chart-primary">+ New Correction Entry</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                {selectedFinding === 'CUSTOM' && (
-                  <Input 
-                    placeholder="Enter custom entry point..." 
-                    className="h-12 rounded-xl font-medium border border-border animate-in slide-in-from-top-2"
-                    value={customText}
-                    onChange={(e) => setCustomText(e.target.value)}
-                    autoFocus
-                  />
-                )}
-              </div>
+          <div className="space-y-5 animate-in fade-in duration-300">
+            <div className="space-y-2">
+              <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Finding to Correct</label>
+              <Select value={selectedFinding} onValueChange={(v) => setSelectedFinding(v)}>
+                <SelectTrigger className="h-10 rounded-lg border-border bg-card text-sm font-medium">
+                  <SelectValue placeholder={loadingMuscles ? "Loading..." : "Select finding..."} />
+                </SelectTrigger>
+                <SelectContent className="rounded-lg border-border bg-card">
+                  {inhibitedItems.map(item => (
+                    <SelectItem key={item} value={item} className={cn(
+                      "py-2 text-sm font-medium",
+                      item.includes('(Bilateral)') && "text-chart-primary"
+                    )}>
+                      {item}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="CUSTOM" className="py-2 text-sm font-medium text-chart-primary">+ Custom Entry</SelectItem>
+                </SelectContent>
+              </Select>
+              {selectedFinding === 'CUSTOM' && (
+                <Input 
+                  placeholder="Enter custom entry point..." 
+                  className="h-9 rounded-lg text-sm font-medium border-border animate-in slide-in-from-top-1 duration-200"
+                  value={customText}
+                  onChange={(e) => setCustomText(e.target.value)}
+                  autoFocus
+                />
+              )}
             </div>
 
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold text-foreground">2. Choose Correction Direction</h3>
-                <p className="text-sm text-muted-foreground">Determine if the system needs bottom-up or top-down input.</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Correction Direction</label>
+              <div className="grid grid-cols-2 gap-2">
                 <button 
-                    onClick={() => goToStep('AFFERENT_SELECT')} 
-                    className="p-8 rounded-xl border border-border bg-card hover:bg-muted transition-all duration-500 text-left group"
+                  onClick={() => goToStep('AFFERENT_SELECT')} 
+                  className="p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors text-left group"
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-muted text-muted-foreground flex items-center justify-center transition-all">
-                      <GitBranch size={24} className="text-chart-primary" />
-                    </div>
-                    <Badge className="bg-chart-primary/10 text-chart-primary border-none font-medium text-[10px] uppercase tracking-wider rounded-full">Bottom-Up</Badge>
+                  <div className="flex items-center gap-2 mb-1">
+                    <GitBranch size={14} className="text-chart-primary" />
+                    <span className="text-[9px] font-medium uppercase tracking-wider text-chart-primary">Bottom-Up</span>
                   </div>
-                  <h3 className="text-xl font-semibold text-foreground tracking-tight">Afferent</h3>
-                  <p className="text-xs font-medium text-muted-foreground mt-2">Sensory input issue.</p>
+                  <p className="text-sm font-medium text-foreground">Afferent</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Sensory input</p>
                 </button>
 
                 <button 
-                    onClick={() => goToStep('EFFERENT_SELECT')} 
-                    className="p-8 rounded-xl border border-border bg-card hover:bg-muted transition-all duration-500 text-left group"
+                  onClick={() => goToStep('EFFERENT_SELECT')} 
+                  className="p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors text-left group"
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-muted text-muted-foreground flex items-center justify-center transition-all">
-                      <Sparkles size={24} className="text-muted-foreground" />
-                    </div>
-                    <Badge className="bg-muted text-muted-foreground border-none font-medium text-[10px] uppercase tracking-wider rounded-full">Top-Down</Badge>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Sparkles size={14} className="text-muted-foreground" />
+                    <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">Top-Down</span>
                   </div>
-                  <h3 className="text-xl font-semibold text-foreground tracking-tight">Efferent</h3>
-                  <p className="text-xs font-medium text-muted-foreground mt-2">Processing issue.</p>
+                  <p className="text-sm font-medium text-foreground">Efferent</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Processing</p>
                 </button>
               </div>
             </div>
 
             {clinicalTip && (
-              <div className="p-6 rounded-xl border border-border bg-card animate-in zoom-in-95 duration-500 space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <clinicalTip.icon size={24} className="text-muted-foreground" />
-                    <h4 className="font-medium text-foreground text-sm">Clinical Insight: {clinicalTip.title}</h4>
-                  </div>
-                  <div className="flex gap-2">
-                    <Badge variant="outline" className="bg-muted border-border text-muted-foreground font-medium text-[10px] uppercase tracking-wider rounded-full">
-                      {clinicalTip.type}
-                    </Badge>
-                    <Badge className="bg-primary text-primary-foreground border-none font-medium text-[10px] uppercase tracking-wider rounded-full">
-                      {clinicalTip.logic}
-                    </Badge>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 bg-muted rounded-xl border border-border space-y-1">
-                    <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
-                      {clinicalTip.type === 'Primitive Reflex' ? <ShieldAlert size={10} /> : <Hand size={10} />}
-                      {clinicalTip.type === 'Primitive Reflex' ? 'Inhibition Pattern' : 'Reflex Point'}
-                    </p>
-                    <p className="text-xs font-medium text-foreground leading-tight">{clinicalTip.location}</p>
-                  </div>
-                  <div className="p-4 bg-muted rounded-xl border border-border space-y-1">
-                    <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
-                      <PlayCircle size={10} /> Stimulus
-                    </p>
-                    <p className="text-xs font-medium text-foreground leading-tight">{clinicalTip.stimulus}</p>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-border">
-                  <p className="text-sm text-muted-foreground leading-relaxed italic">
-                    "{clinicalTip.content}"
-                  </p>
-                  {clinicalTip.extra && (
-                    <div className="mt-3 flex items-center gap-2 text-[10px] font-medium text-muted-foreground">
-                      <ShieldAlert size={12} /> {clinicalTip.extra}
+              <div className="border-t border-border pt-3">
+                <button
+                  onClick={() => setShowClinicalTip(!showClinicalTip)}
+                  className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors w-full"
+                >
+                  <clinicalTip.icon size={12} />
+                  <span>Clinical Insight: {clinicalTip.title}</span>
+                  <ChevronDown size={12} className={cn("ml-auto transition-transform", showClinicalTip && "rotate-180")} />
+                </button>
+                {showClinicalTip && (
+                  <div className="mt-2 p-3 bg-muted/50 rounded-lg border border-border space-y-2 animate-in fade-in duration-200">
+                    <div className="flex gap-2">
+                      <Badge variant="outline" className="border-border text-muted-foreground font-medium text-[8px] uppercase tracking-wider px-1.5 py-0 rounded-full">
+                        {clinicalTip.type}
+                      </Badge>
+                      <Badge className="bg-primary/10 text-primary border-none font-medium text-[8px] uppercase tracking-wider px-1.5 py-0 rounded-full">
+                        {clinicalTip.logic}
+                      </Badge>
                     </div>
-                  )}
-                </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="p-2 bg-card rounded-md border border-border">
+                        <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5">
+                          {clinicalTip.type === 'Primitive Reflex' ? 'Inhibition' : 'Reflex Point'}
+                        </p>
+                        <p className="text-[10px] font-medium text-foreground leading-tight">{clinicalTip.location}</p>
+                      </div>
+                      <div className="p-2 bg-card rounded-md border border-border">
+                        <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Stimulus</p>
+                        <p className="text-[10px] font-medium text-foreground leading-tight">{clinicalTip.stimulus}</p>
+                      </div>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground italic leading-relaxed">
+                      "{clinicalTip.content}"
+                    </p>
+                    {clinicalTip.extra && (
+                      <p className="text-[9px] font-medium text-muted-foreground flex items-center gap-1">
+                        <ShieldAlert size={10} /> {clinicalTip.extra}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -443,75 +432,61 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
 
       case 'AFFERENT_SELECT':
         return (
-          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="p-4 bg-muted rounded-xl border border-border flex items-center justify-between mb-4">
+          <div className="space-y-3 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-lg border border-border">
               <div>
-                <p className="text-[10px] font-medium text-muted-foreground">Correcting</p>
-                <p className="text-base font-semibold text-foreground">{effectiveItem || "General Correction"}</p>
+                <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-wider">Correcting</p>
+                <p className="text-sm font-medium text-foreground">{effectiveItem || "General"}</p>
               </div>
-              <Badge className="bg-chart-primary text-primary-foreground border-none font-medium text-[10px] uppercase tracking-wider rounded-full">Afferent</Badge>
+              <Badge className="bg-chart-primary/10 text-chart-primary border-none font-medium text-[8px] uppercase tracking-wider px-1.5 py-0 rounded-full">Afferent</Badge>
             </div>
             {[
-              { type: 'Mechanoreceptive', icon: Activity, color: 'blue', step: 'MECHANO_PROCESS', desc: 'Joint and muscle receptor calibration.' },
-              { type: 'Nociceptive', icon: AlertTriangle, color: 'orange', step: 'NOCICEPTIVE_PROCESS', desc: 'Threat detection via the spinothalamic tract. Known sites, scars, old injuries.' }
+              { type: 'Mechanoreceptive', icon: Activity, step: 'MECHANO_PROCESS', desc: 'Joint and muscle receptor calibration' },
+              { type: 'Nociceptive', icon: AlertTriangle, step: 'NOCICEPTIVE_PROCESS', desc: 'Threat detection via spinothalamic tract' }
             ].map(item => (
-              <button key={item.type} onClick={() => goToStep(item.step as Step)} className="p-6 rounded-xl border border-border bg-card hover:bg-muted transition-all duration-300 text-left group w-full">
+              <button key={item.type} onClick={() => goToStep(item.step as Step)} className="p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors text-left group w-full">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-card shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <item.icon size={24} className={cn(
-                        item.color === 'blue' ? "text-chart-primary" :
-                        item.color === 'cyan' ? "text-muted-foreground" :
-                        "text-muted-foreground"
-                      )} />
-                    </div>
+                  <div className="flex items-center gap-3">
+                    <item.icon size={16} className="text-chart-primary shrink-0" />
                     <div>
-                        <p className="font-semibold text-base text-foreground">{item.type}</p>
-                        <p className="text-xs font-medium text-muted-foreground">{item.desc}</p>
+                      <p className="text-sm font-medium text-foreground">{item.type}</p>
+                      <p className="text-[10px] text-muted-foreground">{item.desc}</p>
                     </div>
                   </div>
-                  <ArrowRight size={20} className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
+                  <ChevronRight size={14} className="text-muted-foreground group-hover:text-foreground transition-colors" />
                 </div>
               </button>
             ))}
-            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-medium text-muted-foreground"><ChevronLeft size={18} className="mr-2" /> Back</Button>
           </div>
         );
 
       case 'EFFERENT_SELECT':
         return (
-          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="p-4 bg-muted rounded-xl border border-border flex items-center justify-between mb-4">
+          <div className="space-y-3 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-lg border border-border">
               <div>
-                <p className="text-[10px] font-medium text-muted-foreground">Correcting</p>
-                <p className="text-base font-semibold text-foreground">{effectiveItem || "General Correction"}</p>
+                <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-wider">Correcting</p>
+                <p className="text-sm font-medium text-foreground">{effectiveItem || "General"}</p>
               </div>
-              <Badge className="bg-foreground text-background border-none font-medium text-[10px] uppercase tracking-wider rounded-full">Efferent</Badge>
+              <Badge className="bg-foreground/10 text-foreground border-none font-medium text-[8px] uppercase tracking-wider px-1.5 py-0 rounded-full">Efferent</Badge>
             </div>
             {[
-              { type: 'Brain Integration', icon: Brain, color: 'purple', step: 'EFFERENT_PROCESS', desc: 'Cortical and subcortical zone pairing.' },
-              { type: 'Emotional Integration', icon: Heart, color: 'rose', step: 'EMOTIONS_PROCESS', desc: 'Limbic system and emotional context balancing.' }
+              { type: 'Brain Integration', icon: Brain, step: 'EFFERENT_PROCESS', desc: 'Cortical and subcortical zone pairing' },
+              { type: 'Emotional Integration', icon: Heart, step: 'EMOTIONS_PROCESS', desc: 'Limbic system and emotional balancing' }
             ].map(item => (
-              <button key={item.type} onClick={() => goToStep(item.step as Step)} className="p-6 rounded-xl border border-border bg-card hover:bg-muted transition-all duration-300 text-left group w-full">
+              <button key={item.type} onClick={() => goToStep(item.step as Step)} className="p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors text-left group w-full">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-card shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <item.icon size={24} className={cn(
-                        item.color === 'purple' ? "text-muted-foreground" :
-                        item.color === 'rose' ? "text-chart-destructive" :
-                        "text-muted-foreground"
-                      )} />
-                    </div>
+                  <div className="flex items-center gap-3">
+                    <item.icon size={16} className="text-muted-foreground shrink-0" />
                     <div>
-                        <p className="font-semibold text-base text-foreground">{item.type}</p>
-                        <p className="text-xs font-medium text-muted-foreground">{item.desc}</p>
+                      <p className="text-sm font-medium text-foreground">{item.type}</p>
+                      <p className="text-[10px] text-muted-foreground">{item.desc}</p>
                     </div>
                   </div>
-                  <ArrowRight size={20} className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
+                  <ChevronRight size={14} className="text-muted-foreground group-hover:text-foreground transition-colors" />
                 </div>
               </button>
             ))}
-            <Button variant="ghost" onClick={goBack} className="w-full h-12 rounded-xl font-medium text-muted-foreground"><ChevronLeft size={18} className="mr-2" /> Back</Button>
           </div>
         );
 
@@ -544,44 +519,40 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
         const eyeSub = eyeMatch?.sub ?? "";
         const eyePos = eyeMatch?.pos ?? "";
         return (
-          <div className="py-6 space-y-6 animate-in zoom-in-95 duration-300">
-            <div className="flex flex-col items-center justify-center text-center space-y-3">
-              <div className="w-16 h-16 rounded-2xl bg-chart-emerald/10 text-chart-emerald flex items-center justify-center">
-                <CheckCircle2 size={36} />
+          <div className="py-4 space-y-4 animate-in fade-in duration-200">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-chart-emerald/10 text-chart-emerald flex items-center justify-center shrink-0">
+                <CheckCircle2 size={20} />
               </div>
-              <div className="space-y-1">
-                <h3 className="text-xl font-semibold text-foreground">Correction Complete</h3>
-                <p className="text-sm text-muted-foreground">
-                  {effectiveItem || "Finding"} has been cleared.
-                </p>
-                <p className="text-xs text-muted-foreground/60">Additional layers can be added in future sessions.</p>
+              <div>
+                <h3 className="text-sm font-medium text-foreground">Correction Complete</h3>
+                <p className="text-xs text-muted-foreground">{effectiveItem || "Finding"} corrected.</p>
               </div>
             </div>
 
             {correctionSummary && (
-              <div className="bg-card border border-border rounded-2xl p-5 space-y-3 text-left">
-                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">Correction Details</p>
-                <div className="space-y-2 text-sm">
+              <div className="bg-muted/50 border border-border rounded-lg p-3 space-y-1.5 text-left">
+                <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-wider">Details</p>
+                <div className="space-y-1">
                   {correctionSummary.split(" | ").map((part, i) => {
                     const [key, ...rest] = part.split(": ");
                     const val = rest.join(": ");
                     if (key === "Eye Position" && eyeMatch) {
                       return (
-                        <div key={i} className="flex items-start gap-2">
-                          <Eye size={14} className="text-rose-500 mt-0.5 shrink-0" />
-                          <div>
-                            <span className="font-bold text-foreground">{eyeLabel}</span>
-                            <span className="text-muted-foreground"> ({eyePos})</span>
-                            <p className="text-xs text-muted-foreground/70 mt-0.5">{eyeSub}</p>
-                          </div>
+                        <div key={i} className="flex items-start gap-1.5">
+                          <Eye size={12} className="text-chart-destructive mt-0.5 shrink-0" />
+                          <span className="text-xs text-muted-foreground">
+                            <span className="font-medium text-foreground">{eyeLabel}</span> ({eyePos})
+                            {eyeSub && <span className="text-[10px] block">{eyeSub}</span>}
+                          </span>
                         </div>
                       );
                     }
                     return (
-                      <div key={i} className="flex items-start gap-2">
-                        <CheckCircle2 size={14} className="text-chart-emerald mt-0.5 shrink-0" />
-                        <span className="text-muted-foreground">
-                          {key && val ? <><span className="font-semibold text-foreground">{key}</span>: {val}</> : part}
+                      <div key={i} className="flex items-start gap-1.5">
+                        <CheckCircle2 size={12} className="text-chart-emerald mt-0.5 shrink-0" />
+                        <span className="text-xs text-muted-foreground">
+                          {key && val ? <><span className="font-medium text-foreground">{key}</span>: {val}</> : part}
                         </span>
                       </div>
                     );
@@ -590,12 +561,12 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
               </div>
             )}
 
-            <div className="flex gap-3 pt-2">
-              <Button variant="outline" onClick={resetWizard} className="rounded-xl h-10 px-5 text-sm font-medium">
-                <RefreshCw size={14} className="mr-2" /> Correct Another Finding
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={resetWizard} className="rounded-lg h-8 px-3 text-xs font-medium">
+                <RefreshCw size={12} className="mr-1.5" /> Another
               </Button>
-              <Button onClick={() => { setStep('SELECT_START'); setHistory([]); setSelectedFinding(''); setCustomText(''); }} className="rounded-xl h-10 px-5 text-sm font-medium">
-                <Zap size={14} className="mr-2" /> Done for Today
+              <Button size="sm" onClick={() => { setStep('SELECT_START'); setHistory([]); setSelectedFinding(''); setCustomText(''); }} className="rounded-lg h-8 px-3 text-xs font-medium">
+                <Zap size={12} className="mr-1.5" /> Done
               </Button>
             </div>
           </div>
@@ -606,49 +577,75 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
     }
   };
 
+  const isProcessStep = ['MECHANO_PROCESS', 'NOCICEPTIVE_PROCESS', 'EFFERENT_PROCESS', 'EMOTIONS_PROCESS', 'VESTIBULAR_PROCESS'].includes(step);
+
   return (
     <>
-      <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
-        <CardHeader className="p-10 pb-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-                <CardTitle className="text-xl font-semibold text-foreground">Calibration Wizard</CardTitle>
-                <CardDescription className="text-muted-foreground text-sm">
-                    Correct inhibited findings via Afferent or Efferent pathways.
-                </CardDescription>
-            </div>
+      <div className="rounded-xl border border-border bg-card overflow-hidden">
+        {/* Compact header */}
+        <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+          <div className="flex items-center gap-3">
             {step !== 'SELECT_START' && (
-                <Button variant="ghost" size="sm" onClick={resetWizard} className="text-[10px] font-medium text-muted-foreground hover:text-foreground rounded-xl">
-                    <RefreshCw size={14} className="mr-2" /> Reset Wizard
-                </Button>
+              <Button variant="ghost" size="sm" onClick={goBack} className="h-7 px-2 text-xs font-medium text-muted-foreground hover:text-foreground rounded-lg -ml-1">
+                <ChevronLeft size={14} />
+              </Button>
+            )}
+            <div>
+              <h3 className="text-sm font-medium text-foreground">Correction Wizard</h3>
+              <p className="text-[10px] text-muted-foreground">
+                {step === 'COMPLETION' ? 'Correction logged' : `Step: ${STEP_LABELS[step]}`}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {/* Step dots */}
+            {!isProcessStep && step !== 'COMPLETION' && (
+              <div className="flex items-center gap-1">
+                {(['SELECT_START', 'AFFERENT_SELECT', 'EFFERENT_SELECT'] as Step[]).map((s, i) => (
+                  <div 
+                    key={s} 
+                    className={cn(
+                      "w-1.5 h-1.5 rounded-full transition-colors",
+                      step === s ? "bg-primary" : 
+                      history.includes(s) ? "bg-primary/30" : "bg-border"
+                    )} 
+                  />
+                ))}
+              </div>
+            )}
+            {step !== 'SELECT_START' && (
+              <Button variant="ghost" size="sm" onClick={resetWizard} className="h-7 px-2 text-[10px] font-medium text-muted-foreground hover:text-foreground rounded-lg">
+                <RefreshCw size={11} className="mr-1" /> Reset
+              </Button>
             )}
           </div>
-        </CardHeader>
-        <CardContent className="p-10 pt-0">
+        </div>
+
+        {/* Content */}
+        <div className={cn("p-4", isProcessStep && "p-0")}>
           {renderStep()}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
       <Dialog open={ligamentModalOpen} onOpenChange={setLigamentModalOpen}>
         <DialogContent className="sm:max-w-[80vw] max-h-[90vh] rounded-xl p-0 overflow-hidden border-none shadow-sm bg-card">
-          <DialogHeader className="p-8 bg-muted text-foreground">
-            <DialogTitle className="text-lg font-semibold">Ligament Reference Images</DialogTitle>
+          <DialogHeader className="p-6 bg-muted text-foreground">
+            <DialogTitle className="text-base font-medium">Ligament Reference Images</DialogTitle>
             <DialogDescription>Visual guides for mechanoreceptive ligament corrections.</DialogDescription>
           </DialogHeader>
-          <ScrollArea className="max-h-[70vh] p-8">
-            <div className="space-y-12">
+          <ScrollArea className="max-h-[70vh] p-6">
+            <div className="space-y-8">
               {Object.entries(ligamentImages).map(([category, urls]) => (
-                <div key={category} className="space-y-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center">
-                        <ImageIcon size={18} />
-                    </div>
-                    <h3 className="text-base font-semibold text-foreground capitalize">{category.replace('_', ' ')}</h3>
+                <div key={category} className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon size={14} className="text-muted-foreground" />
+                    <h3 className="text-sm font-medium text-foreground capitalize">{category.replace('_', ' ')}</h3>
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {urls.map((url, index) => (
                       url ? (
-                        <div key={index} className="aspect-video rounded-xl overflow-hidden border border-border shadow-sm hover:border-muted-foreground transition-all">
-                            <img src={url} alt={`${category} ${index}`} className="w-full h-full object-cover" />
+                        <div key={index} className="aspect-video rounded-lg overflow-hidden border border-border">
+                          <img src={url} alt={`${category} ${index}`} className="w-full h-full object-cover" />
                         </div>
                       ) : null
                     ))}
@@ -659,7 +656,6 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
           </ScrollArea>
         </DialogContent>
       </Dialog>
-
     </>
   );
 };

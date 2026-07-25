@@ -10,7 +10,11 @@ import {
   Activity, 
   FileText,
   Search,
-  CheckCircle2
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Crown,
+  Brain
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -53,6 +57,7 @@ interface ReflexTestItemProps {
 
 const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLateralized, images, compact, onUpdate }: ReflexTestItemProps) => {
   const [localNotes, setLocalNotes] = useState(test.notes || "");
+  const [showDetails, setShowDetails] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -109,10 +114,20 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
     )}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1 min-w-0 space-y-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-sm font-medium text-foreground truncate">
               {reflex.name}
             </h2>
+            {reflex.isBoss && (
+              <Badge className="bg-primary/10 text-primary border-primary/30 font-semibold text-[7px] uppercase tracking-wider px-1.5 py-0 rounded-none gap-0.5">
+                <Crown size={8} /> Boss
+              </Badge>
+            )}
+            {reflex.track && (
+              <Badge variant="outline" className="border-border text-muted-foreground font-medium text-[7px] uppercase tracking-wider px-1.5 py-0 rounded-none">
+                Track {reflex.track}
+              </Badge>
+            )}
             <span className="text-[8px] font-medium text-muted-foreground uppercase tracking-wider hidden sm:inline">
               {reflex.category} • {reflex.developmentalWindow}
             </span>
@@ -239,15 +254,55 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
       </div>
 
       {!compact && (
-        <div className="mt-1.5 pt-1.5 border-t border-border/50 flex items-center gap-2">
-          <FileText size={10} className="text-muted-foreground/60 shrink-0" />
-          <input 
-            value={localNotes}
-            onChange={(e) => handleNotesChange(e.target.value)}
-            className="flex-1 bg-transparent border-none p-0 text-[10px] font-medium focus:ring-0 placeholder:text-muted-foreground/60"
-            placeholder="Add assessment findings..."
-          />
-        </div>
+        <>
+          <div className="mt-1.5 pt-1.5 border-t border-border/50 flex items-center gap-2">
+            <FileText size={10} className="text-muted-foreground/60 shrink-0" />
+            <input 
+              value={localNotes}
+              onChange={(e) => handleNotesChange(e.target.value)}
+              className="flex-1 bg-transparent border-none p-0 text-[10px] font-medium focus:ring-0 placeholder:text-muted-foreground/60"
+              placeholder="Add assessment findings..."
+            />
+          </div>
+
+          {(reflex.isBoss || reflex.bossTitle || reflex.relatedBrainAreas?.length || reflex.dysfunctionConsequences) && (
+            <div className="mt-1.5 pt-1.5 border-t border-border/50">
+              <button
+                onClick={() => setShowDetails(!showDetails)}
+                className="flex items-center gap-1.5 text-[9px] font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors print:hidden"
+              >
+                {showDetails ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
+                <Brain size={10} />
+                Clinical Details
+              </button>
+              {showDetails && (
+                <div className="mt-2 space-y-2 animate-in fade-in duration-200">
+                  {reflex.bossTitle && (
+                    <div className="p-2 bg-primary/5 rounded-lg border border-primary/10">
+                      <span className="text-[9px] font-medium text-primary uppercase tracking-wider">{reflex.bossTitle}</span>
+                    </div>
+                  )}
+                  {reflex.relatedBrainAreas && reflex.relatedBrainAreas.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      <span className="text-[8px] font-medium text-muted-foreground uppercase tracking-wider self-center mr-1">Brain:</span>
+                      {reflex.relatedBrainAreas.map(area => (
+                        <Badge key={area} variant="outline" className="border-border text-muted-foreground font-medium text-[7px] px-1.5 py-0 rounded-full">
+                          {area}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  {reflex.dysfunctionConsequences && (
+                    <div className="p-2 bg-destructive/5 rounded-lg border border-destructive/10">
+                      <span className="text-[8px] font-medium text-destructive uppercase tracking-wider block mb-1">Dysfunction Consequences</span>
+                      <p className="text-[9px] text-foreground/80 leading-relaxed">{reflex.dysfunctionConsequences}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </>
       )}
     </section>
   );
@@ -358,20 +413,81 @@ export function PrimitiveReflexAssessment({
         </div>
       </div>
 
-      {sortedReflexes.map((reflex) => (
-        <ReflexTestItem 
-          key={reflex.id}
-          reflex={reflex}
-          test={tests.find(t => t.reflex_id === reflex.id) || {}}
-          statusL={reflexPattern[`${reflex.name} (L)`]}
-          statusR={reflexPattern[`${reflex.name} (R)`]}
-          statusMidline={reflexPattern[reflex.name]}
-          isLateralized={reflex.isLateralized}
-          images={customImages[reflex.id]}
-          compact={compactMode}
-          onUpdate={updateTest}
-        />
-      ))}
+      {(() => {
+        const TRACKS = [
+          { num: 1, label: 'Track 1 — Sagittal / Brainstem', desc: 'FPR → Moro → Startle → TLR → STNR' },
+          { num: 2, label: 'Track 2 — Unilateral / Gait', desc: 'ATNR → Spinal Galant → Rooting → Palmar → Babinski' },
+          { num: 3, label: 'Track 3 — Global Override', desc: 'Tendon Guard' },
+        ];
+        const trackGroups = TRACKS.map(t => ({
+          ...t,
+          reflexes: sortedReflexes.filter(r => r.track === t.num),
+        }));
+        const noTrack = sortedReflexes.filter(r => !r.track);
+
+        return (
+          <>
+            {trackGroups.map(group => (
+              group.reflexes.length > 0 && (
+                <div key={group.num} className="space-y-1.5">
+                  <div className="flex items-center gap-3 px-1 py-1">
+                    <div className={cn(
+                      "w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold text-primary-foreground",
+                      group.num === 1 ? "bg-chart-primary" : group.num === 2 ? "bg-chart-destructive" : "bg-foreground"
+                    )}>
+                      {group.num}
+                    </div>
+                    <div>
+                      <h3 className="text-[10px] font-medium text-foreground uppercase tracking-wider">{group.label}</h3>
+                      <p className="text-[8px] text-muted-foreground">{group.desc}</p>
+                    </div>
+                    <div className="flex-1 h-px bg-border" />
+                  </div>
+                  {group.reflexes.map(reflex => (
+                    <ReflexTestItem 
+                      key={reflex.id}
+                      reflex={reflex}
+                      test={tests.find(t => t.reflex_id === reflex.id) || {}}
+                      statusL={reflexPattern[`${reflex.name} (L)`]}
+                      statusR={reflexPattern[`${reflex.name} (R)`]}
+                      statusMidline={reflexPattern[reflex.name]}
+                      isLateralized={reflex.isLateralized}
+                      images={customImages[reflex.id]}
+                      compact={compactMode}
+                      onUpdate={updateTest}
+                    />
+                  ))}
+                </div>
+              )
+            ))}
+            {noTrack.length > 0 && (
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-3 px-1 py-1">
+                  <div className="w-6 h-6 rounded-md bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground">
+                    —
+                  </div>
+                  <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Other</h3>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+                {noTrack.map(reflex => (
+                  <ReflexTestItem 
+                    key={reflex.id}
+                    reflex={reflex}
+                    test={tests.find(t => t.reflex_id === reflex.id) || {}}
+                    statusL={reflexPattern[`${reflex.name} (L)`]}
+                    statusR={reflexPattern[`${reflex.name} (R)`]}
+                    statusMidline={reflexPattern[reflex.name]}
+                    isLateralized={reflex.isLateralized}
+                    images={customImages[reflex.id]}
+                    compact={compactMode}
+                    onUpdate={updateTest}
+                  />
+                ))}
+              </div>
+            )}
+          </>
+        );
+      })()}
     </div>
   );
 }

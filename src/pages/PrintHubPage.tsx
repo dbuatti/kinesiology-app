@@ -22,6 +22,7 @@ import AppLayout from "@/components/crm/AppLayout";
 
 import PageHeader from "@/components/shared/PageHeader";
 import { cn } from "@/lib/utils";
+import FooterLinks from "@/components/crm/FooterLinks";
 
 const PRINTABLES = [
  {
@@ -152,7 +153,7 @@ const PrintHubPage = () => {
  ))}
  </div>
 
-      <Card className="border-none shadow-sm rounded-xl bg-slate-900 text-white overflow-hidden relative">
+      <Card className="border-none shadow-sm rounded-xl bg-card text-white overflow-hidden relative">
  <div className="absolute top-0 right-0 p-12 opacity-10"><Sparkles size={150} /></div>
  <CardContent className="p-10 md:p-14 flex flex-col md:flex-row items-center gap-10 relative z-10">
  <div className="w-24 h-24 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm ">
@@ -176,7 +177,8 @@ const PrintHubPage = () => {
  </div>
  </CardContent>
  </Card>
- </div>
+    <FooterLinks />
+  </div>
  </AppLayout>
  );
 };

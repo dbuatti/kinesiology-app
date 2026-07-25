@@ -37,12 +37,12 @@ class ErrorBoundary extends Component<Props, State> {
             <AlertTriangle size={40} />
           </div>
           <div className="space-y-2">
-            <h2 className="text-2xl font-black text-slate-900">Something went wrong</h2>
-            <p className="text-slate-500 max-w-md mx-auto font-medium">
+            <h2 className="text-2xl font-black text-foreground">Something went wrong</h2>
+            <p className="text-muted-foreground max-w-md mx-auto font-medium">
               The clinical engine encountered an unexpected error. Your data is safe, but the view needs to be reset.
             </p>
             {this.state.error && (
-              <pre className="mt-4 p-4 bg-slate-50 rounded-xl text-[10px] font-mono text-rose-600 overflow-auto max-w-lg mx-auto border border-rose-100">
+              <pre className="mt-4 p-4 bg-muted rounded-xl text-[10px] font-mono text-rose-600 overflow-auto max-w-lg mx-auto border border-rose-100">
                 {this.state.error.message}
               </pre>
             )}
@@ -57,7 +57,7 @@ class ErrorBoundary extends Component<Props, State> {
             <Button 
               variant="outline"
               onClick={() => window.location.href = '/'}
-              className="rounded-xl h-12 px-8 font-bold border-slate-200"
+              className="rounded-xl h-12 px-8 font-bold border-border"
             >
               <Home size={18} className="mr-2" /> Back to Dashboard
             </Button>

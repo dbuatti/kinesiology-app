@@ -781,8 +781,8 @@ const UnifiedCalendarPage = () => {
    <span className="text-[10px] font-medium text-muted-foreground">Unpaid</span>
    </div>
    <div className="flex items-center gap-1.5">
-   <span className="w-2 h-2 rounded-full bg-slate-400" />
-   <span className="text-[10px] font-medium text-muted-foreground">Free</span>
+   <span className="w-2 h-2 rounded-full bg-muted" />
+    <span className="text-[10px] font-medium text-muted-foreground">Free</span>
    </div>
    </div>
 
@@ -900,15 +900,15 @@ const UnifiedCalendarPage = () => {
    )}
    >
    <div className="flex items-center gap-1">
-   <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", item.isFree ? "bg-slate-400" : item.paid ? "bg-chart-emerald" : "bg-amber-500")} />
-   {item.source === "voice" && item.discipline === "piano" ? (
-   <BookOpen size={9} className="shrink-0 opacity-60" />
-     ) : item.source === "voice" ? (
-     <Mic size={9} className="shrink-0 opacity-60" />
-     ) : (
-     <User size={9} className="shrink-0 opacity-60" />
-     )}
-     {item.source === "kinesiology" && item.clientId ? (
+    <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", item.isFree ? "bg-muted" : item.paid ? "bg-chart-emerald" : "bg-amber-500")} />
+    {item.source === "voice" && item.discipline === "piano" ? (
+    <BookOpen size={9} className="shrink-0 opacity-60" />
+      ) : item.source === "voice" ? (
+      <Mic size={9} className="shrink-0 opacity-60" />
+      ) : (
+      <User size={9} className="shrink-0 opacity-60" />
+      )}
+      {item.source === "kinesiology" && item.clientId ? (
      <span
        className="truncate cursor-pointer hover:underline"
        onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/clients/${item.clientId}`); }}
@@ -933,15 +933,15 @@ const UnifiedCalendarPage = () => {
      )}
      >
      <div className="flex items-center gap-1">
-     <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", item.isFree ? "bg-slate-400" : item.paid ? "bg-chart-emerald" : "bg-amber-500")} />
-     {item.source === "voice" && item.discipline === "piano" ? (
-     <BookOpen size={9} className="shrink-0 opacity-60" />
-     ) : item.source === "voice" ? (
-     <Mic size={9} className="shrink-0 opacity-60" />
-     ) : (
-     <User size={9} className="shrink-0 opacity-60" />
-     )}
-     <span className="truncate">{item.title}</span>
+      <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", item.isFree ? "bg-muted" : item.paid ? "bg-chart-emerald" : "bg-amber-500")} />
+      {item.source === "voice" && item.discipline === "piano" ? (
+      <BookOpen size={9} className="shrink-0 opacity-60" />
+      ) : item.source === "voice" ? (
+      <Mic size={9} className="shrink-0 opacity-60" />
+      ) : (
+      <User size={9} className="shrink-0 opacity-60" />
+      )}
+      <span className="truncate">{item.title}</span>
      {item.time && <span className="text-[9px] opacity-60 shrink-0 ml-0.5">{item.time}</span>}
      </div>
      </div>
@@ -980,7 +980,7 @@ const UnifiedCalendarPage = () => {
     {item.source === "voice" ? (item.discipline || "Voice") : item.tag || "Kinesiology"}
     </Badge>
    <Badge className={cn("text-[10px] font-semibold border-none",
-     item.isFree ? "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+      item.isFree ? "bg-muted text-muted-foreground dark:bg-card dark:text-foreground"
      : item.paid ? "bg-chart-emerald/10 text-chart-emerald"
      : "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400")}>
    {item.isFree ? "Free" : item.paid ? `Paid · $${item.amount ?? ""}` : `Unpaid · $${item.amount ?? ""}`}

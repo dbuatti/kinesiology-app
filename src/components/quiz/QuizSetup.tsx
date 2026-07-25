@@ -34,8 +34,8 @@ const QuizSetup = ({ onStart }: QuizSetupProps) => {
         <div className="w-20 h-20 bg-indigo-600 rounded-[2rem] flex items-center justify-center mx-auto shadow-2xl shadow-indigo-200">
           <GraduationCap size={40} className="text-white" />
         </div>
-        <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-slate-900">Knowledge Oracle</h1>
-        <p className="text-lg text-slate-500 font-medium max-w-xl mx-auto">
+        <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">Knowledge Oracle</h1>
+        <p className="text-lg text-muted-foreground font-medium max-w-xl mx-auto">
           Sharpen your clinical intuition with infinite practice questions.
         </p>
       </div>
@@ -44,7 +44,7 @@ const QuizSetup = ({ onStart }: QuizSetupProps) => {
         {CATEGORIES.map((cat) => (
           <Card 
             key={cat.id}
-            className="border-none shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer rounded-[2.5rem] bg-white overflow-hidden"
+            className="border-none shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer rounded-[2.5rem] bg-background overflow-hidden"
             onClick={() => onStart(cat.id)}
           >
             <CardContent className="p-8 space-y-6">
@@ -55,12 +55,12 @@ const QuizSetup = ({ onStart }: QuizSetupProps) => {
                 <cat.icon size={28} />
               </div>
               <div>
-                <h3 className="text-xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors">{cat.label}</h3>
-                <p className="text-sm text-slate-500 font-medium mt-1 leading-relaxed">{cat.desc}</p>
+                <h3 className="text-xl font-black text-foreground group-hover:text-indigo-600 transition-colors">{cat.label}</h3>
+                <p className="text-sm text-muted-foreground font-medium mt-1 leading-relaxed">{cat.desc}</p>
               </div>
-              <div className="pt-4 flex items-center justify-between border-t border-slate-50">
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-indigo-600 transition-colors">Start Training</span>
-                <ArrowRight size={18} className="text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
+              <div className="pt-4 flex items-center justify-between border-t border-border">
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-indigo-600 transition-colors">Start Training</span>
+                <ArrowRight size={18} className="text-muted-foreground group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
               </div>
             </CardContent>
           </Card>

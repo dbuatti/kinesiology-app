@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { RotateCcw, Printer, ChevronDown, ChevronUp, Loader2, RefreshCw, Activity, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import FooterLinks from "@/components/crm/FooterLinks";
 import {
  Collapsible,
  CollapsibleContent,
@@ -162,7 +163,7 @@ const PracticeNotes = () => {
  <h2 className="text-xl font-serif font-medium text-black uppercase">
  {title}
  </h2>
- <div className="flex items-center gap-2 text-gray-400 group-hover:text-black transition-colors print:hidden">
+ <div className="flex items-center gap-2 text-muted-foreground group-hover:text-foreground transition-colors print:hidden">
  {isCollapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
  </div>
  </div>
@@ -189,7 +190,7 @@ const PracticeNotes = () => {
  className={cn(
  "text-sm cursor-pointer select-none shrink-0",
  bold ? "font-medium" : "font-normal",
- checkedItems[id] && "line-through text-gray-400"
+ checkedItems[id] && "line-through text-muted-foreground"
  )}
  >
  {label}
@@ -205,7 +206,7 @@ const PracticeNotes = () => {
  )}
  </div>
  {subtext && (
- <p className={cn("text-xs text-gray-600 leading-relaxed", checkedItems[id] && "text-gray-300")}>
+ <p className={cn("text-xs text-muted-foreground leading-relaxed", checkedItems[id] && "text-muted-foreground")}>
  {subtext}
  </p>
  )}
@@ -218,17 +219,17 @@ const PracticeNotes = () => {
  return (
  <div className="grid grid-cols-3 gap-4 mt-4">
  {images.primary && (
- <div className="aspect-video border border-gray-300 p-0.5 rounded-sm overflow-hidden bg-muted">
+ <div className="aspect-video border border-border p-0.5 rounded-sm overflow-hidden bg-muted">
  <img src={images.primary} alt="Primary" className="w-full h-full object-cover" />
  </div>
  )}
  {images.secondary && (
- <div className="aspect-video border border-gray-300 p-0.5 rounded-sm overflow-hidden bg-muted">
+ <div className="aspect-video border border-border p-0.5 rounded-sm overflow-hidden bg-muted">
  <img src={images.secondary} alt="Secondary" className="w-full h-full object-cover" />
  </div>
  )}
  {images.tertiary && (
- <div className="aspect-video border border-gray-300 p-0.5 rounded-sm overflow-hidden bg-muted">
+ <div className="aspect-video border border-border p-0.5 rounded-sm overflow-hidden bg-muted">
  <img src={images.tertiary} alt="Tertiary" className="w-full h-full object-cover" />
  </div>
  )}
@@ -249,7 +250,7 @@ const PracticeNotes = () => {
  onCheckedChange={() => toggleItem(id)}
  className="h-4 w-4 border-black rounded-none"
  />
- <h3 className={cn("font-medium text-base shrink-0", checkedItems[id] && "line-through text-gray-400")}>
+ <h3 className={cn("font-medium text-base shrink-0", checkedItems[id] && "line-through text-muted-foreground")}>
  {reflex.name}
  </h3>
  <input 
@@ -285,7 +286,7 @@ const PracticeNotes = () => {
  onCheckedChange={() => toggleItem(id)}
  className="h-4 w-4 border-black rounded-none"
  />
- <h3 className={cn("font-medium text-base shrink-0", checkedItems[id] && "line-through text-gray-400")}>
+ <h3 className={cn("font-medium text-base shrink-0", checkedItems[id] && "line-through text-muted-foreground")}>
  {nerve.name}: {nerve.latinName}
  </h3>
  <input 
@@ -321,7 +322,7 @@ const PracticeNotes = () => {
  onCheckedChange={() => toggleItem(id)}
  className="h-4 w-4 border-black rounded-none"
  />
- <h3 className={cn("font-medium text-base shrink-0", checkedItems[id] && "line-through text-gray-400")}>
+ <h3 className={cn("font-medium text-base shrink-0", checkedItems[id] && "line-through text-muted-foreground")}>
  {point.name}
  </h3>
  <input 
@@ -345,7 +346,7 @@ const PracticeNotes = () => {
  };
 
  return (
- <div className="min-h-screen bg-white md:bg-[hsl(var(--docs-surface))] flex flex-col">
+ <div className="min-h-screen bg-background md:bg-[hsl(var(--docs-surface))] flex flex-col">
  <DocsHeader />
  <DocsToolbar />
  <DocsRuler />
@@ -355,10 +356,10 @@ const PracticeNotes = () => {
  <DocsOutline items={OUTLINE_ITEMS} />
 
  {/* Document Container */}
- <div className="w-full max-w-[1000px] bg-white border-none md:border md:border-border md:shadow-sm p-6 sm:p-10 md:p-20 min-h-[1056px] print:border-none print:p-0 text-black font-sans relative">
+ <div className="w-full max-w-[1000px] bg-background border-none md:border md:border-border md:shadow-sm p-6 sm:p-10 md:p-20 min-h-[1056px] print:border-none print:p-0 text-black font-sans relative">
  
  {loading && (
- <div className="absolute inset-0 bg-white/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-4">
+ <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-4">
  <Loader2 className="w-10 h-10 text-chart-primary animate-spin" />
   <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Loading...</p>
  </div>
@@ -416,28 +417,28 @@ const PracticeNotes = () => {
  <Section id="clinical-hierarchy" title="II. Clinical Hierarchy">
  <div className="grid grid-cols-2 gap-x-12 gap-y-6">
  <div className="space-y-3">
- <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Asterisk Tier</h3>
+ <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Asterisk Tier</h3>
  <Item id="h-emotional" label="Emotional Charge" />
  <Item id="h-assemblage" label="Assemblage Point" />
  <Item id="h-hara" label="Hara Line" />
  <Item id="h-heartwall" label="Heart Wall" />
  </div>
  <div className="space-y-3">
- <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">1. Primary Tier</h3>
+ <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">1. Primary Tier</h3>
  <Item id="h-primitive" label="Primitive Reflexes" />
  <Item id="h-nociception" label="Nociception" />
  <Item id="h-cranial" label="Cranial Nerves" />
  <Item id="h-eyes" label="Eye Systems" />
  </div>
  <div className="space-y-3">
- <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">2. Secondary Tier</h3>
+ <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">2. Secondary Tier</h3>
  <Item id="h-immune" label="Immune Vials (TH1/2/17/9)" />
  <Item id="h-infections" label="Infections" />
  <Item id="h-krebs" label="Krebs Cycle" />
  <Item id="h-organ" label="Organ/Gland Balance" />
  </div>
  <div className="space-y-3">
- <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">3. Tertiary Tier</h3>
+ <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">3. Tertiary Tier</h3>
  <Item id="h-icv" label="Ileocecal Valve (ICV)" />
  <Item id="h-cranialbones" label="Cranial Bones" />
  <Item id="h-musculo" label="Musculoskeletal" />
@@ -450,7 +451,7 @@ const PracticeNotes = () => {
  <div className="space-y-8">
  <div className="grid grid-cols-2 gap-x-12">
  <div className="space-y-3">
- <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Preliminary Vitals</h3>
+ <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Preliminary Vitals</h3>
  <Item id="v-bolt" label="BOLT Score" subtext="Measure CO2 tolerance. Target: 25s+ (Functional), 40s+ (Optimal)." hasInput />
  <Item id="v-coherence" label="Heart Coherence" subtext="Autonomic sync. HR/BR ratio. Check for coherence vs discordance." hasInput />
  </div>
@@ -460,12 +461,12 @@ const PracticeNotes = () => {
  </div>
 
  <div className="space-y-6">
- <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">SNS Down-Regulation Procedures</h3>
+ <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">SNS Down-Regulation Procedures</h3>
  
  <div className="grid grid-cols-1 gap-4">
  <div className="p-4 border border-black">
  <Item id="sns-t1-main" label="T1 Sympathetic Reset" bold />
- <div className="mt-2 grid grid-cols-2 gap-4 pl-7 text-[10px] text-gray-700">
+ <div className="mt-2 grid grid-cols-2 gap-4 pl-7 text-[10px] text-muted-foreground">
  <p>1. Palpate bilateral anterior T1 to find restricted side.</p>
  <p>2. Test contralateral Psoas (should be inhibited).</p>
  <p>3. Move ipsilateral shoulder into external rotation.</p>
@@ -475,7 +476,7 @@ const PracticeNotes = () => {
 
  <div className="p-4 border border-black">
  <Item id="sns-diaphragm-main" label="Diaphragm Reset" bold />
- <div className="mt-2 grid grid-cols-2 gap-4 pl-7 text-[10px] text-gray-700">
+ <div className="mt-2 grid grid-cols-2 gap-4 pl-7 text-[10px] text-muted-foreground">
  <p>1. Challenge tender points either side of sternum.</p>
  <p>2. Palpate neck at C4 level (opposite to tender point).</p>
  <p>3. Move ribcage superiorly towards neck. Hold 45-90s.</p>
@@ -494,7 +495,7 @@ const PracticeNotes = () => {
  placeholder="Add vagus note..."
  />
  </div>
-  <div className="mt-2 space-y-2 pl-7 text-[10px] text-gray-700">
+  <div className="mt-2 space-y-2 pl-7 text-[10px] text-muted-foreground">
   <p className="font-medium uppercase text-[10px] text-chart-destructive">Screen & Reset Protocol</p>
   <p>• Functional Check: Test Humming/Swallowing vs IM.</p>
   <p>• Challenge: Identify Organ/Gland + Polarity + Spinal Match.</p>
@@ -514,7 +515,7 @@ const PracticeNotes = () => {
  placeholder="Add lymphatic findings..."
  />
  </div>
- <div className="mt-2 grid grid-cols-2 gap-6 pl-7 text-[10px] text-gray-700">
+ <div className="mt-2 grid grid-cols-2 gap-6 pl-7 text-[10px] text-muted-foreground">
  <div className="space-y-1">
  <p className="font-medium uppercase text-[10px] text-chart-primary">Diagnosis</p>
  <p>• Palpate Suture (Glide/Tenderness).</p>
@@ -539,7 +540,7 @@ const PracticeNotes = () => {
  <div className="space-y-8">
  {/* The 9-Step Hierarchy */}
  <div className="p-6 border border-black">
- <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-4">The 9-Step Integration Hierarchy</h3>
+ <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">The 9-Step Integration Hierarchy</h3>
  <div className="space-y-2 text-xs">
  <p>1. <strong>Indicator Change:</strong> Hold Frontal Lobe (ESR) points to see if system is ready.</p>
  <p>2. <strong>Current or Historic:</strong> Determine if the stress is happening now or in the past.</p>
@@ -555,12 +556,12 @@ const PracticeNotes = () => {
 
  {/* Emotion-Organ Mapping */}
  <div className="space-y-4">
- <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Primary Emotion & Organ Mapping</h3>
+ <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Primary Emotion & Organ Mapping</h3>
  <div className="grid grid-cols-1 gap-1 text-xs">
  {PRIMARY_EMOTIONS.map(e => (
  <div key={e.id} className="flex gap-2">
  <span className="font-medium w-20">{e.label}:</span>
- <span className="text-gray-600">{e.organs.join(', ')} ({e.element})</span>
+ <span className="text-muted-foreground">{e.organs.join(', ')} ({e.element})</span>
  </div>
  ))}
  </div>
@@ -569,7 +570,7 @@ const PracticeNotes = () => {
  <div className="grid grid-cols-2 gap-12">
  {/* Pulse Points Diagram */}
  <div className="space-y-4">
- <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Organ Pulse Points</h3>
+ <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Organ Pulse Points</h3>
  <div className="border border-black p-1">
  <img 
  src="/images/pulse-points.png" 
@@ -582,7 +583,7 @@ const PracticeNotes = () => {
 
  {/* Eye Accessing Cues Diagram */}
  <div className="space-y-4">
- <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Eye Accessing Cues (NLP)</h3>
+ <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Eye Accessing Cues (NLP)</h3>
  <div className="border border-black p-1">
  <img 
  src="/images/eye-modes.png" 
@@ -596,13 +597,13 @@ const PracticeNotes = () => {
 
  {/* Signs of Shift */}
  <div className="p-6 border border-black">
- <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-4">Signs of Neurological Shift</h3>
+ <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Signs of Neurological Shift</h3>
  <ul className="list-none space-y-1 text-xs font-medium">
  {SIGNS_OF_SHIFT.map(s => (
  <li key={s}>• {s}</li>
  ))}
  </ul>
- <p className="text-[10px] text-gray-500 mt-4 italic">"Wait for a parasympathetic response before proceeding to the Positive Upload phase."</p>
+ <p className="text-[10px] text-muted-foreground mt-4 italic">"Wait for a parasympathetic response before proceeding to the Positive Upload phase."</p>
  </div>
 
  <div className="p-4 border border-black">
@@ -633,7 +634,7 @@ const PracticeNotes = () => {
  <Section id="brain-zones" title="VII. Brain Zones (Cortical & Subcortical)">
  <div className="space-y-8">
  <div className="space-y-4">
- <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Cortical Zones</h3>
+ <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Cortical Zones</h3>
  <div className="grid grid-cols-1 gap-2">
  {BRAIN_REFLEX_POINTS.filter(p => p.category === 'Cortical').map(point => (
  <BrainZoneCard key={point.id} point={point} />
@@ -642,7 +643,7 @@ const PracticeNotes = () => {
  </div>
 
  <div className="space-y-4">
- <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Subcortical Zones</h3>
+ <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Subcortical Zones</h3>
  <div className="grid grid-cols-1 gap-2">
  {BRAIN_REFLEX_POINTS.filter(p => p.category === 'Subcortical').map(point => (
  <BrainZoneCard key={point.id} point={point} />
@@ -675,7 +676,7 @@ const PracticeNotes = () => {
  <td className="p-3 font-semibold border-r border-black/10">{assoc.spinalSegment}</td>
  <td className="p-3 font-semibold text-chart-destructive border-r border-black/10">{assoc.reciprocatingSegment}</td>
  <td className="p-3 font-medium border-r border-black/10">{assoc.muscle}</td>
- <td className="p-3 text-gray-600">{assoc.organ}</td>
+ <td className="p-3 text-muted-foreground">{assoc.organ}</td>
  </tr>
  ))}
  </tbody>
@@ -691,8 +692,8 @@ const PracticeNotes = () => {
  <div key={muscle.name} className="flex items-center gap-2">
  <Checkbox id={`muscle-${muscle.name}`} onCheckedChange={() => toggleItem(`muscle-${muscle.name}`)} checked={!!checkedItems[`muscle-${muscle.name}`]} className="h-3 w-3 border-black rounded-none" />
  <div className="leading-tight">
- <p className={cn("text-xs font-medium", checkedItems[`muscle-${muscle.name}`] && "line-through text-gray-400")}>{muscle.name}</p>
- <p className="text-[10px] font-gray-500 italic">{muscle.meridian} Meridian</p>
+ <p className={cn("text-xs font-medium", checkedItems[`muscle-${muscle.name}`] && "line-through text-muted-foreground")}>{muscle.name}</p>
+ <p className="text-[10px] text-muted-foreground italic">{muscle.meridian} Meridian</p>
  </div>
  </div>
  ))}
@@ -701,7 +702,7 @@ const PracticeNotes = () => {
 
  {/* Footer Notes */}
  <div id="observations" className="mt-16 pt-8 border-t border-black scroll-mt-32">
- <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-6">Clinical Observations & Integration Notes</h3>
+ <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-6">Clinical Observations & Integration Notes</h3>
  <div className="relative">
  <textarea 
  value={textData.observations || ""}
@@ -720,7 +721,7 @@ const PracticeNotes = () => {
 
   {/* Floating Action Buttons for Docs feel */}
   <div className="fixed bottom-8 right-8 flex flex-col gap-3 print:hidden">
-  <Button variant="outline" size="icon" onClick={() => setShowClearConfirm(true)} className="h-12 w-12 rounded-full shadow-sm bg-white border-border text-muted-foreground hover:text-chart-destructive">
+  <Button variant="outline" size="icon" onClick={() => setShowClearConfirm(true)} className="h-12 w-12 rounded-full shadow-sm bg-background border-border text-muted-foreground hover:text-chart-destructive">
   <RotateCcw size={20} />
   </Button>
   <Button onClick={handlePrint} className="h-14 w-14 rounded-full shadow-sm bg-primary hover:bg-blue-700 text-white">
@@ -736,6 +737,7 @@ const PracticeNotes = () => {
     confirmLabel="Clear"
     onConfirm={executeClear}
   />
+    <FooterLinks />
   </div>
   </div>
   );

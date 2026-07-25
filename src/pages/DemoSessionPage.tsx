@@ -160,13 +160,13 @@ const DemoSessionPage = () => {
  <Button 
  variant="outline" 
  size="sm" 
- className={cn("h-10 px-4 font-medium text-xs rounded-xl transition-all", showSidebar ? "bg-primary text-white border-indigo-600" : "bg-white border-border text-muted-foreground hover:bg-muted")}
+  className={cn("h-10 px-4 font-medium text-xs rounded-xl transition-all", showSidebar ? "bg-primary text-white border-indigo-600" : "bg-background border-border text-muted-foreground hover:bg-muted")}
  onClick={() => setShowSidebar(!showSidebar)}
  >
  {showSidebar ? <PanelRightClose size={16} className="mr-2" /> : <PanelRightOpen size={16} className="mr-2" />}
  {showSidebar ? "Hide Sidebar" : "Show Sidebar"}
  </Button>
- <Button variant="outline" size="sm" className="bg-white rounded-xl border-border text-chart-primary h-10 px-4 font-medium text-xs" onClick={handleCopySummary}>
+ <Button variant="outline" size="sm" className="bg-background rounded-xl border-border text-chart-primary h-10 px-4 font-medium text-xs" onClick={handleCopySummary}>
  {copied ? <Check size={16} className="mr-2 text-chart-emerald" /> : <Copy size={16} className="mr-2" />}
  Copy Summary
  </Button>
@@ -184,13 +184,13 @@ const DemoSessionPage = () => {
 
  <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
  <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-8 transition-all duration-500")}>
- <Card className="border-none shadow-sm rounded-xl bg-white overflow-hidden">
+ <Card className="border-none shadow-sm rounded-xl bg-background overflow-hidden">
  <div className="p-6 border-b border-border bg-muted/30">
  <div className="flex items-start gap-5">
  <div className="w-16 h-16 rounded-xl bg-primary text-white flex items-center justify-center text-2xl font-semibold shadow-sm">A</div>
  <div className="space-y-2">
  <div className="flex items-center gap-3">
- <Badge variant="secondary" className="font-medium bg-white border-border text-muted-foreground">{appointment.display_id}</Badge>
+ <Badge variant="secondary" className="font-medium bg-background border-border text-muted-foreground">{appointment.display_id}</Badge>
  <Badge className="bg-primary text-white border-none">{appointment.tag}</Badge>
  </div>
  <h1 className="text-3xl font-semibold text-foreground">{appointment.clients.name}</h1>

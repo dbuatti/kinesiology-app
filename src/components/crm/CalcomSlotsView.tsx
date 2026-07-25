@@ -653,7 +653,7 @@ const CalcomSlotsView = () => {
             <Button 
               onClick={fetchSlots} 
               disabled={loading}
-              className="rounded-xl h-10 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-100"
+              className="rounded-xl h-10 px-6 bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-amber-200/50"
             >
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw size={14} className="mr-2" />}
               Refresh
@@ -798,7 +798,7 @@ const CalcomSlotsView = () => {
           {groupedWeeks.map((week, weekIdx) => (
             <div key={weekIdx} className="space-y-8">
               <div className="flex items-center gap-4 px-4">
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-amber-100/70 dark:bg-amber-950/30 flex items-center justify-center text-amber-600 shadow-sm">
                   <CalendarDays size={20} />
                 </div>
                 <h3 className="text-xl font-serif font-bold uppercase tracking-widest text-slate-400">
@@ -852,7 +852,7 @@ const CalcomSlotsView = () => {
                           <div className="flex items-center gap-4">
                             <div className={cn(
                               "w-12 h-12 rounded-2xl flex items-center justify-center shadow-xl transition-all duration-500",
-                              isBlocked ? "bg-slate-400 scale-95" : "bg-indigo-600"
+                              isBlocked ? "bg-slate-400 scale-95" : "bg-gradient-to-br from-amber-500 to-rose-500"
                             )}>
                               {isBlocked ? <Ban size={24} className="text-white" /> : <Calendar size={24} className="text-white" />}
                             </div>
@@ -983,7 +983,7 @@ const CalcomSlotsView = () => {
                                       <button 
                                         key={idx} 
                                         onClick={() => handleSlotClick(date, timeStr)}
-                                        className="flex items-center justify-center p-2.5 rounded-xl bg-muted/50 border border-border text-[10px] font-black text-foreground hover:bg-indigo-600 hover:border-indigo-600 hover:text-white transition-all group/slot shadow-sm"
+                                        className="flex items-center justify-center p-2.5 rounded-xl bg-muted/50 border border-border text-[10px] font-black text-foreground hover:bg-gradient-to-br hover:from-amber-500 hover:to-rose-500 hover:border-amber-500 hover:text-white transition-all group/slot shadow-sm"
                                       >
                                         <Clock size={12} className="mr-1.5 opacity-40 group-hover/slot:opacity-100 transition-opacity" />
                                         {format(new Date(timeStr), "h:mm a")}
@@ -1132,7 +1132,7 @@ const CalcomSlotsView = () => {
           <div className="p-10">
             <DialogHeader className="mb-8">
               <div className="flex items-center gap-4 mb-2">
-                <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xl">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-rose-500 text-white flex items-center justify-center shadow-xl">
                   <CalendarPlus size={28} />
                 </div>
                 <div>
@@ -1163,7 +1163,7 @@ const CalcomSlotsView = () => {
           <div className="p-8">
             <DialogHeader className="mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-rose-500 text-white flex items-center justify-center shadow-lg">
                   <CalendarPlus size={22} />
                 </div>
                 <div>

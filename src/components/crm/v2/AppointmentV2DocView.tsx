@@ -9,10 +9,11 @@ import PathwayFindingsList from "@/components/crm/PathwayFindingsList";
 import CheckItem from "@/components/crm/document-view/CheckItem";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
-import { PRIMARY_14_MUSCLES } from "@/data/muscle-data";
+import { MUSCLE_GROUPS, MIDLINE_MUSCLES } from "@/data/muscle-data";
 import { getMuscleInfo } from "@/data/muscle-info-data";
 import { AppointmentWithClient } from "@/types/crm";
 import { safeParse } from "@/utils/safe-json";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DocViewProps {
   appointment: AppointmentWithClient;
@@ -125,6 +126,23 @@ const EditableNumberField = ({ label, value, field, onSave, editable = false, su
 
 const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = false, saveField, updatePriorityPattern }: DocViewProps) => {
   const handlePrint = () => window.print();
+  const [clientName, setClientName] = useState(appointment.clients?.name || "");
+
+  const handleSaveClientName = async () => {
+    if (!clientName.trim() || clientName === appointment.clients?.name) return;
+    const clientId = appointment.clients?.id;
+    if (!clientId) return;
+    const { error } = await supabase
+      .from('clients')
+      .update({ name: clientName.trim() })
+      .eq('id', clientId);
+    if (error) {
+      console.error("Failed to save client name:", error);
+      return;
+    }
+    // Update local appointment state
+    saveField('clients', { ...appointment.clients, name: clientName.trim() });
+  };
 
   const pattern = safeParse(appointment.priority_pattern, {} as any);
 
@@ -147,6 +165,10 @@ const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = fal
   const muscleDesc = (name: string) => {
     const info = getMuscleInfo(name);
     return info.meridian || undefined;
+  };
+  const muscleTestPos = (name: string) => {
+    const info = getMuscleInfo(name);
+    return info.testingPosition || undefined;
   };
   const correctionsHistory = metadata?.corrections || [];
 
@@ -191,7 +213,19 @@ const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = fal
               <div className="space-y-2">
                 <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-muted-foreground">Clinical Session Notes</p>
                 <h1 className="text-[22px] font-bold tracking-tight text-foreground leading-tight">
-                  {appointment.clients?.name || "Client Session"}
+                  {editable ? (
+                    <input
+                      type="text"
+                      value={clientName}
+                      onChange={(e) => setClientName(e.target.value)}
+                      onBlur={handleSaveClientName}
+                      onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+                      className="w-full bg-transparent border-b-2 border-dashed border-border/40 focus:outline-none focus:border-primary/50 transition-colors"
+                      placeholder="Client name"
+                    />
+                  ) : (
+                    appointment.clients?.name || "Client Session"
+                  )}
                 </h1>
                 <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                   <span>{format(new Date(appointment.date), "EEEE, MMMM d, yyyy")}</span>
@@ -292,15 +326,19 @@ const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = fal
               </div>
             )}
 
-            {/* Muscle Assessment — Primary 14 */}
+            {/* Muscle Assessment — Intrinsic Stabilisation */}
             {(editable || hasPatternCategory('muscles')) && (
               <div className="mb-4 pb-4 border-b border-border/30">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Muscle Assessment — Primary 14</p>
+                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Muscle Assessment — Intrinsic Stabilisation</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
-                  {PRIMARY_14_MUSCLES.map(m => (
+                  {(MUSCLE_GROUPS['Intrinsic Stabilisation'] || []).map(m => MIDLINE_MUSCLES.includes(m) ? (
                     <Fragment key={m}>
-                      <CheckItem category="muscles" name={m} side="L" pattern={pattern} description={muscleDesc(m)} onToggle={handleAssessmentToggle} />
-                      <CheckItem category="muscles" name={m} side="R" pattern={pattern} description={muscleDesc(m)} onToggle={handleAssessmentToggle} />
+                      <CheckItem category="muscles" name={m} pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} onToggle={handleAssessmentToggle} />
+                    </Fragment>
+                  ) : (
+                    <Fragment key={m}>
+                      <CheckItem category="muscles" name={m} side="L" pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} onToggle={handleAssessmentToggle} />
+                      <CheckItem category="muscles" name={m} side="R" pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} onToggle={handleAssessmentToggle} />
                     </Fragment>
                   ))}
                 </div>

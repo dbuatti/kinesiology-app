@@ -60,13 +60,13 @@ const ImportPage = () => {
 
  <Alert className="bg-chart-primary/10 border-border">
  <Info className="h-4 w-4 text-chart-primary" />
- <AlertDescription className="text-sm text-blue-900">
+ <AlertDescription className="text-sm text-foreground">
  <strong>Important:</strong> Client names in your CSV must match existing clients in the database. 
  The importer will automatically extract names from Notion URL formats and skip appointments with duplicate IDs.
  </AlertDescription>
  </Alert>
 
- <Card className="border-none shadow-sm rounded-xl bg-white">
+ <Card className="border-none shadow-sm rounded-xl bg-card">
  <CardHeader>
  <CardTitle className="text-lg">Upload CSV File</CardTitle>
  <CardDescription>Select a CSV file exported from your Notion database</CardDescription>
@@ -98,7 +98,7 @@ const ImportPage = () => {
  disabled={loading || !file}
  className={cn(
  "w-full h-11",
- file ? "bg-primary hover:bg-primary/90" : "bg-slate-300 text-muted-foreground cursor-not-allowed"
+ file ? "bg-primary hover:bg-primary/90" : "bg-muted text-muted-foreground cursor-not-allowed"
  )}
  >
  {loading ? (

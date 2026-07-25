@@ -58,8 +58,8 @@ const IdentityAlignmentPage = () => {
   <Info size={14} />
   </div>
   <div className="space-y-1">
-  <h4 className="font-semibold text-blue-900 text-[10px] uppercase tracking-wider">Practitioner's Playbook</h4>
-  <p className="text-xs text-blue-800/70 leading-relaxed font-medium">
+  <h4 className="font-semibold text-chart-primary text-[10px] uppercase tracking-wider">Practitioner's Playbook</h4>
+  <p className="text-xs text-chart-primary/70 leading-relaxed font-medium">
   The Identity Alignment Protocol is most effective when the client is in a state of autonomic safety. If you detect high sympathetic arousal, pause and use a down-regulation technique.
   </p>
   </div>

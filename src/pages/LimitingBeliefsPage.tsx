@@ -72,7 +72,7 @@ const LimitingBeliefsPage = () => {
   <Info className="text-destructive" size={14} />
   </div>
   <div className="space-y-1">
-  <h4 className="font-semibold text-rose-900 text-[10px] uppercase tracking-wider">Practitioner Note</h4>
+  <h4 className="font-semibold text-destructive text-[10px] uppercase tracking-wider">Practitioner Note</h4>
   <p className="text-xs text-chart-destructive/70 leading-relaxed font-medium">
   This protocol is based on the "Psychology of Suffering and Limiting Beliefs" framework. It works by creating cognitive and emotional flexibility between the limiting identity and the desired positive identity.
   </p>

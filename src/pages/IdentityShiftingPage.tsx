@@ -58,7 +58,7 @@ const IdentityShiftingPage = () => {
   <Info className="text-primary" size={14} />
   </div>
   <div className="space-y-1">
-  <h4 className="font-semibold text-indigo-900 text-[10px] uppercase tracking-wider">Practitioner Note</h4>
+  <h4 className="font-semibold text-primary text-[10px] uppercase tracking-wider">Practitioner Note</h4>
   <p className="text-xs text-chart-primary/70 leading-relaxed font-medium">
   Identity shifting is a powerful tool for deep transformation. It is most effective when the practitioner is in a grounded, neutral state. If you feel overwhelmed during the process, take a break and return to the "Learn" section to ground yourself in the philosophical foundations.
   </p>

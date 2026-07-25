@@ -150,7 +150,7 @@ const BusinessDashboardPage = () => {
         {/* Quick Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <SummaryCard icon={Calendar} label="Today" value={`${d.todayTotal} sessions`}
-            sub={fmt(d.todayRevenue) + ' today'} color="text-blue-600" />
+            sub={fmt(d.todayRevenue) + ' today'} color="text-chart-primary" />
           <SummaryCard icon={Clock} label="This Month" value={fmt(d.monthKine + d.monthVoice)}
             sub={`FNH ${fmt(d.monthKine)} · Voice ${fmt(d.monthVoice)}`} color="text-emerald-600" />
           <SummaryCard icon={Users} label="Active" value={`${d.activeKineCount} FNH`}

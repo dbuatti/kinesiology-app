@@ -119,16 +119,16 @@ const JointActionExplorer = () => {
   return (
     <div className="space-y-6">
       {/* Header Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/50 p-4 rounded-2xl border border-border">
         <div className="space-y-1">
-          <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Joint Action Explorer</h3>
-          <p className="text-xs text-slate-500 font-medium">Master the planes of motion and joint actions.</p>
+          <h3 className="text-sm font-black text-muted-foreground uppercase tracking-widest">Joint Action Explorer</h3>
+          <p className="text-xs text-muted-foreground font-medium">Master the planes of motion and joint actions.</p>
         </div>
         <Button 
           onClick={handleToggleQuizMode}
           className={cn(
             "rounded-xl h-10 px-6 font-black text-[10px] uppercase tracking-widest shadow-sm transition-all",
-            isQuizMode ? "bg-rose-600 hover:bg-rose-700 text-white" : "bg-indigo-600 hover:bg-indigo-700 text-white"
+            isQuizMode ? "bg-rose-600 hover:bg-rose-700 text-primary-foreground" : "bg-indigo-600 hover:bg-indigo-700 text-primary-foreground"
           )}
         >
           {isQuizMode ? <XCircle size={14} className="mr-2" /> : <GraduationCap size={14} className="mr-2" />}
@@ -141,10 +141,10 @@ const JointActionExplorer = () => {
           {/* Sidebar List */}
           <div className="lg:col-span-4 space-y-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
               <Input 
                 placeholder="Search 15 joints..." 
-                className="pl-10 h-11 rounded-2xl border-slate-200 bg-white"
+                className="pl-10 h-11 rounded-2xl border-border bg-card"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -158,8 +158,8 @@ const JointActionExplorer = () => {
                     className={cn(
                       "w-full p-4 rounded-2xl border-2 text-left transition-all group",
                       selectedJoint.name === joint.name 
-                        ? "bg-indigo-600 border-indigo-600 text-white shadow-lg" 
-                        : "bg-white border-slate-100 hover:border-indigo-200 text-slate-600"
+                        ? "bg-indigo-600 border-indigo-600 text-primary-foreground shadow-lg" 
+                        : "bg-card border-border/50 hover:border-indigo-200 text-muted-foreground"
                     )}
                   >
                     <div className="flex items-center justify-between">
@@ -168,19 +168,19 @@ const JointActionExplorer = () => {
                         <div className="flex gap-1 mt-1">
                           <Badge className={cn(
                             "border-none font-black text-[6px] uppercase tracking-widest px-1.5 py-0 rounded-full",
-                            selectedJoint.name === joint.name ? "bg-white/20 text-white" : "bg-slate-100 text-slate-400"
+                            selectedJoint.name === joint.name ? "bg-card/20 text-primary-foreground" : "bg-muted text-muted-foreground"
                           )}>
                             {joint.type}
                           </Badge>
                           <Badge className={cn(
                             "border-none font-black text-[6px] uppercase tracking-widest px-1.5 py-0 rounded-full",
-                            selectedJoint.name === joint.name ? "bg-white/20 text-white" : "bg-slate-100 text-slate-400"
+                            selectedJoint.name === joint.name ? "bg-card/20 text-primary-foreground" : "bg-muted text-muted-foreground"
                           )}>
                             {joint.region}
                           </Badge>
                         </div>
                       </div>
-                      <ChevronRight size={16} className={cn("transition-transform", selectedJoint.name === joint.name ? "translate-x-1" : "text-slate-300")} />
+                      <ChevronRight size={16} className={cn("transition-transform", selectedJoint.name === joint.name ? "translate-x-1" : "text-muted-foreground/60")} />
                     </div>
                   </button>
                 ))}
@@ -189,15 +189,15 @@ const JointActionExplorer = () => {
           </div>
 
           {/* Detail View */}
-          <Card className="lg:col-span-8 border-none shadow-xl rounded-[3rem] bg-white overflow-hidden">
-            <CardHeader className="bg-slate-50 border-b border-slate-100 p-8">
+          <Card className="lg:col-span-8 border-none shadow-xl rounded-[3rem] bg-card overflow-hidden">
+            <CardHeader className="bg-muted/50 border-b border-border/50 p-8">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-primary-foreground flex items-center justify-center shadow-lg">
                     <Move size={24} />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-black text-slate-900">{selectedJoint.name}</CardTitle>
+                    <CardTitle className="text-2xl font-black text-foreground">{selectedJoint.name}</CardTitle>
                     <CardDescription className="font-bold text-[10px] uppercase tracking-widest text-indigo-600">
                       {selectedJoint.type} Skeleton • {selectedJoint.region} Body
                     </CardDescription>
@@ -213,24 +213,24 @@ const JointActionExplorer = () => {
               <div className="space-y-8">
                 {Object.entries(selectedJoint.actions).map(([plane, actions]) => (
                   <div key={plane} className="space-y-4">
-                    <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                    <div className="flex items-center gap-2 border-b border-border/50 pb-2">
                       {plane === 'Sagittal' ? <Zap size={16} className="text-blue-500" /> :
                        plane === 'Frontal' ? <Move size={16} className="text-emerald-500" /> :
                        <RefreshCw size={16} className="text-orange-500" />}
-                      <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">{plane} Plane Actions</h4>
+                      <h4 className="text-xs font-black text-muted-foreground uppercase tracking-widest">{plane} Plane Actions</h4>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {actions.map((action, idx) => (
                         <div key={idx} className={cn(
                           "p-4 rounded-2xl border-2 transition-all",
-                          action.label === '-' ? "bg-slate-50 border-slate-100 opacity-50" : "bg-white border-slate-50 hover:border-indigo-100 shadow-sm"
+                          action.label === '-' ? "bg-muted/50 border-border/50 opacity-50" : "bg-card border-slate-50 hover:border-indigo-100 shadow-sm"
                         )}>
                           <div className="flex items-center gap-2 mb-2">
                             <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none font-black text-[10px] uppercase tracking-widest rounded-full">
                               {action.label}
                             </Badge>
                           </div>
-                          <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                          <p className="text-xs text-muted-foreground font-medium leading-relaxed">
                             {action.howTo}
                           </p>
                         </div>
@@ -241,7 +241,7 @@ const JointActionExplorer = () => {
               </div>
 
               <div className="p-6 bg-indigo-50 rounded-[2rem] border-2 border-indigo-100 flex items-start gap-5">
-                <div className="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-indigo-600 shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-card shadow-sm flex items-center justify-center text-indigo-600 shrink-0">
                   <Lightbulb size={24} />
                 </div>
                 <div className="space-y-1">
@@ -253,22 +253,22 @@ const JointActionExplorer = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-5 bg-slate-900 text-white rounded-[2rem] space-y-3">
+                <div className="p-5 bg-foreground text-primary-foreground rounded-[2rem] space-y-3">
                   <div className="flex items-center gap-2 text-blue-400">
                     <Brain size={16} />
                     <span className="text-[10px] font-black uppercase tracking-widest">Conscious Logic</span>
                   </div>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Hold <span className="text-white font-bold">Contralateral S1</span>. Perform 30-40% isometric hold in the restricted action for 60s.
+                  <p className="text-xs text-muted-foreground/60 leading-relaxed">
+                    Hold <span className="text-primary-foreground font-bold">Contralateral S1</span>. Perform 30-40% isometric hold in the restricted action for 60s.
                   </p>
                 </div>
-                <div className="p-5 bg-slate-900 text-white rounded-[2rem] space-y-3">
+                <div className="p-5 bg-foreground text-primary-foreground rounded-[2rem] space-y-3">
                   <div className="flex items-center gap-2 text-emerald-400">
                     <Activity size={16} />
                     <span className="text-[10px] font-black uppercase tracking-widest">Unconscious Logic</span>
                   </div>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Hold <span className="text-white font-bold">Ipsilateral GV16</span>. Stretch the priority ligament and apply tuning fork to cranium.
+                  <p className="text-xs text-muted-foreground/60 leading-relaxed">
+                    Hold <span className="text-primary-foreground font-bold">Ipsilateral GV16</span>. Stretch the priority ligament and apply tuning fork to cranium.
                   </p>
                 </div>
               </div>
@@ -278,11 +278,11 @@ const JointActionExplorer = () => {
       ) : (
         /* Quiz Mode UI */
         <div className="max-w-3xl mx-auto space-y-6 animate-in zoom-in-95 duration-300">
-          <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
-            <CardHeader className="bg-indigo-900 text-white p-8">
+          <Card className="border-none shadow-xl rounded-[2.5rem] bg-card overflow-hidden">
+            <CardHeader className="bg-indigo-900 text-primary-foreground p-8">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-card/10 flex items-center justify-center">
                     <GraduationCap size={20} className="text-indigo-300" />
                   </div>
                   <div>
@@ -299,12 +299,12 @@ const JointActionExplorer = () => {
             <CardContent className="p-8 space-y-8">
               {quizJoint && quizPlane && (
                 <div className="space-y-6">
-                  <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 text-center space-y-2">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">The Question</p>
-                    <h3 className="text-2xl font-black text-slate-900">
+                  <div className="p-6 bg-muted/50 rounded-2xl border border-border/50 text-center space-y-2">
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">The Question</p>
+                    <h3 className="text-2xl font-black text-foreground">
                       Which of the following are valid actions for the <span className="text-indigo-600">"{quizJoint.name}"</span> in the <span className="text-indigo-600">"{quizPlane}"</span> plane?
                     </h3>
-                    <p className="text-xs text-slate-500 font-medium">Select all that apply, then click Submit.</p>
+                    <p className="text-xs text-muted-foreground font-medium">Select all that apply, then click Submit.</p>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -324,10 +324,10 @@ const JointActionExplorer = () => {
                                 ? "bg-emerald-50 border-emerald-500 text-emerald-700"
                                 : isSelected
                                   ? "bg-rose-50 border-rose-500 text-rose-700"
-                                  : "bg-slate-50 border-slate-100 text-slate-400"
+                                  : "bg-muted/50 border-border/50 text-muted-foreground"
                               : isSelected
                                 ? "bg-indigo-50 border-indigo-600 text-indigo-900"
-                                : "bg-white border-slate-100 hover:border-indigo-200 text-slate-600"
+                                : "bg-card border-border/50 hover:border-indigo-200 text-muted-foreground"
                           )}
                         >
                           <span>{option}</span>
@@ -339,15 +339,15 @@ const JointActionExplorer = () => {
                   </div>
 
                   {quizSubmitted && (
-                    <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 space-y-4 animate-in fade-in duration-500">
-                      <h4 className="font-black text-xs uppercase tracking-widest text-slate-500">Correct Actions & Explanations:</h4>
+                    <div className="p-6 bg-muted/50 rounded-2xl border border-border/50 space-y-4 animate-in fade-in duration-500">
+                      <h4 className="font-black text-xs uppercase tracking-widest text-muted-foreground">Correct Actions & Explanations:</h4>
                       <div className="space-y-3">
                         {quizJoint.actions[quizPlane]
                           .filter(a => a.label !== '-')
                           .map((action, idx) => (
-                            <div key={idx} className="p-3 bg-white rounded-xl border border-slate-200 text-xs">
+                            <div key={idx} className="p-3 bg-card rounded-xl border border-border text-xs">
                               <span className="font-black text-indigo-600 uppercase">{action.label}</span>
-                              <p className="text-slate-600 font-medium mt-1">{action.howTo}</p>
+                              <p className="text-muted-foreground font-medium mt-1">{action.howTo}</p>
                             </div>
                           ))}
                       </div>
@@ -359,14 +359,14 @@ const JointActionExplorer = () => {
                       <Button 
                         onClick={handleSubmitQuiz}
                         disabled={selectedAnswers.length === 0}
-                        className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest shadow-lg"
+                        className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-primary-foreground font-black text-xs uppercase tracking-widest shadow-lg"
                       >
                         Submit Answer
                       </Button>
                     ) : (
                       <Button 
                         onClick={startNewQuizQuestion}
-                        className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest shadow-lg"
+                        className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-primary-foreground font-black text-xs uppercase tracking-widest shadow-lg"
                       >
                         Next Question <ChevronRight size={16} className="ml-1" />
                       </Button>

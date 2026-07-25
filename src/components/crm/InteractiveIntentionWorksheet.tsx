@@ -51,7 +51,7 @@ const STEPS = [
       { id: "q2_3", label: "What would your life look like if these patterns no longer controlled you?", sub: "Paint the picture. Be specific." }
     ],
     icon: Wind,
-    color: "bg-blue-600"
+    color: "bg-primary"
   },
   {
     id: "part3",
@@ -178,7 +178,7 @@ const InteractiveIntentionWorksheet = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 print:space-y-4 print:max-w-none">
       {/* Header - Hidden on Print */}
-      <div className="relative rounded-[3.5rem] overflow-hidden bg-slate-950 text-white p-12 shadow-2xl group border border-slate-800 print:hidden">
+      <div className="relative rounded-[3.5rem] overflow-hidden bg-foreground text-primary-foreground p-12 shadow-2xl group border border-border print:hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-slate-950 to-purple-900/40" />
         <div className="relative z-10 flex flex-col items-center text-center space-y-6">
           <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-2xl">
@@ -189,7 +189,7 @@ const InteractiveIntentionWorksheet = () => {
               Practitioner Development
             </Badge>
             <h1 className="text-4xl font-black tracking-tighter">Setting Your North Star</h1>
-            <p className="text-lg text-slate-400 font-medium max-w-xl mx-auto italic">
+            <p className="text-lg text-muted-foreground font-medium max-w-xl mx-auto italic">
               "Clarity of intention is the foundation of transformation."
             </p>
           </div>
@@ -204,9 +204,9 @@ const InteractiveIntentionWorksheet = () => {
       </div>
 
       {/* Print Header - Only visible on Print */}
-      <div className="hidden print:block border-b-2 border-slate-200 pb-4 mb-8">
+      <div className="hidden print:block border-b-2 border-border pb-4 mb-8">
         <h1 className="text-3xl font-bold">Intention Reflection Sheet: Setting Your North Star</h1>
-        <p className="text-slate-500 italic">Integrated Healer Program</p>
+        <p className="text-muted-foreground italic">Integrated Healer Program</p>
       </div>
 
       {/* Step Navigation Tabs - Hidden on Print */}
@@ -218,14 +218,14 @@ const InteractiveIntentionWorksheet = () => {
             className={cn(
               "flex-1 min-w-[120px] p-3 rounded-2xl border-2 transition-all text-left group",
               currentStep === i 
-                ? "bg-white border-indigo-600 shadow-lg scale-105" 
-                : "bg-slate-100 border-transparent hover:bg-white hover:border-slate-200"
+                ? "bg-card border-indigo-600 shadow-lg scale-105" 
+                : "bg-muted border-transparent hover:bg-card hover:border-border"
             )}
           >
             <div className="flex items-center justify-between mb-1">
               <span className={cn(
                 "text-[8px] font-black uppercase tracking-widest",
-                currentStep === i ? "text-indigo-600" : "text-slate-400"
+                currentStep === i ? "text-indigo-600" : "text-muted-foreground"
               )}>Part {i + 1}</span>
               {s.questions.every(q => formData[q.id]?.length > 10) && (
                 <CheckCircle2 size={12} className="text-emerald-500" />
@@ -233,7 +233,7 @@ const InteractiveIntentionWorksheet = () => {
             </div>
             <p className={cn(
               "text-[10px] font-bold truncate",
-              currentStep === i ? "text-slate-900" : "text-slate-50"
+              currentStep === i ? "text-foreground" : "text-primary-foreground"
             )}>
               {s.title.split(': ')[1]}
             </p>
@@ -245,11 +245,11 @@ const InteractiveIntentionWorksheet = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 print:block">
         {/* Left Side: Context & Tips - Hidden on Print */}
         <div className="lg:col-span-1 space-y-6 print:hidden">
-          <Card className={cn("border-none shadow-lg rounded-[2.5rem] text-white overflow-hidden relative h-full", stepData.color)}>
+          <Card className={cn("border-none shadow-lg rounded-[2.5rem] text-primary-foreground overflow-hidden relative h-full", stepData.color)}>
              <div className="absolute top-0 right-0 p-6 opacity-10"><stepData.icon size={100} /></div>
              <CardHeader className="relative z-10">
                <CardTitle className="text-xl font-black">{stepData.title}</CardTitle>
-               <CardDescription className="text-white/80 font-medium">{stepData.description}</CardDescription>
+               <CardDescription className="text-primary-foreground/80 font-medium">{stepData.description}</CardDescription>
              </CardHeader>
              <CardContent className="relative z-10 space-y-6">
                <div className="p-4 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-sm">
@@ -278,11 +278,11 @@ const InteractiveIntentionWorksheet = () => {
             {stepData.questions.map((question) => (
               <div key={question.id} className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
                 <div className="space-y-1">
-                  <label className="text-lg font-black text-slate-900">{question.label}</label>
-                  <p className="text-sm text-slate-500 font-medium">{question.sub}</p>
+                  <label className="text-lg font-black text-foreground">{question.label}</label>
+                  <p className="text-sm text-muted-foreground font-medium">{question.sub}</p>
                 </div>
                 <Textarea
-                  className="min-h-[150px] rounded-2xl border-2 border-slate-100 focus:border-indigo-500 bg-white p-8 text-lg font-medium leading-relaxed shadow-inner resize-none transition-all"
+                  className="min-h-[150px] rounded-2xl border-2 border-border/50 focus:border-indigo-500 bg-card p-8 text-lg font-medium leading-relaxed shadow-inner resize-none transition-all"
                   placeholder="Write freely here..."
                   value={formData[question.id] || ""}
                   onChange={(e) => handleInputChange(question.id, e.target.value)}
@@ -296,18 +296,18 @@ const InteractiveIntentionWorksheet = () => {
             {STEPS.flatMap(s => s.questions).map((question) => (
               <div key={`print-${question.id}`} className="space-y-4 break-inside-avoid">
                 <div className="space-y-1">
-                  <label className="text-base font-bold text-slate-900">{question.label}</label>
-                  <p className="text-xs text-slate-500 font-medium">{question.sub}</p>
+                  <label className="text-base font-bold text-foreground">{question.label}</label>
+                  <p className="text-xs text-muted-foreground font-medium">{question.sub}</p>
                 </div>
-                <div className="p-4 border-2 border-slate-100 rounded-xl min-h-[100px] text-slate-800 bg-slate-50/30">
-                  {formData[question.id] || <span className="text-slate-300 italic">No response provided.</span>}
+                <div className="p-4 border-2 border-border/50 rounded-xl min-h-[100px] text-foreground bg-muted/30">
+                  {formData[question.id] || <span className="text-muted-foreground/60 italic">No response provided.</span>}
                 </div>
               </div>
             ))}
           </div>
 
           {/* Step Actions - Hidden on Print */}
-          <div className="flex items-center justify-between pt-10 border-t border-slate-100 print:hidden">
+          <div className="flex items-center justify-between pt-10 border-t border-border/50 print:hidden">
             <Button
               variant="ghost"
               onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
@@ -321,7 +321,7 @@ const InteractiveIntentionWorksheet = () => {
               <Button
                 variant="outline"
                 onClick={() => setShowResetConfirm(true)}
-                className="rounded-xl h-12 px-4 border-slate-200 text-slate-400 hover:text-rose-600"
+                className="rounded-xl h-12 px-4 border-border text-muted-foreground hover:text-rose-600"
               >
                 <RotateCcw size={18} />
               </Button>
@@ -376,14 +376,14 @@ const InteractiveIntentionWorksheet = () => {
                 "I am here to clear the patterns that block my nervous system from feeling safe, so I can finally trust myself and life.",
                 "I am ready to stop performing and start being—to release perfectionism and embrace my messy, beautiful humanity."
               ].map((ex, i) => (
-                <div key={i} className="p-4 bg-white rounded-2xl border border-indigo-100 text-sm italic text-indigo-700 font-medium">
+                <div key={i} className="p-4 bg-card rounded-2xl border border-indigo-100 text-sm italic text-indigo-700 font-medium">
                   "{ex}"
                 </div>
               ))}
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
+          <Card className="border-none shadow-lg rounded-[2.5rem] bg-foreground text-primary-foreground overflow-hidden">
             <CardHeader>
               <CardTitle className="text-xl font-black flex items-center gap-2">
                 <Compass size={20} className="text-amber-400" /> How to Use Your Intention
@@ -396,7 +396,7 @@ const InteractiveIntentionWorksheet = () => {
                 </div>
                 <div>
                   <h4 className="font-bold text-sm">Daily Practice</h4>
-                  <p className="text-xs text-slate-400 mt-1">Read your intention every morning before you journal. Let it ground you.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Read your intention every morning before you journal. Let it ground you.</p>
                 </div>
               </div>
               <div className="flex gap-4">
@@ -405,7 +405,7 @@ const InteractiveIntentionWorksheet = () => {
                 </div>
                 <div>
                   <h4 className="font-bold text-sm">When Resistance Shows Up</h4>
-                  <p className="text-xs text-slate-400 mt-1">Ask: "What would the version of me who has realized this intention do right now?"</p>
+                  <p className="text-xs text-muted-foreground mt-1">Ask: "What would the version of me who has realized this intention do right now?"</p>
                 </div>
               </div>
               <div className="pt-4 border-t border-white/10">
@@ -413,7 +413,7 @@ const InteractiveIntentionWorksheet = () => {
                   <Share2 size={16} />
                   <span className="text-xs font-black uppercase tracking-widest">Sharing (Optional)</span>
                 </div>
-                <p className="text-[10px] text-slate-400 leading-relaxed">
+                <p className="text-[10px] text-muted-foreground leading-relaxed">
                   Sharing creates accountability and gives others permission to be vulnerable. However, some intentions are sacred and personal—honor what feels right for you.
                 </p>
               </div>

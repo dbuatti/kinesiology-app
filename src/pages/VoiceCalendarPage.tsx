@@ -457,6 +457,14 @@ const VoiceCalendarPage = () => {
  Loading lessons...
  </p>
  </div>
+ ) : lessons.length === 0 ? (
+  <div className="flex flex-col items-center justify-center py-16 text-center">
+    <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mb-3">
+      <CalendarIcon size={20} className="text-muted-foreground" />
+    </div>
+    <h3 className="text-sm font-semibold text-foreground mb-1">No lessons scheduled</h3>
+    <p className="text-xs text-muted-foreground max-w-[240px]">Lessons will appear here once students book sessions.</p>
+  </div>
  ) : (
  <>
  <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden animate-in fade-in duration-500">

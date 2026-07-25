@@ -15,7 +15,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import { safeParse, safeStringify } from "@/utils/safe-json";
 import {
-  ArrowLeft, Activity, FileText, Maximize2, Minimize2, Save
+  ArrowLeft, Activity, FileText, Maximize2, Minimize2, Save, Database
 } from "lucide-react";
 import FooterLinks from "@/components/crm/FooterLinks";
 
@@ -231,7 +231,11 @@ const SandboxV2Page = () => {
             </button>
             <span className="h-4 w-px bg-border/60" />
             <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">Sandbox</span>
-            <span className="text-[10px] text-muted-foreground hidden sm:inline">No data saved</span>
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground hidden sm:flex">
+              <Database size={12} className="text-muted-foreground" />
+              <span className="font-medium">No data saved</span>
+              <span className="text-muted-foreground/60">— Save your progress to see it here.</span>
+            </div>
           </div>
 
           <div className="flex items-center gap-1">

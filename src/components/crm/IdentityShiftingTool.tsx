@@ -464,7 +464,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
             placeholder="What is the problem or pattern you're facing?" 
             value={formData.problem}
             onChange={(e) => setFormData({ ...formData, problem: e.target.value })}
-            className="min-h-[56px] rounded-xl border border-border focus:border-indigo-500 bg-white p-3 text-sm font-medium leading-relaxed resize-none transition-all"
+            className="min-h-[56px] rounded-xl border border-border bg-white p-3 text-sm font-medium leading-relaxed resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
           />
         </div>
         
@@ -484,7 +484,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
               placeholder="Where is it in the body?" 
               value={formData.feltSense}
               onChange={(e) => setFormData({ ...formData, feltSense: e.target.value })}
-              className="h-9 rounded-lg border border-border px-4 text-sm font-medium bg-white"
+              className="h-9 rounded-lg border border-border px-4 text-sm font-medium bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
             />
           </div>
         </div>
@@ -504,7 +504,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
             placeholder="Who are you being when you have this problem?"
             value={formData.identity}
             onChange={(e) => setFormData({ ...formData, identity: e.target.value })}
-            className="h-9 rounded-lg border border-border px-4 text-sm font-medium bg-white"
+            className="h-9 rounded-lg border border-border px-4 text-sm font-medium bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
           />
           {suggestions.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-3">
@@ -680,15 +680,15 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
           <div className="space-y-3">
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground ml-1">1. How do you feel about the problem now?</Label>
-              <Input value={formData.feelingsNow} onChange={e => setFormData({...formData, feelingsNow: e.target.value})} className="rounded-lg h-9 border border-border px-4 text-sm font-medium bg-white" />
+              <Input value={formData.feelingsNow} onChange={e => setFormData({...formData, feelingsNow: e.target.value})} className="rounded-lg h-9 border border-border px-4 text-sm font-medium bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground ml-1">2. What are you more conscious of now than before?</Label>
-              <Input value={formData.moreConsciousOf} onChange={e => setFormData({...formData, moreConsciousOf: e.target.value})} className="rounded-lg h-9 border border-border px-4 text-sm font-medium bg-white" />
+              <Input value={formData.moreConsciousOf} onChange={e => setFormData({...formData, moreConsciousOf: e.target.value})} className="rounded-lg h-9 border border-border px-4 text-sm font-medium bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground ml-1">3. What's your new intention?</Label>
-              <Input value={formData.newIntention} onChange={e => setFormData({...formData, newIntention: e.target.value})} className="rounded-lg h-9 border border-border px-4 text-sm font-medium bg-white" />
+              <Input value={formData.newIntention} onChange={e => setFormData({...formData, newIntention: e.target.value})} className="rounded-lg h-9 border border-border px-4 text-sm font-medium bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
             </div>
           </div>
         </div>
@@ -698,11 +698,11 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
           <div className="space-y-3">
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground ml-1">1. How are you going to put that intention or awareness into action?</Label>
-              <Input value={formData.actionPlan} onChange={e => setFormData({...formData, actionPlan: e.target.value})} className="rounded-lg h-9 border border-border px-4 text-sm font-medium bg-white" />
+              <Input value={formData.actionPlan} onChange={e => setFormData({...formData, actionPlan: e.target.value})} className="rounded-lg h-9 border border-border px-4 text-sm font-medium bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground ml-1">2. What is the No.1 thing to do to make that happen?</Label>
-              <Input value={formData.no1Thing} onChange={e => setFormData({...formData, no1Thing: e.target.value})} className="rounded-lg h-9 border border-border px-4 text-sm font-medium bg-white" />
+              <Input value={formData.no1Thing} onChange={e => setFormData({...formData, no1Thing: e.target.value})} className="rounded-lg h-9 border border-border px-4 text-sm font-medium bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
             </div>
           </div>
         </div>

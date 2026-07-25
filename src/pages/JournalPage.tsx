@@ -536,14 +536,12 @@ const JournalPage = () => {
 
             <div className="grid grid-cols-1 gap-6">
               {reflections.length === 0 ? (
-                <div className="text-center py-24 bg-muted rounded-xl border-2 border-dashed border-border">
-                  <div className="w-16 h-16 bg-card rounded-xl flex items-center justify-center mx-auto mb-5 shadow-sm">
-                    <BookOpen size={28} className="text-muted-foreground" />
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mb-3">
+                    <BookOpen size={20} className="text-muted-foreground" />
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground">No journal entries yet</h3>
-                  <p className="text-sm text-muted-foreground mt-1 max-w-xs mx-auto">
-                    Write your first reflection above, or link it to a session for clinical tracking.
-                  </p>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">No journal entries</h3>
+                  <p className="text-xs text-muted-foreground max-w-[240px]">Start writing to capture your thoughts and reflections.</p>
                 </div>
               ) : reflections.map((ref) => {
                 const catInfo = CATEGORIES.find(c => c.id === ref.category) || CATEGORIES[0];

@@ -115,7 +115,7 @@ const EmotionAssessment = ({
   const getPrimaryColor = (key: string) => {
     if (mode === 'element') {
       switch (key) {
-        case 'FIRE': return 'bg-red-500 hover:bg-red-600';
+        case 'FIRE': return 'bg-red-500 hover:bg-destructive';
         case 'EARTH': return 'bg-yellow-500 hover:bg-yellow-600';
         case 'METAL': return 'bg-gray-500 hover:bg-gray-600';
         case 'WATER': return 'bg-blue-500 hover:bg-blue-600';
@@ -131,17 +131,17 @@ const EmotionAssessment = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="border-none shadow-lg rounded-2xl bg-white overflow-hidden">
+      <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
         <CollapsibleTrigger asChild>
-          <CardHeader className="bg-gradient-to-r from-red-50 to-pink-50 border-b border-red-100 cursor-pointer hover:from-red-100 hover:to-pink-100 transition-colors">
+          <CardHeader className="bg-gradient-to-r from-red-50 to-pink-50 border-b border-destructive/20 cursor-pointer hover:from-red-100 hover:to-pink-100 transition-colors">
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-200">
-                  <Heart size={24} className="text-white" />
+                <div className="w-12 h-12 bg-destructive rounded-xl flex items-center justify-center shadow-lg shadow-red-200">
+                  <Heart size={24} className="text-primary-foreground" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl font-bold text-slate-900">Emotional Assessment (PS12)</CardTitle>
-                  <CardDescription className="text-slate-600">Identify and balance core emotional context</CardDescription>
+                  <CardTitle className="text-xl font-bold text-foreground">Emotional Assessment (PS12)</CardTitle>
+                  <CardDescription className="text-muted-foreground">Identify and balance core emotional context</CardDescription>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -153,19 +153,19 @@ const EmotionAssessment = ({
                       setShowResetConfirm(true);
                     }}
                     disabled={isSaving}
-                    className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3"
+                    className="border-destructive/20 text-destructive hover:bg-destructive/5 h-8 px-3"
                   >
                     <RotateCcw size={16} className="mr-1" />
                     Reset
                   </Button>
                 )}
                 {isComplete && (
-                  <Badge className="px-4 py-2 text-sm font-bold shadow-sm bg-emerald-500 text-white hover:bg-emerald-600">
+                  <Badge className="px-4 py-2 text-sm font-bold shadow-sm bg-emerald-500 text-primary-foreground hover:bg-emerald-600">
                     Balanced
                   </Badge>
                 )}
                 <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <ChevronDown className={cn("h-5 w-5 transition-transform text-slate-600", isOpen && "rotate-180")} />
+                  <ChevronDown className={cn("h-5 w-5 transition-transform text-muted-foreground", isOpen && "rotate-180")} />
                 </Button>
               </div>
             </div>
@@ -181,15 +181,15 @@ const EmotionAssessment = ({
               </AlertDescription>
             </Alert>
 
-            <div className="space-y-3 p-4 border border-slate-200 rounded-xl bg-slate-50">
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <Layers size={16} className="text-red-600" /> 1. Select Assessment Mode
+            <div className="space-y-3 p-4 border border-border rounded-xl bg-muted/50">
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                <Layers size={16} className="text-destructive" /> 1. Select Assessment Mode
               </h3>
               <div className="flex gap-3">
                 <Button
                   variant={mode === 'channel' ? 'default' : 'outline'}
                   onClick={() => handleModeChange('channel')}
-                  className={cn("flex-1 h-10", mode === 'channel' ? "bg-red-600 hover:bg-red-700" : "border-slate-300 hover:bg-white")}
+                  className={cn("flex-1 h-10", mode === 'channel' ? "bg-destructive hover:bg-destructive" : "border-border hover:bg-card")}
                   disabled={isSaving}
                 >
                   By Channel
@@ -197,7 +197,7 @@ const EmotionAssessment = ({
                 <Button
                   variant={mode === 'element' ? 'default' : 'outline'}
                   onClick={() => handleModeChange('element')}
-                  className={cn("flex-1 h-10", mode === 'element' ? "bg-red-600 hover:bg-red-700" : "border-slate-300 hover:bg-white")}
+                  className={cn("flex-1 h-10", mode === 'element' ? "bg-destructive hover:bg-destructive" : "border-border hover:bg-card")}
                   disabled={isSaving}
                 >
                   By 5 Element
@@ -205,11 +205,11 @@ const EmotionAssessment = ({
               </div>
             </div>
 
-            <div className="space-y-3 p-4 border border-slate-200 rounded-xl bg-white">
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <div className="space-y-3 p-4 border border-border rounded-xl bg-card">
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                 <List size={16} className="text-indigo-600" /> 2. Select {mode === 'channel' ? 'Channel/Meridian' : 'Element'}
               </h3>
-              <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto p-2 border border-slate-100 rounded-lg">
+              <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto p-2 border border-border/50 rounded-lg">
                 {primaryKeys.map((key) => (
                   <Button
                     key={key}
@@ -218,8 +218,8 @@ const EmotionAssessment = ({
                     className={cn(
                       "h-8 text-xs font-semibold",
                       primarySelection === key 
-                        ? getPrimaryColor(key) + " text-white" 
-                        : "border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700"
+                        ? getPrimaryColor(key) + " text-primary-foreground" 
+                        : "border-border bg-muted/50 hover:bg-muted text-foreground/80"
                     )}
                     disabled={isSaving}
                   >
@@ -229,12 +229,12 @@ const EmotionAssessment = ({
               </div>
             </div>
 
-            <div className="space-y-3 p-4 border border-slate-200 rounded-xl bg-slate-50">
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <div className="space-y-3 p-4 border border-border rounded-xl bg-muted/50">
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                 <Zap size={16} className="text-emerald-600" /> 3. Select Specific Emotion/Feeling
               </h3>
               {primarySelection ? (
-                <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto p-2 border border-slate-100 rounded-lg bg-white">
+                <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto p-2 border border-border/50 rounded-lg bg-card">
                   {secondaryOptions.map((emotion) => (
                     <Button
                       key={emotion}
@@ -243,8 +243,8 @@ const EmotionAssessment = ({
                       className={cn(
                         "h-8 text-xs font-semibold",
                         secondarySelections.includes(emotion)
-                          ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
-                          : "border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700"
+                          ? "bg-emerald-600 hover:bg-emerald-700 text-primary-foreground" 
+                          : "border-border bg-muted/50 hover:bg-muted text-foreground/80"
                       )}
                       disabled={isSaving}
                     >
@@ -261,19 +261,19 @@ const EmotionAssessment = ({
               )}
             </div>
 
-            <div className="space-y-4 pt-4 border-t border-slate-100">
-              <Card className="border-2 border-red-200 bg-red-50/50 shadow-none rounded-2xl">
+            <div className="space-y-4 pt-4 border-t border-border/50">
+              <Card className="border-2 border-destructive/20 bg-destructive/5 shadow-none rounded-2xl">
                 <CardContent className="pt-4 space-y-2">
-                  <h4 className="text-sm font-bold text-red-900 uppercase tracking-widest">Current Emotional Focus</h4>
+                  <h4 className="text-sm font-bold text-destructive uppercase tracking-widest">Current Emotional Focus</h4>
                   <div className="flex flex-wrap gap-2">
                     {secondarySelections.length > 0 ? (
                       secondarySelections.map(emotion => (
-                        <Badge key={emotion} className="bg-red-600 hover:bg-red-700 text-white text-base font-extrabold">
+                        <Badge key={emotion} className="bg-destructive hover:bg-destructive text-primary-foreground text-base font-extrabold">
                           {emotion}
                         </Badge>
                       ))
                     ) : (
-                      <p className="text-slate-400 italic text-sm">No emotions selected yet.</p>
+                      <p className="text-muted-foreground italic text-sm">No emotions selected yet.</p>
                     )}
                   </div>
                 </CardContent>

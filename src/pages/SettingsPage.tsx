@@ -77,7 +77,7 @@ const SettingsPage = () => {
             </div>
 
             {/* Intake Form Preview */}
-            <div className="bg-card rounded-[2.5rem] border border-border shadow-sm overflow-hidden">
+            <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
               <div className="p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 flex items-center justify-center">
@@ -151,7 +151,7 @@ const SettingsPage = () => {
              ════════════════════════════════════════════════ */}
           <TabsContent value="integrations" className="space-y-6">
             {/* Integration Status Overview */}
-            <div className="bg-card rounded-[2.5rem] border border-border shadow-sm p-8 space-y-6">
+            <div className="bg-card rounded-xl border border-border shadow-sm p-8 space-y-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                   <Globe size={20} />
@@ -191,7 +191,7 @@ const SettingsPage = () => {
             <DocumentationSettings />
 
             {/* Workflow Debugger */}
-            <div className="bg-card rounded-[2.5rem] border border-border shadow-sm overflow-hidden">
+            <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
               <div className="p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 flex items-center justify-center">
@@ -232,7 +232,7 @@ const SettingsPage = () => {
             </div>
 
             {/* Debug & Demo Tools */}
-            <div className="bg-card rounded-[2.5rem] border border-border shadow-sm overflow-hidden">
+            <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
               <div className="p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 flex items-center justify-center">

@@ -41,14 +41,14 @@ const StripeSettings = () => {
   };
 
   return (
-    <Card className="border-none shadow-xl rounded-[2.5rem] bg-card overflow-hidden border-2 border-indigo-100 dark:border-indigo-900/30">
-      <CardHeader className="p-8 pb-4 bg-indigo-50/50">
+    <Card className="border-none shadow-xl rounded-xl bg-card overflow-hidden border-2 border-indigo-100 dark:border-indigo-900/30">
+      <CardHeader className="p-4 pb-4 bg-indigo-50/50">
         <CardTitle className="text-xl font-black flex items-center gap-3 text-indigo-900">
           <CreditCard size={24} /> Stripe Clinical Payments
         </CardTitle>
         <CardDescription className="text-indigo-700 font-medium">Link your CRM clients to Stripe for seamless Tap-to-Pay and invoicing.</CardDescription>
       </CardHeader>
-      <CardContent className="p-8 pt-0 space-y-6">
+      <CardContent className="p-4 pt-0 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <SettingsActionCard
             title="1. Initialize FNH Product"
@@ -71,7 +71,7 @@ const StripeSettings = () => {
           />
         </div>
 
-        <div className="p-6 bg-amber-50 dark:bg-amber-950/20 rounded-3xl border border-amber-100 dark:border-amber-900/30 space-y-3">
+        <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-100 dark:border-amber-900/30 space-y-3">
           <div className="flex items-center gap-2">
             <Info size={16} className="text-amber-600" />
             <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Automation Active</p>

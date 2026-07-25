@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { DollarSign, RefreshCw, Save, Clock, Info } from "lucide-react";
+import { DollarSign, RefreshCw, Save, Clock, Info, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -115,7 +115,9 @@ const PricingSettings = () => {
       </CardHeader>
       <CardContent className="p-8 pt-6 space-y-4">
         {isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading prices…</p>
+          <p className="text-sm text-muted-foreground flex items-center gap-2">
+            <Loader2 size={14} className="animate-spin" /> Loading prices…
+          </p>
         ) : rows.length === 0 ? (
           <p className="text-sm text-muted-foreground">
             No appointments yet. Click <strong>Sync from Cal.com</strong> to pull them in.

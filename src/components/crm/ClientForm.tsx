@@ -147,9 +147,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
   };
 
   const SectionHeader = ({ icon: Icon, title, color }: { icon: any, title: string, color: string }) => (
-    <div className="flex items-center gap-2 mb-4 pt-6 border-t border-slate-100 first:border-t-0 first:pt-0">
+    <div className="flex items-center gap-2 mb-4 pt-6 border-t border-border/50 first:border-t-0 first:pt-0">
       <Icon size={16} className={color} />
-      <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-900">{title}</h3>
+      <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground">{title}</h3>
     </div>
   );
 
@@ -160,10 +160,10 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
           <CheckCircle2 size={40} className="text-emerald-500" />
         </div>
         <div className="space-y-2">
-          <h3 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+          <h3 className="text-2xl font-bold text-foreground dark:text-white tracking-tight">
             {createdClientName} added!
           </h3>
-          <p className="text-sm text-slate-500 font-medium">
+          <p className="text-sm text-muted-foreground font-medium">
             The client profile has been saved. Would you like to book their first session now?
           </p>
         </div>
@@ -177,7 +177,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
           </Button>
           <Button
             variant="outline"
-            className="flex-1 h-12 rounded-2xl font-bold text-xs uppercase tracking-widest border-slate-200"
+            className="flex-1 h-12 rounded-2xl font-bold text-xs uppercase tracking-widest border-border"
             onClick={() => onSuccess()}
           >
             Done
@@ -198,9 +198,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Full Name</FormLabel>
+                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Full Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Georg Gleeson" {...field} className="h-12 rounded-xl border-slate-200" />
+                  <Input placeholder="Georg Gleeson" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -213,9 +213,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Email</FormLabel>
+                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="georg@example.com" {...field} className="h-12 rounded-xl border-slate-200" />
+                    <Input placeholder="georg@example.com" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -226,9 +226,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Phone</FormLabel>
+                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Phone</FormLabel>
                   <FormControl>
-                    <Input placeholder="0400 000 000" {...field} className="h-12 rounded-xl border-slate-200" />
+                    <Input placeholder="0400 000 000" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -242,9 +242,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="pronouns"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Pronouns</FormLabel>
+                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Pronouns</FormLabel>
                   <FormControl>
-                    <Input placeholder="They/Them" {...field} className="h-12 rounded-xl border-slate-200" />
+                    <Input placeholder="They/Them" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -255,9 +255,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="born"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Date of Birth</FormLabel>
+                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Date of Birth</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} className="h-12 rounded-xl border-slate-200" />
+                    <Input type="date" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -270,9 +270,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="suburbs"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Suburbs (comma separated)</FormLabel>
+                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Suburbs (comma separated)</FormLabel>
                 <FormControl>
-                  <Input placeholder="Brunswick, Fitzroy" {...field} className="h-12 rounded-xl border-slate-200" />
+                  <Input placeholder="Brunswick, Fitzroy" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -288,9 +288,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="medical_history"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Medical History & Past Injuries</FormLabel>
+                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Medical History & Past Injuries</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Past surgeries, chronic issues..." className="min-h-[100px] rounded-xl border-slate-200 resize-none" {...field} />
+                  <Textarea placeholder="Past surgeries, chronic issues..." className="min-h-[100px] rounded-xl border-border resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -302,9 +302,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="medications_supplements"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Medications & Supplements</FormLabel>
+                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Medications & Supplements</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Current intake..." className="min-h-[80px] rounded-xl border-slate-200 resize-none" {...field} />
+                  <Textarea placeholder="Current intake..." className="min-h-[80px] rounded-xl border-border resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -317,9 +317,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="sleep_quality"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Sleep Quality</FormLabel>
+                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Sleep Quality</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. 6hrs, wake often" {...field} className="h-12 rounded-xl border-slate-200" />
+                    <Input placeholder="e.g. 6hrs, wake often" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -330,9 +330,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="digestive_health"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Digestive Health</FormLabel>
+                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Digestive Health</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Regular, bloating" {...field} className="h-12 rounded-xl border-slate-200" />
+                    <Input placeholder="e.g. Regular, bloating" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -344,9 +344,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             control={form.control}
             name="current_stress_level"
             render={({ field }) => (
-              <FormItem className="space-y-4 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+              <FormItem className="space-y-4 p-6 bg-muted/50 rounded-2xl border border-border/50">
                 <div className="flex items-center justify-between">
-                  <FormLabel className="text-[10px] font-black uppercase tracking-widest text-slate-500">Current Stress Level</FormLabel>
+                  <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Current Stress Level</FormLabel>
                   <span className="text-2xl font-black text-indigo-600">{field.value}</span>
                 </div>
                 <FormControl>
@@ -359,7 +359,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
                     className="[&_[role=slider]]:h-6 [&_[role=slider]]:w-6"
                   />
                 </FormControl>
-                <div className="flex justify-between text-[8px] font-black text-slate-400 uppercase tracking-widest">
+                <div className="flex justify-between text-[8px] font-black text-muted-foreground uppercase tracking-widest">
                   <span>Low</span>
                   <span>High</span>
                 </div>
@@ -378,9 +378,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="emergency_contact_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Emergency Contact Name</FormLabel>
+                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Emergency Contact Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Name" {...field} className="h-12 rounded-xl border-slate-200" />
+                    <Input placeholder="Name" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -391,9 +391,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="emergency_contact_phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Emergency Contact Phone</FormLabel>
+                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Emergency Contact Phone</FormLabel>
                   <FormControl>
-                    <Input placeholder="Phone" {...field} className="h-12 rounded-xl border-slate-200" />
+                    <Input placeholder="Phone" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -406,9 +406,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="referral_source"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Referral Source</FormLabel>
+                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Referral Source</FormLabel>
                 <FormControl>
-                  <Input placeholder="How did they find you?" {...field} className="h-12 rounded-xl border-slate-200" />
+                  <Input placeholder="How did they find you?" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -420,9 +420,9 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="chatgpt_url"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">ChatGPT URL</FormLabel>
+                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">ChatGPT URL</FormLabel>
                 <FormControl>
-                  <Input placeholder="https://chat.openai.com/c/..." {...field} className="h-12 rounded-xl border-slate-200" />
+                  <Input placeholder="https://chat.openai.com/c/..." {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -434,11 +434,11 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="journal"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Practitioner Notes (Journal)</FormLabel>
+                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Practitioner Notes (Journal)</FormLabel>
                 <FormControl>
                   <Textarea 
                     placeholder="Long-term history, key notes, and personal reflections..." 
-                    className="min-h-[120px] rounded-xl border-slate-200 resize-none"
+                    className="min-h-[120px] rounded-xl border-border resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
                     {...field} 
                   />
                 </FormControl>
@@ -448,7 +448,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
           />
         </div>
 
-        <div className="sticky bottom-0 pt-4 bg-white/80 backdrop-blur-sm border-t border-slate-100">
+        <div className="sticky bottom-0 pt-4 bg-card/80 backdrop-blur-sm border-t border-border/50">
           <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 h-14 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100" disabled={submitting}>
             {submitting ? (
               <>

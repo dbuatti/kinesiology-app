@@ -60,9 +60,9 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
   }, []);
 
   const SectionHeader = ({ title, subtitle }: { title: string, subtitle?: string }) => (
-    <div className="border-b border-black pb-1 mb-4 mt-8 first:mt-0">
-      <h3 className="text-sm font-black uppercase tracking-widest text-black">{title}</h3>
-      {subtitle && <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{subtitle}</p>}
+    <div className="border-b border-foreground/20 pb-1 mb-4 mt-8 first:mt-0">
+      <h3 className="text-sm font-black uppercase tracking-widest text-foreground">{title}</h3>
+      {subtitle && <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{subtitle}</p>}
     </div>
   );
 
@@ -70,10 +70,10 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
     return (
       <div className="animate-in fade-in duration-500">
         <div className="flex items-center justify-between mb-6">
-          <Badge className="bg-indigo-600 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">
+          <Badge className="bg-indigo-600 text-primary-foreground border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">
             Interactive Calibration Active
           </Badge>
-          <Button variant="ghost" size="sm" onClick={() => setShowWizard(false)} className="text-slate-400 hover:text-rose-600 font-bold text-xs">
+          <Button variant="ghost" size="sm" onClick={() => setShowWizard(false)} className="text-muted-foreground hover:text-rose-600 font-bold text-xs">
             Exit Wizard
           </Button>
         </div>
@@ -92,24 +92,24 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
   }
 
   return (
-    <div className="w-full bg-white text-black font-sans animate-in fade-in duration-700 pb-20">
+    <div className="w-full bg-card text-foreground font-sans animate-in fade-in duration-700 pb-20">
       {/* Document Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-4 border-black pb-8 mb-12">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-4 border-foreground/20 pb-8 mb-12">
         <div className="space-y-1">
           <h1 className="text-4xl font-black tracking-tighter uppercase leading-none">Mechanoreceptive Protocol</h1>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.5em]">Resonance Clinical Infrastructure • Section IV.A</p>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.5em]">Resonance Clinical Infrastructure • Section IV.A</p>
         </div>
         <div className="flex gap-3 print:hidden">
           <Button 
             variant="outline" 
             onClick={() => setActionTableOpen(true)}
-            className="rounded-none border-black font-black text-[10px] uppercase tracking-widest h-10 px-4 hover:bg-slate-50"
+            className="rounded-none border-foreground/20 font-black text-[10px] uppercase tracking-widest h-10 px-4 hover:bg-muted/50"
           >
             <List size={14} className="mr-2" /> Action Table
           </Button>
           <Button 
             onClick={() => setShowWizard(true)}
-            className="bg-black text-white hover:bg-slate-800 rounded-none h-10 px-6 font-black text-[10px] uppercase tracking-widest shadow-lg"
+            className="bg-foreground text-primary-foreground hover:bg-foreground rounded-none h-10 px-6 font-black text-[10px] uppercase tracking-widest shadow-lg"
           >
             <Zap size={14} className="mr-2 fill-current" /> Start Calibration
           </Button>
@@ -124,30 +124,30 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
           <section>
             <SectionHeader title="I. Clinical Theory" subtitle="The 15/85 Afferent Split" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="p-6 border border-black space-y-4">
-                <div className="flex items-center gap-2 text-blue-600">
+              <div className="p-6 border border-foreground/20 space-y-4">
+                <div className="flex items-center gap-2 text-primary">
                   <Brain size={18} />
                   <h4 className="font-black text-[11px] uppercase tracking-widest">Conscious (DCML)</h4>
                 </div>
-                <p className="text-xs leading-relaxed font-medium text-slate-700">
+                <p className="text-xs leading-relaxed font-medium text-foreground/80">
                   Targets the <strong>15%</strong> of afferent input processed by the contralateral Sensory Cortex (S1). Used for "smudged" sensory maps and chronic pain patterns.
                 </p>
-                <div className="pt-2 border-t border-slate-100">
-                  <p className="text-[9px] font-black uppercase text-slate-400 mb-1">Correction</p>
+                <div className="pt-2 border-t border-border/50">
+                  <p className="text-[9px] font-black uppercase text-muted-foreground mb-1">Correction</p>
                   <p className="text-[10px] font-bold">Isometric Contraction (30-40% effort) for 60-90s.</p>
                 </div>
               </div>
 
-              <div className="p-6 border border-black space-y-4">
+              <div className="p-6 border border-foreground/20 space-y-4">
                 <div className="flex items-center gap-2 text-emerald-600">
                   <Activity size={18} />
                   <h4 className="font-black text-[11px] uppercase tracking-widest">Unconscious (SC)</h4>
                 </div>
-                <p className="text-xs leading-relaxed font-medium text-slate-700">
+                <p className="text-xs leading-relaxed font-medium text-foreground/80">
                   Targets the <strong>85%</strong> of afferent input processed by the Cerebellum via Spinocerebellar tracts. Used for ligamentous threat and stability issues.
                 </p>
-                <div className="pt-2 border-t border-slate-100">
-                  <p className="text-[9px] font-black uppercase text-slate-400 mb-1">Correction</p>
+                <div className="pt-2 border-t border-border/50">
+                  <p className="text-[9px] font-black uppercase text-muted-foreground mb-1">Correction</p>
                   <p className="text-[10px] font-bold">Ligament Stretch + GV16 + 128Hz Tuning Fork.</p>
                 </div>
               </div>
@@ -158,11 +158,11 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
           <section>
             <SectionHeader title="II. Localization Hierarchy" subtitle="Isolating the Priority Joint" />
             <div className="space-y-4">
-              <div className="overflow-hidden border border-black">
+              <div className="overflow-hidden border border-foreground/20">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-black">
-                      <th className="p-4 font-black text-[10px] uppercase tracking-widest border-r border-black w-1/3">Step</th>
+                    <tr className="bg-muted/50 border-b border-foreground/20">
+                      <th className="p-4 font-black text-[10px] uppercase tracking-widest border-r border-foreground/20 w-1/3">Step</th>
                       <th className="p-4 font-black text-[10px] uppercase tracking-widest">Clinical Logic</th>
                     </tr>
                   </thead>
@@ -175,13 +175,13 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
                     ].map((row, i) => (
                       <tr key={i}>
                         <td className="p-4 font-bold text-xs border-r border-black/10 bg-slate-50/30">{row.s}</td>
-                        <td className="p-4 text-xs font-medium text-slate-600">{row.l}</td>
+                        <td className="p-4 text-xs font-medium text-muted-foreground">{row.l}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <div className="p-4 bg-slate-900 text-white italic text-xs leading-relaxed">
+              <div className="p-4 bg-foreground text-primary-foreground italic text-xs leading-relaxed">
                 "The joint may not be related to the symptom site—it's where the brain needs proprioceptive input to reduce threat."
               </div>
             </div>
@@ -192,13 +192,13 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
             <SectionHeader title="III. The Geometry of Movement" subtitle="Planes of Motion" />
             <div className="grid grid-cols-3 gap-4">
               {[
-                { p: "Sagittal", m: "Flexion / Extension", c: "text-blue-600" },
+                { p: "Sagittal", m: "Flexion / Extension", c: "text-primary" },
                 { p: "Frontal", m: "Abduction / Adduction", c: "text-emerald-600" },
                 { p: "Transverse", m: "Internal / External Rot", c: "text-orange-600" }
               ].map(plane => (
-                <div key={plane.p} className="p-4 border border-black text-center space-y-1">
+                <div key={plane.p} className="p-4 border border-foreground/20 text-center space-y-1">
                   <p className={cn("font-black text-[10px] uppercase tracking-widest", plane.c)}>{plane.p}</p>
-                  <p className="text-[10px] font-bold text-slate-900">{plane.m}</p>
+                  <p className="text-[10px] font-bold text-foreground">{plane.m}</p>
                 </div>
               ))}
             </div>
@@ -207,12 +207,12 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
 
         {/* Sidebar / Reference Column */}
         <div className="lg:col-span-4 space-y-10">
-          <div className="p-8 border-2 border-black space-y-6 bg-slate-50/50">
+          <div className="p-8 border-2 border-foreground/20 space-y-6 bg-slate-50/50">
             <div className="flex items-center gap-3">
-              <ShieldAlert size={20} className="text-black" />
+              <ShieldAlert size={20} className="text-foreground" />
               <h4 className="font-black text-xs uppercase tracking-widest">Practitioner Note</h4>
             </div>
-            <p className="text-xs font-medium leading-relaxed italic text-slate-600">
+            <p className="text-xs font-medium leading-relaxed italic text-muted-foreground">
               "Always re-test the original stimulus after each layer. If the IM remains inhibited, there is a deeper layer of compensation. Expect 5-15 layers in complex cases."
             </p>
             <div className="pt-4 border-t border-black/10 space-y-4">
@@ -227,7 +227,7 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
             </div>
           </div>
 
-          <Card className="border-none shadow-sm bg-slate-900 text-white rounded-none overflow-hidden">
+          <Card className="border-none shadow-sm bg-foreground text-primary-foreground rounded-none overflow-hidden">
             <CardHeader className="p-6 pb-2">
               <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400 flex items-center gap-2">
                 <ImageIcon size={14} /> Visual Reference
@@ -241,21 +241,21 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
                   className="max-w-full h-auto opacity-80"
                 />
               </div>
-              <p className="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-4 text-center">Cortical Homunculus (S1/M1 Map)</p>
+              <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest mt-4 text-center">Cortical Homunculus (S1/M1 Map)</p>
             </CardContent>
           </Card>
 
           <div className="space-y-4">
             <Button 
               variant="outline" 
-              className="w-full h-14 rounded-none border-black font-black text-[10px] uppercase tracking-widest hover:bg-slate-50"
+              className="w-full h-14 rounded-none border-foreground/20 font-black text-[10px] uppercase tracking-widest hover:bg-muted/50"
               onClick={() => setLigamentModalOpen(true)}
             >
               <Layers size={18} className="mr-2" /> Open Ligament Charts
             </Button>
             <Button 
               variant="outline" 
-              className="w-full h-14 rounded-none border-black font-black text-[10px] uppercase tracking-widest hover:bg-slate-50"
+              className="w-full h-14 rounded-none border-foreground/20 font-black text-[10px] uppercase tracking-widest hover:bg-muted/50"
               onClick={() => window.print()}
             >
               <Printer size={18} className="mr-2" /> Print Protocol Sheet
@@ -265,8 +265,8 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
       </div>
 
       {/* Footer */}
-      <div className="mt-20 pt-8 border-t-2 border-slate-100 text-center">
-        <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.5em]">Fractal Resolution OS • Confidential Practitioner Resource</p>
+      <div className="mt-20 pt-8 border-t-2 border-border/50 text-center">
+        <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.5em]">Fractal Resolution OS • Confidential Practitioner Resource</p>
       </div>
 
       <JointActionTableModal open={actionTableOpen} onOpenChange={setActionTableOpen} />

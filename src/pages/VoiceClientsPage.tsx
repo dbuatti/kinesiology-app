@@ -391,20 +391,12 @@ const VoiceClientsPage = () => {
 
  {/* Empty state */}
  {students.length === 0 && !search ? (
- <div className="flex flex-col items-center justify-center py-24 bg-card rounded-xl border-2 border-dashed border-border">
- <div className="w-16 h-16 rounded-xl bg-chart-destructive/10 flex items-center justify-center mb-5">
- <Mic size={28} className="text-destructive" />
+ <div className="flex flex-col items-center justify-center py-16 text-center">
+ <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mb-3">
+ <Users size={20} className="text-muted-foreground" />
  </div>
- <h3 className="text-xl font-semibold text-foreground">No voice students yet</h3>
- <p className="text-sm text-muted-foreground mt-1 mb-6 max-w-xs text-center">
- Add your first student to start tracking lessons and availability.
- </p>
- <Button
- onClick={() => setOnboardOpen(true)}
- className="bg-destructive hover:bg-destructive/80 rounded-xl font-medium text-xs gap-2"
- >
- <Plus size={16} /> Add Your First Student
- </Button>
+ <h3 className="text-sm font-semibold text-foreground mb-1">No students yet</h3>
+ <p className="text-xs text-muted-foreground max-w-[240px]">Students will appear here after they book their first lesson.</p>
  </div>
  ) : bucketConfig.map((cfg) => {
  const collapsedKey = `bucket_${cfg.key}`;

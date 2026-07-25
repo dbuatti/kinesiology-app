@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
  Heart, Activity, FlaskConical, Brain, Plus, 
- Calendar, Clock, Loader2, TrendingUp, ArrowRight, 
+ Calendar, Clock, TrendingUp, ArrowRight, 
  Zap, Info, History, Sparkles, CheckCircle2, Target, Move, Footprints,
  LayoutDashboard, Trash2
 } from "lucide-react";
@@ -20,6 +20,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientProgressTab from "@/components/crm/ClientProgressTab";
 import AppLayout from "@/components/crm/AppLayout";
+import { PageLoader } from "@/components/shared/PageLoader";
 
 const SelfPracticePage = () => {
  const [searchParams, setSearchParams] = useSearchParams();
@@ -173,7 +174,7 @@ const SelfPracticePage = () => {
 
  if (loading) return (
  <div className="flex min-h-screen items-center justify-center">
- <Loader2 className="animate-spin text-primary" size={48} />
+ <PageLoader label="Loading practice..." />
  </div>
  );
 

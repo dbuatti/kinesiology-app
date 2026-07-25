@@ -185,7 +185,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
   return (
     <>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <Card className="border-none shadow-sm rounded-2xl bg-card overflow-hidden">
+        <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
           <CollapsibleTrigger asChild>
             <CardHeader className="bg-muted/50 border-b border-border pb-4 cursor-pointer hover:bg-muted transition-colors">
               <div className="flex items-center justify-between">
@@ -223,7 +223,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
           </CollapsibleTrigger>
 
           <CollapsibleContent>
-            <CardContent className="p-6 space-y-8">
+            <CardContent className="p-4 space-y-8">
               <div className="space-y-3">
                 <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                   <Zap size={14} className="text-muted-foreground" /> 1. Side
@@ -266,7 +266,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                 </Select>
               </div>
 
-              <div className="space-y-4 p-6 bg-muted rounded-2xl border border-border">
+              <div className="space-y-4 p-6 bg-muted rounded-xl border border-border">
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                     <Heart size={14} className="text-muted-foreground" /> 4. Organ / Gland Challenge
@@ -337,7 +337,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                     </div>
                     
                     {selectedGland ? (
-                      <div className="bg-muted border border-border rounded-2xl p-4 flex items-start gap-4">
+                      <div className="bg-muted border border-border rounded-xl p-4 flex items-start gap-4">
                         <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
                           <Sparkles size={20} className="text-muted-foreground" />
                         </div>
@@ -350,7 +350,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                         </div>
                       </div>
                     ) : (
-                      <div className="border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center text-center p-4 text-muted-foreground">
+                      <div className="border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center text-center p-4 text-muted-foreground">
                         <MousePointer2 size={24} className="mb-2 opacity-20" />
                         <p className="text-sm font-medium">Select a gland to see <br/>its reflex challenge</p>
                       </div>
@@ -367,7 +367,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                   <Button 
                     variant={polarity === 'Energy OUT' ? "default" : "outline"}
                     className={cn(
-                      "h-20 flex-col gap-1.5 rounded-2xl transition-all",
+                      "h-20 flex-col gap-1.5 rounded-xl transition-all",
                       polarity === 'Energy OUT' ? "bg-chart-destructive hover:bg-chart-destructive/90 text-destructive-foreground shadow-sm ring-2 ring-chart-destructive/20" : "hover:border-border hover:bg-destructive/5"
                     )}
                     onClick={() => setPolarity(polarity === 'Energy OUT' ? null : 'Energy OUT')}
@@ -380,7 +380,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                   <Button 
                     variant={polarity === 'Energy IN' ? "default" : "outline"}
                     className={cn(
-                      "h-20 flex-col gap-1.5 rounded-2xl transition-all",
+                      "h-20 flex-col gap-1.5 rounded-xl transition-all",
                       polarity === 'Energy IN' ? "bg-chart-primary hover:bg-chart-primary/90 shadow-sm ring-2 ring-chart-primary/20" : "hover:border-border hover:bg-primary/5"
                     )}
                     onClick={() => setPolarity(polarity === 'Energy IN' ? null : 'Energy IN')}
@@ -413,7 +413,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                   </SelectContent>
                 </Select>
                 {partnerInfo && (
-                  <div className="p-4 bg-muted rounded-2xl border border-border animate-in fade-in slide-in-from-top-2">
+                  <div className="p-4 bg-muted rounded-xl border border-border animate-in fade-in slide-in-from-top-2">
                     <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <p className="text-[10px] font-medium text-muted-foreground/70 uppercase tracking-widest mb-1">Muscle to Test</p>
@@ -442,11 +442,11 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                 )}
               </div>
 
-              <div className="space-y-4 p-6 bg-muted rounded-2xl border border-border">
+              <div className="space-y-4 p-6 bg-muted rounded-xl border border-border">
                 <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                   <Search size={14} /> 7. Breathing Pattern — Test & Select
                 </label>
-                <div className="p-4 bg-background rounded-2xl border border-border space-y-3">
+                <div className="p-4 bg-background rounded-xl border border-border space-y-3">
                   <p className="text-xs font-medium text-muted-foreground leading-relaxed">
                     Test/challenge the client to determine which breathing pattern creates a change in the indicator muscle. Once identified, select it below:
                   </p>
@@ -457,7 +457,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                 </div>
               </div>
 
-              <div className="space-y-4 p-6 bg-muted rounded-2xl border border-border">
+              <div className="space-y-4 p-6 bg-muted rounded-xl border border-border">
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                     <Wind size={14} /> 8. Correction Phase
@@ -466,7 +466,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                 </div>
                 
                 <div className="space-y-4">
-                  <div className="p-4 bg-background rounded-2xl border border-border space-y-3">
+                  <div className="p-4 bg-background rounded-xl border border-border space-y-3">
                     <div className="flex items-center gap-2">
                       <Hand size={16} className="text-muted-foreground" />
                       <p className="text-xs font-medium text-foreground uppercase tracking-tight">Instruction:</p>
@@ -487,11 +487,11 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                   </div>
 
                   <div className="flex gap-3">
-                    <Button onClick={toggleCorrectionTimer} variant={isCorrectionActive ? "outline" : "default"} className={cn("flex-1 rounded-2xl h-12 font-semibold transition-all", !isCorrectionActive && "bg-primary hover:bg-primary/90")}>
+                    <Button onClick={toggleCorrectionTimer} variant={isCorrectionActive ? "outline" : "default"} className={cn("flex-1 rounded-xl h-12 font-semibold transition-all", !isCorrectionActive && "bg-primary hover:bg-primary/90")}>
                       {isCorrectionActive ? <Pause size={18} className="mr-2" /> : <Play size={18} className="mr-2" />}
                       {isCorrectionActive ? "Pause" : "Start Correction (30s)"}
                     </Button>
-                    <Button onClick={resetCorrectionTimer} variant="ghost" size="icon" className="rounded-2xl h-12 w-12 text-muted-foreground hover:text-foreground" aria-label="Reset correction timer"><RotateCcw size={18} /></Button>
+                    <Button onClick={resetCorrectionTimer} variant="ghost" size="icon" className="rounded-xl h-12 w-12 text-muted-foreground hover:text-foreground" aria-label="Reset correction timer"><RotateCcw size={18} /></Button>
                   </div>
                   
                   <p className="text-xs text-muted-foreground/70 font-medium leading-relaxed italic">
@@ -524,7 +524,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                     <Zap size={12} className="mr-1" /> Auto-Populate Summary
                   </Button>
                 </div>
-                <EditableField field="vagus_nerve_notes" label="" value={initialNotes} multiline placeholder="Document stimulation details and client response..." onSave={(field, value) => onSaveField(field, value as string)} className="bg-muted/50 border-border rounded-2xl" />
+                <EditableField field="vagus_nerve_notes" label="" value={initialNotes} multiline placeholder="Document stimulation details and client response..." onSave={(field, value) => onSaveField(field, value as string)} className="bg-muted/50 border-border rounded-xl" />
               </div>
             </CardContent>
           </CollapsibleContent>

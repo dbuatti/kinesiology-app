@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
-  TrendingUp, Users, DollarSign, Mic, Calendar, ChevronRight, Loader2, Clock,
+  TrendingUp, Users, DollarSign, Mic, Calendar, ChevronRight, Clock,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -10,6 +10,7 @@ import AppLayout from '@/components/crm/AppLayout';
 import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { PageLoader } from '@/components/shared/PageLoader';
 
 interface VoiceBooking {
   id: string; student_name: string | null; student_email: string | null;
@@ -132,9 +133,7 @@ const BusinessDashboardPage = () => {
   if (isLoading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center py-24">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
+        <PageLoader label="Loading dashboard..." />
       </AppLayout>
     );
   }

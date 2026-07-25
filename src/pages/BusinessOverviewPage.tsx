@@ -1,12 +1,13 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  TrendingUp, Users, DollarSign, Mic, Layers, Loader2,
+  TrendingUp, Users, DollarSign, Mic, Layers,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import AppLayout from '@/components/crm/AppLayout';
 import PageHeader from '@/components/shared/PageHeader';
+import { PageLoader } from '@/components/shared/PageLoader';
 
 interface VoiceBooking {
   id: string; student_name: string | null; student_email: string | null;
@@ -244,9 +245,7 @@ const BusinessOverviewPage = () => {
   if (isLoading) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center py-24">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
+        <PageLoader label="Loading overview..." />
       </AppLayout>
     );
   }

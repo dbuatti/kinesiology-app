@@ -128,7 +128,7 @@ const VoiceOnboardingPage = () => {
                 onChange={(e) => setStudentName(e.target.value)}
                 placeholder="e.g. Jane Smith"
                 required
-                className="h-12 rounded-2xl border-border text-sm font-medium"
+                className="h-12 rounded-2xl border-border text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
               />
             </div>
 
@@ -141,7 +141,7 @@ const VoiceOnboardingPage = () => {
                 onChange={(e) => setMobile(e.target.value)}
                 placeholder="e.g. 0412 345 678"
                 type="tel"
-                className="h-12 rounded-2xl border-border text-sm font-medium"
+                className="h-12 rounded-2xl border-border text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
               />
             </div>
 
@@ -153,7 +153,7 @@ const VoiceOnboardingPage = () => {
                 value={goals}
                 onChange={(e) => setGoals(e.target.value)}
                 placeholder="e.g. Improve breath support, expand vocal range, prepare for a performance..."
-                className="min-h-[100px] rounded-2xl border-border text-sm font-medium resize-none"
+                className="min-h-[100px] rounded-2xl border-border text-sm font-medium resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
               />
             </div>
 
@@ -162,7 +162,7 @@ const VoiceOnboardingPage = () => {
               <select
                 value={experienceLevel}
                 onChange={(e) => setExperienceLevel(e.target.value)}
-                className="flex h-12 w-full rounded-2xl border border-border bg-background px-4 text-sm font-medium"
+                className="flex h-12 w-full rounded-2xl border border-border bg-background px-4 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
               >
                 <option value="">Select...</option>
                 <option value="beginner">Beginner — Never had formal lessons</option>
@@ -180,7 +180,7 @@ const VoiceOnboardingPage = () => {
                 value={additionalNotes}
                 onChange={(e) => setAdditionalNotes(e.target.value)}
                 placeholder="Any medical considerations, preferences, or questions..."
-                className="min-h-[80px] rounded-2xl border-border text-sm font-medium resize-none"
+                className="min-h-[80px] rounded-2xl border-border text-sm font-medium resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
               />
             </div>
 

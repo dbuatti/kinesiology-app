@@ -98,7 +98,7 @@ const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g. Jane Smith"
           required
-          className="h-12 rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-medium"
+          className="h-12 rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
         />
       </div>
 
@@ -112,7 +112,7 @@ const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="jane@example.com"
-          className="h-12 rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-medium"
+          className="h-12 rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
         />
       </div>
 
@@ -126,7 +126,7 @@ const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           placeholder="+61 4XX XXX XXX"
-          className="h-12 rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-medium"
+          className="h-12 rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
         />
       </div>
 
@@ -139,7 +139,7 @@ const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Any additional context about the student..."
-          className="min-h-[100px] rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-medium resize-none"
+          className="min-h-[100px] rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-medium resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
         />
       </div>
 

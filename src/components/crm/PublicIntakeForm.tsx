@@ -291,42 +291,42 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             <FormField control={form.control} name="first_name" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">First Name <span className="text-destructive">*</span></FormLabel>
-                <FormControl><Input placeholder="First Name" {...field} className="h-12 rounded-xl border-border text-base" /></FormControl>
+                <FormControl><Input placeholder="First Name" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="second_name" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Second Name <span className="text-destructive">*</span></FormLabel>
-                <FormControl><Input placeholder="Second Name" {...field} className="h-12 rounded-xl border-border text-base" /></FormControl>
+                <FormControl><Input placeholder="Second Name" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="born" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Date of Birth <span className="text-destructive">*</span></FormLabel>
-                <FormControl><Input type="date" {...field} className="h-12 rounded-xl border-border text-base" /></FormControl>
+                <FormControl><Input type="date" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="email" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Email Address <span className="text-destructive">*</span></FormLabel>
-                <FormControl><Input type="email" placeholder="email@example.com" {...field} className="h-12 rounded-xl border-border text-base" /></FormControl>
+                <FormControl><Input type="email" placeholder="email@example.com" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="phone" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Mobile Number</FormLabel>
-                <FormControl><Input placeholder="0400 000 000" {...field} className="h-12 rounded-xl border-border text-base" /></FormControl>
+                <FormControl><Input placeholder="0400 000 000" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="home_address" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Home Address</FormLabel>
-                <FormControl><Input placeholder="Street, City, Postcode" {...field} className="h-12 rounded-xl border-border text-base" /></FormControl>
+                <FormControl><Input placeholder="Street, City, Postcode" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -340,7 +340,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             <FormField control={form.control} name="occupation" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">What is your occupation?</FormLabel>
-                <FormControl><Input placeholder="Occupation" {...field} className="h-12 rounded-xl border-border text-base" /></FormControl>
+                <FormControl><Input placeholder="Occupation" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -359,7 +359,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             <FormField control={form.control} name="referral_source" render={({ field }) => (
               <FormItem className="md:col-span-2">
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">How did you find out about us? <span className="text-destructive">*</span></FormLabel>
-                <FormControl><Input placeholder="e.g. Google, Instagram, Friend" {...field} className="h-12 rounded-xl border-border text-base" /></FormControl>
+                <FormControl><Input placeholder="e.g. Google, Instagram, Friend" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -373,21 +373,21 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             <FormField control={form.control} name="emergency_contact_name" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Emergency Contact <span className="text-destructive">*</span></FormLabel>
-                <FormControl><Input placeholder="Full Name" {...field} className="h-12 rounded-xl border-border text-base" /></FormControl>
+                <FormControl><Input placeholder="Full Name" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="emergency_contact_phone" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Phone <span className="text-destructive">*</span></FormLabel>
-                <FormControl><Input placeholder="0400 000 000" {...field} className="h-12 rounded-xl border-border text-base" /></FormControl>
+                <FormControl><Input placeholder="0400 000 000" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="emergency_contact_relationship" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Relationship <span className="text-destructive">*</span></FormLabel>
-                <FormControl><Input placeholder="e.g. Partner, Parent" {...field} className="h-12 rounded-xl border-border text-base" /></FormControl>
+                <FormControl><Input placeholder="e.g. Partner, Parent" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -401,21 +401,21 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             <FormField control={form.control} name="change_one_thing" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">If you could change just one thing in your life, what would it be and why? <span className="text-destructive">*</span></FormLabel>
-                <FormControl><Textarea placeholder="Your answer..." className="min-h-[80px] rounded-xl border-border text-base resize-none" {...field} /></FormControl>
+                <FormControl><Textarea placeholder="Your answer..." className="min-h-[80px] rounded-xl border-border text-base resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="never_been_same_since" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Finish this statement: "I have never been the same since..." <span className="text-destructive">*</span></FormLabel>
-                <FormControl><Textarea placeholder="Your answer..." className="min-h-[80px] rounded-xl border-border text-base resize-none" {...field} /></FormControl>
+                <FormControl><Textarea placeholder="Your answer..." className="min-h-[80px] rounded-xl border-border text-base resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="chief_complaint" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">What is your Chief Complaint? How long have you been suffering with it? <span className="text-destructive">*</span></FormLabel>
-                <FormControl><Textarea placeholder="Describe your main concern and duration..." className="min-h-[80px] rounded-xl border-border text-base resize-none" {...field} /></FormControl>
+                <FormControl><Textarea placeholder="Describe your main concern and duration..." className="min-h-[80px] rounded-xl border-border text-base resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -496,7 +496,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             </FormItem>
           )} />
           <FormField control={form.control} name="current_stress_level" render={({ field }) => (
-            <FormItem className="space-y-4 p-6 bg-muted/30 rounded-2xl border border-border">
+            <FormItem className="space-y-4 p-6 bg-muted/30 rounded-xl border border-border">
               <div className="flex items-center justify-between">
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Current Stress Level (1-10) <span className="text-destructive">*</span></FormLabel>
                 <span className="text-2xl font-black text-primary">{field.value}</span>
@@ -527,14 +527,14 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             <FormField control={form.control} name="therapies_other" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">If other, please specify</FormLabel>
-                <FormControl><Input placeholder="Other therapies..." {...field} className="h-12 rounded-xl border-border text-base" /></FormControl>
+                <FormControl><Input placeholder="Other therapies..." {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="therapies_success" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">How successful were they?</FormLabel>
-                <FormControl><Input placeholder="e.g. Somewhat, Very, Not at all" {...field} className="h-12 rounded-xl border-border text-base" /></FormControl>
+                <FormControl><Input placeholder="e.g. Somewhat, Very, Not at all" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -548,14 +548,14 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             <FormField control={form.control} name="specific_illnesses" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Do you have any specific illnesses occurring from time to time?</FormLabel>
-                <FormControl><Input placeholder="e.g. Migraines, sinus infections, etc." {...field} className="h-12 rounded-xl border-border text-base" /></FormControl>
+                <FormControl><Input placeholder="e.g. Migraines, sinus infections, etc." {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="allergies_asthma" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Do you have any allergies, asthma or suffer from anaphylaxis? If so what type?</FormLabel>
-                <FormControl><Input placeholder="Describe..." {...field} className="h-12 rounded-xl border-border text-base" /></FormControl>
+                <FormControl><Input placeholder="Describe..." {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -575,7 +575,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
               <FormField control={form.control} name="covid_shots" render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">If yes, how many shots</FormLabel>
-                  <FormControl><Input type="number" min="1" placeholder="2" {...field} className="h-12 rounded-xl border-border text-base" /></FormControl>
+                  <FormControl><Input type="number" min="1" placeholder="2" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -606,7 +606,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             <FormField control={form.control} name="alcohol_frequency" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">How often do you consume alcohol?</FormLabel>
-                <FormControl><Input placeholder="e.g. Rarely, Weekly, Daily" {...field} className="h-12 rounded-xl border-border text-base" /></FormControl>
+                <FormControl><Input placeholder="e.g. Rarely, Weekly, Daily" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -620,7 +620,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             <FormField control={form.control} name="sleep_schedule" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">What time do you go to bed and wake up?</FormLabel>
-                <FormControl><Input placeholder="e.g. 10:30pm – 6:30am" {...field} className="h-12 rounded-xl border-border text-base" /></FormControl>
+                <FormControl><Input placeholder="e.g. 10:30pm – 6:30am" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -646,7 +646,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             <FormField control={form.control} name="concussion_details" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">How many concussions have you had, at what time and where did you hit your head?</FormLabel>
-                <FormControl><Textarea placeholder="Details..." className="min-h-[80px] rounded-xl border-border text-base resize-none" {...field} /></FormControl>
+                <FormControl><Textarea placeholder="Details..." className="min-h-[80px] rounded-xl border-border text-base resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -761,7 +761,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             <FormField control={form.control} name="emotional_regulation_time" render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">When you are emotionally triggered, how long does it take to calm yourself down?</FormLabel>
-                <FormControl><Input placeholder="e.g. Minutes, Hours, Days" {...field} className="h-12 rounded-xl border-border text-base" /></FormControl>
+                <FormControl><Input placeholder="e.g. Minutes, Hours, Days" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -774,7 +774,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
           <FormField control={form.control} name="additional_notes" render={({ field }) => (
             <FormItem>
               <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Is there anything else that you want to mention to help us understand your case?</FormLabel>
-              <FormControl><Textarea placeholder="Your additional notes..." className="min-h-[100px] rounded-xl border-border text-base resize-none" {...field} /></FormControl>
+              <FormControl><Textarea placeholder="Your additional notes..." className="min-h-[100px] rounded-xl border-border text-base resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" {...field} /></FormControl>
               <FormMessage />
             </FormItem>
           )} />
@@ -782,7 +782,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
 
         <Button
           type="submit"
-          className="w-full bg-primary hover:bg-primary/90 h-16 rounded-2xl font-black text-base uppercase tracking-widest shadow-xl shadow-primary/10"
+          className="w-full bg-primary hover:bg-primary/90 h-16 rounded-xl font-black text-base uppercase tracking-widest shadow-xl shadow-primary/10"
           disabled={submitting}
         >
           {submitting ? (

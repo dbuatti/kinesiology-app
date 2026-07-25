@@ -456,10 +456,10 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
               <button
                 onClick={() => setStatusFilter(statusFilter === "unpaid" ? "all" : "unpaid")}
                 className={cn(
-                  "tabular-nums transition-colors",
+                  "tabular-nums transition-all rounded-full px-3 py-1 border font-semibold",
                   statusFilter === "unpaid"
-                    ? "text-amber-600 dark:text-amber-400 font-semibold underline underline-offset-4 decoration-2 decoration-amber-500/50"
-                    : "text-amber-600 dark:text-amber-400 hover:underline"
+                    ? "bg-amber-500 text-white border-amber-500 shadow-sm"
+                    : "bg-amber-100/60 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200/50 dark:border-amber-900/40 hover:bg-amber-100"
                 )}
               >
                 ${summary.outstanding} outstanding
@@ -469,8 +469,8 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
               <button
                 onClick={() => setStatusFilter(statusFilter === "unpaid" ? "all" : "unpaid")}
                 className={cn(
-                  "transition-colors",
-                  statusFilter === "unpaid" ? "text-foreground font-semibold underline underline-offset-4" : "text-muted-foreground hover:text-foreground"
+                  "transition-all rounded-full px-3 py-1 border font-semibold",
+                  statusFilter === "unpaid" ? "bg-foreground text-background border-foreground" : "bg-muted/60 text-muted-foreground border-border/60 hover:text-foreground"
                 )}
               >
                 {summary.unpaid} unpaid
@@ -480,10 +480,10 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
               <button
                 onClick={() => setStatusFilter(statusFilter === "paid" ? "all" : "paid")}
                 className={cn(
-                  "tabular-nums transition-colors",
+                  "tabular-nums transition-all rounded-full px-3 py-1 border font-semibold",
                   statusFilter === "paid"
-                    ? "text-chart-emerald font-semibold underline underline-offset-4 decoration-2 decoration-chart-emerald/50"
-                    : "text-chart-emerald hover:underline"
+                    ? "bg-chart-emerald text-white border-chart-emerald shadow-sm"
+                    : "bg-chart-emerald/10 text-chart-emerald border-chart-emerald/20 hover:bg-chart-emerald/15"
                 )}
               >
                 ${summary.collected} collected
@@ -493,8 +493,8 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
               <button
                 onClick={() => setStatusFilter(statusFilter === "free" ? "all" : "free")}
                 className={cn(
-                  "transition-colors",
-                  statusFilter === "free" ? "text-foreground font-semibold underline underline-offset-4" : "text-muted-foreground hover:text-foreground"
+                  "transition-all rounded-full px-3 py-1 border font-semibold",
+                  statusFilter === "free" ? "bg-foreground text-background border-foreground" : "bg-muted/60 text-muted-foreground border-border/60 hover:text-foreground"
                 )}
               >
                 {summary.free} free

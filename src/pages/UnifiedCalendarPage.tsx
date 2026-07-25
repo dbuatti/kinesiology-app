@@ -703,7 +703,7 @@ const UnifiedCalendarPage = () => {
          className={cn(
            "px-4 py-2 rounded-[10px] text-xs font-semibold transition-all",
            viewMode === "list"
-           ? "bg-card text-foreground shadow-sm"
+           ? "bg-card text-amber-700 dark:text-amber-400 shadow-sm ring-1 ring-amber-200/60 dark:ring-amber-900/40"
            : "text-muted-foreground hover:text-foreground"
          )}
        >
@@ -714,7 +714,7 @@ const UnifiedCalendarPage = () => {
          className={cn(
            "px-4 py-2 rounded-[10px] text-xs font-semibold transition-all",
            viewMode === "month"
-           ? "bg-card text-foreground shadow-sm"
+           ? "bg-card text-amber-700 dark:text-amber-400 shadow-sm ring-1 ring-amber-200/60 dark:ring-amber-900/40"
            : "text-muted-foreground hover:text-foreground"
          )}
        >
@@ -725,7 +725,7 @@ const UnifiedCalendarPage = () => {
          className={cn(
            "px-4 py-2 rounded-[10px] text-xs font-semibold transition-all",
            viewMode === "week"
-           ? "bg-card text-foreground shadow-sm"
+           ? "bg-card text-amber-700 dark:text-amber-400 shadow-sm ring-1 ring-amber-200/60 dark:ring-amber-900/40"
            : "text-muted-foreground hover:text-foreground"
          )}
        >
@@ -736,7 +736,7 @@ const UnifiedCalendarPage = () => {
          className={cn(
            "px-4 py-2 rounded-[10px] text-xs font-semibold transition-all",
            viewMode === "overview"
-           ? "bg-card text-foreground shadow-sm"
+           ? "bg-card text-amber-700 dark:text-amber-400 shadow-sm ring-1 ring-amber-200/60 dark:ring-amber-900/40"
            : "text-muted-foreground hover:text-foreground"
          )}
        >
@@ -756,7 +756,7 @@ const UnifiedCalendarPage = () => {
 
    ) : viewMode === "month" ? (
 
-   <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden animate-in fade-in duration-500">
+   <div className="bg-card rounded-[1.75rem] border border-border/60 shadow-[0_4px_30px_-12px_rgba(120,90,40,0.18)] overflow-hidden animate-in fade-in duration-500">
    {/* Legend */}
    <div className="px-8 pt-6 pb-0 flex flex-wrap items-center gap-x-6 gap-y-2">
    <div className="flex items-center gap-2">
@@ -844,7 +844,7 @@ const UnifiedCalendarPage = () => {
    className={cn(
    "min-h-[130px] p-3 border-r border-b border-border/50 transition-colors",
    !isCurrent && "bg-muted/20 opacity-40",
-   isCurrentDay && "bg-chart-primary/5 ring-1 ring-inset ring-primary/20"
+   isCurrentDay && "bg-amber-50/60 dark:bg-amber-950/15 ring-1 ring-inset ring-amber-300/50 dark:ring-amber-800/40"
    )}
    >
    <div className="flex justify-between items-start mb-2">
@@ -852,7 +852,7 @@ const UnifiedCalendarPage = () => {
    className={cn(
    "w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold",
    isCurrentDay
-   ? "bg-primary text-white shadow-sm "
+   ? "bg-gradient-to-br from-amber-500 to-rose-500 text-white shadow-sm "
    : "text-muted-foreground"
    )}
    >

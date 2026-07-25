@@ -794,7 +794,7 @@ const VoiceCalendarPage = () => {
 
  {/* Cancel Confirmation Dialog */}
  <Dialog open={!!cancelLesson} onOpenChange={(o) => !o && setCancelLesson(null)}>
- <DialogContent className="sm:max-w-[400px] rounded-xl bg-white ">
+ <DialogContent className="sm:max-w-[400px] rounded-xl">
  <DialogHeader>
  <DialogTitle>Cancel Lesson</DialogTitle>
  <DialogDescription>
@@ -832,7 +832,7 @@ const VoiceCalendarPage = () => {
 
  {/* Reschedule Dialog */}
  <Dialog open={!!rescheduleLesson} onOpenChange={(o) => !o && setRescheduleLesson(null)}>
- <DialogContent className="sm:max-w-[500px] rounded-xl bg-white ">
+ <DialogContent className="sm:max-w-[500px] rounded-xl">
  <DialogHeader>
  <DialogTitle>Reschedule Lesson</DialogTitle>
  <DialogDescription>
@@ -862,7 +862,7 @@ const VoiceCalendarPage = () => {
 
  {/* Payment Link Dialog */}
  <Dialog open={!!payDialogLesson} onOpenChange={(o) => !o && setPayDialogLesson(null)}>
- <DialogContent className="sm:max-w-[420px] rounded-xl bg-white ">
+ <DialogContent className="sm:max-w-[420px] rounded-xl">
  <DialogHeader>
  <DialogTitle>Generate Payment Link</DialogTitle>
  <DialogDescription>

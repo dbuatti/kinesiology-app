@@ -77,7 +77,7 @@ const Login = () => {
           <h1 className="text-4xl font-serif font-bold tracking-tighter text-primary">Resonance</h1>
         </div>
 
-        <Card className="border-none shadow-3xl rounded-[3rem] bg-white overflow-hidden">
+        <Card className="border-none shadow-3xl rounded-[3rem] bg-card overflow-hidden">
           <CardHeader className="space-y-2 text-center pb-8 pt-10">
             <CardTitle className="text-2xl font-serif font-bold tracking-tight">Welcome Back</CardTitle>
             <CardDescription className="text-muted-foreground font-medium">
@@ -116,7 +116,7 @@ const Login = () => {
                 <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
-                <span className="bg-white px-4 text-muted-foreground">Or use email</span>
+                <span className="bg-background px-4 text-muted-foreground">Or use email</span>
               </div>
             </div>
 

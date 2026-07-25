@@ -44,15 +44,15 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
       isInhibited ? "bg-amber-50 border-amber-200" : 
       isHypertonic ? "bg-rose-50 border-rose-200" :
       isClear ? "bg-emerald-50/50 border-emerald-200" :
-      "border-slate-100 bg-white"
+      "border-border bg-card"
     )}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1 min-w-0 space-y-1">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-bold text-slate-900 truncate">
+            <h2 className="text-sm font-bold text-foreground truncate">
               {name}
             </h2>
-            <Badge variant="outline" className="border-slate-200 text-slate-400 font-black text-[7px] uppercase tracking-widest px-1.5 py-0 rounded-none">
+            <Badge variant="outline" className="border-border text-muted-foreground font-black text-[7px] uppercase tracking-widest px-1.5 py-0 rounded-none">
               {info.meridian}
             </Badge>
             {isClear && !isInhibited && !isHypertonic && (
@@ -64,8 +64,8 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
           
           {!compact && info.testingPosition && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] leading-tight">
-              <div className="flex items-center gap-1 text-slate-500">
-                <Zap size={10} className="text-indigo-400 shrink-0" />
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <Zap size={10} className="text-chart-primary shrink-0" />
                 <span className="font-medium">{info.testingPosition}</span>
               </div>
             </div>
@@ -73,28 +73,28 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
         </div>
 
         {showImage && imageUrl && (
-          <div className="hidden md:block h-8 w-12 rounded border border-slate-100 overflow-hidden bg-slate-50 shrink-0">
+          <div className="hidden md:block h-8 w-12 rounded border border-border overflow-hidden bg-muted/50 shrink-0">
             <img src={imageUrl} alt="P" className="w-full h-full object-cover opacity-80" />
           </div>
         )}
 
         <div className="flex items-center gap-3 shrink-0 print:hidden">
           {/* Inhibition Controls */}
-          <div className="flex items-center gap-2 border-r border-slate-100 pr-2">
-            <span className="text-[7px] font-black text-slate-300 uppercase tracking-widest">Inhib</span>
+          <div className="flex items-center gap-2 border-r border-border pr-2">
+            <span className="text-[7px] font-black text-muted-foreground/60 uppercase tracking-widest">Inhib</span>
             {isLateralized ? (
               <div className="flex items-center gap-1.5">
                 <Checkbox 
                   id={`inhib-l-${name}`}
                   checked={statusL === 'Inhibited'}
                   onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Inhibited' : null, 'L')}
-                  className="h-3.5 w-3.5 border-slate-400 rounded-none"
+                  className="h-3.5 w-3.5 border-muted-foreground rounded-none"
                 />
                 <Checkbox 
                   id={`inhib-r-${name}`}
                   checked={statusR === 'Inhibited'}
                   onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Inhibited' : null, 'R')}
-                  className="h-3.5 w-3.5 border-slate-400 rounded-none"
+                  className="h-3.5 w-3.5 border-muted-foreground rounded-none"
                 />
               </div>
             ) : (
@@ -102,14 +102,14 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
                 id={`inhib-mid-${name}`}
                 checked={statusMidline === 'Inhibited'}
                 onCheckedChange={(checked) => onUpdate('muscles', name, checked ? 'Inhibited' : null)}
-                className="h-3.5 w-3.5 border-slate-400 rounded-none"
+                className="h-3.5 w-3.5 border-muted-foreground rounded-none"
               />
             )}
           </div>
 
           {/* Hypertonic Controls */}
-          <div className="flex items-center gap-2 border-r border-slate-100 pr-2">
-            <span className="text-[7px] font-black text-slate-300 uppercase tracking-widest">Hyper</span>
+          <div className="flex items-center gap-2 border-r border-border pr-2">
+            <span className="text-[7px] font-black text-muted-foreground/60 uppercase tracking-widest">Hyper</span>
             {isLateralized ? (
               <div className="flex items-center gap-1.5">
                 <Checkbox 
@@ -137,7 +137,7 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
 
           {/* Normotonic Controls */}
           <div className="flex items-center gap-2 pr-2">
-            <span className="text-[7px] font-black text-slate-300 uppercase tracking-widest">Norm</span>
+            <span className="text-[7px] font-black text-muted-foreground/60 uppercase tracking-widest">Norm</span>
             {isLateralized ? (
               <div className="flex items-center gap-1.5">
                 <Checkbox 
@@ -231,7 +231,7 @@ export function MuscleAssessment({
       <div className="space-y-8">
         {Object.entries(filteredGroups).map(([group, muscles]) => (
           <div key={group} className="space-y-2">
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] px-2 mb-3">{group}</h3>
+            <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] px-2 mb-3">{group}</h3>
             <div className="grid grid-cols-1 gap-1.5">
               {muscles.map(muscle => (
                 <MuscleTestItem 

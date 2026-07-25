@@ -39,20 +39,20 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
       "p-4 rounded-2xl border transition-all",
       hasInhibition ? "bg-rose-50 border-rose-200" : 
       isFullyClear ? "bg-emerald-50/10 border-emerald-100 opacity-80" :
-      "border-slate-100 bg-white"
+      "border-border bg-card"
     )}>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-slate-100/50 pb-2 mb-3">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-border/50 pb-2 mb-3">
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-serif font-bold text-slate-900">
+          <h2 className="text-lg font-serif font-bold text-foreground">
             {point.name}
           </h2>
-          <Badge variant="outline" className="border-slate-200 text-slate-400 font-black text-[7px] uppercase tracking-widest px-1.5 py-0 rounded-none">
+          <Badge variant="outline" className="border-border text-muted-foreground font-black text-[7px] uppercase tracking-widest px-1.5 py-0 rounded-none">
             {point.category} • {point.lateralization}
           </Badge>
         </div>
 
         <div className="flex items-center gap-4 print:hidden">
-          <div className="flex items-center gap-3 border-r border-slate-100 pr-4">
+          <div className="flex items-center gap-3 border-r border-border pr-4">
             {isLateralized ? (
               <>
                 <div className="flex items-center gap-1.5">
@@ -60,9 +60,9 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
                     id={`inhib-l-${point.id}`}
                     checked={statusL === 'Inhibited'}
                     onCheckedChange={(checked) => onUpdate('brainZones', point.name, checked ? 'Inhibited' : 'Clear', 'L')}
-                    className="h-3.5 w-3.5 border-slate-400 rounded-none"
+                    className="h-3.5 w-3.5 border-muted-foreground rounded-none"
                   />
-                  <label htmlFor={`inhib-l-${point.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+                  <label htmlFor={`inhib-l-${point.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-muted-foreground">
                     L Inhib
                   </label>
                 </div>
@@ -71,9 +71,9 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
                     id={`inhib-r-${point.id}`}
                     checked={statusR === 'Inhibited'}
                     onCheckedChange={(checked) => onUpdate('brainZones', point.name, checked ? 'Inhibited' : 'Clear', 'R')}
-                    className="h-3.5 w-3.5 border-slate-400 rounded-none"
+                    className="h-3.5 w-3.5 border-muted-foreground rounded-none"
                   />
-                  <label htmlFor={`inhib-r-${point.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+                  <label htmlFor={`inhib-r-${point.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-muted-foreground">
                     R Inhib
                   </label>
                 </div>
@@ -84,9 +84,9 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
                   id={`inhib-mid-${point.id}`}
                   checked={statusMidline === 'Inhibited'}
                   onCheckedChange={(checked) => onUpdate('brainZones', point.name, checked ? 'Inhibited' : 'Clear')}
-                  className="h-3.5 w-3.5 border-slate-400 rounded-none"
+                  className="h-3.5 w-3.5 border-muted-foreground rounded-none"
                 />
-                <label htmlFor={`inhib-mid-${point.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-slate-500">
+                <label htmlFor={`inhib-mid-${point.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-muted-foreground">
                   Inhibited
                 </label>
               </div>
@@ -108,28 +108,28 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
           <div className="lg:col-span-8 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-0.5">
-                <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-slate-400">
+                <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-muted-foreground">
                   <Hand size={10} /> Location
                 </div>
-                <p className="text-xs font-bold text-slate-700 leading-tight">{point.location}</p>
+                <p className="text-xs font-bold text-foreground leading-tight">{point.location}</p>
               </div>
               
               <div className="space-y-0.5">
-                <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-slate-400">
+                <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-muted-foreground">
                   <PlayCircle size={10} /> Stimulus
                 </div>
-                <p className="text-xs font-bold text-slate-700 leading-tight">{point.stimulus || point.technique || ""}</p>
+                <p className="text-xs font-bold text-foreground leading-tight">{point.stimulus || point.technique || ""}</p>
               </div>
             </div>
           </div>
 
           <div className="lg:col-span-4">
             {showImage && imageUrl ? (
-              <div className="aspect-video border border-slate-100 p-0.5 rounded-lg bg-slate-50 overflow-hidden">
+              <div className="aspect-video border border-border p-0.5 rounded-lg bg-muted/50 overflow-hidden">
                 <img src={imageUrl} alt="Reference" className="w-full h-full object-cover rounded-md opacity-80" />
               </div>
             ) : showImage && (
-              <div className="h-full min-h-[60px] border border-dashed border-slate-100 rounded-xl flex items-center justify-center text-slate-200 bg-slate-50/20">
+              <div className="h-full min-h-[60px] border border-dashed border-border rounded-xl flex items-center justify-center text-muted-foreground/30 bg-muted/20">
                 <Brain size={16} className="opacity-10" />
               </div>
             )}

@@ -60,19 +60,19 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
 
       {/* Priority Pathway Banner */}
       {priorityPathway && (
-        <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-xl">
-          <div className="w-9 h-9 rounded-lg bg-red-100 text-red-700 flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-3 p-4 bg-destructive/5 border border-destructive/20 rounded-xl">
+          <div className="w-9 h-9 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
             <Target size={16} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[9px] font-bold text-red-700 uppercase tracking-wider">Priority Pathway</p>
+            <p className="text-[9px] font-bold text-destructive uppercase tracking-wider">Priority Pathway</p>
             <p className="text-sm font-semibold text-foreground truncate">{priorityPathway}</p>
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setPathModalOpen(true)}
-            className="rounded-lg h-8 w-8 p-0 text-muted-foreground hover:bg-red-100"
+            className="rounded-lg h-8 w-8 p-0 text-muted-foreground hover:bg-destructive/10"
           >
             <Info size={16} />
           </Button>
@@ -138,7 +138,7 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
         <DialogContent className="sm:max-w-[500px] rounded-xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Target size={18} className="text-red-500" /> Priority Pathway
+              <Target size={18} className="text-destructive" /> Priority Pathway
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-6 py-4">
@@ -211,15 +211,15 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
                         Corrections Linked to {priorityPathway}
                       </p>
                       {pathwayCorrections.map((c: any, i: number) => (
-                        <div key={i} className="p-4 bg-amber-50 border border-amber-200 rounded-xl space-y-2">
+                        <div key={i} className="p-4 bg-muted border border-border rounded-xl space-y-2">
                           {pathwayCorrections.length > 1 && (
-                            <p className="text-[8px] font-bold uppercase tracking-wider text-amber-600">
+                            <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">
                               Correction #{i + 1}
                             </p>
                           )}
-                          <p className="text-sm font-medium text-amber-900 leading-relaxed">{c.summary}</p>
-                          <div className="flex items-center gap-1.5 text-[10px] text-amber-600 font-medium">
-                            <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500" />
+                          <p className="text-sm font-medium text-foreground leading-relaxed">{c.summary}</p>
+                          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-medium">
+                            <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
                             Linked to {c.pathway}
                           </div>
                         </div>

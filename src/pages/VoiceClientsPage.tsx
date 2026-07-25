@@ -322,7 +322,7 @@ const VoiceClientsPage = () => {
  >
  <Plus size={20} className="mr-2" /> Add Student
  </Button>
- <DialogContent className="sm:max-w-[500px] rounded-xl p-0 overflow-hidden bg-white ">
+ <DialogContent className="sm:max-w-[500px] rounded-xl p-0 overflow-hidden">
  <div className="p-8">
  <DialogHeader className="mb-6">
  <DialogTitle className="text-2xl font-semibold">New Student</DialogTitle>
@@ -586,7 +586,7 @@ const VoiceClientsPage = () => {
 
  {/* Delete confirmation */}
  <Dialog open={!!deleteConfirmId} onOpenChange={(o) => !o && setDeleteConfirmId(null)}>
- <DialogContent className="sm:max-w-[400px] rounded-xl bg-white ">
+ <DialogContent className="sm:max-w-[400px] rounded-xl">
  <DialogHeader>
  <DialogTitle>Delete Student</DialogTitle>
  <DialogDescription>

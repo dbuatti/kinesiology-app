@@ -604,7 +604,7 @@ const CalcomSlotsView = () => {
                   onClick={() => setWeeks(w)}
                   className={cn(
                     "h-8 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest",
-                    weeks === w ? "bg-card text-indigo-600 shadow-sm" : "text-muted-foreground"
+                    weeks === w ? "bg-card text-amber-600 shadow-sm ring-1 ring-amber-200/60" : "text-muted-foreground"
                   )}
                 >
                   {w}W
@@ -636,7 +636,7 @@ const CalcomSlotsView = () => {
               variant="outline"
               onClick={handleCopyBookings}
               disabled={loading}
-              className="rounded-xl h-10 px-4 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-black text-[10px] uppercase tracking-widest"
+              className="rounded-xl h-10 px-4 border-amber-200/60 text-amber-700 hover:bg-amber-100/70 rounded-xl font-black text-[10px] uppercase tracking-widest"
             >
               {copied === 'bookings' ? <Check size={14} className="mr-2" /> : <Copy size={14} className="mr-2" />}
               Copy Bookings
@@ -645,7 +645,7 @@ const CalcomSlotsView = () => {
               variant="outline"
               onClick={handleCopyAll}
               disabled={loading}
-              className="rounded-xl h-10 px-4 border-indigo-100 text-indigo-600 hover:bg-indigo-100 rounded-xl font-black text-[10px] uppercase tracking-widest"
+              className="rounded-xl h-10 px-4 border-amber-200/60 text-amber-700 hover:bg-amber-100/70 rounded-xl font-black text-[10px] uppercase tracking-widest"
             >
               {copied === 'all' ? <Check size={14} className="mr-2" /> : <Copy size={14} className="mr-2" />}
               Copy All
@@ -712,8 +712,8 @@ const CalcomSlotsView = () => {
         {/* Copy by Day Bar */}
         <div className="px-4 py-3 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 flex flex-wrap items-center gap-3 animate-in slide-in-from-top-2 duration-500">
           <div className="flex items-center gap-2 mr-2">
-            <Sparkles size={14} className="text-indigo-500" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Quick Copy:</span>
+            <Sparkles size={14} className="text-amber-500" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">Quick Copy:</span>
           </div>
           
           <Button
@@ -739,7 +739,7 @@ const CalcomSlotsView = () => {
               onClick={() => handleCopyDay(day)}
               className={cn(
                 "h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
-                copied === day ? "bg-emerald-500 text-white hover:bg-emerald-600" : "text-slate-500 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 hover:text-indigo-600"
+                copied === day ? "bg-emerald-500 text-white hover:bg-emerald-600" : "text-slate-500 hover:bg-amber-100/70 dark:hover:bg-amber-950/30 hover:text-amber-700"
               )}
             >
               {copied === day ? <Check size={12} className="mr-1.5" /> : <Copy size={12} className="mr-1.5" />}

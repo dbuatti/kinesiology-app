@@ -833,7 +833,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                       onClick={() => setRescheduleAt(iso)}
                       className={cn(
                         "text-left text-xs rounded-lg border px-2.5 py-2 transition-all",
-                        selected ? "border-primary bg-primary/5 font-semibold" : "border-border hover:border-primary/40"
+                        selected ? "border-amber-400 bg-amber-50/70 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 font-semibold" : "border-border hover:border-amber-300/60"
                       )}
                     >
                       {format(new Date(iso), "EEE d MMM · h:mma").toLowerCase()}

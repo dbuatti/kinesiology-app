@@ -103,7 +103,7 @@ const ShareAvailabilityButton = () => {
                   onClick={() => setService(s)}
                   className={cn(
                     "flex-1 px-2 py-1.5 rounded-md text-xs font-semibold transition-all",
-                    service.key === s.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                    service.key === s.key ? "bg-card text-amber-700 dark:text-amber-400 shadow-sm ring-1 ring-amber-200/60 dark:ring-amber-900/40" : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   {s.label}
@@ -121,7 +121,7 @@ const ShareAvailabilityButton = () => {
                   onClick={() => setRange(r)}
                   className={cn(
                     "flex-1 px-2 py-1.5 rounded-md text-xs font-semibold transition-all",
-                    range.key === r.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                    range.key === r.key ? "bg-card text-amber-700 dark:text-amber-400 shadow-sm ring-1 ring-amber-200/60 dark:ring-amber-900/40" : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   {r.label}

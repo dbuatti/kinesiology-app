@@ -255,7 +255,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
         <div className="px-8 pt-8 pb-5 border-b border-border shrink-0">
           <DialogHeader>
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-rose-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
                 <CalendarPlus size={22} />
               </div>
               <div className="flex-1 min-w-0">
@@ -448,7 +448,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                 <Button
                   onClick={handleBook}
                   disabled={submitting}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 h-14 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-indigo-100 mt-6"
+                  className="w-full bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white border-none h-14 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-amber-200/50 mt-6"
                 >
                   {submitting ? (
                     <>

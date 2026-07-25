@@ -292,7 +292,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
         <div className="px-8 pt-8 pb-5 border-b border-border shrink-0">
           <DialogHeader>
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center shadow-lg shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-rose-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
                 <Music size={22} />
               </div>
               <div>
@@ -569,7 +569,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                 <Button
                   onClick={handleConfirm}
                   disabled={bookingPending || creatingNotion || !selectedStudent || !date || !time || (!studentEmail)}
-                  className="bg-rose-500 hover:bg-rose-600 rounded-xl font-bold text-xs gap-2"
+                  className="bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white border-none rounded-xl font-bold text-xs gap-2"
                 >
                   {bookingPending ? (
                     <Loader2 size={14} className="animate-spin" />

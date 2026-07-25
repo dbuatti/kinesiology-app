@@ -7,6 +7,8 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import PathwayFindingsList from "@/components/crm/PathwayFindingsList";
 import CheckItem from "@/components/crm/document-view/CheckItem";
+import { ShowingLog, type CorrectionEntry } from "@/components/crm/ShowingLog";
+import { RecheckSection } from "@/components/crm/RecheckSection";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { MUSCLE_GROUPS, MIDLINE_MUSCLES } from "@/data/muscle-data";
@@ -127,6 +129,16 @@ const EditableNumberField = ({ label, value, field, onSave, editable = false, su
 const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = false, saveField, updatePriorityPattern }: DocViewProps) => {
   const handlePrint = () => window.print();
   const [clientName, setClientName] = useState(appointment.clients?.name || "");
+  const [correctionEntries, setCorrectionEntries] = useState<CorrectionEntry[]>(() => {
+    const meta = safeParse(appointment.metadata, {} as any);
+    return (meta?.corrections || []).map((c: any) => ({
+      finding: c.finding || c.pathway || 'Unknown',
+      summary: c.summary || '',
+      timestamp: c.timestamp || new Date().toISOString(),
+      status: c.status || 'pending',
+      recheckTimestamp: c.recheckTimestamp,
+    }));
+  });
 
   const handleSaveClientName = async () => {
     if (!clientName.trim() || clientName === appointment.clients?.name) return;
@@ -181,6 +193,35 @@ const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = fal
   const handleAssessmentToggle = useCallback((category: string, name: string, nextStatus: string, side?: 'L' | 'R') => {
     updatePriorityPattern(category, name, nextStatus === 'Clear' ? null : nextStatus, side);
   }, [updatePriorityPattern]);
+
+  const handleCorrectionStatusChange = useCallback(async (index: number, status: 'cleared' | 'still_showing') => {
+    setCorrectionEntries(prev => {
+      const next = [...prev];
+      next[index] = { ...next[index], status, recheckTimestamp: new Date().toISOString() };
+      // Persist back to metadata
+      const meta = safeParse(appointment.metadata, {} as any);
+      const corrections = (meta?.corrections || []).map((c: any, i: number) => {
+        if (i === index) return { ...c, status, recheckTimestamp: new Date().toISOString() };
+        return c;
+      });
+      saveField('metadata', { ...meta, corrections });
+      return next;
+    });
+  }, [appointment.metadata, saveField]);
+
+  const handleRecheckSetPriority = useCallback(async (finding: string) => {
+    await saveField('metadata', {
+      ...safeParse(appointment.metadata, {}),
+      priority_pathway: finding,
+    });
+  }, [appointment.metadata, saveField]);
+
+  const handleRecheckResolved = useCallback(async (finding: string) => {
+    const meta = safeParse(appointment.metadata, {} as any);
+    const cleared = [...(meta?.cleared_findings || [])];
+    if (!cleared.includes(finding)) cleared.push(finding);
+    await saveField('metadata', { ...meta, cleared_findings: cleared });
+  }, [appointment.metadata, saveField]);
 
   const hasPatternCategory = (cat: string) => {
     const entries = pattern?.[cat];
@@ -244,6 +285,18 @@ const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = fal
               </div>
             </div>
           </div>
+
+          {/* Recheck Previous Findings */}
+          {history.length > 0 && (
+            <div className="mb-8 print:hidden">
+              <RecheckSection
+                currentAppointment={appointment}
+                history={history}
+                onSetPriority={handleRecheckSetPriority}
+                onMarkResolved={handleRecheckResolved}
+              />
+            </div>
+          )}
 
           {/* ════════════════════════════════════════
              1 — PRELIMINARY ASSESSMENT
@@ -428,6 +481,16 @@ const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = fal
                         <p className="text-[12px] text-amber-900 dark:text-amber-100 leading-relaxed whitespace-pre-wrap">{c.summary}</p>
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {/* Showing Log */}
+                {correctionEntries.length > 0 && (
+                  <div className="mb-4 print:hidden">
+                    <ShowingLog
+                      corrections={correctionEntries}
+                      onStatusChange={handleCorrectionStatusChange}
+                    />
                   </div>
                 )}
 

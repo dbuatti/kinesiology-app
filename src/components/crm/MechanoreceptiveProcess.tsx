@@ -1,7 +1,6 @@
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { 
   Brain, 
@@ -104,141 +103,133 @@ const MechanoreceptiveProcess = ({
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
 
-      <div className="flex items-center gap-0 mb-6">
-        {stepOrder.map((s, i) => (
-          <div key={s} className="flex items-center">
-            <div className={cn(
-              "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all shrink-0",
-              step === s
-                ? "bg-blue-600 text-white shadow-sm shadow-blue-200"
-                : i < currentIndex
-                  ? "bg-blue-200 text-blue-700"
-                  : "bg-muted text-muted-foreground"
-            )}>
-              {i < currentIndex ? <CheckCircle2 size={14} /> : i + 1}
+      <div className="mb-4">
+        <p className="text-xs text-muted-foreground mb-2">{stepNames[step]}</p>
+        <div className="flex items-center gap-2">
+          {stepOrder.map((s, i) => (
+            <div key={s} className="flex items-center gap-2">
+              <div className={cn(
+                "w-2 h-2 rounded-full transition-all shrink-0",
+                step === s
+                  ? "bg-primary"
+                  : i < currentIndex
+                    ? "bg-primary/30"
+                    : "bg-border"
+              )} />
             </div>
-            <span className={cn(
-              "text-[9px] font-semibold uppercase tracking-wider mx-1.5 hidden sm:block",
-              step === s ? "text-blue-600" : i < currentIndex ? "text-blue-500" : "text-muted-foreground"
-            )}>
-              {stepNames[s]}
-            </span>
-            {i < stepOrder.length - 1 && (
-              <div className={cn("w-6 h-px mx-0.5", i < currentIndex ? "bg-blue-300" : "bg-border")} />
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {step === 'CONFIRM' && (
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold text-foreground">1. Confirm Unconscious Mechanoreception</h3>
-            <p className="text-sm text-muted-foreground">
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <h3 className="text-sm font-medium text-foreground">1. Confirm Unconscious Mechanoreception</h3>
+            <p className="text-xs text-muted-foreground">
               Work from an inhibited direct muscle in the clear (e.g. quadriceps).
             </p>
           </div>
 
-          <div className="p-5 rounded-xl bg-blue-50 border border-blue-200 space-y-4">
+          <div className="p-4 rounded-lg bg-muted/50 border border-border space-y-3">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 text-sm font-bold">1</div>
+              <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 text-xs font-bold">1</div>
               <div>
-                <p className="font-semibold text-blue-900">State <strong>&quot;Afferent&quot;</strong> in the mind</p>
-                <p className="text-sm text-blue-700">The inhibited muscle facilitates (locks). <strong>Thought is a stim:</strong> stating &quot;afferent&quot; locks it; an unrelated thought unlocks it. The X card is the objective way to hold the indication.</p>
+                <p className="font-medium text-sm text-foreground">State <strong>&quot;Afferent&quot;</strong> in the mind</p>
+                <p className="text-xs text-muted-foreground">The inhibited muscle facilitates (locks). <strong>Thought is a stim:</strong> stating &quot;afferent&quot; locks it; an unrelated thought unlocks it. The X card is the objective way to hold the indication.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 text-sm font-bold">2</div>
+              <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 text-xs font-bold">2</div>
               <div>
-                <p className="font-semibold text-blue-900">Show the <strong>X card</strong> for 5–10 seconds</p>
-                <p className="text-sm text-blue-700">The inhibited muscle facilitates → <strong>afferent unconscious mechanoreception confirmed</strong>. (TL of GV16 facilitates too — same test, same result.)</p>
+                <p className="font-medium text-sm text-foreground">Show the <strong>X card</strong> for 5–10 seconds</p>
+                <p className="text-xs text-muted-foreground">The inhibited muscle facilitates → <strong>afferent unconscious mechanoreception confirmed</strong>. (TL of GV16 facilitates too — same test, same result.)</p>
               </div>
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-muted border border-border">
+          <div className="p-3 rounded-lg bg-muted/50 border border-border">
             <div className="flex items-start gap-3">
-              <Info size={18} className="text-blue-600 shrink-0 mt-0.5" />
+              <Info size={14} className="text-muted-foreground shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-foreground">The X card is your mechanoreception check</p>
+                <p className="text-xs font-medium text-foreground">The X card is your mechanoreception check</p>
                 <p className="text-xs text-muted-foreground">Viewing an X-pattern for 5–10s while testing an inhibited direct muscle is the quick confirmation. If it facilitates, it&apos;s unconscious mechanoreception via the spinocerebellar tract. The X card is <strong>more objective</strong> than stating it in the mind — use it as your primary confirm.</p>
               </div>
             </div>
           </div>
 
-          <Button onClick={() => goToStep('LOCALIZE')} className="w-full h-14 rounded-xl bg-blue-600 hover:bg-blue-700 text-lg font-medium">
-            Confirmed — Localise the Ligament <ChevronRight size={20} className="ml-2" />
+          <Button onClick={() => goToStep('LOCALIZE')} className="w-full h-10 rounded-lg text-xs font-medium">
+            Confirmed — Localise the Ligament <ChevronRight size={14} className="ml-2" />
           </Button>
         </div>
       )}
 
       {step === 'LOCALIZE' && (
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold text-foreground">2. Localise the Ligament</h3>
-            <p className="text-sm text-muted-foreground">
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <h3 className="text-sm font-medium text-foreground">2. Localise the Ligament</h3>
+            <p className="text-xs text-muted-foreground">
               Switch to a strong indicator muscle. The client TLs <strong>GV16 (cerebellum point)</strong> — the indicator stays facilitated. Then bracket in binaries.
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-blue-50 border border-blue-200">
-            <p className="text-sm text-blue-800 font-medium text-center">
+          <div className="p-3 rounded-lg bg-muted/50 border border-border">
+            <p className="text-xs text-muted-foreground font-medium text-center">
               Client: hold GV16 (midline hollow below the occiput). Strong indicator → stays clear.
             </p>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Region</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               {REGIONS.map(r => (
-                <Button key={r} variant="outline" className={cn("h-16 rounded-xl border-2 font-medium", region === r ? "border-blue-500 bg-blue-50" : "border-border")} onClick={() => setRegion(r)}>
+                <Button key={r} variant="outline" size="sm" className={cn("rounded-lg font-medium", region === r ? "border-primary bg-primary/10" : "border-border")} onClick={() => setRegion(r)}>
                   {r}
                 </Button>
               ))}
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Side</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               {SIDES.map(s => (
-                <Button key={s} variant="outline" className={cn("h-14 rounded-xl border-2 font-medium", side === s ? "border-blue-500 bg-blue-50" : "border-border")} onClick={() => setSide(s)}>
+                <Button key={s} variant="outline" size="sm" className={cn("rounded-lg font-medium", side === s ? "border-primary bg-primary/10" : "border-border")} onClick={() => setSide(s)}>
                   {s}
                 </Button>
               ))}
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Joint</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {JOINT_GROUPS.flatMap(g => g.joints).map(j => (
-                <Button key={j} variant="outline" className={cn("h-12 rounded-xl text-xs font-medium", joint === j ? "border-blue-500 bg-blue-50" : "border-border")} onClick={() => setJoint(j)}>
+                <Button key={j} variant="outline" size="sm" className={cn("rounded-lg text-xs font-medium", joint === j ? "border-primary bg-primary/10" : "border-border")} onClick={() => setJoint(j)}>
                   {j}
                 </Button>
               ))}
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Ligament (specific)</p>
-              <Button variant="link" size="sm" className="text-[10px] h-auto p-0 text-blue-600" onClick={onOpenLigamentCharts}>
+              <Button variant="link" size="sm" className="text-[10px] h-auto p-0 text-muted-foreground" onClick={onOpenLigamentCharts}>
                 View Charts
               </Button>
             </div>
             <Input
               placeholder="Lightly rub over the suspected ligament — if it momentarily facilitates, that's the one. Enter name or leave blank."
-              className="h-12 rounded-xl font-medium"
+              className="h-10 rounded-lg text-xs font-medium"
               value={ligament}
               onChange={(e) => setLigament(e.target.value)}
             />
             {joint && (
               <div className="grid grid-cols-2 gap-2">
                 {(ligamentImages[jointToCategoryMap[joint]] || []).slice(0, 2).map((url, i) => url && (
-                  <div key={i} className="aspect-video rounded-lg overflow-hidden border bg-white shadow-sm">
+                  <div key={i} className="aspect-video rounded-lg overflow-hidden border border-border">
                     <img src={url} alt="Ligament reference" className="w-full h-full object-cover" />
                   </div>
                 ))}
@@ -246,144 +237,144 @@ const MechanoreceptiveProcess = ({
             )}
           </div>
 
-          <div className="space-y-3 p-4 rounded-xl bg-muted border border-border">
+          <div className="space-y-2 p-3 rounded-lg bg-muted/50 border border-border">
             <div className="flex items-start gap-3">
-              <Info size={16} className="text-blue-600 shrink-0 mt-0.5" />
+              <Info size={14} className="text-muted-foreground shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-foreground">Rub to confirm, stretch to correct</p>
+                <p className="text-xs font-medium text-foreground">Rub to confirm, stretch to correct</p>
                 <p className="text-xs text-muted-foreground"><strong>Rubbing/compressing</strong> the tissue down-regulates the signal → the indicator momentarily facilitates (use this to confirm the spot). <strong>Stretching</strong> aggravates it → the indicator inhibits (this held with GV16 drives the correction). Same tissue, opposite readings.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Info size={16} className="text-blue-600 shrink-0 mt-0.5" />
+              <Info size={14} className="text-muted-foreground shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-foreground">Golgi receptors are everywhere</p>
-                <p className="xs text-muted-foreground">They sit in ligaments, tendons <strong>and fascia</strong>. That&apos;s why the tissue can be close (e.g. SC ligament → neck flexors) or distant and contralateral (e.g. anterior oblique sling → glute medius). When it doesn&apos;t &quot;make sense,&quot; follow the process anyway — it finds the tissue.</p>
+                <p className="text-xs font-medium text-foreground">Golgi receptors are everywhere</p>
+                <p className="text-xs text-muted-foreground">They sit in ligaments, tendons <strong>and fascia</strong>. That&apos;s why the tissue can be close (e.g. SC ligament → neck flexors) or distant and contralateral (e.g. anterior oblique sling → glute medius). When it doesn&apos;t &quot;make sense,&quot; follow the process anyway — it finds the tissue.</p>
               </div>
             </div>
           </div>
 
-          <div className="flex gap-3">
-            <Button variant="ghost" onClick={goBack} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
-            <Button disabled={!region || !side || !joint} onClick={() => goToStep('STRETCH')} className="flex-[2] h-12 rounded-xl bg-blue-600 hover:bg-blue-700 font-medium">
-              Ligament Found <ChevronRight size={18} className="ml-2" />
+          <div className="flex gap-2">
+            <Button variant="ghost" size="sm" onClick={goBack} className="flex-1 rounded-lg"><ChevronLeft size={14} className="mr-1" /> Back</Button>
+            <Button size="sm" disabled={!region || !side || !joint} onClick={() => goToStep('STRETCH')} className="flex-[2] rounded-lg font-medium">
+              Ligament Found <ChevronRight size={14} className="ml-1" />
             </Button>
           </div>
         </div>
       )}
 
       {step === 'STRETCH' && (
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold text-foreground">3. Find the Direction of Stretch</h3>
-            <p className="text-sm text-muted-foreground">
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <h3 className="text-sm font-medium text-foreground">3. Find the Direction of Stretch</h3>
+            <p className="text-xs text-muted-foreground">
               On a strong indicator, stretch the ligament in different directions. The direction that <strong>inhibits</strong> the indicator is the one to correct.
             </p>
           </div>
 
-          <div className="p-6 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 space-y-4">
-            <div className="text-center space-y-3">
-              <Move size={40} className="text-blue-600 mx-auto" />
-              <p className="text-lg font-semibold text-blue-900">
+          <div className="p-4 rounded-lg bg-muted/50 border border-border space-y-3">
+            <div className="space-y-2">
+              <Move size={20} className="text-muted-foreground" />
+              <p className="text-sm font-medium text-foreground">
                 Stretch {side} {joint} in different directions
               </p>
-              <p className="text-sm text-blue-700">
+              <p className="text-xs text-muted-foreground">
                 Place your hand over the tissue and stretch through it. The direction that <strong>inhibits</strong> the indicator is the one to correct.
               </p>
             </div>
-            <div className="p-4 rounded-xl bg-white border border-blue-200">
-              <p className="text-sm font-semibold text-blue-900 mb-1">Rubbing vs stretching — same tissue, opposite readings</p>
-              <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
+            <div className="p-3 rounded-lg bg-background border border-border">
+              <p className="text-xs font-medium text-foreground mb-1">Rubbing vs stretching — same tissue, opposite readings</p>
+              <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
                 <li><strong>Rub / compress</strong> → down-regulates → muscle momentarily <strong>facilitates</strong> → use to <strong>confirm</strong> the spot</li>
                 <li><strong>Stretch</strong> → aggravates → indicator <strong>inhibits</strong> → held with GV16, this <strong>drives the correction</strong></li>
               </ul>
             </div>
           </div>
 
-          <div className="flex gap-3">
-            <Button variant="ghost" onClick={goBack} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
-            <Button onClick={() => goToStep('CORRECT')} className="flex-[2] h-12 rounded-xl bg-blue-600 hover:bg-blue-700 font-medium">
-              Direction Found <ChevronRight size={18} className="ml-2" />
+          <div className="flex gap-2">
+            <Button variant="ghost" size="sm" onClick={goBack} className="flex-1 rounded-lg"><ChevronLeft size={14} className="mr-1" /> Back</Button>
+            <Button size="sm" onClick={() => goToStep('CORRECT')} className="flex-[2] rounded-lg font-medium">
+              Direction Found <ChevronRight size={14} className="ml-1" />
             </Button>
           </div>
         </div>
       )}
 
       {step === 'CORRECT' && (
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold text-foreground">4. Correction</h3>
-            <p className="text-sm text-muted-foreground">
+        <div className="space-y-4">
+          <div className="space-y-1">
+            <h3 className="text-sm font-medium text-foreground">4. Correction</h3>
+            <p className="text-xs text-muted-foreground">
               Connect the ligament and the cerebellum point — then reset the circuit.
             </p>
           </div>
 
-          <div className="rounded-xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden">
-            <div className="p-6 space-y-4">
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-white border border-blue-200">
-                <div className="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-sm">1</div>
-                <Brain size={20} className="text-blue-600 shrink-0" />
+          <div className="rounded-lg border border-border bg-muted/50 overflow-hidden">
+            <div className="p-4 space-y-3">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-background border border-border">
+                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">1</div>
+                <Brain size={16} className="text-muted-foreground shrink-0" />
                 <div>
-                  <p className="font-semibold text-sm text-blue-900">Hold GV16 (cerebellum point)</p>
-                  <p className="text-xs text-blue-700">Client or practitioner holds the point below the occiput. This is the cerebellum relay — the top of the spinocerebellar pathway.</p>
+                  <p className="font-medium text-xs text-foreground">Hold GV16 (cerebellum point)</p>
+                  <p className="text-xs text-muted-foreground">Client or practitioner holds the point below the occiput. This is the cerebellum relay — the top of the spinocerebellar pathway.</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-white border border-blue-200">
-                <div className="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-sm">2</div>
-                <Activity size={20} className="text-blue-600 shrink-0" />
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-background border border-border">
+                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">2</div>
+                <Activity size={16} className="text-muted-foreground shrink-0" />
                 <div>
-                  <p className="font-semibold text-sm text-blue-900">Take the ligament into the stretch</p>
-                  <p className="text-xs text-blue-700">The direction you found in step 3 — the one that inhibits the indicator.</p>
+                  <p className="font-medium text-xs text-foreground">Take the ligament into the stretch</p>
+                  <p className="text-xs text-muted-foreground">The direction you found in step 3 — the one that inhibits the indicator.</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-white border border-blue-200">
-                <div className="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-sm">3</div>
-                <Zap size={20} className="text-blue-600 shrink-0" />
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-background border border-border">
+                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">3</div>
+                <Zap size={16} className="text-muted-foreground shrink-0" />
                 <div>
-                  <p className="font-semibold text-sm text-blue-900">Tuning fork on bone + Rocking</p>
-                  <p className="text-xs text-blue-700">Strike the tuning fork and rest it on a bony surface (head, sternum, or sacrum). Add rocking afterwards. This creates a piezoelectric effect that normalises the charge between the cerebellum and the ligament.</p>
+                  <p className="font-medium text-xs text-foreground">Tuning fork on bone + Rocking</p>
+                  <p className="text-xs text-muted-foreground">Strike the tuning fork and rest it on a bony surface (head, sternum, or sacrum). Add rocking afterwards. This creates a piezoelectric effect that normalises the charge between the cerebellum and the ligament.</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
-            <p className="text-xs text-amber-800 font-medium text-center">
+          <div className="p-3 rounded-lg bg-muted/50 border border-border">
+            <p className="text-xs text-muted-foreground font-medium text-center">
               Hold GV16, maintain the stretch, apply the tuning fork — then rock. Retest the original muscle — it now facilitates. Done.
             </p>
           </div>
 
-          <div className="flex gap-3">
-            <Button variant="ghost" onClick={goBack} className="flex-1 h-12 rounded-xl"><ChevronLeft size={18} className="mr-2" /> Back</Button>
-            <Button onClick={() => goToStep('REASSESS')} className="flex-[2] h-12 rounded-xl bg-blue-600 hover:bg-blue-700 font-medium">
-              Correction Applied <ChevronRight size={18} className="ml-2" />
+          <div className="flex gap-2">
+            <Button variant="ghost" size="sm" onClick={goBack} className="flex-1 rounded-lg"><ChevronLeft size={14} className="mr-1" /> Back</Button>
+            <Button size="sm" onClick={() => goToStep('REASSESS')} className="flex-[2] rounded-lg font-medium">
+              Correction Applied <ChevronRight size={14} className="ml-1" />
             </Button>
           </div>
         </div>
       )}
 
       {step === 'REASSESS' && (
-        <div className="space-y-6">
-          <div className="bg-muted p-8 rounded-xl border-2 border-border text-center">
-            <div className="w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-6">
-              <RefreshCw size={48} className="text-chart-emerald" />
+        <div className="space-y-4">
+          <div className="bg-muted/50 p-4 rounded-lg border border-border">
+            <div className="flex items-center gap-3 mb-3">
+              <RefreshCw size={16} className="text-chart-emerald" />
+              <h3 className="text-sm font-medium text-foreground">5. Re-assess</h3>
             </div>
-            <h3 className="text-2xl font-semibold text-foreground mb-2">5. Re-assess</h3>
-            <p className="text-foreground font-medium">
+            <p className="text-xs text-muted-foreground">
               Retest the original inhibited muscle — it now facilitates. The ligament signal is restored.
             </p>
-            <p className="text-sm text-muted-foreground mt-2">
+            <p className="text-xs text-muted-foreground mt-1">
               The cerebellum can now &quot;see&quot; the joint again. Movement rate, rhythm and accuracy are back online.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
-            <Button className="h-16 rounded-xl bg-chart-emerald hover:bg-chart-emerald/90 text-xl font-semibold shadow-sm" onClick={handleFinish}>
-              Pathway is Clear <CheckCircle2 size={24} className="ml-2" />
+          <div className="grid grid-cols-1 gap-2">
+            <Button size="sm" className="rounded-lg font-medium" onClick={handleFinish}>
+              Pathway is Clear <CheckCircle2 size={14} className="ml-1" />
             </Button>
-            <Button variant="outline" className="h-16 rounded-xl border-2 border-blue-200 text-blue-700 hover:bg-blue-50 font-medium text-lg" onClick={handleInhibited}>
+            <Button variant="outline" size="sm" className="rounded-lg font-medium" onClick={handleInhibited}>
               Still Inhibited — Add Layer
             </Button>
           </div>

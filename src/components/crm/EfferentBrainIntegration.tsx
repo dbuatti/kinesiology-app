@@ -52,28 +52,28 @@ const ZoneCard = ({ point, images, isSelected, onSelect, onShowInfo, isLoading }
 
     return (
         <div className={cn(
-            "relative flex flex-col items-center p-2 rounded-xl border-2 transition-all duration-300 group",
+            "relative flex flex-col items-center p-2 rounded-xl border transition-all duration-300 group",
             isSelected 
-                ? "bg-indigo-600 border-indigo-600 shadow-lg z-10" 
-                : "bg-white border-slate-100 hover:border-indigo-200"
+                ? "bg-primary border-primary z-10" 
+                : "bg-card border-border hover:border-primary/30"
         )}>
             <div className={cn(
                 "w-full aspect-square rounded-lg overflow-hidden mb-1.5 flex items-center justify-center transition-colors relative",
-                isSelected ? "bg-white/10" : "bg-slate-50"
+                isSelected ? "bg-white/10" : "bg-muted/50"
             )}>
                 {isLoading ? (
-                  <Loader2 size={14} className="text-slate-300 animate-spin" />
+                  <Loader2 size={14} className="text-muted-foreground animate-spin" />
                 ) : imageUrl ? (
                     <img src={imageUrl} alt={point.name} className="w-full h-full object-cover" />
                 ) : (
-                    <Brain size={18} className={isSelected ? "text-white" : "text-slate-300"} />
+                    <Brain size={18} className={isSelected ? "text-primary-foreground" : "text-muted-foreground"} />
                 )}
 
                 {/* Info Trigger */}
                 <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                   <button 
                     onClick={(e) => { e.stopPropagation(); onShowInfo(point); }}
-                    className="w-6 h-6 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-indigo-600 shadow-md hover:bg-indigo-600 hover:text-white transition-all"
+                    className="w-6 h-6 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-primary hover:bg-primary hover:text-primary-foreground transition-all"
                   >
                     <Info size={14} />
                   </button>
@@ -81,7 +81,7 @@ const ZoneCard = ({ point, images, isSelected, onSelect, onShowInfo, isLoading }
             </div>
             <p className={cn(
                 "font-black text-[8px] uppercase tracking-tight truncate w-full text-center",
-                isSelected ? "text-white" : "text-slate-700"
+                isSelected ? "text-primary-foreground" : "text-foreground"
             )}>
                 {point.name}
             </p>
@@ -96,11 +96,11 @@ const ZoneCard = ({ point, images, isSelected, onSelect, onShowInfo, isLoading }
                 <div className="flex flex-col w-full gap-1">
                     {!isMidline && (
                         <div className="flex gap-1 w-full">
-                            <button onClick={(e) => { e.stopPropagation(); onSelect('Left'); }} className="flex-1 bg-white/10 hover:bg-indigo-500 text-white text-[8px] font-black py-1 rounded-md border border-white/10 transition-colors">L</button>
-                            <button onClick={(e) => { e.stopPropagation(); onSelect('Right'); }} className="flex-1 bg-white/10 hover:bg-indigo-500 text-white text-[8px] font-black py-1 rounded-md border border-white/10 transition-colors">R</button>
+                            <button onClick={(e) => { e.stopPropagation(); onSelect('Left'); }} className="flex-1 bg-white/10 hover:bg-primary text-white text-[8px] font-black py-1 rounded-md border border-white/10 transition-colors">L</button>
+                            <button onClick={(e) => { e.stopPropagation(); onSelect('Right'); }} className="flex-1 bg-white/10 hover:bg-primary text-white text-[8px] font-black py-1 rounded-md border border-white/10 transition-colors">R</button>
                         </div>
                     )}
-                    <button onClick={(e) => { e.stopPropagation(); onSelect('Bilateral'); }} className="w-full bg-white/10 hover:bg-indigo-500 text-white text-[8px] font-black py-1 rounded-md border border-white/10 transition-colors">{isMidline ? 'Select' : 'Bilateral'}</button>
+                    <button onClick={(e) => { e.stopPropagation(); onSelect('Bilateral'); }} className="w-full bg-white/10 hover:bg-primary text-white text-[8px] font-black py-1 rounded-md border border-white/10 transition-colors">{isMidline ? 'Select' : 'Bilateral'}</button>
                 </div>
             </div>
         </div>
@@ -190,38 +190,38 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
       <div className="space-y-4 animate-in fade-in slide-in-from-right-2 duration-300">
         <div className="flex items-center justify-between gap-4">
             <div className="space-y-0.5">
-                <h3 className="text-lg font-black text-slate-900">{title}</h3>
-                <p className="text-[10px] text-slate-500 font-medium">Select a zone and side to continue.</p>
+                <h3 className="text-sm font-medium text-foreground">{title}</h3>
+                <p className="text-[10px] text-muted-foreground font-medium">Select a zone and side to continue.</p>
             </div>
             <div className="relative w-48">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={12} />
-                <Input placeholder="Search..." className="h-8 pl-8 rounded-lg border-slate-200 text-[10px] font-bold" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={12} />
+                <Input placeholder="Search..." className="h-8 pl-8 rounded-lg border-border text-[10px] font-bold" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
             </div>
         </div>
 
         {nerveInfo && (
-          <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100 flex items-start gap-3">
-            <Info size={16} className="text-amber-600 shrink-0 mt-0.5" />
-            <p className="text-[10px] text-amber-800 font-bold leading-relaxed">
+          <div className="p-4 bg-muted/50 rounded-xl border border-border flex items-start gap-3">
+            <Info size={16} className="text-muted-foreground shrink-0 mt-0.5" />
+            <p className="text-[10px] text-muted-foreground font-bold leading-relaxed">
               Tip: For {nerveInfo.name}, prioritize the <span className="underline">{nerveInfo.nuclei}</span> nuclei reflex point as one of your coordinates.
             </p>
           </div>
         )}
 
         <div className="grid grid-cols-2 gap-3">
-          <div className={cn("p-3 rounded-xl border transition-all", coord.point?.category === 'Cortical' ? "bg-purple-50 border-purple-200" : "bg-slate-50 border-slate-100")}>
-            <div className="flex items-center gap-2 mb-1"><ShieldAlert size={14} className="text-purple-600" /><p className="text-[8px] font-black text-purple-600 uppercase tracking-widest">Cortical</p></div>
-            <p className="text-[9px] font-bold text-purple-900">Contralateral Logic</p>
+          <div className={cn("p-3 rounded-xl border transition-all", coord.point?.category === 'Cortical' ? "bg-chart-emerald/10 text-chart-emerald border-chart-emerald/30" : "bg-muted/50 border-border")}>
+            <div className="flex items-center gap-2 mb-1"><ShieldAlert size={14} className="text-chart-emerald" /><p className="text-[8px] font-black text-chart-emerald uppercase tracking-widest">Cortical</p></div>
+            <p className="text-[9px] font-bold text-foreground">Contralateral Logic</p>
           </div>
-          <div className={cn("p-3 rounded-xl border transition-all", coord.point?.category === 'Subcortical' ? "bg-indigo-50 border-indigo-200" : "bg-slate-50 border-slate-100")}>
-            <div className="flex items-center gap-2 mb-1"><ShieldAlert size={14} className="text-indigo-600" /><p className="text-[8px] font-black text-indigo-600 uppercase tracking-widest">Subcortical</p></div>
-            <p className="text-[9px] font-bold text-indigo-900">Ipsilateral Logic</p>
+          <div className={cn("p-3 rounded-xl border transition-all", coord.point?.category === 'Subcortical' ? "bg-primary/10 text-primary border-primary/30" : "bg-muted/50 border-border")}>
+            <div className="flex items-center gap-2 mb-1"><ShieldAlert size={14} className="text-primary" /><p className="text-[8px] font-black text-primary uppercase tracking-widest">Subcortical</p></div>
+            <p className="text-[9px] font-bold text-foreground">Ipsilateral Logic</p>
           </div>
         </div>
 
         <div className="space-y-6">
             <div className="space-y-2">
-                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">Cortical Zones</p>
+                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest px-1">Cortical Zones</p>
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                     {corticalPoints.map(p => (
                         <ZoneCard 
@@ -237,7 +237,7 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
                 </div>
             </div>
             <div className="space-y-2">
-                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest px-1">Subcortical Zones</p>
+                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest px-1">Subcortical Zones</p>
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                     {subcorticalPoints.map(p => (
                         <ZoneCard 
@@ -255,7 +255,7 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
         </div>
 
         <div className="flex gap-2 pt-2">
-          <Button variant="ghost" onClick={() => prevStep(prev)} className="flex-1 h-10 rounded-xl font-bold text-xs"><ChevronLeft size={16} className="mr-1" /> Back</Button>
+          <Button variant="ghost" size="sm" onClick={() => prevStep(prev)} className="flex-1"><ChevronLeft size={14} /> Back</Button>
         </div>
       </div>
     );
@@ -263,13 +263,13 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
 
   const SelectionSummary = () => (
     <div className="grid grid-cols-2 gap-2 mb-4">
-      <div className={cn("p-3 rounded-xl border transition-all", coord1.point ? "bg-indigo-50 border-indigo-200" : "bg-slate-50 border-slate-100")}>
-        <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Coordinate 1</p>
-        <p className="text-[11px] font-black text-slate-900 truncate">{formatCoordLabel(coord1)}</p>
+      <div className={cn("p-3 rounded-xl border transition-all", coord1.point ? "bg-primary/10 border-primary/30" : "bg-muted/50 border-border")}>
+        <p className="text-[7px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Coordinate 1</p>
+        <p className="text-[11px] font-black text-foreground truncate">{formatCoordLabel(coord1)}</p>
       </div>
-      <div className={cn("p-3 rounded-xl border transition-all", coord2.point ? "bg-purple-50 border-purple-200" : "bg-slate-50 border-slate-100")}>
-        <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Coordinate 2</p>
-        <p className="text-[11px] font-black text-slate-900 truncate">{formatCoordLabel(coord2)}</p>
+      <div className={cn("p-3 rounded-xl border transition-all", coord2.point ? "bg-chart-emerald/10 border-chart-emerald/30" : "bg-muted/50 border-border")}>
+        <p className="text-[7px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Coordinate 2</p>
+        <p className="text-[11px] font-black text-foreground truncate">{formatCoordLabel(coord2)}</p>
       </div>
     </div>
   );
@@ -278,15 +278,16 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
     <div className="relative overflow-hidden">
       <div className="flex items-center justify-between mb-6 mt-2">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md"><Brain size={20} /></div>
-          <div>
-            <h2 className="text-lg font-black text-slate-900 leading-none">Efferent Integration</h2>
-            <p className="text-[8px] text-slate-400 font-black uppercase tracking-widest mt-1.5">Step {['ENTRY', 'COORD_1', 'COORD_2', 'METHOD', 'CALIBRATE', 'REASSESS'].indexOf(step) + 1} of 6</p>
+          <h2 className="text-sm font-medium text-foreground">Efferent Integration</h2>
+          <div className="flex items-center gap-1.5">
+            {['ENTRY', 'COORD_1', 'COORD_2', 'METHOD', 'CALIBRATE', 'REASSESS'].map((s, i) => (
+              <div key={s} className={cn("w-2 h-2 rounded-full transition-colors", ['ENTRY', 'COORD_1', 'COORD_2', 'METHOD', 'CALIBRATE', 'REASSESS'].indexOf(step) >= i ? "bg-primary" : "bg-muted")} />
+            ))}
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {isComplete && <Badge className="bg-emerald-500 text-white border-none font-black text-[8px]">Cleared</Badge>}
-          {onCancel && <Button variant="ghost" size="icon" onClick={onCancel} className="rounded-full h-8 w-8 hover:bg-slate-100"><X size={16} className="text-slate-400" /></Button>}
+          {isComplete && <Badge className="bg-chart-emerald/10 text-chart-emerald border-chart-emerald/30 font-black text-[8px]">Cleared</Badge>}
+          {onCancel && <Button variant="ghost" size="sm" onClick={onCancel}><X size={14} className="text-muted-foreground" /></Button>}
         </div>
       </div>
 
@@ -295,9 +296,9 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
       <div className="flex flex-col justify-center">
         {step === 'ENTRY' && (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-2 duration-300">
-            <div className="space-y-0.5"><h3 className="text-lg font-black text-slate-900">Entry Pathway</h3><p className="text-xs text-slate-500 font-medium">What stimulus brought you here?</p></div>
-            <div className="relative"><Zap className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-500" size={16} /><Input placeholder="e.g. Left Psoas..." className="h-11 rounded-xl border-slate-200 focus:border-indigo-500 transition-all text-base font-bold pl-10" value={entryPoint} onChange={(e) => setEntryPoint(e.target.value)} /></div>
-            <Button disabled={!entryPoint} onClick={() => nextStep('COORD_1')} className="w-full h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-sm font-black shadow-lg">Find Priority Zone <ChevronRight size={16} className="ml-1" /></Button>
+            <div className="space-y-0.5"><h3 className="text-sm font-medium text-foreground">Entry Pathway</h3><p className="text-xs text-muted-foreground font-medium">What stimulus brought you here?</p></div>
+            <div className="relative"><Zap className="absolute left-3 top-1/2 -translate-y-1/2 text-primary" size={16} /><Input placeholder="e.g. Left Psoas..." className="h-10 rounded-lg border-border text-sm font-medium pl-10" value={entryPoint} onChange={(e) => setEntryPoint(e.target.value)} /></div>
+            <Button disabled={!entryPoint} onClick={() => nextStep('COORD_1')} className="w-full h-10 rounded-lg bg-primary hover:bg-primary/90 text-xs font-medium">Find Priority Zone <ChevronRight size={14} className="ml-1" /></Button>
           </div>
         )}
 
@@ -306,58 +307,57 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
 
         {step === 'METHOD' && (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-2 duration-300">
-            <div className="space-y-0.5"><h3 className="text-lg font-black text-slate-900">Calibration Method</h3><p className="text-xs text-slate-500 font-medium">Challenge the system for the preferred method.</p></div>
+            <div className="space-y-0.5"><h3 className="text-sm font-medium text-foreground">Calibration Method</h3><p className="text-xs text-muted-foreground font-medium">Challenge the system for the preferred method.</p></div>
             <div className="grid grid-cols-1 gap-2">
               {[
                 { id: 'Tapping', icon: Zap, color: 'text-amber-500', best: 'Fast resets' },
                 { id: 'Holding + Intention', icon: Heart, color: 'text-rose-500', best: 'Deep trauma' },
                 { id: 'Tuning Fork', icon: Activity, color: 'text-blue-500', best: 'Vibrational' }
               ].map((m) => (
-                <Button key={m.id} variant="outline" className={cn("h-16 justify-start gap-4 px-6 rounded-2xl border-2 transition-all group", method === m.id ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-100 hover:border-indigo-200")} onClick={() => { setMethod(m.id as IntegrationMethod); nextStep('CALIBRATE'); }}>
-                  <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"><m.icon size={20} className={m.color} /></div>
-                  <div className="text-left"><div className="font-black text-sm">{m.id}</div><div className="text-[8px] font-black text-indigo-500 uppercase tracking-widest">Best for: {m.best}</div></div>
+                <Button key={m.id} variant="outline" className={cn("h-12 justify-start gap-4 px-6 rounded-xl border transition-all group", method === m.id ? "border-primary bg-primary/5 text-primary" : "border-border hover:border-primary/30")} onClick={() => { setMethod(m.id as IntegrationMethod); nextStep('CALIBRATE'); }}>
+                  <div className="w-10 h-10 rounded-lg bg-card flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"><m.icon size={20} className={m.color} /></div>
+                  <div className="text-left"><div className="font-black text-sm">{m.id}</div><div className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Best for: {m.best}</div></div>
                 </Button>
               ))}
             </div>
-            <Button variant="ghost" onClick={() => prevStep('COORD_2')} className="w-full h-10 rounded-xl font-bold text-xs"><ChevronLeft size={16} className="mr-1" /> Back</Button>
+            <Button variant="ghost" size="sm" onClick={() => prevStep('COORD_2')} className="w-full"><ChevronLeft size={14} /> Back</Button>
           </div>
         )}
 
         {step === 'CALIBRATE' && (
           <div className="space-y-3 animate-in fade-in slide-in-from-right-2 duration-300">
-            <div className="bg-slate-950 text-white p-5 rounded-[2rem] shadow-xl relative overflow-hidden border border-slate-800">
-              <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none"><Sparkles size={120} /></div>
+            <div className="bg-muted/50 p-5 rounded-xl border border-border relative overflow-hidden">
               <div className="flex items-center justify-between mb-4 relative z-10">
-                <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30"><Zap size={20} className="text-amber-400 fill-amber-400" /></div><div><h3 className="text-xl font-black tracking-tight">Calibration</h3><p className="text-slate-500 font-bold uppercase tracking-widest text-[8px]">Integrating Pathways</p></div></div>
-                <Badge className="bg-indigo-600 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1">{method}</Badge>
+                <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20"><Zap size={20} className="text-primary" /></div><div><h3 className="text-base font-medium text-foreground tracking-tight">Calibration</h3><p className="text-muted-foreground font-bold uppercase tracking-widest text-[8px]">Integrating Pathways</p></div></div>
+                <Badge className="bg-primary/10 text-primary border-primary/20 font-black text-[8px] uppercase tracking-widest px-3 py-1">{method}</Badge>
               </div>
-              <div className="relative z-10 mb-4 p-4 bg-white rounded-2xl text-slate-900 shadow-xl border-t-4 border-indigo-600">
-                <div className="flex items-center gap-2 mb-1.5"><Info size={14} className="text-indigo-600" /><p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Instructions</p></div>
+              <div className="relative z-10 mb-4 p-4 bg-card rounded-xl text-foreground border border-border">
+                <div className="flex items-center gap-2 mb-1.5"><Info size={14} className="text-primary" /><p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Instructions</p></div>
                 <div className="space-y-3">
-                  {method === 'Tapping' && <p className="text-sm font-black leading-tight text-slate-900">Simultaneously <span className="text-indigo-600 underline decoration-indigo-200 underline-offset-4">TAP</span> both reflex points for 3-5 seconds.</p>}
-                  {method === 'Holding + Intention' && <div className="space-y-2"><p className="text-[11px] font-bold leading-tight text-slate-700">Hold both points lightly and mentally repeat:</p><div className="p-2.5 bg-indigo-50 rounded-xl border border-indigo-100 text-center italic font-black text-indigo-600 text-xs">"{entryPoint} — {formatCoordLabel(coord1)} — {formatCoordLabel(coord2)}"</div></div>}
-                  {method === 'Tuning Fork' && <p className="text-sm font-black leading-tight text-slate-900">TL both points and strike tuning fork on the <span className="text-indigo-600 underline decoration-indigo-200 underline-offset-4">Cranium</span>.</p>}
+                  {method === 'Tapping' && <p className="text-sm font-black leading-tight text-foreground">Simultaneously <span className="text-primary underline decoration-primary/30 underline-offset-4">TAP</span> both reflex points for 3-5 seconds.</p>}
+                  {method === 'Holding + Intention' && <div className="space-y-2"><p className="text-[11px] font-bold leading-tight text-foreground">Hold both points lightly and mentally repeat:</p><div className="p-2.5 bg-primary/5 rounded-xl border border-primary/10 text-center italic font-black text-primary text-xs">"{entryPoint} — {formatCoordLabel(coord1)} — {formatCoordLabel(coord2)}"</div></div>}
+                  {method === 'Tuning Fork' && <p className="text-sm font-black leading-tight text-foreground">TL both points and strike tuning fork on the <span className="text-primary underline decoration-primary/30 underline-offset-4">Cranium</span>.</p>}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 relative z-10">
                 <div className="space-y-1.5">
-                  <div className="p-2 bg-white/5 rounded-xl border border-white/10 text-center">
-                    <p className="text-[7px] font-black text-indigo-400 uppercase tracking-widest mb-0.5">Coord 1</p>
-                    <p className="text-[9px] font-black truncate">{formatCoordLabel(coord1)}</p>
+                  <div className="p-2 bg-card rounded-xl border border-border text-center">
+                    <p className="text-[7px] font-black text-primary uppercase tracking-widest mb-0.5">Coord 1</p>
+                    <p className="text-[9px] font-black truncate text-foreground">{formatCoordLabel(coord1)}</p>
                   </div>
                   {coord1.point && (customizations[coord1.point.id]?.secondaryUrl || customizations[coord1.point.id]?.primaryUrl) && (
-                    <div className="aspect-[16/10] rounded-xl overflow-hidden border-2 border-white/5 bg-white/5">
+                    <div className="aspect-[16/10] rounded-xl overflow-hidden border border-border bg-muted/50">
                       <img src={customizations[coord1.point.id].secondaryUrl || customizations[coord1.point.id].primaryUrl || ""} alt="Reflex 1" className="w-full h-full object-cover opacity-80" />
                     </div>
                   )}
                 </div>
                 <div className="space-y-1.5">
-                  <div className="p-2 bg-white/5 rounded-xl border border-white/10 text-center">
-                    <p className="text-[7px] font-black text-purple-400 uppercase tracking-widest mb-0.5">Coord 2</p>
-                    <p className="text-[9px] font-black truncate">{formatCoordLabel(coord2)}</p>
+                  <div className="p-2 bg-card rounded-xl border border-border text-center">
+                    <p className="text-[7px] font-black text-primary uppercase tracking-widest mb-0.5">Coord 2</p>
+                    <p className="text-[9px] font-black truncate text-foreground">{formatCoordLabel(coord2)}</p>
                   </div>
                   {coord2.point && (customizations[coord2.point.id]?.secondaryUrl || customizations[coord2.point.id]?.primaryUrl) && (
-                    <div className="aspect-[16/10] rounded-xl overflow-hidden border-2 border-white/5 bg-white/5">
+                    <div className="aspect-[16/10] rounded-xl overflow-hidden border border-border bg-muted/50">
                       <img src={customizations[coord2.point.id].secondaryUrl || customizations[coord2.point.id].primaryUrl || ""} alt="Reflex 2" className="w-full h-full object-cover opacity-80" />
                     </div>
                   )}
@@ -365,24 +365,24 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="ghost" onClick={() => prevStep('METHOD')} className="flex-1 h-10 rounded-xl font-bold text-xs"><ChevronLeft size={16} className="mr-1" /> Back</Button>
-              <Button onClick={() => nextStep('REASSESS')} className="flex-[2] h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 font-black text-xs uppercase tracking-widest shadow-lg">Complete <ChevronRight size={16} className="ml-1" /></Button>
+              <Button variant="ghost" size="sm" onClick={() => prevStep('METHOD')} className="flex-1"><ChevronLeft size={14} /> Back</Button>
+              <Button onClick={() => nextStep('REASSESS')} className="flex-[2] h-10 rounded-lg bg-primary hover:bg-primary/90 text-xs font-medium">Complete <ChevronRight size={14} className="ml-1" /></Button>
             </div>
           </div>
         )}
 
         {step === 'REASSESS' && (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-2 duration-300">
-            <div className="bg-emerald-50 p-8 rounded-[2rem] border-2 border-emerald-100 text-center">
-              <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-4"><RefreshCw size={32} className="text-emerald-500" /></div>
-              <h3 className="text-xl font-black text-emerald-900 mb-1">Final Re-assessment</h3>
-              <p className="text-emerald-700 font-bold text-sm">Re-stimulate <span className="font-black underline decoration-emerald-300 underline-offset-4">"{entryPoint}"</span> and test the IM.</p>
+            <div className="bg-chart-emerald/5 p-6 rounded-xl border border-chart-emerald/20 text-center">
+              <div className="w-12 h-12 rounded-full bg-card flex items-center justify-center mx-auto mb-3"><RefreshCw size={24} className="text-chart-emerald" /></div>
+              <h3 className="text-base font-medium text-foreground mb-1">Final Re-assessment</h3>
+              <p className="text-muted-foreground font-bold text-sm">Re-stimulate <span className="font-black underline decoration-primary/30 underline-offset-4">"{entryPoint}"</span> and test the IM.</p>
             </div>
             <div className="grid grid-cols-1 gap-2">
-              <Button className="h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-lg font-black shadow-lg" onClick={handleComplete}>Pathway is Clear <CheckCircle2 size={20} className="ml-2" /></Button>
-              <Button variant="outline" className="h-12 rounded-xl border-2 border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-black text-[10px] uppercase tracking-widest" onClick={handleInhibited}>Still Inhibited - Add Layer</Button>
+              <Button className="h-10 rounded-lg bg-chart-emerald/10 hover:bg-chart-emerald/20 text-chart-emerald text-xs font-medium" onClick={handleComplete}>Pathway is Clear <CheckCircle2 size={16} className="ml-2" /></Button>
+              <Button variant="outline" className="h-10 rounded-lg border-border text-muted-foreground hover:bg-muted/50 font-black text-[10px] uppercase tracking-widest" onClick={handleInhibited}>Still Inhibited - Add Layer</Button>
             </div>
-            <Button variant="ghost" onClick={() => prevStep('CALIBRATE')} className="w-full h-10 rounded-xl font-bold text-xs"><ChevronLeft size={16} className="mr-1" /> Back</Button>
+            <Button variant="ghost" size="sm" onClick={() => prevStep('CALIBRATE')} className="w-full"><ChevronLeft size={14} /> Back</Button>
           </div>
         )}
       </div>

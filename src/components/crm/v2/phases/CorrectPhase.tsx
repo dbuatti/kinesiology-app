@@ -34,15 +34,16 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
 
   const pattern = safeParse(appointment.priority_pattern, {} as any);
   const pathwayFindings = useMemo(() => {
-    const items: { value: string; label: string }[] = [];
+    const items: { value: string; label: string; category: string }[] = [];
     Object.entries(pattern).forEach(([catKey, categoryItems]: [string, any]) => {
       Object.entries(categoryItems).forEach(([name, status]) => {
         if (status === 'Inhibited' || status === 'Inhibition' || status === 'Hypertonic') {
           const sideMatch = name.match(/\(([LR])\)$/);
           const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
           const baseName = name.replace(/ \([LR]\)$/, '');
-          const val = `${baseName}${side ? ` (${side})` : ''} — ${CATEGORY_LABELS[catKey] || catKey}`;
-          items.push({ value: val, label: val });
+          const catLabel = CATEGORY_LABELS[catKey] || catKey;
+          const val = `${baseName}${side ? ` (${side})` : ''} — ${catLabel}`;
+          items.push({ value: val, label: val, category: catKey });
         }
       });
     });
@@ -80,6 +81,56 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
       )}
 
       <div>
+        {/* Inhibition/Hypertonic Finding Selector */}
+        {pathwayFindings.length > 0 && (
+          <div className="mb-4 p-3 bg-muted/50 rounded-xl border border-border">
+            <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Select Finding to Correct</p>
+            <Select
+              value={priorityPathway || ''}
+              onValueChange={async (val) => {
+                await saveField('metadata', { ...meta, priority_pathway: val });
+                onUpdate();
+              }}
+            >
+              <SelectTrigger className="w-full h-10 rounded-lg border-border text-xs">
+                <SelectValue placeholder="Choose an inhibited finding..." />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-border max-h-[200px]">
+                {pathwayFindings.map(f => (
+                  <SelectItem key={f.value} value={f.value} className="rounded-lg py-2 text-xs font-medium">
+                    {f.label}
+                  </SelectItem>
+                ))}
+                <SelectItem value="CUSTOM" className="rounded-lg py-2 text-xs font-medium text-chart-primary">
+                  <Plus size={12} className="mr-1.5 inline" /> Custom Entry
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            {priorityPathway === 'CUSTOM' && (
+              <div className="flex items-center gap-2 mt-2">
+                <Input
+                  value={customPathway}
+                  onChange={e => setCustomPathway(e.target.value)}
+                  placeholder="e.g. Startle Reflex — Primitive Reflex"
+                  className="h-9 rounded-lg text-xs"
+                  autoFocus
+                />
+                <Button
+                  size="sm"
+                  disabled={!customPathway.trim()}
+                  onClick={async () => {
+                    await saveField('metadata', { ...meta, priority_pathway: customPathway.trim() });
+                    onUpdate();
+                  }}
+                  className="rounded-lg h-9 px-3 text-xs font-medium"
+                >
+                  Save
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
         <PathwayLogicWizard
           onSave={async (summary) => {
             await saveField('modes_balances', summary);

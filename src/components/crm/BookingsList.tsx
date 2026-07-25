@@ -766,7 +766,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
             </DialogDescription>
           </DialogHeader>
           <div className="py-2 text-center">
-            <div className="text-4xl font-black text-foreground tabular-nums">${payTarget?.amount ?? "—"}</div>
+            <div className="text-5xl font-serif font-bold tabular-nums bg-gradient-to-br from-amber-500 to-rose-500 bg-clip-text text-transparent">${payTarget?.amount ?? "—"}</div>
             <div className="text-xs text-muted-foreground mt-1">
               {payTarget?.source === "voice"
                 ? "Generates a Stripe checkout link and copies it to your clipboard."
@@ -778,7 +778,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
             <Button
               onClick={() => { const t = payTarget; setPayTarget(null); if (t) sendPaymentLink(t); }}
               disabled={!!busyId}
-              className="rounded-xl"
+              className="rounded-xl bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white border-none"
             >
               <CreditCard size={15} className="mr-2" /> Send for ${payTarget?.amount ?? ""}
             </Button>

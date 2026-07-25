@@ -84,19 +84,44 @@ export function usePrimitiveReflexTests(
         setTests(prev => prev.map(t => ({ ...t, is_primary_priority: false })));
       }
 
-      const { data, error } = await supabase
+      // Find existing record to decide insert vs update
+      const { data: existing } = await supabase
         .from('primitive_reflex_tests')
-        .upsert({
-          ...updates,
-          appointment_id: appointmentId,
-          reflex_id: reflexId,
-          user_id: userData.user.id,
-          updated_at: new Date().toISOString()
-        }, { 
-          onConflict: 'appointment_id,reflex_id' 
-        })
-        .select()
-        .single();
+        .select('id')
+        .eq('appointment_id', appointmentId)
+        .eq('reflex_id', reflexId)
+        .maybeSingle();
+
+      let data: any;
+      let error: any;
+
+      if (existing) {
+        const result = await supabase
+          .from('primitive_reflex_tests')
+          .update({
+            ...updates,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existing.id)
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      } else {
+        const result = await supabase
+          .from('primitive_reflex_tests')
+          .insert({
+            ...updates,
+            appointment_id: appointmentId,
+            reflex_id: reflexId,
+            user_id: userData.user.id,
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      }
 
       if (error) throw error;
 

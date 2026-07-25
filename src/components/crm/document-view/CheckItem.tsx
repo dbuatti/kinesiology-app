@@ -19,34 +19,30 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
   const fullName = side ? `${name} (${side})` : name;
   let rawStatus = pattern[category]?.[fullName];
 
-  // Fallback to non-lateralized status if lateralized is not found
   if (!rawStatus && side && pattern[category]?.[name]) {
     rawStatus = pattern[category]?.[name];
   }
 
   const isMuscle = category === 'muscles';
 
-  // Normalize status and check if cleared
   const isCleared = rawStatus?.endsWith('_Cleared') || rawStatus === 'Normotonic_Cleared';
-  const baseStatus = rawStatus?.replace('_Cleared', '') || 'Clear';
+  const baseStatus = rawStatus?.replace('_Cleared', '') || null;
 
   const status = isMuscle
-    ? (baseStatus === 'Inhibition' || baseStatus === 'Inhibited' ? 'Inhibited' : baseStatus === 'Hypertonic' ? 'Hypertonic' : 'Clear')
-    : (baseStatus === 'Inhibited' ? 'Inhibited' : 'Clear');
+    ? (baseStatus === 'Inhibition' || baseStatus === 'Inhibited' ? 'Inhibited' : baseStatus === 'Hypertonic' ? 'Hypertonic' : null)
+    : (baseStatus === 'Inhibited' ? 'Inhibited' : null);
 
   const handleCycle = (e: MouseEvent) => {
     e.stopPropagation();
-    let nextStatus = 'Clear';
+    let nextStatus: string;
 
     if (isMuscle) {
-      if (status === 'Clear') nextStatus = 'Inhibited';
-      else if (status === 'Inhibited' && !isCleared) nextStatus = 'Hypertonic';
-      else if (status === 'Hypertonic' && !isCleared) nextStatus = 'Inhibited_Cleared';
-      else nextStatus = 'Clear';
+      if (!status) nextStatus = 'Inhibited';
+      else if (status === 'Inhibited') nextStatus = 'Hypertonic';
+      else nextStatus = 'Inhibited';
     } else {
-      if (status === 'Clear') nextStatus = 'Inhibited';
-      else if (status === 'Inhibited' && !isCleared) nextStatus = 'Inhibited_Cleared';
-      else nextStatus = 'Clear';
+      if (!status) nextStatus = 'Inhibited';
+      else nextStatus = 'Inhibited';
     }
 
     onToggle(category, name, nextStatus, side);
@@ -58,27 +54,26 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
         "flex items-center justify-between p-1.5 transition-all cursor-pointer group border rounded-md",
         status === 'Inhibited' 
           ? isCleared 
-            ? "bg-emerald-500/10 border-emerald-500/30 text-foreground/80" 
-            : "bg-destructive/10 border-destructive/30 text-destructive"
+            ? "bg-chart-emerald/8 border-chart-emerald/25 text-foreground/80" 
+            : "bg-destructive/8 border-destructive/25 text-destructive"
           : status === 'Hypertonic'
             ? isCleared
-              ? "bg-emerald-500/10 border-emerald-500/30 text-foreground/80"
-              : "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-300"
+              ? "bg-chart-emerald/8 border-chart-emerald/25 text-foreground/80"
+              : "bg-amber-500/8 border-amber-500/25 text-amber-600 dark:text-amber-300"
             : "hover:bg-muted/50 border-transparent text-muted-foreground"
       )}
       onClick={handleCycle}
     >
       <div className="flex items-center gap-2 min-w-0">
-        {/* Tri-state Indicator Box */}
         <div className={cn(
           "w-4 h-4 border flex items-center justify-center transition-all shrink-0 rounded-sm",
           status === 'Inhibited' 
             ? isCleared 
-              ? "bg-emerald-500 border-emerald-500 text-white" 
+              ? "bg-chart-emerald border-chart-emerald text-white" 
               : "bg-amber-500 border-amber-500 text-white"
             : status === 'Hypertonic'
               ? isCleared
-                ? "bg-emerald-500 border-emerald-500 text-white"
+                ? "bg-chart-emerald border-chart-emerald text-white"
                 : "bg-rose-600 border-rose-600 text-white"
               : "border-border group-hover:border-foreground bg-background"
         )}>
@@ -100,7 +95,7 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
           )}
           {testingInstructions && (
             <span className={cn(
-              "text-[9px] text-indigo-400 dark:text-indigo-300/70 leading-tight flex items-start gap-1",
+              "text-[9px] text-chart-primary/70 leading-tight flex items-start gap-1",
               showFullInstructions ? "mt-1" : "truncate"
             )}>
               <Zap size={8} className="shrink-0 mt-0.5" />{testingInstructions}
@@ -110,7 +105,7 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
       </div>
 
       {isCleared && (
-        <Badge className="bg-emerald-500 text-white border-none font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-sm shrink-0">
+        <Badge className="bg-chart-emerald text-white border-none font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-sm shrink-0">
           Cleared
         </Badge>
       )}

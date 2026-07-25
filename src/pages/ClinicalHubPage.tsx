@@ -12,6 +12,7 @@ import {
   Activity, FileText, BookMarked, Plus, Loader2, Zap, Clock, User, Calendar
 } from "lucide-react";
 import { format } from "date-fns";
+import FooterLinks from "@/components/crm/FooterLinks";
 
 interface RecentSession {
   id: string;
@@ -214,6 +215,7 @@ const ClinicalHubPage = () => {
       </Dialog>
 
       <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} v2 />
+      <FooterLinks />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
 import { BookOpen, FileText, LayoutDashboard } from "lucide-react";
 import CorrectionsManualContent from "@/components/crm/CorrectionsManualContent";
+import FooterLinks from "@/components/crm/FooterLinks";
 
 const CorrectionsManualPage = () => {
   const { session } = useAuth();
@@ -29,6 +30,7 @@ const CorrectionsManualPage = () => {
       <div className="flex-1 overflow-hidden">
         <CorrectionsManualContent />
       </div>
+      <FooterLinks />
     </div>
   );
 };

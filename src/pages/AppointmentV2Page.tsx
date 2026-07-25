@@ -20,6 +20,7 @@ import AppointmentV2DocView from "@/components/crm/v2/AppointmentV2DocView";
 import CorrectionsManualContent from "@/components/crm/CorrectionsManualContent";
 import { QuickSessionDialog } from "@/components/crm/QuickSessionDialog";
 import { parseClientJournal } from "@/utils/journal-helper";
+import FooterLinks from "@/components/crm/FooterLinks";
 
 const AppointmentV2Page = () => {
   const { id } = useParams<{ id: string }>();
@@ -217,6 +218,7 @@ const AppointmentV2Page = () => {
       )}
 
       <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} v2 />
+      <FooterLinks />
     </div>
   );
 };

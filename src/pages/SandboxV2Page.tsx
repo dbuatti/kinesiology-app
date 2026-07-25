@@ -17,6 +17,7 @@ import { safeParse, safeStringify } from "@/utils/safe-json";
 import {
   ArrowLeft, Activity, FileText, Maximize2, Minimize2, Save
 } from "lucide-react";
+import FooterLinks from "@/components/crm/FooterLinks";
 
 const EMPTY_CLIENT: AppointmentWithClient["clients"] = {
   id: "sandbox",
@@ -425,6 +426,7 @@ const SandboxV2Page = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <FooterLinks />
     </div>
   );
 };

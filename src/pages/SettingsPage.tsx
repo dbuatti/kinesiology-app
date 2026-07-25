@@ -57,7 +57,7 @@ const SettingsPage = () => {
           title="Settings"
           subtitle="Manage your account, appearance, integrations, and client experience."
           icon={Settings}
-          iconClassName="bg-slate-700"
+          iconClassName="bg-muted-foreground"
         />
 
         <Tabs defaultValue="account" className="space-y-8">

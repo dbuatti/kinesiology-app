@@ -94,7 +94,7 @@ export default function ClinicalProtocolsPage() {
   const activeProtocol = PROTOCOLS.find(p => p.id === activeTab);
 
   return (
-    <div className="flex h-screen bg-white overflow-hidden">
+    <div className="flex h-screen bg-background overflow-hidden">
       {/* 1. Slim Vertical Navigation Rail */}
       <aside className="w-20 md:w-24 bg-foreground flex flex-col items-center py-8 gap-6 z-50 shrink-0 shadow-sm">
         <Button 
@@ -145,7 +145,7 @@ export default function ClinicalProtocolsPage() {
       {/* 2. Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-muted/30">
         {/* Top Settings Header */}
-        <header className="h-20 border-b border-border flex items-center justify-between px-10 bg-white shrink-0 shadow-sm z-40">
+        <header className="h-20 border-b border-border flex items-center justify-between px-10 bg-background shrink-0 shadow-sm z-40">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-4">
               <div className={cn(

@@ -21,7 +21,7 @@ const VoiceNewClientPage = () => {
               variant="outline"
               size="sm"
               onClick={() => navigate(-1)}
-              className="h-10 px-4 rounded-xl border-slate-200 dark:border-slate-800 font-bold text-[10px] uppercase tracking-widest gap-2"
+              className="h-10 px-4 rounded-xl border-border font-bold text-[10px] uppercase tracking-widest gap-2"
             >
               <ArrowLeft size={14} />
               Back
@@ -29,7 +29,7 @@ const VoiceNewClientPage = () => {
           }
         />
 
-        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 p-8 shadow-xl">
+        <div className="bg-card rounded-[2.5rem] border border-border p-8 shadow-xl">
           <VoiceOnboardingForm onSuccess={() => navigate("/")} />
         </div>
       </div>

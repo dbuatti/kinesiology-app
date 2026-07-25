@@ -11,10 +11,11 @@ interface CheckItemProps {
   pattern: any;
   description?: string;
   testingInstructions?: string;
+  showFullInstructions?: boolean;
   onToggle: (category: string, name: string, nextStatus: string, side?: 'L' | 'R') => void;
 }
 
-const CheckItem = ({ category, name, side, pattern, description, testingInstructions, onToggle }: CheckItemProps) => {
+const CheckItem = ({ category, name, side, pattern, description, testingInstructions, showFullInstructions = false, onToggle }: CheckItemProps) => {
   const fullName = side ? `${name} (${side})` : name;
   let rawStatus = pattern[category]?.[fullName];
 
@@ -98,8 +99,11 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
             <span className="text-[10px] text-muted-foreground/50 truncate leading-tight italic">{description}</span>
           )}
           {testingInstructions && (
-            <span className="text-[9px] text-indigo-400 dark:text-indigo-300/70 truncate leading-tight flex items-center gap-1">
-              <Zap size={8} className="shrink-0" />{testingInstructions}
+            <span className={cn(
+              "text-[9px] text-indigo-400 dark:text-indigo-300/70 leading-tight flex items-start gap-1",
+              showFullInstructions ? "mt-1" : "truncate"
+            )}>
+              <Zap size={8} className="shrink-0 mt-0.5" />{testingInstructions}
             </span>
           )}
         </div>

@@ -480,8 +480,8 @@ const VoiceCalendarPage = () => {
  <span className="flex items-center gap-1.5 text-[10px] font-medium text-chart-emerald uppercase tracking-wider">
  <span className="w-3 h-3 rounded-sm bg-emerald-400" /> Free
  </span>
- <span className="flex items-center gap-1.5 text-[10px] font-medium text-gray-400 uppercase tracking-wider">
- <span className="w-3 h-3 rounded-sm bg-gray-300 " /> Full
+ <span className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+ <span className="w-3 h-3 rounded-sm bg-muted" /> Full
  </span>
  </div>
  )}
@@ -604,7 +604,7 @@ const VoiceCalendarPage = () => {
     !isCurrent && "bg-muted/20 opacity-40",
     isCurrentDay && "bg-chart-destructive/10/40 ",
     dayHasAvailability && "bg-chart-emerald/10 border-l-[3px] border-emerald-400 cursor-pointer hover:bg-chart-emerald/20 ",
-    dayNoAvailability && "bg-gray-100/50 border-l-[3px] border-gray-200 cursor-pointer hover:bg-gray-200/50 ",
+    dayNoAvailability && "bg-muted/30 border-l-[3px] border-border cursor-pointer hover:bg-muted/50 ",
     isCurrent && !isPast && !dayHasAvailability && !dayNoAvailability && "cursor-pointer hover:bg-muted/40 "
     )}
     >
@@ -624,7 +624,7 @@ const VoiceCalendarPage = () => {
     <div className="w-2 h-2 rounded-full bg-chart-emerald shadow-sm" />
     )}
     {dayNoAvailability && (
-    <div className="w-2 h-2 rounded-full bg-gray-300 " />
+    <div className="w-2 h-2 rounded-full bg-muted" />
     )}
     </div>
     {dayLessons.length > 0 && (

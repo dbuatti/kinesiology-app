@@ -240,11 +240,11 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Intrinsic Stabilisation</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                   {(MUSCLE_GROUPS['Intrinsic Stabilisation'] || []).map(m => MIDLINE_MUSCLES.includes(m) ? (
-                    <CheckItem key={m} category="muscles" name={m} pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} onToggle={quickToggle} />
+                    <CheckItem key={m} category="muscles" name={m} pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} showFullInstructions onToggle={quickToggle} />
                   ) : (
                     <Fragment key={m}>
-                      <CheckItem category="muscles" name={m} side="L" pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} onToggle={quickToggle} />
-                      <CheckItem category="muscles" name={m} side="R" pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} onToggle={quickToggle} />
+                      <CheckItem category="muscles" name={m} side="L" pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} showFullInstructions onToggle={quickToggle} />
+                      <CheckItem category="muscles" name={m} side="R" pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} showFullInstructions onToggle={quickToggle} />
                     </Fragment>
                   ))}
                 </div>
@@ -265,11 +265,11 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Intrinsic Stabilisation</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                   {intrinsicMuscles.map(m => MIDLINE_MUSCLES.includes(m) ? (
-                    <CheckItem key={m} category="muscles" name={m} pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} onToggle={toggle} />
+                    <CheckItem key={m} category="muscles" name={m} pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} showFullInstructions onToggle={toggle} />
                   ) : (
                     <Fragment key={m}>
-                      <CheckItem category="muscles" name={m} side="L" pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} onToggle={toggle} />
-                      <CheckItem category="muscles" name={m} side="R" pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} onToggle={toggle} />
+                      <CheckItem category="muscles" name={m} side="L" pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} showFullInstructions onToggle={toggle} />
+                      <CheckItem category="muscles" name={m} side="R" pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} showFullInstructions onToggle={toggle} />
                     </Fragment>
                   ))}
                 </div>
@@ -290,11 +290,11 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                   <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">{groupName}</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                     {muscles.map(m => MIDLINE_MUSCLES.includes(m) ? (
-                      <CheckItem key={m} category="muscles" name={m} pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} onToggle={toggle} />
+                      <CheckItem key={m} category="muscles" name={m} pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} showFullInstructions onToggle={toggle} />
                     ) : (
                       <Fragment key={m}>
-                        <CheckItem category="muscles" name={m} side="L" pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} onToggle={toggle} />
-                        <CheckItem category="muscles" name={m} side="R" pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} onToggle={toggle} />
+                        <CheckItem category="muscles" name={m} side="L" pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} showFullInstructions onToggle={toggle} />
+                        <CheckItem category="muscles" name={m} side="R" pattern={pattern} description={muscleDesc(m)} testingInstructions={muscleTestPos(m)} showFullInstructions onToggle={toggle} />
                       </Fragment>
                     ))}
                   </div>

@@ -622,7 +622,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
         </div>
 
         {/* Content */}
-        <div className={cn("p-4", isProcessStep && "p-0")}>
+        <div className={cn("p-4", isProcessStep && "px-4 py-0")}>
           {renderStep()}
         </div>
       </div>

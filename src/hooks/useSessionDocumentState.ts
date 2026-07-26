@@ -261,6 +261,16 @@ export function useSessionDocumentState({
   const handleTogglePatternItem = useCallback((category: string, name: string, nextStatus: string, side?: 'L' | 'R') => {
     const fullName = side ? `${name} (${side})` : name;
 
+    if (category === 'priorities') {
+      const runUpdatePriority = async () => {
+        await updatePriorityPattern(category, name, nextStatus === 'Clear' ? null : nextStatus, side);
+        setLastSaved(new Date());
+        onUpdate();
+      };
+      runUpdatePriority();
+      return;
+    }
+
     if (category === 'muscles') {
       const dbStatus = nextStatus === 'Clear' || nextStatus.endsWith('_Cleared') ? 'Normotonic' : nextStatus === 'Inhibited' ? 'Inhibition' : 'Hypertonic';
       const existing = currentMuscleTests.find(t => t.muscle_name === fullName);

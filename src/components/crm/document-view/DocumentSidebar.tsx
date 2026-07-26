@@ -2,9 +2,8 @@
 import { cn } from '@/lib/utils';
 import {
   Compass, ShieldCheck, List, Zap, ClipboardCheck,
-  Activity, Brain, Heart, ArrowDownCircle, ArrowUpCircle,
-  Eye, Droplets, ShieldAlert, Layers, Baby, Dumbbell,
-  Wind, Sparkles
+  Brain, Heart, ArrowDownCircle, ArrowUpCircle,
+  Droplets, Wind, Sparkles
 } from 'lucide-react';
 
 interface DocumentSidebarProps {
@@ -18,9 +17,6 @@ export const OUTLINE_ITEMS = [
   { id: "p-sec",       label: "P — Preliminary",             icon: Compass,         letter: "P", color: "text-muted-foreground dark:text-slate-300" },
   { id: "e-sec",       label: "E — Ease System",             icon: ShieldCheck,     letter: "E", color: "text-primary dark:text-primary" },
   { id: "a-sec",       label: "A — Align Hierarchy",         icon: List,            letter: "A", color: "text-violet-600 dark:text-violet-400" },
-  { id: "a-reflexes",  label: "  Primitive Reflexes",        icon: Baby,            letter: null, color: "text-muted-foreground" },
-  { id: "a-nerves",    label: "  Cranial Nerves",            icon: Zap,             letter: null, color: "text-muted-foreground" },
-  { id: "a-muscles",   label: "  Muscle Assessment",         icon: Dumbbell,        letter: null, color: "text-muted-foreground" },
   { id: "c-sec",       label: "C — Correct",                 icon: Zap,             letter: "C", color: "text-amber-600 dark:text-amber-400" },
   { id: "c-afferent",  label: "  Afferent (Bottom-Up)",      icon: ArrowDownCircle, letter: null, color: "text-muted-foreground" },
   { id: "c-efferent",  label: "  Efferent (Top-Down)",       icon: ArrowUpCircle,   letter: null, color: "text-muted-foreground" },

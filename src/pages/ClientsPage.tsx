@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Loader2, LayoutGrid, List, Users, AlertCircle, RefreshCw } from "lucide-react";
+import { Plus, Search, Loader2, LayoutGrid, List, Users, AlertCircle, RefreshCw, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -102,6 +102,10 @@ const ClientsPage = () => {
           subtitle="Manage your kinesiology client profiles, history, and clinical data."
           icon={Users}
           actions={
+            <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
+              <ArrowLeft size={14} /> Back
+            </Button>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-primary hover:bg-primary/90 shadow-xl shadow-primary/10 rounded-2xl h-12 px-8 font-black text-xs uppercase tracking-widest">
@@ -118,6 +122,7 @@ const ClientsPage = () => {
                 </div>
               </DialogContent>
             </Dialog>
+            </div>
           }
         />
 

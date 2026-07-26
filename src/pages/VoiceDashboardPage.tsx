@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import {
  Mic, Users, Calendar, Mail, Phone, ExternalLink, Plus,
  Loader2, ArrowUpRight, Music, Clock, AlertCircle, MessageCircle,
- CreditCard, BarChart3, BookOpen, RefreshCw
+ CreditCard, BarChart3, BookOpen, RefreshCw, ArrowLeft
 } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
@@ -141,6 +141,11 @@ const VoiceDashboardPage = () => {
           subtitle="Your studio at a glance — students, lessons, and actions."
           icon={Mic}
           iconClassName="bg-destructive text-primary-foreground "
+          actions={
+            <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
+              <ArrowLeft size={14} /> Back
+            </Button>
+          }
         />
 
       {/* Discipline filter */}

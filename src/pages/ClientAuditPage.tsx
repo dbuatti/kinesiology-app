@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useMemo, type ElementType } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import AppLayout from "@/components/crm/AppLayout";
@@ -73,6 +73,7 @@ import {
   Edit3,
   Columns,
   Inbox,
+  ArrowLeft,
 } from "lucide-react";
 import { format, formatDistanceToNow, differenceInMonths, startOfWeek, endOfWeek, startOfMonth } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -159,6 +160,7 @@ const STATIC_STRATEGIES = [
 ];
 
 export default function ClientAuditPage() {
+  const navigate = useNavigate();
   const [clients, setClients] = useState<ClientWithAppointments[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -1207,7 +1209,11 @@ export default function ClientAuditPage() {
           subtitle="Review client rates, track appointment recency, identify follow-up needs, and perform financial audits with AI-driven pricing suggestions."
           icon={FileText}
           iconClassName="bg-muted"
-
+          actions={
+            <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
+              <ArrowLeft size={14} /> Back
+            </Button>
+          }
         />
 
         {loading ? (

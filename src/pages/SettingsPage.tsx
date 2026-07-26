@@ -1,4 +1,4 @@
-import { Settings, Mail, Link as LinkIcon, Sparkles, Globe, Calendar, ExternalLink, FileText, Bug, FlaskConical, Workflow, ClipboardList, Eye, Share2 } from "lucide-react";
+import { Settings, Mail, Link as LinkIcon, Sparkles, Globe, Calendar, ExternalLink, FileText, Bug, FlaskConical, Workflow, ClipboardList, Eye, Share2, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
@@ -58,6 +58,11 @@ const SettingsPage = () => {
           subtitle="Manage your account, appearance, integrations, and client experience."
           icon={Settings}
           iconClassName="bg-muted-foreground"
+          actions={
+            <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
+              <ArrowLeft size={14} /> Back
+            </Button>
+          }
         />
 
         <Tabs defaultValue="account" className="space-y-8">

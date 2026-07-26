@@ -13,9 +13,10 @@ import {
  CheckCircle2, Workflow, Clock, Sparkles, Link as LinkIcon, Send,
  BookOpen, Wand2, Copy, Check, User, Activity, History, Mail,
  Trophy, ArrowRight, Star, ExternalLink, MessageSquare, Code,
- EyeOff, Volume2, Heart, Quote
+ EyeOff, Volume2, Heart, Quote, ArrowLeft
 } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
+import { useNavigate } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
@@ -27,6 +28,7 @@ const CLAUDE_MARKETING_CHAT = "https://claude.ai/chat/e4805343-71a0-48fc-a1e0-4d
 const GEMINI_BUSINESS_CHAT = "https://gemini.google.com/app/5d5d4bcde141a99a";
 
 const MarketingEnginePage = () => {
+ const navigate = useNavigate();
  const { isPrivate } = usePrivacyMode();
  const [activeTab, setActiveTab] = useState("guide");
  const [recentWins, setRecentWins] = useState<any[]>([]);
@@ -142,6 +144,9 @@ Please provide the final output ready to be reviewed.`;
 
  actions={
  <div className="flex flex-wrap gap-3 shrink-0">
+ <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
+ <ArrowLeft size={14} /> Back
+ </Button>
  <Button asChild className="bg-card text-foreground hover:bg-muted h-12 px-6 rounded-xl font-semibold text-[10px] uppercase tracking-wider shadow-md border border-border">
  <a href={CLAUDE_MARKETING_CHAT} target="_blank" rel="noopener noreferrer">
  <MessageSquare size={18} className="mr-2 text-chart-emerald" /> Claude

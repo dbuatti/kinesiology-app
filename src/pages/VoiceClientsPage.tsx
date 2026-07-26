@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
-  Search, Plus, Mic, Mail, Phone, ExternalLink, Users,
-  ChevronDown, ChevronRight, CheckCheck, Square, Loader2,
-  Calendar, CalendarPlus, Music, MessageCircle, Trash2, RotateCcw
+ Search, Plus, Mic, Mail, Phone, ExternalLink, Users,
+ ChevronDown, ChevronRight, CheckCheck, Square, Loader2,
+ Calendar, CalendarPlus, Music, MessageCircle, Trash2, RotateCcw, ArrowLeft
 } from "lucide-react";
 import {
  Dialog,
@@ -315,6 +315,9 @@ const VoiceClientsPage = () => {
    iconClassName="bg-destructive text-primary-foreground "
   actions={
  <div className="flex gap-2">
+ <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
+ <ArrowLeft size={14} /> Back
+ </Button>
  <Dialog open={onboardOpen} onOpenChange={setOnboardOpen}>
  <Button
  onClick={() => setOnboardOpen(true)}

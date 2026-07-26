@@ -422,7 +422,7 @@ const VoiceCalendarPage = () => {
   variant="outline"
   size="sm"
   onClick={() => { setBookPrefillDate(""); setBookPrefillTime(""); setBookDialogOpen(true); }}
-  className="h-10 px-4 rounded-xl border-border font-medium text-[10px] uppercase tracking-wider gap-2 bg-rose-500 text-primary-foreground hover:bg-rose-600 border-rose-500"
+  className="h-10 px-4 rounded-xl border-border font-medium text-[10px] uppercase tracking-wider gap-2 bg-destructive text-primary-foreground hover:bg-destructive/80 border-destructive"
   >
   <CalendarPlus size={14} />
   Book

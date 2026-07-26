@@ -1,13 +1,13 @@
 
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { format, differenceInDays } from "date-fns";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Mail, MessageSquare, Calendar, ChevronRight, Loader2, RefreshCw } from "lucide-react";
+import { Mail, MessageSquare, Calendar, ChevronRight, Loader2, RefreshCw, ArrowLeft } from "lucide-react";
 
 const FOLLOW_UP_OPTIONS = [3, 5, 7, 14];
 
@@ -20,6 +20,7 @@ interface ClientSession {
 }
 
 const FollowUpPage = () => {
+  const navigate = useNavigate();
   const [clients, setClients] = useState<ClientSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [daysThreshold, setDaysThreshold] = useState(7);
@@ -91,9 +92,14 @@ const FollowUpPage = () => {
           subtitle="Check in on clients at the right time after their sessions."
           icon={MessageSquare}
           actions={
-            <Button onClick={fetchData} variant="outline" size="sm" className="rounded-xl h-10 px-4 gap-2">
-              <RefreshCw size={14} /> Refresh
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
+                <ArrowLeft size={14} /> Back
+              </Button>
+              <Button onClick={fetchData} variant="outline" size="sm" className="rounded-xl h-10 px-4 gap-2">
+                <RefreshCw size={14} /> Refresh
+              </Button>
+            </div>
           }
         />
 

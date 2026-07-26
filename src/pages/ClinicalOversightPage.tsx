@@ -6,12 +6,12 @@ import {
  Activity, FlaskConical, Brain, AlertCircle, 
  CheckCircle2, ArrowRight, Search, Loader2, 
  TrendingUp, Users, Zap, Wind, ShieldCheck,
-  CalendarClock, MessageSquare, RefreshCw
+  CalendarClock, MessageSquare, RefreshCw, ArrowLeft
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
 import DataIntegrityCheck from "@/components/crm/DataIntegrityCheck";
@@ -24,6 +24,7 @@ const ClinicalOversightPage = () => {
  const [loading, setLoading] = useState(true);
  const [error, setError] = useState<string | null>(null);
  const [search, setSearch] = useState("");
+ const navigate = useNavigate();
 
  useEffect(() => {
  const fetchClinicalData = async () => {
@@ -111,6 +112,9 @@ const ClinicalOversightPage = () => {
   icon={TrendingUp}
   actions={
  <div className="flex items-center gap-3">
+ <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2 shrink-0">
+ <ArrowLeft size={14} /> Back
+ </Button>
  <div className="relative w-full md:w-72">
  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
  <Input 

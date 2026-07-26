@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   TrendingUp, 
@@ -18,7 +19,8 @@ import {
   Heart,
   Shield,
   Dumbbell,
-  Wind
+  Wind,
+  ArrowLeft
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +58,7 @@ import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 const SANDBOX_ID = "00000000-0000-0000-0000-000000000000";
 
 const ProceduresPage = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState<MasteryStat[]>([]);
   const [loading, setLoading] = useState(true);
   const [committing, setCommitting] = useState(false);
@@ -191,9 +194,14 @@ const ProceduresPage = () => {
           subtitle="Clinical mastery tracking, protocol proficiency, and interactive reference."
           icon={Trophy}
           actions={
-            <Button onClick={loadStats} variant="outline" className="rounded-xl h-12 px-6 font-medium border-chart-primary/20 text-chart-primary hover:bg-chart-primary/10">
-              <RefreshCw size={18} className="mr-2" /> Refresh Data
-            </Button>
+            <>
+              <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
+                <ArrowLeft size={14} /> Back
+              </Button>
+              <Button onClick={loadStats} variant="outline" className="rounded-xl h-12 px-6 font-medium border-chart-primary/20 text-chart-primary hover:bg-chart-primary/10">
+                <RefreshCw size={18} className="mr-2" /> Refresh Data
+              </Button>
+            </>
           }
         />
 

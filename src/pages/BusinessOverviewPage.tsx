@@ -1,12 +1,14 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import {
-  TrendingUp, Users, DollarSign, Mic, Layers,
+  TrendingUp, Users, DollarSign, Mic, Layers, ArrowLeft,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import AppLayout from '@/components/crm/AppLayout';
 import PageHeader from '@/components/shared/PageHeader';
+import { Button } from '@/components/ui/button';
 import { PageLoader } from '@/components/shared/PageLoader';
 
 interface VoiceBooking {
@@ -42,6 +44,7 @@ const SOURCE_COLORS: Record<string, string> = {
 };
 
 const BusinessOverviewPage = () => {
+  const navigate = useNavigate();
   const [viewFilter, setViewFilter] = useState<ViewFilter>('all');
   const now = useMemo(() => new Date(), []);
   const monthStart = useMemo(() => new Date(now.getFullYear(), now.getMonth(), 1), [now]);
@@ -258,12 +261,17 @@ const BusinessOverviewPage = () => {
 
         {/* Header + Filter */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <PageHeader
-            title={`Business Overview · ${d.titleLabel}`}
-            subtitle="Revenue, clients, and performance metrics"
-            icon={TrendingUp}
-            className="mb-0"
-          />
+          <div className="flex items-center gap-3">
+            <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2 shrink-0">
+              <ArrowLeft size={14} /> Back
+            </Button>
+            <PageHeader
+              title={`Business Overview · ${d.titleLabel}`}
+              subtitle="Revenue, clients, and performance metrics"
+              icon={TrendingUp}
+              className="mb-0"
+            />
+          </div>
           <div className="flex gap-1 rounded-lg border bg-muted/30 p-1 self-start">
             {FILTERS.map(f => (
               <button key={f.key} onClick={() => setViewFilter(f.key)}

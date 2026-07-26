@@ -1,6 +1,6 @@
 
 import React, { useMemo, useEffect } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import {
   BookOpen,
   Activity,
@@ -25,7 +25,8 @@ import {
   Shield,
   Printer,
   Lightbulb,
-  FileText
+  FileText,
+  ArrowLeft
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -140,6 +141,7 @@ const CATEGORIES = [
 ];
 
 const ResourcesPage = () => {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || "hub";
 
@@ -169,6 +171,9 @@ const ResourcesPage = () => {
   icon={BookOpen}
   actions={
  <div className="flex items-center gap-3">
+ <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
+ <ArrowLeft size={14} /> Back
+ </Button>
  <Button asChild variant="outline" className="rounded-xl h-12 px-6 font-medium text-xs uppercase tracking-wider border-border text-chart-primary hover:bg-muted">
  <Link to="/resources/print">
  <Printer size={18} className="mr-2" /> Print Hub

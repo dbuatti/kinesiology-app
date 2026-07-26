@@ -1,9 +1,10 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronDown, ChevronRight, Mail, User, Globe, CreditCard, FileText, Calendar, Webhook, Brain, Mic, Zap, ArrowRight, AlertTriangle, CheckCircle2, ExternalLink, Settings, Search, BookOpen, Workflow, Database, Cloud, Play, Copy, Terminal, Hash, Shield, Clock, RefreshCw, XCircle, DollarSign, Building, Eye, Code, Activity, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Mail, User, Globe, CreditCard, FileText, Calendar, Webhook, Brain, Mic, Zap, ArrowRight, AlertTriangle, CheckCircle2, ExternalLink, Settings, Search, BookOpen, Workflow, Database, Cloud, Play, Copy, Terminal, Hash, Shield, Clock, RefreshCw, XCircle, DollarSign, Building, Eye, Code, Activity, Loader2, ArrowLeft } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { showSuccess } from "@/utils/toast";
@@ -1158,6 +1159,11 @@ const WorkflowDebuggerPage = () => {
           subtitle="Every booking workflow, email template, edge function, API integration, and client state across FNH and Voice."
           icon={Settings}
           iconClassName="bg-amber-600"
+          actions={
+            <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
+              <ArrowLeft size={14} /> Back
+            </Button>
+          }
         />
 
         {/* Stats bar */}

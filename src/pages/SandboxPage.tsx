@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Fingerprint, 
   Target, 
@@ -32,7 +32,8 @@ import {
   Activity,
   Check,
   X,
-  ArrowRightLeft
+  ArrowRightLeft,
+  ArrowLeft
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -108,6 +109,7 @@ interface SandboxPageProps {
 }
 
 const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
+  const navigate = useNavigate();
   const { isPrivate } = usePrivacyMode();
   const [backlog, setBacklog] = useState<any[]>([]);
   const [sessionCounts, setSessionCounts] = useState<Record<string, number>>({});
@@ -496,10 +498,15 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
             subtitle="Track the evolution and integration of your internal constructs."
             icon={Sparkles}
             actions={
-              <Button onClick={handlePrioritize} disabled={isPrioritizing || backlog.length === 0} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-14 px-10 font-semibold text-xs uppercase tracking-wider shadow-sm">
-                {isPrioritizing ? <Loader2 className="mr-2 animate-spin" /> : <Wand2 size={20} className="mr-2" />}
-                AI Prioritize
-              </Button>
+              <>
+                <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
+                  <ArrowLeft size={14} /> Back
+                </Button>
+                <Button onClick={handlePrioritize} disabled={isPrioritizing || backlog.length === 0} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-14 px-10 font-semibold text-xs uppercase tracking-wider shadow-sm">
+                  {isPrioritizing ? <Loader2 className="mr-2 animate-spin" /> : <Wand2 size={20} className="mr-2" />}
+                  AI Prioritize
+                </Button>
+              </>
             }
           />
         </>

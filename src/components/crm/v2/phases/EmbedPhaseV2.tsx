@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   ClipboardCheck, RefreshCw, CheckCircle2, Loader2, ShieldCheck,
-  CalendarPlus, Plus, Calendar, Target,
+  CalendarPlus, Plus, Calendar, Target, Zap,
   FileText, Brain, Dumbbell, Baby
 } from "lucide-react";
 import { format } from "date-fns";

@@ -33,13 +33,14 @@ import {
   RotateCcw,
   Target,
   MessageCircle,
-  ChevronDown,
-  ChevronUp,
-  BookOpen,
-  Lock,
-  Activity,
-  Wind,
-  Layers
+   ChevronDown,
+   ChevronUp,
+   BookOpen,
+   Lock,
+   Activity,
+   Wind,
+   Layers,
+   ArrowLeft
 } from "lucide-react";
 import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";
@@ -54,7 +55,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import PageHeader from "@/components/shared/PageHeader";
 import { cn } from "@/lib/utils";
 
@@ -67,6 +68,7 @@ const CATEGORIES = [
 
 const JournalPage = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const preselectedAppId = location.state?.appointmentId;
 
   const [activeTab, setActiveTab] = useState("log");
@@ -420,11 +422,14 @@ const JournalPage = () => {
 
           actions={
             <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
+                <ArrowLeft size={14} /> Back
+              </Button>
               <Button 
                 variant="outline" 
                 onClick={handleScanAll}
                 disabled={isScanning || reflections.length === 0}
-                className="rounded-xl h-12 px-6 font-medium text-xs uppercase tracking-wider border-indigo-100 text-chart-primary hover:bg-muted"
+                className="rounded-xl h-12 px-6 font-medium text-xs uppercase tracking-wider text-chart-primary hover:bg-muted"
               >
                 {isScanning ? <Loader2 className="animate-spin mr-2" /> : <Wand2 size={18} className="mr-2" />}
                 Scan All

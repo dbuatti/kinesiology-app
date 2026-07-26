@@ -126,7 +126,7 @@ const EditableNumberField = ({ label, value, field, onSave, editable = false, su
   );
 };
 
-const AppointmentV2DocView = ({ appointment, onBack, hideToolbar, editable = false, saveField, updatePriorityPattern }: DocViewProps) => {
+const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, editable = false, saveField, updatePriorityPattern }: DocViewProps) => {
   const handlePrint = () => window.print();
   const [clientName, setClientName] = useState(appointment.clients?.name || "");
   const [correctionEntries, setCorrectionEntries] = useState<CorrectionEntry[]>(() => {

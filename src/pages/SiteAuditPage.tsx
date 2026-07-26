@@ -1,11 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/crm/AppLayout';
 import PageHeader from '@/components/shared/PageHeader';
 import { SITE_MAP, type PageAudit } from '@/utils/site-audit';
 import {
   FileText, Printer, Copy, Check, ChevronRight, ShieldCheck,
   Info, Search, CheckCircle2, XCircle, Database, Route, AlertTriangle,
-  Loader2, RefreshCw, Activity
+  Loader2, RefreshCw, Activity, ArrowLeft
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -52,6 +53,7 @@ interface TableHealth {
 }
 
 const SiteAuditPage = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [copied, setCopied] = useState(false);
   const [tableHealth, setTableHealth] = useState<TableHealth[]>(TABLE_AUDIT.map(t => ({ name: t, status: "loading", count: null })));
@@ -128,6 +130,9 @@ const SiteAuditPage = () => {
           icon={FileText}
           actions={
             <div className="flex gap-3 print:hidden">
+              <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
+                <ArrowLeft size={14} /> Back
+              </Button>
               <Button variant="outline" onClick={handleCopyMarkdown} className="rounded-xl h-12 px-6 font-bold border-indigo-100 text-indigo-600">
                 {copied ? <Check size={18} className="mr-2" /> : <Copy size={18} className="mr-2" />}
                 Copy Markdown

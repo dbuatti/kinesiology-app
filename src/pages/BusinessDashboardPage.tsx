@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   TrendingUp, Users, DollarSign, Mic, Calendar, ChevronRight, Clock,
-  AlertCircle, RefreshCw,
+  AlertCircle, RefreshCw, ArrowLeft,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -162,7 +162,13 @@ const BusinessDashboardPage = () => {
     <AppLayout variant="wide">
       <div className="flex flex-col gap-8 p-6">
 
-        <PageHeader title="Business Dashboard" subtitle="Today's overview and quick actions" icon={TrendingUp} />
+        <PageHeader title="Business Dashboard" subtitle="Today's overview and quick actions" icon={TrendingUp}
+          actions={
+            <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
+              <ArrowLeft size={14} /> Back
+            </Button>
+          }
+        />
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

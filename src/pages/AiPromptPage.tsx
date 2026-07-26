@@ -1,10 +1,11 @@
 
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Copy, Check, Sparkles, ClipboardList } from "lucide-react";
+import { Copy, Check, Sparkles, ClipboardList, ArrowLeft } from "lucide-react";
 import { showSuccess } from "@/utils/toast";
 
 const PROMPT = `You are a clinical documentation AI for a Functional Neuro Health (FNH) kinesiology practice. Analyze session transcripts and extract structured clinical data.
@@ -67,6 +68,7 @@ RULES:
 - Always note the brainstem nuclei associated with each inhibited finding`;
 
 const AiPromptPage = () => {
+  const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -84,10 +86,15 @@ const AiPromptPage = () => {
           subtitle="Copy this prompt into your AI tool when analyzing voice memo transcripts from kinesiology sessions."
           icon={Sparkles}
           actions={
-            <Button onClick={handleCopy} className="rounded-xl h-10 px-5 gap-2">
-              {copied ? <Check size={16} /> : <Copy size={16} />}
-              {copied ? "Copied" : "Copy Prompt"}
-            </Button>
+            <>
+              <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
+                <ArrowLeft size={14} /> Back
+              </Button>
+              <Button onClick={handleCopy} className="rounded-xl h-10 px-5 gap-2">
+                {copied ? <Check size={16} /> : <Copy size={16} />}
+                {copied ? "Copied" : "Copy Prompt"}
+              </Button>
+            </>
           }
         />
 

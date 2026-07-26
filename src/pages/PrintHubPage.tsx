@@ -126,7 +126,7 @@ const PrintHubPage = () => {
  )}>
  <item.icon size={28} />
  </div>
- <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground/60 group-hover:bg-primary/80 group-hover:text-white transition-all">
+ <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground/60 group-hover:bg-primary/80 group-hover:text-primary-foreground transition-all">
  <Printer size={16} />
  </div>
  </div>
@@ -153,11 +153,11 @@ const PrintHubPage = () => {
  ))}
  </div>
 
-      <Card className="border-none shadow-sm rounded-xl bg-card text-white overflow-hidden relative">
+      <Card className="border-none shadow-sm rounded-xl bg-card text-primary-foreground overflow-hidden relative">
  <div className="absolute top-0 right-0 p-12 opacity-10"><Sparkles size={150} /></div>
  <CardContent className="p-10 md:p-14 flex flex-col md:flex-row items-center gap-10 relative z-10">
  <div className="w-24 h-24 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm ">
- <ShieldCheck size={48} className="text-white" />
+ <ShieldCheck size={48} className="text-primary-foreground" />
  </div>
  <div className="space-y-4">
  <h4 className="text-2xl font-semibold">Clinical Standard v2.4</h4>

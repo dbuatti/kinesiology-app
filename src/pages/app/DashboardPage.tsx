@@ -152,7 +152,7 @@ const Index = () => {
           title="Dashboard"
           subtitle="Welcome back, Daniele. Here is your clinical landscape for today."
           icon={LayoutDashboard}
-          iconClassName="bg-gradient-to-br from-amber-500 to-rose-500 text-white shadow-lg shadow-amber-500/20"
+          iconClassName="bg-gradient-to-br from-amber-500 to-rose-500 text-primary-foreground shadow-lg shadow-amber-500/20"
           actions={
             <div className="flex items-center gap-4 bg-card px-4 py-2 rounded-xl border border-border shadow-sm">
               <div className="pr-4 border-r border-border">

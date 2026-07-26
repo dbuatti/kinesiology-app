@@ -122,7 +122,7 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
                 )}
                 onClick={() => setCanal(pos)}
               >
-                <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0 mr-4">
+                <div className="w-10 h-10 rounded-xl bg-card shadow-sm flex items-center justify-center shrink-0 mr-4">
                   <pos.icon size={20} className={canal?.id === pos.id ? "text-cyan-600" : "text-muted-foreground"} />
                 </div>
                 <div className="text-left">
@@ -173,7 +173,7 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
               <p className="text-[10px] font-semibold text-cyan-600 uppercase tracking-wider">Selected Position</p>
               <p className="text-lg font-semibold text-cyan-900">{canal.label} {direction ? `(${direction})` : ''}</p>
             </div>
-            <Badge className="bg-cyan-600 text-white border-none font-semibold text-[10px] uppercase tracking-wider">Afferent</Badge>
+            <Badge className="bg-cyan-600 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider">Afferent</Badge>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -233,11 +233,11 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
               
               <div className="grid grid-cols-1 gap-4">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-cyan-600 text-white flex items-center justify-center shrink-0 shadow-sm"><Sparkles size={20} /></div>
+                  <div className="w-10 h-10 rounded-xl bg-cyan-600 text-primary-foreground flex items-center justify-center shrink-0 shadow-sm"><Sparkles size={20} /></div>
                   <div>
                     <p className="text-sm font-semibold uppercase tracking-tight">The Protocol</p>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      Hold <span className="font-medium text-white">GV16 (Cerebellum)</span> while maintaining the head/eye position. Apply 128Hz tuning fork to cranium or tap for 5-10 seconds.
+                      Hold <span className="font-medium text-primary-foreground">GV16 (Cerebellum)</span> while maintaining the head/eye position. Apply 128Hz tuning fork to cranium or tap for 5-10 seconds.
                     </p>
                   </div>
                 </div>
@@ -258,7 +258,7 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
       {step === 'REASSESS' && (
         <div className="space-y-6">
           <div className="bg-muted p-8 rounded-xl border-2 border-border text-center">
-            <div className="w-20 h-20 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-6"><RefreshCw size={48} className="text-chart-emerald" /></div>
+            <div className="w-20 h-20 rounded-full bg-card shadow-sm flex items-center justify-center mx-auto mb-6"><RefreshCw size={48} className="text-chart-emerald" /></div>
             <h3 className="text-2xl font-semibold text-foreground mb-2">Final Re-assessment</h3>
             <p className="text-foreground font-medium">Re-test the specific head position and visual tracking.</p>
           </div>

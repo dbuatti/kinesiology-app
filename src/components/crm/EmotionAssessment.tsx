@@ -115,12 +115,12 @@ const EmotionAssessment = ({
   const getPrimaryColor = (key: string) => {
     if (mode === 'element') {
       switch (key) {
-        case 'FIRE': return 'bg-red-500 hover:bg-destructive';
+        case 'FIRE': return 'bg-destructive hover:bg-destructive/80';
         case 'EARTH': return 'bg-yellow-500 hover:bg-yellow-600';
-        case 'METAL': return 'bg-gray-500 hover:bg-gray-600';
-        case 'WATER': return 'bg-blue-500 hover:bg-blue-600';
-        case 'WOOD': return 'bg-green-500 hover:bg-green-700';
-        default: return 'bg-slate-500 hover:bg-slate-600';
+        case 'METAL': return 'bg-muted-foreground hover:bg-muted-foreground/80';
+        case 'WATER': return 'bg-primary hover:bg-primary';
+        case 'WOOD': return 'bg-chart-emerald hover:bg-chart-emerald/80';
+        default: return 'bg-muted-foreground hover:bg-muted-foreground/80';
       }
     }
     return 'bg-indigo-500 hover:bg-indigo-600';
@@ -174,9 +174,9 @@ const EmotionAssessment = ({
 
         <CollapsibleContent>
           <CardContent className="p-6 space-y-6">
-            <Alert className="bg-blue-50 border-blue-200">
-              <Info className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-sm text-blue-900">
+            <Alert className="bg-primary/5 border-primary/20">
+              <Info className="h-4 w-4 text-primary" />
+              <AlertDescription className="text-sm text-foreground/80">
                 <strong>Protocol:</strong> Use PS12 mode to challenge the body for the relevant mode, primary selection, and secondary selection.
               </AlertDescription>
             </Alert>
@@ -243,7 +243,7 @@ const EmotionAssessment = ({
                       className={cn(
                         "h-8 text-xs font-semibold",
                         secondarySelections.includes(emotion)
-                          ? "bg-emerald-600 hover:bg-emerald-700 text-primary-foreground" 
+                          ? "bg-chart-emerald hover:bg-chart-emerald/80 text-primary-foreground" 
                           : "border-border bg-muted/50 hover:bg-muted text-foreground/80"
                       )}
                       disabled={isSaving}

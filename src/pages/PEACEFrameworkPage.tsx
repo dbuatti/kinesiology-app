@@ -26,7 +26,7 @@ const PEACEFrameworkPage = () => {
 
 
  {/* Hero Section */}
-  <div className="relative rounded-xl overflow-hidden bg-card border border-border text-white p-8 shadow-sm group border border-border">
+  <div className="relative rounded-xl overflow-hidden bg-card border border-border text-primary-foreground p-8 shadow-sm group border border-border">
  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-card to-muted/40" />
   <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
  <BookOpen size={200} />
@@ -40,7 +40,7 @@ const PEACEFrameworkPage = () => {
  <p className="text-xl text-muted-foreground/60 font-medium max-w-2xl leading-relaxed">
  The central organising framework of Functional Neuro Health. 
  </p>
- <div className="p-6 bg-card/5 border border-white/10 rounded-3xl mt-4 max-w-3xl backdrop-blur-md">
+ <div className="p-6 bg-card/5 border border-primary-foreground/10 rounded-3xl mt-4 max-w-3xl backdrop-blur-md">
  <p className="text-lg italic font-medium text-muted-foreground/40">
  "Follow the process, not your preference. Let the system reveal its own order. One correction in the right sequence is worth ten done in the wrong one."
  </p>

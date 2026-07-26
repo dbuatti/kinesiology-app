@@ -30,11 +30,11 @@ const CranialNerveHomeworkTool = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
-        <CardHeader className="bg-indigo-600 text-white p-8">
+      <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+        <CardHeader className="bg-indigo-600 text-primary-foreground p-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center shadow-inner">
+              <div className="w-12 h-12 rounded-2xl bg-card/20 flex items-center justify-center shadow-inner">
                 <Calculator size={24} />
               </div>
               <div>
@@ -42,12 +42,12 @@ const CranialNerveHomeworkTool = () => {
                 <p className="text-indigo-100 text-xs font-bold uppercase tracking-widest">3-Week Integration Protocol</p>
               </div>
             </div>
-            <div className="flex bg-white/10 p-1 rounded-xl border border-white/20">
+            <div className="flex bg-card/10 p-1 rounded-xl border border-primary-foreground/20">
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={() => setMode('nerve')}
-                className={cn("rounded-lg h-8 text-[10px] font-black uppercase tracking-widest", mode === 'nerve' ? "bg-white text-indigo-600" : "text-white hover:bg-white/10")}
+                className={cn("rounded-lg h-8 text-[10px] font-black uppercase tracking-widest", mode === 'nerve' ? "bg-card text-indigo-600" : "text-primary-foreground hover:bg-card/10")}
               >
                 <Zap size={14} className="mr-1.5" /> Nerve
               </Button>
@@ -55,7 +55,7 @@ const CranialNerveHomeworkTool = () => {
                 variant="ghost" 
                 size="sm" 
                 onClick={() => setMode('reflex')}
-                className={cn("rounded-lg h-8 text-[10px] font-black uppercase tracking-widest", mode === 'reflex' ? "bg-white text-indigo-600" : "text-white hover:bg-white/10")}
+                className={cn("rounded-lg h-8 text-[10px] font-black uppercase tracking-widest", mode === 'reflex' ? "bg-card text-indigo-600" : "text-primary-foreground hover:bg-card/10")}
               >
                 <Baby size={14} className="mr-1.5" /> Reflex
               </Button>
@@ -63,9 +63,9 @@ const CranialNerveHomeworkTool = () => {
           </div>
         </CardHeader>
         <CardContent className="p-8 space-y-8">
-          <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl flex items-start gap-3">
-            <Info size={18} className="text-blue-600 shrink-0 mt-0.5" />
-            <p className="text-xs text-blue-900 font-medium leading-relaxed">
+          <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-start gap-3">
+            <Info size={18} className="text-primary shrink-0 mt-0.5" />
+            <p className="text-xs text-primary font-medium leading-relaxed">
               {mode === 'nerve' 
                 ? "Identify the point where the stimulus causes the IM to inhibit (the threshold). Prescribe 70% of that value for Week 1."
                 : "For reflexes, prescribe the specific integration movement. Use the same 3-week progression to ensure the pathway remains strong."}
@@ -75,7 +75,7 @@ const CranialNerveHomeworkTool = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div className="space-y-4">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">1. Measurement Unit</label>
+                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">1. Measurement Unit</label>
                 <div className="flex gap-2">
                   <Button 
                     variant={unit === 'seconds' ? 'default' : 'outline'}
@@ -95,23 +95,23 @@ const CranialNerveHomeworkTool = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">2. Max Threshold (Inhibition Point)</label>
+                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">2. Max Threshold (Inhibition Point)</label>
                 <Input 
                   type="number" 
                   placeholder={`e.g. 10 ${unit}`}
                   value={threshold}
                   onChange={(e) => setThreshold(e.target.value)}
-                  className="h-14 rounded-2xl border-2 border-slate-100 text-xl font-black text-center focus:border-indigo-500"
+                  className="h-14 rounded-2xl border-2 border-border/50 text-xl font-black text-center focus:border-indigo-500"
                 />
               </div>
             </div>
 
             <div className="space-y-4">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">3. 3-Week Progression Plan</label>
+              <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">3. 3-Week Progression Plan</label>
               <div className="grid grid-cols-1 gap-3">
                 {[
                   { week: 1, val: week1Value, label: "70% Threshold", color: "bg-indigo-50 border-indigo-100 text-indigo-700" },
-                  { week: 2, val: week2Value, label: "Double Week 1", color: "bg-blue-50 border-blue-100 text-blue-700" },
+                  { week: 2, val: week2Value, label: "Double Week 1", color: "bg-primary/5 border-primary/20 text-primary" },
                   { week: 3, val: week3Value, label: "Double Week 2", color: "bg-emerald-50 border-emerald-100 text-emerald-700" }
                 ].map((w) => (
                   <div key={w.week} className={cn("p-4 rounded-2xl border-2 flex items-center justify-between", w.color)}>
@@ -129,39 +129,39 @@ const CranialNerveHomeworkTool = () => {
             </div>
           </div>
 
-          <div className="pt-6 border-t border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-5 bg-slate-900 text-white rounded-[2rem] space-y-3 relative overflow-hidden">
+          <div className="pt-6 border-t border-border/50 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="p-5 bg-foreground text-primary-foreground rounded-[2rem] space-y-3 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 opacity-10"><Clock size={40} /></div>
               <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2">
                 <Clock size={14} /> Frequency
               </h4>
               <p className="text-lg font-bold leading-tight">Every hour on the hour.</p>
-              <p className="text-[10px] text-slate-400 font-medium">Or at least 10x daily to keep the drill top of mind.</p>
+              <p className="text-[10px] text-muted-foreground font-medium">Or at least 10x daily to keep the drill top of mind.</p>
             </div>
 
-            <div className="p-5 bg-slate-900 text-white rounded-[2rem] space-y-3 relative overflow-hidden">
+            <div className="p-5 bg-foreground text-primary-foreground rounded-[2rem] space-y-3 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 opacity-10"><Calendar size={40} /></div>
               <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2">
                 <Calendar size={14} /> Duration
               </h4>
               <p className="text-lg font-bold leading-tight">3 Full Weeks.</p>
-              <p className="text-[10px] text-slate-400 font-medium">The pathway typically requires 21 days of regular input to remain strong.</p>
+              <p className="text-[10px] text-muted-foreground font-medium">The pathway typically requires 21 days of regular input to remain strong.</p>
             </div>
 
-            <div className="p-5 bg-slate-900 text-white rounded-[2rem] space-y-3 relative overflow-hidden">
+            <div className="p-5 bg-foreground text-primary-foreground rounded-[2rem] space-y-3 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 opacity-10"><TrendingUp size={40} /></div>
               <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2">
                 <TrendingUp size={14} /> Progression
               </h4>
               <p className="text-lg font-bold leading-tight">Double every 7 days.</p>
-              <p className="text-[10px] text-slate-400 font-medium">If the pathway tests clear at the end of the week, proceed to double the reps/time.</p>
+              <p className="text-[10px] text-muted-foreground font-medium">If the pathway tests clear at the end of the week, proceed to double the reps/time.</p>
             </div>
           </div>
         </CardContent>
       </Card>
 
       <div className="p-8 bg-amber-50 rounded-[2.5rem] border-2 border-amber-100 flex items-start gap-6">
-        <div className="w-14 h-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-xl shrink-0">
+        <div className="w-14 h-14 rounded-2xl bg-amber-500 text-primary-foreground flex items-center justify-center shadow-xl shrink-0">
           <Brain size={32} />
         </div>
         <div className="space-y-2">

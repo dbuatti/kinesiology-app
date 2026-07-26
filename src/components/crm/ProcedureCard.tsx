@@ -41,7 +41,7 @@ const ProcedureCard = ({ procedure, latestScores, onEdit, onDelete, onToggle }: 
   const isComplete = procedure.current_count >= procedure.target_count;
   
   let specificStatus = null;
-  let statusColor = "text-slate-500";
+  let statusColor = "text-muted-foreground";
 
   if (procedure.name.includes("BOLT Test")) {
     const score = latestScores.bolt_score;
@@ -64,28 +64,28 @@ const ProcedureCard = ({ procedure, latestScores, onEdit, onDelete, onToggle }: 
     <Card className={cn(
       "border-none shadow-md rounded-2xl overflow-hidden transition-all hover:shadow-lg",
       !procedure.enabled && "opacity-60",
-      isComplete && procedure.enabled ? "bg-gradient-to-br from-emerald-50 to-emerald-100" : "bg-white"
+      isComplete && procedure.enabled ? "bg-gradient-to-br from-emerald-50 to-emerald-100" : "bg-card"
     )}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3 flex-1">
             <div className={cn(
               "w-12 h-12 rounded-xl flex items-center justify-center shadow-sm",
-              !procedure.enabled ? "bg-slate-300" :
+              !procedure.enabled ? "bg-muted" :
               isComplete ? "bg-emerald-500" : "bg-indigo-600"
             )}>
-              <IconComponent size={24} className="text-white" />
+              <IconComponent size={24} className="text-primary-foreground" />
             </div>
             <div className="flex-1">
-              <CardTitle className="text-lg font-bold text-slate-900">{procedure.name}</CardTitle>
+              <CardTitle className="text-lg font-bold text-foreground">{procedure.name}</CardTitle>
               <div className="flex items-center gap-2 mt-1">
                 {isComplete && procedure.enabled && (
-                  <Badge className="bg-emerald-600 text-white border-none text-[10px] font-black uppercase tracking-widest">
+                  <Badge className="bg-emerald-600 text-primary-foreground border-none text-[10px] font-black uppercase tracking-widest">
                     <CheckCircle2 size={10} className="mr-1" /> Complete
                   </Badge>
                 )}
                 {!procedure.enabled && (
-                  <Badge variant="outline" className="border-slate-300 text-slate-500 text-[10px] font-black uppercase tracking-widest">
+                  <Badge variant="outline" className="border-border text-muted-foreground text-[10px] font-black uppercase tracking-widest">
                     <PowerOff size={10} className="mr-1" /> Disabled
                   </Badge>
                 )}
@@ -101,7 +101,7 @@ const ProcedureCard = ({ procedure, latestScores, onEdit, onDelete, onToggle }: 
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(procedure)}>
               <Edit3 size={14} />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-700" onClick={() => onDelete(procedure.id)}>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-red-700" onClick={() => onDelete(procedure.id)}>
               <Trash2 size={14} />
             </Button>
           </div>
@@ -109,11 +109,11 @@ const ProcedureCard = ({ procedure, latestScores, onEdit, onDelete, onToggle }: 
       </CardHeader>
       <CardContent className="space-y-4">
         {procedure.description && (
-          <p className="text-sm text-slate-600 leading-relaxed line-clamp-2">{procedure.description}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{procedure.description}</p>
         )}
         
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-700">Track in appointments</span>
+          <span className="text-xs font-bold text-foreground/80">Track in appointments</span>
           <Switch
             checked={procedure.enabled}
             onCheckedChange={() => onToggle(procedure.id, procedure.enabled)}
@@ -123,7 +123,7 @@ const ProcedureCard = ({ procedure, latestScores, onEdit, onDelete, onToggle }: 
         {procedure.enabled && (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
-              <span className="text-slate-400">Progress</span>
+              <span className="text-muted-foreground">Progress</span>
               <span className={cn(isComplete ? "text-emerald-600" : "text-indigo-600")}>
                 {procedure.current_count} / {procedure.target_count}
               </span>
@@ -136,7 +136,7 @@ const ProcedureCard = ({ procedure, latestScores, onEdit, onDelete, onToggle }: 
         )}
 
         {procedure.name.includes("Lymphatic System") && (
-          <Button variant="outline" size="sm" className="w-full rounded-xl border-blue-100 text-blue-600 hover:bg-blue-50 font-bold text-xs" asChild>
+          <Button variant="outline" size="sm" className="w-full rounded-xl border-primary/20 text-primary hover:bg-primary/5 font-bold text-xs" asChild>
             <Link to="/resources?tab=lymphatic">
               <ExternalLink size={14} className="mr-2" /> View Protocol
             </Link>

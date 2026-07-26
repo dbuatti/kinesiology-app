@@ -179,9 +179,9 @@ const InteractiveIntentionWorksheet = () => {
     <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 print:space-y-4 print:max-w-none">
       {/* Header - Hidden on Print */}
       <div className="relative rounded-[3.5rem] overflow-hidden bg-foreground text-primary-foreground p-12 shadow-2xl group border border-border print:hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-slate-950 to-purple-900/40" />
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-foreground to-purple-900/40" />
         <div className="relative z-10 flex flex-col items-center text-center space-y-6">
-          <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-2xl">
+          <div className="w-16 h-16 rounded-2xl bg-primary-foreground/10 backdrop-blur-md flex items-center justify-center border border-primary-foreground/20 shadow-2xl">
             <Compass size={32} className="text-indigo-400" />
           </div>
           <div className="space-y-2">
@@ -195,7 +195,7 @@ const InteractiveIntentionWorksheet = () => {
           </div>
         </div>
         
-        <div className="absolute bottom-0 left-0 w-full h-1 bg-white/5">
+        <div className="absolute bottom-0 left-0 w-full h-1 bg-primary-foreground/5">
           <div 
             className="h-full bg-indigo-500 transition-all duration-700 ease-out" 
             style={{ width: `${progress}%` }} 
@@ -252,7 +252,7 @@ const InteractiveIntentionWorksheet = () => {
                <CardDescription className="text-primary-foreground/80 font-medium">{stepData.description}</CardDescription>
              </CardHeader>
              <CardContent className="relative z-10 space-y-6">
-               <div className="p-4 bg-white/10 rounded-2xl border border-white/20 backdrop-blur-sm">
+               <div className="p-4 bg-primary-foreground/10 rounded-2xl border border-primary-foreground/20 backdrop-blur-sm">
                  <p className="text-xs font-medium leading-relaxed italic">
                    Take a few deep breaths. Don't overthink. Let your truth emerge.
                  </p>
@@ -261,7 +261,7 @@ const InteractiveIntentionWorksheet = () => {
                <div className="space-y-4">
                  <p className="text-[9px] font-black uppercase tracking-widest opacity-60">Practitioner Tips</p>
                  <div className="flex gap-3">
-                   <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                   <div className="w-8 h-8 rounded-lg bg-primary-foreground/20 flex items-center justify-center shrink-0">
                      <Target size={14} />
                    </div>
                    <p className="text-[10px] font-bold leading-tight">Be real. Your intention doesn't need to be polished—it just needs to be true.</p>
@@ -391,7 +391,7 @@ const InteractiveIntentionWorksheet = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex gap-4">
-                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-primary-foreground/10 flex items-center justify-center shrink-0">
                   <Clock size={20} className="text-amber-400" />
                 </div>
                 <div>
@@ -400,7 +400,7 @@ const InteractiveIntentionWorksheet = () => {
                 </div>
               </div>
               <div className="flex gap-4">
-                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-primary-foreground/10 flex items-center justify-center shrink-0">
                   <Zap size={20} className="text-amber-400" />
                 </div>
                 <div>
@@ -408,7 +408,7 @@ const InteractiveIntentionWorksheet = () => {
                   <p className="text-xs text-muted-foreground mt-1">Ask: "What would the version of me who has realized this intention do right now?"</p>
                 </div>
               </div>
-              <div className="pt-4 border-t border-white/10">
+              <div className="pt-4 border-t border-primary-foreground/10">
                 <div className="flex items-center gap-2 text-amber-400 mb-2">
                   <Share2 size={16} />
                   <span className="text-xs font-black uppercase tracking-widest">Sharing (Optional)</span>

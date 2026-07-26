@@ -100,7 +100,7 @@ const queryClient = new QueryClient();
 
 const FullScreenLoader = ({ label }: { label: string }) => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-    <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-2xl animate-bounce">
+    <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-primary-foreground font-black text-2xl shadow-2xl animate-bounce">
       A
     </div>
     <div className="flex items-center gap-2 text-muted-foreground font-black text-[10px] uppercase tracking-[0.3em]">

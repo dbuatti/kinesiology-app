@@ -13,7 +13,7 @@ const QuickCalibratePage = () => {
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center text-white shadow-md">
+            <div className="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center text-primary-foreground shadow-md">
               <Zap size={28} className="fill-current" />
             </div>
             <h1 className="text-3xl font-bold tracking-tight text-foreground">Quick Calibrate</h1>
@@ -37,7 +37,7 @@ const QuickCalibratePage = () => {
           }} 
         />
 
-        <div className="p-6 bg-card dark:bg-card text-white rounded-xl shadow-lg relative overflow-hidden">
+        <div className="p-6 bg-card dark:bg-card text-primary-foreground rounded-xl shadow-lg relative overflow-hidden">
           <div className="absolute top-0 right-0 p-8 opacity-10">
             <ShieldCheck size={100} />
           </div>

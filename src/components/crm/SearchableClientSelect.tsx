@@ -48,31 +48,31 @@ const SearchableClientSelect = ({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between bg-white border-slate-200 hover:bg-slate-50 h-10"
+          className="w-full justify-between bg-card border-border hover:bg-muted/50 h-10"
           disabled={disabled}
         >
           {selectedClient ? (
-            <span className="truncate font-medium text-slate-900">{selectedClient.name}</span>
+            <span className="truncate font-medium text-foreground">{selectedClient.name}</span>
           ) : (
-            <span className="text-slate-400">{placeholder}</span>
+            <span className="text-muted-foreground">{placeholder}</span>
           )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-[--radix-popover-trigger-width] p-0 bg-white dark:bg-slate-900 border-none shadow-2xl z-[120]" 
+        className="w-[--radix-popover-trigger-width] p-0 bg-card dark:bg-foreground border-none shadow-2xl z-[120]" 
         align="start"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <Command className="rounded-xl bg-white dark:bg-slate-900">
+        <Command className="rounded-xl bg-card dark:bg-foreground">
           <CommandInput placeholder="Search clients..." className="h-11" />
           <CommandList 
             className="max-h-[300px] overflow-y-auto custom-scrollbar"
             onWheel={(e) => e.stopPropagation()}
           >
-            <CommandEmpty className="py-6 text-center text-sm text-slate-500">
+            <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
               <div className="flex flex-col items-center gap-2">
-                <Search size={24} className="text-slate-300" />
+                <Search size={24} className="text-muted-foreground/60" />
                 <p>No client found.</p>
               </div>
             </CommandEmpty>

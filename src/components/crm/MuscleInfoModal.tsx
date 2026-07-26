@@ -189,7 +189,7 @@ const MuscleImageZone = ({
             alt="Muscle Reference" 
             className="w-full h-full object-cover" 
           />
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center gap-2">
+          <div className="absolute inset-0 bg-foreground/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center gap-2">
             <div className="flex flex-col items-center gap-2">
               <div className="flex gap-2">
                 <Button variant="secondary" size="icon" className="rounded-xl h-8 w-8 shadow-sm">
@@ -199,7 +199,7 @@ const MuscleImageZone = ({
                   <X size={14} />
                 </Button>
               </div>
-              <p className="text-[10px] font-medium text-white uppercase tracking-wider">Click to Change</p>
+              <p className="text-[10px] font-medium text-primary-foreground uppercase tracking-wider">Click to Change</p>
             </div>
           </div>
         </>
@@ -210,7 +210,7 @@ const MuscleImageZone = ({
           ) : (
             <>
               <div className={cn(
-                "rounded-xl bg-white shadow-sm border border-border flex items-center justify-center mx-auto text-muted-foreground group-hover/image:text-chart-primary group-hover/image:scale-110 transition-all",
+                "rounded-xl bg-card shadow-sm border border-border flex items-center justify-center mx-auto text-muted-foreground group-hover/image:text-chart-primary group-hover/image:scale-110 transition-all",
                 isPrimary ? "w-12 h-12" : "w-8 h-8"
               )}>
                 {isPrimary ? <Plus size={24} /> : <Target size={18} />}
@@ -311,24 +311,24 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
           <div className={cn("p-8 text-primary-foreground transition-colors relative", channel ? channel.color.split(' ')[0] : "bg-primary")}>
             {isPeak && (
               <div className="absolute top-6 right-6 animate-pulse">
-                <Badge className="bg-white text-foreground border-none font-medium text-[10px] uppercase tracking-wider px-2 py-0.5">
+                <Badge className="bg-card text-foreground border-none font-medium text-[10px] uppercase tracking-wider px-2 py-0.5">
                   <Zap size={10} className="mr-1 fill-muted-foreground text-muted-foreground" /> Peak Now
                 </Badge>
               </div>
             )}
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center shadow-sm">
+              <div className="w-14 h-14 bg-card/20 backdrop-blur-md rounded-xl flex items-center justify-center shadow-sm">
                 <Dumbbell size={32} />
               </div>
               <div>
                 <DialogTitle className="text-3xl font-semibold tracking-tight">{info.name}</DialogTitle>
                 <DialogDescription className="sr-only">Clinical details and associations for {info.name}</DialogDescription>
                 <div className="flex gap-2 mt-2">
-                  <Badge className="bg-white/20 text-white border-none font-medium text-[10px] uppercase tracking-wider">
+                  <Badge className="bg-card/20 text-primary-foreground border-none font-medium text-[10px] uppercase tracking-wider">
                     {info.meridian || 'General'} Meridian
                   </Badge>
                   {info.myotome && (
-                    <Badge className="bg-white/20 text-white border-none font-medium text-[10px] uppercase tracking-wider">
+                    <Badge className="bg-card/20 text-primary-foreground border-none font-medium text-[10px] uppercase tracking-wider">
                       Myotome: {info.myotome}
                     </Badge>
                   )}
@@ -373,7 +373,7 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
                 {info.videoUrl && (
                   <div className="space-y-3">
                     <SectionHeader icon={PlayCircle} title="Technique Video" color="text-chart-destructive" />
-                    <div className="aspect-video rounded-xl overflow-hidden border-2 border-border shadow-sm bg-slate-900">
+                    <div className="aspect-video rounded-xl overflow-hidden border-2 border-border shadow-sm bg-foreground">
                       <iframe
                         src={info.videoUrl}
                         title={`${info.name} Technique`}
@@ -406,7 +406,7 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
                   <p className="text-2xl font-semibold text-foreground">{lovettPartner.segment}</p>
                   <p className="text-[10px] font-medium text-chart-destructive">{muscleName}</p>
                 </div>
-                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm border border-border">
+                <div className="w-10 h-10 rounded-full bg-card flex items-center justify-center shadow-sm border border-border">
                   <RefreshCw size={20} className="text-chart-destructive" />
                 </div>
                 <div className="text-center flex-1">
@@ -443,7 +443,7 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {channel.emotions.slice(0, 8).map(e => (
-                      <Badge key={e} variant="outline" className="bg-white border-border text-chart-destructive text-[10px] font-medium">
+                      <Badge key={e} variant="outline" className="bg-card border-border text-chart-destructive text-[10px] font-medium">
                         {e}
                       </Badge>
                     ))}
@@ -570,7 +570,7 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
           {/* Clinical Pearl */}
           {info.pearl && (
             <section>
-              <div className="p-8 bg-slate-900 text-white rounded-xl shadow-sm relative overflow-hidden">
+              <div className="p-8 bg-foreground text-primary-foreground rounded-xl shadow-sm relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-6 opacity-10"><Sparkles size={80} /></div>
                 <SectionHeader icon={Sparkles} title="Clinical Pearl" color="text-chart-primary" />
                 <p className="text-lg font-medium leading-relaxed relative z-10">

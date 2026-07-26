@@ -6,14 +6,14 @@ import { FINGER_POLARITIES } from '@/data/emotion-data';
 const HandPolarityReference = () => {
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+      <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
         <Zap size={14} className="text-amber-500" /> Finger Polarity Guide (98% Population)
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {Object.entries(FINGER_POLARITIES).map(([hand, fingers]) => (
           <div key={hand} className="space-y-3">
-            <p className="text-xs font-black text-center uppercase text-slate-500">{hand} Hand</p>
+            <p className="text-xs font-black text-center uppercase text-muted-foreground">{hand} Hand</p>
             <div className="grid grid-cols-1 gap-2">
               {fingers.map((f) => (
                 <div 
@@ -21,8 +21,8 @@ const HandPolarityReference = () => {
                   className={cn(
                     "p-3 rounded-xl border-2 flex items-center justify-between transition-all",
                     f.type.includes('IN') ? "bg-rose-50 border-rose-100 text-rose-700" :
-                    f.type.includes('OUT') ? "bg-blue-50 border-blue-100 text-blue-700" :
-                    "bg-slate-50 border-slate-100 text-slate-400"
+                    f.type.includes('OUT') ? "bg-primary/5 border-primary/20 text-primary" :
+                    "bg-muted/50 border-border/50 text-muted-foreground"
                   )}
                 >
                   <span className="font-black text-xs uppercase">{f.name}</span>

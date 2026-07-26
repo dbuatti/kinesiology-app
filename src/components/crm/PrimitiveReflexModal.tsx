@@ -51,28 +51,28 @@ const PrimitiveReflexModal = ({
       <DialogContent className="sm:max-w-[750px] max-h-[95vh] rounded-[2.5rem] overflow-hidden p-0 border-none shadow-2xl">
         <DialogHeader className="p-0">
           <div className={cn(
-            "p-8 text-white transition-colors relative",
+            "p-8 text-primary-foreground transition-colors relative",
             reflex.category === 'Foundational' ? "bg-indigo-600" :
             reflex.category === 'Postural' ? "bg-emerald-600" :
             "bg-amber-600"
           )}>
             <div className="flex items-center gap-6">
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-xl">
+              <div className="w-16 h-16 bg-card/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-xl">
                 <Baby size={32} />
               </div>
               <div className="space-y-1">
                 <div className="flex gap-2 mb-1">
-                  <Badge className="bg-white/20 text-white border-none font-black text-[10px] uppercase tracking-widest">
+                  <Badge className="bg-card/20 text-primary-foreground border-none font-black text-[10px] uppercase tracking-widest">
                     {reflex.category} Reflex
                   </Badge>
                   {reflex.hierarchyLevel && (
-                    <Badge variant="outline" className="border-white/40 text-white font-black text-[10px] uppercase tracking-widest">
+                    <Badge variant="outline" className="border-primary-foreground/20 text-primary-foreground font-black text-[10px] uppercase tracking-widest">
                       Level {reflex.hierarchyLevel}
                     </Badge>
                   )}
                 </div>
                 <DialogTitle className="text-3xl font-black tracking-tight">{reflex.name}</DialogTitle>
-                <DialogDescription className="text-white/80 font-medium">
+                <DialogDescription className="text-primary-foreground/80 font-medium">
                   Foundational Neurological Pattern
                 </DialogDescription>
               </div>
@@ -99,10 +99,10 @@ const PrimitiveReflexModal = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <section className="space-y-4">
-              <SectionHeader icon={Activity} title="Clinical Signs" color="text-slate-600" />
+              <SectionHeader icon={Activity} title="Clinical Signs" color="text-muted-foreground" />
               <div className="flex flex-wrap gap-2">
                 {reflex.clinicalSigns?.map(sign => (
-                  <Badge key={sign} variant="outline" className="bg-slate-50 border-slate-200 text-slate-700 font-bold text-[10px] uppercase tracking-widest px-3 py-1">
+                  <Badge key={sign} variant="outline" className="bg-muted/50 border-border text-foreground/80 font-bold text-[10px] uppercase tracking-widest px-3 py-1">
                     {sign}
                   </Badge>
                 ))}
@@ -110,10 +110,10 @@ const PrimitiveReflexModal = ({
             </section>
 
             <section className="space-y-4">
-              <SectionHeader icon={Clock} title="Developmental Window" color="text-slate-600" />
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                <p className="text-sm font-bold text-slate-900">{reflex.developmentalWindow}</p>
-                <p className="text-[10px] text-slate-500 mt-1">Should be inhibited by the nervous system during this period.</p>
+              <SectionHeader icon={Clock} title="Developmental Window" color="text-muted-foreground" />
+              <div className="p-4 bg-muted/50 rounded-2xl border border-border/50">
+                <p className="text-sm font-bold text-foreground">{reflex.developmentalWindow}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">Should be inhibited by the nervous system during this period.</p>
               </div>
             </section>
           </div>
@@ -126,11 +126,11 @@ const PrimitiveReflexModal = ({
                   Example correction from demonstration:
                 </p>
                 <div className="grid grid-cols-1 gap-2">
-                  <div className="flex items-center gap-3 p-3 bg-white/60 rounded-xl border border-amber-200">
+                  <div className="flex items-center gap-3 p-3 bg-card rounded-xl border border-amber-200">
                     <Eye size={16} className="text-amber-600" />
                     <p className="text-[10px] font-bold text-amber-900">Eyes UP then DOWN while holding reflex point.</p>
                   </div>
-                  <div className="flex items-center gap-3 p-3 bg-white/60 rounded-xl border border-amber-200">
+                  <div className="flex items-center gap-3 p-3 bg-card rounded-xl border border-amber-200">
                     <Move size={16} className="text-amber-600" />
                     <p className="text-[10px] font-bold text-amber-900">Tilt head back + Nasal breathing.</p>
                   </div>
@@ -141,12 +141,12 @@ const PrimitiveReflexModal = ({
           )}
 
           {reflex.fractalPartners && reflex.fractalPartners.length > 0 && (
-            <section className="p-6 bg-indigo-900 text-white rounded-2xl shadow-xl relative overflow-hidden">
+            <section className="p-6 bg-indigo-900 text-primary-foreground rounded-2xl shadow-xl relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 opacity-10"><Workflow size={80} /></div>
               <SectionHeader icon={Workflow} title="Fractal Partners" color="text-indigo-300" />
               <div className="flex flex-wrap gap-2 relative z-10">
                 {reflex.fractalPartners.map(partner => (
-                  <Badge key={partner} className="bg-white/10 text-white border-white/20 font-black text-[10px] uppercase tracking-widest px-3 py-1">
+                  <Badge key={partner} className="bg-card/10 text-primary-foreground border-primary-foreground/20 font-black text-[10px] uppercase tracking-widest px-3 py-1">
                     {partner}
                   </Badge>
                 ))}
@@ -158,15 +158,15 @@ const PrimitiveReflexModal = ({
           )}
 
           <section className="space-y-2">
-            <SectionHeader icon={Info} title="Clinical Context" color="text-slate-400" />
-            <p className="text-sm text-slate-600 font-medium leading-relaxed">
+            <SectionHeader icon={Info} title="Clinical Context" color="text-muted-foreground" />
+            <p className="text-sm text-muted-foreground font-medium leading-relaxed">
               {reflex.description}
             </p>
           </section>
 
           {reflex.pearl && (
             <section>
-              <div className="p-6 bg-slate-900 text-white rounded-[2rem] shadow-xl relative overflow-hidden">
+              <div className="p-6 bg-foreground text-primary-foreground rounded-[2rem] shadow-xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-10"><Sparkles size={60} /></div>
                 <SectionHeader icon={Sparkles} title="Clinical Pearl" color="text-amber-400" />
                 <p className="text-sm font-medium leading-relaxed relative z-10">
@@ -176,7 +176,7 @@ const PrimitiveReflexModal = ({
             </section>
           )}
 
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+          <div className="pt-4 border-t border-border/50 flex items-center justify-between">
             <div className="flex items-center gap-2 text-[10px] font-black text-emerald-600 uppercase tracking-widest">
               <CheckCircle2 size={14} /> Integration Goal: Clear IM response
             </div>

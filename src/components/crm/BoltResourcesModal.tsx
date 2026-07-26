@@ -36,7 +36,7 @@ const BoltResourcesModal = ({ open, onOpenChange, currentScore }: BoltResourcesM
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold flex items-center gap-3">
             <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center">
-              <Wind size={24} className="text-white" />
+              <Wind size={24} className="text-primary-foreground" />
             </div>
             BOLT Score Improvement Resources
           </DialogTitle>
@@ -51,19 +51,19 @@ const BoltResourcesModal = ({ open, onOpenChange, currentScore }: BoltResourcesM
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-bold text-slate-600 uppercase tracking-wider mb-1">Current BOLT Score</p>
-                    <p className="text-4xl font-black text-slate-900">{currentScore}s</p>
+                    <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-1">Current BOLT Score</p>
+                    <p className="text-4xl font-black text-foreground">{currentScore}s</p>
                   </div>
                   <div className="text-right">
                     {needsImprovement ? (
                       <>
-                        <Badge className="bg-amber-500 text-white mb-2">Needs Improvement</Badge>
+                        <Badge className="bg-amber-500 text-primary-foreground mb-2">Needs Improvement</Badge>
                         <p className="text-xs text-amber-800 font-medium">Target: 25s minimum</p>
                         <p className="text-xs text-amber-700">Optimal: 40s+</p>
                       </>
                     ) : (
                       <>
-                        <Badge className="bg-emerald-500 text-white mb-2">
+                        <Badge className="bg-emerald-500 text-primary-foreground mb-2">
                           <CheckCircle2 size={14} className="mr-1" /> Good Score
                         </Badge>
                         <p className="text-xs text-emerald-800 font-medium">Keep practicing!</p>
@@ -84,44 +84,44 @@ const BoltResourcesModal = ({ open, onOpenChange, currentScore }: BoltResourcesM
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
-                <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-indigo-100">
-                  <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                <div className="flex items-start gap-3 p-3 bg-card rounded-lg border border-indigo-100">
+                  <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-primary-foreground font-bold flex-shrink-0">
                     1
                   </div>
                   <div>
-                    <p className="font-semibold text-slate-900">Breath Hold</p>
-                    <p className="text-sm text-slate-700 leading-relaxed">
+                    <p className="font-semibold text-foreground">Breath Hold</p>
+                    <p className="text-sm text-foreground/80 leading-relaxed">
                       Take a normal breath in and out through the nose. Plug the nose/nostrils for <strong>5 seconds</strong>
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-indigo-100">
-                  <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                <div className="flex items-start gap-3 p-3 bg-card rounded-lg border border-indigo-100">
+                  <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-primary-foreground font-bold flex-shrink-0">
                     2
                   </div>
                   <div>
-                    <p className="font-semibold text-slate-900">Recovery Breathing</p>
-                    <p className="text-sm text-slate-700 leading-relaxed">
+                    <p className="font-semibold text-foreground">Recovery Breathing</p>
+                    <p className="text-sm text-foreground/80 leading-relaxed">
                       Release the hold and resume normal, calm, nasal breathing for <strong>10-15 seconds</strong>
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 p-3 bg-white rounded-lg border border-indigo-100">
-                  <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                <div className="flex items-start gap-3 p-3 bg-card rounded-lg border border-indigo-100">
+                  <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-primary-foreground font-bold flex-shrink-0">
                     3
                   </div>
                   <div>
-                    <p className="font-semibold text-slate-900">Repeat Cycle</p>
-                    <p className="text-sm text-slate-700 leading-relaxed">
+                    <p className="font-semibold text-foreground">Repeat Cycle</p>
+                    <p className="text-sm text-foreground/80 leading-relaxed">
                       Continue the cycle for <strong>5-15 minutes</strong>
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-indigo-600 text-white p-4 rounded-xl">
+              <div className="bg-indigo-600 text-primary-foreground p-4 rounded-xl">
                 <div className="flex items-center gap-2 mb-2">
                   <Clock size={18} />
                   <p className="font-bold">Recommended Practice Schedule</p>
@@ -133,7 +133,7 @@ const BoltResourcesModal = ({ open, onOpenChange, currentScore }: BoltResourcesM
             </CardContent>
           </Card>
 
-          <Card className="border-slate-200">
+          <Card className="border-border">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Target size={20} className="text-emerald-600" />
@@ -148,19 +148,19 @@ const BoltResourcesModal = ({ open, onOpenChange, currentScore }: BoltResourcesM
                   <p className="text-sm text-emerald-700">Essential for optimizing health</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <CheckCircle2 size={24} className="text-blue-600 flex-shrink-0" />
+              <div className="flex items-center gap-3 p-3 bg-primary/5 rounded-lg border border-primary/20">
+                <CheckCircle2 size={24} className="text-primary flex-shrink-0" />
                 <div>
-                  <p className="font-bold text-blue-900">Optimal Target: 40+ seconds</p>
-                  <p className="text-sm text-blue-700">Ideal for peak respiratory function</p>
+                  <p className="font-bold text-primary">Optimal Target: 40+ seconds</p>
+                  <p className="text-sm text-primary">Ideal for peak respiratory function</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Alert className="bg-red-50 border-red-200">
-            <AlertCircle className="h-5 w-5 text-red-600" />
-            <AlertDescription className="text-sm text-red-900 space-y-2">
+          <Alert className="bg-destructive/5 border-destructive/20">
+            <AlertCircle className="h-5 w-5 text-destructive" />
+            <AlertDescription className="text-sm text-destructive space-y-2">
               <p className="font-bold">Important Clinical Notes:</p>
               <ul className="space-y-1 ml-4 list-disc">
                 <li>
@@ -179,26 +179,26 @@ const BoltResourcesModal = ({ open, onOpenChange, currentScore }: BoltResourcesM
             </AlertDescription>
           </Alert>
 
-          <Card className="border-slate-200 bg-slate-50">
+          <Card className="border-border bg-muted/50">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <BookOpen size={20} className="text-slate-700" />
+                <BookOpen size={20} className="text-foreground/80" />
                 Reference Books
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200">
+              <div className="flex items-center gap-3 p-3 bg-card rounded-lg border border-border">
                 <BookOpen size={20} className="text-indigo-600 flex-shrink-0" />
                 <div>
-                  <p className="font-bold text-slate-900">The Oxygen Advantage</p>
-                  <p className="text-sm text-slate-600">by Patrick McKeown</p>
+                  <p className="font-bold text-foreground">The Oxygen Advantage</p>
+                  <p className="text-sm text-muted-foreground">by Patrick McKeown</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200">
+              <div className="flex items-center gap-3 p-3 bg-card rounded-lg border border-border">
                 <BookOpen size={20} className="text-indigo-600 flex-shrink-0" />
                 <div>
-                  <p className="font-bold text-slate-900">The Breathing Cure</p>
-                  <p className="text-sm text-slate-600">by Patrick McKeown</p>
+                  <p className="font-bold text-foreground">The Breathing Cure</p>
+                  <p className="text-sm text-muted-foreground">by Patrick McKeown</p>
                 </div>
               </div>
             </CardContent>

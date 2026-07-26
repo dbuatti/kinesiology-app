@@ -12,7 +12,7 @@ const LimitingBeliefsPage = () => {
  <AppLayout>
   <div className="max-w-5xl mx-auto space-y-4">
  <div className="flex items-center gap-3">
-  <div className="w-8 h-8 rounded-lg bg-destructive text-white flex items-center justify-center">
+  <div className="w-8 h-8 rounded-lg bg-destructive text-primary-foreground flex items-center justify-center">
     <ShieldAlert size={16} />
   </div>
   <div>

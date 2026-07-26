@@ -236,7 +236,7 @@ const EditableField = ({
  e.stopPropagation();
  handleChipClick(chip);
  }}
- className="px-3 py-1 rounded-xl bg-muted hover:bg-primary/80 hover:text-white text-[10px] font-semibold uppercase tracking-wider text-muted-foreground transition-all hover:scale-105 active:scale-95"
+ className="px-3 py-1 rounded-xl bg-muted hover:bg-primary/80 hover:text-primary-foreground text-[10px] font-semibold uppercase tracking-wider text-muted-foreground transition-all hover:scale-105 active:scale-95"
  >
  {chip}
  </button>

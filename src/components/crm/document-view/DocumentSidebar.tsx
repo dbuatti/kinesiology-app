@@ -15,8 +15,8 @@ interface DocumentSidebarProps {
 }
 
 export const OUTLINE_ITEMS = [
-  { id: "p-sec",       label: "P — Preliminary",             icon: Compass,         letter: "P", color: "text-slate-600 dark:text-slate-300" },
-  { id: "e-sec",       label: "E — Ease System",             icon: ShieldCheck,     letter: "E", color: "text-blue-600 dark:text-blue-400" },
+  { id: "p-sec",       label: "P — Preliminary",             icon: Compass,         letter: "P", color: "text-muted-foreground dark:text-slate-300" },
+  { id: "e-sec",       label: "E — Ease System",             icon: ShieldCheck,     letter: "E", color: "text-primary dark:text-primary" },
   { id: "a-sec",       label: "A — Align Hierarchy",         icon: List,            letter: "A", color: "text-violet-600 dark:text-violet-400" },
   { id: "a-reflexes",  label: "  Primitive Reflexes",        icon: Baby,            letter: null, color: "text-muted-foreground" },
   { id: "a-nerves",    label: "  Cranial Nerves",            icon: Zap,             letter: null, color: "text-muted-foreground" },
@@ -44,8 +44,8 @@ export const CORRECTIONS_GUIDE = [
   {
     title: "Diaphragm Reset",
     icon: Wind,
-    accentClass: "bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/40",
-    dotClass: "bg-blue-500",
+    accentClass: "bg-primary/5 dark:bg-primary/30 text-primary dark:text-blue-300 border-primary/20 dark:border-blue-800/40",
+    dotClass: "bg-primary/50",
     steps: [
       "Challenge tender points either side of sternum at xiphoid process.",
       "Palpate neck at C4 level (usually contralateral to tender point).",

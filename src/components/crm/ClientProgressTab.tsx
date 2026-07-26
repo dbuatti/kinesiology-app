@@ -119,7 +119,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
       <div className="space-y-4">
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 rounded-xl bg-purple-600 text-primary-foreground flex items-center justify-center shadow-lg">
               <Brain size={20} />
             </div>
             <div>
@@ -139,7 +139,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
       {/* Neurological History Tracker */}
       <div className="space-y-4">
         <div className="flex items-center gap-3 px-2">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+          <div className="w-10 h-10 rounded-xl bg-indigo-600 text-primary-foreground flex items-center justify-center shadow-lg">
             <Workflow size={20} />
           </div>
           <div>
@@ -163,13 +163,13 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
               <div className="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/30">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Latest BOLT Score</p>
-                  {boltTrend === "up" && <Badge className="bg-emerald-500 text-white border-none text-[10px]"><ArrowUpRight size={10} className="mr-1" /> Improving</Badge>}
-                  {boltTrend === "down" && <Badge className="bg-rose-500 text-white border-none text-[10px]"><ArrowDownRight size={10} className="mr-1" /> Declining</Badge>}
+                  {boltTrend === "up" && <Badge className="bg-emerald-500 text-primary-foreground border-none text-[10px]"><ArrowUpRight size={10} className="mr-1" /> Improving</Badge>}
+                  {boltTrend === "down" && <Badge className="bg-rose-500 text-primary-foreground border-none text-[10px]"><ArrowDownRight size={10} className="mr-1" /> Declining</Badge>}
                 </div>
                 <div className="flex items-baseline gap-2">
                   <p className={cn(
                     "text-4xl font-black",
-                    latestBolt === null ? "text-slate-300" : (latestBolt >= 25 ? "text-emerald-600" : "text-rose-600")
+                    latestBolt === null ? "text-muted-foreground/60" : (latestBolt >= 25 ? "text-emerald-600" : "text-rose-600")
                   )}>
                     {latestBolt !== null ? `${latestBolt}s` : "—"}
                   </p>
@@ -309,7 +309,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
         </div>
         
         <div className="space-y-6">
-          <Card className="border-none shadow-lg rounded-3xl bg-indigo-900 text-white overflow-hidden relative">
+          <Card className="border-none shadow-lg rounded-3xl bg-indigo-900 text-primary-foreground overflow-hidden relative">
             <div className="absolute top-0 right-0 p-8 opacity-10">
               <Zap size={120} />
             </div>
@@ -319,7 +319,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 relative z-10">
-              <div className="p-4 bg-white/10 rounded-2xl border border-white/10 shadow-inner">
+              <div className="p-4 bg-card/10 rounded-2xl border border-primary-foreground/10 shadow-inner">
                 <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-2">Primary Focus</p>
                 <p className="text-sm font-bold leading-relaxed">
                   {latestBolt !== null && latestBolt < 25 
@@ -327,7 +327,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
                     : "Refine autonomic synchronization and multi-planar mobility patterns."}
                 </p>
               </div>
-              <div className="p-4 bg-white/10 rounded-2xl border border-white/10 shadow-inner">
+              <div className="p-4 bg-card/10 rounded-2xl border border-primary-foreground/10 shadow-inner">
                 <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-2">Shared Responsibility</p>
                 <p className="text-xs text-indigo-100 leading-relaxed italic">
                   "There needs to be a balance of shared responsibility, but ultimately the client must drive their own healing process."

@@ -224,7 +224,7 @@ export function QuickSessionDialog({ open, onOpenChange, v2 }: QuickSessionDialo
         <div className="p-8 md:p-10">
           <DialogHeader className="mb-6">
             <div className="flex items-center gap-4 mb-2">
-              <div className="w-14 h-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-sm">
+              <div className="w-14 h-14 rounded-2xl bg-amber-500 text-primary-foreground flex items-center justify-center shadow-sm">
                 <Zap size={28} />
               </div>
               <div>

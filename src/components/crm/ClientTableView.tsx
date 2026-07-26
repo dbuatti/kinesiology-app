@@ -79,7 +79,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
                       <IntakeStatusBadge client={client} />
                       <NewInfoBadge submittedAt={(client as any).onboarding_submitted_at} />
                       {client.stripe_customer_id && (
-                        <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-black uppercase border-blue-200 text-blue-600 bg-blue-50">
+                        <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-black uppercase border-primary/20 text-primary bg-primary/5">
                           <CreditCard size={8} className="mr-1" /> Synced
                         </Badge>
                       )}

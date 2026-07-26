@@ -21,16 +21,16 @@ const BrainstemToneMap = ({ priorityPattern, activeFilter, onSelectNuclei }: Bra
 
   if (!hasData) {
     return (
-      <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center justify-between group hover:border-indigo-300 transition-all cursor-default">
+      <div className="p-4 bg-muted/50 dark:bg-foreground/50 rounded-2xl border border-border/50 dark:border-foreground/50 flex items-center justify-between group hover:border-indigo-300 transition-all cursor-default">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center text-slate-300">
+          <div className="w-8 h-8 rounded-lg bg-card dark:bg-foreground/50 flex items-center justify-center text-muted-foreground/60">
             <Brain size={16} />
           </div>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
             Log pathway findings to activate →
           </p>
         </div>
-        <ChevronRight size={14} className="text-slate-200 group-hover:text-indigo-400 transition-colors" />
+        <ChevronRight size={14} className="text-muted-foreground/60 group-hover:text-indigo-400 transition-colors" />
       </div>
     );
   }
@@ -49,16 +49,16 @@ const BrainstemToneMap = ({ priorityPattern, activeFilter, onSelectNuclei }: Bra
               className={cn(
                 "border-none shadow-md rounded-3xl overflow-hidden transition-all duration-500 cursor-pointer group",
                 isActive ? "ring-2 ring-indigo-500 scale-[1.02] shadow-xl" : "hover:shadow-lg",
-                isHighThreat ? "bg-rose-50 dark:bg-rose-950/10 border-2 border-rose-200" : "bg-card"
+                isHighThreat ? "bg-destructive/5 dark:bg-destructive/10 border-2 border-destructive/20" : "bg-card"
               )}
             >
               <CardContent className="p-6 space-y-5">
                 <div className="flex items-center justify-between">
                   <div className={cn(
-                    "w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg transition-transform group-hover:scale-110",
-                    nuclei.name === 'Midbrain' ? "bg-amber-500" :
-                    nuclei.name === 'Pons' ? "bg-indigo-600" :
-                    nuclei.name === 'Medulla' ? "bg-rose-600" : "bg-purple-600"
+                    "w-12 h-12 rounded-2xl flex items-center justify-center text-primary-foreground shadow-lg transition-transform group-hover:scale-110",
+                    nuclei.name === 'Midbrain' ? "bg-primary" :
+                    nuclei.name === 'Pons' ? "bg-primary" :
+                    nuclei.name === 'Medulla' ? "bg-destructive" : "bg-primary"
                   )}>
                     {nuclei.name === 'Midbrain' ? <Zap size={24} /> :
                      nuclei.name === 'Pons' ? <Layers size={24} /> :
@@ -67,12 +67,12 @@ const BrainstemToneMap = ({ priorityPattern, activeFilter, onSelectNuclei }: Bra
                   <div className="flex flex-col items-end gap-1">
                     <Badge variant="outline" className={cn(
                       "font-black text-[8px] uppercase tracking-widest px-2 py-0.5 border-none rounded-full flex items-center gap-1",
-                      nuclei.toneEffect === 'Flexors' ? "bg-blue-100 text-blue-600" : "bg-rose-100 text-rose-600"
+                      nuclei.toneEffect === 'Flexors' ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"
                     )}>
                       {nuclei.toneEffect === 'Flexors' ? <ArrowDownCircle size={10} /> : <ArrowUpCircle size={10} />}
                       {nuclei.toneEffect}
                     </Badge>
-                    <span className="text-[7px] font-black text-slate-400 uppercase tracking-widest">Tone Effect</span>
+                    <span className="text-[7px] font-black text-muted-foreground uppercase tracking-widest">Tone Effect</span>
                   </div>
                 </div>
 
@@ -84,12 +84,12 @@ const BrainstemToneMap = ({ priorityPattern, activeFilter, onSelectNuclei }: Bra
                 <div className="space-y-2">
                   <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
                     <span className="text-muted-foreground">Threat Level</span>
-                    <span className={cn(isHighThreat ? "text-rose-600" : "text-indigo-600")}>{nuclei.threatLevel}%</span>
+                    <span className={cn(isHighThreat ? "text-destructive" : "text-indigo-600")}>{nuclei.threatLevel}%</span>
                   </div>
-                  <Progress value={nuclei.threatLevel} className={cn("h-2 bg-slate-100 dark:bg-slate-800", isHighThreat ? "[&>div]:bg-rose-500" : "[&>div]:bg-indigo-500")} />
+                  <Progress value={nuclei.threatLevel} className={cn("h-2 bg-muted dark:bg-foreground/50", isHighThreat ? "[&>div]:bg-destructive" : "[&>div]:bg-primary")} />
                 </div>
 
-                <div className="pt-2 border-t border-slate-50 dark:border-slate-800">
+                <div className="pt-2 border-t border-border/50 dark:border-foreground/50">
                   <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-2">Inhibited Findings</p>
                   <div className="flex flex-wrap gap-1.5">
                     {nuclei.findings.map(f => (
@@ -97,7 +97,7 @@ const BrainstemToneMap = ({ priorityPattern, activeFilter, onSelectNuclei }: Bra
                         {f}
                       </Badge>
                     ))}
-                    {nuclei.findings.length === 0 && <span className="text-[8px] text-slate-300 italic">None detected</span>}
+                    {nuclei.findings.length === 0 && <span className="text-[8px] text-muted-foreground/60 italic">None detected</span>}
                   </div>
                 </div>
               </CardContent>
@@ -106,10 +106,10 @@ const BrainstemToneMap = ({ priorityPattern, activeFilter, onSelectNuclei }: Bra
         })}
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 bg-muted/50 dark:bg-foreground/50 rounded-2xl border border-border/50 dark:border-foreground/50">
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
-            <Workflow size={20} className="text-white" />
+          <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
+            <Workflow size={20} className="text-primary-foreground" />
           </div>
           <p className="text-xs text-muted-foreground font-medium max-w-md leading-relaxed">
             {activeFilter 
@@ -122,7 +122,7 @@ const BrainstemToneMap = ({ priorityPattern, activeFilter, onSelectNuclei }: Bra
             variant="ghost" 
             size="sm" 
             onClick={() => onSelectNuclei?.(null)}
-            className="h-9 px-4 text-[10px] font-black uppercase tracking-widest text-rose-600 hover:bg-rose-50 rounded-xl border border-rose-100"
+            className="h-9 px-4 text-[10px] font-black uppercase tracking-widest text-destructive hover:bg-destructive/5 rounded-xl border border-destructive/20"
           >
             <FilterX size={14} className="mr-2" /> Clear Filter
           </Button>

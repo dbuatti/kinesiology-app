@@ -19,14 +19,14 @@ const SectionHeader = ({ icon: Icon, title, color }: { icon: ElementType, title:
 const FnTheory = () => {
   return (
     <div className="space-y-12">
-      <Card className="border-none shadow-2xl rounded-[3.5rem] bg-slate-900 text-white overflow-hidden relative">
+      <Card className="border-none shadow-2xl rounded-[3.5rem] bg-foreground text-primary-foreground overflow-hidden relative">
         <div className="absolute top-0 right-0 p-12 opacity-5"><Workflow size={200} /></div>
         <CardHeader className="p-12 relative z-10">
           <div className="flex items-center gap-5 mb-4">
-            <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20"><GitBranch size={32} className="text-indigo-400" /></div>
+            <div className="w-16 h-16 bg-card/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-primary-foreground/20"><GitBranch size={32} className="text-indigo-400" /></div>
             <div>
               <CardTitle className="text-4xl font-black tracking-tight">Functional Neuro Approach</CardTitle>
-              <CardDescription className="text-slate-400 text-xl font-medium mt-2">
+              <CardDescription className="text-muted-foreground text-xl font-medium mt-2">
                 The Hierarchy of Clinical Integration
               </CardDescription>
             </div>
@@ -38,11 +38,11 @@ const FnTheory = () => {
       <div className="space-y-8">
         <div className="px-2">
           <SectionHeader icon={Baby} title="Primitive Reflex Hierarchy" color="text-indigo-600" />
-          <p className="text-slate-500 font-medium mt-2 text-lg">The "Safe Mode" of the nervous system. These foundational patterns must be integrated for higher-level work to stick.</p>
+          <p className="text-muted-foreground font-medium mt-2 text-lg">The "Safe Mode" of the nervous system. These foundational patterns must be integrated for higher-level work to stick.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-900 text-white overflow-hidden relative">
+          <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-900 text-primary-foreground overflow-hidden relative">
             <div className="absolute top-0 right-0 p-6 opacity-10"><ShieldCheck size={100} /></div>
             <CardHeader>
               <CardTitle className="text-xl font-black flex items-center gap-2">
@@ -53,7 +53,7 @@ const FnTheory = () => {
               <p className="text-sm text-indigo-100 leading-relaxed">
                 "The nervous system works in fractal patterns. If you correct the highest level reflex, you can knock out 3-4 others in one go."
               </p>
-              <div className="p-4 bg-white/10 rounded-2xl border border-white/10">
+              <div className="p-4 bg-card/10 rounded-2xl border border-primary-foreground/10">
                 <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-2">Master Chain</p>
                 <div className="flex items-center gap-2 text-sm font-bold">
                   <span>Fear Paralysis</span>
@@ -66,16 +66,16 @@ const FnTheory = () => {
             </CardContent>
           </Card>
 
-          <Card className="lg:col-span-2 border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
-            <CardHeader className="bg-slate-50 p-8">
-              <h4 className="font-black text-slate-900 uppercase tracking-widest text-xs">Clinical Significance</h4>
+          <Card className="lg:col-span-2 border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+            <CardHeader className="bg-muted/50 p-8">
+              <h4 className="font-black text-foreground uppercase tracking-widest text-xs">Clinical Significance</h4>
             </CardHeader>
             <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <h5 className="font-bold text-indigo-600 flex items-center gap-2">
                   <Brain size={16} /> Cognitive & Emotional
                 </h5>
-                <p className="text-xs text-slate-600 leading-relaxed">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   Movement development equals cognitive development. Retained reflexes disorganize the ANS into permanent fight-flight or freeze states.
                 </p>
               </div>
@@ -83,7 +83,7 @@ const FnTheory = () => {
                 <h5 className="font-bold text-rose-600 flex items-center gap-2">
                   <Activity size={16} /> Postural Load
                 </h5>
-                <p className="text-xs text-slate-600 leading-relaxed">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   Posture equals brain function. Retained reflexes create a massive "neural load," forcing the system to compensate constantly.
                 </p>
               </div>
@@ -95,25 +95,25 @@ const FnTheory = () => {
       <MotorControlHierarchy />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
-          <CardHeader className="bg-blue-50 p-8">
-            <SectionHeader icon={Brain} title="Mechanoreceptive Conscious" color="text-blue-600" />
+        <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+          <CardHeader className="bg-primary/5 p-8">
+            <SectionHeader icon={Brain} title="Mechanoreceptive Conscious" color="text-primary" />
             <p className="text-blue-800 font-medium">Targets the DCML pathway (15% of afferent input) to the contralateral sensory cortex (S1).</p>
           </CardHeader>
           <CardContent className="p-8 space-y-6">
-             <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                <p className="text-xs font-bold text-slate-700">Protocol: Isometric contraction (30-40% effort) for 30-90 seconds with nasal breathing.</p>
+             <div className="p-4 bg-muted/50 rounded-2xl border border-border/50">
+                <p className="text-xs font-bold text-foreground/80">Protocol: Isometric contraction (30-40% effort) for 30-90 seconds with nasal breathing.</p>
              </div>
           </CardContent>
         </Card>
-        <Card className="border-none shadow-lg rounded-[2.5rem] bg-white overflow-hidden">
+        <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
           <CardHeader className="bg-emerald-50 p-8">
             <SectionHeader icon={Activity} title="Mechanoreceptive Unconscious" color="text-emerald-600" />
             <p className="text-emerald-800 font-medium">Targets spinocerebellar tracts (85% of afferent input) to the cerebellum.</p>
           </CardHeader>
           <CardContent className="p-8 space-y-6">
-             <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                <p className="text-xs font-bold text-slate-700">Protocol: Stretch priority ligament/tendon while holding GV16. Apply tuning fork or tap for 3-5s.</p>
+             <div className="p-4 bg-muted/50 rounded-2xl border border-border/50">
+                <p className="text-xs font-bold text-foreground/80">Protocol: Stretch priority ligament/tendon while holding GV16. Apply tuning fork or tap for 3-5s.</p>
              </div>
           </CardContent>
         </Card>

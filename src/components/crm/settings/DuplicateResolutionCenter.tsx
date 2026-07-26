@@ -390,7 +390,7 @@ const DuplicateResolutionCenter = () => {
                   description: `This will automatically merge ALL ${detectedDuplicates.length} duplicate groups into their primary profiles. This is a bulk operation. Are you sure you want to proceed?`
                 })}
                 disabled={merging}
-                className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl h-10 px-4 font-black text-[10px] uppercase tracking-widest shadow-lg"
+                className="bg-amber-600 hover:bg-amber-700 text-primary-foreground rounded-xl h-10 px-4 font-black text-[10px] uppercase tracking-widest shadow-lg"
               >
                 {merging ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 size={14} className="mr-1.5" />}
                 Auto-Merge All ({detectedDuplicates.length})

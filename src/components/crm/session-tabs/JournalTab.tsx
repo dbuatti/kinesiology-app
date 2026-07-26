@@ -178,7 +178,7 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
           <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-[0.3em] flex items-center gap-2">
             <History size={16} /> Session Journal History
           </h3>
-          <Badge variant="secondary" className="bg-slate-100 text-muted-foreground border-none font-bold">
+          <Badge variant="secondary" className="bg-muted text-muted-foreground border-none font-bold">
             {reflections.length} Entries
           </Badge>
         </div>
@@ -201,15 +201,15 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
                         </Badge>
                       )}
                     </div>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-slate-200 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all" onClick={() => setDeleteTargetId(ref.id)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground/60 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all" onClick={() => setDeleteTargetId(ref.id)}>
                       <Trash2 size={14} />
                     </Button>
                   </div>
                   
-                  <p className="text-sm font-medium text-slate-700 leading-relaxed italic">"{ref.content}"</p>
+                  <p className="text-sm font-medium text-foreground/80 leading-relaxed italic">"{ref.content}"</p>
 
                   {ref.ai_extractions?.length > 0 && (
-                    <div className="pt-4 border-t border-slate-50 flex flex-wrap gap-2">
+                    <div className="pt-4 border-t border-border/30 flex flex-wrap gap-2">
                       {ref.ai_extractions.map((ext: any, i: number) => (
                         <Badge key={i} variant="outline" className={cn(
                           "text-[8px] font-medium uppercase tracking-widest px-2 py-0.5 rounded-md border-none",

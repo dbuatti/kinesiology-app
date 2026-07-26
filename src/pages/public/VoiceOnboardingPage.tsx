@@ -102,7 +102,7 @@ const VoiceOnboardingPage = () => {
         <div className="h-2 bg-gradient-to-r from-rose-400 to-rose-600" />
         <div className="p-10">
           <div className="flex items-center gap-4 mb-8">
-            <div className="w-14 h-14 rounded-2xl bg-rose-500 text-white flex items-center justify-center shadow-lg">
+            <div className="w-14 h-14 rounded-2xl bg-rose-500 text-primary-foreground flex items-center justify-center shadow-lg">
               <Mic size={26} />
             </div>
             <div>
@@ -189,7 +189,7 @@ const VoiceOnboardingPage = () => {
               disabled={submitting || !studentName.trim()}
               className={cn(
                 "w-full h-14 rounded-[1.5rem] font-black text-sm uppercase tracking-widest gap-2 transition-all",
-                "bg-rose-500 hover:bg-rose-600 text-white shadow-xl shadow-rose-200"
+                "bg-rose-500 hover:bg-rose-600 text-primary-foreground shadow-xl shadow-rose-200"
               )}
             >
               {submitting ? (

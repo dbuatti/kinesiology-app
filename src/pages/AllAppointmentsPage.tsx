@@ -100,7 +100,7 @@ const AllAppointmentsPage = () => {
     const colors: Record<string, string> = {
       Scheduled: "bg-chart-primary/10 text-chart-primary border-chart-primary/20",
       Completed: "bg-emerald-100 text-emerald-700 border-emerald-200",
-      Cancelled: "bg-red-100 text-red-700 border-red-200",
+      Cancelled: "bg-red-100 text-red-700 border-destructive/20",
       "No Show": "bg-amber-100 text-amber-700 border-amber-200",
       AP: "bg-muted text-muted-foreground border-border",
     };

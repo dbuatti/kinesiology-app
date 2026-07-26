@@ -42,10 +42,10 @@ const MuscleTestingFilters = ({
     <div className="space-y-4">
       <div className="flex flex-col md:flex-row gap-4 items-center">
         <div className="relative flex-1 w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
           <Input 
             placeholder="Search muscles (e.g. Psoas, Deltoid)..." 
-            className="pl-12 bg-white border-slate-200 h-12 rounded-2xl shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
+            className="pl-12 bg-card border-border h-12 rounded-2xl shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -53,7 +53,7 @@ const MuscleTestingFilters = ({
         
         <div className="w-full md:w-64">
           <Select value={meridianFilter} onValueChange={setMeridianFilter}>
-            <SelectTrigger className="h-12 rounded-2xl border-slate-200 bg-white font-bold text-slate-600">
+            <SelectTrigger className="h-12 rounded-2xl border-border bg-card font-bold text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Layers size={16} className="text-indigo-500" />
                 <SelectValue placeholder="Filter by Meridian" />
@@ -72,14 +72,14 @@ const MuscleTestingFilters = ({
 
         <Button 
           variant="outline" 
-          className="w-full md:w-auto rounded-xl h-12 px-6 border-slate-200 font-bold text-slate-600"
+          className="w-full md:w-auto rounded-xl h-12 px-6 border-border font-bold text-muted-foreground"
           onClick={onToggleAllGroups}
         >
           {isAllExpanded ? "Collapse All" : "Expand All"}
         </Button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-6 px-4 py-3 bg-slate-50 rounded-2xl border border-slate-100">
+      <div className="flex flex-wrap items-center gap-6 px-4 py-3 bg-muted/50 rounded-2xl border border-border/50">
         <div className="flex items-center space-x-2">
           <Switch 
             id="show-tested" 
@@ -87,7 +87,7 @@ const MuscleTestingFilters = ({
             onCheckedChange={setShowOnlyTested} 
             className="data-[state=checked]:bg-indigo-600"
           />
-          <Label htmlFor="show-tested" className="text-xs font-bold text-slate-600 cursor-pointer flex items-center gap-1.5">
+          <Label htmlFor="show-tested" className="text-xs font-bold text-muted-foreground cursor-pointer flex items-center gap-1.5">
             <Eye size={14} className="text-indigo-500" /> Show Only Tested
           </Label>
         </div>
@@ -98,7 +98,7 @@ const MuscleTestingFilters = ({
             onCheckedChange={setShowOnlyDysfunctional} 
             className="data-[state=checked]:bg-rose-600"
           />
-          <Label htmlFor="show-dysfunctional" className="text-xs font-bold text-slate-600 cursor-pointer flex items-center gap-1.5">
+          <Label htmlFor="show-dysfunctional" className="text-xs font-bold text-muted-foreground cursor-pointer flex items-center gap-1.5">
             <AlertTriangle size={14} className="text-rose-500" /> Show Only Dysfunctional
           </Label>
         </div>

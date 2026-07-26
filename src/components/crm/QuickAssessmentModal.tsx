@@ -73,13 +73,13 @@ const QuickAssessmentModal = ({
       <DialogContent className="sm:max-w-[500px] rounded-[2rem]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-black flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white ${type === 'bolt' ? 'bg-indigo-600' : 'bg-rose-600'}`}>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-primary-foreground ${type === 'bolt' ? 'bg-indigo-600' : 'bg-rose-600'}`}>
               {type === 'bolt' ? <FlaskConical size={24} /> : <Activity size={24} />}
             </div>
             Quick {type === 'bolt' ? 'BOLT' : 'Coherence'} Test
           </DialogTitle>
           <DialogDescription className="font-medium">
-            Performing assessment for <span className="text-slate-900 font-bold">{clientName}</span>. This will create a new record in the client's history.
+            Performing assessment for <span className="text-foreground font-bold">{clientName}</span>. This will create a new record in the client's history.
           </DialogDescription>
         </DialogHeader>
 
@@ -100,7 +100,7 @@ const QuickAssessmentModal = ({
                 onUpdate={() => {}}
                 onSave={(data) => handleSaveResult(data)}
               />
-              <p className="text-[10px] text-slate-400 text-center italic">
+              <p className="text-[10px] text-muted-foreground text-center italic">
                 Note: Use the "Save Result" button inside the tool to log the findings.
               </p>
             </div>

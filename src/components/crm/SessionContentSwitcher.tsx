@@ -259,7 +259,7 @@ const SessionContentSwitcher = ({
                   </div>
                   <NeurologicalHistoryTracker appointments={history.length > 0 ? history : [appointment]} />
               </div>
-              <div className="h-px bg-slate-100 dark:bg-slate-800" />
+              <div className="h-px bg-muted dark:bg-foreground" />
               <PreviousSessionSummary 
                 previousSession={history.length > 1 ? history[1] : null}
                 clientId={appointment.clients.id}
@@ -274,7 +274,7 @@ const SessionContentSwitcher = ({
 
         {/* CLONE PREVIEW DIALOG */}
         <Dialog open={cloneDialogOpen} onOpenChange={setCloneDialogOpen}>
-          <DialogContent className="sm:max-w-[550px] rounded-xl p-0 overflow-hidden border-none shadow-3xl bg-white">
+          <DialogContent className="sm:max-w-[550px] rounded-xl p-0 overflow-hidden border-none shadow-3xl bg-card">
             <div className="p-10 space-y-8">
               <DialogHeader>
                 <div className="flex items-center gap-4 mb-2">
@@ -302,10 +302,10 @@ const SessionContentSwitcher = ({
 
         {/* QUICK NOTE DIALOG */}
         <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
-          <DialogContent className="w-[95vw] max-w-5xl rounded-xl p-0 overflow-visible border-none shadow-3xl bg-white dark:bg-slate-950">
+          <DialogContent className="w-[95vw] max-w-5xl rounded-xl p-0 overflow-visible border-none shadow-3xl bg-card dark:bg-foreground">
             <div className="p-12 md:p-20 relative flex flex-col h-[85vh] overflow-visible">
               <div className="absolute top-10 right-10 z-50">
-                <Button variant="ghost" size="icon" onClick={() => setNoteDialogOpen(false)} className="h-12 w-12 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-all">
+                <Button variant="ghost" size="icon" onClick={() => setNoteDialogOpen(false)} className="h-12 w-12 text-muted-foreground hover:text-rose-500 hover:bg-rose-50 rounded-full transition-all">
                   <X size={28} />
                 </Button>
               </div>
@@ -318,7 +318,7 @@ const SessionContentSwitcher = ({
                   <p className="text-muted-foreground font-medium text-xl mt-2">Capture observations and insights in real-time.</p>
                 </div>
               </div>
-              <div className="flex-1 overflow-visible bg-slate-50 dark:bg-slate-900/50 rounded-xl p-10 border border-slate-100 dark:border-slate-800">
+              <div className="flex-1 overflow-visible bg-muted/50 dark:bg-foreground/50 rounded-xl p-10 border border-border/50 border-border/50">
                 <EditableField 
                   field="notes" 
                   label="General Session Notes" 

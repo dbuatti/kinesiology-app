@@ -140,7 +140,7 @@ const IdentitySmartTool = () => {
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
       <div className="lg:col-span-7 space-y-8">
         <div className="flex items-center gap-4 px-2">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg">
+          <div className="w-10 h-10 rounded-xl bg-indigo-600 text-primary-foreground flex items-center justify-center shadow-lg">
             <Brain size={20} />
           </div>
           <div>
@@ -150,7 +150,7 @@ const IdentitySmartTool = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-8">
-          <Card className="border-none shadow-xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden relative group">
+          <Card className="border-none shadow-xl rounded-[2.5rem] bg-foreground text-primary-foreground overflow-hidden relative group">
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-transparent" />
             <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
               <Sparkles size={100} />
@@ -159,18 +159,18 @@ const IdentitySmartTool = () => {
               {smartSuggestion ? (
                 <>
                   <div className="space-y-2">
-                    <Badge className="bg-indigo-500 text-white border-none font-black text-[9px] uppercase tracking-[0.3em] px-4 py-1 rounded-full shadow-lg">
+                    <Badge className="bg-indigo-500 text-primary-foreground border-none font-black text-[9px] uppercase tracking-[0.3em] px-4 py-1 rounded-full shadow-lg">
                       Follow-up Suggestion
                     </Badge>
                     <h3 className="text-3xl font-serif font-bold tracking-tight leading-tight">
                       Have you really worked through <span className="text-indigo-400 italic">"{smartSuggestion.label}"</span>?
                     </h3>
-                    <p className="text-sm text-slate-400 font-medium">Last processed {smartSuggestion.daysAgo} days ago.</p>
+                    <p className="text-sm text-muted-foreground font-medium">Last processed {smartSuggestion.daysAgo} days ago.</p>
                   </div>
                   <div className="flex gap-4">
                     <Button 
                       asChild
-                      className="bg-white text-slate-900 hover:bg-indigo-50 h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl transition-all hover:scale-105"
+                      className="bg-card text-foreground hover:bg-indigo-50 h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl transition-all hover:scale-105"
                     >
                       <Link to={smartSuggestion.type === 'alignment' ? "/identity-alignment" : "/identity-shifting"} state={{ prefill: smartSuggestion.label }}>
                         {smartSuggestion.type === 'alignment' ? 'Align Again' : 'Shift Again'}
@@ -179,7 +179,7 @@ const IdentitySmartTool = () => {
                     <Button 
                       asChild
                       variant="outline"
-                      className="bg-transparent border-white/20 text-white hover:bg-white/10 h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest transition-all"
+                      className="bg-transparent border-primary-foreground/20 text-primary-foreground hover:bg-card/10 h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest transition-all"
                     >
                        <Link to="/identity-map">View Map</Link>
                     </Button>
@@ -187,10 +187,10 @@ const IdentitySmartTool = () => {
                 </>
               ) : (
                 <div className="flex flex-col items-center justify-center text-center py-6 space-y-6">
-                  <div className="w-16 h-16 rounded-[1.5rem] bg-white/10 flex items-center justify-center text-indigo-400 shadow-inner">
+                  <div className="w-16 h-16 rounded-[1.5rem] bg-card/10 flex items-center justify-center text-indigo-400 shadow-inner">
                     <CheckCircle2 size={32} />
                   </div>
-                  <p className="text-lg font-bold text-slate-300">Your identity work is up to date. No immediate follow-ups detected.</p>
+                  <p className="text-lg font-bold text-muted-foreground/60">Your identity work is up to date. No immediate follow-ups detected.</p>
                 </div>
               )}
             </CardContent>
@@ -237,7 +237,7 @@ const IdentitySmartTool = () => {
       <div className="lg:col-span-5 space-y-8">
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 rounded-xl bg-amber-500 text-primary-foreground flex items-center justify-center shadow-lg">
               <Zap size={20} />
             </div>
             <h2 className="text-2xl font-black text-foreground tracking-tight">Backlog</h2>
@@ -283,7 +283,7 @@ const IdentitySmartTool = () => {
                 <Button 
                   type="submit" 
                   disabled={isAdding || !newContent.trim()}
-                  className="h-12 w-12 rounded-xl bg-amber-500 hover:bg-amber-600 text-white shadow-lg shrink-0 transition-all hover:scale-105"
+                  className="h-12 w-12 rounded-xl bg-amber-500 hover:bg-amber-600 text-primary-foreground shadow-lg shrink-0 transition-all hover:scale-105"
                 >
                   {isAdding ? <Loader2 className="animate-spin" size={20} /> : <Plus size={24} />}
                 </Button>
@@ -305,7 +305,7 @@ const IdentitySmartTool = () => {
                            item.type === 'alignment' ? <Target size={16} /> : <Fingerprint size={16} />}
                         </div>
                         {item.priority_score > 0 && (
-                          <div className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[7px] font-black border-2 border-background shadow-sm">
+                          <div className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-indigo-600 text-primary-foreground flex items-center justify-center text-[7px] font-black border-2 border-background shadow-sm">
                             {item.priority_score}
                           </div>
                         )}
@@ -315,7 +315,7 @@ const IdentitySmartTool = () => {
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="h-8 w-8 rounded-xl text-slate-300 hover:text-indigo-600 shrink-0 transition-all"
+                      className="h-8 w-8 rounded-xl text-muted-foreground/60 hover:text-indigo-600 shrink-0 transition-all"
                       asChild
                     >
                        <Link to={item.type === 'shifting' ? "/identity-shifting" : item.type === 'alignment' ? "/identity-alignment" : "/limiting-beliefs"} state={{ prefill: item.content, backlogId: item.id }}>
@@ -329,7 +329,7 @@ const IdentitySmartTool = () => {
                   <div className="w-16 h-16 rounded-[1.5rem] bg-muted flex items-center justify-center text-muted-foreground/30 shadow-inner">
                     <CheckCircle2 size={32} />
                   </div>
-                  <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">No pending items.</p>
+                  <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest">No pending items.</p>
                 </div>
               )}
             </div>

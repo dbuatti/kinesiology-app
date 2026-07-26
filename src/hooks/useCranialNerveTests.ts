@@ -83,21 +83,41 @@ export function useCranialNerveTests(
         setTests(prev => prev.map(t => ({ ...t, is_primary_priority: false })));
       }
 
-      const { data, error } = await supabase
+      const { data: existing } = await supabase
         .from('cranial_nerve_tests')
-        .upsert({
-          ...updates,
-          appointment_id: appointmentId,
-          nerve_id: nerveId,
-          user_id: userData.user.id,
-          updated_at: new Date().toISOString()
-        }, { 
-          onConflict: 'appointment_id,nerve_id' 
-        })
-        .select()
-        .single();
+        .select('id')
+        .eq('appointment_id', appointmentId)
+        .eq('nerve_id', nerveId)
+        .maybeSingle();
 
-      if (error) throw error;
+      let data: CranialNerveTest | null = null;
+
+      if (existing) {
+        const { data: updated, error: updateErr } = await supabase
+          .from('cranial_nerve_tests')
+          .update({ ...updates, updated_at: new Date().toISOString() })
+          .eq('id', existing.id)
+          .select()
+          .single();
+        if (updateErr) throw updateErr;
+        data = updated;
+      } else {
+        const { data: inserted, error: insertErr } = await supabase
+          .from('cranial_nerve_tests')
+          .insert({
+            ...updates,
+            appointment_id: appointmentId,
+            nerve_id: nerveId,
+            user_id: userData.user.id,
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+        if (insertErr) throw insertErr;
+        data = inserted;
+      }
+
+      if (!data) throw new Error("No data returned");
 
       setTests(prev => {
         const exists = prev.some(t => t.id === data.id);

@@ -124,7 +124,7 @@ const ReflexImageZone = ({
       onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
       className={cn(
         "relative group/image transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none cursor-pointer flex-1 aspect-video",
-        currentUrl ? "bg-white" : "bg-slate-50 hover:bg-slate-100",
+        currentUrl ? "bg-card" : "bg-muted/50 hover:bg-muted",
         isDragging && "bg-indigo-50 ring-2 ring-indigo-500 ring-inset",
         isUploading && "opacity-50 pointer-events-none"
       )}
@@ -148,7 +148,7 @@ const ReflexImageZone = ({
             alt="Reflex Reference" 
             className="w-full h-full object-cover" 
           />
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center gap-2">
+          <div className="absolute inset-0 bg-foreground/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center gap-2">
             <div className="flex flex-col items-center gap-2">
               <div className="flex gap-2">
                 <Button variant="secondary" size="icon" className="rounded-xl h-8 w-8 shadow-lg">
@@ -158,7 +158,7 @@ const ReflexImageZone = ({
                   <X size={14} />
                 </Button>
               </div>
-              <p className="text-[8px] font-black text-white uppercase tracking-widest">Click to Change</p>
+              <p className="text-[8px] font-black text-primary-foreground uppercase tracking-widest">Click to Change</p>
             </div>
           </div>
         </>
@@ -169,12 +169,12 @@ const ReflexImageZone = ({
           ) : (
             <>
               <div className={cn(
-                "rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center mx-auto text-slate-400 group-hover/image:text-indigo-600 group-hover/image:scale-110 transition-all",
+                "rounded-xl bg-card shadow-sm border border-border/50 flex items-center justify-center mx-auto text-muted-foreground group-hover/image:text-indigo-600 group-hover/image:scale-110 transition-all",
                 isPrimary ? "w-12 h-12" : "w-8 h-8"
               )}>
                 <Plus size={24} />
               </div>
-              <p className="font-black text-slate-500 uppercase tracking-widest text-[8px]">
+              <p className="font-black text-muted-foreground uppercase tracking-widest text-[8px]">
                 {type === 'primary' ? "Add Main Image" : "Add Secondary"}
               </p>
             </>

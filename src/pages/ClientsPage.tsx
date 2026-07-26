@@ -176,7 +176,7 @@ const ClientsPage = () => {
             </div>
             <p className="text-foreground font-black text-xl">No clients yet</p>
             <p className="text-muted-foreground mt-2 mb-8 font-medium">Add your first client to start building your clinical database.</p>
-            <Button className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 rounded-2xl font-bold text-white" onClick={() => setOpen(true)}>
+            <Button className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 rounded-2xl font-bold text-primary-foreground" onClick={() => setOpen(true)}>
               <Plus size={18} className="mr-2" /> Add First Client
             </Button>
           </div>

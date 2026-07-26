@@ -14,7 +14,7 @@ const NewInfoBadge = ({ submittedAt, className = "" }: { submittedAt?: string | 
   return (
     <span
       title={`Onboarding submitted ${submittedAt ? new Date(submittedAt).toLocaleDateString() : ""}`}
-      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-500 text-white text-[9px] font-black uppercase tracking-wider shadow-sm ${className}`}
+      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-500 text-primary-foreground text-[9px] font-black uppercase tracking-wider shadow-sm ${className}`}
     >
       <Sparkles size={9} /> New
     </span>

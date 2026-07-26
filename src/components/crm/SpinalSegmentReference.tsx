@@ -29,10 +29,10 @@ const SpinalSegmentReference = () => {
   return (
     <div className="space-y-6">
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
         <Input 
           placeholder="Search by segment (C1), muscle (Psoas), or organ (Kidney)..." 
-          className="pl-12 bg-white border-slate-200 rounded-2xl h-14 shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
+          className="pl-12 bg-card border-border rounded-2xl h-14 shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -44,8 +44,8 @@ const SpinalSegmentReference = () => {
           const meridian = muscleInfo.meridian;
 
           return (
-            <Card key={assoc.spinalSegment} className="border-none shadow-md rounded-[2rem] bg-white hover:shadow-xl transition-all group overflow-hidden">
-              <CardHeader className="pb-3 bg-slate-50/50 border-b border-slate-100">
+            <Card key={assoc.spinalSegment} className="border-none shadow-md rounded-[2rem] bg-card hover:shadow-xl transition-all group overflow-hidden">
+              <CardHeader className="pb-3 bg-muted/50 border-b border-border/50">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <div className="flex gap-2 mb-2">
@@ -58,11 +58,11 @@ const SpinalSegmentReference = () => {
                         </Badge>
                       )}
                     </div>
-                    <CardTitle className="text-3xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
+                    <CardTitle className="text-3xl font-black text-foreground group-hover:text-indigo-600 transition-colors">
                       {assoc.spinalSegment}
                     </CardTitle>
                   </div>
-                  <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border border-slate-100 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                  <div className="w-12 h-12 rounded-2xl bg-card shadow-sm border border-border/50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-primary-foreground transition-all">
                     <Move size={24} />
                   </div>
                 </div>
@@ -89,11 +89,11 @@ const SpinalSegmentReference = () => {
                     )}
                   </button>
                   
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                  <div className="p-4 bg-muted/50 rounded-2xl border border-border/50">
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1 flex items-center gap-1">
                       <Activity size={12} /> Organ / Gland
                     </p>
-                    <p className="text-lg font-black text-slate-900">{assoc.organ}</p>
+                    <p className="text-lg font-black text-foreground">{assoc.organ}</p>
                   </div>
                 </div>
                 
@@ -116,12 +116,12 @@ const SpinalSegmentReference = () => {
       </div>
 
       {filteredAssociations.length === 0 && (
-        <div className="text-center py-32 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
-          <div className="mx-auto w-20 h-20 bg-white rounded-3xl flex items-center justify-center mb-6 shadow-xl">
-            <Search size={40} className="text-slate-300" />
+        <div className="text-center py-32 bg-muted/50 rounded-[3rem] border-2 border-dashed border-border">
+          <div className="mx-auto w-20 h-20 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-xl">
+            <Search size={40} className="text-muted-foreground/60" />
           </div>
-          <h3 className="text-xl font-black text-slate-900">No associations found</h3>
-          <p className="text-slate-500 mt-2">Try searching for a different segment, muscle, or organ.</p>
+          <h3 className="text-xl font-black text-foreground">No associations found</h3>
+          <p className="text-muted-foreground mt-2">Try searching for a different segment, muscle, or organ.</p>
         </div>
       )}
 

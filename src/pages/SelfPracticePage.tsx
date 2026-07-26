@@ -204,7 +204,7 @@ const SelfPracticePage = () => {
 
  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
  <div className="flex items-center gap-4">
- <div className="w-12 h-12 bg-destructive rounded-xl flex items-center justify-center text-white shadow-sm">
+ <div className="w-12 h-12 bg-destructive rounded-xl flex items-center justify-center text-primary-foreground shadow-sm">
  <Heart size={32} className="fill-current" />
  </div>
  <div>
@@ -297,7 +297,7 @@ const SelfPracticePage = () => {
  </Card>
 
  <div className="space-y-6">
- <Card className="border-none shadow-sm bg-card text-white rounded-3xl overflow-hidden relative">
+ <Card className="border-none shadow-sm bg-card text-primary-foreground rounded-3xl overflow-hidden relative">
  <div className="absolute top-0 right-0 p-8 opacity-10">
  <Sparkles size={120} />
  </div>
@@ -312,10 +312,10 @@ const SelfPracticePage = () => {
  <button
  key={p.name}
  onClick={() => handleNewSelfSession(p.goal)}
- className="w-full flex items-center justify-between p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all group"
+ className="w-full flex items-center justify-between p-3 bg-card/5 hover:bg-card/10 border border-primary-foreground/10 rounded-xl transition-all group"
  >
  <div className="flex items-center gap-3">
- <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm", p.color)}>
+ <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-primary-foreground shadow-sm", p.color)}>
  <p.icon size={20} />
  </div>
  <div className="text-left">
@@ -323,7 +323,7 @@ const SelfPracticePage = () => {
  <p className="text-[10px] text-muted-foreground/60">Practice Drill</p>
  </div>
  </div>
- <ArrowRight size={16} className="text-muted-foreground group-hover:text-white group-hover:translate-x-1 transition-all" />
+ <ArrowRight size={16} className="text-muted-foreground group-hover:text-primary-foreground group-hover:translate-x-1 transition-all" />
  </button>
  ))}
  </CardContent>

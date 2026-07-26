@@ -160,7 +160,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
           <CheckCircle2 size={40} className="text-emerald-500" />
         </div>
         <div className="space-y-2">
-          <h3 className="text-2xl font-bold text-foreground dark:text-white tracking-tight">
+          <h3 className="text-2xl font-bold text-foreground dark:text-primary-foreground tracking-tight">
             {createdClientName} added!
           </h3>
           <p className="text-sm text-muted-foreground font-medium">

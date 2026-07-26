@@ -47,8 +47,8 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         {/* Card 1: The Print Hub */}
         <Link to="/resources/print" className="block group h-full">
-          <Card className="h-full border-none shadow-2xl rounded-[2.5rem] bg-slate-950 text-white overflow-hidden relative cursor-pointer hover:shadow-indigo-500/10 hover:-translate-y-2 transition-all duration-700">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-slate-950 to-purple-900/40" />
+          <Card className="h-full border-none shadow-2xl rounded-[2.5rem] bg-foreground text-primary-foreground overflow-hidden relative cursor-pointer hover:shadow-indigo-500/10 hover:-translate-y-2 transition-all duration-700">
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-foreground to-purple-900/40" />
             <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity duration-700">
               <Printer size={100} />
             </div>
@@ -58,14 +58,14 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
                   Clinical Assets
                 </Badge>
                 <h2 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight leading-tight">The Print Hub</h2>
-                <p className="text-sm font-medium text-white/60 leading-relaxed">
+                <p className="text-sm font-medium text-primary-foreground/60 leading-relaxed">
                   Access all landscape-optimized reference sheets and worksheets.
                 </p>
               </div>
               <div className="flex items-center justify-between mt-8">
-                <span className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-widest text-slate-400">Central Hub</span>
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
-                  <ArrowRight size={20} className="text-white" />
+                <span className="px-3 py-1.5 rounded-xl bg-primary-foreground/5 border border-primary-foreground/10 text-[9px] font-black uppercase tracking-widest text-muted-foreground">Central Hub</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-primary-foreground/20 backdrop-blur-md flex items-center justify-center border border-primary-foreground/30 shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
+                  <ArrowRight size={20} className="text-primary-foreground" />
                 </div>
               </div>
             </CardContent>
@@ -74,21 +74,21 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
 
         {/* Card 2: FNH Ref App */}
         <a href="https://fnhrefapp-ggs6ojfk.manus.space/brain-zones" target="_blank" rel="noopener noreferrer" className="block group h-full">
-          <Card className="h-full border-none shadow-2xl rounded-[3rem] bg-indigo-950 text-white overflow-hidden relative cursor-pointer hover:shadow-indigo-500/10 hover:-translate-y-2 transition-all duration-700">
+          <Card className="h-full border-none shadow-2xl rounded-[3rem] bg-indigo-950 text-primary-foreground overflow-hidden relative cursor-pointer hover:shadow-indigo-500/10 hover:-translate-y-2 transition-all duration-700">
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 to-transparent" />
             <div className="absolute top-0 right-0 p-6 opacity-20 transition-opacity duration-700">
               <Globe size={100} />
             </div>
             <CardContent className="p-6 sm:p-8 relative z-10 flex flex-col justify-between h-full min-h-[380px]">
               <div className="space-y-4">
-                <Badge className="bg-white/20 text-white border-white/30 font-black text-[9px] uppercase tracking-[0.3em] px-3 py-1.5 backdrop-blur-md rounded-full">Official App</Badge>
+                <Badge className="bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30 font-black text-[9px] uppercase tracking-[0.3em] px-3 py-1.5 backdrop-blur-md rounded-full">Official App</Badge>
                 <h2 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight leading-tight">FNH Ref App</h2>
-                <p className="text-sm font-medium text-white/60 leading-relaxed">The official reference application by Nick Moss for brain zones.</p>
+                <p className="text-sm font-medium text-primary-foreground/60 leading-relaxed">The official reference application by Nick Moss for brain zones.</p>
               </div>
               <div className="flex items-center justify-between mt-8">
-                <span className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-widest text-slate-400">External</span>
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
-                  <ExternalLink size={20} className="text-white" />
+                <span className="px-3 py-1.5 rounded-xl bg-primary-foreground/5 border border-primary-foreground/10 text-[9px] font-black uppercase tracking-widest text-muted-foreground">External</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-primary-foreground/10 backdrop-blur-md flex items-center justify-center border border-primary-foreground/30 shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
+                  <ExternalLink size={20} className="text-primary-foreground" />
                 </div>
               </div>
             </CardContent>
@@ -97,21 +97,21 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
 
         {/* Card 3: My Study Videos */}
         <a href="https://kin-videos.vercel.app/" target="_blank" rel="noopener noreferrer" className="block group h-full">
-          <Card className="h-full border-none shadow-2xl rounded-[3rem] bg-indigo-600 text-white overflow-hidden relative cursor-pointer hover:shadow-indigo-500/10 hover:-translate-y-2 transition-all duration-700">
+          <Card className="h-full border-none shadow-2xl rounded-[3rem] bg-indigo-600 text-primary-foreground overflow-hidden relative cursor-pointer hover:shadow-indigo-500/10 hover:-translate-y-2 transition-all duration-700">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.15),transparent_50%)]" />
             <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity duration-700">
               <GraduationCap size={100} />
             </div>
             <CardContent className="p-6 sm:p-8 relative z-10 flex flex-col justify-between h-full min-h-[380px]">
               <div className="space-y-4">
-                <Badge className="bg-white/20 text-white border-white/30 font-black text-[9px] uppercase tracking-[0.3em] px-3 py-1.5 backdrop-blur-sm rounded-full">Regular Access</Badge>
+                <Badge className="bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30 font-black text-[9px] uppercase tracking-[0.3em] px-3 py-1.5 backdrop-blur-sm rounded-full">Regular Access</Badge>
                 <h2 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight leading-tight">My Study Videos</h2>
-                <p className="text-sm font-medium text-white/80 leading-relaxed">Quick access to your personal technique reviews.</p>
+                <p className="text-sm font-medium text-primary-foreground/80 leading-relaxed">Quick access to your personal technique reviews.</p>
               </div>
               <div className="flex items-center justify-between mt-8">
-                <span className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-widest text-slate-300">Portal</span>
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
-                  <ExternalLink size={20} className="text-white" />
+                <span className="px-3 py-1.5 rounded-xl bg-primary-foreground/5 border border-primary-foreground/10 text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Portal</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-primary-foreground/20 backdrop-blur-md flex items-center justify-center border border-primary-foreground/30 shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
+                  <ExternalLink size={20} className="text-primary-foreground" />
                 </div>
               </div>
             </CardContent>
@@ -120,8 +120,8 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
 
         {/* Card 4: The PEACE Method */}
         <Link to="/peace-framework" className="block group h-full">
-          <Card className="h-full border-none shadow-2xl rounded-[3rem] bg-slate-900 text-white overflow-hidden relative cursor-pointer hover:shadow-indigo-500/10 hover:-translate-y-2 transition-all duration-700">
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-800/50 to-transparent" />
+          <Card className="h-full border-none shadow-2xl rounded-[3rem] bg-foreground text-primary-foreground overflow-hidden relative cursor-pointer hover:shadow-indigo-500/10 hover:-translate-y-2 transition-all duration-700">
+            <div className="absolute inset-0 bg-gradient-to-br bg-foreground/80 to-transparent" />
             <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity duration-700">
               <Workflow size={100} />
             </div>
@@ -129,16 +129,16 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
               <div className="space-y-4">
                 <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30 font-black text-[9px] uppercase tracking-[0.3em] px-3 py-1.5 backdrop-blur-sm rounded-full">Methodology</Badge>
                 <h2 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight leading-tight">The PEACE Method</h2>
-                <p className="text-sm font-medium text-slate-400 leading-relaxed">The central clinical hierarchy of Functional Neuro Health.</p>
+                <p className="text-sm font-medium text-muted-foreground leading-relaxed">The central clinical hierarchy of Functional Neuro Health.</p>
               </div>
               <div className="flex items-center justify-between mt-8 gap-2">
                 <div className="flex gap-1 flex-wrap">
                   {["P", "E", "A", "C", "E"].map((letter, idx) => (
-                    <span key={`${letter}-${idx}`} className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center font-black text-[9px] text-slate-400 border border-white/5">{letter}</span>
+                    <span key={`${letter}-${idx}`} className="w-6 h-6 rounded-full bg-primary-foreground/5 flex items-center justify-center font-black text-[9px] text-muted-foreground border border-primary-foreground/5">{letter}</span>
                   ))}
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-2xl group-hover:scale-110 transition-all duration-700 shrink-0">
-                  <ArrowRight size={20} className="text-white" />
+                <div className="w-10 h-10 rounded-xl bg-primary-foreground/10 backdrop-blur-md flex items-center justify-center border border-primary-foreground/20 shadow-2xl group-hover:scale-110 transition-all duration-700 shrink-0">
+                  <ArrowRight size={20} className="text-primary-foreground" />
                 </div>
               </div>
             </CardContent>
@@ -147,21 +147,21 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
 
         {/* Card 5: FNH Notion Manual */}
         <a href="https://functional-neuro-health.notion.site/Functional-Neuro-Health-The-PEACE-Method-28beacafb4a88026b9a9ccdefa4e1de9" target="_blank" rel="noopener noreferrer" className="block group h-full">
-          <Card className="h-full border-none shadow-2xl rounded-[3rem] bg-slate-900 text-white overflow-hidden relative cursor-pointer hover:shadow-indigo-500/10 hover:-translate-y-2 transition-all duration-700">
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-800/50 to-transparent" />
+          <Card className="h-full border-none shadow-2xl rounded-[3rem] bg-foreground text-primary-foreground overflow-hidden relative cursor-pointer hover:shadow-indigo-500/10 hover:-translate-y-2 transition-all duration-700">
+            <div className="absolute inset-0 bg-gradient-to-br bg-foreground/80 to-transparent" />
             <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity duration-700">
               <BookOpen size={100} />
             </div>
             <CardContent className="p-6 sm:p-8 relative z-10 flex flex-col justify-between h-full min-h-[380px]">
               <div className="space-y-4">
                 <Badge className="bg-amber-500/20 text-amber-200 border-amber-500/30 font-black text-[9px] uppercase tracking-[0.3em] px-3 py-1.5 backdrop-blur-sm rounded-full">External</Badge>
-                <h2 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight leading-tight text-slate-100">FNH Notion Manual</h2>
-                <p className="text-sm font-medium text-slate-400 leading-relaxed">Access the full external Notion database.</p>
+                <h2 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight leading-tight text-primary-foreground">FNH Notion Manual</h2>
+                <p className="text-sm font-medium text-muted-foreground leading-relaxed">Access the full external Notion database.</p>
               </div>
               <div className="flex items-center justify-between mt-8">
-                <span className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-widest text-slate-400">Notion</span>
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
-                  <ExternalLink size={20} className="text-white" />
+                <span className="px-3 py-1.5 rounded-xl bg-primary-foreground/5 border border-primary-foreground/10 text-[9px] font-black uppercase tracking-widest text-muted-foreground">Notion</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-primary-foreground/10 backdrop-blur-md flex items-center justify-center border border-primary-foreground/30 shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
+                  <ExternalLink size={20} className="text-primary-foreground" />
                 </div>
               </div>
             </CardContent>
@@ -214,7 +214,7 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
                       <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                         {isExternal ? 'Open External' : 'Open Tool'} 
                       </span>
-                      <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
+                      <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-indigo-600 group-hover:text-primary-foreground transition-all shadow-sm">
                         {isExternal ? <ExternalLink size={18} /> : <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />}
                       </div>
                     </div>
@@ -237,25 +237,25 @@ const ResourceHub = ({ categories }: ResourceHubProps) => {
       ))}
 
       {/* FOOTER PHILOSOPHY */}
-      <Card className="border-none shadow-2xl rounded-[4rem] bg-slate-900 text-white overflow-hidden relative">
+      <Card className="border-none shadow-2xl rounded-[4rem] bg-foreground text-primary-foreground overflow-hidden relative">
         <div className="absolute top-0 right-0 p-12 opacity-10"><Sparkles size={200} /></div>
         <CardContent className="p-16 md:p-24 flex flex-col md:flex-row items-center gap-16 relative z-10">
           <div className="w-32 h-32 rounded-[2.5rem] bg-indigo-600 flex items-center justify-center shrink-0 shadow-3xl shadow-indigo-500/40 animate-float">
-            <ShieldCheck size={64} className="text-white" />
+            <ShieldCheck size={64} className="text-primary-foreground" />
           </div>
           <div className="space-y-6 text-center md:text-left">
             <h4 className="text-4xl font-serif font-bold tracking-tight">The Clinical Standard</h4>
-            <p className="text-slate-400 font-medium text-xl leading-relaxed max-w-3xl">
+            <p className="text-muted-foreground font-medium text-xl leading-relaxed max-w-3xl">
               "Mastery is not the accumulation of knowledge, but the refinement of intuition. These resources are your map, but your presence is the compass."
             </p>
             <div className="flex flex-wrap justify-center md:justify-start gap-8 pt-4">
               <div className="flex items-center gap-3">
                 <CheckCircle2 size={24} className="text-emerald-400" />
-                <span className="text-sm font-bold text-slate-300 uppercase tracking-widest">Verified Protocols</span>
+                <span className="text-sm font-bold text-muted-foreground/60 uppercase tracking-widest">Verified Protocols</span>
               </div>
               <div className="flex items-center gap-3">
                 <CheckCircle2 size={24} className="text-emerald-400" />
-                <span className="text-sm font-bold text-slate-300 uppercase tracking-widest">Gold Standard v2.4</span>
+                <span className="text-sm font-bold text-muted-foreground/60 uppercase tracking-widest">Gold Standard v2.4</span>
               </div>
             </div>
           </div>

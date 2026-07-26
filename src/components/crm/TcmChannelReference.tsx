@@ -42,10 +42,10 @@ const TcmChannelReference = () => {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
           <Input 
             placeholder="Search channels (e.g. Lung, LV, Respiration)..." 
-            className="pl-12 bg-white border-slate-200 rounded-2xl h-14 shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
+            className="pl-12 bg-card border-border rounded-2xl h-14 shadow-sm font-medium focus:ring-2 focus:ring-indigo-500"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -58,7 +58,7 @@ const TcmChannelReference = () => {
               onClick={() => setSelectedElement(el)}
               className={cn(
                 "rounded-xl h-14 px-6 font-black text-[10px] uppercase tracking-widest whitespace-nowrap transition-all",
-                selectedElement === el ? "bg-slate-900 shadow-lg" : "border-slate-200 bg-white hover:bg-slate-50"
+                selectedElement === el ? "bg-foreground shadow-lg" : "border-border bg-card hover:bg-muted/50"
               )}
             >
               {el}
@@ -78,11 +78,11 @@ const TcmChannelReference = () => {
           );
 
           return (
-            <Card key={channel.id} className="border-none shadow-lg rounded-[2.5rem] bg-white hover:shadow-2xl transition-all group overflow-hidden">
+            <Card key={channel.id} className="border-none shadow-lg rounded-[2.5rem] bg-card hover:shadow-2xl transition-all group overflow-hidden">
               <CardHeader className={cn("pb-6 border-b transition-colors relative", channel.color)}>
                 {isPeak && (
                   <div className="absolute top-4 right-4 animate-pulse">
-                    <Badge className="bg-white text-slate-900 border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5">
+                    <Badge className="bg-card text-foreground border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5">
                       <Zap size={10} className="mr-1 fill-amber-400 text-amber-400" /> Peak Now
                     </Badge>
                   </div>
@@ -90,10 +90,10 @@ const TcmChannelReference = () => {
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <div className="flex gap-2 mb-2">
-                      <Badge className="bg-white/20 text-white border-none font-black text-[9px] uppercase tracking-widest">
+                      <Badge className="bg-card/20 text-primary-foreground border-none font-black text-[9px] uppercase tracking-widest">
                         {channel.element}
                       </Badge>
-                      <Badge className="bg-white/20 text-white border-none font-black text-[9px] uppercase tracking-widest">
+                      <Badge className="bg-card/20 text-primary-foreground border-none font-black text-[9px] uppercase tracking-widest">
                         {channel.yinYang}
                       </Badge>
                     </div>
@@ -102,7 +102,7 @@ const TcmChannelReference = () => {
                     </CardTitle>
                     <p className="text-xs font-bold opacity-80 uppercase tracking-[0.2em]">{channel.code} Meridian</p>
                   </div>
-                  <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-inner">
+                  <div className="w-14 h-14 rounded-2xl bg-card/20 backdrop-blur-md flex items-center justify-center shadow-inner">
                     <Activity size={28} />
                   </div>
                 </div>
@@ -111,21 +111,21 @@ const TcmChannelReference = () => {
                 <div className="space-y-4">
                   <div className={cn(
                     "flex items-center gap-3 p-4 rounded-2xl border transition-all",
-                    isPeak ? "bg-amber-50 border-amber-200 shadow-inner" : "bg-slate-50 border-slate-100"
+                    isPeak ? "bg-amber-50 border-amber-200 shadow-inner" : "bg-muted/50 border-border/50"
                   )}>
                     <Clock size={18} className={isPeak ? "text-amber-600" : "text-indigo-500"} />
                     <div>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Peak Time</p>
-                      <p className={cn("text-sm font-bold", isPeak ? "text-amber-900" : "text-slate-900")}>{channel.peakTime}</p>
+                      <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Peak Time</p>
+                      <p className={cn("text-sm font-bold", isPeak ? "text-amber-900" : "text-foreground")}>{channel.peakTime}</p>
                     </div>
                   </div>
-                  <p className="text-sm text-slate-600 leading-relaxed font-medium">
+                  <p className="text-sm text-muted-foreground leading-relaxed font-medium">
                     {channel.description}
                   </p>
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                  <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
                     <Heart size={14} className="text-rose-500" /> Core Emotions
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -135,13 +135,13 @@ const TcmChannelReference = () => {
                       </Badge>
                     ))}
                     {channel.emotions.length > 6 && (
-                      <span className="text-[10px] font-bold text-slate-400 ml-1">+{channel.emotions.length - 6} more</span>
+                      <span className="text-[10px] font-bold text-muted-foreground ml-1">+{channel.emotions.length - 6} more</span>
                     )}
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                  <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
                     <Target size={14} className="text-emerald-500" /> Primary Acupoints
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -151,17 +151,17 @@ const TcmChannelReference = () => {
                       </Badge>
                     ))}
                     {associatedPoints.length === 0 && (
-                      <span className="text-[10px] font-bold text-slate-400 italic">Reference charts for points</span>
+                      <span className="text-[10px] font-bold text-muted-foreground italic">Reference charts for points</span>
                     )}
                   </div>
                 </div>
 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                    <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
                       <Dumbbell size={14} className="text-indigo-500" /> Associated Muscles
                     </h4>
-                    <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest flex items-center gap-1">
+                    <span className="text-[8px] font-black text-muted-foreground/60 uppercase tracking-widest flex items-center gap-1">
                       <MousePointer2 size={8} /> Click for info
                     </span>
                   </div>
@@ -170,7 +170,7 @@ const TcmChannelReference = () => {
                       <button 
                         key={muscle}
                         onClick={() => handleMuscleClick(muscle)}
-                        className="bg-indigo-50/50 border border-indigo-100 text-indigo-700 text-[10px] font-bold px-3 py-1 rounded-lg hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all"
+                        className="bg-indigo-50/50 border border-indigo-100 text-indigo-700 text-[10px] font-bold px-3 py-1 rounded-lg hover:bg-indigo-600 hover:text-primary-foreground hover:border-indigo-600 transition-all"
                       >
                         {muscle}
                       </button>
@@ -184,12 +184,12 @@ const TcmChannelReference = () => {
       </div>
 
       {filteredChannels.length === 0 && (
-        <div className="text-center py-32 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
-          <div className="mx-auto w-20 h-20 bg-white rounded-3xl flex items-center justify-center mb-6 shadow-xl">
-            <Search size={40} className="text-slate-300" />
+        <div className="text-center py-32 bg-muted/50 rounded-[3rem] border-2 border-dashed border-border">
+          <div className="mx-auto w-20 h-20 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-xl">
+            <Search size={40} className="text-muted-foreground/60" />
           </div>
-          <h3 className="text-xl font-black text-slate-900">No channels found</h3>
-          <p className="text-slate-500 mt-2">Try adjusting your search or element filter.</p>
+          <h3 className="text-xl font-black text-foreground">No channels found</h3>
+          <p className="text-muted-foreground mt-2">Try adjusting your search or element filter.</p>
         </div>
       )}
 

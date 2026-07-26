@@ -59,7 +59,7 @@ const ClinicalReasoningModal = ({ muscleName, status, open, onOpenChange }: Clin
         title: "Meridian Sedation",
         desc: `The ${info.meridian} meridian may be over-active. Check sedation points or the 'Mother' element in the Sheng cycle.`,
         icon: Layers,
-        color: "text-blue-600 bg-blue-50"
+        color: "text-primary bg-primary/5"
       });
       steps.push({
         title: "Neurolymphatic Clearance",
@@ -106,26 +106,26 @@ const ClinicalReasoningModal = ({ muscleName, status, open, onOpenChange }: Clin
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
-        <div className="p-8 bg-slate-900 text-white">
+        <div className="p-8 bg-foreground text-primary-foreground">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg">
               <Lightbulb size={28} className="text-amber-400" />
             </div>
             <div>
               <DialogTitle className="text-2xl font-black">Clinical Reasoning</DialogTitle>
-              <DialogDescription className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-1">
+              <DialogDescription className="text-muted-foreground font-bold uppercase tracking-widest text-[10px] mt-1">
                 Diagnostic Assistant for {muscleName}
               </DialogDescription>
             </div>
           </div>
-          <div className="flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/10">
+          <div className="flex items-center gap-3 p-4 bg-card/5 rounded-2xl border border-primary-foreground/10">
             <Badge className={cn(
               "border-none font-black text-[10px] uppercase tracking-widest px-3 py-1",
-              status === 'Inhibition' ? "bg-amber-500" : status === 'Hypertonic' ? "bg-red-500" : "bg-purple-500"
+              status === 'Inhibition' ? "bg-amber-500" : status === 'Hypertonic' ? "bg-destructive" : "bg-purple-500"
             )}>
               {status}
             </Badge>
-            <p className="text-sm font-medium text-slate-300">
+            <p className="text-sm font-medium text-muted-foreground/60">
               Systemic response detected. Follow the hierarchy below to identify the priority correction.
             </p>
           </div>
@@ -134,13 +134,13 @@ const ClinicalReasoningModal = ({ muscleName, status, open, onOpenChange }: Clin
         <div className="p-8 space-y-6 max-h-[60vh] overflow-y-auto">
           <div className="space-y-4">
             {reasoningSteps.map((step, i) => (
-              <div key={i} className="flex gap-5 p-5 rounded-2xl border-2 border-slate-50 hover:border-indigo-100 transition-all group">
+              <div key={i} className="flex gap-5 p-5 rounded-2xl border-2 border-border/30 hover:border-indigo-100 transition-all group">
                 <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm group-hover:scale-110 transition-transform", step.color)}>
                   <step.icon size={24} />
                 </div>
                 <div className="space-y-1">
-                  <h4 className="font-black text-slate-900 text-sm uppercase tracking-tight">{step.title}</h4>
-                  <p className="text-sm text-slate-600 leading-relaxed font-medium">{step.desc}</p>
+                  <h4 className="font-black text-foreground text-sm uppercase tracking-tight">{step.title}</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed font-medium">{step.desc}</p>
                 </div>
               </div>
             ))}

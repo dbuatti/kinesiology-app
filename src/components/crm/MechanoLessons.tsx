@@ -385,8 +385,8 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
           {!currentLessonId ? (
             <div className="space-y-6">
               <div className="space-y-1">
-                <h3 className="text-xl font-bold text-slate-900">Confidence Lessons</h3>
-                <p className="text-slate-500 text-sm">Bite-sized, reassuring lessons designed to demystify tendons, ligaments, and the clinical process.</p>
+                <h3 className="text-xl font-bold text-foreground">Confidence Lessons</h3>
+                <p className="text-muted-foreground text-sm">Bite-sized, reassuring lessons designed to demystify tendons, ligaments, and the clinical process.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -394,27 +394,27 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                   const Icon = lesson.icon;
                   const isCompleted = lessonProgress[lesson.id];
                   return (
-                    <Card key={lesson.id} className="border border-slate-200 shadow-sm rounded-xl bg-white hover:shadow-md transition-all group overflow-hidden flex flex-col justify-between">
+                    <Card key={lesson.id} className="border border-border shadow-sm rounded-xl bg-card hover:shadow-md transition-all group overflow-hidden flex flex-col justify-between">
                       <CardHeader className="p-6 pb-4">
                         <div className="flex items-start justify-between mb-3">
-                          <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-700">
+                          <div className="w-10 h-10 rounded-xl bg-muted/50 border border-border flex items-center justify-center text-foreground/80">
                             <Icon size={20} />
                           </div>
                           <div className="flex gap-1.5">
-                            <Badge className="bg-slate-100 text-slate-600 border-none font-bold text-[8px] uppercase tracking-wider">
+                            <Badge className="bg-muted text-muted-foreground border-none font-bold text-[8px] uppercase tracking-wider">
                               {lesson.duration}
                             </Badge>
                             {isCompleted && (
-                              <Badge className="bg-slate-900 text-white border-none font-bold text-[8px] uppercase tracking-wider flex items-center gap-1">
+                              <Badge className="bg-foreground text-primary-foreground border-none font-bold text-[8px] uppercase tracking-wider flex items-center gap-1">
                                 <CheckCircle2 size={10} /> Completed
                               </Badge>
                             )}
                           </div>
                         </div>
-                        <CardTitle className="text-base font-bold text-slate-900 group-hover:text-slate-800 transition-colors">
+                        <CardTitle className="text-base font-bold text-foreground group-hover:text-foreground transition-colors">
                           {lesson.title}
                         </CardTitle>
-                        <CardDescription className="text-xs font-medium text-slate-500 mt-1">
+                        <CardDescription className="text-xs font-medium text-muted-foreground mt-1">
                           {lesson.description}
                         </CardDescription>
                       </CardHeader>
@@ -426,7 +426,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                             setQuizSubmitted(false);
                             setQuizIsCorrect(false);
                           }}
-                          className="w-full bg-slate-900 hover:bg-slate-800 h-10 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm transition-all"
+                          className="w-full bg-foreground hover:bg-foreground h-10 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm transition-all"
                         >
                           Start Lesson <PlayCircle size={14} className="ml-1.5" />
                         </Button>
@@ -437,27 +437,27 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
               </div>
             </div>
           ) : (
-            <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white overflow-hidden animate-in zoom-in-95 duration-300">
-              <CardHeader className="bg-slate-50 border-b border-slate-200 p-6">
+            <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden animate-in zoom-in-95 duration-300">
+              <CardHeader className="bg-muted/50 border-b border-border p-6">
                 <div className="flex items-center justify-between">
                   <Button 
                     variant="ghost" 
                     onClick={() => setCurrentLessonId(null)}
-                    className="rounded-xl font-bold text-xs text-slate-500 hover:bg-slate-100 h-9 px-3"
+                    className="rounded-xl font-bold text-xs text-muted-foreground hover:bg-muted h-9 px-3"
                   >
                     <ChevronLeft size={16} className="mr-1" /> Back to Lessons
                   </Button>
-                  <Badge className="bg-slate-900 text-white border-none font-bold text-[9px] uppercase tracking-wider px-3 py-1 rounded-full">
+                  <Badge className="bg-foreground text-primary-foreground border-none font-bold text-[9px] uppercase tracking-wider px-3 py-1 rounded-full">
                     Lesson {activeLesson?.id} of {lessons.length}
                   </Badge>
                 </div>
                 <div className="mt-4 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-sm">
+                  <div className="w-10 h-10 rounded-xl bg-foreground text-primary-foreground flex items-center justify-center shadow-sm">
                     {activeLesson && React.createElement(activeLesson.icon, { size: 20 })}
                   </div>
                   <div>
-                    <CardTitle className="text-lg font-bold text-slate-900">{activeLesson?.title}</CardTitle>
-                    <CardDescription className="font-bold text-[9px] uppercase tracking-wider text-slate-500 mt-0.5">
+                    <CardTitle className="text-lg font-bold text-foreground">{activeLesson?.title}</CardTitle>
+                    <CardDescription className="font-bold text-[9px] uppercase tracking-wider text-muted-foreground mt-0.5">
                       {activeLesson?.difficulty} • {activeLesson?.duration}
                     </CardDescription>
                   </div>
@@ -468,11 +468,11 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
 
                 {/* Check Your Understanding Mini-Quiz */}
                 {activeLesson && (
-                  <div className="mt-8 p-6 bg-slate-50 rounded-2xl border border-slate-200 space-y-4">
-                    <h4 className="text-sm font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                  <div className="mt-8 p-6 bg-muted/50 rounded-2xl border border-border space-y-4">
+                    <h4 className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                       <HelpCircle size={16} className="text-indigo-600" /> Check Your Understanding
                     </h4>
-                    <p className="text-sm font-bold text-slate-900">{activeLesson.quiz.question}</p>
+                    <p className="text-sm font-bold text-foreground">{activeLesson.quiz.question}</p>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {activeLesson.quiz.options.map((option) => {
@@ -492,10 +492,10 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                                   ? "bg-emerald-50 border-emerald-500 text-emerald-700"
                                   : isSelected
                                     ? "bg-rose-50 border-rose-500 text-rose-700"
-                                    : "bg-slate-50 border-slate-100 text-slate-400"
+                                    : "bg-muted/50 border-border/50 text-muted-foreground"
                                 : isSelected
                                   ? "bg-indigo-50 border-indigo-600 text-indigo-900"
-                                  : "bg-white border-slate-100 hover:border-indigo-200 text-slate-600"
+                                  : "bg-card border-border/50 hover:border-indigo-200 text-muted-foreground"
                             )}
                           >
                             <span>{option}</span>
@@ -507,14 +507,14 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     </div>
 
                     {quizSubmitted && (
-                      <div className="p-4 bg-white rounded-xl border border-slate-200 space-y-2 animate-in fade-in duration-300">
+                      <div className="p-4 bg-card rounded-xl border border-border space-y-2 animate-in fade-in duration-300">
                         <p className={cn(
                           "text-xs font-black uppercase tracking-widest",
                           quizIsCorrect ? "text-emerald-600" : "text-rose-600"
                         )}>
                           {quizIsCorrect ? "Correct!" : "Incorrect"}
                         </p>
-                        <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                        <p className="text-xs text-muted-foreground leading-relaxed font-medium">
                           {activeLesson.quiz.explanation}
                         </p>
                       </div>
@@ -524,7 +524,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                       <Button 
                         onClick={handleQuizSubmit}
                         disabled={!selectedQuizAnswer}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-10 px-6 font-bold text-xs uppercase tracking-wider"
+                        className="bg-indigo-600 hover:bg-indigo-700 text-primary-foreground rounded-xl h-10 px-6 font-bold text-xs uppercase tracking-wider"
                       >
                         Submit Answer
                       </Button>
@@ -532,11 +532,11 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                   </div>
                 )}
 
-                <div className="pt-4 border-t border-slate-200 flex justify-between items-center">
+                <div className="pt-4 border-t border-border flex justify-between items-center">
                   <Button 
                     variant="ghost" 
                     onClick={() => setCurrentLessonId(null)}
-                    className="rounded-xl font-bold text-xs text-slate-500"
+                    className="rounded-xl font-bold text-xs text-muted-foreground"
                   >
                     Cancel
                   </Button>
@@ -545,7 +545,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     disabled={!quizIsCorrect}
                     className={cn(
                       "h-10 px-6 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm transition-all",
-                      quizIsCorrect ? "bg-slate-900 hover:bg-slate-800 text-white" : "bg-slate-200 text-slate-400 cursor-not-allowed"
+                      quizIsCorrect ? "bg-foreground hover:bg-foreground text-primary-foreground" : "bg-muted text-muted-foreground cursor-not-allowed"
                     )}
                   >
                     Complete Lesson & Build Confidence <CheckCircle2 size={14} className="ml-1.5" />
@@ -561,17 +561,17 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
       {activeSubTab === 'anatomy' && (
         <div className="space-y-6">
           <div className="space-y-1">
-            <h3 className="text-xl font-bold text-slate-900">Interactive Anatomy Model</h3>
-            <p className="text-slate-500 text-sm">Click on any structure to see its clinical logic. Use the buttons to switch joints.</p>
+            <h3 className="text-xl font-bold text-foreground">Interactive Anatomy Model</h3>
+            <p className="text-muted-foreground text-sm">Click on any structure to see its clinical logic. Use the buttons to switch joints.</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Left Column: Interactive SVG */}
-            <Card className="lg:col-span-7 border border-slate-200 shadow-sm rounded-2xl bg-white overflow-hidden flex flex-col justify-between">
-              <CardHeader className="bg-slate-50 border-b border-slate-200 p-4">
+            <Card className="lg:col-span-7 border border-border shadow-sm rounded-2xl bg-card overflow-hidden flex flex-col justify-between">
+              <CardHeader className="bg-muted/50 border-b border-border p-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <span className="text-xs font-bold text-slate-700">Select Joint Model:</span>
-                  <div className="flex flex-wrap gap-1 bg-slate-200/50 p-1 rounded-xl">
+                  <span className="text-xs font-bold text-foreground/80">Select Joint Model:</span>
+                  <div className="flex flex-wrap gap-1 bg-muted/50 p-1 rounded-xl">
                     {[
                       { id: 'knee', label: 'Knee', defaultStructure: 'mcl' },
                       { id: 'ankle', label: 'Ankle', defaultStructure: 'atfl' },
@@ -590,7 +590,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="p-6 flex items-center justify-center min-h-[350px] bg-slate-50/30">
+              <CardContent className="p-6 flex items-center justify-center min-h-[350px] bg-muted/30">
                 <AnatomyModel 
                   selectedAnatomyJoint={selectedAnatomyJoint}
                   selectedStructure={selectedStructure}
@@ -602,22 +602,22 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
             {/* Right Column: Clinical Logic Card with Image Upload */}
             <div className="lg:col-span-5 space-y-6">
               {currentStructure ? (
-                <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white overflow-hidden border-l-4 border-slate-900 animate-in fade-in slide-in-from-right-2 duration-300">
+                <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden border-l-4 border-border animate-in fade-in slide-in-from-right-2 duration-300">
                   <CardHeader className="p-6 pb-4">
                     <div className="flex items-center justify-between mb-2">
-                      <Badge className="bg-slate-100 text-slate-800 border-none font-bold text-[8px] uppercase tracking-wider">
+                      <Badge className="bg-muted text-foreground border-none font-bold text-[8px] uppercase tracking-wider">
                         {currentStructure.type}
                       </Badge>
-                      <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Anatomy Guide</span>
+                      <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Anatomy Guide</span>
                     </div>
-                    <CardTitle className="text-lg font-bold text-slate-900">{currentStructure.name}</CardTitle>
+                    <CardTitle className="text-lg font-bold text-foreground">{currentStructure.name}</CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 space-y-5">
                     {/* Real-time Image Upload Zone */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Reference Image</p>
-                        <div className="flex bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                        <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Reference Image</p>
+                        <div className="flex bg-muted p-0.5 rounded-lg border border-border">
                           <Button 
                             variant={imageSourceMode === 'sourced' ? 'default' : 'ghost'} 
                             size="sm" 
@@ -638,9 +638,9 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                       </div>
 
                       {imageSourceMode === 'sourced' ? (
-                        <div className="aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center relative group/img">
+                        <div className="aspect-video rounded-xl overflow-hidden border border-border bg-muted/50 flex items-center justify-center relative group/img">
                           <img src={currentStructure.defaultImageUrl} alt={currentStructure.name} className="w-full h-full object-cover" />
-                          <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md text-white text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md">
+                          <div className="absolute bottom-2 right-2 bg-foreground/60 backdrop-blur-md text-primary-foreground text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md">
                             Sourced Reference
                           </div>
                         </div>
@@ -652,7 +652,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                           onClick={() => fileInputRef.current?.click()}
                           className={cn(
                             "relative group/img aspect-video rounded-xl border-2 border-dashed flex flex-col items-center justify-center overflow-hidden cursor-pointer transition-all duration-300",
-                            customImageUrl ? "border-transparent" : "border-slate-200 bg-slate-50/50 hover:border-indigo-400 hover:bg-indigo-50/30",
+                            customImageUrl ? "border-transparent" : "border-border bg-muted/50 hover:border-indigo-400 hover:bg-indigo-50/30",
                             isDragging && "border-indigo-600 bg-indigo-100/80 scale-[1.02]",
                             isUploading && "opacity-50 pointer-events-none"
                           )}
@@ -670,13 +670,13 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                           {customImageUrl ? (
                             <>
                               <img src={customImageUrl} alt={currentStructure.name} className="w-full h-full object-cover" />
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                              <div className="absolute inset-0 bg-foreground/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                 <div className="flex flex-col items-center gap-2">
                                   <div className="flex gap-2">
                                     <Button variant="secondary" size="icon" className="rounded-xl h-8 w-8 shadow-lg"><Upload size={14} /></Button>
                                     <Button variant="destructive" size="icon" className="rounded-xl h-8 w-8 shadow-lg" onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}><X size={14} /></Button>
                                   </div>
-                                  <p className="text-[8px] font-black text-white uppercase tracking-widest">Click to Change</p>
+                                  <p className="text-[8px] font-black text-primary-foreground uppercase tracking-widest">Click to Change</p>
                                 </div>
                               </div>
                             </>
@@ -686,10 +686,10 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                                 <Loader2 className="mx-auto text-indigo-500 animate-spin" size={24} />
                               ) : (
                                 <>
-                                  <div className="w-10 h-10 rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center mx-auto text-slate-400 group-hover/img:text-indigo-600 transition-all">
+                                  <div className="w-10 h-10 rounded-xl bg-card shadow-sm border border-border/50 flex items-center justify-center mx-auto text-muted-foreground group-hover/img:text-indigo-600 transition-all">
                                     <ImageIcon size={20} />
                                   </div>
-                                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Click or Drop Reference Image</p>
+                                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Click or Drop Reference Image</p>
                                 </>
                               )}
                             </div>
@@ -699,25 +699,25 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     </div>
 
                     <div className="space-y-1">
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Description</p>
-                      <p className="text-xs text-slate-600 font-medium leading-relaxed">{currentStructure.desc}</p>
+                      <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Description</p>
+                      <p className="text-xs text-muted-foreground font-medium leading-relaxed">{currentStructure.desc}</p>
                     </div>
 
-                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-                      <p className="text-[9px] font-bold text-slate-700 uppercase tracking-wider">How to Test / Stimulate</p>
-                      <p className="text-xs text-slate-600 font-medium leading-relaxed">{currentStructure.test}</p>
+                    <div className="p-4 bg-muted/50 rounded-xl border border-border space-y-1">
+                      <p className="text-[9px] font-bold text-foreground/80 uppercase tracking-wider">How to Test / Stimulate</p>
+                      <p className="text-xs text-muted-foreground font-medium leading-relaxed">{currentStructure.test}</p>
                     </div>
 
-                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-                      <p className="text-[9px] font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1">
+                    <div className="p-4 bg-muted/50 rounded-xl border border-border space-y-1.5">
+                      <p className="text-[9px] font-bold text-foreground uppercase tracking-wider flex items-center gap-1">
                         <Zap size={12} /> Correction Protocol
                       </p>
-                      <p className="text-xs text-slate-600 font-medium leading-relaxed">{currentStructure.correction}</p>
+                      <p className="text-xs text-muted-foreground font-medium leading-relaxed">{currentStructure.correction}</p>
                     </div>
 
-                    <div className="p-4 bg-slate-900 text-white rounded-xl space-y-1">
-                      <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Neurological Logic</p>
-                      <p className="text-xs text-slate-300 leading-relaxed">
+                    <div className="p-4 bg-foreground text-primary-foreground rounded-xl space-y-1">
+                      <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider">Neurological Logic</p>
+                      <p className="text-xs text-muted-foreground/60 leading-relaxed">
                         {currentStructure.type === 'Ligament' 
                           ? "Targets the Spinocerebellar tract to the ipsilateral cerebellum. Hold GV16 to clear the threat." 
                           : "Targets the DCML pathway to the contralateral sensory cortex. Perform a light isometric hold to reset GTO threshold."}
@@ -726,17 +726,17 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
 
                     <Button 
                       onClick={handleSendToSandbox}
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-12 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg"
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-primary-foreground h-12 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg"
                     >
                       <Compass size={16} className="mr-2" /> Practice with Selection
                     </Button>
                   </CardContent>
                 </Card>
               ) : (
-                <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white p-8 text-center flex flex-col items-center justify-center h-full min-h-[300px]">
-                  <HelpCircle size={40} className="text-slate-300 mb-3" />
-                  <h4 className="font-bold text-slate-900 text-sm">Select a Structure</h4>
-                  <p className="text-xs text-slate-400 mt-1 max-w-xs">Click on any highlighted ligament or tendon in the interactive model to view its clinical logic.</p>
+                <Card className="border border-border shadow-sm rounded-2xl bg-card p-8 text-center flex flex-col items-center justify-center h-full min-h-[300px]">
+                  <HelpCircle size={40} className="text-muted-foreground/60 mb-3" />
+                  <h4 className="font-bold text-foreground text-sm">Select a Structure</h4>
+                  <p className="text-xs text-muted-foreground mt-1 max-w-xs">Click on any highlighted ligament or tendon in the interactive model to view its clinical logic.</p>
                 </Card>
               )}
             </div>
@@ -748,15 +748,15 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
       {activeSubTab === 'sandbox' && (
         <div className="space-y-6">
           <div className="space-y-1">
-            <h3 className="text-xl font-bold text-slate-900">Protocol Practice</h3>
-            <p className="text-slate-500 text-sm">Select a joint and tissue type to generate a step-by-step confidence protocol.</p>
+            <h3 className="text-xl font-bold text-foreground">Protocol Practice</h3>
+            <p className="text-muted-foreground text-sm">Select a joint and tissue type to generate a step-by-step confidence protocol.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
             {/* Left Column: Configuration */}
-            <Card className="md:col-span-5 border border-slate-200 shadow-sm rounded-2xl bg-white p-6 space-y-5">
+            <Card className="md:col-span-5 border border-border shadow-sm rounded-2xl bg-card p-6 space-y-5">
               <div className="space-y-2">
-                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">1. Select Joint</label>
+                <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">1. Select Joint</label>
                 <div className="grid grid-cols-4 gap-1.5">
                   {["Knee", "Ankle", "Shoulder", "Hip"].map(j => (
                     <Button 
@@ -772,7 +772,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">2. Select Tissue Type</label>
+                <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">2. Select Tissue Type</label>
                 <div className="grid grid-cols-2 gap-2">
                   <Button 
                     variant={sandboxTissue === 'Ligament' ? 'default' : 'outline'}
@@ -794,7 +794,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
               {sandboxTissue === 'Tendon' && (
                 <>
                   <div className="space-y-2">
-                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">3. Select Plane of Motion</label>
+                    <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">3. Select Plane of Motion</label>
                     <div className="grid grid-cols-3 gap-2">
                       {["Sagittal", "Frontal", "Transverse"].map(p => (
                         <Button 
@@ -810,7 +810,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">4. Select Action</label>
+                    <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">4. Select Action</label>
                     <div className="grid grid-cols-2 gap-2">
                       {sandboxActions[sandboxJoint as keyof typeof sandboxActions][sandboxPlane as keyof typeof sandboxActions['Knee']].map(a => (
                         <Button 
@@ -830,31 +830,31 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
 
             {/* Right Column: Generated Protocol & Interactive Simulator */}
             <div className="md:col-span-7 space-y-6">
-              <Card className="border border-slate-200 shadow-sm rounded-2xl bg-slate-900 text-white overflow-hidden flex flex-col justify-between">
+              <Card className="border border-border shadow-sm rounded-2xl bg-foreground text-primary-foreground overflow-hidden flex flex-col justify-between">
                 <CardHeader className="p-6 pb-3">
                   <div className="flex items-center justify-between mb-2">
-                    <Badge className="bg-white/10 text-white border-none font-bold text-[8px] uppercase tracking-wider">
+                    <Badge className="bg-card/10 text-primary-foreground border-none font-bold text-[8px] uppercase tracking-wider">
                       {sandboxTissue} Priority
                     </Badge>
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Generated Protocol</span>
+                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Generated Protocol</span>
                   </div>
                   <CardTitle className="text-xl font-bold">{sandboxProtocol.title}</CardTitle>
-                  <p className="text-xs text-slate-300 font-bold mt-0.5">Pathway: {sandboxProtocol.pathway}</p>
+                  <p className="text-xs text-muted-foreground/60 font-bold mt-0.5">Pathway: {sandboxProtocol.pathway}</p>
                 </CardHeader>
                 <CardContent className="p-6 space-y-5">
-                  <div className="p-4 bg-white/5 rounded-xl border border-white/10 space-y-1">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Step 1: Stimulate (Find the Threat)</p>
-                    <p className="text-xs font-bold text-white leading-relaxed">{sandboxProtocol.text}</p>
+                  <div className="p-4 bg-card/5 rounded-xl border border-primary-foreground/10 space-y-1">
+                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Step 1: Stimulate (Find the Threat)</p>
+                    <p className="text-xs font-bold text-primary-foreground leading-relaxed">{sandboxProtocol.text}</p>
                   </div>
 
-                  <div className="p-4 bg-white/5 rounded-xl border border-white/10 space-y-1">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Step 2: Calibrate (Apply Correction)</p>
-                    <p className="text-xs font-bold text-white leading-relaxed">{sandboxProtocol.correction}</p>
+                  <div className="p-4 bg-card/5 rounded-xl border border-primary-foreground/10 space-y-1">
+                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Step 2: Calibrate (Apply Correction)</p>
+                    <p className="text-xs font-bold text-primary-foreground leading-relaxed">{sandboxProtocol.correction}</p>
                   </div>
 
-                  <div className="p-4 bg-white/5 rounded-xl border border-white/10 flex items-start gap-3">
+                  <div className="p-4 bg-card/5 rounded-xl border border-primary-foreground/10 flex items-start gap-3">
                     <Lightbulb className="text-amber-400 shrink-0 mt-0.5" size={16} />
-                    <p className="text-xs text-slate-300 font-medium leading-relaxed">
+                    <p className="text-xs text-muted-foreground/60 font-medium leading-relaxed">
                       {sandboxProtocol.tip}
                     </p>
                   </div>

@@ -181,7 +181,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
         <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none"><CalendarPlus size={150} /></div>
         <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
           <div className="flex items-center gap-5">
-            <div className="w-16 h-16 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-inner">
+            <div className="w-16 h-16 rounded-xl bg-card/20 backdrop-blur-md flex items-center justify-center shadow-inner">
               <CalendarPlus size={32} />
             </div>
             <div>

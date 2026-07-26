@@ -36,7 +36,7 @@ export const AFFERENT_PATHWAYS: PathwayOption[] = [
     label: 'Mechanoreceptor (Unconscious)',
     direction: 'Afferent (Bottom-Up)',
     icon: Activity,
-    color: 'text-blue-500',
+    color: 'text-primary',
     description: 'Unconscious mechanoreception — Golgi receptors in ligaments, tendons and fascia report joint stretch to the cerebellum via the spinocerebellar tract (~85% of unconscious input).',
     confirmationTest: 'Inhibited DM → state afferent (facilitates) → X card 5-10s (facilitates) → Unconscious mechanoreception confirmed',
     protocols: [

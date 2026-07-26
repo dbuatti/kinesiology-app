@@ -555,18 +555,18 @@ const CalcomSlotsView = () => {
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Availability Logic Alert */}
-      <div className="p-6 bg-slate-900 text-white rounded-[2.5rem] shadow-xl relative overflow-hidden group border border-slate-800">
+      <div className="p-6 bg-foreground text-primary-foreground rounded-[2.5rem] shadow-xl relative overflow-hidden group border border-foreground/20">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-slate-950 to-purple-900/40" />
         <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
           <ShieldAlert size={120} />
         </div>
         <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-          <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-amber-400 border border-white/10 shrink-0">
+          <div className="w-14 h-14 rounded-2xl bg-card/10 flex items-center justify-center text-amber-400 border border-primary-foreground/10 shrink-0">
             <Info size={28} />
           </div>
           <div className="space-y-1">
             <h4 className="text-xl font-black">Availability Logic</h4>
-            <p className="text-sm text-slate-300 leading-relaxed font-medium max-w-3xl">
+            <p className="text-sm text-muted-foreground/60 leading-relaxed font-medium max-w-3xl">
               Blocking a day creates an "Out of Office" entry in Cal.com. This overrides your standard schedule and prevents any new bookings for that date.
             </p>
           </div>
@@ -653,7 +653,7 @@ const CalcomSlotsView = () => {
             <Button 
               onClick={fetchSlots} 
               disabled={loading}
-              className="rounded-xl h-10 px-6 bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-amber-200/50"
+              className="rounded-xl h-10 px-6 bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-primary-foreground font-black text-[10px] uppercase tracking-widest shadow-lg shadow-amber-200/50"
             >
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw size={14} className="mr-2" />}
               Refresh
@@ -669,17 +669,17 @@ const CalcomSlotsView = () => {
             >
               <div className={cn(
                 "w-4 h-4 rounded border-2 flex items-center justify-center transition-all",
-                showOnlyAvailable ? "bg-indigo-600 border-indigo-600" : "border-slate-300 group-hover:border-indigo-400"
+                showOnlyAvailable ? "bg-indigo-600 border-indigo-600" : "border-border group-hover:border-indigo-400"
               )}>
-                {showOnlyAvailable && <Check size={10} className="text-white" />}
+                {showOnlyAvailable && <Check size={10} className="text-primary-foreground" />}
               </div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-slate-900 transition-colors">
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
                 Show only available days
               </span>
             </button>
 
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Session Type:</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Session Type:</span>
               <Select value={eventTypeId} onValueChange={(val) => {
                 setEventTypeId(val);
                 setTimeout(fetchSlots, 100);
@@ -700,7 +700,7 @@ const CalcomSlotsView = () => {
           
           <Collapsible open={configOpen} onOpenChange={setConfigOpen}>
             <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600">
+              <Button variant="ghost" size="sm" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-indigo-600">
                 <Settings2 size={14} className="mr-2" />
                 Advanced Settings
                 {configOpen ? <ChevronUp size={14} className="ml-1" /> : <ChevronDown size={14} className="ml-1" />}
@@ -722,7 +722,7 @@ const CalcomSlotsView = () => {
             onClick={handleCopyInstaNote}
             className={cn(
               "h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
-              copied === 'insta' ? "bg-rose-50 text-white hover:bg-rose-600" : "text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-900/30"
+              copied === 'insta' ? "bg-rose-50 text-primary-foreground hover:bg-rose-600" : "text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-900/30"
             )}
           >
             {copied === 'insta' ? <Check size={12} className="mr-1.5" /> : <Instagram size={12} className="mr-1.5" />}
@@ -739,7 +739,7 @@ const CalcomSlotsView = () => {
               onClick={() => handleCopyDay(day)}
               className={cn(
                 "h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
-                copied === day ? "bg-emerald-500 text-white hover:bg-emerald-600" : "text-slate-500 hover:bg-amber-100/70 dark:hover:bg-amber-950/30 hover:text-amber-700"
+                copied === day ? "bg-emerald-500 text-primary-foreground hover:bg-emerald-600" : "text-muted-foreground hover:bg-amber-100/70 dark:hover:bg-amber-950/30 hover:text-amber-700"
               )}
             >
               {copied === day ? <Check size={12} className="mr-1.5" /> : <Copy size={12} className="mr-1.5" />}
@@ -753,7 +753,7 @@ const CalcomSlotsView = () => {
             <Card className="border-none shadow-sm bg-muted/30 rounded-[2rem] p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Event Type ID</label>
+                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Event Type ID</label>
                   <Input 
                     placeholder="e.g. 4279898" 
                     value={eventTypeId}
@@ -762,7 +762,7 @@ const CalcomSlotsView = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Schedule ID</label>
+                  <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Schedule ID</label>
                   <Input 
                     placeholder="Optional override" 
                     value={scheduleId}
@@ -791,7 +791,7 @@ const CalcomSlotsView = () => {
             <div className="w-20 h-20 rounded-[2rem] bg-indigo-600/10 animate-pulse" />
             <Loader2 className="absolute inset-0 m-auto w-10 h-10 text-indigo-600 animate-spin" />
           </div>
-          <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">Syncing with Cal.com...</p>
+          <p className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground">Syncing with Cal.com...</p>
         </div>
       ) : (
         <div className="space-y-16">
@@ -801,10 +801,10 @@ const CalcomSlotsView = () => {
                 <div className="w-10 h-10 rounded-xl bg-amber-100/70 dark:bg-amber-950/30 flex items-center justify-center text-amber-600 shadow-sm">
                   <CalendarDays size={20} />
                 </div>
-                <h3 className="text-xl font-serif font-bold uppercase tracking-widest text-slate-400">
+                <h3 className="text-xl font-serif font-bold uppercase tracking-widest text-muted-foreground">
                   Week of {format(new Date(week[0]), "MMM d")}
                 </h3>
-                <div className="flex-1 h-[2px] bg-slate-100 rounded-full" />
+                <div className="flex-1 h-[2px] bg-muted rounded-full" />
                 <Button
                   variant="ghost"
                   size="sm"
@@ -812,8 +812,8 @@ const CalcomSlotsView = () => {
                   className={cn(
                     "h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest shrink-0 transition-all",
                     copied === `week-${week[0]}`
-                      ? "bg-emerald-500 text-white hover:bg-emerald-600"
-                      : "text-slate-400 hover:bg-indigo-50 hover:text-indigo-600"
+                      ? "bg-emerald-500 text-primary-foreground hover:bg-emerald-600"
+                      : "text-muted-foreground hover:bg-indigo-50 hover:text-indigo-600"
                   )}
                 >
                   {copied === `week-${week[0]}`
@@ -842,11 +842,11 @@ const CalcomSlotsView = () => {
                   return (
                     <Card key={date} className={cn(
                       "border-none shadow-xl rounded-[2.5rem] overflow-hidden group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col",
-                      isBlocked ? "bg-slate-50/80 dark:bg-slate-900/50 border-2 border-dashed border-slate-200 dark:border-slate-800" : "bg-card"
+                      isBlocked ? "bg-muted/50/80 dark:bg-foreground/50 border-2 border-dashed border-border dark:border-foreground/20" : "bg-card"
                     )}>
                       <CardHeader className={cn(
                         "transition-colors p-6 pb-4",
-                        isBlocked ? "bg-slate-100/50 dark:bg-slate-900/80" : "bg-card"
+                        isBlocked ? "bg-muted/50 dark:bg-foreground/80" : "bg-card"
                       )}>
                         <div className="flex items-start justify-between">
                           <div className="flex items-center gap-4">
@@ -854,12 +854,12 @@ const CalcomSlotsView = () => {
                               "w-12 h-12 rounded-2xl flex items-center justify-center shadow-xl transition-all duration-500",
                               isBlocked ? "bg-slate-400 scale-95" : "bg-gradient-to-br from-amber-500 to-rose-500"
                             )}>
-                              {isBlocked ? <Ban size={24} className="text-white" /> : <Calendar size={24} className="text-white" />}
+                              {isBlocked ? <Ban size={24} className="text-primary-foreground" /> : <Calendar size={24} className="text-primary-foreground" />}
                             </div>
                             <div>
                               <CardTitle className={cn(
                                 "text-xl font-serif font-bold",
-                                isBlocked ? "text-slate-500" : "text-foreground"
+                                isBlocked ? "text-muted-foreground" : "text-foreground"
                               )}>
                                 {format(new Date(date), "EEEE")}
                               </CardTitle>
@@ -878,7 +878,7 @@ const CalcomSlotsView = () => {
                       </CardHeader>
                       
                       <CardContent className="p-6 pt-0 space-y-6 flex-1 flex flex-col">
-                        <div className="h-px bg-slate-100 w-full" />
+                        <div className="h-px bg-muted w-full" />
                         
                         {isBlocked ? (
                           <div className="flex-1 flex flex-col items-center justify-center py-8 text-center space-y-4 animate-in fade-in zoom-in-95 duration-500">
@@ -886,8 +886,8 @@ const CalcomSlotsView = () => {
                               <ShieldAlert size={28} className="text-rose-400" />
                             </div>
                             <div className="space-y-1">
-                              <p className="text-base font-serif font-bold text-slate-900 dark:text-white">Day Blocked</p>
-                              <p className="text-[10px] font-medium text-slate-500">Manual override active</p>
+                              <p className="text-base font-serif font-bold text-foreground dark:text-primary-foreground">Day Blocked</p>
+                              <p className="text-[10px] font-medium text-muted-foreground">Manual override active</p>
                             </div>
                             <Button 
                               variant="outline" 
@@ -913,10 +913,10 @@ const CalcomSlotsView = () => {
                                   {dayBookings.map((booking) => (
                                     <div 
                                       key={booking.id} 
-                                      className="flex items-center justify-between p-3 rounded-2xl bg-indigo-900 text-white shadow-lg border border-indigo-800 group/booking"
+                                      className="flex items-center justify-between p-3 rounded-2xl bg-indigo-900 text-primary-foreground shadow-lg border border-indigo-800 group/booking"
                                     >
                                       <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                        <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0 border border-white/10">
+                                        <div className="w-8 h-8 rounded-lg bg-card/10 flex items-center justify-center shrink-0 border border-primary-foreground/10">
                                           <User size={14} className="text-indigo-300" />
                                         </div>
                                         <div className="min-w-0 flex-1">
@@ -983,7 +983,7 @@ const CalcomSlotsView = () => {
                                       <button 
                                         key={idx} 
                                         onClick={() => handleSlotClick(date, timeStr)}
-                                        className="flex items-center justify-center p-2.5 rounded-xl bg-muted/50 border border-border text-[10px] font-black text-foreground hover:bg-gradient-to-br hover:from-amber-500 hover:to-rose-500 hover:border-amber-500 hover:text-white transition-all group/slot shadow-sm"
+                                        className="flex items-center justify-center p-2.5 rounded-xl bg-muted/50 border border-border text-[10px] font-black text-foreground hover:bg-gradient-to-br hover:from-amber-500 hover:to-rose-500 hover:border-amber-500 hover:text-primary-foreground transition-all group/slot shadow-sm"
                                       >
                                         <Clock size={12} className="mr-1.5 opacity-40 group-hover/slot:opacity-100 transition-opacity" />
                                         {format(new Date(timeStr), "h:mm a")}
@@ -1008,7 +1008,7 @@ const CalcomSlotsView = () => {
                               </div>
                             )}
 
-                            <div className="pt-4 border-t border-slate-100 mt-auto">
+                            <div className="pt-4 border-t border-border/50 mt-auto">
                               <Button 
                                 variant="ghost" 
                                 size="sm" 
@@ -1055,7 +1055,7 @@ const CalcomSlotsView = () => {
           <div className="p-10">
             <DialogHeader className="mb-8">
               <div className="flex items-center gap-4 mb-2">
-                <div className="w-14 h-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-xl">
+                <div className="w-14 h-14 rounded-2xl bg-amber-500 text-primary-foreground flex items-center justify-center shadow-xl">
                   <CalendarClock size={28} />
                 </div>
                 <div>
@@ -1078,8 +1078,8 @@ const CalcomSlotsView = () => {
 
               if (availableSlotsByDate.length === 0) {
                 return (
-                  <div className="text-center py-12 text-slate-500">
-                    <CalendarDays size={40} className="mx-auto mb-4 text-slate-300" />
+                  <div className="text-center py-12 text-muted-foreground">
+                    <CalendarDays size={40} className="mx-auto mb-4 text-muted-foreground/60" />
                     <p className="font-bold">No available slots found in the current range.</p>
                     <p className="text-sm mt-1">Try increasing the week range and refresh.</p>
                   </div>
@@ -1090,7 +1090,7 @@ const CalcomSlotsView = () => {
                 <div className="space-y-6">
                   {availableSlotsByDate.map(({ date, daySlots }) => (
                     <div key={date} className="space-y-2">
-                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 ml-1">
+                      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground ml-1">
                         {format(new Date(date), "EEEE, MMMM d")}
                       </p>
                       <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
@@ -1106,10 +1106,10 @@ const CalcomSlotsView = () => {
                               className={cn(
                                 "flex items-center justify-center gap-1.5 p-2.5 rounded-xl text-[10px] font-black border transition-all",
                                 isCurrentTime
-                                  ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed line-through"
+                                  ? "bg-muted border-border text-muted-foreground cursor-not-allowed line-through"
                                   : rescheduling
                                     ? "opacity-50 cursor-wait bg-muted border-border text-foreground"
-                                    : "bg-muted/50 border-border text-foreground hover:bg-amber-500 hover:border-amber-500 hover:text-white shadow-sm"
+                                    : "bg-muted/50 border-border text-foreground hover:bg-amber-500 hover:border-amber-500 hover:text-primary-foreground shadow-sm"
                               )}
                             >
                               {rescheduling ? <Loader2 size={11} className="animate-spin" /> : <Clock size={11} className="opacity-60" />}
@@ -1132,7 +1132,7 @@ const CalcomSlotsView = () => {
           <div className="p-10">
             <DialogHeader className="mb-8">
               <div className="flex items-center gap-4 mb-2">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-rose-500 text-white flex items-center justify-center shadow-xl">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-rose-500 text-primary-foreground flex items-center justify-center shadow-xl">
                   <CalendarPlus size={28} />
                 </div>
                 <div>
@@ -1163,7 +1163,7 @@ const CalcomSlotsView = () => {
           <div className="p-8">
             <DialogHeader className="mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-rose-500 text-white flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-rose-500 text-primary-foreground flex items-center justify-center shadow-lg">
                   <CalendarPlus size={22} />
                 </div>
                 <div>

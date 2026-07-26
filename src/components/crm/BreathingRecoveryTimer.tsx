@@ -95,14 +95,14 @@ const BreathingRecoveryTimer = ({ onSessionComplete }: BreathingRecoveryTimerPro
         "relative p-8 rounded-3xl border-4 transition-all duration-500 flex flex-col items-center justify-center overflow-hidden",
         phase === 'idle' ? "bg-muted border-border" :
         phase === 'hold' ? "bg-primary border-primary text-primary-foreground shadow-2xl shadow-primary/20" :
-        phase === 'recover' ? "bg-emerald-500 border-emerald-300 text-white shadow-2xl shadow-emerald-200" :
+        phase === 'recover' ? "bg-emerald-500 border-emerald-300 text-primary-foreground shadow-2xl shadow-emerald-200" :
         "bg-foreground border-border text-background"
       )}>
         {/* Background Pulse for Breathing */}
         {(phase === 'hold' || phase === 'recover') && (
           <div className={cn(
             "absolute inset-0 opacity-20 animate-ping",
-            phase === 'hold' ? "bg-white" : "bg-white"
+            phase === 'hold' ? "bg-card" : "bg-card"
           )} style={{ animationDuration: phase === 'hold' ? '5s' : '3s' }} />
         )}
 
@@ -133,7 +133,7 @@ const BreathingRecoveryTimer = ({ onSessionComplete }: BreathingRecoveryTimerPro
             </div>
 
             <div className="w-full max-w-[200px] mx-auto space-y-2">
-              <Progress value={progress} className="h-2 bg-white/20 [&>div]:bg-white" />
+              <Progress value={progress} className="h-2 bg-card/20 [&>div]:bg-card" />
               <div className="flex justify-between text-[10px] font-medium opacity-70">
                 <span>{cycles} Cycles Done</span>
                 <span>{formatTime(totalElapsed)} Total</span>
@@ -141,7 +141,7 @@ const BreathingRecoveryTimer = ({ onSessionComplete }: BreathingRecoveryTimerPro
             </div>
 
             <div className="flex gap-3 pt-4">
-              <Button variant="outline" onClick={handleStop} className="flex-1 bg-muted border-border hover:bg-muted/80 text-white rounded-xl font-medium">
+              <Button variant="outline" onClick={handleStop} className="flex-1 bg-muted border-border hover:bg-muted/80 text-primary-foreground rounded-xl font-medium">
                 <Square size={18} className="mr-2 fill-current" /> Stop
               </Button>
             </div>
@@ -151,7 +151,7 @@ const BreathingRecoveryTimer = ({ onSessionComplete }: BreathingRecoveryTimerPro
         {phase === 'complete' && (
           <div className="text-center space-y-6 py-4 relative z-10">
             <div className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-sm">
-              <Trophy size={40} className="text-white" />
+              <Trophy size={40} className="text-primary-foreground" />
             </div>
             <div>
               <h3 className="text-2xl font-semibold">Session Complete!</h3>

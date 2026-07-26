@@ -8,7 +8,7 @@ const CranialNerveWorksheetPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-muted py-8 px-4 print:p-0 print:bg-white">
+    <div className="min-h-screen bg-muted py-8 px-4 print:p-0 print:bg-card">
       <div className="max-w-[297mm] mx-auto mb-8 flex items-center justify-between px-2 sm:px-0 print:hidden gap-4">
         <Button 
           variant="ghost" 
@@ -21,7 +21,7 @@ const CranialNerveWorksheetPage = () => {
         <div className="flex gap-3">
           <Button 
             onClick={() => window.print()}
-            className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-lg font-bold h-10 px-4 text-xs sm:text-sm"
+            className="bg-rose-600 hover:bg-rose-700 text-primary-foreground rounded-xl shadow-lg font-bold h-10 px-4 text-xs sm:text-sm"
           >
             <Printer size={18} className="mr-1 sm:mr-2" /> Print Worksheet
           </Button>

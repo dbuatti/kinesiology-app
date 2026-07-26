@@ -11,7 +11,7 @@ const FractalToolPage = () => {
 
 
         <div className="flex items-center gap-5">
-          <div className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center shadow-md">
+          <div className="w-12 h-12 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-md">
             <Layers size={24} />
           </div>
           <div>

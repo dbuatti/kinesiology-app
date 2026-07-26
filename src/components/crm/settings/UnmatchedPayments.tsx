@@ -71,7 +71,7 @@ const UnmatchedPayments = () => {
         <CardTitle className="text-xl font-black flex items-center gap-3 text-amber-900 dark:text-amber-200">
           <AlertTriangle size={24} /> Payment &amp; Sync Issues
           {count > 0 && (
-            <Badge className="bg-amber-500 text-white border-none text-xs font-black">{count}</Badge>
+            <Badge className="bg-amber-500 text-primary-foreground border-none text-xs font-black">{count}</Badge>
           )}
         </CardTitle>
         <CardDescription className="text-amber-700 dark:text-amber-300/80 font-medium">

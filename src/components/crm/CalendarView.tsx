@@ -50,29 +50,29 @@ const CalendarView = ({ appointments }: CalendarViewProps) => {
   };
 
   return (
-    <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden animate-in fade-in duration-500">
+    <div className="bg-card rounded-[2.5rem] border border-border/50 shadow-xl overflow-hidden animate-in fade-in duration-500">
       {/* Calendar Header */}
-      <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+      <div className="p-8 border-b border-border/50 flex items-center justify-between bg-muted/50">
         <div>
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+          <h2 className="text-3xl font-black text-foreground tracking-tight">
             {format(currentMonth, "MMMM yyyy")}
           </h2>
-          <p className="text-slate-500 font-medium text-sm mt-1">Monthly clinical schedule</p>
+          <p className="text-muted-foreground font-medium text-sm mt-1">Monthly clinical schedule</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="icon" onClick={prevMonth} className="rounded-xl h-12 w-12 border-slate-200 hover:bg-white">
+          <Button variant="outline" size="icon" onClick={prevMonth} className="rounded-xl h-12 w-12 border-border hover:bg-card">
             <ChevronLeft size={24} />
           </Button>
-          <Button variant="outline" size="icon" onClick={nextMonth} className="rounded-xl h-12 w-12 border-slate-200 hover:bg-white">
+          <Button variant="outline" size="icon" onClick={nextMonth} className="rounded-xl h-12 w-12 border-border hover:bg-card">
             <ChevronRight size={24} />
           </Button>
         </div>
       </div>
 
       {/* Days of Week */}
-      <div className="grid grid-cols-7 border-b border-slate-100">
+      <div className="grid grid-cols-7 border-b border-border/50">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-          <div key={day} className="py-4 text-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+          <div key={day} className="py-4 text-center text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
             {day}
           </div>
         ))}
@@ -89,20 +89,20 @@ const CalendarView = ({ appointments }: CalendarViewProps) => {
             <div 
               key={day.toString()} 
               className={cn(
-                "min-h-[140px] p-3 border-r border-b border-slate-50 transition-colors",
-                !isCurrentMonth && "bg-slate-50/30 opacity-40",
+                "min-h-[140px] p-3 border-r border-b border-border/30 transition-colors",
+                !isCurrentMonth && "bg-muted/30 opacity-40",
                 isCurrentDay && "bg-indigo-50/30"
               )}
             >
               <div className="flex justify-between items-start mb-2">
                 <span className={cn(
                   "w-8 h-8 flex items-center justify-center rounded-full text-sm font-black",
-                  isCurrentDay ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200" : "text-slate-400"
+                  isCurrentDay ? "bg-indigo-600 text-primary-foreground shadow-lg shadow-indigo-200" : "text-muted-foreground"
                 )}>
                   {format(day, "d")}
                 </span>
                 {dayApps.length > 0 && (
-                  <Badge variant="secondary" className="bg-slate-100 text-slate-500 border-none text-[9px] font-black">
+                  <Badge variant="secondary" className="bg-muted text-muted-foreground border-none text-[9px] font-black">
                     {dayApps.length}
                   </Badge>
                 )}
@@ -127,9 +127,9 @@ const CalendarView = ({ appointments }: CalendarViewProps) => {
                     </TooltipTrigger>
                     <TooltipContent className="rounded-xl p-3 shadow-2xl border-none">
                       <div className="space-y-1">
-                        <p className="font-black text-slate-900">{app.clients?.name}</p>
+                        <p className="font-black text-foreground">{app.clients?.name}</p>
                         <p className="text-[10px] font-bold text-indigo-600 uppercase">{app.tag}</p>
-                        <div className="flex items-center gap-2 text-[10px] text-slate-500">
+                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                           <Clock size={10} /> {format(new Date(app.date), "h:mm a")}
                         </div>
                       </div>
@@ -137,7 +137,7 @@ const CalendarView = ({ appointments }: CalendarViewProps) => {
                   </Tooltip>
                 ))}
                 {dayApps.length > 3 && (
-                  <p className="text-[9px] font-black text-slate-400 text-center pt-1">
+                  <p className="text-[9px] font-black text-muted-foreground text-center pt-1">
                     + {dayApps.length - 3} more
                   </p>
                 )}

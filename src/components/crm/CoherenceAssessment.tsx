@@ -192,10 +192,10 @@ const CoherenceAssessment = ({
               </div>
 
               {/* Breath Rate */}
-              <div className={cn("p-4 rounded-2xl border transition-all", breathTimerRunning ? "bg-blue-500/10 border-blue-500/20" : "bg-muted/50 border-border")}>
+              <div className={cn("p-4 rounded-2xl border transition-all", breathTimerRunning ? "bg-primary/10 border-primary/20" : "bg-muted/50 border-border")}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <Brain size={14} className={cn("text-blue-500", breathTimerRunning && "animate-bounce")} />
+                    <Brain size={14} className={cn("text-primary", breathTimerRunning && "animate-bounce")} />
                     <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Breath (30s)</span>
                   </div>
                   <span className="text-xl font-black text-foreground tabular-nums">{breathTimer}s</span>

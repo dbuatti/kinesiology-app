@@ -72,10 +72,10 @@ const DocumentRightSidebar = ({
 
       {/* Live clock */}
       <div className="text-center space-y-0.5">
-        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Time</p>
-        <p className="text-base font-black tabular-nums text-slate-800 dark:text-slate-200">{format(now, "HH:mm")}</p>
+        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Time</p>
+        <p className="text-base font-black tabular-nums text-foreground dark:text-muted-foreground/60">{format(now, "HH:mm")}</p>
         {elapsedMinutes >= 0 && (
-          <p className="text-[9px] font-bold text-slate-400 tabular-nums">+{elapsedMinutes}m elapsed</p>
+          <p className="text-[9px] font-bold text-muted-foreground tabular-nums">+{elapsedMinutes}m elapsed</p>
         )}
       </div>
 
@@ -89,11 +89,11 @@ const DocumentRightSidebar = ({
         </div>
       )}
 
-      <div className="h-px bg-slate-200 dark:bg-slate-700" />
+      <div className="h-px bg-muted dark:bg-card" />
 
       {/* Quick timers */}
       <div className="space-y-2">
-        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest text-center">Timers</p>
+        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest text-center">Timers</p>
         {TIMER_PRESETS.map((preset) => {
           const isActive = activeTimerDuration === preset.value;
           return (
@@ -103,8 +103,8 @@ const DocumentRightSidebar = ({
               className={cn(
                 "w-full rounded-xl border-2 flex flex-col items-center justify-center py-2 transition-all duration-300",
                 isActive
-                  ? "bg-indigo-600 border-indigo-600 text-white scale-[1.02] shadow-lg shadow-indigo-500/20"
-                  : "bg-white dark:bg-slate-900 border-black dark:border-slate-600 text-black dark:text-slate-200 hover:bg-black hover:text-white dark:hover:bg-slate-700 hover:scale-[1.02]"
+                  ? "bg-indigo-600 border-indigo-600 text-primary-foreground scale-[1.02] shadow-lg shadow-indigo-500/20"
+                  : "bg-card dark:bg-foreground border-foreground/20 dark:border-slate-600 text-foreground dark:text-muted-foreground/60 hover:bg-foreground hover:text-primary-foreground dark:hover:bg-card hover:scale-[1.02]"
               )}
               title={isActive ? "Click to stop" : `Start ${preset.label} timer — ${preset.note}`}
             >
@@ -119,11 +119,11 @@ const DocumentRightSidebar = ({
         })}
       </div>
 
-      <div className="h-px bg-slate-200 dark:bg-slate-700" />
+      <div className="h-px bg-muted dark:bg-card" />
 
       {/* Quick reference: key durations */}
       <div className="space-y-2">
-        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest text-center">Reference</p>
+        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest text-center">Reference</p>
         {[
           { label: "Vagus stim", value: "30–60s" },
           { label: "T1 / Dia hold", value: "45–90s" },
@@ -132,8 +132,8 @@ const DocumentRightSidebar = ({
           { label: "4-7-8 breath", value: "4×" },
         ].map(({ label, value }) => (
           <div key={label} className="flex justify-between items-baseline gap-1 px-0.5">
-            <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 truncate">{label}</span>
-            <span className="text-[9px] font-black text-slate-700 dark:text-slate-300 shrink-0 tabular-nums">{value}</span>
+            <span className="text-[9px] font-bold text-muted-foreground dark:text-muted-foreground truncate">{label}</span>
+            <span className="text-[9px] font-black text-foreground/80 dark:text-muted-foreground/60 shrink-0 tabular-nums">{value}</span>
           </div>
         ))}
       </div>

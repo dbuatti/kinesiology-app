@@ -292,7 +292,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
         <div className="px-8 pt-8 pb-5 border-b border-border shrink-0">
           <DialogHeader>
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-rose-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-rose-500 text-primary-foreground flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
                 <Music size={22} />
               </div>
               <div>
@@ -402,7 +402,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                   className={cn(
                     "flex-1 py-2.5 rounded-xl text-xs font-black transition-all border-2",
                     duration === et.key
-                      ? "bg-rose-600 border-rose-600 text-white shadow-lg"
+                      ? "bg-rose-600 border-rose-600 text-primary-foreground shadow-lg"
                       : "bg-card border-border text-foreground hover:border-rose-300 dark:hover:border-rose-700"
                   )}
                 >
@@ -443,7 +443,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                       className={cn(
                         "px-3 py-1.5 rounded-lg text-xs font-bold border transition-all",
                         time === slotTime
-                          ? "bg-rose-600 border-rose-600 text-white"
+                          ? "bg-rose-600 border-rose-600 text-primary-foreground"
                           : "bg-card border-border text-foreground hover:border-rose-300 dark:hover:border-rose-700"
                       )}
                     >
@@ -495,7 +495,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
 
           {createBooking.isError && !bookingDone && (
             <div className="space-y-3">
-              <div className="bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 p-4 rounded-xl text-xs font-bold">
+              <div className="bg-destructive/5 dark:bg-red-950/30 text-destructive dark:text-red-400 p-4 rounded-xl text-xs font-bold">
                 {(createBooking.error as any)?.message || "Booking failed. The slot may already be taken."}
               </div>
               <Button
@@ -521,7 +521,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
               )}
             >
               <div className="flex items-center gap-3">
-                <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center transition-colors", sendOnboarding ? "bg-emerald-600 text-white" : "bg-muted text-emerald-600")}>
+                <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center transition-colors", sendOnboarding ? "bg-emerald-600 text-primary-foreground" : "bg-muted text-emerald-600")}>
                   <Mail size={16} />
                 </div>
                 <div className="space-y-0.5">
@@ -530,7 +530,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                 </div>
               </div>
               <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all", sendOnboarding ? "bg-emerald-600 border-emerald-600" : "border-muted-foreground/30")}>
-                {sendOnboarding && <Check size={12} className="text-white" />}
+                {sendOnboarding && <Check size={12} className="text-primary-foreground" />}
               </div>
             </div>
           )}
@@ -569,7 +569,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                 <Button
                   onClick={handleConfirm}
                   disabled={bookingPending || creatingNotion || !selectedStudent || !date || !time || (!studentEmail)}
-                  className="bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white border-none rounded-xl font-bold text-xs gap-2"
+                  className="bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-primary-foreground border-none rounded-xl font-bold text-xs gap-2"
                 >
                   {bookingPending ? (
                     <Loader2 size={14} className="animate-spin" />

@@ -452,7 +452,7 @@ const AppointmentDetailPage = () => {
                 </DropdownMenu>
                 {isSessionToday && appointment.status === 'Scheduled' && (
                   <Button onClick={handleStartSession}
-                    className="h-8 px-4 bg-chart-primary text-white rounded-lg font-medium text-xs transition-all hover:scale-105 active:scale-95 gap-1.5">
+                    className="h-8 px-4 bg-chart-primary text-primary-foreground rounded-lg font-medium text-xs transition-all hover:scale-105 active:scale-95 gap-1.5">
                     <Zap size={13} className="md:hidden" />
                     <span className="hidden md:inline">Start Session</span>
                   </Button>
@@ -484,7 +484,7 @@ const AppointmentDetailPage = () => {
                   >+ Add condition</button>
                 )}
                 {medicalHistoryEditing && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20" onClick={() => setMedicalHistoryEditing(false)}>
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/20" onClick={() => setMedicalHistoryEditing(false)}>
                     <div className="w-96 p-4 rounded-xl border border-border bg-card shadow-lg" onClick={(e) => e.stopPropagation()}>
                       <textarea
                         value={medicalHistoryValue}

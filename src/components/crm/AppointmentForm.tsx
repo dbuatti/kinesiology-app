@@ -248,7 +248,7 @@ const AppointmentForm = ({
           name="clientId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Client</FormLabel>
+              <FormLabel className="text-xs font-black text-foreground uppercase tracking-widest">Client</FormLabel>
               <FormControl>
                 <SearchableClientSelect
                   clients={clients}
@@ -268,9 +268,9 @@ const AppointmentForm = ({
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Appointment Title (Optional)</FormLabel>
+              <FormLabel className="text-xs font-black text-foreground uppercase tracking-widest">Appointment Title (Optional)</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. Initial Session" {...field} className="h-12 rounded-xl border-2 border-slate-100 focus:border-indigo-500 transition-all" />
+                <Input placeholder="e.g. Initial Session" {...field} className="h-12 rounded-xl border-2 border-border/50 focus:border-indigo-500 transition-all" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -283,14 +283,14 @@ const AppointmentForm = ({
             name="date"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Date</FormLabel>
+                <FormLabel className="text-xs font-black text-foreground uppercase tracking-widest">Date</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full pl-3 text-left font-normal h-12 rounded-xl border-2 border-slate-100",
+                          "w-full pl-3 text-left font-normal h-12 rounded-xl border-2 border-border/50",
                           !field.value && "text-muted-foreground"
                         )}
                         disabled={isTimeLocked}
@@ -315,7 +315,7 @@ const AppointmentForm = ({
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between">
-                  <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Time</FormLabel>
+                  <FormLabel className="text-xs font-black text-foreground uppercase tracking-widest">Time</FormLabel>
                   {isTimeLocked && (
                     <button type="button" onClick={() => setIsTimeLocked(false)} className="text-[8px] font-black text-indigo-600 uppercase tracking-widest flex items-center gap-1 hover:underline">
                       <Unlock size={10} /> Override Slot
@@ -324,8 +324,8 @@ const AppointmentForm = ({
                 </div>
                 <FormControl>
                   <div className="relative">
-                    <Input type="time" {...field} className="h-12 rounded-xl border-2 border-slate-100 pr-10" disabled={isTimeLocked} />
-                    <Clock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                    <Input type="time" {...field} className="h-12 rounded-xl border-2 border-border/50 pr-10" disabled={isTimeLocked} />
+                    <Clock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                   </div>
                 </FormControl>
                 <FormMessage />
@@ -340,14 +340,14 @@ const AppointmentForm = ({
             name="tag"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Type</FormLabel>
+                <FormLabel className="text-xs font-black text-foreground uppercase tracking-widest">Type</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger className="h-12 rounded-xl border-2 border-slate-100">
+                    <SelectTrigger className="h-12 rounded-xl border-2 border-border/50">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent className="rounded-xl border-none shadow-2xl bg-white dark:bg-slate-900">
+                  <SelectContent className="rounded-xl border-none shadow-2xl bg-card dark:bg-foreground">
                     {APPOINTMENT_TAGS.map(tag => (
                       <SelectItem key={tag} value={tag} className="rounded-lg">{tag}</SelectItem>
                     ))}
@@ -363,14 +363,14 @@ const AppointmentForm = ({
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest">Status</FormLabel>
+                <FormLabel className="text-xs font-black text-foreground uppercase tracking-widest">Status</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <SelectTrigger className="h-12 rounded-xl border-2 border-slate-100">
+                    <SelectTrigger className="h-12 rounded-xl border-2 border-border/50">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent className="rounded-xl border-none shadow-2xl bg-white dark:bg-slate-900">
+                  <SelectContent className="rounded-xl border-none shadow-2xl bg-card dark:bg-foreground">
                     {APPOINTMENT_STATUSES.map(status => (
                       <SelectItem key={status} value={status} className="rounded-lg">{status}</SelectItem>
                     ))}
@@ -384,7 +384,7 @@ const AppointmentForm = ({
 
         <div className="grid grid-cols-1 gap-4">
           <div className="space-y-3">
-            <FormLabel className="text-xs font-black text-slate-900 uppercase tracking-widest ml-1">Session Price</FormLabel>
+            <FormLabel className="text-xs font-black text-foreground uppercase tracking-widest ml-1">Session Price</FormLabel>
             <div className="grid grid-cols-3 gap-3">
               {[0, 50, 100].map((price) => (
                 <button
@@ -397,8 +397,8 @@ const AppointmentForm = ({
                   className={cn(
                     "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all",
                     selectedPrice === price
-                      ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100"
-                      : "bg-white border-slate-100 text-slate-600 hover:border-indigo-100"
+                      ? "bg-indigo-600 border-indigo-600 text-primary-foreground shadow-lg shadow-indigo-100"
+                      : "bg-card border-border/50 text-muted-foreground hover:border-indigo-100"
                   )}
                 >
                   <span className="text-lg font-black">{price === 0 ? "Free" : `$${price}`}</span>
@@ -416,21 +416,21 @@ const AppointmentForm = ({
                 <FormItem 
                   className={cn(
                     "flex flex-row items-center justify-between rounded-[1.5rem] border-2 p-5 transition-all cursor-pointer",
-                    field.value ? "bg-emerald-50 border-emerald-200" : "bg-white border-slate-100 hover:border-emerald-100"
+                    field.value ? "bg-emerald-50 border-emerald-200" : "bg-card border-border/50 hover:border-emerald-100"
                   )}
                   onClick={() => field.onChange(!field.value)}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-colors", field.value ? "bg-emerald-600 text-white" : "bg-slate-100 text-emerald-600")}>
+                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-colors", field.value ? "bg-emerald-600 text-primary-foreground" : "bg-muted text-emerald-600")}>
                       <Mail size={20} />
                     </div>
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base font-black text-slate-900 cursor-pointer">Send Onboarding Email</FormLabel>
-                      <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Automatically email the intake form</p>
+                      <FormLabel className="text-base font-black text-foreground cursor-pointer">Send Onboarding Email</FormLabel>
+                      <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">Automatically email the intake form</p>
                     </div>
                   </div>
-                  <div className={cn("w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all", field.value ? "bg-emerald-600 border-emerald-600" : "border-slate-200")}>
-                    {field.value && <CheckCircle2 size={16} className="text-white" />}
+                  <div className={cn("w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all", field.value ? "bg-emerald-600 border-emerald-600" : "border-border")}>
+                    {field.value && <CheckCircle2 size={16} className="text-primary-foreground" />}
                   </div>
                 </FormItem>
               )}

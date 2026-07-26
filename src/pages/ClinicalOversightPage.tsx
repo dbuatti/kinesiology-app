@@ -120,7 +120,7 @@ const ClinicalOversightPage = () => {
  </div>
 
  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
- <Card className="border-none shadow-sm rounded-xl bg-destructive text-white overflow-hidden relative">
+ <Card className="border-none shadow-sm rounded-xl bg-destructive text-primary-foreground overflow-hidden relative">
  <div className="absolute top-0 right-0 p-6 opacity-20">
  <AlertCircle size={80} />
  </div>
@@ -133,7 +133,7 @@ const ClinicalOversightPage = () => {
  </CardContent>
  </Card>
 
- <Card className="border-none shadow-sm rounded-xl bg-chart-emerald text-white overflow-hidden relative">
+ <Card className="border-none shadow-sm rounded-xl bg-chart-emerald text-primary-foreground overflow-hidden relative">
  <div className="absolute top-0 right-0 p-6 opacity-20">
  <CheckCircle2 size={80} />
  </div>
@@ -146,7 +146,7 @@ const ClinicalOversightPage = () => {
  </CardContent>
  </Card>
 
- <Card className="border-none shadow-sm rounded-xl bg-primary text-white overflow-hidden relative">
+ <Card className="border-none shadow-sm rounded-xl bg-primary text-primary-foreground overflow-hidden relative">
  <div className="absolute top-0 right-0 p-6 opacity-20">
  <Users size={80} />
  </div>
@@ -185,7 +185,7 @@ const ClinicalOversightPage = () => {
  {client.totalAssessments} Assessments Recorded
  </p>
  </div>
- <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary/80 group-hover:text-white transition-all shadow-sm">
+ <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary/80 group-hover:text-primary-foreground transition-all shadow-sm">
  <ArrowRight size={24} />
  </div>
  </div>
@@ -210,7 +210,7 @@ const ClinicalOversightPage = () => {
  </div>
 
  {isImperative && (
- <div className="flex items-center gap-3 p-3 bg-destructive text-white rounded-xl shadow-sm ">
+ <div className="flex items-center gap-3 p-3 bg-destructive text-primary-foreground rounded-xl shadow-sm ">
  <Wind size={18} className="shrink-0" />
  <span className="text-[10px] font-semibold uppercase tracking-wider">Imperative: Breathing Recovery</span>
  </div>

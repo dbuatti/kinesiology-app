@@ -57,7 +57,7 @@ const MergeConflictDialog = ({
   };
 
   const displayValue = (val: any) => {
-    if (val === null || val === undefined || val === "") return <span className="text-slate-300 italic">Empty</span>;
+    if (val === null || val === undefined || val === "") return <span className="text-muted-foreground/60 italic">Empty</span>;
     if (Array.isArray(val)) return val.join(", ");
     if (val instanceof Date) return val.toLocaleDateString();
     return String(val);
@@ -65,11 +65,11 @@ const MergeConflictDialog = ({
 
   return (
     <Dialog open={!!activeMerge} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl bg-white">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl bg-card">
         <div className="p-10 space-y-6">
           <DialogHeader>
             <div className="flex items-center gap-4 mb-2">
-              <div className="w-14 h-14 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-xl">
+              <div className="w-14 h-14 rounded-2xl bg-amber-500 text-primary-foreground flex items-center justify-center shadow-xl">
                 <Merge size={28} />
               </div>
               <div>
@@ -101,7 +101,7 @@ const MergeConflictDialog = ({
                       "grid grid-cols-3 p-3 items-center text-xs gap-4",
                       isConflict ? "bg-amber-50/30" : ""
                     )}>
-                      <div className="font-bold text-slate-700 capitalize">
+                      <div className="font-bold text-foreground/80 capitalize">
                         {field.replace('_', ' ')}
                         {isConflict && <span className="text-amber-500 ml-1">*</span>}
                       </div>
@@ -146,51 +146,51 @@ const MergeConflictDialog = ({
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Name</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Name</Label>
                   <Input
                     value={activeMerge.fields.name || ""}
                     onChange={(e) => handleFieldEdit('name', e.target.value)}
-                    className="h-10 rounded-xl bg-white"
+                    className="h-10 rounded-xl bg-card"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Email</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Email</Label>
                   <Input
                     value={activeMerge.fields.email || ""}
                     onChange={(e) => handleFieldEdit('email', e.target.value)}
-                    className="h-10 rounded-xl bg-white"
+                    className="h-10 rounded-xl bg-card"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Phone</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Phone</Label>
                   <Input
                     value={activeMerge.fields.phone || ""}
                     onChange={(e) => handleFieldEdit('phone', e.target.value)}
-                    className="h-10 rounded-xl bg-white"
+                    className="h-10 rounded-xl bg-card"
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Suburbs</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Suburbs</Label>
                   <Input
                     value={Array.isArray(activeMerge.fields.suburbs) ? activeMerge.fields.suburbs.join(", ") : activeMerge.fields.suburbs || ""}
                     onChange={(e) => handleFieldEdit('suburbs', e.target.value.split(",").map(s => s.trim()).filter(Boolean))}
-                    className="h-10 rounded-xl bg-white"
+                    className="h-10 rounded-xl bg-card"
                   />
                 </div>
                 <div className="space-y-1.5 sm:col-span-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Medical History</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Medical History</Label>
                   <Textarea
                     value={activeMerge.fields.medical_history || ""}
                     onChange={(e) => handleFieldEdit('medical_history', e.target.value)}
-                    className="min-h-[80px] rounded-xl bg-white resize-none"
+                    className="min-h-[80px] rounded-xl bg-card resize-none"
                   />
                 </div>
                 <div className="space-y-1.5 sm:col-span-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Medications & Supplements</Label>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Medications & Supplements</Label>
                   <Textarea
                     value={activeMerge.fields.medications_supplements || ""}
                     onChange={(e) => handleFieldEdit('medications_supplements', e.target.value)}
-                    className="min-h-[80px] rounded-xl bg-white resize-none"
+                    className="min-h-[80px] rounded-xl bg-card resize-none"
                   />
                 </div>
               </div>
@@ -201,7 +201,7 @@ const MergeConflictDialog = ({
               <Button 
                 onClick={onConfirmMerge}
                 disabled={merging}
-                className="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl h-14 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-500/20"
+                className="flex-[2] bg-indigo-600 hover:bg-indigo-700 text-primary-foreground rounded-2xl h-14 font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-500/20"
               >
                 {merging ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 className="mr-2" />}
                 Confirm & Execute Merge

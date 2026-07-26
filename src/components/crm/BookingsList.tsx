@@ -59,7 +59,7 @@ const itemTime = (i: BookingListItem) => new Date(i.datetime || i.date).getTime(
 const AVATAR_COLORS = [
   "bg-chart-primary", "bg-pink-600", "bg-chart-emerald", "bg-amber-600", "bg-purple-600",
   "bg-cyan-600", "bg-rose-700", "bg-lime-600", "bg-teal-600", "bg-fuchsia-600",
-  "bg-blue-600", "bg-yellow-600", "bg-green-600", "bg-violet-600", "bg-orange-600",
+  "bg-primary", "bg-yellow-600", "bg-green-600", "bg-violet-600", "bg-orange-600",
 ];
 
 function nameHash(name: string): number {
@@ -425,7 +425,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
           {onNewBooking && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button className="rounded-lg font-semibold text-xs h-8 px-3 bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white border-none active:scale-95 transition-transform">
+                <Button className="rounded-lg font-semibold text-xs h-8 px-3 bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-primary-foreground border-none active:scale-95 transition-transform">
                   <Plus size={14} className="mr-1" /> New
                 </Button>
               </DropdownMenuTrigger>
@@ -458,7 +458,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                 className={cn(
                   "tabular-nums transition-all rounded-full px-3 py-1 border font-semibold",
                   statusFilter === "unpaid"
-                    ? "bg-amber-500 text-white border-amber-500 shadow-sm"
+                    ? "bg-amber-500 text-primary-foreground border-amber-500 shadow-sm"
                     : "bg-amber-100/60 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200/50 dark:border-amber-900/40 hover:bg-amber-100"
                 )}
               >
@@ -482,7 +482,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                 className={cn(
                   "tabular-nums transition-all rounded-full px-3 py-1 border font-semibold",
                   statusFilter === "paid"
-                    ? "bg-chart-emerald text-white border-chart-emerald shadow-sm"
+                    ? "bg-chart-emerald text-primary-foreground border-chart-emerald shadow-sm"
                     : "bg-chart-emerald/10 text-chart-emerald border-chart-emerald/20 hover:bg-chart-emerald/15"
                 )}
               >
@@ -591,7 +591,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                 className="shrink-0"
               />
               <div
-                className={`${AVATAR_COLORS[nameHash(person) % AVATAR_COLORS.length]} w-9 h-9 rounded-full flex items-center justify-center shrink-0 font-bold text-xs text-white shadow-sm ring-2 ring-background`}
+                className={`${AVATAR_COLORS[nameHash(person) % AVATAR_COLORS.length]} w-9 h-9 rounded-full flex items-center justify-center shrink-0 font-bold text-xs text-primary-foreground shadow-sm ring-2 ring-background`}
               >
                 {nameInitials(person)}
               </div>
@@ -612,7 +612,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                   {item.cancelled ? (
                     <Badge className="bg-muted text-muted-foreground border-none text-[10px] font-semibold rounded-full px-2.5 py-0.5">Cancelled</Badge>
                   ) : item.isFree ? (
-                    <Badge className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border-none text-[10px] font-semibold rounded-full px-2.5 py-0.5">Free</Badge>
+                    <Badge className="bg-muted text-muted-foreground dark:bg-foreground dark:text-slate-300 border-none text-[10px] font-semibold rounded-full px-2.5 py-0.5">Free</Badge>
                   ) : !item.paid ? (
                     <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-none text-[10px] font-semibold rounded-full px-2.5 py-0.5">Unpaid</Badge>
                   ) : null}
@@ -635,7 +635,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
               {/* Charge — at-a-glance pricing */}
               <div className="shrink-0 text-right w-14">
                 {item.isFree ? (
-                  <span className="text-xs font-bold text-slate-400">Free</span>
+                  <span className="text-xs font-bold text-muted-foreground">Free</span>
                 ) : item.amount != null ? (
                   <span className={cn("text-sm font-bold tabular-nums", item.paid ? "text-chart-emerald" : "text-orange-600 dark:text-orange-400")}>${item.amount}</span>
                 ) : (
@@ -707,7 +707,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                       </DropdownMenuItem>
                     ) : (
                       <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setFree(item, true); }}>
-                        <Gift size={14} className="mr-2 text-slate-500" /> Mark as free
+                        <Gift size={14} className="mr-2 text-muted-foreground" /> Mark as free
                       </DropdownMenuItem>
                     )
                   )}
@@ -778,7 +778,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
             <Button
               onClick={() => { const t = payTarget; setPayTarget(null); if (t) sendPaymentLink(t); }}
               disabled={!!busyId}
-              className="rounded-xl bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white border-none"
+              className="rounded-xl bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-primary-foreground border-none"
             >
               <CreditCard size={15} className="mr-2" /> Send for ${payTarget?.amount ?? ""}
             </Button>

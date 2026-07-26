@@ -59,7 +59,7 @@ const ZoneCard = ({ point, images, isSelected, onSelect, onShowInfo, isLoading }
         )}>
             <div className={cn(
                 "w-full aspect-square rounded-lg overflow-hidden mb-1.5 flex items-center justify-center transition-colors relative",
-                isSelected ? "bg-white/10" : "bg-muted/50"
+                isSelected ? "bg-primary-foreground/10" : "bg-muted/50"
             )}>
                 {isLoading ? (
                   <Loader2 size={14} className="text-muted-foreground animate-spin" />
@@ -73,7 +73,7 @@ const ZoneCard = ({ point, images, isSelected, onSelect, onShowInfo, isLoading }
                 <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                   <button 
                     onClick={(e) => { e.stopPropagation(); onShowInfo(point); }}
-                    className="w-6 h-6 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-primary hover:bg-primary hover:text-primary-foreground transition-all"
+                    className="w-6 h-6 rounded-full bg-primary-foreground/90 backdrop-blur-sm flex items-center justify-center text-primary hover:bg-primary hover:text-primary-foreground transition-all"
                   >
                     <Info size={14} />
                   </button>
@@ -87,7 +87,7 @@ const ZoneCard = ({ point, images, isSelected, onSelect, onShowInfo, isLoading }
             </p>
 
             <div className={cn(
-                "absolute inset-0 bg-slate-900/90 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center p-2 gap-1.5 transition-all duration-300",
+                "absolute inset-0 bg-foreground/90 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center p-2 gap-1.5 transition-all duration-300",
                 isSelected 
                   ? "opacity-100 pointer-events-auto" 
                   : "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
@@ -96,11 +96,11 @@ const ZoneCard = ({ point, images, isSelected, onSelect, onShowInfo, isLoading }
                 <div className="flex flex-col w-full gap-1">
                     {!isMidline && (
                         <div className="flex gap-1 w-full">
-                            <button onClick={(e) => { e.stopPropagation(); onSelect('Left'); }} className="flex-1 bg-white/10 hover:bg-primary text-white text-[8px] font-black py-1 rounded-md border border-white/10 transition-colors">L</button>
-                            <button onClick={(e) => { e.stopPropagation(); onSelect('Right'); }} className="flex-1 bg-white/10 hover:bg-primary text-white text-[8px] font-black py-1 rounded-md border border-white/10 transition-colors">R</button>
+                            <button onClick={(e) => { e.stopPropagation(); onSelect('Left'); }} className="flex-1 bg-primary-foreground/10 hover:bg-primary text-primary-foreground text-[8px] font-black py-1 rounded-md border border-primary-foreground/10 transition-colors">L</button>
+                            <button onClick={(e) => { e.stopPropagation(); onSelect('Right'); }} className="flex-1 bg-primary-foreground/10 hover:bg-primary text-primary-foreground text-[8px] font-black py-1 rounded-md border border-primary-foreground/10 transition-colors">R</button>
                         </div>
                     )}
-                    <button onClick={(e) => { e.stopPropagation(); onSelect('Bilateral'); }} className="w-full bg-white/10 hover:bg-primary text-white text-[8px] font-black py-1 rounded-md border border-white/10 transition-colors">{isMidline ? 'Select' : 'Bilateral'}</button>
+                    <button onClick={(e) => { e.stopPropagation(); onSelect('Bilateral'); }} className="w-full bg-primary-foreground/10 hover:bg-primary text-primary-foreground text-[8px] font-black py-1 rounded-md border border-primary-foreground/10 transition-colors">{isMidline ? 'Select' : 'Bilateral'}</button>
                 </div>
             </div>
         </div>
@@ -310,9 +310,9 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
             <div className="space-y-0.5"><h3 className="text-sm font-medium text-foreground">Calibration Method</h3><p className="text-xs text-muted-foreground font-medium">Challenge the system for the preferred method.</p></div>
             <div className="grid grid-cols-1 gap-2">
               {[
-                { id: 'Tapping', icon: Zap, color: 'text-amber-500', best: 'Fast resets' },
-                { id: 'Holding + Intention', icon: Heart, color: 'text-rose-500', best: 'Deep trauma' },
-                { id: 'Tuning Fork', icon: Activity, color: 'text-blue-500', best: 'Vibrational' }
+                { id: 'Tapping', icon: Zap, color: 'text-primary', best: 'Fast resets' },
+                { id: 'Holding + Intention', icon: Heart, color: 'text-destructive', best: 'Deep trauma' },
+                { id: 'Tuning Fork', icon: Activity, color: 'text-primary', best: 'Vibrational' }
               ].map((m) => (
                 <Button key={m.id} variant="outline" className={cn("h-12 justify-start gap-4 px-6 rounded-xl border transition-all group", method === m.id ? "border-primary bg-primary/5 text-primary" : "border-border hover:border-primary/30")} onClick={() => { setMethod(m.id as IntegrationMethod); nextStep('CALIBRATE'); }}>
                   <div className="w-10 h-10 rounded-lg bg-card flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"><m.icon size={20} className={m.color} /></div>

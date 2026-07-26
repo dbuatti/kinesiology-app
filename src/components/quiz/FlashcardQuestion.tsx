@@ -24,9 +24,9 @@ const FlashcardQuestion: FC<FlashcardQuestionProps> = ({
         onClick={() => setIsFlipped(!isFlipped)}
       >
         {/* Front */}
-        <div className="absolute inset-0 w-full h-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-[2rem] p-8 flex flex-col items-center justify-center text-center [backface-visibility:hidden] shadow-xl">
+        <div className="absolute inset-0 w-full h-full bg-card dark:bg-foreground border-2 border-border dark:border-border rounded-[2rem] p-8 flex flex-col items-center justify-center text-center [backface-visibility:hidden] shadow-xl">
           <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-4">Theory Flashcard</span>
-          <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+          <h3 className="text-2xl font-bold text-foreground dark:text-primary-foreground">
             {question}
           </h3>
           <div className="mt-8 flex items-center gap-2 text-muted-foreground text-xs font-bold">
@@ -56,7 +56,7 @@ const FlashcardQuestion: FC<FlashcardQuestionProps> = ({
             <X size={20} className="mr-2" /> I didn't know this
           </Button>
           <Button 
-            className="flex-1 h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20"
+            className="flex-1 h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-primary-foreground shadow-lg shadow-emerald-600/20"
             onClick={() => onAnswer(true)}
           >
             <Check size={20} className="mr-2" /> I knew this!

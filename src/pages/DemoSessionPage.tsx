@@ -160,7 +160,7 @@ const DemoSessionPage = () => {
  <Button 
  variant="outline" 
  size="sm" 
-  className={cn("h-10 px-4 font-medium text-xs rounded-xl transition-all", showSidebar ? "bg-primary text-white border-indigo-600" : "bg-background border-border text-muted-foreground hover:bg-muted")}
+  className={cn("h-10 px-4 font-medium text-xs rounded-xl transition-all", showSidebar ? "bg-primary text-primary-foreground border-indigo-600" : "bg-background border-border text-muted-foreground hover:bg-muted")}
  onClick={() => setShowSidebar(!showSidebar)}
  >
  {showSidebar ? <PanelRightClose size={16} className="mr-2" /> : <PanelRightOpen size={16} className="mr-2" />}
@@ -187,11 +187,11 @@ const DemoSessionPage = () => {
  <Card className="border-none shadow-sm rounded-xl bg-background overflow-hidden">
  <div className="p-6 border-b border-border bg-muted/30">
  <div className="flex items-start gap-5">
- <div className="w-16 h-16 rounded-xl bg-primary text-white flex items-center justify-center text-2xl font-semibold shadow-sm">A</div>
+ <div className="w-16 h-16 rounded-xl bg-primary text-primary-foreground flex items-center justify-center text-2xl font-semibold shadow-sm">A</div>
  <div className="space-y-2">
  <div className="flex items-center gap-3">
  <Badge variant="secondary" className="font-medium bg-background border-border text-muted-foreground">{appointment.display_id}</Badge>
- <Badge className="bg-primary text-white border-none">{appointment.tag}</Badge>
+ <Badge className="bg-primary text-primary-foreground border-none">{appointment.tag}</Badge>
  </div>
  <h1 className="text-3xl font-semibold text-foreground">{appointment.clients.name}</h1>
  <div className="flex items-center gap-4 text-sm font-medium text-muted-foreground">

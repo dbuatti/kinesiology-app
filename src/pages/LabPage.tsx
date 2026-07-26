@@ -20,7 +20,7 @@ const LabPage = () => {
         {/* Philosophy Card */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-8 border-t border-border">
           <div className="p-5 bg-indigo-50 dark:bg-indigo-950/20 rounded-2xl border-2 border-indigo-100 dark:border-indigo-900/30 flex items-start gap-5">
-            <div className="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xl shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-indigo-600 text-primary-foreground flex items-center justify-center shadow-xl shrink-0">
               <Target size={32} />
             </div>
             <div className="space-y-2">
@@ -32,7 +32,7 @@ const LabPage = () => {
           </div>
 
           <div className="p-5 bg-amber-50 dark:bg-amber-950/20 rounded-2xl border-2 border-amber-100 dark:border-amber-900/30 flex items-start gap-5">
-            <div className="w-12 h-12 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-xl shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-amber-500 text-primary-foreground flex items-center justify-center shadow-xl shrink-0">
               <Zap size={32} />
             </div>
             <div className="space-y-2">

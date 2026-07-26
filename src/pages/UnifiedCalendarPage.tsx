@@ -665,7 +665,7 @@ const UnifiedCalendarPage = () => {
  title="Calendar"
  subtitle="Kinesiology appointments and voice lessons at a glance."
   icon={CalendarIcon}
-  iconClassName="bg-gradient-to-br from-amber-500 to-rose-500 text-white shadow-lg shadow-amber-500/20"
+  iconClassName="bg-gradient-to-br from-amber-500 to-rose-500 text-primary-foreground shadow-lg shadow-amber-500/20"
   actions={
  <div className="flex gap-2 items-center">
  <ShareAvailabilityButton />
@@ -852,7 +852,7 @@ const UnifiedCalendarPage = () => {
    className={cn(
    "w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold",
    isCurrentDay
-   ? "bg-gradient-to-br from-amber-500 to-rose-500 text-white shadow-sm "
+   ? "bg-gradient-to-br from-amber-500 to-rose-500 text-primary-foreground shadow-sm "
    : "text-muted-foreground"
    )}
    >
@@ -1061,7 +1061,7 @@ const UnifiedCalendarPage = () => {
     <DialogContent className="sm:max-w-[440px] rounded-2xl p-0 mx-4 w-[calc(100%-2rem)] flex flex-col bg-background">
       <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-rose-500 text-white flex items-center justify-center shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-rose-500 text-primary-foreground flex items-center justify-center shadow-sm">
             <User size={20} />
           </div>
           <div>
@@ -1106,7 +1106,7 @@ const UnifiedCalendarPage = () => {
       <DialogContent className="sm:max-w-[480px] rounded-2xl p-0 mx-4 w-[calc(100%-2rem)] flex flex-col bg-background">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-rose-500 text-white flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-rose-500 text-primary-foreground flex items-center justify-center shadow-sm">
               <Plus size={20} />
             </div>
             <div>

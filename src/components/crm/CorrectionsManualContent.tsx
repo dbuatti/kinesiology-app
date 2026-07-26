@@ -191,7 +191,7 @@ const CorrectionsManualContent = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const tabAccent = activeTab === "afferent"
-    ? "text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800"
+    ? "text-primary dark:text-blue-300 bg-primary/5 dark:bg-primary/50 border-primary/20 dark:border-blue-800"
     : activeTab === "efferent"
     ? "text-purple-600 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 border-purple-200 dark:border-purple-800"
     : activeTab === "heart-wall"
@@ -214,7 +214,7 @@ const CorrectionsManualContent = () => {
         <div key={step} className="flex gap-3 px-3 py-2 rounded-lg hover:bg-muted/40 transition-colors">
           <span className={cn(
             "badge-step mt-0.5",
-            accent === "text-blue-600" ? "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300" :
+            accent === "text-primary" ? "bg-primary/10 dark:bg-primary/50 text-primary dark:text-blue-300" :
             accent === "text-purple-600" ? "bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300" :
             accent === "text-rose-600" ? "bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300" :
             "bg-destructive/10 text-destructive"
@@ -257,7 +257,7 @@ const CorrectionsManualContent = () => {
         return (
           <div className="space-y-4">
             <h2 className="text-base font-bold tracking-tight">{content.title}</h2>
-            {renderSteps(content.steps, "text-blue-600")}
+            {renderSteps(content.steps, "text-primary")}
           </div>
         );
       }
@@ -462,7 +462,7 @@ const CorrectionsManualContent = () => {
         <div className="px-4 py-2 flex items-center justify-between gap-4">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="h-8 bg-muted/60">
-              <TabsTrigger value="afferent" className="text-[10px] h-7 px-3 data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700 data-[state=active]:shadow-sm">
+              <TabsTrigger value="afferent" className="text-[10px] h-7 px-3 data-[state=active]:bg-primary/5 data-[state=active]:text-primary data-[state=active]:shadow-sm">
                 <ArrowDownCircle size={12} className="mr-1.5" /> Afferent
               </TabsTrigger>
               <TabsTrigger value="efferent" className="text-[10px] h-7 px-3 data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700 data-[state=active]:shadow-sm">

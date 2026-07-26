@@ -161,7 +161,7 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
                       className={cn(
                         "flex flex-col items-center justify-center min-w-[72px] h-20 rounded-2xl border-2 transition-all duration-200 shrink-0",
                         isActive
-                          ? "bg-primary border-primary text-white shadow-lg scale-105"
+                          ? "bg-primary border-primary text-primary-foreground shadow-lg scale-105"
                           : "bg-card border-border hover:border-primary/30 text-foreground"
                       )}
                     >
@@ -212,7 +212,7 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
                 <button
                   key={idx}
                   onClick={() => onSlotSelect(dateObj, format(dateObj, "HH:mm"), timeStr)}
-                  className="flex items-center justify-center gap-2 p-3.5 rounded-xl bg-card border border-border text-sm font-black text-foreground hover:bg-indigo-600 hover:border-indigo-600 hover:text-white transition-all group shadow-sm"
+                  className="flex items-center justify-center gap-2 p-3.5 rounded-xl bg-card border border-border text-sm font-black text-foreground hover:bg-indigo-600 hover:border-indigo-600 hover:text-primary-foreground transition-all group shadow-sm"
                 >
                   <Clock size={13} className="opacity-40 group-hover:opacity-100 transition-opacity shrink-0" />
                   {format(dateObj, "h:mm a")}

@@ -290,7 +290,7 @@ const EmbedSection = ({
       <div className="flex justify-end -mb-4 print:hidden">
         <button
           onClick={printHomework}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider border border-black hover:bg-black hover:text-white transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider border border-foreground/20 hover:bg-foreground hover:text-primary-foreground transition-colors"
         >
           <Printer size={12} /> Print Homework
         </button>
@@ -341,7 +341,7 @@ const EmbedSection = ({
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className={cn(
                           "font-medium text-xs",
-                          item.isCleared ? "text-muted-foreground line-through" : "text-slate-900"
+                          item.isCleared ? "text-muted-foreground line-through" : "text-foreground"
                         )}>
                           {item.name}
                         </span>
@@ -372,7 +372,7 @@ const EmbedSection = ({
                       "h-8 px-3 rounded-none border text-[10px] font-semibold uppercase tracking-wider transition-all shrink-0",
                       item.isCleared
                         ? "border-border hover:bg-muted text-muted-foreground"
-                        : "border-emerald-500 hover:bg-emerald-600 hover:text-white text-emerald-700"
+                        : "border-emerald-500 hover:bg-emerald-600 hover:text-primary-foreground text-emerald-700"
                     )}
                   >
                     {isClearing
@@ -415,7 +415,7 @@ const EmbedSection = ({
                   <span className="truncate">{finding.name}</span>
                   <span className={cn(
                     "text-[7px] font-semibold uppercase tracking-wider px-1.5 py-0.5 shrink-0",
-                    isClear ? "bg-emerald-500 text-white" : "bg-rose-500 text-white"
+                    isClear ? "bg-emerald-500 text-primary-foreground" : "bg-rose-500 text-primary-foreground"
                   )}>
                     {finding.status.replace('_Cleared', '✓')}
                   </span>
@@ -434,7 +434,7 @@ const EmbedSection = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
             <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Balances Applied</label>
-            <div className="p-4 bg-muted/50 border border-border min-h-[90px] text-xs font-mono leading-relaxed text-slate-700 whitespace-pre-wrap">
+            <div className="p-4 bg-muted/50 border border-border min-h-[90px] text-xs font-mono leading-relaxed text-foreground/80 whitespace-pre-wrap">
               {appointment.modes_balances || <span className="italic text-muted-foreground/50">No corrections logged.</span>}
             </div>
           </div>

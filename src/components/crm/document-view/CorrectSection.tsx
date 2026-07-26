@@ -115,7 +115,7 @@ const parseCorrectionString = (str: string) => {
 const CorrectSectionProtocolBlock = ({ title, icon: Icon, color, steps, desc, children }: { title: string, icon: any, color: string, steps: string[], desc?: string, children?: ReactNode }) => (
   <div className="p-5 bg-muted border border-border rounded-xl space-y-3">
     <div className="flex items-center gap-2">
-      <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-white", color)}>
+      <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-primary-foreground", color)}>
         <Icon size={14} />
       </div>
       <h5 className="text-xs font-semibold uppercase tracking-tight">{title}</h5>
@@ -123,8 +123,8 @@ const CorrectSectionProtocolBlock = ({ title, icon: Icon, color, steps, desc, ch
     {desc && <p className="text-[11px] text-muted-foreground italic leading-relaxed">"{desc}"</p>}
     <div className="space-y-1.5">
       {steps.map((step, idx) => (
-        <div key={step} className="flex gap-2 items-start text-[11px] leading-relaxed text-slate-700">
-          <span className="font-semibold text-black shrink-0">{idx + 1}.</span>
+        <div key={step} className="flex gap-2 items-start text-[11px] leading-relaxed text-foreground/80">
+          <span className="font-semibold text-foreground shrink-0">{idx + 1}.</span>
           <p className="font-medium">{step}</p>
         </div>
       ))}
@@ -327,10 +327,10 @@ Correction Method: ${method}`;
   return (
     <div className="space-y-12">
       {/* Interactive Wizard Card */}
-      <div className="p-8 border-2 border-black space-y-8 bg-white">
-        <div className="flex items-center justify-between border-b border-black pb-3">
+      <div className="p-8 border-2 border-foreground/20 space-y-8 bg-card">
+        <div className="flex items-center justify-between border-b border-foreground/20 pb-3">
           <div className="flex items-center gap-2">
-            <Zap size={20} className="text-black" />
+            <Zap size={20} className="text-foreground" />
             <h3 className="text-sm font-semibold uppercase tracking-wider">
               {showLog ? "Calibration Log" : "Lofi Calibration Wizard"}
             </h3>
@@ -340,7 +340,7 @@ Correction Method: ${method}`;
               variant="ghost"
               size="sm"
               onClick={() => setShowLog(!showLog)}
-              className="h-8 px-3 rounded-md border border-black hover:bg-black hover:text-white transition-all text-[10px] font-semibold uppercase tracking-wider gap-1.5"
+              className="h-8 px-3 rounded-md border border-foreground/20 hover:bg-foreground hover:text-primary-foreground transition-all text-[10px] font-semibold uppercase tracking-wider gap-1.5"
             >
               <History size={12} />
               {showLog ? "Show Wizard" : `View Log (${pastCorrections.length})`}
@@ -350,7 +350,7 @@ Correction Method: ${method}`;
                 variant="ghost"
                 size="icon"
                 onClick={handleCopyWizard}
-                className="h-8 w-8 rounded-md border border-black hover:bg-black hover:text-white transition-all"
+                className="h-8 w-8 rounded-md border border-foreground/20 hover:bg-foreground hover:text-primary-foreground transition-all"
                 title="Copy wizard configuration to clipboard"
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
@@ -363,11 +363,11 @@ Correction Method: ${method}`;
           /* FLIPPED LOG VIEW */
           <div className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
             {pastCorrections.length > 0 ? (
-              <div className="divide-y divide-slate-100 border border-black">
+              <div className="divide-y divide-slate-100 border border-foreground/20">
                 {pastCorrections.map((correction, idx) => (
                   <div key={`${idx}-${correction.slice(0, 40)}`} className="p-4 flex items-center justify-between gap-4 hover:bg-muted transition-colors">
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-mono font-medium text-slate-800 leading-relaxed break-words">
+                      <p className="text-xs font-mono font-medium text-foreground leading-relaxed break-words">
                         {correction.replace(/^[-*\s]+/, '')}
                       </p>
                     </div>
@@ -376,7 +376,7 @@ Correction Method: ${method}`;
                         variant="ghost"
                         size="sm"
                         onClick={() => handleLoadSingleLog(correction)}
-                        className="h-8 px-3 rounded-md border border-black hover:bg-black hover:text-white text-[10px] font-semibold uppercase tracking-wider"
+                        className="h-8 px-3 rounded-md border border-foreground/20 hover:bg-foreground hover:text-primary-foreground text-[10px] font-semibold uppercase tracking-wider"
                       >
                         Load
                       </Button>
@@ -430,11 +430,11 @@ Correction Method: ${method}`;
                       updateMetadataFields({ wizard_finding: val });
                     }
                   }}
-                  className="w-full bg-transparent border-b border-border py-1.5 text-sm font-medium focus:border-black outline-none transition-all"
+                  className="w-full bg-transparent border-b border-border py-1.5 text-sm font-medium focus:border-foreground/20 outline-none transition-all"
                 >
                   <option value="" className="text-muted-foreground">Select inhibited finding...</option>
                   {inhibitedFindings.map(finding => (
-                    <option key={finding} value={finding} className="text-black font-medium">
+                    <option key={finding} value={finding} className="text-foreground font-medium">
                       {finding}
                     </option>
                   ))}
@@ -448,7 +448,7 @@ Correction Method: ${method}`;
                     onChange={handleFindingChange}
                     onFocus={() => setIsFindingFocused(true)}
                     onBlur={handleFindingBlur}
-                    className="w-full bg-transparent border-b border-border py-1.5 text-sm font-medium focus:border-black outline-none transition-all mt-2 animate-in slide-in-from-top-1"
+                    className="w-full bg-transparent border-b border-border py-1.5 text-sm font-medium focus:border-foreground/20 outline-none transition-all mt-2 animate-in slide-in-from-top-1"
                     placeholder="Type custom finding..."
                   />
                 )}
@@ -467,7 +467,7 @@ Correction Method: ${method}`;
                           wizard_system: null // Reset system on direction change
                         });
                       }}
-                      className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
+                      className="h-4 w-4 border-foreground/20 rounded-none data-[state=checked]:bg-foreground"
                     />
                     <label htmlFor="dir-afferent" className="text-xs font-medium cursor-pointer">Afferent (Bottom-Up)</label>
                   </div>
@@ -481,7 +481,7 @@ Correction Method: ${method}`;
                           wizard_system: null // Reset system on direction change
                         });
                       }}
-                      className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
+                      className="h-4 w-4 border-foreground/20 rounded-none data-[state=checked]:bg-foreground"
                     />
                     <label htmlFor="dir-efferent" className="text-xs font-medium cursor-pointer">Efferent (Top-Down)</label>
                   </div>
@@ -498,7 +498,7 @@ Correction Method: ${method}`;
                           id={`sys-${sys}`}
                           checked={metadata.wizard_system === sys}
                           onCheckedChange={(checked) => updateMetadataFields({ wizard_system: checked ? sys : null })}
-                          className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
+                          className="h-4 w-4 border-foreground/20 rounded-none data-[state=checked]:bg-foreground"
                         />
                         <label htmlFor={`sys-${sys}`} className="text-xs font-medium cursor-pointer">{sys}</label>
                       </div>
@@ -512,7 +512,7 @@ Correction Method: ${method}`;
                           id={`sys-${sys}`}
                           checked={metadata.wizard_system === sys}
                           onCheckedChange={(checked) => updateMetadataFields({ wizard_system: checked ? sys : null })}
-                          className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
+                          className="h-4 w-4 border-foreground/20 rounded-none data-[state=checked]:bg-foreground"
                         />
                         <label htmlFor={`sys-${sys}`} className="text-xs font-medium cursor-pointer">{sys}</label>
                       </div>
@@ -526,8 +526,8 @@ Correction Method: ${method}`;
 
             {/* Right Column: Coordinates & Polarity */}
             <div className="space-y-6">
-              <div className="space-y-4 border-l-2 border-slate-100 pl-4">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-1">
+              <div className="space-y-4 border-l-2 border-border/50 pl-4">
+                <div className="flex items-center justify-between border-b border-border/50 pb-1">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Calibration Coordinates</p>
                   <a 
                     href="/resources/brain-zones/print" 
@@ -544,19 +544,19 @@ Correction Method: ${method}`;
                   <select 
                     value={metadata.wizard_coord1_name || ""}
                     onChange={(e) => updateMetadataFields({ wizard_coord1_name: e.target.value })}
-                    className="w-full bg-transparent border-b border-border py-1.5 text-xs font-medium focus:border-black outline-none transition-all"
+                    className="w-full bg-transparent border-b border-border py-1.5 text-xs font-medium focus:border-foreground/20 outline-none transition-all"
                   >
                     <option value="" className="text-muted-foreground">Select Zone...</option>
                     <optgroup label="Cortical Brain Zones">
                       {corticalOptions.map(option => (
-                        <option key={`c1-${option.id}`} value={option.name} className="text-black font-medium">
+                        <option key={`c1-${option.id}`} value={option.name} className="text-foreground font-medium">
                           {option.name}
                         </option>
                       ))}
                     </optgroup>
                     <optgroup label="Subcortical Brain Zones">
                       {subcorticalOptions.map(option => (
-                        <option key={`c1-${option.id}`} value={option.name} className="text-black font-medium">
+                        <option key={`c1-${option.id}`} value={option.name} className="text-foreground font-medium">
                           {option.name}
                         </option>
                       ))}
@@ -569,7 +569,7 @@ Correction Method: ${method}`;
                           id={`c1-side-${side}`}
                           checked={metadata.wizard_coord1_side === side}
                           onCheckedChange={(checked) => updateMetadataFields({ wizard_coord1_side: checked ? side : null })}
-                          className="h-3.5 w-3.5 border-black rounded-none data-[state=checked]:bg-black"
+                          className="h-3.5 w-3.5 border-foreground/20 rounded-none data-[state=checked]:bg-foreground"
                         />
                         <label htmlFor={`c1-side-${side}`} className="text-[10px] font-medium cursor-pointer">{side}</label>
                       </div>
@@ -582,19 +582,19 @@ Correction Method: ${method}`;
                   <select 
                     value={metadata.wizard_coord2_name || ""}
                     onChange={(e) => updateMetadataFields({ wizard_coord2_name: e.target.value })}
-                    className="w-full bg-transparent border-b border-border py-1.5 text-xs font-medium focus:border-black outline-none transition-all"
+                    className="w-full bg-transparent border-b border-border py-1.5 text-xs font-medium focus:border-foreground/20 outline-none transition-all"
                   >
                     <option value="" className="text-muted-foreground">Select Zone...</option>
                     <optgroup label="Cortical Brain Zones">
                       {corticalOptions.map(option => (
-                        <option key={`c2-${option.id}`} value={option.name} className="text-black font-medium">
+                        <option key={`c2-${option.id}`} value={option.name} className="text-foreground font-medium">
                           {option.name}
                         </option>
                       ))}
                     </optgroup>
                     <optgroup label="Subcortical Brain Zones">
                       {subcorticalOptions.map(option => (
-                        <option key={`c2-${option.id}`} value={option.name} className="text-black font-medium">
+                        <option key={`c2-${option.id}`} value={option.name} className="text-foreground font-medium">
                           {option.name}
                         </option>
                       ))}
@@ -607,7 +607,7 @@ Correction Method: ${method}`;
                           id={`c2-side-${side}`}
                           checked={metadata.wizard_coord2_side === side}
                           onCheckedChange={(checked) => updateMetadataFields({ wizard_coord2_side: checked ? side : null })}
-                          className="h-3.5 w-3.5 border-black rounded-none data-[state=checked]:bg-black"
+                          className="h-3.5 w-3.5 border-foreground/20 rounded-none data-[state=checked]:bg-foreground"
                         />
                         <label htmlFor={`c2-side-${side}`} className="text-[10px] font-medium cursor-pointer">{side}</label>
                       </div>
@@ -621,7 +621,7 @@ Correction Method: ${method}`;
 
         {!showLog && (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-slate-100">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-border/50">
               <div className="space-y-3">
                 <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Polarity</label>
                 <div className="flex gap-6">
@@ -630,7 +630,7 @@ Correction Method: ${method}`;
                       id="pol-in"
                       checked={metadata.wizard_polarity === 'IN'}
                       onCheckedChange={(checked) => updateMetadataFields({ wizard_polarity: checked ? 'IN' : null })}
-                      className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
+                      className="h-4 w-4 border-foreground/20 rounded-none data-[state=checked]:bg-foreground"
                     />
                     <label htmlFor="pol-in" className="text-xs font-medium cursor-pointer">Energy IN (+)</label>
                   </div>
@@ -639,7 +639,7 @@ Correction Method: ${method}`;
                       id="pol-out"
                       checked={metadata.wizard_polarity === 'OUT'}
                       onCheckedChange={(checked) => updateMetadataFields({ wizard_polarity: checked ? 'OUT' : null })}
-                      className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
+                      className="h-4 w-4 border-foreground/20 rounded-none data-[state=checked]:bg-foreground"
                     />
                     <label htmlFor="pol-out" className="text-xs font-medium cursor-pointer">Energy OUT (-)</label>
                   </div>
@@ -655,7 +655,7 @@ Correction Method: ${method}`;
                         id={`method-${method}`}
                         checked={metadata.wizard_method === method}
                         onCheckedChange={(checked) => updateMetadataFields({ wizard_method: checked ? method : null })}
-                        className="h-4 w-4 border-black rounded-none data-[state=checked]:bg-black"
+                        className="h-4 w-4 border-foreground/20 rounded-none data-[state=checked]:bg-foreground"
                       />
                       <label htmlFor={`method-${method}`} className="text-xs font-medium cursor-pointer">{method}</label>
                     </div>
@@ -665,7 +665,7 @@ Correction Method: ${method}`;
             </div>
 
             {/* Log Correction Button */}
-            <div className="pt-6 border-t border-slate-100 flex justify-between items-center">
+            <div className="pt-6 border-t border-border/50 flex justify-between items-center">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                 Ready to log this correction?
               </p>
@@ -683,9 +683,9 @@ Correction Method: ${method}`;
 
       {/* AFFERENT PROTOCOLS SECTION */}
       <div id="c-afferent" className="space-y-6 scroll-mt-24">
-        <div className="flex items-center gap-2 border-b border-black pb-2">
-          <ArrowDownCircle size={16} className="text-blue-600" />
-          <h4 className="text-sm font-semibold uppercase tracking-wider text-blue-600">Afferent (Bottom-Up) Protocols</h4>
+        <div className="flex items-center gap-2 border-b border-foreground/20 pb-2">
+          <ArrowDownCircle size={16} className="text-primary" />
+          <h4 className="text-sm font-semibold uppercase tracking-wider text-primary">Afferent (Bottom-Up) Protocols</h4>
         </div>
 
         <div className="grid grid-cols-1 gap-4">
@@ -693,7 +693,7 @@ Correction Method: ${method}`;
             <CorrectSectionProtocolBlock 
               title="Mechanoreceptor (Unconscious)"
               icon={Activity}
-              color="bg-blue-500"
+              color="bg-primary"
               desc="Unconscious mechanoreception — Golgi receptors in ligaments, tendons and fascia report joint stretch to the cerebellum via the spinocerebellar tract (~85% of unconscious input)."
               steps={[
                 "Confirm: inhibited DM → state afferent (facilitates) → X card 5-10s (facilitates) → GV16 TL confirms",
@@ -741,7 +741,7 @@ Correction Method: ${method}`;
 
       {/* EFFERENT PROTOCOLS SECTION */}
       <div id="c-efferent" className="space-y-6 scroll-mt-24">
-        <div className="flex items-center gap-2 border-b border-black pb-2">
+        <div className="flex items-center gap-2 border-b border-foreground/20 pb-2">
           <ArrowUpCircle size={16} className="text-purple-600" />
           <h4 className="text-sm font-semibold uppercase tracking-wider text-purple-600">Efferent (Top-Down) Protocols</h4>
         </div>
@@ -795,7 +795,7 @@ Correction Method: ${method}`;
                 "Correction & Upload: Hold ESR + Pulse Point + Eye Position. Replay stress until shift (yawn, sigh, swallow, gurgle, deep breath), then upload positive state."
               ]}
             >
-              <div className="p-4 bg-white rounded-xl border border-border space-y-2 text-[11px] leading-relaxed text-slate-700">
+              <div className="p-4 bg-card rounded-xl border border-border space-y-2 text-[11px] leading-relaxed text-foreground/80">
                 <div className="flex items-center gap-2 mb-1">
                   <Info size={14} className="text-chart-primary" />
                   <span className="font-semibold uppercase text-[10px] text-chart-primary">Clinical Mastery Note</span>

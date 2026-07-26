@@ -78,7 +78,7 @@ const LimitingBeliefsBackground = () => {
         <div className="bg-primary/5 border border-primary/10 rounded-3xl p-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex flex-col items-center text-center max-w-[150px]">
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-2">
+              <div className="w-12 h-12 bg-card rounded-full flex items-center justify-center shadow-sm mb-2">
                 <AlertCircle className="text-amber-500" />
               </div>
               <span className="text-xs font-bold">Stimulus</span>
@@ -86,7 +86,7 @@ const LimitingBeliefsBackground = () => {
             </div>
             <ArrowRight className="hidden md:block text-muted-foreground/30" />
             <div className="flex flex-col items-center text-center max-w-[150px]">
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-2">
+              <div className="w-12 h-12 bg-card rounded-full flex items-center justify-center shadow-sm mb-2">
                 <Brain className="text-rose-500" />
               </div>
               <span className="text-xs font-bold">Felt Sense</span>
@@ -94,7 +94,7 @@ const LimitingBeliefsBackground = () => {
             </div>
             <ArrowRight className="hidden md:block text-muted-foreground/30" />
             <div className="flex flex-col items-center text-center max-w-[150px]">
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-2">
+              <div className="w-12 h-12 bg-card rounded-full flex items-center justify-center shadow-sm mb-2">
                 <MessageSquare className="text-indigo-500" />
               </div>
               <span className="text-xs font-bold">Belief Extraction</span>
@@ -102,7 +102,7 @@ const LimitingBeliefsBackground = () => {
             </div>
             <ArrowRight className="hidden md:block text-muted-foreground/30" />
             <div className="flex flex-col items-center text-center max-w-[150px]">
-              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-2">
+              <div className="w-12 h-12 bg-card rounded-full flex items-center justify-center shadow-sm mb-2">
                 <ShieldAlert className="text-primary" />
               </div>
               <span className="text-xs font-bold">Overwhelm</span>
@@ -120,7 +120,7 @@ const LimitingBeliefsBackground = () => {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
-            { title: "Identity Statements", pattern: "I am...", example: "I am not good enough", color: "bg-blue-50 text-blue-700 border-blue-100" },
+            { title: "Identity Statements", pattern: "I am...", example: "I am not good enough", color: "bg-primary/5 text-primary border-primary/20" },
             { title: "Generalizations", pattern: "People will...", example: "People will always let me down", color: "bg-purple-50 text-purple-700 border-purple-100" },
             { title: "Causality", pattern: "If I... then...", example: "If I succeed, I'll be alone", color: "bg-emerald-50 text-emerald-700 border-emerald-100" },
             { title: "Necessity", pattern: "I must / I can't...", example: "I can't show any weakness", color: "bg-amber-50 text-amber-700 border-amber-100" },

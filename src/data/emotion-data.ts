@@ -34,7 +34,7 @@ export const PRIMARY_EMOTIONS: PrimaryEmotion[] = [
     element: 'Metal',
     organs: ['Lung', 'Large Intestine'], 
     color: 'bg-slate-500', 
-    textColor: 'text-slate-600',
+    textColor: 'text-muted-foreground',
     insight: "Related to loss of spirit, disconnection, or lacking connection to purpose."
   },
   { 
@@ -42,8 +42,8 @@ export const PRIMARY_EMOTIONS: PrimaryEmotion[] = [
     label: 'Fear', 
     element: 'Water',
     organs: ['Kidney', 'Bladder'], 
-    color: 'bg-blue-600', 
-    textColor: 'text-blue-600',
+    color: 'bg-primary', 
+    textColor: 'text-primary',
     insight: "Relates to trusting your own instincts and feeling safe/connected."
   },
   { 

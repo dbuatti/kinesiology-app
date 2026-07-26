@@ -55,10 +55,10 @@ const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
           <CheckCircle2 size={40} className="text-rose-500" />
         </div>
         <div className="space-y-2">
-          <h3 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+          <h3 className="text-2xl font-bold text-foreground dark:text-primary-foreground tracking-tight">
             Student Onboarded!
           </h3>
-          <p className="text-sm text-slate-500 font-medium">
+          <p className="text-sm text-muted-foreground font-medium">
             {name} has been added to the Voice Studio client database in Notion.
           </p>
         </div>
@@ -89,7 +89,7 @@ const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="space-y-2">
-        <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-slate-700">
+        <Label htmlFor="name" className="text-xs font-black uppercase tracking-widest text-foreground/80">
           Full Name <span className="text-rose-500">*</span>
         </Label>
         <Input
@@ -98,12 +98,12 @@ const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g. Jane Smith"
           required
-          className="h-12 rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
+          className="h-12 rounded-2xl border-border dark:border-border bg-card dark:bg-foreground text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-xs font-black uppercase tracking-widest text-slate-700">
+        <Label htmlFor="email" className="text-xs font-black uppercase tracking-widest text-foreground/80">
           Email
         </Label>
         <Input
@@ -112,12 +112,12 @@ const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="jane@example.com"
-          className="h-12 rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
+          className="h-12 rounded-2xl border-border dark:border-border bg-card dark:bg-foreground text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="phone" className="text-xs font-black uppercase tracking-widest text-slate-700">
+        <Label htmlFor="phone" className="text-xs font-black uppercase tracking-widest text-foreground/80">
           Phone Number
         </Label>
         <Input
@@ -126,20 +126,20 @@ const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           placeholder="+61 4XX XXX XXX"
-          className="h-12 rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
+          className="h-12 rounded-2xl border-border dark:border-border bg-card dark:bg-foreground text-sm font-medium focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="notes" className="text-xs font-black uppercase tracking-widest text-slate-700">
-          Onboarding Notes <span className="text-slate-400 font-normal normal-case tracking-normal">(optional)</span>
+        <Label htmlFor="notes" className="text-xs font-black uppercase tracking-widest text-foreground/80">
+          Onboarding Notes <span className="text-muted-foreground font-normal normal-case tracking-normal">(optional)</span>
         </Label>
         <Textarea
           id="notes"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Any additional context about the student..."
-          className="min-h-[100px] rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-medium resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
+          className="min-h-[100px] rounded-2xl border-border dark:border-border bg-card dark:bg-foreground text-sm font-medium resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
         />
       </div>
 
@@ -148,7 +148,7 @@ const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
         disabled={submitting || !name.trim()}
         className={cn(
           "w-full h-12 rounded-2xl font-black text-xs uppercase tracking-widest gap-2 transition-all",
-          "bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/20"
+          "bg-rose-500 hover:bg-rose-600 text-primary-foreground shadow-lg shadow-rose-500/20"
         )}
       >
         {submitting ? (

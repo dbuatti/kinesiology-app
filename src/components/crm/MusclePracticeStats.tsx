@@ -28,9 +28,9 @@ const MusclePracticeStats = () => {
 
   if (loading) {
     return (
-      <Card className="border-none shadow-lg rounded-2xl bg-white">
+      <Card className="border-none shadow-lg rounded-2xl bg-card">
         <CardHeader>
-          <CardTitle className="text-xl font-bold flex items-center gap-2 text-slate-900">
+          <CardTitle className="text-xl font-bold flex items-center gap-2 text-foreground">
             <Dumbbell size={24} className="text-indigo-500" /> Muscle Practice Insights
           </CardTitle>
         </CardHeader>
@@ -45,9 +45,9 @@ const MusclePracticeStats = () => {
   const topMuscles = stats.slice(0, 5);
 
   return (
-    <Card className="border-none shadow-lg rounded-2xl bg-white">
+    <Card className="border-none shadow-lg rounded-2xl bg-card">
       <CardHeader className="pb-3">
-        <CardTitle className="text-xl font-bold flex items-center gap-2 text-slate-900">
+        <CardTitle className="text-xl font-bold flex items-center gap-2 text-foreground">
           <Dumbbell size={24} className="text-indigo-600" /> Muscle Practice Insights
         </CardTitle>
         <CardDescription>
@@ -56,7 +56,7 @@ const MusclePracticeStats = () => {
       </CardHeader>
       <CardContent className="space-y-6">
         {totalMuscles === 0 ? (
-          <div className="text-center py-8 text-slate-500">
+          <div className="text-center py-8 text-muted-foreground">
             <AlertTriangle size={32} className="mx-auto mb-3 text-amber-400" />
             <p className="font-medium">No sufficient muscle test data found.</p>
             <p className="text-sm">Start logging muscle tests in your appointments to see insights (requires 5+ tests per muscle).</p>
@@ -72,7 +72,7 @@ const MusclePracticeStats = () => {
               const isHigh = progress >= 50;
               const isMedium = progress >= 25;
 
-              const colorClass = isHigh ? "[&>div]:bg-red-500" : isMedium ? "[&>div]:bg-amber-500" : "[&>div]:bg-emerald-500";
+              const colorClass = isHigh ? "[&>div]:bg-destructive" : isMedium ? "[&>div]:bg-amber-500" : "[&>div]:bg-emerald-500";
               const icon = isHigh ? AlertTriangle : isMedium ? TrendingUp : CheckCircle2;
               const IconComponent = icon;
 
@@ -80,15 +80,15 @@ const MusclePracticeStats = () => {
                 <div key={stat.muscle_name} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <IconComponent size={16} className={isHigh ? "text-red-500" : isMedium ? "text-amber-500" : "text-emerald-500"} />
-                        <span className="font-medium text-slate-800">{stat.muscle_name}</span>
-                        <Badge variant="secondary" className="text-xs bg-slate-100 text-slate-500">
+                        <IconComponent size={16} className={isHigh ? "text-destructive" : isMedium ? "text-amber-500" : "text-emerald-500"} />
+                        <span className="font-medium text-foreground">{stat.muscle_name}</span>
+                        <Badge variant="secondary" className="text-xs bg-muted text-muted-foreground">
                             {stat.total_tests} tests
                         </Badge>
                     </div>
                     <span className={cn(
                         "font-bold text-lg tabular-nums",
-                        isHigh ? "text-red-600" : isMedium ? "text-amber-600" : "text-emerald-600"
+                        isHigh ? "text-destructive" : isMedium ? "text-amber-600" : "text-emerald-600"
                     )}>
                       {stat.dysfunction_rate}%
                     </span>
@@ -97,14 +97,14 @@ const MusclePracticeStats = () => {
                     value={progress} 
                     className={cn("h-2", colorClass)}
                   />
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     {stat.non_normotonic_count} non-Normotonic results.
                   </p>
                 </div>
               );
             })}
             {totalMuscles > 5 && (
-                <p className="text-xs text-slate-400 text-center pt-2">
+                <p className="text-xs text-muted-foreground text-center pt-2">
                     ...and {totalMuscles - 5} more muscles tracked.
                 </p>
             )}

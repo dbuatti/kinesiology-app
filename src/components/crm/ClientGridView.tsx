@@ -64,7 +64,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
         >
           <CardContent className="p-8 space-y-6">
             <div className="flex items-start justify-between">
-              <div className="w-16 h-16 rounded-[1.5rem] bg-indigo-600 text-white flex items-center justify-center text-2xl font-black uppercase shadow-xl shadow-indigo-100 dark:shadow-indigo-900/20 group-hover:scale-110 transition-transform">
+              <div className="w-16 h-16 rounded-[1.5rem] bg-indigo-600 text-primary-foreground flex items-center justify-center text-2xl font-black uppercase shadow-xl shadow-indigo-100 dark:shadow-indigo-900/20 group-hover:scale-110 transition-transform">
                 {client.name.charAt(0)}
               </div>
               <div className="flex flex-col items-end">
@@ -86,7 +86,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
                 <IntakeStatusBadge client={client} />
                 <NewInfoBadge submittedAt={(client as any).onboarding_submitted_at} />
                 {client.stripe_customer_id && (
-                  <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-black uppercase border-blue-200 text-blue-600 bg-blue-50">
+                  <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-black uppercase border-primary/20 text-primary bg-primary/5">
                     <CreditCard size={8} className="mr-1" /> Synced
                   </Badge>
                 )}
@@ -164,7 +164,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
                   </Tooltip>
                 )}
               </div>
-              <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-indigo-600 group-hover:text-white transition-all shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-indigo-600 group-hover:text-primary-foreground transition-all shrink-0">
                 <ArrowRight size={16} />
               </div>
             </div>

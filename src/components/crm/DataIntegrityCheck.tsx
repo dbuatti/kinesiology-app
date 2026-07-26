@@ -42,7 +42,7 @@ const DataIntegrityCheck = ({ clients }: DataIntegrityCheckProps) => {
     return (
       <Card className="border-none shadow-lg rounded-[2.5rem] bg-emerald-50 border-2 border-emerald-100">
         <CardContent className="p-10 text-center space-y-4">
-          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto shadow-sm">
+          <div className="w-16 h-16 bg-card rounded-2xl flex items-center justify-center mx-auto shadow-sm">
             <CheckCircle2 size={32} className="text-emerald-500" />
           </div>
           <h3 className="text-xl font-black text-emerald-900">Data Integrity: 100%</h3>
@@ -62,7 +62,7 @@ const DataIntegrityCheck = ({ clients }: DataIntegrityCheckProps) => {
             </CardTitle>
             <CardDescription className="font-medium">Identifying profiles missing pivotal contact or clinical data.</CardDescription>
           </div>
-          <Badge className="bg-amber-500 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">
+          <Badge className="bg-amber-500 text-primary-foreground border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">
             {clientsWithMissingData.length} Profiles
           </Badge>
         </div>

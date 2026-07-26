@@ -25,8 +25,8 @@ const DashboardStats = ({ stats }: DashboardStatsProps) => {
         { label: "Clinical Alerts", value: stats.imperativeAlerts, sub: "Case focus", icon: AlertCircle, alert: stats.imperativeAlerts > 0 },
       ].map((stat, i) => (
         <div key={i} className={cn(
-          "p-4 rounded-xl border bg-white dark:bg-slate-900 shadow-sm transition-all duration-500 hover:shadow-md",
-          stat.alert ? "border-rose-200 bg-rose-50/30 dark:border-rose-900/30" : "border-slate-100 dark:border-slate-800"
+          "p-4 rounded-xl border bg-card dark:bg-foreground shadow-sm transition-all duration-500 hover:shadow-md",
+          stat.alert ? "border-rose-200 bg-rose-50/30 dark:border-rose-900/30" : "border-border/50 dark:border-border"
         )}>
           <div className="flex items-center gap-3 mb-4">
             <div className={cn(
@@ -35,11 +35,11 @@ const DashboardStats = ({ stats }: DashboardStatsProps) => {
             )}>
               <stat.icon size={16} />
             </div>
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{stat.label}</p>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{stat.label}</p>
           </div>
           <div className="flex items-baseline gap-2">
-            <p className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{stat.value}</p>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{stat.sub}</span>
+            <p className="text-2xl font-black text-foreground dark:text-primary-foreground tracking-tight">{stat.value}</p>
+            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{stat.sub}</span>
           </div>
         </div>
       ))}

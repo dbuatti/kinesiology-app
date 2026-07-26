@@ -17,7 +17,7 @@ const muscleDesc = (name: string) => {
 };
 
 const SubHeader = ({ id, children }: { id?: string; children: ReactNode }) => (
-  <h3 id={id} className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 mt-10 border-l-4 border-slate-200 pl-3 scroll-mt-24">{children}</h3>
+  <h3 id={id} className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-4 mt-10 border-l-4 border-border pl-3 scroll-mt-24">{children}</h3>
 );
 
 const AlignSection = ({ pattern, onToggle }: AlignSectionProps) => {
@@ -78,7 +78,7 @@ const AlignSection = ({ pattern, onToggle }: AlignSectionProps) => {
         <div className="space-y-12">
           {Object.entries(MUSCLE_GROUPS).map(([group, muscles]) => (
             <div key={group} id={getGroupId(group)} className="space-y-3 scroll-mt-24">
-              <h4 className="text-[9px] font-black uppercase text-slate-400 border-l-2 border-slate-200 pl-2 tracking-widest">{group}</h4>
+              <h4 className="text-[9px] font-black uppercase text-muted-foreground border-l-2 border-border pl-2 tracking-widest">{group}</h4>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-0.5">
                   {muscles.map(muscle => (
                     <div key={muscle} className="space-y-0.5">

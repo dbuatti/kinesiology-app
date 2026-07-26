@@ -49,7 +49,7 @@ const OnboardingPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
-        <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-3xl animate-bounce mb-6">
+        <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground font-black text-2xl shadow-3xl animate-bounce mb-6">
           ✦
         </div>
         <div className="flex items-center gap-2 text-muted-foreground font-black text-[10px] uppercase tracking-[0.3em]">
@@ -80,9 +80,9 @@ const OnboardingPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <Card className="max-w-2xl w-full border shadow-3xl rounded-[4rem] overflow-hidden animate-in zoom-in-95 duration-700 bg-card">
-          <div className="bg-emerald-600 dark:bg-emerald-700 p-12 text-center text-white relative">
+          <div className="bg-emerald-600 dark:bg-emerald-700 p-12 text-center text-primary-foreground relative">
             <div className="absolute top-0 right-0 p-8 opacity-10 hidden md:block"><Sparkles size={120} /></div>
-            <div className="w-20 md:w-24 md:h-24 bg-white/20 backdrop-blur-md rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-xl border border-white/20">
+            <div className="w-20 md:w-24 md:h-24 bg-card/20 backdrop-blur-md rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-xl border border-primary-foreground/20">
               <CheckCircle2 size={48} />
             </div>
             <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight mb-2">All Set, {client.name.split(' ')[0]}!</h2>
@@ -107,7 +107,7 @@ const OnboardingPage = () => {
     <div className="min-h-screen bg-background py-12 px-6 md:py-24">
       <div className="max-w-4xl mx-auto space-y-12">
         <div className="text-center space-y-6">
-          <div className="w-16 h-16 md:w-20 md:h-20 bg-primary rounded-[2rem] flex items-center justify-center text-white font-black text-2xl md:text-3xl shadow-3xl mx-auto mb-8">
+          <div className="w-16 h-16 md:w-20 md:h-20 bg-primary rounded-[2rem] flex items-center justify-center text-primary-foreground font-black text-2xl md:text-3xl shadow-3xl mx-auto mb-8">
             ✦
           </div>
           <Badge className="bg-muted text-foreground border-none font-black text-[10px] uppercase tracking-[0.4em] px-6 py-2 rounded-full">

@@ -273,7 +273,7 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
  >
  <MessageCircle size={15} />
  {recentlySmsed && (
- <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-muted0 rounded-full border-2 border-white" />
+ <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-muted0 rounded-full border-2 border-primary-foreground/20" />
  )}
  </button>
  </PopoverTrigger>

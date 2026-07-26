@@ -123,7 +123,7 @@ const VoiceDashboardPage = () => {
           title="Voice Studio"
           subtitle="Your studio at a glance — students, lessons, and actions."
           icon={Mic}
-          iconClassName="bg-destructive text-white "
+          iconClassName="bg-destructive text-primary-foreground "
         />
 
       {/* Discipline filter */}

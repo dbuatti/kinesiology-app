@@ -53,7 +53,7 @@ const MuscleTestCard = ({
                 }}
                 className={cn(
                   "text-[9px] font-black px-2 py-0.5 rounded-md border tracking-widest transition-all hover:scale-110 active:scale-95",
-                  side === 'L' ? "bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100" : "bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100"
+                  side === 'L' ? "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10" : "bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100"
                 )}
               >
                 {side === 'L' ? 'LEFT' : 'RIGHT'}
@@ -85,7 +85,7 @@ const MuscleTestCard = ({
                 variant="ghost"
                 size="icon"
                 onClick={() => onClear(muscle, side)}
-                className="h-6 w-6 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+                className="h-6 w-6 text-muted-foreground/60 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
                 disabled={disabled}
               >
                 <RotateCcw size={12} />
@@ -94,7 +94,7 @@ const MuscleTestCard = ({
           </div>
         </div>
 
-        <div className="flex p-1 bg-slate-100/50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+        <div className="flex p-1 bg-muted/50 dark:bg-foreground/50 rounded-2xl border border-border/50 dark:border-border">
           {MUSCLE_STATUSES.map(status => {
             const isSelected = result?.status === status.value;
             const StatusIcon = status.icon;
@@ -108,8 +108,8 @@ const MuscleTestCard = ({
                 className={cn(
                   "flex-1 flex flex-col items-center justify-center py-2.5 gap-1 rounded-xl transition-all duration-300 group/btn",
                   isSelected 
-                    ? cn("shadow-md scale-[1.02] z-10 text-white", activeColorClass)
-                    : "text-slate-400 hover:text-slate-600 hover:bg-white dark:hover:bg-slate-800"
+                    ? cn("shadow-md scale-[1.02] z-10 text-primary-foreground", activeColorClass)
+                    : "text-muted-foreground hover:text-muted-foreground hover:bg-card dark:hover:bg-foreground"
                 )}
               >
                 <StatusIcon size={14} className={cn("transition-transform duration-300", isSelected ? "scale-110" : "group-hover/btn:scale-110")} />
@@ -129,8 +129,8 @@ const MuscleTestCard = ({
       className={cn(
         "p-6 border rounded-[2.5rem] space-y-6 transition-all duration-500 group relative overflow-hidden",
         (currentResultL || currentResultR || currentResultMidline)
-          ? "bg-white border-indigo-200 shadow-xl shadow-indigo-500/5" 
-          : "bg-white border-slate-100 hover:border-indigo-100 hover:shadow-lg"
+          ? "bg-card border-indigo-200 shadow-xl shadow-indigo-500/5" 
+          : "bg-card border-border/50 hover:border-indigo-100 hover:shadow-lg"
       )}
     >
       {(currentResultL || currentResultR || currentResultMidline) && (
@@ -143,16 +143,16 @@ const MuscleTestCard = ({
         <div className="flex items-center gap-3">
           <div className={cn(
             "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-500",
-            (currentResultL || currentResultR || currentResultMidline) ? "bg-indigo-600 text-white shadow-lg shadow-indigo-200" : "bg-slate-50 text-slate-400"
+            (currentResultL || currentResultR || currentResultMidline) ? "bg-indigo-600 text-primary-foreground shadow-lg shadow-indigo-200" : "bg-muted/50 text-muted-foreground"
           )}>
             <Dumbbell size={20} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h4 className="font-black text-lg text-slate-900 tracking-tight">{muscle}</h4>
+              <h4 className="font-black text-lg text-foreground tracking-tight">{muscle}</h4>
               <button 
                 onClick={() => onShowInfo(muscle)}
-                className="text-slate-300 hover:text-indigo-600 transition-colors"
+                className="text-muted-foreground/60 hover:text-indigo-600 transition-colors"
               >
                 <Info size={16} />
               </button>
@@ -186,10 +186,10 @@ const MuscleTestCard = ({
             <StatusRow side="L" result={currentResultL} />
             <div className="relative py-1">
               <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                <div className="w-full border-t border-slate-100"></div>
+                <div className="w-full border-t border-border/50"></div>
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-white px-2 text-[8px] font-black text-slate-300 uppercase tracking-[0.3em]">Bilateral</span>
+                <span className="bg-card px-2 text-[8px] font-black text-muted-foreground/60 uppercase tracking-[0.3em]">Bilateral</span>
               </div>
             </div>
             <StatusRow side="R" result={currentResultR} />

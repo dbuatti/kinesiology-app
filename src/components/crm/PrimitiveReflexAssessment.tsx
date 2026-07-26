@@ -32,7 +32,7 @@ function HighlightPattern({ text }: { text: string }) {
       {parts.map((part, i) => {
         const lower = part.toLowerCase();
         if (lower === 'flexors' || lower === 'flexor') {
-          return <span key={i} className="font-bold text-blue-600">{part}</span>;
+          return <span key={i} className="font-bold text-primary">{part}</span>;
         }
         if (lower === 'extensors' || lower === 'extensor') {
           return <span key={i} className="font-bold text-amber-600">{part}</span>;
@@ -176,7 +176,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                     id={`inhib-l-${reflex.id}`}
                     checked={statusL === 'Inhibited'}
                     onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, 'L', reflex.name)}
-                    className="h-3 w-3 border-slate-400 rounded-none"
+                    className="h-3 w-3 border-border rounded-none"
                   />
                   <label htmlFor={`inhib-l-${reflex.id}`} className="text-[8px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
                     L
@@ -187,7 +187,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                     id={`inhib-r-${reflex.id}`}
                     checked={statusR === 'Inhibited'}
                     onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, 'R', reflex.name)}
-                    className="h-3 w-3 border-slate-400 rounded-none"
+                    className="h-3 w-3 border-border rounded-none"
                   />
                   <label htmlFor={`inhib-r-${reflex.id}`} className="text-[8px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
                     R
@@ -198,7 +198,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                     id={`inhib-both-${reflex.id}`}
                     checked={isBilateral}
                     onCheckedChange={(checked) => handleBilateralToggle(!!checked)}
-                    className="h-3 w-3 border-indigo-400 rounded-none data-[state=checked]:bg-indigo-600"
+                    className="h-3 w-3 border-primary rounded-none data-[state=checked]:bg-primary"
                   />
                   <label htmlFor={`inhib-both-${reflex.id}`} className="text-[8px] font-medium uppercase tracking-wider cursor-pointer text-chart-primary">
                     Both
@@ -211,7 +211,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                   id={`inhib-mid-${reflex.id}`}
                   checked={statusMidline === 'Inhibited'}
                   onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, undefined, reflex.name)}
-                  className="h-3 w-3 border-slate-400 rounded-none"
+                  className="h-3 w-3 border-border rounded-none"
                 />
                 <label htmlFor={`inhib-mid-${reflex.id}`} className="text-[8px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
                   Inhib
@@ -225,7 +225,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
               id={`priority-reflex-${reflex.id}`}
               checked={test.is_priority}
               onCheckedChange={(checked) => onUpdate(reflex.id, { is_priority: !!checked })}
-              className="h-3 w-3 border-slate-400 rounded-none"
+              className="h-3 w-3 border-border rounded-none"
             />
             <label htmlFor={`priority-reflex-${reflex.id}`} className="text-[8px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
               Prio
@@ -237,7 +237,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
             onClick={() => onUpdate(reflex.id, { is_primary_priority: !test.is_primary_priority })}
             className={cn(
               "h-5 px-1.5 text-[7px] font-medium uppercase tracking-wider transition-all rounded",
-              test.is_primary_priority ? "bg-slate-900 text-white" : "text-muted-foreground hover:text-foreground"
+              test.is_primary_priority ? "bg-foreground text-primary-foreground" : "text-muted-foreground hover:text-foreground"
             )}
           >
             {test.is_primary_priority ? "Primary" : "Set 1°"}

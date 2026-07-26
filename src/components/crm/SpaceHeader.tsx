@@ -79,7 +79,7 @@ const SpaceHeader = () => {
               : "text-muted-foreground hover:text-foreground"
           )}
         >
-          <span className={cn("w-7 h-7 rounded-full flex items-center justify-center", !location.pathname.startsWith('/voice') ? "bg-primary text-white" : "bg-muted text-muted-foreground")}>
+          <span className={cn("w-7 h-7 rounded-full flex items-center justify-center", !location.pathname.startsWith('/voice') ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
             <Activity size={14} />
           </span>
           Kinesiology
@@ -93,7 +93,7 @@ const SpaceHeader = () => {
               : "text-muted-foreground hover:text-foreground"
           )}
         >
-          <span className={cn("w-7 h-7 rounded-full flex items-center justify-center", location.pathname.startsWith('/voice') ? "bg-destructive text-white" : "bg-muted text-muted-foreground")}>
+          <span className={cn("w-7 h-7 rounded-full flex items-center justify-center", location.pathname.startsWith('/voice') ? "bg-destructive text-primary-foreground" : "bg-muted text-muted-foreground")}>
             <Mic size={14} />
           </span>
           Voice

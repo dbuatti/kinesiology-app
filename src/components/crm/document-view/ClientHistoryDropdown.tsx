@@ -55,7 +55,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                 <History size={18} />
               </div>
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700">Clinical History Overview</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground/80">Clinical History Overview</h3>
                 <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-0.5">
                   Quick glance across {pastSessions.length} past {pastSessions.length === 1 ? 'session' : 'sessions'}
                 </p>
@@ -65,7 +65,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
               <Badge variant="outline" className="border-border text-muted-foreground font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full">
                 {historyStats.filter(h => h.isResolved).length} / {historyStats.length} Cleared
               </Badge>
-              <div className="w-7 h-7 rounded-full bg-white border border-border flex items-center justify-center text-muted-foreground">
+              <div className="w-7 h-7 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground">
                 {isOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               </div>
             </div>
@@ -73,24 +73,24 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
         </CollapsibleTrigger>
 
         <CollapsibleContent className="animate-in slide-in-from-top-2 duration-300">
-          <CardContent className="p-6 border-t border-border bg-white space-y-8">
+          <CardContent className="p-6 border-t border-border bg-card space-y-8">
             {/* Past Sessions Summary */}
             <div className="space-y-3">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Past Sessions Timeline</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {pastSessions.slice(0, 4).map((session) => (
-                  <div key={session.id} className="p-3 bg-muted border border-slate-100 rounded-xl flex items-start gap-3">
+                  <div key={session.id} className="p-3 bg-muted border border-border/50 rounded-xl flex items-start gap-3">
                     <Calendar size={14} className="text-indigo-500 shrink-0 mt-0.5" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-semibold text-muted-foreground uppercase">
                           {format(new Date(session.date), "MMM d, yyyy")}
                         </span>
-                        <Badge className="bg-emerald-500 text-white border-none font-semibold text-[7px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm">
+                        <Badge className="bg-emerald-500 text-primary-foreground border-none font-semibold text-[7px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm">
                           {session.status}
                         </Badge>
                       </div>
-                      <p className="text-xs font-medium text-slate-800 truncate mt-1">Goal: {session.goal || 'No goal set'}</p>
+                      <p className="text-xs font-medium text-foreground truncate mt-1">Goal: {session.goal || 'No goal set'}</p>
                       {session.bolt_score && (
                         <p className="text-[10px] font-medium text-chart-primary mt-0.5">BOLT: {session.bolt_score}s</p>
                       )}
@@ -110,7 +110,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                           href={`/appointments/${session.id}?view=document`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[9px] font-semibold text-slate-600 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-1.5 py-0.5 rounded transition-colors"
+                          className="inline-flex items-center gap-1 text-[9px] font-semibold text-muted-foreground hover:text-foreground bg-muted hover:bg-muted px-1.5 py-0.5 rounded transition-colors"
                           title="Open session document"
                         >
                           <FileText size={10} /> Doc
@@ -175,7 +175,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                                   {side && (
                                     <Badge className={cn(
                                       "border-none font-semibold text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm leading-none",
-                                      side === 'L' ? "bg-blue-100 text-blue-700" : "bg-rose-100 text-rose-700"
+                                      side === 'L' ? "bg-primary/10 text-primary" : "bg-rose-100 text-rose-700"
                                     )}>
                                       {side === 'L' ? 'Left' : 'Right'}
                                     </Badge>
@@ -186,12 +186,12 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                             </div>
 
                             {/* First Inhibited */}
-                            <div className="col-span-2 text-center text-xs font-medium text-slate-600">
+                            <div className="col-span-2 text-center text-xs font-medium text-muted-foreground">
                               {finding.firstInhibited || "—"}
                             </div>
 
                             {/* Last Cleared */}
-                            <div className="col-span-2 text-center text-xs font-medium text-slate-600">
+                            <div className="col-span-2 text-center text-xs font-medium text-muted-foreground">
                               {finding.lastCleared || "—"}
                             </div>
 
@@ -199,7 +199,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                             <div className="col-span-2 text-center">
                               <Badge className={cn(
                                 "border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-0.5 rounded-sm",
-                                finding.isResolved ? "bg-emerald-500 text-white" : "bg-rose-500 text-white"
+                                finding.isResolved ? "bg-emerald-500 text-primary-foreground" : "bg-rose-500 text-primary-foreground"
                               )}>
                                 {finding.isResolved ? "Clear" : "Unclear"}
                               </Badge>
@@ -228,7 +228,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
 
                           {/* Expanded Evolution Timeline */}
                           {isExpanded && (
-                            <div className="bg-muted/50 border-t border-slate-100 p-4 pl-14 space-y-4 animate-in slide-in-from-top-1 duration-200">
+                            <div className="bg-muted/50 border-t border-border/50 p-4 pl-14 space-y-4 animate-in slide-in-from-top-1 duration-200">
                               <div className="space-y-3">
                                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Evolution Timeline</p>
                                 <div className="space-y-3 relative pl-4 border-l border-border">
@@ -238,7 +238,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                                       <div key={idx} className="relative space-y-1">
                                         {/* Timeline Node Dot */}
                                         <div className={cn(
-                                          "absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full border-2 border-white shadow-sm",
+                                          "absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full border-2 border-primary-foreground/20 shadow-sm",
                                           isClear ? "bg-emerald-500" : "bg-rose-500"
                                         )} />
                                         
@@ -252,7 +252,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                                           </Badge>
                                         </div>
                                         {h.correction && (
-                                          <p className="text-xs text-slate-600 font-medium leading-relaxed pl-2 border-l-2 border-border italic">
+                                          <p className="text-xs text-muted-foreground font-medium leading-relaxed pl-2 border-l-2 border-border italic">
                                             "{h.correction.replace(/^[-*\s]+/, '')}"
                                           </p>
                                         )}

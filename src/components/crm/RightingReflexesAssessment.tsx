@@ -299,7 +299,7 @@ const RightingReflexesAssessment = ({
             className="min-h-[300px] resize-none"
           />
           <div className="flex gap-3">
-            <Button onClick={handleSaveNotes} disabled={loading} className="flex-1 bg-foreground hover:bg-slate-800 text-primary-foreground h-12 font-semibold rounded-xl shadow-lg">
+            <Button onClick={handleSaveNotes} disabled={loading} className="flex-1 bg-foreground hover:bg-foreground text-primary-foreground h-12 font-semibold rounded-xl shadow-lg">
               {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Save Notes"}
             </Button>
             {(initialNotes || currentStatus) && (

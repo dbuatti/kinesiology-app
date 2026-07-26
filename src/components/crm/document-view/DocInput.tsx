@@ -13,13 +13,13 @@ interface DocInputProps {
 const DocInput = ({ label, value, field, placeholder, multiline = false, type = "text", onChange }: DocInputProps) => {
   return (
     <div className="space-y-1.5 group">
-      <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 group-focus-within:text-black transition-colors">{label}</label>
+      <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground group-focus-within:text-foreground transition-colors">{label}</label>
       {multiline ? (
         <textarea
           value={value || ""}
           onChange={(e) => onChange(field, e.target.value)}
           placeholder={placeholder}
-          className="w-full min-h-[100px] bg-slate-50/30 border border-slate-200 rounded-none p-4 text-sm font-medium focus:border-black focus:bg-white focus:ring-0 transition-all resize-none"
+          className="w-full min-h-[100px] bg-muted/30 border border-border rounded-none p-4 text-sm font-medium focus:border-foreground/20 focus:bg-card focus:ring-0 transition-all resize-none"
         />
       ) : (
         <input
@@ -27,7 +27,7 @@ const DocInput = ({ label, value, field, placeholder, multiline = false, type = 
           value={value || ""}
           onChange={(e) => onChange(field, e.target.value)}
           placeholder={placeholder}
-          className="w-full bg-transparent border-b border-slate-200 py-2 text-sm font-bold focus:border-black outline-none transition-all placeholder:text-slate-200"
+          className="w-full bg-transparent border-b border-border py-2 text-sm font-bold focus:border-foreground/20 outline-none transition-all placeholder:text-muted-foreground/60"
         />
       )}
     </div>

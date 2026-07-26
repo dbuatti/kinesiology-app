@@ -415,14 +415,14 @@ const VoiceCalendarPage = () => {
  title="Studio Calendar"
  subtitle="Your weekly voice and piano lesson schedule at a glance."
  icon={CalendarIcon}
-  iconClassName="bg-destructive text-white "
+  iconClassName="bg-destructive text-primary-foreground "
   actions={
   <div className="flex gap-2">
   <Button
   variant="outline"
   size="sm"
   onClick={() => { setBookPrefillDate(""); setBookPrefillTime(""); setBookDialogOpen(true); }}
-  className="h-10 px-4 rounded-xl border-border font-medium text-[10px] uppercase tracking-wider gap-2 bg-rose-500 text-white hover:bg-rose-600 border-rose-500"
+  className="h-10 px-4 rounded-xl border-border font-medium text-[10px] uppercase tracking-wider gap-2 bg-rose-500 text-primary-foreground hover:bg-rose-600 border-rose-500"
   >
   <CalendarPlus size={14} />
   Book
@@ -622,7 +622,7 @@ const VoiceCalendarPage = () => {
     className={cn(
     "w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold",
     isCurrentDay
-    ? "bg-destructive text-white shadow-sm "
+    ? "bg-destructive text-primary-foreground shadow-sm "
     : "text-muted-foreground"
     )}
     >
@@ -1020,7 +1020,7 @@ const RescheduleSlotPicker = ({
  className={cn(
  "flex flex-col items-center justify-center min-w-[64px] h-16 rounded-xl border-2 transition-all shrink-0",
  selectedDate?.getTime() === date.getTime()
- ? "bg-muted border-border text-white"
+ ? "bg-muted border-border text-primary-foreground"
  : "bg-card border-border hover:border-amber-300 text-foreground"
  )}
  >
@@ -1044,7 +1044,7 @@ const RescheduleSlotPicker = ({
  className={cn(
  "flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-semibold transition-all",
  selectedSlot === timeVal
- ? "bg-muted border-border text-white"
+ ? "bg-muted border-border text-primary-foreground"
  : "bg-card border-border text-foreground hover:bg-muted"
  )}
  >

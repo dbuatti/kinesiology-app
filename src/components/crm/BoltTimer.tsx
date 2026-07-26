@@ -67,7 +67,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving }: BoltTimerProps) 
   const displayTime = isRunning || isFinished ? time : (initialScore || 0);
   const getScoreColor = (score: number) => {
     if (score >= 40) return 'text-emerald-600';
-    if (score >= 25) return 'text-blue-600';
+    if (score >= 25) return 'text-primary';
     return 'text-amber-600';
   };
 
@@ -80,9 +80,9 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving }: BoltTimerProps) 
   return (
     <div className="space-y-4">
       {showInstructions && !isRunning && (
-        <Alert className="bg-blue-50 border-blue-200 py-2">
-          <Info className="h-3 w-3 text-blue-600" />
-          <AlertDescription className="text-[10px] text-blue-900 leading-tight">
+        <Alert className="bg-primary/5 border-primary/20 py-2">
+          <Info className="h-3 w-3 text-primary" />
+          <AlertDescription className="text-[10px] text-primary leading-tight">
             Breathe normally, then hold after a normal exhalation. Stop at the first definite desire to breathe.
           </AlertDescription>
         </Alert>
@@ -91,7 +91,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving }: BoltTimerProps) 
       <div className="relative">
         <div className={cn(
           "flex flex-col items-center justify-center p-4 rounded-xl border transition-all",
-          isRunning ? "bg-indigo-50 border-indigo-300 animate-pulse" : "bg-slate-50 border-slate-200"
+          isRunning ? "bg-indigo-50 border-indigo-300 animate-pulse" : "bg-muted/50 border-border"
         )}>
           <div className="flex items-baseline gap-1">
             <span className={cn(
@@ -100,7 +100,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving }: BoltTimerProps) 
             )}>
               {displayTime}
             </span>
-            <span className="text-xl font-semibold text-slate-400">s</span>
+            <span className="text-xl font-semibold text-muted-foreground">s</span>
           </div>
           
           {!isRunning && displayTime > 0 && (
@@ -108,7 +108,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving }: BoltTimerProps) 
               <div className={cn(
                 "px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider",
                 displayTime >= 40 ? "bg-emerald-100 text-emerald-700" :
-                displayTime >= 25 ? "bg-blue-100 text-blue-700" :
+                displayTime >= 25 ? "bg-primary/10 text-primary" :
                 "bg-amber-100 text-amber-700"
               )}>
                 {getScoreLabel(displayTime)}
@@ -131,7 +131,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving }: BoltTimerProps) 
         {isRunning && (
           <Button 
             onClick={stopTimer} 
-            className="flex-1 bg-red-600 hover:bg-red-700 rounded-xl h-10 text-xs font-bold"
+            className="flex-1 bg-destructive hover:bg-red-700 rounded-xl h-10 text-xs font-bold"
           >
             <Square size={16} className="mr-2" /> Stop
           </Button>
@@ -150,7 +150,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving }: BoltTimerProps) 
             <Button 
               onClick={resetTimer} 
               variant="outline" 
-              className="px-4 rounded-xl border-slate-200 hover:bg-slate-100 h-10"
+              className="px-4 rounded-xl border-border hover:bg-muted h-10"
               disabled={isSaving}
             >
               <RotateCcw size={16} />

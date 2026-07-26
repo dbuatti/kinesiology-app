@@ -30,7 +30,7 @@ const FillInTheBlank: FC<FillInTheBlankProps> = ({
 
   return (
     <div className="space-y-8">
-      <h3 className="text-xl md:text-2xl font-black leading-tight text-slate-900 dark:text-slate-100">
+      <h3 className="text-xl md:text-2xl font-black leading-tight text-foreground dark:text-primary-foreground">
         {question}
       </h3>
       
@@ -42,11 +42,11 @@ const FillInTheBlank: FC<FillInTheBlankProps> = ({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your answer here..."
-              className="h-14 pl-12 rounded-2xl border-2 border-slate-100 focus:border-indigo-500 focus:ring-indigo-500 text-lg font-medium shadow-inner bg-slate-50/50"
+              className="h-14 pl-12 rounded-2xl border-2 border-border/50 focus:border-indigo-500 focus:ring-indigo-500 text-lg font-medium shadow-inner bg-muted/50"
               autoFocus
             />
           </div>
-          <Button type="submit" className="h-14 px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-100">
+          <Button type="submit" className="h-14 px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-primary-foreground font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-100">
             Submit <ArrowRight size={18} className="ml-2" />
           </Button>
         </form>
@@ -61,7 +61,7 @@ const FillInTheBlank: FC<FillInTheBlankProps> = ({
               <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-1">Your Answer</span>
               <span className="text-xl font-black">{selectedAnswer}</span>
             </div>
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg ${isCorrect ? 'bg-emerald-500' : 'bg-rose-500'}`}>
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-primary-foreground shadow-lg ${isCorrect ? 'bg-emerald-500' : 'bg-rose-500'}`}>
               {isCorrect ? <CheckCircle2 size={28} /> : <XCircle size={28} />}
             </div>
           </div>

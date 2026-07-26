@@ -47,7 +47,7 @@ const CollapsibleSection = ({ title, icon: Icon, color, desc, number, defaultOpe
           {number && (
             <span className="text-lg font-bold text-muted-foreground/40 tabular-nums shrink-0">{number}</span>
           )}
-          <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0", color)}>
+          <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-primary-foreground shrink-0", color)}>
             <Icon size={15} />
           </div>
           <div>
@@ -96,7 +96,7 @@ const TraumaClearingProtocol = () => {
       {/* Goal */}
       <div className="p-6 bg-indigo-50 rounded-xl border border-indigo-200 mb-8">
         <div className="flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-sm shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-primary-foreground shadow-sm shrink-0">
             <Target size={20} />
           </div>
           <div className="space-y-1">
@@ -269,7 +269,7 @@ const TraumaClearingProtocol = () => {
                 <p className="text-rose-800 font-medium italic pl-4 border-l-2 border-rose-400">
                   "Feel yourself being a <strong>fearful person</strong>."
                 </p>
-                <div className="bg-white/60 rounded-lg p-3 space-y-2 text-rose-800">
+                <div className="bg-card/60 rounded-lg p-3 space-y-2 text-rose-800">
                   <p className="font-medium">Ask: "What does it feel like?"</p>
                   <p className="italic text-rose-600">"It feels heavy..."</p>
                   <p className="font-medium mt-2">Then deepen embodiment:</p>
@@ -289,7 +289,7 @@ const TraumaClearingProtocol = () => {
               {/* Phase C */}
               <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200 space-y-3">
                 <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">C. Install the Resource Identity (Embodiment Sequence)</p>
-                <div className="bg-white/60 rounded-lg p-3 space-y-1.5 text-indigo-800">
+                <div className="bg-card/60 rounded-lg p-3 space-y-1.5 text-indigo-800">
                   <p className="italic">"Okay, feel <strong>calm</strong>."</p>
                   <p className="italic">"What happens in yourself when you feel calm?"</p>
                   <p className="italic text-indigo-500">"I relax."</p>
@@ -304,7 +304,7 @@ const TraumaClearingProtocol = () => {
                 <p className="text-amber-800 font-medium italic pl-4 border-l-2 border-amber-400">
                   "Can you still feel yourself being a fearful person?"
                 </p>
-                <div className="p-3 bg-white/60 rounded-lg">
+                <div className="p-3 bg-card/60 rounded-lg">
                   <p className="text-sm font-bold text-amber-800">Repeat as needed:</p>
                   <ul className="mt-2 space-y-1 text-xs text-amber-700 font-medium">
                     <li className="flex items-start gap-2"><div className="w-1 h-1 rounded-full bg-amber-500 mt-1.5 shrink-0" /><span>Keep clearing against the <strong>future</strong></span></li>
@@ -419,7 +419,7 @@ const TraumaClearingProtocol = () => {
             'Maintain client sovereignty at all times. If no (conscious or in the body), stop.',
           ].map((point, i) => (
             <div key={i} className="flex items-start gap-3">
-              <div className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+              <div className="w-5 h-5 rounded-full bg-amber-500 text-primary-foreground flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
                 {i + 1}
               </div>
               <p className="text-sm font-medium text-muted-foreground leading-relaxed">{point}</p>
@@ -430,7 +430,7 @@ const TraumaClearingProtocol = () => {
 
       {/* Image */}
       <section className="mb-8">
-        <SectionTitle icon={Eye} color="bg-slate-700">Process Diagram</SectionTitle>
+        <SectionTitle icon={Eye} color="bg-card">Process Diagram</SectionTitle>
         <div className="rounded-xl overflow-hidden bg-muted border border-border shadow-inner flex items-center justify-center p-4">
           <img
             src="/images/FNH - Trauma Clearing Process.png"

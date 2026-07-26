@@ -94,7 +94,7 @@ const LigamentImageUploader = ({ userId, category, imageIndex, initialUrl, onUpl
 
   return (
     <div className="space-y-2">
-      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{title}</p>
+      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{title}</p>
       <div
         onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
         onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
@@ -102,7 +102,7 @@ const LigamentImageUploader = ({ userId, category, imageIndex, initialUrl, onUpl
         onClick={() => fileInputRef.current?.click()}
         className={cn(
           "relative group aspect-video transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none cursor-pointer rounded-2xl border-2 border-dashed",
-          initialUrl ? "border-transparent" : "border-slate-200 bg-slate-50/50 hover:border-indigo-400 hover:bg-indigo-50/30",
+          initialUrl ? "border-transparent" : "border-border bg-muted/50 hover:border-indigo-400 hover:bg-indigo-50/30",
           isDragging && "border-indigo-600 bg-indigo-100/80 scale-[1.02] ring-4 ring-indigo-500/20",
           isUploading && "opacity-50 pointer-events-none"
         )}
@@ -111,7 +111,7 @@ const LigamentImageUploader = ({ userId, category, imageIndex, initialUrl, onUpl
         {initialUrl ? (
           <>
             <img key={initialUrl} src={initialUrl} alt={title} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+            <div className="absolute inset-0 bg-foreground/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
               <Button variant="secondary" size="icon" className="rounded-xl h-8 w-8 shadow-lg"><Upload size={14} /></Button>
               <Button variant="destructive" size="icon" className="rounded-xl h-8 w-8 shadow-lg" onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}><X size={14} /></Button>
             </div>
@@ -122,10 +122,10 @@ const LigamentImageUploader = ({ userId, category, imageIndex, initialUrl, onUpl
               <Loader2 className="mx-auto text-indigo-500 animate-spin" size={24} />
             ) : (
               <>
-                <div className="w-12 h-12 rounded-xl bg-white shadow-sm border border-slate-100 flex items-center justify-center mx-auto text-slate-400 group-hover:text-indigo-600 group-hover:scale-110 transition-all">
+                <div className="w-12 h-12 rounded-xl bg-card shadow-sm border border-border/50 flex items-center justify-center mx-auto text-muted-foreground group-hover:text-indigo-600 group-hover:scale-110 transition-all">
                   <ImageIcon size={24} />
                 </div>
-                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Click or Drop Image</p>
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Click or Drop Image</p>
               </>
             )}
           </div>

@@ -155,7 +155,7 @@ const IdentityHistoryList = () => {
                   >
                     <Trash2 size={16} />
                   </Button>
-                  <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                  <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-indigo-600 group-hover:text-primary-foreground transition-all">
                     <ArrowRight size={18} />
                   </div>
                 </div>

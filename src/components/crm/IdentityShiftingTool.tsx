@@ -420,7 +420,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
         <div className="p-3 bg-muted dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-900/30 space-y-3 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none"><Quote size={120} /></div>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-primary text-white flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-primary text-primary-foreground flex items-center justify-center">
               <History size={12} />
             </div>
             <h4 className="text-xs font-semibold text-indigo-900 dark:text-indigo-100 uppercase tracking-wider">Source Context</h4>
@@ -445,7 +445,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
             )}
             
             {backlogItem.polarity_insight && (
-              <div className="flex items-start gap-2 p-3 bg-white/50 dark:bg-slate-900/50 rounded-xl border border-indigo-200 dark:border-indigo-900/30">
+              <div className="flex items-start gap-2 p-3 bg-card/50 dark:bg-foreground/50 rounded-xl border border-indigo-200 dark:border-indigo-900/30">
                 <ArrowRightLeft size={14} className="text-indigo-500 shrink-0 mt-0.5" />
                 <div>
                   <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider mb-1">Polarity Insight</p>
@@ -464,7 +464,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
             placeholder="What is the problem or pattern you're facing?" 
             value={formData.problem}
             onChange={(e) => setFormData({ ...formData, problem: e.target.value })}
-            className="min-h-[56px] rounded-xl border border-border bg-white p-3 text-sm font-medium leading-relaxed resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
+            className="min-h-[56px] rounded-xl border border-border bg-card p-3 text-sm font-medium leading-relaxed resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
           />
         </div>
         
@@ -475,7 +475,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
               placeholder="Fear, Worry, Anger, etc." 
               value={formData.emotion}
               onChange={(e) => setFormData({ ...formData, emotion: e.target.value })}
-              className="h-9 rounded-lg border border-border px-4 text-sm font-medium bg-white"
+              className="h-9 rounded-lg border border-border px-4 text-sm font-medium bg-card"
             />
           </div>
           <div className="space-y-3">
@@ -484,7 +484,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
               placeholder="Where is it in the body?" 
               value={formData.feltSense}
               onChange={(e) => setFormData({ ...formData, feltSense: e.target.value })}
-              className="h-9 rounded-lg border border-border px-4 text-sm font-medium bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
+              className="h-9 rounded-lg border border-border px-4 text-sm font-medium bg-card focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
             />
           </div>
         </div>
@@ -504,7 +504,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
             placeholder="Who are you being when you have this problem?"
             value={formData.identity}
             onChange={(e) => setFormData({ ...formData, identity: e.target.value })}
-            className="h-9 rounded-lg border border-border px-4 text-sm font-medium bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
+            className="h-9 rounded-lg border border-border px-4 text-sm font-medium bg-card focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
           />
           {suggestions.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-3">
@@ -523,7 +523,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
         <Button variant="outline" onClick={() => saveProgress(false)} disabled={isSaving} className="flex-1 rounded-lg h-9 font-semibold text-[10px] uppercase tracking-wider border-border">
           <Save className="mr-1.5" size={14} /> Save Draft
         </Button>
-        <Button onClick={handleNext} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-lg h-9 font-semibold text-[10px] uppercase tracking-wider">
+        <Button onClick={handleNext} className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-9 font-semibold text-[10px] uppercase tracking-wider">
           Begin Dissolving <ArrowRight className="ml-1.5" size={14} />
         </Button>
       </div>
@@ -546,7 +546,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
             <Button variant="outline" onClick={() => handleCheckIdentity(true)} className="h-9 px-6 rounded-lg border border-indigo-100 text-chart-primary font-semibold text-[10px] uppercase tracking-wider hover:bg-muted">
               Yes, it's still there
             </Button>
-            <Button onClick={() => handleCheckIdentity(false)} className="h-9 px-6 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold text-[10px] uppercase tracking-wider">
+            <Button onClick={() => handleCheckIdentity(false)} className="h-9 px-6 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-[10px] uppercase tracking-wider">
               No, it has dissolved
             </Button>
           </div>
@@ -572,7 +572,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
           <div className="w-full relative">
             <textarea 
               autoFocus
-              className="w-full bg-transparent text-base text-center border-none focus:ring-0 placeholder:text-slate-200 resize-none min-h-[56px] font-medium"
+              className="w-full bg-transparent text-base text-center border-none focus:ring-0 placeholder:text-border resize-none min-h-[56px] font-medium"
               placeholder="First thing that comes up..."
               value={currentLoopResponse}
               onChange={(e) => setCurrentLoopResponse(e.target.value)}
@@ -589,7 +589,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
           <Button 
             onClick={handleLoopNext} 
             disabled={isGenerating}
-            className="bg-primary hover:bg-primary/90 text-white rounded-full px-6 h-8 font-semibold uppercase tracking-wider text-[10px] transition-all hover:scale-105"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6 h-8 font-semibold uppercase tracking-wider text-[10px] transition-all hover:scale-105"
           >
             Continue <ArrowRight className="ml-1.5" size={14} />
           </Button>
@@ -634,7 +634,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
 
       {!singlePage && (
       <div className="flex justify-center pt-3">
-        <Button onClick={handleNext} className="bg-primary hover:bg-primary/90 text-white rounded-lg h-8 px-10 font-semibold text-[10px] uppercase tracking-wider">
+        <Button onClick={handleNext} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-8 px-10 font-semibold text-[10px] uppercase tracking-wider">
           Move to Phase 4 <ArrowRight className="ml-1.5" size={14} />
         </Button>
       </div>
@@ -653,10 +653,10 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
       </div>
       {!singlePage && (
       <div className="flex flex-col sm:flex-row gap-3 justify-center pt-3">
-        <Button variant="outline" onClick={() => { reset(); setPhase(1); }} className="h-8 px-6 rounded-lg border border-rose-200 text-chart-destructive font-semibold text-[10px] uppercase tracking-wider hover:bg-muted">
+        <Button variant="outline" onClick={() => { reset(); setPhase(1); }} className="h-8 px-6 rounded-lg border border-destructive/20 text-chart-destructive font-semibold text-[10px] uppercase tracking-wider hover:bg-muted">
           Yes, start new process
         </Button>
-        <Button onClick={handleNext} className="h-8 px-6 rounded-lg bg-primary hover:bg-primary/90 text-white font-semibold text-[10px] uppercase tracking-wider">
+        <Button onClick={handleNext} className="h-8 px-6 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-[10px] uppercase tracking-wider">
           No, it's clear
         </Button>
       </div>
@@ -680,15 +680,15 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
           <div className="space-y-3">
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground ml-1">1. How do you feel about the problem now?</Label>
-              <Input value={formData.feelingsNow} onChange={e => setFormData({...formData, feelingsNow: e.target.value})} className="rounded-lg h-9 border border-border px-4 text-sm font-medium bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
+              <Input value={formData.feelingsNow} onChange={e => setFormData({...formData, feelingsNow: e.target.value})} className="rounded-lg h-9 border border-border px-4 text-sm font-medium bg-card focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground ml-1">2. What are you more conscious of now than before?</Label>
-              <Input value={formData.moreConsciousOf} onChange={e => setFormData({...formData, moreConsciousOf: e.target.value})} className="rounded-lg h-9 border border-border px-4 text-sm font-medium bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
+              <Input value={formData.moreConsciousOf} onChange={e => setFormData({...formData, moreConsciousOf: e.target.value})} className="rounded-lg h-9 border border-border px-4 text-sm font-medium bg-card focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground ml-1">3. What's your new intention?</Label>
-              <Input value={formData.newIntention} onChange={e => setFormData({...formData, newIntention: e.target.value})} className="rounded-lg h-9 border border-border px-4 text-sm font-medium bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
+              <Input value={formData.newIntention} onChange={e => setFormData({...formData, newIntention: e.target.value})} className="rounded-lg h-9 border border-border px-4 text-sm font-medium bg-card focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
             </div>
           </div>
         </div>
@@ -698,11 +698,11 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
           <div className="space-y-3">
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground ml-1">1. How are you going to put that intention or awareness into action?</Label>
-              <Input value={formData.actionPlan} onChange={e => setFormData({...formData, actionPlan: e.target.value})} className="rounded-lg h-9 border border-border px-4 text-sm font-medium bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
+              <Input value={formData.actionPlan} onChange={e => setFormData({...formData, actionPlan: e.target.value})} className="rounded-lg h-9 border border-border px-4 text-sm font-medium bg-card focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground ml-1">2. What is the No.1 thing to do to make that happen?</Label>
-              <Input value={formData.no1Thing} onChange={e => setFormData({...formData, no1Thing: e.target.value})} className="rounded-lg h-9 border border-border px-4 text-sm font-medium bg-white focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
+              <Input value={formData.no1Thing} onChange={e => setFormData({...formData, no1Thing: e.target.value})} className="rounded-lg h-9 border border-border px-4 text-sm font-medium bg-card focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
             </div>
           </div>
         </div>
@@ -717,7 +717,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
         >
           {isAnalyzing ? <Loader2 className="mr-1.5 animate-spin" size={12} /> : <Wand2 className="mr-1.5" size={12} />} Scan for Deeper Patterns
         </Button>
-        <Button onClick={() => saveProgress(true)} disabled={isSaving} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-lg h-8 font-semibold text-[10px] uppercase tracking-wider">
+        <Button onClick={() => saveProgress(true)} disabled={isSaving} className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-8 font-semibold text-[10px] uppercase tracking-wider">
           {isSaving ? <Loader2 className="mr-1.5 animate-spin" size={12} /> : <CheckCircle2 className="mr-1.5" size={12} />} Complete &amp; Save Session
         </Button>
         <Button onClick={reset} variant="ghost" className="flex-1 text-muted-foreground rounded-lg h-8 font-medium hover:bg-muted">
@@ -745,7 +745,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
             </p>
             <div className="grid grid-cols-1 gap-3">
               {activeDrafts.map((session) => (
-                <div key={session.id} className="p-3 bg-white rounded-xl border border-amber-100 hover:border-amber-400 transition-all cursor-pointer group flex items-center justify-between" onClick={() => loadSession(session)}>
+                <div key={session.id} className="p-3 bg-card rounded-xl border border-amber-100 hover:border-amber-400 transition-all cursor-pointer group flex items-center justify-between" onClick={() => loadSession(session)}>
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
                       <Zap size={14} />
@@ -772,9 +772,9 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
           ) : (
             <div className="grid grid-cols-1 gap-3">
               {completedSessions.map((session) => (
-                <div key={session.id} className="p-3 bg-white rounded-xl border border-border hover:border-indigo-400 transition-all cursor-pointer group flex items-center justify-between" onClick={() => setViewingReportId(session.id)}>
+                <div key={session.id} className="p-3 bg-card rounded-xl border border-border hover:border-indigo-400 transition-all cursor-pointer group flex items-center justify-between" onClick={() => setViewingReportId(session.id)}>
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-chart-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                    <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-chart-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                       <FileText size={14} />
                     </div>
                     <div className="min-w-0">
@@ -787,7 +787,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
                   </div>
                   <div className="flex items-center gap-2">
                     <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground/60 hover:text-chart-destructive opacity-0 group-hover:opacity-100 transition-all" onClick={(e) => { e.stopPropagation(); setDeleteTargetId(session.id); setShowDeleteConfirm(true); }}><Trash2 size={14} /></Button>
-                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-white transition-all"><ArrowRight size={14} /></div>
+                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all"><ArrowRight size={14} /></div>
                   </div>
                 </div>
               ))}

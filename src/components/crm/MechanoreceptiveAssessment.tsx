@@ -174,7 +174,7 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
                       { s: "4. Specific Joint", l: "Isolate the segment (e.g. L4/L5, GH Joint)" }
                     ].map((row, i) => (
                       <tr key={i}>
-                        <td className="p-4 font-bold text-xs border-r border-black/10 bg-slate-50/30">{row.s}</td>
+                        <td className="p-4 font-bold text-xs border-r border-foreground/10 bg-muted/30">{row.s}</td>
                         <td className="p-4 text-xs font-medium text-muted-foreground">{row.l}</td>
                       </tr>
                     ))}
@@ -207,7 +207,7 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
 
         {/* Sidebar / Reference Column */}
         <div className="lg:col-span-4 space-y-10">
-          <div className="p-8 border-2 border-foreground/20 space-y-6 bg-slate-50/50">
+          <div className="p-8 border-2 border-foreground/20 space-y-6 bg-muted/50">
             <div className="flex items-center gap-3">
               <ShieldAlert size={20} className="text-foreground" />
               <h4 className="font-black text-xs uppercase tracking-widest">Practitioner Note</h4>
@@ -215,7 +215,7 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
             <p className="text-xs font-medium leading-relaxed italic text-muted-foreground">
               "Always re-test the original stimulus after each layer. If the IM remains inhibited, there is a deeper layer of compensation. Expect 5-15 layers in complex cases."
             </p>
-            <div className="pt-4 border-t border-black/10 space-y-4">
+            <div className="pt-4 border-t border-foreground/10 space-y-4">
               <div className="flex items-center gap-3">
                 <CheckCircle2 size={16} className="text-emerald-600" />
                 <span className="text-[10px] font-black uppercase tracking-widest">Nasal Breathing Required</span>
@@ -234,7 +234,7 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 pt-0">
-              <div className="aspect-square rounded-none overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center p-4">
+              <div className="aspect-square rounded-none overflow-hidden bg-card/5 border border-primary-foreground/10 flex items-center justify-center p-4">
                 <img 
                   src="/images/mechanoreceptive/homunculus.png" 
                   alt="Homunculus" 

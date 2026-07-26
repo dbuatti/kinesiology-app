@@ -56,7 +56,7 @@ const SectionHeader = ({ id, title, subtitle }: { id: string; title: string; sub
   const meta = SECTION_META[id];
   return (
     <div id={id} className="mt-16 md:mt-24 mb-6 first:mt-0 scroll-mt-24">
-      <div className="flex items-start gap-4 pb-3 border-b-2 border-black">
+      <div className="flex items-start gap-4 pb-3 border-b-2 border-foreground/20">
         {meta && (
           <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center font-semibold text-xl shrink-0 mt-0.5", meta.bg, meta.color)}>
             {meta.letter}
@@ -179,12 +179,12 @@ const SessionDocumentView = ({
   }, [unifiedPattern]);
 
   return (
-    <div className="bg-white min-h-screen text-black font-sans pb-40 print:p-0 print:m-0">
+    <div className="bg-card min-h-screen text-foreground font-sans pb-40 print:p-0 print:m-0">
       {/* Document Controls */}
       <div className="sticky top-0 z-50 bg-card/95 backdrop-blur-md print:hidden border-b border-border">
         <div className="px-4 md:px-6 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-4 min-w-0">
-            <Button variant="ghost" size="sm" onClick={onClose} className="rounded-none h-9 px-3 font-medium text-[10px] uppercase tracking-wider border border-black hover:bg-black hover:text-white transition-all shrink-0">
+            <Button variant="ghost" size="sm" onClick={onClose} className="rounded-none h-9 px-3 font-medium text-[10px] uppercase tracking-wider border border-foreground/20 hover:bg-foreground hover:text-primary-foreground transition-all shrink-0">
               <ArrowLeft size={14} className="mr-1" /> Exit
             </Button>
             <Popover open={sessionSearchOpen} onOpenChange={setSessionSearchOpen}>
@@ -241,7 +241,7 @@ const SessionDocumentView = ({
               className={cn(
                 "text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border transition-colors shrink-0",
                 !appointment.is_paid
-                  ? "text-slate-500 border-slate-200 hover:bg-slate-50"
+                  ? "text-muted-foreground border-border hover:bg-muted/50"
                   : appointment.payment_received
                     ? "text-emerald-600 border-emerald-200 bg-emerald-50 hover:bg-emerald-100"
                     : "text-rose-600 border-rose-200 bg-rose-50 hover:bg-rose-100"
@@ -263,31 +263,31 @@ const SessionDocumentView = ({
                 <>
                   <Button variant="outline" size="sm"
                     onClick={() => setQuickSessionOpen(true)}
-                    className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
+                    className="rounded-none border-foreground/20 font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
                     <Plus size={12} className="mr-1" /> New Session
                   </Button>
                   {appointment.clients.phone && (
                     <Button variant="outline" size="sm"
                       onClick={() => window.open(`imessage:${appointment.clients.phone}`, '_blank')}
-                      className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
+                      className="rounded-none border-foreground/20 font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
                       <MessageCircle size={12} className="mr-1" /> Message
                     </Button>
                   )}
                   {appointment.notion_link && (
-                    <Button asChild variant="outline" size="sm" className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
+                    <Button asChild variant="outline" size="sm" className="rounded-none border-foreground/20 font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
                       <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
                         <ExternalLink size={12} className="mr-1" /> Notion
                       </a>
                     </Button>
                   )}
                   <Link to={`/schedule?view=list&clientId=${appointment.clients.id}`} className="no-underline">
-                    <Button variant="outline" size="sm" className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
+                    <Button variant="outline" size="sm" className="rounded-none border-foreground/20 font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
                       <CalendarPlus size={12} className="mr-1" /> Book Next
                     </Button>
                   </Link>
                 </>
               )}
-              <Button variant="outline" size="sm" onClick={() => window.print()} className="rounded-none border-black font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
+              <Button variant="outline" size="sm" onClick={() => window.print()} className="rounded-none border-foreground/20 font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
                 <Printer size={12} className="mr-1" /> Print
               </Button>
               <button
@@ -295,8 +295,8 @@ const SessionDocumentView = ({
                 className={cn(
                   "h-8 px-3 text-[10px] font-bold uppercase tracking-wider border transition-colors",
                   weekendMode
-                    ? "bg-black text-white border-black"
-                    : "border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600"
+                    ? "bg-foreground text-primary-foreground border-foreground/20"
+                    : "border-border text-muted-foreground hover:bg-muted/50 hover:text-muted-foreground"
                 )}
                 title={weekendMode ? "Exit Weekend Mode — show full interface" : "Weekend Mode — hide sidebars and focus on the session"}
               >
@@ -322,7 +322,7 @@ const SessionDocumentView = ({
 
         {/* Center: The Document */}
         <div className={cn(
-          "flex-1 w-full mx-auto bg-white border-none md:border md:border-slate-200 md:shadow-sm p-3 sm:p-6 md:p-8 min-h-[900px] print:border-none print:p-0",
+          "flex-1 w-full mx-auto bg-card border-none md:border md:border-border md:shadow-sm p-3 sm:p-6 md:p-8 min-h-[900px] print:border-none print:p-0",
           weekendMode ? "max-w-[1100px]" : "max-w-[850px]"
         )}>
           {/* Header */}
@@ -384,11 +384,11 @@ const SessionDocumentView = ({
           </section>
 
           {/* Footer */}
-          <div className="pt-32 border-t-2 border-black text-center space-y-4">
+          <div className="pt-32 border-t-2 border-foreground/20 text-center space-y-4">
             <div className="flex justify-center gap-12 text-[10px] font-semibold uppercase tracking-wider">
-              <div className="flex items-center gap-2"><div className="w-2 h-2 bg-black" /> Verified</div>
-              <div className="flex items-center gap-2"><div className="w-2 h-2 bg-black" /> Integrated</div>
-              <div className="flex items-center gap-2"><div className="w-2 h-2 bg-black" /> Encrypted</div>
+              <div className="flex items-center gap-2"><div className="w-2 h-2 bg-foreground" /> Verified</div>
+              <div className="flex items-center gap-2"><div className="w-2 h-2 bg-foreground" /> Integrated</div>
+              <div className="flex items-center gap-2"><div className="w-2 h-2 bg-foreground" /> Encrypted</div>
             </div>
             <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">Session Complete</p>
           </div>

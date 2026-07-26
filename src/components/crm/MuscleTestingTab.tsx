@@ -339,14 +339,14 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 bg-primary rounded-xl text-primary-foreground shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center"><Sparkles size={24} /></div>
+            <div className="w-12 h-12 bg-card/20 backdrop-blur-md rounded-xl flex items-center justify-center"><Sparkles size={24} /></div>
             <div>
               <h3 className="text-xl font-semibold">14 Muscle Balance</h3>
               <p className="text-primary-foreground/80 text-xs font-medium">Quick-log the standard TFH primary balance.</p>
             </div>
           </div>
           <div className="flex gap-2">
-            <Button onClick={handleQuickLog14} disabled={saving} className="bg-white text-chart-primary hover:bg-muted rounded-xl font-semibold text-xs uppercase tracking-wider h-12 px-8 shadow-sm">
+            <Button onClick={handleQuickLog14} disabled={saving} className="bg-card text-chart-primary hover:bg-muted rounded-xl font-semibold text-xs uppercase tracking-wider h-12 px-8 shadow-sm">
               {saving ? <Loader2 className="mr-2 animate-spin" /> : <Zap size={18} className="mr-2 fill-current" />}
               Log 14 Primary
             </Button>
@@ -370,7 +370,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
               onClick={() => setMeridianFilter(currentPeakMeridian.name)}
               className={cn(
                 "rounded-xl h-9 px-4 font-semibold text-[10px] uppercase tracking-wider transition-all",
-                meridianFilter === currentPeakMeridian.name ? "bg-primary text-primary-foreground border-none shadow-sm" : "border-border bg-white hover:bg-muted"
+                meridianFilter === currentPeakMeridian.name ? "bg-primary text-primary-foreground border-none shadow-sm" : "border-border bg-card hover:bg-muted"
               )}
             >
               <Clock size={14} className="mr-2" /> Peak Now: {currentPeakMeridian.name}
@@ -407,7 +407,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
 
         {Object.keys(filteredGroups).length === 0 && (
           <div className="text-center py-20 bg-muted rounded-xl border-2 border-dashed border-border">
-            <div className="mx-auto w-16 h-16 bg-white rounded-xl flex items-center justify-center mb-4 shadow-sm"><Filter className="text-muted-foreground" size={24} /></div>
+            <div className="mx-auto w-16 h-16 bg-card rounded-xl flex items-center justify-center mb-4 shadow-sm"><Filter className="text-muted-foreground" size={24} /></div>
             <p className="text-foreground font-semibold text-xl">No muscles match your filters</p>
             <Button variant="link" onClick={() => { setShowOnlyTested(false); setShowOnlyDysfunctional(false); setSearchTerm(""); setMeridianFilter("all"); }} className="mt-4 text-chart-primary font-medium">Reset All Filters</Button>
           </div>

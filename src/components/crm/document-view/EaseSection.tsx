@@ -177,13 +177,13 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
         {/* Left Column: Harmonic Rocking & T1 Reset */}
         <div className="space-y-6">
-          <div className="p-6 border border-black space-y-4">
+          <div className="p-6 border border-foreground/20 space-y-4">
             <div className="flex items-center justify-between">
               <h4 className="text-[11px] font-semibold uppercase tracking-wider">Harmonic Rocking</h4>
               <Checkbox 
                 checked={harmonicRockingDone}
                 onCheckedChange={() => toggleCompletion(harmonicRockingDone, setHarmonicRockingDone, 'harmonic_rocking_notes')}
-                className="border-black rounded-none data-[state=checked]:bg-black" 
+                className="border-foreground/20 rounded-none data-[state=checked]:bg-foreground" 
               />
             </div>
             <DocInput 
@@ -195,13 +195,13 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
             />
           </div>
           
-          <div className="p-6 border border-black space-y-4">
+          <div className="p-6 border border-foreground/20 space-y-4">
             <div className="flex items-center justify-between">
               <h4 className="text-[11px] font-semibold uppercase tracking-wider">T1 Sympathetic Reset</h4>
               <Checkbox 
                 checked={t1ResetDone}
                 onCheckedChange={() => toggleCompletion(t1ResetDone, setT1ResetDone, 't1_reset_notes')}
-                className="border-black rounded-none data-[state=checked]:bg-black" 
+                className="border-foreground/20 rounded-none data-[state=checked]:bg-foreground" 
               />
             </div>
             <DocInput 
@@ -213,13 +213,13 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
             />
           </div>
 
-          <div className="p-6 border border-black space-y-4">
+          <div className="p-6 border border-foreground/20 space-y-4">
             <div className="flex items-center justify-between">
               <h4 className="text-[11px] font-semibold uppercase tracking-wider">Lymphatic Cranial Reflex Zone</h4>
               <Checkbox 
                 checked={lymphaticDone}
                 onCheckedChange={() => toggleCompletion(lymphaticDone, setLymphaticDone, 'lymphatic_notes')}
-                className="border-black rounded-none data-[state=checked]:bg-black" 
+                className="border-foreground/20 rounded-none data-[state=checked]:bg-foreground" 
               />
             </div>
             <DocInput 
@@ -234,13 +234,13 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
 
         {/* Right Column: Diaphragm Reset & Vagus Nerve Process */}
         <div className="space-y-6">
-          <div className="p-6 border border-black space-y-4">
+          <div className="p-6 border border-foreground/20 space-y-4">
             <div className="flex items-center justify-between">
               <h4 className="text-[11px] font-semibold uppercase tracking-wider">Diaphragm Reset</h4>
               <Checkbox 
                 checked={diaphragmResetDone}
                 onCheckedChange={() => toggleCompletion(diaphragmResetDone, setDiaphragmResetDone, 'diaphragm_reset_notes')}
-                className="border-black rounded-none data-[state=checked]:bg-black" 
+                className="border-foreground/20 rounded-none data-[state=checked]:bg-foreground" 
               />
             </div>
             <DocInput 
@@ -253,8 +253,8 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
           </div>
 
           {/* Vagus Nerve Process — Screen & Reset Only */}
-          <div className="p-6 border border-black space-y-6 bg-muted/50">
-            <div className="flex items-center justify-between border-b border-black/10 pb-2">
+          <div className="p-6 border border-foreground/20 space-y-6 bg-muted/50">
+            <div className="flex items-center justify-between border-b border-foreground/10 pb-2">
               <div className="flex items-center gap-2">
                 <h4 className="text-[11px] font-semibold uppercase tracking-wider">Vagus Nerve Process</h4>
                 <span className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-sm bg-foreground text-background">Screen</span>
@@ -266,7 +266,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
                 <Checkbox 
                   checked={vagusNerveDone}
                   onCheckedChange={() => toggleCompletion(vagusNerveDone, setVagusNerveDone, 'vagus_nerve_notes')}
-                  className="border-black rounded-none data-[state=checked]:bg-black" 
+                  className="border-foreground/20 rounded-none data-[state=checked]:bg-foreground" 
                 />
               </div>
             </div>
@@ -302,7 +302,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
                 </select>
               </div>
 
-              <div className="p-3 bg-white border border-border space-y-3">
+              <div className="p-3 bg-card border border-border space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-semibold uppercase text-muted-foreground">4. Challenge Type</span>
                   <div className="flex gap-1">
@@ -376,7 +376,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
                   <Button type="button" size="sm" onClick={toggleCorrectionTimer} className="flex-1 h-7 bg-foreground text-background hover:bg-foreground/90 rounded-none text-[10px] font-semibold uppercase">
                     {isCorrectionActive ? "Pause" : "Start"}
                   </Button>
-                  <Button type="button" size="sm" onClick={resetCorrectionTimer} className="h-7 w-7 p-0 rounded-none border border-border bg-white text-slate-600">
+                  <Button type="button" size="sm" onClick={resetCorrectionTimer} className="h-7 w-7 p-0 rounded-none border border-border bg-card text-muted-foreground">
                     <RotateCcw size={10} />
                   </Button>
                 </div>
@@ -386,7 +386,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
                 <span className="text-[10px] font-semibold uppercase text-muted-foreground">8. Re-assess</span>
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] font-medium">Balanced?</span>
-                  <Checkbox checked={isCleared} onCheckedChange={(checked) => setIsCleared(!!checked)} className="border-black rounded-none data-[state=checked]:bg-black" />
+                  <Checkbox checked={isCleared} onCheckedChange={(checked) => setIsCleared(!!checked)} className="border-foreground/20 rounded-none data-[state=checked]:bg-foreground" />
                 </div>
               </div>
             </div>

@@ -60,9 +60,9 @@ export const AssessmentItem = ({
         <div className={cn(
           "w-4 h-4 border flex items-center justify-center transition-all shrink-0 rounded-sm",
           status === 'Inhibited'
-            ? "bg-amber-500 border-amber-500 text-white"
+            ? "bg-amber-500 border-amber-500 text-primary-foreground"
             : status === 'Hypertonic'
-              ? "bg-rose-600 border-rose-600 text-white"
+              ? "bg-rose-600 border-rose-600 text-primary-foreground"
               : "border-border group-hover:border-foreground bg-background"
         )}>
           {status === 'Inhibited' && <ArrowDown size={10} strokeWidth={4} />}

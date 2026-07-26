@@ -18,8 +18,8 @@ export const BAGUA_PROFILES: BaGuaProfile[] = [
     meridians: ["Bladder (BL)", "Yin Qiao Mai"],
     themes: ["Fear", "Loneliness", "Impotence", "Control", "Safety", "Connection", "Trust/Distrust", "Security"],
     description: "Focuses on the fundamental need for safety and the existential fear of being alone or powerless.",
-    color: "text-blue-600",
-    bgColor: "bg-blue-50"
+    color: "text-primary",
+    bgColor: "bg-primary/5"
   },
   {
     number: 2,
@@ -58,8 +58,8 @@ export const BAGUA_PROFILES: BaGuaProfile[] = [
     meridians: ["General System"],
     themes: ["Balance", "Receptivity", "Fulfillment", "Yearning", "Support", "Spirit Connection", "Fullness"],
     description: "The pivot point of the system, dealing with the core sense of being supported by life itself.",
-    color: "text-slate-600",
-    bgColor: "bg-slate-50"
+    color: "text-muted-foreground",
+    bgColor: "bg-muted/50"
   },
   {
     number: 6,
@@ -68,8 +68,8 @@ export const BAGUA_PROFILES: BaGuaProfile[] = [
     meridians: ["Large Intestine (LI)", "Du Mai (GV)"],
     themes: ["Belonging", "Respect", "Value", "Worth", "Abandonment", "Separation", "Loss", "Alienation"],
     description: "Relates to the higher sense of value, authority, and the deep pain of feeling alienated or unworthy.",
-    color: "text-slate-500",
-    bgColor: "bg-slate-100"
+    color: "text-muted-foreground",
+    bgColor: "bg-muted"
   },
   {
     number: 7,
@@ -89,7 +89,7 @@ export const BAGUA_PROFILES: BaGuaProfile[] = [
     themes: ["Stillness", "Peace", "Withdrawal", "Closeness", "Connected", "Loneliness", "Safety"],
     description: "Seeks the deep peace of stillness, often oscillating between the need for withdrawal and the desire for closeness.",
     color: "text-blue-800",
-    bgColor: "bg-blue-100"
+    bgColor: "bg-primary/10"
   },
   {
     number: 9,

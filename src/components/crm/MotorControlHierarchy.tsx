@@ -25,9 +25,9 @@ const HIERARCHY_DATA = [
     borderColor: 'border-amber-200',
     textColor: 'text-amber-700',
     targetColor: 'bg-blue-400',
-    targetLight: 'bg-blue-50',
-    targetBorder: 'border-blue-200',
-    targetText: 'text-blue-700'
+    targetLight: 'bg-primary/5',
+    targetBorder: 'border-primary/20',
+    targetText: 'text-primary'
   },
   {
     id: 'pons',
@@ -53,9 +53,9 @@ const HIERARCHY_DATA = [
     borderColor: 'border-rose-200',
     textColor: 'text-rose-700',
     targetColor: 'bg-blue-400',
-    targetLight: 'bg-blue-50',
-    targetBorder: 'border-blue-200',
-    targetText: 'text-blue-700'
+    targetLight: 'bg-primary/5',
+    targetBorder: 'border-primary/20',
+    targetText: 'text-primary'
   },
   {
     id: 'vestibular',
@@ -85,7 +85,7 @@ const MotorControlHierarchy = () => {
               item.lightColor, item.borderColor
             )}>
               <div className={cn(
-                "w-12 h-12 rounded-2xl mx-auto mb-3 flex items-center justify-center text-white shadow-lg",
+                "w-12 h-12 rounded-2xl mx-auto mb-3 flex items-center justify-center text-primary-foreground shadow-lg",
                 item.color
               )}>
                 {item.id === 'midbrain' ? <Zap size={24} /> : 
@@ -98,7 +98,7 @@ const MotorControlHierarchy = () => {
 
             {/* Connector Arrow */}
             <div className="flex flex-col items-center gap-1 animate-bounce">
-              <ArrowDown className="text-slate-300" size={24} />
+              <ArrowDown className="text-muted-foreground/60" size={24} />
             </div>
 
             {/* Motor Output Target */}
@@ -107,16 +107,16 @@ const MotorControlHierarchy = () => {
               item.targetLight, item.targetBorder
             )}>
               <p className={cn("text-2xl font-black mb-1", item.targetText)}>{item.target}</p>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Motor Control</p>
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Motor Control</p>
             </div>
 
             {/* Associated Nerves */}
             <div className="pt-4 flex flex-col items-center gap-2">
-              <div className="w-0.5 h-8 bg-slate-100 rounded-full" />
-              <div className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm text-center">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Associated Pathway</p>
+              <div className="w-0.5 h-8 bg-muted rounded-full" />
+              <div className="p-4 bg-card rounded-2xl border border-border/50 shadow-sm text-center">
+                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-2">Associated Pathway</p>
                 {item.nerves.map(nerve => (
-                  <p key={nerve} className="text-xs font-bold text-slate-700">{nerve}</p>
+                  <p key={nerve} className="text-xs font-bold text-foreground/80">{nerve}</p>
                 ))}
               </div>
             </div>
@@ -124,17 +124,17 @@ const MotorControlHierarchy = () => {
         ))}
       </div>
 
-      <Card className="border-none shadow-lg rounded-[2.5rem] bg-slate-900 text-white overflow-hidden">
+      <Card className="border-none shadow-lg rounded-[2.5rem] bg-foreground text-primary-foreground overflow-hidden">
         <CardContent className="p-8 flex flex-col md:flex-row items-center gap-8">
           <div className="w-20 h-20 rounded-[1.5rem] bg-indigo-600 flex items-center justify-center shrink-0 shadow-2xl shadow-indigo-500/20">
-            <Workflow size={40} className="text-white" />
+            <Workflow size={40} className="text-primary-foreground" />
           </div>
           <div className="space-y-2">
             <h4 className="text-xl font-black flex items-center gap-2">
               <Info size={20} className="text-indigo-400" /> Clinical Application
             </h4>
-            <p className="text-slate-400 font-medium leading-relaxed">
-              Cranial nerves arise from specific nuclei in the brainstem. By assessing the nerves, you are indirectly assessing the health of the <span className="text-white font-bold">Midbrain, Pons, and Medulla</span>. Clearing a single nucleus (e.g. Pons) can often resolve multiple associated nerve dysfunctions in a fractal pattern.
+            <p className="text-muted-foreground font-medium leading-relaxed">
+              Cranial nerves arise from specific nuclei in the brainstem. By assessing the nerves, you are indirectly assessing the health of the <span className="text-primary-foreground font-bold">Midbrain, Pons, and Medulla</span>. Clearing a single nucleus (e.g. Pons) can often resolve multiple associated nerve dysfunctions in a fractal pattern.
             </p>
           </div>
         </CardContent>

@@ -45,22 +45,22 @@ const MuscleGroupCollapsible = ({
       onOpenChange={onToggle}
       className="w-full"
     >
-      <Card className="border-none shadow-xl rounded-[2.5rem] bg-white overflow-hidden">
+      <Card className="border-none shadow-xl rounded-[2.5rem] bg-card overflow-hidden">
         <CollapsibleTrigger asChild>
-          <CardHeader className="bg-slate-900 text-white p-6 cursor-pointer hover:bg-slate-800 transition-colors">
+          <CardHeader className="bg-foreground text-primary-foreground p-6 cursor-pointer hover:bg-foreground transition-colors">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-card/10 flex items-center justify-center">
                   <Dumbbell size={20} />
                 </div>
                 <div>
                   <CardTitle className="text-xl font-black">{groupName}</CardTitle>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
+                  <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5">
                     {muscles.length} Muscles • {testedInGroup} Tested
                   </p>
                 </div>
               </div>
-              {isOpen ? <ChevronUp size={20} className="text-slate-500" /> : <ChevronDown size={20} className="text-slate-500" />}
+              {isOpen ? <ChevronUp size={20} className="text-muted-foreground" /> : <ChevronDown size={20} className="text-muted-foreground" />}
             </div>
           </CardHeader>
         </CollapsibleTrigger>

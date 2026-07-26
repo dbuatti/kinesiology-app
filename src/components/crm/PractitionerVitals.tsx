@@ -92,21 +92,21 @@ const PractitionerVitals = ({ onComplete }: PractitionerVitalsProps) => {
             "p-6 rounded-[2rem] border-2 transition-all text-left group",
             results.bolt 
               ? "bg-emerald-50 border-emerald-200" 
-              : "bg-white border-slate-100 hover:border-indigo-200"
+              : "bg-card border-border/50 hover:border-indigo-200"
           )}
         >
           <div className="flex items-center justify-between mb-4">
             <div className={cn(
               "w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-110",
-              results.bolt ? "bg-emerald-500 text-white" : "bg-indigo-50 text-indigo-600"
+              results.bolt ? "bg-emerald-500 text-primary-foreground" : "bg-indigo-50 text-indigo-600"
             )}>
               <FlaskConical size={24} />
             </div>
             {results.bolt && <CheckCircle2 className="text-emerald-500" size={20} />}
           </div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Step 1</p>
-          <h4 className="text-xl font-black text-slate-900">Log BOLT Score</h4>
-          <p className="text-xs text-slate-500 mt-1">Target: 40s for clinical peak.</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Step 1</p>
+          <h4 className="text-xl font-black text-foreground">Log BOLT Score</h4>
+          <p className="text-xs text-muted-foreground mt-1">Target: 40s for clinical peak.</p>
           {results.bolt && (
             <p className="mt-4 text-2xl font-black text-emerald-600">{results.bolt}s</p>
           )}
@@ -118,21 +118,21 @@ const PractitionerVitals = ({ onComplete }: PractitionerVitalsProps) => {
             "p-6 rounded-[2rem] border-2 transition-all text-left group",
             results.coherence 
               ? "bg-emerald-50 border-emerald-200" 
-              : "bg-white border-slate-100 hover:border-indigo-200"
+              : "bg-card border-border/50 hover:border-indigo-200"
           )}
         >
           <div className="flex items-center justify-between mb-4">
             <div className={cn(
               "w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm transition-transform group-hover:scale-110",
-              results.coherence ? "bg-emerald-500 text-white" : "bg-rose-50 text-rose-600"
+              results.coherence ? "bg-emerald-500 text-primary-foreground" : "bg-rose-50 text-rose-600"
             )}>
               <Activity size={24} />
             </div>
             {results.coherence && <CheckCircle2 className="text-emerald-500" size={20} />}
           </div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Step 2</p>
-          <h4 className="text-xl font-black text-slate-900">Log Coherence</h4>
-          <p className="text-xs text-slate-500 mt-1">Sync your heart and brain.</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Step 2</p>
+          <h4 className="text-xl font-black text-foreground">Log Coherence</h4>
+          <p className="text-xs text-muted-foreground mt-1">Sync your heart and brain.</p>
           {results.coherence && (
             <p className="mt-4 text-2xl font-black text-emerald-600">{results.coherence.toFixed(2)}</p>
           )}
@@ -140,11 +140,11 @@ const PractitionerVitals = ({ onComplete }: PractitionerVitalsProps) => {
       </div>
 
       {activeTest === 'bolt' && (
-        <Card className="border-none shadow-2xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden animate-in zoom-in-95 duration-300">
+        <Card className="border-none shadow-2xl rounded-[2.5rem] bg-foreground text-primary-foreground overflow-hidden animate-in zoom-in-95 duration-300">
           <CardContent className="p-10 space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-black">Practitioner BOLT</h3>
-              <Button variant="ghost" size="icon" onClick={() => setActiveTest(null)} className="text-slate-400 hover:text-white">
+              <Button variant="ghost" size="icon" onClick={() => setActiveTest(null)} className="text-muted-foreground hover:text-primary-foreground">
                 <X className="w-6 h-6" />
               </Button>
             </div>
@@ -158,11 +158,11 @@ const PractitionerVitals = ({ onComplete }: PractitionerVitalsProps) => {
       )}
 
       {activeTest === 'coherence' && (
-        <Card className="border-none shadow-2xl rounded-[2.5rem] bg-slate-900 text-white overflow-hidden animate-in zoom-in-95 duration-300">
+        <Card className="border-none shadow-2xl rounded-[2.5rem] bg-foreground text-primary-foreground overflow-hidden animate-in zoom-in-95 duration-300">
           <CardContent className="p-10 space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-black">Practitioner Coherence</h3>
-              <Button variant="ghost" size="icon" onClick={() => setActiveTest(null)} className="text-slate-400 hover:text-white">
+              <Button variant="ghost" size="icon" onClick={() => setActiveTest(null)} className="text-muted-foreground hover:text-primary-foreground">
                 <X className="w-6 h-6" />
               </Button>
             </div>

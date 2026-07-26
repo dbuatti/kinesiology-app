@@ -24,7 +24,7 @@ const StarRating = ({ rating, onRatingChange, disabled, size = 16 }: StarRatingP
           className={cn(
             "transition-all duration-200 hover:scale-110",
             disabled ? "cursor-default" : "cursor-pointer",
-            star <= rating ? "text-amber-400 fill-amber-400" : "text-slate-200 dark:text-slate-800 fill-transparent"
+            star <= rating ? "text-amber-400 fill-amber-400" : "text-muted-foreground/60 dark:text-foreground fill-transparent"
           )}
         >
           <Star size={size} className={cn(star <= rating && "drop-shadow-[0_0_3px_rgba(251,191,36,0.4)]")} />

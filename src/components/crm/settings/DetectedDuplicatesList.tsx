@@ -40,7 +40,7 @@ const DetectedDuplicatesList = ({
  if (detectedDuplicates.length === 0) {
  return (
  <div className="p-6 bg-chart-emerald/10/50 rounded-3xl border border-border flex items-center gap-4">
- <div className="w-10 h-10 rounded-xl bg-chart-emerald text-white flex items-center justify-center shadow-sm">
+ <div className="w-10 h-10 rounded-xl bg-chart-emerald text-primary-foreground flex items-center justify-center shadow-sm">
  <UserCheck size={20} />
  </div>
  <div className="space-y-0.5">
@@ -63,7 +63,7 @@ const DetectedDuplicatesList = ({
  <div className="space-y-2">
  <div className="flex items-center gap-2">
  <h4 className="font-semibold text-base text-muted-foreground">"{group.name}"</h4>
- <Badge className="bg-muted text-white border-none font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full">
+ <Badge className="bg-muted text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full">
  {group.confidence}% Match Confidence
  </Badge>
  </div>
@@ -72,13 +72,13 @@ const DetectedDuplicatesList = ({
  </p>
  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
  <span className="font-medium">Keep:</span>
- <code className="bg-white px-2 py-0.5 rounded border border-border text-[10px] font-mono">
+ <code className="bg-card px-2 py-0.5 rounded border border-border text-[10px] font-mono">
  {group.primary.name} {group.primary.email ? `(${group.primary.email})` : '(No Email)'}
  </code>
  <span className="opacity-40">|</span>
  <span className="font-medium">Merge:</span>
  {group.duplicates.map(d => (
- <code key={d.id} className="bg-white px-2 py-0.5 rounded border border-border text-[10px] font-mono">
+ <code key={d.id} className="bg-card px-2 py-0.5 rounded border border-border text-[10px] font-mono">
  {d.name} {d.email ? `(${d.email})` : '(No Email)'}
  </code>
  ))}
@@ -96,7 +96,7 @@ const DetectedDuplicatesList = ({
  <Button 
  onClick={() => onAutoMerge(group)}
  disabled={merging}
- className="bg-muted hover:bg-muted/90 text-white rounded-xl h-9 px-4 font-semibold text-[10px] uppercase tracking-wider shadow-md"
+ className="bg-muted hover:bg-muted/90 text-primary-foreground rounded-xl h-9 px-4 font-semibold text-[10px] uppercase tracking-wider shadow-md"
  >
  {merging ? <Loader2 className="mr-1.5" /> : <Merge size={12} className="mr-1.5" />}
  Auto-Merge

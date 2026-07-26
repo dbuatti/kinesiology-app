@@ -23,7 +23,7 @@ const ImageQuestion: FC<ImageQuestionProps> = ({
 }) => {
   return (
     <div className="space-y-6">
-      <div className="overflow-hidden rounded-2xl border-2 border-slate-100 dark:border-slate-800 shadow-sm">
+      <div className="overflow-hidden rounded-2xl border-2 border-border/50 dark:border-border shadow-sm">
         <AspectRatio ratio={16 / 9}>
           <img
             src={imageUrl}

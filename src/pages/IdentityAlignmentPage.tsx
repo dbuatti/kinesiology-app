@@ -11,7 +11,7 @@ const IdentityAlignmentPage = () => {
  <AppLayout>
   <div className="max-w-5xl mx-auto space-y-4">
  <div className="flex items-center gap-3">
-  <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center">
+  <div className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center">
     <Target size={16} />
   </div>
   <div>
@@ -53,7 +53,7 @@ const IdentityAlignmentPage = () => {
   </TabsContent>
  </Tabs>
 
- <div className="max-w-3xl mx-auto bg-chart-primary/5 border border-blue-500/10 rounded-xl p-4 flex gap-3 items-start">
+ <div className="max-w-3xl mx-auto bg-chart-primary/5 border border-primary/10 rounded-xl p-4 flex gap-3 items-start">
   <div className="w-6 h-6 bg-chart-primary/10 rounded-lg flex items-center justify-center shrink-0 text-chart-primary">
   <Info size={14} />
   </div>

@@ -11,9 +11,9 @@ interface ClientProfileCardProps {
 
 const ClientProfileCard = ({ client }: ClientProfileCardProps) => {
   return (
-    <Card className="overflow-hidden border-none shadow-lg bg-white rounded-2xl">
+    <Card className="overflow-hidden border-none shadow-lg bg-card rounded-2xl">
       <div className="h-24 bg-gradient-to-r from-indigo-600 to-indigo-500 relative">
-          <div className="absolute bottom-0 left-6 translate-y-1/2 p-1 bg-white rounded-full shadow-md">
+          <div className="absolute bottom-0 left-6 translate-y-1/2 p-1 bg-card rounded-full shadow-md">
               <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center text-3xl font-bold text-indigo-600 border-2 border-indigo-100">
                 {client.name.charAt(0)}
               </div>
@@ -21,8 +21,8 @@ const ClientProfileCard = ({ client }: ClientProfileCardProps) => {
       </div>
       <CardContent className="pt-14 px-6 pb-6 space-y-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">{client.name}</h2>
-          <p className="text-slate-500 font-medium">{client.pronouns || 'No pronouns set'}</p>
+          <h2 className="text-2xl font-bold text-foreground">{client.name}</h2>
+          <p className="text-muted-foreground font-medium">{client.pronouns || 'No pronouns set'}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {client.born && (
@@ -30,7 +30,7 @@ const ClientProfileCard = ({ client }: ClientProfileCardProps) => {
               <Badge className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border-none px-3 py-1 rounded-full">
                 {calculateAge(client.born)} years old
               </Badge>
-              <Badge variant="outline" className="flex gap-1 items-center px-3 py-1 border-slate-200 rounded-full">
+              <Badge variant="outline" className="flex gap-1 items-center px-3 py-1 border-border rounded-full">
                 <Star size={12} className="fill-amber-400 text-amber-400" />
                 {getStarSign(client.born)}
               </Badge>

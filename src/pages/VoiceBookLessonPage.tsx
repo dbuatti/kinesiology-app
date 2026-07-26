@@ -26,7 +26,7 @@ const VoiceBookLessonPage = () => {
           title="Book a Lesson"
           subtitle="Schedule a voice or piano coaching session."
           icon={Mic}
-          iconClassName="bg-rose-500 text-white dark:bg-rose-500 dark:text-white"
+          iconClassName="bg-rose-500 text-primary-foreground dark:bg-rose-500 dark:text-primary-foreground"
           actions={
             <div className="flex gap-2">
               <Button
@@ -60,7 +60,7 @@ const VoiceBookLessonPage = () => {
               className={cn(
                 "flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all",
                 duration === d.key
-                  ? "bg-rose-500 text-white shadow-lg shadow-rose-200 dark:shadow-rose-900/20"
+                  ? "bg-rose-500 text-primary-foreground shadow-lg shadow-rose-200 dark:shadow-rose-900/20"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >

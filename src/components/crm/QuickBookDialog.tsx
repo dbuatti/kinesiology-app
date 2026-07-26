@@ -255,7 +255,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
         <div className="px-8 pt-8 pb-5 border-b border-border shrink-0">
           <DialogHeader>
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-rose-500 text-white flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-rose-500 text-primary-foreground flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
                 <CalendarPlus size={22} />
               </div>
               <div className="flex-1 min-w-0">
@@ -309,7 +309,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
             </div>
           ) : slotsError ? (
             <div className="text-center py-12">
-              <p className="text-sm font-bold text-red-500">Failed to load availability</p>
+              <p className="text-sm font-bold text-destructive">Failed to load availability</p>
               <p className="text-xs text-muted-foreground mt-1">Please try again.</p>
             </div>
           ) : availableDates.length > 0 ? (
@@ -325,7 +325,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                       className={cn(
                         "flex flex-col items-center justify-center min-w-[72px] h-20 rounded-2xl border-2 transition-all duration-200 shrink-0",
                         selectedDate?.getTime() === date.getTime()
-                          ? "bg-indigo-600 border-indigo-600 text-white shadow-lg scale-105"
+                          ? "bg-indigo-600 border-indigo-600 text-primary-foreground shadow-lg scale-105"
                           : "bg-card border-border hover:border-indigo-300 dark:hover:border-indigo-700 text-foreground"
                       )}
                     >
@@ -359,8 +359,8 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                           className={cn(
                             "flex items-center justify-center gap-2 p-3.5 rounded-xl border text-sm font-black transition-all group shadow-sm",
                             isSelected
-                              ? "bg-indigo-600 border-indigo-600 text-white"
-                              : "bg-card border-border text-foreground hover:bg-indigo-600 hover:border-indigo-600 hover:text-white"
+                              ? "bg-indigo-600 border-indigo-600 text-primary-foreground"
+                              : "bg-card border-border text-foreground hover:bg-indigo-600 hover:border-indigo-600 hover:text-primary-foreground"
                           )}
                         >
                           <Clock size={13} className={cn("shrink-0", isSelected ? "opacity-100" : "opacity-40 group-hover:opacity-100 transition-opacity")} />
@@ -396,12 +396,12 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                           className={cn(
                             "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all relative",
                             isSelected
-                              ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100"
+                              ? "bg-indigo-600 border-indigo-600 text-primary-foreground shadow-lg shadow-indigo-100"
                               : "bg-card border-border text-foreground hover:border-indigo-300"
                           )}
                         >
                           {isCurrentRate && !isSelected && (
-                            <span className="absolute -top-2 right-2 bg-chart-emerald text-white text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full">
+                            <span className="absolute -top-2 right-2 bg-chart-emerald text-primary-foreground text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full">
                               Rate
                             </span>
                           )}
@@ -429,7 +429,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                   )}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-colors", sendOnboarding ? "bg-emerald-600 text-white" : "bg-muted text-emerald-600")}>
+                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-colors", sendOnboarding ? "bg-emerald-600 text-primary-foreground" : "bg-muted text-emerald-600")}>
                       <Mail size={20} />
                     </div>
                     <div className="space-y-0.5">
@@ -438,7 +438,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                     </div>
                   </div>
                   <div className={cn("w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all", sendOnboarding ? "bg-emerald-600 border-emerald-600" : "border-muted-foreground/30")}>
-                    {sendOnboarding && <CheckCircle2 size={16} className="text-white" />}
+                    {sendOnboarding && <CheckCircle2 size={16} className="text-primary-foreground" />}
                   </div>
                 </div>
               )}
@@ -448,7 +448,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                 <Button
                   onClick={handleBook}
                   disabled={submitting}
-                  className="w-full bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-white border-none h-14 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-amber-200/50 mt-6"
+                  className="w-full bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-primary-foreground border-none h-14 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-amber-200/50 mt-6"
                 >
                   {submitting ? (
                     <>

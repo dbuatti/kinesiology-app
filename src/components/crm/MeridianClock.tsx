@@ -67,13 +67,13 @@ const MeridianClock = () => {
                   className={cn(
                     "absolute top-0 left-1/2 -translate-x-1/2 w-8 h-12 -mt-2 rounded-lg transition-all duration-300 flex flex-col items-center justify-center gap-0.5 border-2",
                     isActive ? "bg-indigo-600 border-indigo-400 shadow-lg scale-110 z-20" : 
-                    isHovered ? "bg-slate-800 border-slate-600 scale-105 z-10" :
+                    isHovered ? "bg-foreground border-border scale-105 z-10" :
                     "bg-card border-muted shadow-sm"
                   )}
                 >
                   <span className={cn(
                     "text-[7px] font-black",
-                    isActive || isHovered ? "text-white" : "text-muted-foreground"
+                    isActive || isHovered ? "text-primary-foreground" : "text-muted-foreground"
                   )}>
                     {channel.code}
                   </span>
@@ -106,7 +106,7 @@ const MeridianClock = () => {
           <div className="space-y-4 animate-in fade-in duration-500">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm", displayChannel.color.split(' ')[0])}>
+                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-primary-foreground shadow-sm", displayChannel.color.split(' ')[0])}>
                   <Activity size={16} />
                 </div>
                 <div>
@@ -116,10 +116,10 @@ const MeridianClock = () => {
               </div>
               {nextChannel && !hoveredId && (
                 <div className="text-right">
-                  <p className="text-[7px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-end gap-1">
+                  <p className="text-[7px] font-black text-muted-foreground uppercase tracking-widest flex items-center justify-end gap-1">
                     Next <ArrowRight size={8} />
                   </p>
-                  <p className="text-[9px] font-bold text-slate-500">{nextChannel.name}</p>
+                  <p className="text-[9px] font-bold text-muted-foreground">{nextChannel.name}</p>
                 </div>
               )}
             </div>

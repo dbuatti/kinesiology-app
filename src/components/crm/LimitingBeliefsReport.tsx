@@ -67,7 +67,7 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
                 </p>
               </div>
               
-              <div className="space-y-1 pt-4 border-t border-slate-50">
+              <div className="space-y-1 pt-4 border-t border-border/30">
                 <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-1">
                   <Activity size={10} /> Felt Sense
                 </p>

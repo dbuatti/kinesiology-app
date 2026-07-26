@@ -244,15 +244,15 @@ const DebugAppointmentPage = () => {
  </div>
 
  {/* Onboarding Debug Suite */}
- <Card className="border-none shadow-sm rounded-xl bg-card text-white overflow-hidden relative">
+ <Card className="border-none shadow-sm rounded-xl bg-card text-primary-foreground overflow-hidden relative">
  <div className="absolute top-0 right-0 p-12 opacity-5"><Beaker size={200} /></div>
  <CardHeader className="p-10 pb-6 relative z-10">
  <div className="flex items-center gap-4 mb-2">
  <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center shadow-sm">
- <Beaker size={28} className="text-white" />
+ <Beaker size={28} className="text-primary-foreground" />
  </div>
  <div>
- <Badge className="bg-primary/20 text-primary/50 border-indigo-500/30 font-semibold text-[10px] uppercase tracking-wider mb-1 rounded-full">Automation Lab</Badge>
+ <Badge className="bg-primary/20 text-primary/50 border-primary/30 font-semibold text-[10px] uppercase tracking-wider mb-1 rounded-full">Automation Lab</Badge>
  <CardTitle className="text-3xl font-semibold">Integration Debug Suite</CardTitle>
  </div>
  </div>
@@ -269,7 +269,7 @@ const DebugAppointmentPage = () => {
  <Input 
  value={testName} 
  onChange={e => setTestName(e.target.value)}
- className="bg-white/5 border-white/10 text-white h-12 rounded-xl font-medium"
+ className="bg-primary-foreground/5 border-primary-foreground/10 text-primary-foreground h-12 rounded-xl font-medium"
  placeholder="Daniele Buatti"
  />
  </div>
@@ -278,7 +278,7 @@ const DebugAppointmentPage = () => {
  <Input 
  value={testEmail} 
  onChange={e => setTestEmail(e.target.value)}
- className="bg-white/5 border-white/10 text-white h-12 rounded-xl font-medium"
+ className="bg-primary-foreground/5 border-primary-foreground/10 text-primary-foreground h-12 rounded-xl font-medium"
  placeholder="your@email.com"
  />
  </div>
@@ -293,7 +293,7 @@ const DebugAppointmentPage = () => {
  </div>
 
  {debugClient && (
- <div className="p-6 bg-white/5 rounded-xl border border-white/10 space-y-4 animate-in fade-in zoom-in-95">
+ <div className="p-6 bg-primary-foreground/5 rounded-xl border border-primary-foreground/10 space-y-4 animate-in fade-in zoom-in-95">
  <div className="flex items-center justify-between">
  <h4 className="font-semibold text-xs uppercase tracking-wider text-primary/50">Active Test Environment</h4>
  <Button variant="ghost" size="sm" onClick={cleanupTestData} className="h-7 text-[10px] text-destructive/70 hover:text-rose-300 hover:bg-muted0/10">
@@ -311,7 +311,7 @@ const DebugAppointmentPage = () => {
  </div>
  </div>
  {debugApp && (
- <div className="pt-2 border-t border-white/5">
+ <div className="pt-2 border-t border-primary-foreground/5">
  <p className="text-[10px] font-semibold text-muted-foreground uppercase mb-1">Current App Time</p>
  <p className="text-sm font-medium text-chart-emerald/60">{format(new Date(debugApp.date), "EEEE, MMM d @ h:mm a")}</p>
  </div>
@@ -328,7 +328,7 @@ const DebugAppointmentPage = () => {
  variant="outline" 
  disabled={!debugApp || !!activeTest}
  onClick={simulateReschedule}
- className="h-16 justify-between px-6 rounded-xl border-border/30 bg-muted/5 hover:bg-muted0/10 text-white group"
+ className="h-16 justify-between px-6 rounded-xl border-border/30 bg-muted/5 hover:bg-muted0/10 text-primary-foreground group"
  >
  <div className="flex items-center gap-4">
  <div className="w-10 h-10 rounded-xl bg-muted/20 flex items-center justify-center text-amber-400">
@@ -346,7 +346,7 @@ const DebugAppointmentPage = () => {
  variant="outline" 
  disabled={!debugClient || !!activeTest}
  onClick={testOffGridBooking}
- className="h-16 justify-between px-6 rounded-xl border-indigo-500/30 bg-primary/5 hover:bg-muted0/10 text-white group"
+ className="h-16 justify-between px-6 rounded-xl border-primary/30 bg-primary/5 hover:bg-muted0/10 text-primary-foreground group"
  >
  <div className="flex items-center gap-4">
  <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary/70">
@@ -362,7 +362,7 @@ const DebugAppointmentPage = () => {
  </div>
  </div>
 
- <div className="space-y-4 pt-4 border-t border-white/5">
+ <div className="space-y-4 pt-4 border-t border-primary-foreground/5">
  <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Other Triggers</Label>
  <div className="grid grid-cols-2 gap-3">
  <Button 
@@ -370,7 +370,7 @@ const DebugAppointmentPage = () => {
  size="sm"
  disabled={!debugClient || !!activeTest}
  onClick={testKitSync}
- className="h-12 rounded-xl border-white/10 bg-white/5 text-white text-[10px] font-medium uppercase"
+ className="h-12 rounded-xl border-primary-foreground/10 bg-primary-foreground/5 text-primary-foreground text-[10px] font-medium uppercase"
  >
  {activeTest === 'kit' ? <Loader2 className="animate-spin mr-2" /> : <Globe size={14} className="mr-2" />}
  Kit Sync
@@ -380,7 +380,7 @@ const DebugAppointmentPage = () => {
  size="sm" 
  disabled={!debugClient || !!activeTest}
  onClick={testEmailOnboarding}
- className="h-12 rounded-xl border-white/10 bg-white/5 text-white text-[10px] font-medium uppercase"
+ className="h-12 rounded-xl border-primary-foreground/10 bg-primary-foreground/5 text-primary-foreground text-[10px] font-medium uppercase"
  >
  {activeTest === 'email' ? <Loader2 className="animate-spin mr-2" /> : <Mail size={14} className="mr-2" />}
  Email Test
@@ -404,7 +404,7 @@ const DebugAppointmentPage = () => {
 
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
  {/* Susan's Win Seeder */}
- <Card className="border-none shadow-sm rounded-xl bg-card text-white overflow-hidden relative">
+ <Card className="border-none shadow-sm rounded-xl bg-card text-primary-foreground overflow-hidden relative">
  <div className="absolute top-0 right-0 p-8 opacity-10"><Heart size={120} /></div>
  <CardHeader className="p-8 pb-4">
  <CardTitle className="text-2xl font-semibold flex items-center gap-3">
@@ -415,13 +415,13 @@ const DebugAppointmentPage = () => {
  </CardDescription>
  </CardHeader>
  <CardContent className="p-8 pt-0 space-y-6">
- <div className="p-4 bg-white/5 rounded-xl border border-white/10 italic text-sm text-rose-100">
+ <div className="p-4 bg-primary-foreground/5 rounded-xl border border-primary-foreground/10 italic text-sm text-rose-100">
  "Slept like a baby — 9 hours and no wake ups or bad dreams — feeling good 🤗"
  </div>
  <Button 
  onClick={seedSusansWin} 
  disabled={loading}
- className="w-full h-14 rounded-xl bg-destructive hover:bg-destructive/80 text-white font-semibold text-xs uppercase tracking-wider shadow-sm"
+ className="w-full h-14 rounded-xl bg-destructive hover:bg-destructive/80 text-primary-foreground font-semibold text-xs uppercase tracking-wider shadow-sm"
  >
  {loading ? <Loader2 className="mr-2 animate-spin" /> : <Sparkles size={18} className="mr-2" />}
  Add to Wins Vault
@@ -429,7 +429,7 @@ const DebugAppointmentPage = () => {
  </CardContent>
  </Card>
 
- <Card className="border-none shadow-sm rounded-xl bg-card text-white overflow-hidden relative">
+ <Card className="border-none shadow-sm rounded-xl bg-card text-primary-foreground overflow-hidden relative">
  <div className="absolute top-0 right-0 p-8 opacity-10"><ShieldCheck size={120} /></div>
  <CardHeader className="p-8 pb-4">
  <CardTitle className="text-2xl font-semibold flex items-center gap-3">
@@ -440,7 +440,7 @@ const DebugAppointmentPage = () => {
  <Button 
  onClick={simulateWebhook} 
  disabled={loading || !debugApp}
- className="w-full h-14 rounded-xl bg-chart-emerald hover:bg-chart-emerald/80 text-white font-semibold text-xs uppercase tracking-wider shadow-sm"
+ className="w-full h-14 rounded-xl bg-chart-emerald hover:bg-chart-emerald/80 text-primary-foreground font-semibold text-xs uppercase tracking-wider shadow-sm"
  >
  {loading ? <Loader2 className="mr-2 animate-spin" /> : <Zap size={18} className="mr-2" />}
  Simulate Payment

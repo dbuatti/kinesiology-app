@@ -43,10 +43,10 @@ const ManualMergeForm = ({
 
   return (
     <div className="space-y-4">
-      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Manual Merge Override</p>
+      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Manual Merge Override</p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Duplicate Client (To Remove)</label>
+          <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Duplicate Client (To Remove)</label>
           <Select value={sourceClientId} onValueChange={setSourceClientId} disabled={loadingClients || merging}>
             <SelectTrigger className="h-12 rounded-xl font-bold bg-muted/40 border-border">
               <SelectValue placeholder={loadingClients ? "Loading..." : "Select duplicate..."} />
@@ -60,7 +60,7 @@ const ManualMergeForm = ({
         </div>
 
         <div className="space-y-2">
-          <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Primary Client (To Keep)</label>
+          <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Primary Client (To Keep)</label>
           <Select value={targetClientId} onValueChange={setTargetClientId} disabled={loadingClients || merging}>
             <SelectTrigger className="h-12 rounded-xl font-bold bg-muted/40 border-border">
               <SelectValue placeholder={loadingClients ? "Loading..." : "Select primary..."} />
@@ -89,7 +89,7 @@ const ManualMergeForm = ({
       <Button 
         onClick={handleMerge}
         disabled={merging || !sourceClientId || !targetClientId || sourceClientId === targetClientId}
-        className="w-full h-14 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-amber-100"
+        className="w-full h-14 bg-amber-500 hover:bg-amber-600 text-primary-foreground rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-amber-100"
       >
         {merging ? <Loader2 className="mr-2 animate-spin" /> : <Merge size={18} className="mr-2" />}
         Merge Client Profiles

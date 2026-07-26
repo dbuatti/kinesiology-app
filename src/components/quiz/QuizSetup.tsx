@@ -24,7 +24,7 @@ const CATEGORIES: { id: QuizCategory; label: string; icon: any; color: string; d
   { id: 'TCM', label: 'TCM & Meridians', icon: Layers, color: 'bg-emerald-600', desc: 'Channels, elements, and acupoints.' },
   { id: 'Clinical', label: 'Clinical Reflexes', icon: Activity, color: 'bg-rose-600', desc: 'Primitive reflexes and stimuli.' },
   { id: 'Priority Logic', label: 'Priority Logic', icon: Zap, color: 'bg-amber-500', desc: 'Clinical hierarchy and reasoning.' },
-  { id: 'Methodology', label: 'FNH Methodology', icon: Target, color: 'bg-blue-600', desc: 'PEACE process and NEI protocols.' },
+  { id: 'Methodology', label: 'FNH Methodology', icon: Target, color: 'bg-primary', desc: 'PEACE process and NEI protocols.' },
 ];
 
 const QuizSetup = ({ onStart }: QuizSetupProps) => {
@@ -32,7 +32,7 @@ const QuizSetup = ({ onStart }: QuizSetupProps) => {
     <div className="max-w-4xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="text-center space-y-4">
         <div className="w-20 h-20 bg-indigo-600 rounded-[2rem] flex items-center justify-center mx-auto shadow-2xl shadow-indigo-200">
-          <GraduationCap size={40} className="text-white" />
+          <GraduationCap size={40} className="text-primary-foreground" />
         </div>
         <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">Knowledge Oracle</h1>
         <p className="text-lg text-muted-foreground font-medium max-w-xl mx-auto">
@@ -49,7 +49,7 @@ const QuizSetup = ({ onStart }: QuizSetupProps) => {
           >
             <CardContent className="p-8 space-y-6">
               <div className={cn(
-                "w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-lg transition-transform group-hover:scale-110",
+                "w-14 h-14 rounded-2xl flex items-center justify-center text-primary-foreground shadow-lg transition-transform group-hover:scale-110",
                 cat.color
               )}>
                 <cat.icon size={28} />

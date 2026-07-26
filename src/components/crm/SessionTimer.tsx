@@ -228,7 +228,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
 
           {!isFinished && (
             <div className="hidden sm:flex items-center gap-2 shrink-0">
-              <Badge className={cn("border-none font-semibold text-[7px] md:text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded-md", activePhase.color, "text-white")}>
+              <Badge className={cn("border-none font-semibold text-[7px] md:text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded-md", activePhase.color, "text-primary-foreground")}>
                 {activePhase.name}
               </Badge>
             </div>

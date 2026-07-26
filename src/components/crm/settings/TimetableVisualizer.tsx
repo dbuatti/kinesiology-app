@@ -670,7 +670,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
   className={cn(
   "rounded-xl h-9 px-5 font-semibold text-[10px] uppercase tracking-wider",
   isOptimized
-  ? "bg-chart-emerald hover:bg-chart-emerald/90 text-white "
+  ? "bg-chart-emerald hover:bg-chart-emerald/90 text-primary-foreground "
   : "bg-muted hover:bg-muted/80 text-foreground "
   )}>
  {isOptimized
@@ -704,7 +704,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  <CardContent className="p-5 space-y-2">
  <div className="flex items-center justify-between">
  <span className="text-[10px] font-semibold uppercase tracking-wider opacity-70">Fortnightly</span>
- <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center">
+ <div className="w-7 h-7 rounded-lg bg-card/10 flex items-center justify-center">
  <Sparkles size={14} />
  </div>
  </div>
@@ -754,7 +754,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  </CardDescription>
  </div>
   <Button onClick={() => setShowApplyConfirm(true)} disabled={applyingMoves}
- className="bg-chart-emerald hover:bg-chart-emerald/90 text-white rounded-xl h-9 px-6 font-semibold text-[10px] uppercase tracking-wider shrink-0">
+ className="bg-chart-emerald hover:bg-chart-emerald/90 text-primary-foreground rounded-xl h-9 px-6 font-semibold text-[10px] uppercase tracking-wider shrink-0">
  {applyingMoves ? <Loader2 className="mr-2 animate-spin" size={13} /> : <CheckCircle2 size={13} className="mr-2" />}
  Apply Schedule
  </Button>
@@ -781,7 +781,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  {/* Bottom info panels */}
  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
  {/* Insights */}
- <Card className="border-none shadow-sm rounded-xl bg-card text-white overflow-hidden relative">
+ <Card className="border-none shadow-sm rounded-xl bg-card text-primary-foreground overflow-hidden relative">
  <div className="absolute top-0 right-0 p-6 opacity-[0.06] pointer-events-none"><Sparkles size={96} /></div>
  <CardHeader className="pb-2">
  <CardTitle className="text-sm font-semibold uppercase tracking-wider text-primary/70 flex items-center gap-2">
@@ -790,7 +790,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  </CardHeader>
  <CardContent className="p-5 pt-0 space-y-2">
  {suggestions.length > 0 ? suggestions.map((s, i) => (
- <div key={i} className="p-3 bg-white/5 rounded-xl border border-white/10 flex items-start gap-2.5">
+ <div key={i} className="p-3 bg-card/5 rounded-xl border border-primary-foreground/10 flex items-start gap-2.5">
  <Info size={13} className="text-primary/70 shrink-0 mt-0.5" />
  <p className="text-xs text-muted-foreground/60 font-medium leading-relaxed">{s}</p>
  </div>

@@ -112,17 +112,17 @@ const LuscherColourAssessment = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="border-none shadow-lg rounded-2xl bg-white overflow-hidden">
+      <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
         <CollapsibleTrigger asChild>
           <CardHeader className="bg-gradient-to-r from-violet-50 to-purple-50 border-b border-violet-100 cursor-pointer hover:from-violet-100 hover:to-purple-100 transition-colors">
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-violet-200">
-                  <Palette size={24} className="text-white" />
+                  <Palette size={24} className="text-primary-foreground" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl font-bold text-slate-900">Luscher Colour (Ps14)</CardTitle>
-                  <CardDescription className="text-slate-600">Bach Flower essence reference via colour pairs</CardDescription>
+                  <CardTitle className="text-xl font-bold text-foreground">Luscher Colour (Ps14)</CardTitle>
+                  <CardDescription className="text-muted-foreground">Bach Flower essence reference via colour pairs</CardDescription>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -134,19 +134,19 @@ const LuscherColourAssessment = ({
                       setShowResetConfirm(true);
                     }}
                     disabled={isSaving}
-                    className="border-red-200 text-red-600 hover:bg-red-50 h-8 px-3"
+                    className="border-destructive/20 text-destructive hover:bg-destructive/5 h-8 px-3"
                   >
                     <RotateCcw size={16} className="mr-1" />
                     Reset
                   </Button>
                 )}
                 {result && (
-                  <Badge className="px-4 py-2 text-sm font-bold shadow-sm bg-violet-600 text-white hover:bg-violet-700">
+                  <Badge className="px-4 py-2 text-sm font-bold shadow-sm bg-violet-600 text-primary-foreground hover:bg-violet-700">
                     {result.bachFlower}
                   </Badge>
                 )}
                 <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <ChevronDown className={cn("h-5 w-5 transition-transform text-slate-600", isOpen && "rotate-180")} />
+                  <ChevronDown className={cn("h-5 w-5 transition-transform text-muted-foreground", isOpen && "rotate-180")} />
                 </Button>
               </div>
             </div>
@@ -155,9 +155,9 @@ const LuscherColourAssessment = ({
 
         <CollapsibleContent>
           <CardContent className="p-6 space-y-6">
-            <Alert className="bg-blue-50 border-blue-200">
-              <Info className="h-4 w-4 text-blue-600" />
-              <AlertDescription className="text-sm text-blue-900">
+            <Alert className="bg-primary/5 border-primary/20">
+              <Info className="h-4 w-4 text-primary" />
+              <AlertDescription className="text-sm text-primary">
                 <strong>Protocol:</strong> Use P/L mode to identify the two colours in order (Color 1 then Color 2). The combination determines the required Bach Flower essence.
               </AlertDescription>
             </Alert>
@@ -165,8 +165,8 @@ const LuscherColourAssessment = ({
             {/* Color Selection */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Color 1 Selection */}
-              <div className="lg:col-span-1 space-y-3 p-4 border border-slate-200 rounded-xl bg-slate-50">
-                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <div className="lg:col-span-1 space-y-3 p-4 border border-border rounded-xl bg-muted/50">
+                <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                   1. Color 1 (Primary)
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -191,8 +191,8 @@ const LuscherColourAssessment = ({
               </div>
 
               {/* Color 2 Selection */}
-              <div className="lg:col-span-1 space-y-3 p-4 border border-slate-200 rounded-xl bg-slate-50">
-                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <div className="lg:col-span-1 space-y-3 p-4 border border-border rounded-xl bg-muted/50">
+                <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                   2. Color 2 (Secondary)
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -222,15 +222,15 @@ const LuscherColourAssessment = ({
                   Current Selection
                 </h3>
                 <div className="flex gap-3">
-                  <div className="flex-1 p-3 rounded-lg border border-violet-300 bg-white text-center">
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Color 1</p>
+                  <div className="flex-1 p-3 rounded-lg border border-violet-300 bg-card text-center">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Color 1</p>
                     <div className="h-8 w-full rounded-md mx-auto border" style={{ backgroundColor: LUSCHER_COLORS[color1]?.hex || '#e2e8f0' }} />
-                    <p className="text-sm font-semibold mt-1 text-slate-800">{LUSCHER_COLORS[color1]?.name || 'None'}</p>
+                    <p className="text-sm font-semibold mt-1 text-foreground">{LUSCHER_COLORS[color1]?.name || 'None'}</p>
                   </div>
-                  <div className="flex-1 p-3 rounded-lg border border-violet-300 bg-white text-center">
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Color 2</p>
+                  <div className="flex-1 p-3 rounded-lg border border-violet-300 bg-card text-center">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Color 2</p>
                     <div className="h-8 w-full rounded-md mx-auto border" style={{ backgroundColor: LUSCHER_COLORS[color2]?.hex || '#e2e8f0' }} />
-                    <p className="text-sm font-semibold mt-1 text-slate-800">{LUSCHER_COLORS[color2]?.name || 'None'}</p>
+                    <p className="text-sm font-semibold mt-1 text-foreground">{LUSCHER_COLORS[color2]?.name || 'None'}</p>
                   </div>
                 </div>
                 {selectedPairKey && (
@@ -241,9 +241,9 @@ const LuscherColourAssessment = ({
 
             {/* Results Display */}
             {result && (
-              <Card className="border-2 border-violet-500 shadow-lg rounded-2xl bg-white overflow-hidden">
+              <Card className="border-2 border-violet-500 shadow-lg rounded-2xl bg-card overflow-hidden">
                 <CardHeader className="bg-violet-600 p-4">
-                  <CardTitle className="text-2xl font-bold text-white flex items-center gap-3">
+                  <CardTitle className="text-2xl font-bold text-primary-foreground flex items-center gap-3">
                     <Flower size={24} /> {result.bachFlower}
                   </CardTitle>
                   <CardDescription className="text-violet-200">Recommended Bach Flower Essence</CardDescription>
@@ -251,25 +251,25 @@ const LuscherColourAssessment = ({
                 <CardContent className="p-6 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                         <Zap size={16} className="text-violet-500" /> Qualities
                       </h4>
-                      <p className="text-lg font-semibold text-slate-800 leading-relaxed">{result.qualities}</p>
+                      <p className="text-lg font-semibold text-foreground leading-relaxed">{result.qualities}</p>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                         <Palette size={16} className="text-violet-500" /> Pattern
                       </h4>
-                      <p className="text-sm text-slate-700 leading-relaxed">{result.pattern}</p>
+                      <p className="text-sm text-foreground/80 leading-relaxed">{result.pattern}</p>
                     </div>
                   </div>
 
-                  <div className="pt-6 border-t border-slate-100 space-y-6">
+                  <div className="pt-6 border-t border-border/50 space-y-6">
                     <div className="p-5 bg-violet-50 rounded-2xl border border-violet-100">
                       <h4 className="text-sm font-bold text-violet-600 uppercase tracking-widest flex items-center gap-2 mb-2">
                         <BookOpen size={16} /> The Lesson
                       </h4>
-                      <p className="text-base font-medium text-slate-800 leading-relaxed">
+                      <p className="text-base font-medium text-foreground leading-relaxed">
                         {result.lesson}
                       </p>
                     </div>
@@ -288,8 +288,8 @@ const LuscherColourAssessment = ({
             )}
             
             {!result && color1 && color2 && (
-              <Alert variant="destructive" className="bg-red-50 border-red-200">
-                <AlertDescription className="text-sm text-red-900">
+              <Alert variant="destructive" className="bg-destructive/5 border-destructive/20">
+                <AlertDescription className="text-sm text-destructive">
                   Combination {selectedPairKey} not found in the Luscher data. Please check the selected colors.
                 </AlertDescription>
               </Alert>

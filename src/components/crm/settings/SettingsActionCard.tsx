@@ -56,7 +56,7 @@ const SettingsActionCard = ({
         onClick={onClick} 
         disabled={loading}
         className={cn(
-          "w-full text-white rounded-xl h-10 font-black text-[10px] uppercase tracking-widest shadow-lg transition-all",
+          "w-full text-primary-foreground rounded-xl h-10 font-black text-[10px] uppercase tracking-widest shadow-lg transition-all",
           buttonColors[themeColor]
         )}
       >

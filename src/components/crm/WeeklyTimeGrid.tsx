@@ -262,14 +262,14 @@ export function EarningsPanel({ summary, voiceRate, fnhRate, label }: EarningsPa
             circleClass
           )}>
             <div className="flex flex-col items-center leading-tight">
-              <DollarSign size={16} className="text-white" />
-              <span className="text-white text-lg font-black">
+              <DollarSign size={16} className="text-primary-foreground" />
+              <span className="text-primary-foreground text-lg font-black">
                 {fmt(summary.totalIncome).replace(/^.\s?/, "$")}
               </span>
             </div>
             <div className="absolute inset-0 rounded-full ring-2 ring-white/20" />
             {overworked && (
-              <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive flex items-center justify-center text-white text-[8px] font-bold animate-pulse">
+              <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive flex items-center justify-center text-primary-foreground text-[8px] font-bold animate-pulse">
                 !
               </div>
             )}

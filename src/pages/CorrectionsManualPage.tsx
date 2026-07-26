@@ -20,7 +20,7 @@ const CorrectionsManualPage = () => {
           <div className="flex items-center gap-2">
             <Link
               to="/practice/clinical-hub"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider border border-black hover:bg-black hover:text-white transition-colors no-underline"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider border border-foreground/20 hover:bg-foreground hover:text-primary-foreground transition-colors no-underline"
             >
               <LayoutDashboard size={12} /> Hub
             </Link>

@@ -51,10 +51,10 @@ const FollowUpTracker = ({ clients }: FollowUpTrackerProps) => {
 
   if (clientsNeedingFollowUp.length === 0) {
     return (
-      <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-900 text-white overflow-hidden relative">
+      <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-900 text-primary-foreground overflow-hidden relative">
         <div className="absolute top-0 right-0 p-8 opacity-10"><CheckCircle2 size={120} /></div>
         <CardContent className="p-10 text-center space-y-4 relative z-10">
-          <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto border border-white/20">
+          <div className="w-16 h-16 bg-card/10 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto border border-primary-foreground/20">
             <CheckCircle2 size={32} className="text-emerald-400" />
           </div>
           <h3 className="text-xl font-black">Retention: Optimal</h3>
@@ -74,7 +74,7 @@ const FollowUpTracker = ({ clients }: FollowUpTrackerProps) => {
             </CardTitle>
             <CardDescription className="font-medium">Recent clients (last 30 days) with no future sessions booked.</CardDescription>
           </div>
-          <Badge className="bg-rose-500 text-white border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">
+          <Badge className="bg-rose-500 text-primary-foreground border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">
             {clientsNeedingFollowUp.length} Pending
           </Badge>
         </div>

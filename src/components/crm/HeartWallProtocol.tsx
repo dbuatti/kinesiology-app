@@ -45,7 +45,7 @@ const CollapsibleSection = ({ title, icon: Icon, color, desc, defaultOpen = fals
         className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors text-left"
       >
         <div className="flex items-center gap-3">
-          <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-white shrink-0", color)}>
+          <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center text-primary-foreground shrink-0", color)}>
             <Icon size={14} />
           </div>
           <div>
@@ -118,7 +118,7 @@ const HeartWallProtocol = () => {
                 </p>
               </div>
             </div>
-            <div className="p-5 bg-rose-50 rounded-xl border border-rose-200">
+            <div className="p-5 bg-destructive/5 rounded-xl border border-destructive/20">
               <p className="text-xs font-bold text-rose-800 leading-relaxed">
                 <span className="uppercase tracking-widest text-[8px]">Tip:</span> If the client is unaware of what the Heart Wall is, briefly explain:
                 "You know when you've been through something and you can feel yourself shut down so it doesn't happen again?
@@ -129,7 +129,7 @@ const HeartWallProtocol = () => {
           </div>
 
           {/* Core Wisdom Quote */}
-          <div className="p-6 bg-indigo-900 text-white rounded-xl flex items-center relative overflow-hidden">
+          <div className="p-6 bg-indigo-900 text-primary-foreground rounded-xl flex items-center relative overflow-hidden">
             <div className="absolute top-0 right-0 p-6 opacity-10"><Brain size={100} /></div>
             <div className="space-y-3 relative z-10">
               <p className="text-sm italic font-medium text-indigo-200 leading-relaxed">
@@ -454,7 +454,7 @@ const HeartWallProtocol = () => {
                   <p className="text-xs text-amber-700">Tap 10 times if the emotion was inherited from a parent. The extra stimulus helps clear the lineage pattern.</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-3 bg-slate-900 text-white rounded-lg">
+              <div className="flex items-start gap-3 p-3 bg-foreground text-primary-foreground rounded-lg">
                 <Volume2 size={16} className="text-amber-400 shrink-0 mt-0.5" />
                 <p className="text-xs font-medium leading-relaxed">
                   <strong>Alternative — Rocking:</strong> If you prefer not to hold points for 3 minutes, you can activate the brain circuits
@@ -510,7 +510,7 @@ const HeartWallProtocol = () => {
                 <li className="flex items-center gap-3"><div className="w-1.5 h-1.5 rounded-full bg-chart-destructive" /> Jaw / Neck (occasionally)</li>
               </ul>
             </div>
-            <div className="p-4 bg-rose-50 rounded-xl border border-rose-200">
+            <div className="p-4 bg-destructive/5 rounded-xl border border-destructive/20">
               <p className="text-xs font-bold text-rose-800 leading-relaxed">
                 <strong>Always</strong> stimulate this zone first in every Heart Wall correction.
                 It tells the brain "we are working on the Heart Wall" and sets the context for the rest of the correction.
@@ -564,14 +564,14 @@ const HeartWallProtocol = () => {
             It will usually have fewer layers than the original.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 bg-white rounded-lg space-y-2">
+            <div className="p-4 bg-card rounded-lg space-y-2">
               <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Timeline</p>
               <p className="text-xs text-indigo-800 font-medium leading-relaxed">
                 Hidden Heart Wall will not show for a few days, maybe weeks afterwards.
                 Screen for it in follow-up sessions using the same protocol.
               </p>
             </div>
-            <div className="p-4 bg-white rounded-lg space-y-2">
+            <div className="p-4 bg-card rounded-lg space-y-2">
               <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Why It Exists</p>
               <p className="text-xs text-indigo-800 font-medium leading-relaxed">
                 The subconscious may hold deeper layers back until the system is ready.
@@ -628,7 +628,7 @@ const HeartWallProtocol = () => {
               { t: "Returning Clients", d: "Always screen — more layers may have surfaced since the last session." },
               { t: "Self-Practice", d: "Work through your own Heart Wall online. You will notice a huge difference." },
             ].map(item => (
-              <div key={item.t} className="p-4 bg-white rounded-lg border border-emerald-100">
+              <div key={item.t} className="p-4 bg-card rounded-lg border border-emerald-100">
                 <p className="font-bold text-xs text-emerald-700">{item.t}</p>
                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{item.d}</p>
               </div>

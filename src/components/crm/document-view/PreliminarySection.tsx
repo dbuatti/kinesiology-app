@@ -29,7 +29,7 @@ const DocToggle = ({ options, value, onChange }: { options: { label: string, val
         onClick={() => onChange(opt.value)}
         className={cn(
           "px-2 py-1 text-[10px] font-semibold uppercase rounded-sm transition-all",
-          value === opt.value ? "bg-foreground text-background" : "text-muted-foreground hover:text-black"
+          value === opt.value ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
         )}
       >
         {opt.label}
@@ -198,7 +198,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
             <Checkbox 
               checked={appointment.hydrated || false} 
               onCheckedChange={(checked) => saveField('hydrated', !!checked)}
-              className="h-8 w-8 border-black rounded-none data-[state=checked]:bg-black"
+              className="h-8 w-8 border-foreground/20 rounded-none data-[state=checked]:bg-foreground"
             />
           </div>
 
@@ -218,9 +218,9 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
         {/* Horizontal BOLT Score Assessment */}
         <div className="space-y-3">
           <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">BOLT Score Assessment</label>
-          <div className="border border-black p-6 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div className="border border-foreground/20 p-6 bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div className="space-y-2 flex-1">
-              <h4 className="text-sm font-semibold uppercase tracking-wider text-slate-900">Body Oxygen Level Test</h4>
+              <h4 className="text-sm font-semibold uppercase tracking-wider text-foreground">Body Oxygen Level Test</h4>
               <p className="text-xs text-muted-foreground leading-relaxed max-w-md">
                 Measure comfortable breath-hold time after a normal exhalation to assess CO2 tolerance.
               </p>
@@ -266,7 +266,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
               </div>
             </div>
 
-            <div className="flex items-center gap-6 shrink-0 border-l border-slate-100 pl-6">
+            <div className="flex items-center gap-6 shrink-0 border-l border-border/50 pl-6">
               <div className="text-right">
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Score</p>
                 <div className="flex items-baseline gap-0.5">
@@ -289,7 +289,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
         {/* Horizontal Heart Coherence Calculator */}
         <div className="space-y-3">
           <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Heart Coherence Calculator</label>
-          <div className="border border-black p-6 bg-white flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="border border-foreground/20 p-6 bg-card flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-4 flex-1">
               <div className="grid grid-cols-2 gap-4 max-w-md">
                 <div className="space-y-1.5">
@@ -347,7 +347,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
             </div>
 
             {coherenceScore !== null && (
-              <div className="flex items-center gap-6 shrink-0 border-l border-slate-100 pl-6">
+              <div className="flex items-center gap-6 shrink-0 border-l border-border/50 pl-6">
                 <div className="text-right">
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Coherence Ratio</p>
                   <p className="text-5xl font-semibold tabular-nums">{coherenceScore.toFixed(2)}</p>
@@ -367,7 +367,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
       {/* Neurological Global Assessments Section */}
       <div className="space-y-6 pt-6 border-t border-border">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-foreground text-primary-foreground flex items-center justify-center">
             <Brain size={18} />
           </div>
           <h3 className="text-sm font-semibold uppercase tracking-wider">Neurological Global Assessments</h3>
@@ -375,8 +375,8 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Fukuda Step Test */}
-          <div className="p-6 border border-black space-y-4 bg-white">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+          <div className="p-6 border border-foreground/20 space-y-4 bg-card">
+            <div className="flex items-center justify-between border-b border-border/50 pb-2">
               <div className="flex items-center gap-2">
                 <Footprints size={16} className="text-chart-emerald" />
                 <h4 className="text-xs font-semibold uppercase tracking-wider">Fukuda Step Test</h4>
@@ -404,7 +404,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Drift Direction:[^\n]*\n?/g, "");
                     saveField('fakuda_notes', `${clean}- Drift Direction: ${e.target.value}\n`);
                   }}
-                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-foreground/20 outline-none"
                 />
               </div>
               <div className="space-y-1">
@@ -418,7 +418,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Angle of Rotation:[^\n]*\n?/g, "");
                     saveField('fakuda_notes', `${clean}- Angle of Rotation: ${e.target.value}°\n`);
                   }}
-                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-foreground/20 outline-none"
                 />
               </div>
               <div className="space-y-1">
@@ -432,7 +432,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Distance Displaced:[^\n]*\n?/g, "");
                     saveField('fakuda_notes', `${clean}- Distance Displaced: ${e.target.value} cm\n`);
                   }}
-                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-foreground/20 outline-none"
                 />
               </div>
             </div>
@@ -448,8 +448,8 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
           </div>
 
           {/* Sharpened Romberg's */}
-          <div className="p-6 border border-black space-y-4 bg-white">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+          <div className="p-6 border border-foreground/20 space-y-4 bg-card">
+            <div className="flex items-center justify-between border-b border-border/50 pb-2">
               <div className="flex items-center gap-2">
                 <Activity size={16} className="text-purple-600" />
                 <h4 className="text-xs font-semibold uppercase tracking-wider">Sharpened Romberg's</h4>
@@ -477,7 +477,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Eyes Open Hold Time:[^\n]*\n?/g, "");
                     saveField('sharpened_rhombergs_notes', `${clean}- Eyes Open Hold Time: ${e.target.value}s\n`);
                   }}
-                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-foreground/20 outline-none"
                 />
               </div>
               <div className="space-y-1">
@@ -491,7 +491,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Eyes Closed Hold Time:[^\n]*\n?/g, "");
                     saveField('sharpened_rhombergs_notes', `${clean}- Eyes Closed Hold Time: ${e.target.value}s\n`);
                   }}
-                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-foreground/20 outline-none"
                 />
               </div>
               <div className="space-y-1">
@@ -505,7 +505,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Sway Direction:[^\n]*\n?/g, "");
                     saveField('sharpened_rhombergs_notes', `${clean}- Sway Direction: ${e.target.value}\n`);
                   }}
-                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-foreground/20 outline-none"
                 />
               </div>
             </div>
@@ -521,8 +521,8 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
           </div>
 
           {/* Frontal Lobe Assessment */}
-          <div className="p-6 border border-black space-y-4 bg-white">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+          <div className="p-6 border border-foreground/20 space-y-4 bg-card">
+            <div className="flex items-center justify-between border-b border-border/50 pb-2">
               <div className="flex items-center gap-2">
                 <Hand size={16} className="text-chart-primary" />
                 <h4 className="text-xs font-semibold uppercase tracking-wider">Frontal Lobe</h4>
@@ -550,7 +550,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Left Hand Speed:[^\n]*\n?/g, "");
                     saveField('frontal_lobe_notes', `${clean}- Left Hand Speed: ${e.target.value}\n`);
                   }}
-                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-foreground/20 outline-none"
                 />
               </div>
               <div className="space-y-1">
@@ -564,7 +564,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Right Hand Speed:[^\n]*\n?/g, "");
                     saveField('frontal_lobe_notes', `${clean}- Right Hand Speed: ${e.target.value}\n`);
                   }}
-                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-foreground/20 outline-none"
                 />
               </div>
               <div className="space-y-1">
@@ -578,7 +578,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Asymmetry Detected:[^\n]*\n?/g, "");
                     saveField('frontal_lobe_notes', `${clean}- Asymmetry Detected: ${e.target.value}\n`);
                   }}
-                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-foreground/20 outline-none"
                 />
               </div>
             </div>
@@ -594,10 +594,10 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
           </div>
 
           {/* Righting Reflexes */}
-          <div className="p-6 border border-black space-y-4 bg-white">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+          <div className="p-6 border border-foreground/20 space-y-4 bg-card">
+            <div className="flex items-center justify-between border-b border-border/50 pb-2">
               <div className="flex items-center gap-2">
-                <RefreshCw size={16} className="text-blue-600" />
+                <RefreshCw size={16} className="text-primary" />
                 <h4 className="text-xs font-semibold uppercase tracking-wider">Righting Reflexes</h4>
               </div>
               <DocToggle 
@@ -623,7 +623,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Ocular Righting:[^\n]*\n?/g, "");
                     saveField('righting_reflex_notes', `${clean}- Ocular Righting: ${e.target.value}\n`);
                   }}
-                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-foreground/20 outline-none"
                 />
               </div>
               <div className="space-y-1">
@@ -637,7 +637,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Labyrinthine Righting:[^\n]*\n?/g, "");
                     saveField('righting_reflex_notes', `${clean}- Labyrinthine Righting: ${e.target.value}\n`);
                   }}
-                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-foreground/20 outline-none"
                 />
               </div>
               <div className="space-y-1">
@@ -651,7 +651,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     const clean = notes.replace(/- Head Tilt Angle:[^\n]*\n?/g, "");
                     saveField('righting_reflex_notes', `${clean}- Head Tilt Angle: ${e.target.value}°\n`);
                   }}
-                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-black outline-none"
+                  className="w-full bg-transparent border-b border-border py-1 text-xs font-medium focus:border-foreground/20 outline-none"
                 />
               </div>
             </div>

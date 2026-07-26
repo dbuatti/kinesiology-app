@@ -387,7 +387,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
         <div className="p-3 bg-muted dark:bg-emerald-900/20 rounded-xl border border-border dark:border-emerald-900/30 space-y-3 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-3 opacity-5 pointer-events-none"><Quote size={80} /></div>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-primary text-white flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-primary text-primary-foreground flex items-center justify-center">
               <History size={12} />
             </div>
             <h4 className="text-xs font-semibold text-foreground dark:text-emerald-100 uppercase tracking-wider">Source Context</h4>
@@ -412,7 +412,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
             )}
             
             {backlogItem.polarity_insight && (
-              <div className="flex items-start gap-2 p-3 bg-white/50 dark:bg-slate-900/50 rounded-xl border border-border dark:border-emerald-900/30">
+              <div className="flex items-start gap-2 p-3 bg-card/50 dark:bg-foreground/50 rounded-xl border border-border dark:border-emerald-900/30">
                 <ArrowRightLeft size={14} className="text-chart-emerald shrink-0 mt-0.5" />
                 <div>
                   <p className="text-[10px] font-semibold text-chart-emerald uppercase tracking-wider mb-0.5">Polarity Insight</p>
@@ -467,7 +467,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
         <Button variant="outline" onClick={() => saveProgress(false)} disabled={isSaving || !formData.goal} className="flex-1 rounded-lg h-8 font-semibold text-[10px] uppercase tracking-wider border-border">
           <Save className="mr-1.5" size={14} /> Save Draft
         </Button>
-        <Button onClick={handleNext} disabled={!formData.goal || !formData.targetIdentity} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-lg h-8 font-semibold text-[10px] uppercase tracking-wider">
+        <Button onClick={handleNext} disabled={!formData.goal || !formData.targetIdentity} className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-8 font-semibold text-[10px] uppercase tracking-wider">
           Move to Somatic <ArrowRight className="ml-1.5" size={14} />
         </Button>
       </div>
@@ -502,7 +502,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
         <Button variant="outline" onClick={handleBack} className="flex-1 rounded-lg h-8 font-semibold text-[10px] uppercase tracking-wider border-border">
           <ArrowLeft className="mr-1.5" size={14} /> Back
         </Button>
-        <Button onClick={handleNext} disabled={!formData.physicalSensation || !formData.emotionalState} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-lg h-8 font-semibold text-[10px] uppercase tracking-wider">
+        <Button onClick={handleNext} disabled={!formData.physicalSensation || !formData.emotionalState} className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-8 font-semibold text-[10px] uppercase tracking-wider">
           Begin Reconsolidation <ArrowRight className="ml-1.5" size={14} />
         </Button>
       </div>
@@ -633,7 +633,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
 
         {!singlePage && (
         <div className="flex justify-center pt-3">
-          <Button onClick={handleNext} disabled={formData.presentCheck !== true || formData.futureCheck !== true} className="bg-primary hover:bg-primary/90 text-white rounded-lg h-8 px-10 font-semibold text-[10px] uppercase tracking-wider">
+          <Button onClick={handleNext} disabled={formData.presentCheck !== true || formData.futureCheck !== true} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-8 px-10 font-semibold text-[10px] uppercase tracking-wider">
             Move to Anchoring <ArrowRight className="ml-1.5" size={14} />
           </Button>
         </div>
@@ -695,7 +695,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
         >
           {isAnalyzing ? <Loader2 className="mr-1.5 animate-spin" size={12} /> : <Wand2 className="mr-1.5" size={12} />} Scan for Deeper Patterns
         </Button>
-        <Button onClick={() => saveProgress(true)} disabled={isSaving || formData.goalInevitable !== true || !formData.finalAnchor} className="flex-[2] bg-primary hover:bg-primary/90 text-white rounded-lg h-8 font-semibold text-[10px] uppercase tracking-wider">
+        <Button onClick={() => saveProgress(true)} disabled={isSaving || formData.goalInevitable !== true || !formData.finalAnchor} className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-8 font-semibold text-[10px] uppercase tracking-wider">
           {isSaving ? <Loader2 className="mr-1.5 animate-spin" size={12} /> : <CheckCircle2 className="mr-1.5" size={12} />} Complete & Save Session
         </Button>
         <Button onClick={reset} variant="ghost" className="flex-1 text-muted-foreground rounded-lg h-8 font-medium hover:bg-muted">
@@ -752,7 +752,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
               {completedSessions.map((session) => (
                 <div key={session.id} className="p-3 bg-card rounded-xl border border-border hover:border-emerald-400 transition-all cursor-pointer group flex items-center justify-between" onClick={() => setViewingReportId(session.id)}>
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-chart-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                    <div className="w-7 h-7 rounded-lg bg-muted flex items-center justify-center text-chart-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                       <FileText size={14} />
                     </div>
                     <div className="min-w-0">
@@ -765,7 +765,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
                   </div>
                   <div className="flex items-center gap-2">
                     <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-chart-destructive opacity-0 group-hover:opacity-100 transition-all" onClick={(e) => { e.stopPropagation(); setDeleteTargetId(session.id); setShowDeleteConfirm(true); }}><Trash2 size={14} /></Button>
-                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-white transition-all"><ArrowRight size={14} /></div>
+                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all"><ArrowRight size={14} /></div>
                   </div>
                 </div>
               ))}

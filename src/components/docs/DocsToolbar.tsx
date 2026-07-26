@@ -28,11 +28,11 @@ import {
 import { cn } from '@/lib/utils';
 
 const DocsToolbar = () => {
-  const Separator = () => <div className="w-px h-5 bg-slate-300 mx-1" />;
+  const Separator = () => <div className="w-px h-5 bg-muted mx-1" />;
 
   const ToolButton = ({ children, className }: { children: ReactNode, className?: string }) => (
     <button className={cn(
-      "p-1.5 hover:bg-slate-200 rounded-md transition-colors text-slate-700",
+      "p-1.5 hover:bg-muted rounded-md transition-colors text-foreground/80",
       className
     )}>
       {children}
@@ -40,10 +40,10 @@ const DocsToolbar = () => {
   );
 
   return (
-    <div className="bg-[hsl(var(--docs-toolbar))] border-b border-slate-200 px-4 py-1 flex items-center gap-0.5 overflow-x-auto no-scrollbar print:hidden">
-      <div className="flex items-center bg-white rounded-full px-3 py-1.5 mr-2 border border-transparent hover:border-slate-300 transition-all cursor-text">
-        <Search size={16} className="text-slate-500 mr-2" />
-        <span className="text-sm text-slate-500">Menus</span>
+    <div className="bg-[hsl(var(--docs-toolbar))] border-b border-border px-4 py-1 flex items-center gap-0.5 overflow-x-auto no-scrollbar print:hidden">
+      <div className="flex items-center bg-card rounded-full px-3 py-1.5 mr-2 border border-transparent hover:border-border transition-all cursor-text">
+        <Search size={16} className="text-muted-foreground mr-2" />
+        <span className="text-sm text-muted-foreground">Menus</span>
       </div>
 
       <ToolButton><Undo2 size={16} /></ToolButton>
@@ -52,22 +52,22 @@ const DocsToolbar = () => {
       <ToolButton><Type size={16} /></ToolButton>
       <ToolButton><PaintRoller size={16} /></ToolButton>
 
-      <div className="flex items-center px-2 py-1 hover:bg-slate-200 rounded-md cursor-pointer gap-2">
-        <span className="text-sm font-medium text-slate-700">100%</span>
+      <div className="flex items-center px-2 py-1 hover:bg-muted rounded-md cursor-pointer gap-2">
+        <span className="text-sm font-medium text-foreground/80">100%</span>
         <ChevronDown size={12} />
       </div>
 
       <Separator />
 
-      <div className="flex items-center px-2 py-1 hover:bg-slate-200 rounded-md cursor-pointer gap-4 min-w-[100px]">
-        <span className="text-sm font-medium text-slate-700">Normal text</span>
+      <div className="flex items-center px-2 py-1 hover:bg-muted rounded-md cursor-pointer gap-4 min-w-[100px]">
+        <span className="text-sm font-medium text-foreground/80">Normal text</span>
         <ChevronDown size={12} />
       </div>
 
       <Separator />
 
-      <div className="flex items-center px-2 py-1 hover:bg-slate-200 rounded-md cursor-pointer gap-4 min-w-[80px]">
-        <span className="text-sm font-medium text-slate-700">Arial</span>
+      <div className="flex items-center px-2 py-1 hover:bg-muted rounded-md cursor-pointer gap-4 min-w-[80px]">
+        <span className="text-sm font-medium text-foreground/80">Arial</span>
         <ChevronDown size={12} />
       </div>
 
@@ -75,7 +75,7 @@ const DocsToolbar = () => {
 
       <div className="flex items-center gap-1 px-1">
         <ToolButton className="h-7 w-7 flex items-center justify-center">-</ToolButton>
-        <div className="bg-white border border-slate-300 rounded-sm px-2 py-0.5 text-xs font-medium w-8 text-center">11</div>
+        <div className="bg-card border border-border rounded-sm px-2 py-0.5 text-xs font-medium w-8 text-center">11</div>
         <ToolButton className="h-7 w-7 flex items-center justify-center">+</ToolButton>
       </div>
 
@@ -104,9 +104,9 @@ const DocsToolbar = () => {
       <ToolButton><RemoveFormatting size={16} /></ToolButton>
 
       <div className="ml-auto flex items-center gap-2">
-        <div className="flex items-center px-3 py-1.5 hover:bg-slate-200 rounded-md cursor-pointer gap-2">
-          <Bold size={16} className="text-slate-700" />
-          <span className="text-sm font-medium text-slate-700">Editing</span>
+        <div className="flex items-center px-3 py-1.5 hover:bg-muted rounded-md cursor-pointer gap-2">
+          <Bold size={16} className="text-foreground/80" />
+          <span className="text-sm font-medium text-foreground/80">Editing</span>
           <ChevronDown size={12} />
         </div>
         <Separator />

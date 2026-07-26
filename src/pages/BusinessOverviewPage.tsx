@@ -289,7 +289,7 @@ const BusinessOverviewPage = () => {
             sub={d.showKine && d.filteredVoice.length > 0
               ? `FNH ${fmt(d.kineMonthRev)} · Voice ${fmt(d.voiceMonthRev)}`
               : d.showKine ? `FNH ${fmt(d.kineMonthRev)}` : `Voice ${fmt(d.voiceMonthRev)}`
-            } color="text-blue-600" />
+            } color="text-primary" />
           <SummaryCard icon={Users} label={d.showKine ? "Active Clients" : "Voice Students"}
             value={String(d.showKine ? d.activeClients : d.voiceStudents)}
             sub={d.showKine ? `${d.totalClients} total · ${d.newClients} new` : `${d.paidVoiceCount} paid sessions`}

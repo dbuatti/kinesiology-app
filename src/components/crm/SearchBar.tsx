@@ -217,8 +217,8 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
 
   const getQuickActions = (): SearchResult[] => {
     const baseActions: SearchResult[] = [
-      { type: "action", id: "dashboard", title: "Go to Dashboard", subtitle: "Main overview", path: "/", icon: LayoutDashboard, color: "text-slate-500" },
-      { type: "action", id: "settings", title: "System Settings", subtitle: "Account & preferences", path: "/settings", icon: Settings, color: "text-slate-500" },
+      { type: "action", id: "dashboard", title: "Go to Dashboard", subtitle: "Main overview", path: "/", icon: LayoutDashboard, color: "text-muted-foreground" },
+      { type: "action", id: "settings", title: "System Settings", subtitle: "Account & preferences", path: "/settings", icon: Settings, color: "text-muted-foreground" },
     ];
 
     if (isVoiceMode) {
@@ -255,11 +255,11 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
       ) : (
         <button
           onClick={() => setOpen(true)}
-          className="flex items-center justify-center lg:justify-start gap-3 px-3 lg:px-4 py-2.5 text-sm text-slate-500 bg-slate-100/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800/50 rounded-2xl hover:bg-white dark:hover:bg-slate-800 hover:shadow-md transition-all w-full group"
+          className="flex items-center justify-center lg:justify-start gap-3 px-3 lg:px-4 py-2.5 text-sm text-muted-foreground bg-muted/50 dark:bg-foreground/50 border border-border/50 dark:border-foreground/20 rounded-2xl hover:bg-card dark:hover:bg-foreground hover:shadow-md transition-all w-full group"
         >
           <Search size={16} className="group-hover:text-indigo-600 transition-colors shrink-0" />
           <span className="font-medium hidden lg:inline">Command Center...</span>
-          <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded-lg border bg-white dark:bg-slate-950 px-2 font-mono text-[10px] font-black text-slate-400 shadow-sm hidden lg:inline-flex">
+          <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded-lg border bg-card dark:bg-foreground px-2 font-mono text-[10px] font-black text-muted-foreground shadow-sm hidden lg:inline-flex">
             <span className="text-xs">⌘</span>K
           </kbd>
         </button>
@@ -270,7 +270,7 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
           <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
           <CommandInput
             placeholder="Search anything or type a command..."
-            className="flex h-14 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-14 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
             onValueChange={handleSearch}
           />
         </div>
@@ -279,12 +279,12 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
             {loading ? (
               <div className="flex flex-col items-center justify-center py-10 gap-3">
                 <Sparkles className="animate-pulse text-indigo-500" size={24} />
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Searching the Oracle...</p>
+                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Searching the Oracle...</p>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-10 gap-2">
-                <p className="text-sm font-medium text-slate-500">No results found.</p>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Try searching for "Clinical Hub" or "PEACE"</p>
+                <p className="text-sm font-medium text-muted-foreground">No results found.</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Try searching for "Clinical Hub" or "PEACE"</p>
               </div>
             )}
           </CommandEmpty>
@@ -305,7 +305,7 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
                   <action.icon size={18} className={cn("mr-3", action.color)} />
                   <div className="flex flex-col">
                     <span className="font-bold text-sm">{action.title}</span>
-                    <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{action.subtitle}</span>
+                    <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{action.subtitle}</span>
                   </div>
                 </CommandItem>
               ))}
@@ -319,12 +319,12 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
                 heading={
                   <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-2">
-                      <Clock size={12} className="text-slate-400" />
+                      <Clock size={12} className="text-muted-foreground" />
                       <span>Recent Searches</span>
                     </div>
                     <button 
                       onClick={clearRecentSearches}
-                      className="text-[10px] font-bold text-slate-400 hover:text-rose-500 transition-colors flex items-center gap-1"
+                      className="text-[10px] font-bold text-muted-foreground hover:text-rose-500 transition-colors flex items-center gap-1"
                     >
                       <Trash2 size={10} /> Clear
                     </button>
@@ -337,11 +337,11 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
                     onSelect={() => handleSelect(result)}
                     className="rounded-xl py-3 px-4 cursor-pointer"
                   >
-                    <Clock size={18} className="mr-3 text-slate-300" />
+                    <Clock size={18} className="mr-3 text-muted-foreground/60" />
                     <div className="flex flex-col">
                       <span className="font-bold text-sm">{result.title}</span>
                       {result.subtitle && (
-                        <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
+                        <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
                           {result.subtitle}
                         </span>
                       )}
@@ -367,10 +367,10 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
                         onSelect={() => handleSelect(result)}
                         className="rounded-xl py-3 px-4 cursor-pointer"
                       >
-                        {result.icon ? <result.icon size={18} className={cn("mr-3", result.color)} /> : <Search size={18} className="mr-3 text-slate-300" />}
+                        {result.icon ? <result.icon size={18} className={cn("mr-3", result.color)} /> : <Search size={18} className="mr-3 text-muted-foreground/60" />}
                         <div className="flex flex-col">
                           <span className="font-bold text-sm">{result.title}</span>
-                          <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
+                          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
                             {result.subtitle}
                           </span>
                         </div>

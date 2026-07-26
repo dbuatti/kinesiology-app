@@ -220,7 +220,7 @@ const ProceduresPage = () => {
                         <CardTitle className="text-xl font-semibold flex items-center gap-3 text-foreground">
                           <Lightbulb size={24} className="text-chart-primary" /> Focus on this this week
                         </CardTitle>
-                        <Badge className="bg-chart-primary text-white border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
+                        <Badge className="bg-chart-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
                           Study Priority
                         </Badge>
                       </div>
@@ -231,7 +231,7 @@ const ProceduresPage = () => {
                     <Button 
                       onClick={handleCommitFocus}
                       disabled={committing}
-                      className="bg-primary hover:bg-primary/90 text-white rounded-xl h-12 px-8 font-medium text-xs uppercase tracking-wider shadow-sm"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-12 px-8 font-medium text-xs uppercase tracking-wider shadow-sm"
                     >
                       {committing ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 size={18} className="mr-2" />}
                       Commit to this Focus
@@ -270,28 +270,28 @@ const ProceduresPage = () => {
 
             {/* Mastery Overview Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="border-none shadow-sm rounded-xl bg-chart-primary text-white overflow-hidden relative group">
+              <Card className="border-none shadow-sm rounded-xl bg-chart-primary text-primary-foreground overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><Sparkles size={80} /></div>
                 <CardContent className="p-6 space-y-1 relative z-10">
-                  <p className="text-[10px] font-semibold text-white/70 uppercase tracking-wider">Total Components</p>
+                  <p className="text-[10px] font-semibold text-primary-foreground/70 uppercase tracking-wider">Total Components</p>
                   <p className="text-4xl font-semibold">{summary.total}</p>
-                  <p className="text-xs text-white/50 font-medium">Registry of all loggable items</p>
+                  <p className="text-xs text-primary-foreground/50 font-medium">Registry of all loggable items</p>
                 </CardContent>
               </Card>
-              <Card className="border-none shadow-sm rounded-xl bg-chart-emerald text-white overflow-hidden relative group">
+              <Card className="border-none shadow-sm rounded-xl bg-chart-emerald text-primary-foreground overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><ShieldCheck size={80} /></div>
                 <CardContent className="p-6 space-y-1 relative z-10">
-                  <p className="text-[10px] font-semibold text-white/70 uppercase tracking-wider">Mastered Items</p>
+                  <p className="text-[10px] font-semibold text-primary-foreground/70 uppercase tracking-wider">Mastered Items</p>
                   <p className="text-4xl font-semibold">{summary.masters}</p>
-                  <p className="text-xs text-white/50 font-medium">11+ logs recorded</p>
+                  <p className="text-xs text-primary-foreground/50 font-medium">11+ logs recorded</p>
                 </CardContent>
               </Card>
-              <Card className="border-none shadow-sm rounded-xl bg-chart-destructive text-white overflow-hidden relative group">
+              <Card className="border-none shadow-sm rounded-xl bg-chart-destructive text-primary-foreground overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><AlertCircle size={80} /></div>
                 <CardContent className="p-6 space-y-1 relative z-10">
-                  <p className="text-[10px] font-semibold text-white/70 uppercase tracking-wider">Unpracticed Items</p>
+                  <p className="text-[10px] font-semibold text-primary-foreground/70 uppercase tracking-wider">Unpracticed Items</p>
                   <p className="text-4xl font-semibold">{summary.novices}</p>
-                  <p className="text-xs text-white/50 font-medium">Items with 0-2 logs</p>
+                  <p className="text-xs text-primary-foreground/50 font-medium">Items with 0-2 logs</p>
                 </CardContent>
               </Card>
               <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
@@ -383,7 +383,7 @@ const ProceduresPage = () => {
                   <h2 className="text-3xl font-semibold text-foreground tracking-tight">Protocol Practice</h2>
                   <p className="text-muted-foreground font-medium">Interactive reference for clinical assessments. (Practice Mode: No data is saved to a client).</p>
                 </div>
-                <Badge className="bg-chart-primary text-white border-none font-semibold text-[10px] uppercase tracking-wider px-4 py-1.5 rounded-full shadow-sm">
+                <Badge className="bg-chart-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-4 py-1.5 rounded-full shadow-sm">
                   Reference Only
                 </Badge>
               </div>

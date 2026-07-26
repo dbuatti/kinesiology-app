@@ -69,12 +69,12 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
           "w-4 h-4 border flex items-center justify-center transition-all shrink-0 rounded-sm",
           status === 'Inhibited' 
             ? isCleared 
-              ? "bg-chart-emerald border-chart-emerald text-white" 
-              : "bg-amber-500 border-amber-500 text-white"
+              ? "bg-chart-emerald border-chart-emerald text-primary-foreground" 
+              : "bg-amber-500 border-amber-500 text-primary-foreground"
             : status === 'Hypertonic'
               ? isCleared
-                ? "bg-chart-emerald border-chart-emerald text-white"
-                : "bg-rose-600 border-rose-600 text-white"
+                ? "bg-chart-emerald border-chart-emerald text-primary-foreground"
+                : "bg-rose-600 border-rose-600 text-primary-foreground"
               : "border-border group-hover:border-foreground bg-background"
         )}>
           {status === 'Inhibited' && (isCleared ? <Check size={10} strokeWidth={4} /> : <ArrowDown size={10} strokeWidth={4} />)}
@@ -105,7 +105,7 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
       </div>
 
       {isCleared && (
-        <Badge className="bg-chart-emerald text-white border-none font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-sm shrink-0">
+        <Badge className="bg-chart-emerald text-primary-foreground border-none font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-sm shrink-0">
           Cleared
         </Badge>
       )}

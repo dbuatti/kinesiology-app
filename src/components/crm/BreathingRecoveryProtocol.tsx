@@ -28,11 +28,11 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
         </Alert>
       )}
 
-      <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-white">
-        <div className="bg-gradient-to-r from-teal-600 to-emerald-600 p-6 text-white">
+      <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-card">
+        <div className="bg-gradient-to-r from-teal-600 to-emerald-600 p-6 text-primary-foreground">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
+              <div className="w-12 h-12 bg-card/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
                 <Wind size={28} />
               </div>
               <div>
@@ -43,7 +43,7 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
             {!showInteractive && (
               <Button 
                 onClick={() => setShowInteractive(true)}
-                className="bg-white text-teal-700 hover:bg-teal-50 rounded-xl font-bold shadow-lg"
+                className="bg-card text-teal-700 hover:bg-teal-50 rounded-xl font-bold shadow-lg"
               >
                 <PlayCircle size={18} className="mr-2" /> Start Interactive Session
               </Button>
@@ -54,8 +54,8 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
           {showInteractive ? (
             <div className="animate-in fade-in zoom-in-95 duration-300">
               <div className="flex items-center justify-between mb-6">
-                <h4 className="text-sm font-black uppercase tracking-widest text-slate-400">Interactive Practice Mode</h4>
-                <Button variant="ghost" size="sm" onClick={() => setShowInteractive(false)} className="text-slate-400 hover:text-slate-900">
+                <h4 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Interactive Practice Mode</h4>
+                <Button variant="ghost" size="sm" onClick={() => setShowInteractive(false)} className="text-muted-foreground hover:text-foreground">
                   Back to Instructions
                 </Button>
               </div>
@@ -89,7 +89,7 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
                 ].map((item) => (
                   <div key={item.step} className={cn("flex gap-5 p-5 rounded-2xl border-2 transition-all", item.color)}>
                     <div className="flex flex-col items-center gap-2">
-                      <span className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center font-black text-lg shrink-0 border border-current/10">
+                      <span className="w-10 h-10 rounded-full bg-card shadow-sm flex items-center justify-center font-black text-lg shrink-0 border border-current/10">
                         {item.step}
                       </span>
                       <div className="h-full w-0.5 bg-current/10 rounded-full" />
@@ -102,11 +102,11 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
                 ))}
               </div>
 
-              <div className="bg-slate-900 text-white p-6 rounded-3xl relative overflow-hidden">
+              <div className="bg-foreground text-primary-foreground p-6 rounded-3xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-10">
                   <Clock size={80} />
                 </div>
-                <h4 className="text-sm font-black uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+                <h4 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
                   <Clock size={16} /> Recommended Schedule
                 </h4>
                 <p className="text-xl font-bold leading-snug relative z-10">

@@ -11,7 +11,7 @@ const IdentityShiftingPage = () => {
  <AppLayout>
   <div className="max-w-5xl mx-auto space-y-4">
  <div className="flex items-center gap-3">
-  <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center">
+  <div className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center">
     <Fingerprint size={16} />
   </div>
   <div>

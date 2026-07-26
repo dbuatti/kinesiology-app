@@ -48,7 +48,7 @@ const MasteryItemCard = ({ stat, onClick }: MasteryItemCardProps) => {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className={cn(
-              "w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm transition-transform group-hover:scale-110",
+              "w-10 h-10 rounded-xl flex items-center justify-center text-primary-foreground shadow-sm transition-transform group-hover:scale-110",
               levelColors[stat.masteryLevel]
             )}>
               <Icon size={20} />

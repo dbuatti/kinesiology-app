@@ -102,9 +102,9 @@ const ClientWins = () => {
   };
 
   return (
-    <div className="p-8 bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm">
+    <div className="p-8 bg-card dark:bg-foreground rounded-[2rem] border border-border/50 dark:border-foreground/20 shadow-sm">
       <div className="flex items-center justify-between mb-8">
-        <h3 className="text-2xl font-serif font-bold flex items-center gap-4 text-slate-900 dark:text-white">
+        <h3 className="text-2xl font-serif font-bold flex items-center gap-4 text-foreground dark:text-primary-foreground">
           <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500 shadow-sm">
             <Heart size={20} className="fill-current" />
           </div>
@@ -126,39 +126,39 @@ const ClientWins = () => {
               <div className="relative z-10 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md bg-rose-500">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-primary-foreground shadow-md bg-rose-500">
                       <Sparkles size={16} />
                     </div>
                     <div>
-                      <p className="text-sm font-black text-slate-900 dark:text-white">{win.client_name}</p>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{win.context}</p>
+                      <p className="text-sm font-black text-foreground dark:text-primary-foreground">{win.client_name}</p>
+                      <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">{win.context}</p>
                     </div>
                   </div>
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-8 w-8 rounded-xl text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all"
+                    className="h-8 w-8 rounded-xl text-muted-foreground/60 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all"
                     onClick={() => setDeleteTargetId(win.id)}
                   >
                     <Trash2 size={16} />
                   </Button>
                 </div>
 
-                <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed italic">
+                <p className="text-sm font-medium text-muted-foreground dark:text-muted-foreground leading-relaxed italic">
                   "{win.content}"
                 </p>
               </div>
             </div>
           ))
         ) : (
-          <div className="p-12 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">No wins logged yet.</p>
+          <div className="p-12 text-center bg-muted/50 dark:bg-foreground/50 rounded-2xl border border-dashed border-border dark:border-border">
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">No wins logged yet.</p>
           </div>
         )}
         
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <button className="w-full py-5 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 text-slate-400 hover:border-rose-300 hover:text-rose-500 hover:bg-rose-50/30 transition-all flex flex-col items-center justify-center gap-2 group">
+            <button className="w-full py-5 rounded-2xl border-2 border-dashed border-border dark:border-foreground/20 text-muted-foreground hover:border-rose-300 hover:text-rose-500 hover:bg-rose-50/30 transition-all flex flex-col items-center justify-center gap-2 group">
               <Plus size={24} className="group-hover:scale-110 transition-transform" />
               <span className="text-[10px] font-black uppercase tracking-[0.2em]">Log a new win</span>
             </button>
@@ -166,7 +166,7 @@ const ClientWins = () => {
           <DialogContent className="sm:max-w-[500px] rounded-[2.5rem] p-10">
             <DialogHeader className="mb-8">
               <div className="flex items-center gap-4 mb-2">
-                <div className="w-14 h-14 rounded-2xl bg-rose-500 text-white flex items-center justify-center shadow-xl">
+                <div className="w-14 h-14 rounded-2xl bg-rose-500 text-primary-foreground flex items-center justify-center shadow-xl">
                   <Heart size={28} />
                 </div>
                 <div>
@@ -177,38 +177,38 @@ const ClientWins = () => {
             </DialogHeader>
             <form onSubmit={handleSave} className="space-y-8">
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Client Name</label>
+                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Client Name</label>
                 <Input 
                   placeholder="e.g. Susan Lord" 
                   value={newName} 
                   onChange={e => setNewName(e.target.value)} 
                   required
-                  className="h-12 rounded-xl border-slate-200 focus:ring-rose-500 focus:border-rose-500 font-bold"
+                  className="h-12 rounded-xl border-border focus:ring-rose-500 focus:border-rose-500 font-bold"
                 />
               </div>
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">The "Nice Words"</label>
+                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">The "Nice Words"</label>
                 <Textarea 
                   placeholder="Paste the feedback here..." 
                   value={newContent} 
                   onChange={e => setNewContent(e.target.value)} 
                   required
-                  className="min-h-[150px] rounded-2xl border-slate-200 focus:ring-rose-500 focus:border-rose-500 resize-none p-6 text-lg font-medium leading-relaxed"
+                  className="min-h-[150px] rounded-2xl border-border focus:ring-rose-500 focus:border-rose-500 resize-none p-6 text-lg font-medium leading-relaxed"
                 />
               </div>
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Context</label>
+                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">Context</label>
                 <Input 
                   placeholder="e.g. Post-session text, Email, In-person" 
                   value={newContext} 
                   onChange={e => setNewContext(e.target.value)} 
-                  className="h-12 rounded-xl border-slate-200 focus:ring-rose-500 focus:border-rose-500 font-bold"
+                  className="h-12 rounded-xl border-border focus:ring-rose-500 focus:border-rose-500 font-bold"
                 />
               </div>
               <Button 
                 type="submit" 
                 disabled={saving}
-                className="w-full h-16 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-rose-500/20 transition-all"
+                className="w-full h-16 rounded-2xl bg-rose-600 hover:bg-rose-700 text-primary-foreground font-black text-xs uppercase tracking-widest shadow-xl shadow-rose-500/20 transition-all"
               >
                 {saving ? <Loader2 className="animate-spin mr-3" /> : <Save size={20} className="mr-3" />}
                 Save to Vault
@@ -218,7 +218,7 @@ const ClientWins = () => {
         </Dialog>
 
         {wins.length > 3 && (
-          <Button variant="ghost" className="w-full h-12 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-rose-600 hover:bg-rose-50 group rounded-xl transition-all">
+          <Button variant="ghost" className="w-full h-12 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-rose-600 hover:bg-rose-50 group rounded-xl transition-all">
             View All {wins.length} Wins <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
           </Button>
         )}

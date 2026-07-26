@@ -64,7 +64,7 @@ export default function ClinicalProtocolsPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-muted">
-        <div className="w-16 h-16 bg-chart-primary rounded-xl flex items-center justify-center text-white font-semibold text-2xl shadow-sm animate-bounce">
+        <div className="w-16 h-16 bg-chart-primary rounded-xl flex items-center justify-center text-primary-foreground font-semibold text-2xl shadow-sm animate-bounce">
           A
         </div>
         <div className="flex items-center gap-2 text-muted-foreground font-semibold text-[10px] uppercase tracking-wider">
@@ -101,7 +101,7 @@ export default function ClinicalProtocolsPage() {
           variant="ghost" 
           size="icon" 
           onClick={() => navigate(`/appointments/${id}`)}
-          className="h-12 w-12 rounded-xl bg-white/5 text-white hover:bg-white/10 mb-4 transition-all hover:scale-110"
+          className="h-12 w-12 rounded-xl bg-card/5 text-primary-foreground hover:bg-card/10 mb-4 transition-all hover:scale-110"
         >
           <ChevronLeft size={24} />
         </Button>
@@ -116,12 +116,12 @@ export default function ClinicalProtocolsPage() {
                 className={cn(
                   "flex flex-col items-center justify-center py-4 rounded-xl transition-all duration-500 group relative",
                   isActive 
-                    ? "bg-chart-primary text-white shadow-sm scale-105" 
-                    : "text-muted-foreground hover:text-white hover:bg-white/5"
+                    ? "bg-chart-primary text-primary-foreground shadow-sm scale-105" 
+                    : "text-muted-foreground hover:text-primary-foreground hover:bg-card/5"
                 )}
               >
                 {isActive && (
-                  <div className="absolute left-0 w-1 h-8 bg-white rounded-r-full" />
+                  <div className="absolute left-0 w-1 h-8 bg-card rounded-r-full" />
                 )}
                 <p.icon size={22} className={cn("transition-transform duration-500", isActive ? "scale-110" : "group-hover:scale-110", !isActive && p.color)} />
                 <span className="text-[10px] font-semibold uppercase tracking-wider mt-2 text-center px-1">
@@ -133,10 +133,10 @@ export default function ClinicalProtocolsPage() {
         </div>
 
         <div className="mt-auto flex flex-col gap-6 items-center">
-          <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-muted-foreground hover:text-white transition-colors cursor-pointer">
+          <div className="w-10 h-10 rounded-xl bg-card/5 flex items-center justify-center text-muted-foreground hover:text-primary-foreground transition-colors cursor-pointer">
             <Settings2 size={20} />
           </div>
-          <Badge variant="outline" className="border-white/10 text-muted-foreground font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-none rotate-90 mb-6">
+          <Badge variant="outline" className="border-primary-foreground/10 text-muted-foreground font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-none rotate-90 mb-6">
             Clinical Rail
           </Badge>
         </div>
@@ -149,7 +149,7 @@ export default function ClinicalProtocolsPage() {
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-4">
               <div className={cn(
-                "w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-sm",
+                "w-12 h-12 rounded-xl flex items-center justify-center text-primary-foreground shadow-sm",
                 activeProtocol?.bg.replace(/\/\d+$/, '') || "bg-chart-primary"
               )}>
                 {React.createElement(activeProtocol?.icon || Brain, { size: 24 })}
@@ -261,7 +261,7 @@ export default function ClinicalProtocolsPage() {
             <div className="mt-24 pt-16 border-t border-border">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-5">
-                  <div className="w-14 h-14 rounded-xl bg-foreground text-white flex items-center justify-center shadow-sm">
+                  <div className="w-14 h-14 rounded-xl bg-foreground text-primary-foreground flex items-center justify-center shadow-sm">
                     <ClipboardCheck size={28} />
                   </div>
                   <div>
@@ -278,7 +278,7 @@ export default function ClinicalProtocolsPage() {
                 placeholder="Document the primary correction and prescribed homework here..."
               />
               <div className="mt-6 flex justify-end">
-                <Button className="bg-primary hover:bg-primary/90 text-white rounded-xl h-14 px-12 font-semibold text-xs uppercase tracking-wider shadow-sm">
+                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-14 px-12 font-semibold text-xs uppercase tracking-wider shadow-sm">
                   <Save size={18} className="mr-2" /> Save Integration
                 </Button>
               </div>

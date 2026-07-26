@@ -167,7 +167,7 @@ const Sidebar = () => {
       <div className="shrink-0 px-4 py-4 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2 no-underline">
-            <span className="w-7 h-7 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">
+            <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
               K
             </span>
             <span className={cn(
@@ -381,7 +381,7 @@ const Sidebar = () => {
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-foreground/40 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
           <aside className="absolute left-0 top-0 bottom-0 w-72 shadow-2xl animate-in slide-in-from-left duration-300">
@@ -393,7 +393,7 @@ const Sidebar = () => {
       {/* Mobile Toggle Button */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="fixed bottom-6 left-6 z-40 lg:hidden w-12 h-12 rounded-2xl bg-primary text-white shadow-xl flex items-center justify-center hover:bg-primary/90 transition-colors"
+        className="fixed bottom-6 left-6 z-40 lg:hidden w-12 h-12 rounded-2xl bg-primary text-primary-foreground shadow-xl flex items-center justify-center hover:bg-primary/90 transition-colors"
       >
         <LayoutDashboard size={20} />
       </button>

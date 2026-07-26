@@ -43,13 +43,13 @@ const HeartWallBible = () => {
             </div>
           </div>
           <div className="flex flex-wrap gap-3 mt-6">
-            <Button asChild variant="secondary" className="rounded-xl bg-card/10 text-primary-foreground border-white/20 hover:bg-card/20">
+            <Button asChild variant="secondary" className="rounded-xl bg-card/10 text-primary-foreground border-primary-foreground/20 hover:bg-card/20">
               <Link to="/practice/procedures"><Zap size={16} className="mr-2" /> View Protocol</Link>
             </Button>
-            <Button asChild variant="secondary" className="rounded-xl bg-card/10 text-primary-foreground border-white/20 hover:bg-card/20">
+            <Button asChild variant="secondary" className="rounded-xl bg-card/10 text-primary-foreground border-primary-foreground/20 hover:bg-card/20">
               <Link to="/resources/heart-wall/print"><Printer size={16} className="mr-2" /> Print Sheet</Link>
             </Button>
-            <Button asChild variant="secondary" className="rounded-xl bg-card/10 text-primary-foreground border-white/20 hover:bg-card/20">
+            <Button asChild variant="secondary" className="rounded-xl bg-card/10 text-primary-foreground border-primary-foreground/20 hover:bg-card/20">
               <Link to="/resources/print"><FileText size={16} className="mr-2" /> Print Hub</Link>
             </Button>
           </div>

@@ -137,7 +137,7 @@ const NeurologicalHistoryTracker = ({ appointments }: NeurologicalHistoryTracker
                           {session ? (
                             <div className={cn(
                               "w-8 h-8 rounded-full mx-auto flex items-center justify-center transition-all",
-                              session.status === 'Clear' ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" : "bg-rose-500 text-white shadow-lg shadow-rose-500/20"
+                              session.status === 'Clear' ? "bg-emerald-500 text-primary-foreground shadow-lg shadow-emerald-500/20" : "bg-rose-500 text-primary-foreground shadow-lg shadow-rose-500/20"
                             )}>
                               {session.status === 'Clear' ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
                             </div>
@@ -149,7 +149,7 @@ const NeurologicalHistoryTracker = ({ appointments }: NeurologicalHistoryTracker
                     })}
                     <td className="p-6 text-right">
                       {finding.isResolved ? (
-                        <Badge className="bg-emerald-500 text-white border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5">
+                        <Badge className="bg-emerald-500 text-primary-foreground border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5">
                           Resolved
                         </Badge>
                       ) : (

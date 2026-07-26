@@ -63,12 +63,12 @@ const FractalNode = ({
   
   const getTierInfo = () => {
     if (level === 0) {
-      return { label: hasChildren ? 'Grandparent' : 'Root', tier: 3, color: 'bg-slate-900' };
+      return { label: hasChildren ? 'Grandparent' : 'Root', tier: 3, color: 'bg-foreground' };
     }
     if (level === 1) {
       return { label: 'Parent', tier: 2, color: 'bg-indigo-600' };
     }
-    return { label: 'Child', tier: 1, color: 'bg-slate-200 text-slate-600' };
+    return { label: 'Child', tier: 1, color: 'bg-muted text-muted-foreground' };
   };
 
   const tierInfo = getTierInfo();
@@ -95,7 +95,7 @@ const FractalNode = ({
           {hasChildren ? (
             <button 
               onClick={() => setIsExpanded(!isExpanded)}
-              className="w-8 h-8 rounded-xl hover:bg-muted flex items-center justify-center text-slate-400 transition-colors"
+              className="w-8 h-8 rounded-xl hover:bg-muted flex items-center justify-center text-muted-foreground transition-colors"
             >
               {isExpanded ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
             </button>
@@ -115,14 +115,14 @@ const FractalNode = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             {item.is_primary_primary && (
-              <Badge className="bg-amber-500 text-white border-none font-black text-[7px] uppercase tracking-widest px-2 py-0.5 rounded-md flex items-center gap-1">
+              <Badge className="bg-amber-500 text-primary-foreground border-none font-black text-[7px] uppercase tracking-widest px-2 py-0.5 rounded-md flex items-center gap-1">
                 <Star size={8} className="fill-current" /> Primary Root
               </Badge>
             )}
             <Badge className={cn(
               "border-none font-black text-[7px] uppercase tracking-widest px-2 py-0.5 rounded-md",
               tierInfo.color,
-              tierInfo.tier < 2 && "text-slate-600"
+              tierInfo.tier < 2 && "text-muted-foreground"
             )}>
               Tier {tierInfo.tier}: {tierInfo.label}
             </Badge>
@@ -162,7 +162,7 @@ const FractalNode = ({
                 <Zap size={16} className="text-indigo-500" /> Process in Identity Map
               </DropdownMenuItem>
               
-              <div className="px-4 py-2 text-[8px] font-black uppercase tracking-widest text-slate-400">Move Hierarchy</div>
+              <div className="px-4 py-2 text-[8px] font-black uppercase tracking-widest text-muted-foreground">Move Hierarchy</div>
               {item.parent_id && (
                 <DropdownMenuItem onClick={() => onMove(item.id, null)} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
                   <ArrowRight size={16} className="rotate-180" /> Move to Top Level
@@ -189,7 +189,7 @@ const FractalNode = ({
           
           <Button 
             size="sm" 
-            className="h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest shadow-lg"
+            className="h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-primary-foreground font-black text-[10px] uppercase tracking-widest shadow-lg"
             onClick={() => onProcess(item)}
           >
             Process <ChevronRight size={14} className="ml-1" />
@@ -198,7 +198,7 @@ const FractalNode = ({
       </div>
 
       {isExpanded && hasChildren && (
-        <div className="animate-in fade-in slide-in-from-top-1 duration-300 border-l-2 border-slate-100 dark:border-slate-800 ml-4">
+        <div className="animate-in fade-in slide-in-from-top-1 duration-300 border-l-2 border-border/50 dark:border-foreground ml-4">
           {children}
         </div>
       )}

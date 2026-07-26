@@ -242,7 +242,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
   const SectionHeader = ({ icon: Icon, title, color }: { icon: any; title: string; color: string }) => (
     <div className="flex items-center gap-3 mb-6 pt-4 border-t border-border first:border-t-0 first:pt-0">
       <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", color)}>
-        <Icon size={20} className="text-white" />
+        <Icon size={20} className="text-primary-foreground" />
       </div>
       <h3 className="text-lg font-black text-foreground">{title}</h3>
     </div>
@@ -615,7 +615,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
 
         {/* Sleep & Concussion */}
         <div className="space-y-6">
-          <SectionHeader icon={Bed} title="Sleep & Concussion History" color="bg-blue-600" />
+          <SectionHeader icon={Bed} title="Sleep & Concussion History" color="bg-primary" />
           <div className="space-y-5">
             <FormField control={form.control} name="sleep_schedule" render={({ field }) => (
               <FormItem>

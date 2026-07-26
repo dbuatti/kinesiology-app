@@ -40,57 +40,57 @@ export const lessons: Lesson[] = [
     icon: Shield,
     difficulty: "Beginner",
     content: (
-      <div className="space-y-6 text-slate-700">
-        <div className="p-5 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-sm">
+      <div className="space-y-6 text-foreground/80">
+        <div className="p-5 bg-muted/50 rounded-xl border border-border flex items-start gap-4">
+          <div className="w-10 h-10 rounded-xl bg-foreground text-primary-foreground flex items-center justify-center shrink-0 shadow-sm">
             <Shield size={20} />
           </div>
           <div>
-            <h4 className="font-bold text-slate-900 text-sm uppercase tracking-tight">The Core Concept</h4>
-            <p className="text-xs text-slate-600 font-medium mt-1">
+            <h4 className="font-bold text-foreground text-sm uppercase tracking-tight">The Core Concept</h4>
+            <p className="text-xs text-muted-foreground font-medium mt-1">
               Ligaments connect <strong>bone to bone</strong>. They are not just mechanical straps; they are high-density sensory organs packed with mechanoreceptors that feed 85% of your movement data to the cerebellum.
             </p>
           </div>
         </div>
 
         <div className="space-y-4">
-          <h4 className="font-bold text-slate-900 text-base">Why You Shouldn't Be Intimidated:</h4>
+          <h4 className="font-bold text-foreground text-base">Why You Shouldn't Be Intimidated:</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-              <p className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                <Smile className="text-slate-900" size={16} /> They are Passive Sensors
+            <div className="p-4 bg-muted/50 rounded-xl border border-border space-y-2">
+              <p className="font-bold text-foreground text-sm flex items-center gap-2">
+                <Smile className="text-foreground" size={16} /> They are Passive Sensors
               </p>
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 Ligaments don't contract. They only sense stretch. If a joint is unstable, the ligament gets over-stretched, sending a "threat" signal to the brain.
               </p>
             </div>
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-              <p className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                <CheckCircle className="text-slate-900" size={16} /> The Correction is Simple
+            <div className="p-4 bg-muted/50 rounded-xl border border-border space-y-2">
+              <p className="font-bold text-foreground text-sm flex items-center gap-2">
+                <CheckCircle className="text-foreground" size={16} /> The Correction is Simple
               </p>
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 To clear the threat, we simply stretch the ligament slightly (re-creating the stimulus) while holding <strong>GV16</strong> (the cerebellum's reflex point) to update the map.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="p-5 bg-slate-900 text-white rounded-xl space-y-3">
-          <p className="text-xs font-bold text-slate-300 uppercase tracking-wider">The Neural Pathway</p>
+        <div className="p-5 bg-foreground text-primary-foreground rounded-xl space-y-3">
+          <p className="text-xs font-bold text-muted-foreground/60 uppercase tracking-wider">The Neural Pathway</p>
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-bold">
-            <div className="px-3 py-2 bg-white/10 rounded-lg border border-white/10 text-center w-full md:w-auto">Ligament Stretch</div>
-            <ChevronRight className="text-slate-500 hidden md:block" />
-            <div className="px-3 py-2 bg-white/10 rounded-lg border border-white/10 text-center w-full md:w-auto">Spinocerebellar Tract</div>
-            <ChevronRight className="text-slate-500 hidden md:block" />
-            <div className="px-3 py-2 bg-white/10 rounded-lg border border-white/10 text-center w-full md:w-auto">Ipsilateral Cerebellum</div>
-            <ChevronRight className="text-slate-500 hidden md:block" />
-            <div className="px-3 py-2 bg-slate-800 rounded-lg text-center w-full md:w-auto">GV16 Reset</div>
+            <div className="px-3 py-2 bg-card/10 rounded-lg border border-primary-foreground/10 text-center w-full md:w-auto">Ligament Stretch</div>
+            <ChevronRight className="text-muted-foreground hidden md:block" />
+            <div className="px-3 py-2 bg-card/10 rounded-lg border border-primary-foreground/10 text-center w-full md:w-auto">Spinocerebellar Tract</div>
+            <ChevronRight className="text-muted-foreground hidden md:block" />
+            <div className="px-3 py-2 bg-card/10 rounded-lg border border-primary-foreground/10 text-center w-full md:w-auto">Ipsilateral Cerebellum</div>
+            <ChevronRight className="text-muted-foreground hidden md:block" />
+            <div className="px-3 py-2 bg-foreground rounded-lg text-center w-full md:w-auto">GV16 Reset</div>
           </div>
         </div>
 
-        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-3">
-          <Lightbulb className="text-slate-900 shrink-0 mt-0.5" size={18} />
-          <p className="text-xs text-slate-600 font-medium leading-relaxed">
+        <div className="p-4 bg-muted/50 rounded-xl border border-border flex items-start gap-3">
+          <Lightbulb className="text-foreground shrink-0 mt-0.5" size={18} />
+          <p className="text-xs text-muted-foreground font-medium leading-relaxed">
             <strong>Confidence Tip:</strong> You don't need to know the exact name of every ligament. If you know the joint is the knee, and the threat is on the inside, you are stretching the medial collateral ligament (MCL). Trust your hands and the client's feedback!
           </p>
         </div>
@@ -111,7 +111,7 @@ export const lessons: Lesson[] = [
     icon: Compass,
     difficulty: "Beginner",
     content: (
-      <div className="space-y-6 text-slate-700">
+      <div className="space-y-6 text-foreground/80">
         <p className="text-sm font-medium leading-relaxed">
           Every single mechanoreceptive correction follows the exact same 3-step loop. Once you memorize this loop, you can apply it to any joint in the body with complete confidence.
         </p>
@@ -121,17 +121,17 @@ export const lessons: Lesson[] = [
             {
               step: "Step 1: Stimulate (Find the Threat)",
               desc: "Aggravate the joint or tissue. For ligaments, stretch them. For tendons, contract them. If the indicator muscle (IM) goes weak, you've found the threat.",
-              color: "border-slate-200 bg-slate-50/50 text-slate-900"
+              color: "border-border bg-muted/50 text-foreground"
             },
             {
               step: "Step 2: Localize (Find the Geometry)",
               desc: "Follow the hierarchy: Region (Upper/Lower) -> Laterality (Left/Right) -> Skeleton (Axial/Appendicular) -> Specific Joint. Then find the plane of motion (Sagittal, Frontal, Transverse).",
-              color: "border-slate-200 bg-slate-50/50 text-slate-900"
+              color: "border-border bg-muted/50 text-foreground"
             },
             {
               step: "Step 3: Calibrate (Apply the Correction)",
               desc: "Apply the specific correction. Hold GV16 and stretch the priority ligament, then apply a tuning fork to the cranium or tap for 3-5 seconds.",
-              color: "border-slate-200 bg-slate-50/50 text-slate-900"
+              color: "border-border bg-muted/50 text-foreground"
             }
           ].map((item, i) => (
             <div key={i} className={cn("p-5 rounded-xl border space-y-2", item.color)}>
@@ -141,8 +141,8 @@ export const lessons: Lesson[] = [
           ))}
         </div>
 
-        <div className="p-5 bg-slate-900 text-white rounded-xl space-y-3">
-          <p className="text-xs font-bold text-slate-300 uppercase tracking-wider">The Golden Rule</p>
+        <div className="p-5 bg-foreground text-primary-foreground rounded-xl space-y-3">
+          <p className="text-xs font-bold text-muted-foreground/60 uppercase tracking-wider">The Golden Rule</p>
           <p className="text-xs font-bold leading-relaxed italic">
             "Joints act, muscles and tissues react. Always focus on the joint action first, and let the muscles take care of themselves."
           </p>
@@ -164,21 +164,21 @@ export const lessons: Lesson[] = [
     icon: Heart,
     difficulty: "Beginner",
     content: (
-      <div className="space-y-6 text-slate-700">
-        <div className="p-5 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-md">
+      <div className="space-y-6 text-foreground/80">
+        <div className="p-5 bg-muted/50 rounded-xl border border-border flex items-start gap-4">
+          <div className="w-10 h-10 rounded-xl bg-foreground text-primary-foreground flex items-center justify-center shrink-0 shadow-md">
             <Heart size={20} />
           </div>
           <div>
-            <h4 className="font-bold text-slate-900 text-sm uppercase tracking-tight">A Message for You</h4>
-            <p className="text-xs text-slate-600 font-medium mt-1">
+            <h4 className="font-bold text-foreground text-sm uppercase tracking-tight">A Message for You</h4>
+            <p className="text-xs text-muted-foreground font-medium mt-1">
               It is completely normal to feel intimidated by neurology. But remember: you are not performing brain surgery. You are simply communicating with the nervous system using its own language.
             </p>
           </div>
         </div>
 
         <div className="space-y-4">
-          <h4 className="font-bold text-slate-900 text-base">Three Safety Guarantees:</h4>
+          <h4 className="font-bold text-foreground text-base">Three Safety Guarantees:</h4>
           <div className="space-y-3">
             {[
               {
@@ -194,19 +194,19 @@ export const lessons: Lesson[] = [
                 desc: "Expect layers. If a correction doesn't hold, it doesn't mean you failed—it just means you cleared one layer and the brain is showing you the next one. Stay curious!"
               }
             ].map((item, i) => (
-              <div key={i} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1">
-                <p className="font-bold text-xs text-slate-900">{item.title}</p>
-                <p className="text-xs text-slate-600 leading-relaxed">{item.desc}</p>
+              <div key={i} className="p-4 bg-muted/50 rounded-xl border border-border space-y-1">
+                <p className="font-bold text-xs text-foreground">{item.title}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="p-5 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-4">
-          <Smile className="text-slate-900 shrink-0 mt-1" size={24} />
+        <div className="p-5 bg-muted/50 rounded-xl border border-border flex items-start gap-4">
+          <Smile className="text-foreground shrink-0 mt-1" size={24} />
           <div>
-            <h4 className="font-bold text-slate-900 text-sm uppercase tracking-tight">Your Confidence Mantra</h4>
-            <p className="text-xs text-slate-600 font-medium mt-1 italic">
+            <h4 className="font-bold text-foreground text-sm uppercase tracking-tight">Your Confidence Mantra</h4>
+            <p className="text-xs text-muted-foreground font-medium mt-1 italic">
               "I am a facilitator of the brain's own healing. I don't need to be perfect; I just need to be curious, gentle, and systematic."
             </p>
           </div>
@@ -228,44 +228,44 @@ export const lessons: Lesson[] = [
     icon: ArrowRightLeft,
     difficulty: "Intermediate",
     content: (
-      <div className="space-y-6 text-slate-700">
-        <div className="p-5 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-md">
+      <div className="space-y-6 text-foreground/80">
+        <div className="p-5 bg-muted/50 rounded-xl border border-border flex items-start gap-4">
+          <div className="w-10 h-10 rounded-xl bg-foreground text-primary-foreground flex items-center justify-center shrink-0 shadow-md">
             <ArrowRightLeft size={20} />
           </div>
           <div>
-            <h4 className="font-bold text-slate-900 text-sm uppercase tracking-tight">The Core Concept</h4>
-            <p className="text-xs text-slate-600 font-medium mt-1">
+            <h4 className="font-bold text-foreground text-sm uppercase tracking-tight">The Core Concept</h4>
+            <p className="text-xs text-muted-foreground font-medium mt-1">
               The spine operates as a reciprocal engine. Tension or fixation at one end of the spine (e.g., C1) immediately creates a compensatory dysfunction at the reciprocating partner (e.g., L5).
             </p>
           </div>
         </div>
 
         <div className="space-y-4">
-          <h4 className="font-bold text-slate-900 text-base">The Lovett-Brother Rules:</h4>
+          <h4 className="font-bold text-foreground text-base">The Lovett-Brother Rules:</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-              <p className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                <Layers className="text-slate-900" size={16} /> Parallel Motion
+            <div className="p-4 bg-muted/50 rounded-xl border border-border space-y-2">
+              <p className="font-bold text-foreground text-sm flex items-center gap-2">
+                <Layers className="text-foreground" size={16} /> Parallel Motion
               </p>
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 Cervical and lumbar vertebrae rotate and lateral-flex in parallel directions. If C1 is locked, L5 will lock to compensate and preserve dural tension.
               </p>
             </div>
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-              <p className="font-bold text-slate-900 text-sm flex items-center gap-2">
-                <Activity className="text-slate-900" size={16} /> Reciprocal Organs
+            <div className="p-4 bg-muted/50 rounded-xl border border-border space-y-2">
+              <p className="font-bold text-foreground text-sm flex items-center gap-2">
+                <Activity className="text-foreground" size={16} /> Reciprocal Organs
               </p>
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 The associated organs and muscles of partner segments are also linked. For example, C1 (Buccinator/Pancreas) is paired with L5 (Hamstrings/Large Intestine).
               </p>
             </div>
           </div>
         </div>
 
-        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-3">
-          <Lightbulb className="text-slate-900 shrink-0 mt-0.5" size={18} />
-          <p className="text-xs text-slate-600 font-medium leading-relaxed">
+        <div className="p-4 bg-muted/50 rounded-xl border border-border flex items-start gap-3">
+          <Lightbulb className="text-foreground shrink-0 mt-0.5" size={18} />
+          <p className="text-xs text-muted-foreground font-medium leading-relaxed">
             <strong>Clinical Pearl:</strong> If a client presents with chronic, stubborn L5 lower back pain, do not just rub the lower back! Check C1 (atlas) rotation and the Buccinator muscle. Clearing the C1 restriction often instantly resolves the L5 pain.
           </p>
         </div>
@@ -286,43 +286,43 @@ export const lessons: Lesson[] = [
     icon: Move,
     difficulty: "Intermediate",
     content: (
-      <div className="space-y-6 text-slate-700">
-        <div className="p-5 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 shadow-md">
+      <div className="space-y-6 text-foreground/80">
+        <div className="p-5 bg-muted/50 rounded-xl border border-border flex items-start gap-4">
+          <div className="w-10 h-10 rounded-xl bg-foreground text-primary-foreground flex items-center justify-center shrink-0 shadow-md">
             <Move size={20} />
           </div>
           <div>
-            <h4 className="font-bold text-slate-900 text-sm uppercase tracking-tight">The Core Concept</h4>
-            <p className="text-xs text-slate-600 font-medium mt-1">
+            <h4 className="font-bold text-foreground text-sm uppercase tracking-tight">The Core Concept</h4>
+            <p className="text-xs text-muted-foreground font-medium mt-1">
               The brain maps movement in three distinct geometric planes: Sagittal, Frontal, and Transverse. When a joint is threatened, the brain restricts movement in the specific plane of threat to protect the tissue.
             </p>
           </div>
         </div>
 
         <div className="space-y-4">
-          <h4 className="font-bold text-slate-900 text-base">The Three Planes:</h4>
+          <h4 className="font-bold text-foreground text-base">The Three Planes:</h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 space-y-1">
-              <p className="font-bold text-blue-900 text-xs">1. Sagittal Plane</p>
-              <p className="text-[10px] text-blue-700 font-bold uppercase">Flexion / Extension</p>
-              <p className="text-[11px] text-slate-600 leading-relaxed">Forward and backward movement. E.g., nodding head, bending forward.</p>
+            <div className="p-4 bg-primary/5 rounded-xl border border-primary/20 space-y-1">
+              <p className="font-bold text-primary text-xs">1. Sagittal Plane</p>
+              <p className="text-[10px] text-primary font-bold uppercase">Flexion / Extension</p>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">Forward and backward movement. E.g., nodding head, bending forward.</p>
             </div>
             <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100 space-y-1">
               <p className="font-bold text-emerald-900 text-xs">2. Frontal Plane</p>
               <p className="text-[10px] text-emerald-700 font-bold uppercase">Abduction / Adduction</p>
-              <p className="text-[11px] text-slate-600 leading-relaxed">Side-to-side movement. E.g., tilting head, raising arm to the side.</p>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">Side-to-side movement. E.g., tilting head, raising arm to the side.</p>
             </div>
             <div className="p-4 bg-orange-50 rounded-xl border border-orange-100 space-y-1">
               <p className="font-bold text-orange-900 text-xs">3. Transverse Plane</p>
               <p className="text-[10px] text-orange-700 font-bold uppercase">Rotation</p>
-              <p className="text-[11px] text-slate-600 leading-relaxed">Twisting and rotational movement. E.g., turning head, rotating hip.</p>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">Twisting and rotational movement. E.g., turning head, rotating hip.</p>
             </div>
           </div>
         </div>
 
-        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-3">
-          <Lightbulb className="text-slate-900 shrink-0 mt-0.5" size={18} />
-          <p className="text-xs text-slate-600 font-medium leading-relaxed">
+        <div className="p-4 bg-muted/50 rounded-xl border border-border flex items-start gap-3">
+          <Lightbulb className="text-foreground shrink-0 mt-0.5" size={18} />
+          <p className="text-xs text-muted-foreground font-medium leading-relaxed">
             <strong>Clinical Pearl:</strong> Always ask the body for the <strong>Plane of Motion</strong> first during your challenge. This instantly narrows down your search from dozens of possible joint actions to just 2 or 3, saving valuable session time.
           </p>
         </div>

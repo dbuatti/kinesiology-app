@@ -60,9 +60,9 @@ const JournalRefresher = ({ reflectionId, className }: JournalRefresherProps) =>
       <HoverCardContent 
         side="left" 
         align="start" 
-        className="w-80 p-0 rounded-[2rem] border-none shadow-3xl bg-white overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className="w-80 p-0 rounded-[2rem] border-none shadow-3xl bg-card overflow-hidden animate-in fade-in zoom-in-95 duration-200"
       >
-        <div className="bg-indigo-600 p-4 text-white flex items-center justify-between">
+        <div className="bg-indigo-600 p-4 text-primary-foreground flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MessageSquare size={14} className="text-indigo-200" />
             <span className="text-[10px] font-black uppercase tracking-widest">Journal Refresher</span>
@@ -82,7 +82,7 @@ const JournalRefresher = ({ reflectionId, className }: JournalRefresherProps) =>
           ) : reflection ? (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="bg-slate-50 border-slate-100 text-slate-500 text-[8px] font-black uppercase px-1.5 py-0">
+                <Badge variant="outline" className="bg-muted/50 border-border/50 text-muted-foreground text-[8px] font-black uppercase px-1.5 py-0">
                   {reflection.category}
                 </Badge>
                 {reflection.appointments?.clients?.name && (
@@ -95,19 +95,19 @@ const JournalRefresher = ({ reflectionId, className }: JournalRefresherProps) =>
               <ScrollArea className="h-[350px] pr-4">
                 <div className="relative">
                   <Quote className="absolute -top-2 -left-2 text-indigo-50 opacity-50" size={40} />
-                  <p className="text-sm font-medium text-slate-700 leading-relaxed relative z-10 italic">
+                  <p className="text-sm font-medium text-foreground/80 leading-relaxed relative z-10 italic">
                     {reflection.content}
                   </p>
                 </div>
               </ScrollArea>
 
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Source Reflection</p>
+              <div className="pt-4 border-t border-border/50 flex items-center justify-between">
+                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Source Reflection</p>
                 <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
               </div>
             </div>
           ) : (
-            <p className="text-xs text-slate-400 italic text-center py-8">Reflection content unavailable.</p>
+            <p className="text-xs text-muted-foreground italic text-center py-8">Reflection content unavailable.</p>
           )}
         </div>
       </HoverCardContent>

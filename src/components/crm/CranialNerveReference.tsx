@@ -69,7 +69,7 @@ const CranialNerveReference = () => {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
           <Input 
             placeholder="Search nerves, functions, stims..." 
-            className="pl-12 bg-white border-border rounded-xl h-14 shadow-sm font-medium focus:ring-2 focus:ring-chart-primary"
+            className="pl-12 bg-card border-border rounded-xl h-14 shadow-sm font-medium focus:ring-2 focus:ring-chart-primary"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -82,7 +82,7 @@ const CranialNerveReference = () => {
               onClick={() => setSelectedNuclei(opt)}
               className={cn(
                 "rounded-xl h-14 px-6 font-medium text-[10px] uppercase tracking-wider whitespace-nowrap transition-all",
-                selectedNuclei === opt ? "bg-slate-900 shadow-sm" : "border-border bg-white hover:bg-muted"
+                selectedNuclei === opt ? "bg-foreground shadow-sm" : "border-border bg-card hover:bg-muted"
               )}
             >
               {opt}
@@ -114,7 +114,7 @@ const CranialNerveReference = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {filteredNerves.map(nerve => {
           return (
-            <Card key={nerve.id} className="border-none shadow-sm rounded-xl bg-white hover:shadow-2xl transition-all group overflow-hidden">
+            <Card key={nerve.id} className="border-none shadow-sm rounded-xl bg-card hover:shadow-2xl transition-all group overflow-hidden">
               <CardHeader className={cn(
                 "pb-6 border-b transition-colors relative",
                 nerve.nuclei === 'Cortex' ? "bg-muted/50 border-border" :
@@ -146,7 +146,7 @@ const CranialNerveReference = () => {
                     )}
                   </div>
                   <div className={cn(
-                    "w-12 h-12 rounded-xl flex items-center justify-center shadow-sm text-white",
+                    "w-12 h-12 rounded-xl flex items-center justify-center shadow-sm text-primary-foreground",
                     nerve.color
                   )}>
                     <Zap size={24} />
@@ -208,10 +208,10 @@ const CranialNerveReference = () => {
         })}
       </div>
 
-      <Card className="border-none shadow-sm rounded-xl bg-slate-900 text-white overflow-hidden">
+      <Card className="border-none shadow-sm rounded-xl bg-foreground text-primary-foreground overflow-hidden">
         <CardContent className="p-10 flex flex-col md:flex-row items-center gap-10">
           <div className="w-24 h-24 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-2xl shadow-chart-primary/40">
-            <Workflow size={48} className="text-white" />
+            <Workflow size={48} className="text-primary-foreground" />
           </div>
           <div className="space-y-4">
             <h4 className="text-2xl font-semibold flex items-center gap-3">
@@ -223,15 +223,15 @@ const CranialNerveReference = () => {
             <div className="flex flex-wrap gap-4 pt-2">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-chart-primary" />
-                <span className="text-xs font-medium text-slate-300">Pons = Extensors (CN 5-8)</span>
+                <span className="text-xs font-medium text-muted-foreground/60">Pons = Extensors (CN 5-8)</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-chart-destructive" />
-                <span className="text-xs font-medium text-slate-300">Medulla = Flexors (CN 9-12)</span>
+                <span className="text-xs font-medium text-muted-foreground/60">Medulla = Flexors (CN 9-12)</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-muted" />
-                <span className="text-xs font-medium text-slate-300">Midbrain = Flexors (CN 3-4)</span>
+                <span className="text-xs font-medium text-muted-foreground/60">Midbrain = Flexors (CN 3-4)</span>
               </div>
             </div>
           </div>

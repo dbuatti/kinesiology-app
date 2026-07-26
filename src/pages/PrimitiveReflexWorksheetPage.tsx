@@ -8,7 +8,7 @@ const PrimitiveReflexWorksheetPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-muted py-8 px-4 print:p-0 print:bg-white">
+    <div className="min-h-screen bg-muted py-8 px-4 print:p-0 print:bg-card">
       <div className="max-w-[297mm] mx-auto mb-8 flex items-center justify-between px-2 sm:px-0 print:hidden gap-4">
         <Button 
           variant="ghost" 
@@ -20,7 +20,7 @@ const PrimitiveReflexWorksheetPage = () => {
         
         <Button 
           onClick={() => window.print()}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg font-bold h-10 px-4 text-xs sm:text-sm"
+          className="bg-indigo-600 hover:bg-indigo-700 text-primary-foreground rounded-xl shadow-lg font-bold h-10 px-4 text-xs sm:text-sm"
         >
           <Printer size={18} className="mr-1 sm:mr-2" /> Print Worksheet
         </Button>

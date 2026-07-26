@@ -39,7 +39,7 @@ const Scratchpad = () => {
           </div>
           Practitioner Scratchpad
         </h2>
-        <p className="text-base text-slate-500 font-medium">Quick notes or research ideas. Saves automatically to your browser.</p>
+        <p className="text-base text-muted-foreground font-medium">Quick notes or research ideas. Saves automatically to your browser.</p>
       </div>
       <div className="space-y-6">
         <div className="flex flex-wrap gap-3">
@@ -47,7 +47,7 @@ const Scratchpad = () => {
             <button 
               key={tag}
               onClick={() => addTag(tag)}
-              className="px-5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-amber-50 hover:border-amber-200 hover:text-amber-600 transition-all shadow-sm hover:shadow-md"
+              className="px-5 py-2.5 rounded-xl bg-card dark:bg-foreground border border-border/50 dark:border-foreground text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:bg-amber-50 hover:border-amber-200 hover:text-amber-600 transition-all shadow-sm hover:shadow-md"
             >
               + {tag}
             </button>
@@ -58,7 +58,7 @@ const Scratchpad = () => {
             value={scratchpad}
             onChange={(e) => handleScratchpadChange(e.target.value)}
             placeholder="Type something here..."
-            className="min-h-[300px] md:min-h-[400px] bg-white dark:bg-slate-900/50 border-slate-100 dark:border-slate-800 focus:ring-amber-500 focus:border-amber-500 resize-none text-slate-900 dark:text-white placeholder:text-slate-200 dark:placeholder:text-slate-800 rounded-[2.5rem] p-10 md:p-16 text-2xl md:text-3xl font-medium leading-relaxed shadow-xl transition-all"
+            className="min-h-[300px] md:min-h-[400px] bg-card dark:bg-foreground/50 border-border/50 dark:border-foreground focus:ring-amber-500 focus:border-amber-500 resize-none text-foreground dark:text-primary-foreground placeholder:text-muted-foreground/60 dark:placeholder:text-foreground rounded-[2.5rem] p-10 md:p-16 text-2xl md:text-3xl font-medium leading-relaxed shadow-xl transition-all"
           />
           <div className="absolute bottom-8 right-10 md:bottom-12 md:right-16 flex items-center gap-2 text-[10px] font-black text-amber-600 uppercase tracking-[0.3em] opacity-0 group-hover:opacity-100 transition-opacity">
             <CheckCircle2 size={16} /> {lastSaved ? `Last saved at ${lastSaved}` : 'Auto-saved'}

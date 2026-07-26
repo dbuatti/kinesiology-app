@@ -237,7 +237,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
                 )}
                 onClick={() => { setSelectedEmotion(emotion); setSelectedOrgan(''); goToStep('ORGAN_SELECT'); }}
               >
-                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-white", emotion.color)}>
+                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-primary-foreground", emotion.color)}>
                   <Heart size={16} className="fill-current" />
                 </div>
                 <div className="text-left">
@@ -400,7 +400,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
                       onClick={() => toggleShift(shift)}
                       className={cn(
                         "cursor-pointer transition-all border-none font-medium text-[8px] uppercase tracking-widest px-2 py-1",
-                        observedShifts.includes(shift) ? "bg-chart-emerald text-white" : "bg-muted text-muted-foreground"
+                        observedShifts.includes(shift) ? "bg-chart-emerald text-primary-foreground" : "bg-muted text-muted-foreground"
                       )}
                     >
                       {shift}
@@ -473,7 +473,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
             <p className="text-xs text-muted-foreground">Re-challenge the ESR points and the original stimulus.</p>
           </div>
           <div className="grid grid-cols-1 gap-3">
-            <Button className="h-10 rounded-lg bg-chart-emerald text-white text-xs font-medium" onClick={handleFinish}>Emotion is Integrated <CheckCircle2 size={14} className="ml-2" /></Button>
+            <Button className="h-10 rounded-lg bg-chart-emerald text-primary-foreground text-xs font-medium" onClick={handleFinish}>Emotion is Integrated <CheckCircle2 size={14} className="ml-2" /></Button>
             <Button variant="outline" className="h-10 rounded-lg border-border text-foreground font-medium text-xs" onClick={handleInhibited}>Still Inhibited - Add Layer</Button>
           </div>
           <Button variant="ghost" size="sm" onClick={() => goToStep('POSITIVE_UPLOAD')} className="w-full h-10 rounded-lg text-xs font-medium"><ChevronLeft size={14} className="mr-1" /> Back</Button>

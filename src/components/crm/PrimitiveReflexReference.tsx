@@ -156,7 +156,7 @@ const ReflexImageZone = ({
       onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
       className={cn(
         "relative group/image transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none cursor-pointer flex-1 aspect-video",
-        currentUrl ? "bg-white" : "bg-muted hover:bg-muted",
+        currentUrl ? "bg-card" : "bg-muted hover:bg-muted",
         isDragging && "bg-muted ring-2 ring-chart-primary ring-inset",
         isUploading && "opacity-50 pointer-events-none"
       )}
@@ -180,7 +180,7 @@ const ReflexImageZone = ({
             alt="Reflex Reference" 
             className="w-full h-full object-cover" 
           />
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center gap-2">
+          <div className="absolute inset-0 bg-foreground/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center gap-2">
             <div className="flex flex-col items-center gap-2">
               <div className="flex gap-2">
                 <Button variant="secondary" size="icon" className="rounded-xl h-8 w-8 shadow-sm">
@@ -190,7 +190,7 @@ const ReflexImageZone = ({
                   <X size={14} />
                 </Button>
               </div>
-              <p className="text-[10px] font-medium text-white uppercase tracking-wider">Click to Change</p>
+              <p className="text-[10px] font-medium text-primary-foreground uppercase tracking-wider">Click to Change</p>
             </div>
           </div>
         </>
@@ -200,7 +200,7 @@ const ReflexImageZone = ({
             <Loader2 className="mx-auto text-chart-primary animate-spin" size={24} />
           ) : (
             <>
-              <div className="w-10 h-10 rounded-xl bg-white shadow-sm border border-border flex items-center justify-center mx-auto text-muted-foreground group-hover/image:text-chart-primary group-hover/image:scale-110 transition-all">
+              <div className="w-10 h-10 rounded-xl bg-card shadow-sm border border-border flex items-center justify-center mx-auto text-muted-foreground group-hover/image:text-chart-primary group-hover/image:scale-110 transition-all">
                 <Plus size={20} />
               </div>
               <p className="font-medium text-muted-foreground uppercase tracking-wider text-[10px]">
@@ -290,7 +290,7 @@ const PrimitiveReflexReference = () => {
     <div className="space-y-12">
       {/* Theory & Process Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <Card className="lg:col-span-2 border-none shadow-sm rounded-xl bg-slate-900 text-white overflow-hidden relative">
+        <Card className="lg:col-span-2 border-none shadow-sm rounded-xl bg-foreground text-primary-foreground overflow-hidden relative">
           <div className="absolute top-0 right-0 p-10 opacity-5"><Workflow size={150} /></div>
           <CardHeader className="p-10">
             <div className="flex items-center gap-4 mb-4">
@@ -308,10 +308,10 @@ const PrimitiveReflexReference = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
-                <p className="text-slate-300 leading-relaxed font-medium">
-                  Primitive reflexes are the foundational OS of the nervous system. They should be inhibited by the nervous system at around <span className="text-white font-medium">2 to 4 months of age</span>.
+                <p className="text-muted-foreground/60 leading-relaxed font-medium">
+                  Primitive reflexes are the foundational OS of the nervous system. They should be inhibited by the nervous system at around <span className="text-primary-foreground font-medium">2 to 4 months of age</span>.
                 </p>
-                <div className="p-4 bg-white/5 rounded-xl border border-white/10">
+                <div className="p-4 bg-card/5 rounded-xl border border-primary-foreground/10">
                   <h4 className="font-medium text-chart-primary text-[10px] uppercase tracking-wider mb-2">The "Safe Mode"</h4>
                   <p className="text-xs text-muted-foreground leading-relaxed">When the system is under high threat, it "grabs" these reflexes as a safe mode to deal with stress.</p>
                 </div>
@@ -325,9 +325,9 @@ const PrimitiveReflexReference = () => {
                     "If you correct the highest level reflex (e.g. Moro), you can often knock out 3-4 others in one go because they are cascaded together."
                   </p>
                 </div>
-                <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl border border-white/10">
+                <div className="flex items-center gap-3 p-4 bg-card/5 rounded-xl border border-primary-foreground/10">
                   <Clock size={20} className="text-muted-foreground" />
-                  <p className="text-xs text-muted-foreground font-medium">Integration usually takes <span className="text-white font-medium">1-3 corrections</span> to permanently turn off.</p>
+                  <p className="text-xs text-muted-foreground font-medium">Integration usually takes <span className="text-primary-foreground font-medium">1-3 corrections</span> to permanently turn off.</p>
                 </div>
               </div>
             </div>
@@ -349,7 +349,7 @@ const PrimitiveReflexReference = () => {
                 { step: 4, title: "Follow-up", desc: "Re-assess in the next session; 8/10 times they remain integrated." }
               ].map((item) => (
                 <div key={item.step} className="flex gap-4 items-start">
-                  <span className="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center font-medium text-[10px] shrink-0 mt-0.5">{item.step}</span>
+                  <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium text-[10px] shrink-0 mt-0.5">{item.step}</span>
                   <div>
                     <h5 className="font-medium text-foreground text-xs uppercase tracking-tight">{item.title}</h5>
                     <p className="text-[10px] text-muted-foreground font-medium leading-tight">{item.desc}</p>
@@ -361,15 +361,15 @@ const PrimitiveReflexReference = () => {
             <div className="pt-6 border-t border-border space-y-4">
               <h4 className="text-[10px] font-medium text-chart-primary uppercase tracking-wider">Fractal Chains</h4>
               <div className="space-y-2">
-                <div className="p-3 bg-white rounded-xl border border-border">
+                <div className="p-3 bg-card rounded-xl border border-border">
                   <p className="text-[10px] font-medium text-muted-foreground uppercase mb-1">Master Chain</p>
                   <p className="text-[10px] font-medium text-foreground">Fear Paralysis → Moro → Startle</p>
                 </div>
-                <div className="p-3 bg-white rounded-xl border border-border">
+                <div className="p-3 bg-card rounded-xl border border-border">
                   <p className="text-[10px] font-medium text-muted-foreground uppercase mb-1">Gait Chain</p>
                   <p className="text-[10px] font-medium text-foreground">ATNR → Babinski → Palmar</p>
                 </div>
-                <div className="p-3 bg-white rounded-xl border border-border">
+                <div className="p-3 bg-card rounded-xl border border-border">
                   <p className="text-[10px] font-medium text-muted-foreground uppercase mb-1">Oral Chain</p>
                   <p className="text-[10px] font-medium text-foreground">Rooting → Sucking</p>
                 </div>
@@ -386,7 +386,7 @@ const PrimitiveReflexReference = () => {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
             <Input 
               placeholder="Search reflexes (e.g. Moro, ATNR, Babinski)..." 
-              className="pl-12 bg-white border-border rounded-xl h-14 shadow-sm font-medium focus:ring-2 focus:ring-chart-primary"
+              className="pl-12 bg-card border-border rounded-xl h-14 shadow-sm font-medium focus:ring-2 focus:ring-chart-primary"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -399,7 +399,7 @@ const PrimitiveReflexReference = () => {
                 onClick={() => setSelectedCategory(cat)}
                 className={cn(
                   "rounded-xl h-14 px-6 font-medium text-[10px] uppercase tracking-wider whitespace-nowrap transition-all",
-                  selectedCategory === cat ? "bg-slate-900 shadow-sm" : "border-border bg-white hover:bg-muted"
+                  selectedCategory === cat ? "bg-foreground shadow-sm" : "border-border bg-card hover:bg-muted"
                 )}
               >
                 {cat}
@@ -426,7 +426,7 @@ const PrimitiveReflexReference = () => {
             return (
               <Card 
                 key={reflex.id} 
-                className="border-none shadow-sm rounded-xl bg-white hover:shadow-2xl transition-all group overflow-hidden cursor-pointer"
+                className="border-none shadow-sm rounded-xl bg-card hover:shadow-2xl transition-all group overflow-hidden cursor-pointer"
                 onClick={() => handleCardClick(reflex)}
               >
                 <CardHeader className={cn(
@@ -436,7 +436,7 @@ const PrimitiveReflexReference = () => {
                   "bg-muted/50 border-border"
                 )}>
                   <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground shadow-sm">
+                    <div className="w-8 h-8 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground shadow-sm">
                       <Maximize2 size={14} />
                     </div>
                   </div>
@@ -457,7 +457,7 @@ const PrimitiveReflexReference = () => {
                       </CardTitle>
                     </div>
                     <div className={cn(
-                      "w-12 h-12 rounded-xl flex items-center justify-center shadow-sm text-white",
+                      "w-12 h-12 rounded-xl flex items-center justify-center shadow-sm text-primary-foreground",
                       reflex.category === 'Foundational' ? "bg-primary" :
                       reflex.category === 'Postural' ? "bg-primary" :
                       "bg-muted"

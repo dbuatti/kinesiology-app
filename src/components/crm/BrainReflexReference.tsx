@@ -142,7 +142,7 @@ const ReflexImageZone = ({
       onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
       className={cn(
         "relative group/image transition-all duration-300 flex flex-col items-center justify-center overflow-hidden outline-none cursor-pointer",
-        isPrimary ? "aspect-video rounded-xl border-2 border-dashed" : "w-24 h-24 rounded-xl border-2 border-dashed bg-white/90 backdrop-blur-md shadow-sm",
+        isPrimary ? "aspect-video rounded-xl border-2 border-dashed" : "w-24 h-24 rounded-xl border-2 border-dashed bg-card/90 backdrop-blur-md shadow-sm",
         currentUrl ? "border-transparent" : "border-border bg-muted/50 hover:border-chart-primary hover:bg-muted/30",
         isDragging && "border-chart-primary bg-chart-primary/80 scale-[1.02] ring-4 ring-chart-primary/20",
         isUploading && "opacity-50 pointer-events-none"
@@ -167,7 +167,7 @@ const ReflexImageZone = ({
             alt="Reflex Reference" 
             className="w-full h-full object-cover" 
           />
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center gap-2">
+          <div className="absolute inset-0 bg-foreground/40 opacity-0 group-hover/image:opacity-100 transition-opacity flex items-center justify-center gap-2">
             <div className="flex flex-col items-center gap-2">
               <div className="flex gap-2">
                 <Button variant="secondary" size="icon" className="rounded-xl h-8 w-8 shadow-sm">
@@ -177,7 +177,7 @@ const ReflexImageZone = ({
                   <X size={14} />
                 </Button>
               </div>
-              <p className="text-[10px] font-medium text-white uppercase tracking-wider">Click to Change</p>
+              <p className="text-[10px] font-medium text-primary-foreground uppercase tracking-wider">Click to Change</p>
             </div>
           </div>
         </>
@@ -188,7 +188,7 @@ const ReflexImageZone = ({
           ) : (
             <>
               <div className={cn(
-                "rounded-xl bg-white shadow-sm border border-border flex items-center justify-center mx-auto text-muted-foreground group-hover/image:text-chart-primary group-hover/image:scale-110 transition-all",
+                "rounded-xl bg-card shadow-sm border border-border flex items-center justify-center mx-auto text-muted-foreground group-hover/image:text-chart-primary group-hover/image:scale-110 transition-all",
                 isPrimary ? "w-12 h-12" : "w-8 h-8"
               )}>
                 <Plus size={24} />
@@ -301,7 +301,7 @@ const BrainReflexReference = () => {
         </div>
 
         {/* Reference Map Card */}
-        <Card className="border-none shadow-sm rounded-xl bg-slate-900 text-white overflow-hidden">
+        <Card className="border-none shadow-sm rounded-xl bg-foreground text-primary-foreground overflow-hidden">
           <CardHeader className="p-8 pb-4 flex flex-row items-center justify-between">
             <div className="space-y-1">
               <CardTitle className="text-xl font-semibold flex items-center gap-3">
@@ -315,7 +315,7 @@ const BrainReflexReference = () => {
               <Button 
                 variant="ghost" 
                 asChild
-                className="text-chart-primary hover:text-white hover:bg-white/10 rounded-xl font-medium text-xs uppercase tracking-wider"
+                className="text-chart-primary hover:text-primary-foreground hover:bg-card/10 rounded-xl font-medium text-xs uppercase tracking-wider"
               >
                 <Link to="/resources/brain-zones/print">
                   <Printer size={18} className="mr-2" /> Print Reference
@@ -324,7 +324,7 @@ const BrainReflexReference = () => {
               <Button 
                 variant="ghost" 
                 onClick={() => setMapExpanded(!mapExpanded)}
-                className="text-chart-primary hover:text-white hover:bg-white/10 rounded-xl font-medium text-xs uppercase tracking-wider"
+                className="text-chart-primary hover:text-primary-foreground hover:bg-card/10 rounded-xl font-medium text-xs uppercase tracking-wider"
               >
                 {mapExpanded ? <ChevronUp size={18} className="mr-2" /> : <Maximize2 size={18} className="mr-2" />}
                 {mapExpanded ? "Collapse map" : "Expand map"}
@@ -333,7 +333,7 @@ const BrainReflexReference = () => {
           </CardHeader>
           <CardContent className="p-8 pt-0">
             <div className={cn(
-              "relative rounded-xl overflow-hidden bg-slate-950 border border-slate-800 transition-all duration-700",
+              "relative rounded-xl overflow-hidden bg-foreground border border-border transition-all duration-700",
               mapExpanded ? "aspect-auto" : "aspect-[21/9]"
             )}>
               <img 
@@ -358,7 +358,7 @@ const BrainReflexReference = () => {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
             <Input 
               placeholder="Search zones, functions, acupoints..." 
-              className="pl-12 bg-white border-border rounded-xl h-14 shadow-sm font-medium focus:ring-2 focus:ring-chart-primary"
+              className="pl-12 bg-card border-border rounded-xl h-14 shadow-sm font-medium focus:ring-2 focus:ring-chart-primary"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -371,7 +371,7 @@ const BrainReflexReference = () => {
                 onClick={() => setSelectedCategory(cat)}
                 className={cn(
                   "rounded-xl h-14 px-6 font-medium text-[10px] uppercase tracking-wider whitespace-nowrap transition-all",
-                  selectedCategory === cat ? "bg-slate-900 shadow-sm" : "border-border bg-white hover:bg-muted"
+                  selectedCategory === cat ? "bg-foreground shadow-sm" : "border-border bg-card hover:bg-muted"
                 )}
               >
                 {cat}
@@ -387,7 +387,7 @@ const BrainReflexReference = () => {
             return (
               <Card 
                 key={point.id} 
-                className="border-none shadow-sm rounded-xl bg-white hover:shadow-2xl transition-all group overflow-hidden cursor-pointer flex flex-col"
+                className="border-none shadow-sm rounded-xl bg-card hover:shadow-2xl transition-all group overflow-hidden cursor-pointer flex flex-col"
                 onClick={() => handleCardClick(point)}
               >
                 <CardHeader className={cn(
@@ -397,7 +397,7 @@ const BrainReflexReference = () => {
                   "bg-muted/50 border-border"
                 )}>
                   <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground shadow-sm">
+                    <div className="w-8 h-8 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground shadow-sm">
                       <Maximize2 size={14} />
                     </div>
                   </div>

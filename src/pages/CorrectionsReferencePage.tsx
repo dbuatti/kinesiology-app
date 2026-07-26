@@ -41,7 +41,7 @@ const CorrectionsReferencePage = () => {
             <p className="text-xl text-muted-foreground/60 font-medium max-w-2xl leading-relaxed">
               The glue of the methodology. The full reference framework with the practical in-between knowledge that bridges foundational teaching and real-world application.
             </p>
-            <div className="p-6 bg-card/5 border border-white/10 rounded-3xl mt-4 max-w-3xl backdrop-blur-md">
+            <div className="p-6 bg-card/5 border border-primary-foreground/10 rounded-3xl mt-4 max-w-3xl backdrop-blur-md">
               <p className="text-lg italic font-medium text-muted-foreground/40">
                 "A correction is a correction. The pathway determines the target, not the method."
               </p>
@@ -78,11 +78,11 @@ const CorrectionsReferencePage = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="border-2 border-blue-500/30 shadow-sm rounded-xl bg-card overflow-hidden">
+            <Card className="border-2 border-primary/30 shadow-sm rounded-xl bg-card overflow-hidden">
               <CardHeader className="p-6 pb-3 border-b border-border">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                    <ArrowDown size={20} className="text-blue-500" />
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <ArrowDown size={20} className="text-primary" />
                   </div>
                   <div>
                     <CardTitle className="text-lg font-semibold">Afferent (Bottom-Up)</CardTitle>
@@ -96,7 +96,7 @@ const CorrectionsReferencePage = () => {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {['Mechanoreceptor', 'Nociceptive', 'Physiological'].map(s => (
-                    <Badge key={s} variant="outline" className="text-blue-500 border-blue-500/30">{s}</Badge>
+                    <Badge key={s} variant="outline" className="text-primary border-primary/30">{s}</Badge>
                   ))}
                 </div>
                 <p className="text-xs text-muted-foreground/60 italic">
@@ -168,7 +168,7 @@ const CorrectionsReferencePage = () => {
           </div>
 
           <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-blue-500 flex items-center gap-2 px-2">
+            <h3 className="text-lg font-semibold text-primary flex items-center gap-2 px-2">
               <ArrowDown size={18} /> Afferent Systems
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

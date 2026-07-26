@@ -125,7 +125,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
                     id={`inhib-l-${nerve.id}`}
                     checked={statusL === 'Inhibited'}
                     onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_inhibited: !!checked }, 'L')}
-                    className="h-3.5 w-3.5 border-slate-400 rounded-none"
+                    className="h-3.5 w-3.5 border-border rounded-none"
                   />
                   <label htmlFor={`inhib-l-${nerve.id}`} className="text-[10px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
                     L Inhib
@@ -136,7 +136,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
                     id={`inhib-r-${nerve.id}`}
                     checked={statusR === 'Inhibited'}
                     onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_inhibited: !!checked }, 'R')}
-                    className="h-3.5 w-3.5 border-slate-400 rounded-none"
+                    className="h-3.5 w-3.5 border-border rounded-none"
                   />
                   <label htmlFor={`inhib-r-${nerve.id}`} className="text-[10px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
                     R Inhib
@@ -160,7 +160,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
                   id={`inhib-mid-${nerve.id}`}
                   checked={statusMidline === 'Inhibited'}
                   onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_inhibited: !!checked })}
-                  className="h-3.5 w-3.5 border-slate-400 rounded-none"
+                  className="h-3.5 w-3.5 border-border rounded-none"
                 />
                 <label htmlFor={`inhib-mid-${nerve.id}`} className="text-[10px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
                   Inhibited
@@ -175,7 +175,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
                 id={`priority-${nerve.id}`}
                 checked={test.is_priority}
                 onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_priority: !!checked })}
-                className="h-3.5 w-3.5 border-slate-400 rounded-none"
+                className="h-3.5 w-3.5 border-border rounded-none"
               />
               <label htmlFor={`priority-${nerve.id}`} className="text-[10px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
                 Priority
@@ -318,9 +318,9 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
 };
 
 const NERVE_CLUSTERS = [
-  { id: 'sensory', label: 'Sensory Nerves (I, II, VIII)', ids: [1, 2, 8] },
-  { id: 'eye-motor', label: 'Eye Motor Nerves (III, IV, VI)', ids: [3, 4, 6] },
-  { id: 'face-jaw', label: 'Face & Jaw (V, VII)', ids: [5, 7] },
+  { id: 'sensory', label: 'Sensory (I, II)', ids: [1, 2] },
+  { id: 'eye-motor', label: 'Eye Motor (III, IV, V, VI)', ids: [3, 4, 5, 6] },
+  { id: 'face', label: 'Face (VII, VIII)', ids: [7, 8] },
   { id: 'vagal-throat', label: 'Vagal & Throat (IX, X, XI, XII)', ids: [9, 10, 11, 12] }
 ];
 
@@ -341,6 +341,7 @@ export function CranialNerveAssessment({
 }) {
   const { tests, loading, updateTest } = useCranialNerveTests(appointmentId, priorityPattern, updatePriorityPattern);
   const [showOnlyInhibited, setShowOnlyInhibited] = useState(false);
+  const [showOnlyPriority, setShowOnlyPriority] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [customImages, setCustomImages] = useState<Record<string, { primary: string | null, secondary: string | null }>>({});
 
@@ -380,9 +381,12 @@ export function CranialNerveAssessment({
 
       const matchesInhibited = showOnlyInhibited ? isAnyInhib : true;
       
-      return matchesSearch && matchesInhibited;
+      const isPriority = test.is_primary_priority;
+      const matchesPriority = showOnlyPriority ? isPriority : true;
+      
+      return matchesSearch && matchesInhibited && matchesPriority;
     });
-  }, [tests, searchQuery, showOnlyInhibited, nervePattern]);
+  }, [tests, searchQuery, showOnlyInhibited, showOnlyPriority, nervePattern]);
 
   if (loading) {
     return (
@@ -415,6 +419,17 @@ export function CranialNerveAssessment({
             />
             <Label htmlFor="inhibited-filter-nerve" className="text-[10px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
               Only Inhibited
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2 px-3 border-l border-border">
+            <Switch
+              id="priority-filter-nerve"
+              checked={showOnlyPriority}
+              onCheckedChange={setShowOnlyPriority}
+              className="data-[state=checked]:bg-chart-primary scale-[0.6]"
+            />
+            <Label htmlFor="priority-filter-nerve" className="text-[10px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
+              Only Priority
             </Label>
           </div>
         </div>

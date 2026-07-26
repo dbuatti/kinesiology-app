@@ -159,8 +159,8 @@ const PracticeNotes = () => {
  className="mb-10 break-inside-avoid scroll-mt-32"
  >
  <CollapsibleTrigger asChild>
- <div className="flex items-center justify-between border-b border-black pb-1 mb-4 cursor-pointer group">
- <h2 className="text-xl font-serif font-medium text-black uppercase">
+ <div className="flex items-center justify-between border-b border-foreground/20 pb-1 mb-4 cursor-pointer group">
+ <h2 className="text-xl font-serif font-medium text-foreground uppercase">
  {title}
  </h2>
  <div className="flex items-center gap-2 text-muted-foreground group-hover:text-foreground transition-colors print:hidden">
@@ -181,7 +181,7 @@ const PracticeNotes = () => {
  id={id} 
  checked={!!checkedItems[id]} 
  onCheckedChange={() => toggleItem(id)}
- className="mt-1 h-4 w-4 border-black rounded-none"
+ className="mt-1 h-4 w-4 border-foreground/20 rounded-none"
  />
  <div className="grid gap-0.5 flex-1">
  <div className="flex items-center gap-2">
@@ -200,7 +200,7 @@ const PracticeNotes = () => {
  type="text"
  value={textData[id] || ""}
  onChange={(e) => handleTextChange(id, e.target.value)}
- className="flex-1 border-b border-black bg-transparent outline-none text-sm px-1 min-w-[60px] focus:border-blue-500 transition-colors"
+ className="flex-1 border-b border-foreground/20 bg-transparent outline-none text-sm px-1 min-w-[60px] focus:border-primary transition-colors"
  placeholder="________________"
  />
  )}
@@ -241,14 +241,14 @@ const PracticeNotes = () => {
  const images = customImages[reflex.id];
  const id = `reflex-${reflex.id}`;
  return (
- <div className="p-4 border border-black mb-4 break-inside-avoid">
+ <div className="p-4 border border-foreground/20 mb-4 break-inside-avoid">
  <div className="flex justify-between items-start mb-2">
  <div className="flex items-center gap-3 flex-1">
  <Checkbox 
  id={id} 
  checked={!!checkedItems[id]} 
  onCheckedChange={() => toggleItem(id)}
- className="h-4 w-4 border-black rounded-none"
+ className="h-4 w-4 border-foreground/20 rounded-none"
  />
  <h3 className={cn("font-medium text-base shrink-0", checkedItems[id] && "line-through text-muted-foreground")}>
  {reflex.name}
@@ -257,7 +257,7 @@ const PracticeNotes = () => {
  type="text"
  value={textData[`${id}-note`] || ""}
  onChange={(e) => handleTextChange(`${id}-note`, e.target.value)}
- className="flex-1 border-b border-black/20 bg-transparent outline-none text-xs px-2 focus:border-blue-500 transition-colors"
+ className="flex-1 border-b border-foreground/20 bg-transparent outline-none text-xs px-2 focus:border-primary transition-colors"
  placeholder="Add assessment note..."
  />
  </div>
@@ -277,14 +277,14 @@ const PracticeNotes = () => {
  const images = customImages[`cn${nerve.id}`];
  const id = `cn-${nerve.id}`;
  return (
- <div className="p-4 border border-black mb-4 break-inside-avoid">
+ <div className="p-4 border border-foreground/20 mb-4 break-inside-avoid">
  <div className="flex justify-between items-start mb-2">
  <div className="flex items-center gap-3 flex-1">
  <Checkbox 
  id={id} 
  checked={!!checkedItems[id]} 
  onCheckedChange={() => toggleItem(id)}
- className="h-4 w-4 border-black rounded-none"
+ className="h-4 w-4 border-foreground/20 rounded-none"
  />
  <h3 className={cn("font-medium text-base shrink-0", checkedItems[id] && "line-through text-muted-foreground")}>
  {nerve.name}: {nerve.latinName}
@@ -293,7 +293,7 @@ const PracticeNotes = () => {
  type="text"
  value={textData[`${id}-note`] || ""}
  onChange={(e) => handleTextChange(`${id}-note`, e.target.value)}
- className="flex-1 border-b border-black/20 bg-transparent outline-none text-xs px-2 focus:border-blue-500 transition-colors"
+ className="flex-1 border-b border-foreground/20 bg-transparent outline-none text-xs px-2 focus:border-primary transition-colors"
  placeholder="Add nerve note..."
  />
  </div>
@@ -313,14 +313,14 @@ const PracticeNotes = () => {
  const images = customImages[point.id];
  const id = `brain-${point.id}`;
  return (
- <div className="p-4 border border-black mb-4 break-inside-avoid">
+ <div className="p-4 border border-foreground/20 mb-4 break-inside-avoid">
  <div className="flex justify-between items-start mb-2">
  <div className="flex items-center gap-3 flex-1">
  <Checkbox 
  id={id} 
  checked={!!checkedItems[id]} 
  onCheckedChange={() => toggleItem(id)}
- className="h-4 w-4 border-black rounded-none"
+ className="h-4 w-4 border-foreground/20 rounded-none"
  />
  <h3 className={cn("font-medium text-base shrink-0", checkedItems[id] && "line-through text-muted-foreground")}>
  {point.name}
@@ -329,7 +329,7 @@ const PracticeNotes = () => {
  type="text"
  value={textData[`${id}-note`] || ""}
  onChange={(e) => handleTextChange(`${id}-note`, e.target.value)}
- className="flex-1 border-b border-black/20 bg-transparent outline-none text-xs px-2 focus:border-blue-500 transition-colors"
+ className="flex-1 border-b border-foreground/20 bg-transparent outline-none text-xs px-2 focus:border-primary transition-colors"
  placeholder="Add zone note..."
  />
  </div>
@@ -351,12 +351,12 @@ const PracticeNotes = () => {
  <DocsToolbar />
  <DocsRuler />
 
- <div className="flex-1 overflow-auto p-0 md:p-12 flex justify-center print:p-0 print:bg-white">
+ <div className="flex-1 overflow-auto p-0 md:p-12 flex justify-center print:p-0 print:bg-card">
  {/* Outline Sidebar */}
  <DocsOutline items={OUTLINE_ITEMS} />
 
  {/* Document Container */}
- <div className="w-full max-w-[1000px] bg-background border-none md:border md:border-border md:shadow-sm p-6 sm:p-10 md:p-20 min-h-[1056px] print:border-none print:p-0 text-black font-sans relative">
+ <div className="w-full max-w-[1000px] bg-background border-none md:border md:border-border md:shadow-sm p-6 sm:p-10 md:p-20 min-h-[1056px] print:border-none print:p-0 text-foreground font-sans relative">
  
  {loading && (
  <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-4">
@@ -368,14 +368,14 @@ const PracticeNotes = () => {
  {/* Document Header */}
  <header className="mb-16 text-center">
  <h1 className="text-4xl font-serif font-medium mb-2 tracking-tight">Clinical Practice Notes</h1>
- <div className="mt-10 grid grid-cols-3 gap-8 text-xs font-medium border-y border-black py-6">
+ <div className="mt-10 grid grid-cols-3 gap-8 text-xs font-medium border-y border-foreground/20 py-6">
  <div className="flex items-center gap-2">
  <span>Date:</span>
  <input 
  type="text" 
  value={textData.header_date || ""} 
  onChange={(e) => handleTextChange('header_date', e.target.value)}
- className="flex-1 border-b border-black bg-transparent outline-none px-1 focus:border-blue-500 transition-colors"
+ className="flex-1 border-b border-foreground/20 bg-transparent outline-none px-1 focus:border-primary transition-colors"
  placeholder="________________"
  />
  </div>
@@ -385,7 +385,7 @@ const PracticeNotes = () => {
  type="text" 
  value={textData.header_practitioner || ""} 
  onChange={(e) => handleTextChange('header_practitioner', e.target.value)}
- className="flex-1 border-b border-black bg-transparent outline-none px-1 focus:border-blue-500 transition-colors"
+ className="flex-1 border-b border-foreground/20 bg-transparent outline-none px-1 focus:border-primary transition-colors"
  placeholder="________________"
  />
  </div>
@@ -395,7 +395,7 @@ const PracticeNotes = () => {
  type="text" 
  value={textData.header_clientid || ""} 
  onChange={(e) => handleTextChange('header_clientid', e.target.value)}
- className="flex-1 border-b border-black bg-transparent outline-none px-1 focus:border-blue-500 transition-colors"
+ className="flex-1 border-b border-foreground/20 bg-transparent outline-none px-1 focus:border-primary transition-colors"
  placeholder="________________"
  />
  </div>
@@ -455,7 +455,7 @@ const PracticeNotes = () => {
  <Item id="v-bolt" label="BOLT Score" subtext="Measure CO2 tolerance. Target: 25s+ (Functional), 40s+ (Optimal)." hasInput />
  <Item id="v-coherence" label="Heart Coherence" subtext="Autonomic sync. HR/BR ratio. Check for coherence vs discordance." hasInput />
  </div>
- <div className="p-4 border border-black italic text-xs leading-relaxed">
+ <div className="p-4 border border-foreground/20 italic text-xs leading-relaxed">
  "If the client's BOLT score is below 25s, the system is in a state of chronic threat. Deep work will not stick until CO2 tolerance is improved."
  </div>
  </div>
@@ -464,7 +464,7 @@ const PracticeNotes = () => {
  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">SNS Down-Regulation Procedures</h3>
  
  <div className="grid grid-cols-1 gap-4">
- <div className="p-4 border border-black">
+ <div className="p-4 border border-foreground/20">
  <Item id="sns-t1-main" label="T1 Sympathetic Reset" bold />
  <div className="mt-2 grid grid-cols-2 gap-4 pl-7 text-[10px] text-muted-foreground">
  <p>1. Palpate bilateral anterior T1 to find restricted side.</p>
@@ -474,7 +474,7 @@ const PracticeNotes = () => {
  </div>
  </div>
 
- <div className="p-4 border border-black">
+ <div className="p-4 border border-foreground/20">
  <Item id="sns-diaphragm-main" label="Diaphragm Reset" bold />
  <div className="mt-2 grid grid-cols-2 gap-4 pl-7 text-[10px] text-muted-foreground">
  <p>1. Challenge tender points either side of sternum.</p>
@@ -484,14 +484,14 @@ const PracticeNotes = () => {
  </div>
  </div>
 
- <div className="p-4 border border-black">
+ <div className="p-4 border border-foreground/20">
  <div className="flex items-center justify-between mb-2">
  <Item id="sns-vagus-main" label="Vagus Nerve Process" bold />
  <input 
  type="text"
  value={textData['sns-vagus-note'] || ""}
  onChange={(e) => handleTextChange('sns-vagus-note', e.target.value)}
- className="flex-1 border-b border-black/20 bg-transparent outline-none text-xs px-2 ml-4 focus:border-blue-500 transition-colors"
+ className="flex-1 border-b border-foreground/20 bg-transparent outline-none text-xs px-2 ml-4 focus:border-primary transition-colors"
  placeholder="Add vagus note..."
  />
  </div>
@@ -504,14 +504,14 @@ const PracticeNotes = () => {
   </div>
  </div>
 
- <div className="p-4 border border-black">
+ <div className="p-4 border border-foreground/20">
  <div className="flex items-center justify-between mb-2">
  <Item id="sns-lymphatic-main" label="Lymphatic System Assessment" bold />
  <input 
  type="text"
  value={textData['sns-lymphatic-note'] || ""}
  onChange={(e) => handleTextChange('sns-lymphatic-note', e.target.value)}
- className="flex-1 border-b border-black/20 bg-transparent outline-none text-xs px-2 ml-4 focus:border-blue-500 transition-colors"
+ className="flex-1 border-b border-foreground/20 bg-transparent outline-none text-xs px-2 ml-4 focus:border-primary transition-colors"
  placeholder="Add lymphatic findings..."
  />
  </div>
@@ -539,7 +539,7 @@ const PracticeNotes = () => {
  <Section id="nei" title="IV. Neuro-Emotional Integration">
  <div className="space-y-8">
  {/* The 9-Step Hierarchy */}
- <div className="p-6 border border-black">
+ <div className="p-6 border border-foreground/20">
  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">The 9-Step Integration Hierarchy</h3>
  <div className="space-y-2 text-xs">
  <p>1. <strong>Indicator Change:</strong> Hold Frontal Lobe (ESR) points to see if system is ready.</p>
@@ -571,7 +571,7 @@ const PracticeNotes = () => {
  {/* Pulse Points Diagram */}
  <div className="space-y-4">
  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Organ Pulse Points</h3>
- <div className="border border-black p-1">
+ <div className="border border-foreground/20 p-1">
  <img 
  src="/images/pulse-points.png" 
  alt="Organ Pulse Points Reference" 
@@ -584,7 +584,7 @@ const PracticeNotes = () => {
  {/* Eye Accessing Cues Diagram */}
  <div className="space-y-4">
  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Eye Accessing Cues (NLP)</h3>
- <div className="border border-black p-1">
+ <div className="border border-foreground/20 p-1">
  <img 
  src="/images/eye-modes.png" 
  alt="Eye Accessing Cues Reference" 
@@ -596,7 +596,7 @@ const PracticeNotes = () => {
  </div>
 
  {/* Signs of Shift */}
- <div className="p-6 border border-black">
+ <div className="p-6 border border-foreground/20">
  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Signs of Neurological Shift</h3>
  <ul className="list-none space-y-1 text-xs font-medium">
  {SIGNS_OF_SHIFT.map(s => (
@@ -606,7 +606,7 @@ const PracticeNotes = () => {
  <p className="text-[10px] text-muted-foreground mt-4 italic">"Wait for a parasympathetic response before proceeding to the Positive Upload phase."</p>
  </div>
 
- <div className="p-4 border border-black">
+ <div className="p-4 border border-foreground/20">
  <Item id="nei-positive" label="Positive Upload Phase" subtext="Once the negative charge is cleared, identify the opposite state and anchor it using the same eye position and pulse point." bold />
  </div>
  </div>
@@ -660,22 +660,22 @@ const PracticeNotes = () => {
  "Spinal segments work in pairs. Tension or fixation at one end of the spine (e.g. C1) often creates a compensatory dysfunction at the reciprocating partner (e.g. L5)."
  </div>
  
- <div className="overflow-hidden border border-black">
+ <div className="overflow-hidden border border-foreground/20">
  <table className="w-full text-left border-collapse">
  <thead>
- <tr className="bg-muted border-b border-black">
- <th className="p-3 font-medium text-[10px] uppercase tracking-wider border-r border-black">Segment</th>
- <th className="p-3 font-medium text-[10px] uppercase tracking-wider border-r border-black">Partner</th>
- <th className="p-3 font-medium text-[10px] uppercase tracking-wider border-r border-black">Associated Muscle</th>
+ <tr className="bg-muted border-b border-foreground/20">
+ <th className="p-3 font-medium text-[10px] uppercase tracking-wider border-r border-foreground/20">Segment</th>
+ <th className="p-3 font-medium text-[10px] uppercase tracking-wider border-r border-foreground/20">Partner</th>
+ <th className="p-3 font-medium text-[10px] uppercase tracking-wider border-r border-foreground/20">Associated Muscle</th>
  <th className="p-3 font-medium text-[10px] uppercase tracking-wider">Organ / Gland</th>
  </tr>
  </thead>
  <tbody className="divide-y divide-black/10 text-[11px]">
  {VAGUS_ASSOCIATIONS.map((assoc) => (
  <tr key={assoc.spinalSegment} className="hover:bg-muted transition-colors">
- <td className="p-3 font-semibold border-r border-black/10">{assoc.spinalSegment}</td>
- <td className="p-3 font-semibold text-chart-destructive border-r border-black/10">{assoc.reciprocatingSegment}</td>
- <td className="p-3 font-medium border-r border-black/10">{assoc.muscle}</td>
+ <td className="p-3 font-semibold border-r border-foreground/20">{assoc.spinalSegment}</td>
+ <td className="p-3 font-semibold text-chart-destructive border-r border-foreground/20">{assoc.reciprocatingSegment}</td>
+ <td className="p-3 font-medium border-r border-foreground/20">{assoc.muscle}</td>
  <td className="p-3 text-muted-foreground">{assoc.organ}</td>
  </tr>
  ))}
@@ -690,7 +690,7 @@ const PracticeNotes = () => {
  <div className="grid grid-cols-3 gap-x-8 gap-y-4">
  {Object.values(MUSCLE_INFO_DETAILS).filter(m => m.videoUrl).map(muscle => (
  <div key={muscle.name} className="flex items-center gap-2">
- <Checkbox id={`muscle-${muscle.name}`} onCheckedChange={() => toggleItem(`muscle-${muscle.name}`)} checked={!!checkedItems[`muscle-${muscle.name}`]} className="h-3 w-3 border-black rounded-none" />
+ <Checkbox id={`muscle-${muscle.name}`} onCheckedChange={() => toggleItem(`muscle-${muscle.name}`)} checked={!!checkedItems[`muscle-${muscle.name}`]} className="h-3 w-3 border-foreground/20 rounded-none" />
  <div className="leading-tight">
  <p className={cn("text-xs font-medium", checkedItems[`muscle-${muscle.name}`] && "line-through text-muted-foreground")}>{muscle.name}</p>
  <p className="text-[10px] text-muted-foreground italic">{muscle.meridian} Meridian</p>
@@ -701,7 +701,7 @@ const PracticeNotes = () => {
  </Section>
 
  {/* Footer Notes */}
- <div id="observations" className="mt-16 pt-8 border-t border-black scroll-mt-32">
+ <div id="observations" className="mt-16 pt-8 border-t border-foreground/20 scroll-mt-32">
  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-6">Clinical Observations & Integration Notes</h3>
  <div className="relative">
  <textarea 
@@ -724,7 +724,7 @@ const PracticeNotes = () => {
   <Button variant="outline" size="icon" onClick={() => setShowClearConfirm(true)} className="h-12 w-12 rounded-full shadow-sm bg-background border-border text-muted-foreground hover:text-chart-destructive">
   <RotateCcw size={20} />
   </Button>
-  <Button onClick={handlePrint} className="h-14 w-14 rounded-full shadow-sm bg-primary hover:bg-blue-700 text-white">
+  <Button onClick={handlePrint} className="h-14 w-14 rounded-full shadow-sm bg-primary hover:bg-primary text-primary-foreground">
   <Printer size={24} />
   </Button>
   </div>

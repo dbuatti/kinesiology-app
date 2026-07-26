@@ -53,14 +53,14 @@ const CalibrationTimer = ({ duration }: CalibrationTimerProps) => {
   const progress = ((duration - timeLeft) / duration) * 100;
 
   return (
-    <div className="p-4 bg-white rounded-2xl border border-slate-200 space-y-4">
+    <div className="p-4 bg-card rounded-2xl border border-border space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-bold text-slate-500 uppercase">Timer ({duration}s)</p>
-        <p className="text-2xl font-black text-slate-900 tabular-nums">{timeLeft}s</p>
+        <p className="text-xs font-bold text-muted-foreground uppercase">Timer ({duration}s)</p>
+        <p className="text-2xl font-black text-foreground tabular-nums">{timeLeft}s</p>
       </div>
-      <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
         <div 
-          className={cn("h-full rounded-full transition-all duration-1000 ease-linear", isActive ? "bg-indigo-500" : "bg-slate-300")}
+          className={cn("h-full rounded-full transition-all duration-1000 ease-linear", isActive ? "bg-indigo-500" : "bg-muted")}
           style={{ width: `${progress}%` }}
         />
       </div>

@@ -60,10 +60,10 @@ const QuizResults = ({ score, total, streak, onRestart, onExit }: QuizResultsPro
         </Card>
       </div>
 
-      <div className="p-8 bg-card text-white rounded-[3rem] shadow-2xl relative overflow-hidden">
+      <div className="p-8 bg-card text-primary-foreground rounded-[3rem] shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-10"><Sparkles size={100} /></div>
         <div className="relative z-10 flex items-center gap-6">
-          <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20">
+          <div className="w-16 h-16 rounded-2xl bg-card/10 flex items-center justify-center border border-primary-foreground/20">
             <TrendingUp size={32} className="text-indigo-400" />
           </div>
           <div className="space-y-1">
@@ -76,7 +76,7 @@ const QuizResults = ({ score, total, streak, onRestart, onExit }: QuizResultsPro
       <div className="flex flex-col sm:flex-row gap-4 pt-4">
         <Button 
           onClick={onRestart}
-          className="flex-1 h-16 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100"
+          className="flex-1 h-16 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-primary-foreground font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100"
         >
           <RotateCcw size={20} className="mr-2" /> Try Another Set
         </Button>

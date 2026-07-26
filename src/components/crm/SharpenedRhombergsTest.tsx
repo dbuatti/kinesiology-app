@@ -216,14 +216,14 @@ const SharpenedRhombergsTest = ({
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-muted/50 rounded-2xl border border-border/50">
         <div className="flex gap-1.5">
           <Button 
             size="sm" 
             onClick={() => handleSetStatus('Clear')}
             className={cn(
               "h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
-              currentStatus === 'Clear' ? "bg-emerald-600 text-white shadow-lg" : "bg-white text-slate-600 border-slate-200 hover:bg-emerald-50"
+              currentStatus === 'Clear' ? "bg-emerald-600 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-emerald-50"
             )}
           >
             <CheckCircle2 size={13} className="mr-1.5" /> Clear
@@ -233,7 +233,7 @@ const SharpenedRhombergsTest = ({
             onClick={() => handleSetStatus('Inhibited')}
             className={cn(
               "h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
-              currentStatus === 'Inhibited' ? "bg-rose-600 text-white shadow-lg" : "bg-white text-slate-600 border-slate-200 hover:bg-rose-50"
+              currentStatus === 'Inhibited' ? "bg-rose-600 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-rose-50"
             )}
           >
             <Zap size={13} className="mr-1.5" /> Inhibited
@@ -243,22 +243,22 @@ const SharpenedRhombergsTest = ({
             onClick={() => handleSetStatus('Recheck')}
             className={cn(
               "h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
-              currentStatus === 'Recheck' ? "bg-amber-500 text-white shadow-lg" : "bg-white text-slate-600 border-slate-200 hover:bg-amber-50"
+              currentStatus === 'Recheck' ? "bg-amber-500 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-amber-50"
             )}
           >
             <RefreshCw size={13} className="mr-1.5" /> Recheck
           </Button>
         </div>
         {currentStatus && (
-          <Badge className="bg-indigo-600 text-white border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full">
+          <Badge className="bg-indigo-600 text-primary-foreground border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full">
             Auto-synced to Align phase
           </Badge>
         )}
       </div>
 
-      <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
+      <div className="p-5 bg-muted/50 rounded-2xl border border-border/50 space-y-4">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+          <h4 className="text-xs font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
             <ArrowRightLeft size={14} className="text-indigo-500" /> Clinical Metrics
           </h4>
           <div className="flex items-center gap-2">
@@ -294,26 +294,26 @@ const SharpenedRhombergsTest = ({
         )}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Eyes Open Hold</Label>
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Eyes Open Hold</Label>
             <div className="relative">
               <Input type="number" placeholder="e.g. 30" value={eyesOpenTime} onChange={(e) => handleOpenTimeChange(e.target.value)} className="h-10 rounded-xl pr-8 text-xs font-bold" />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">s</span>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">s</span>
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Eyes Closed Hold</Label>
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Eyes Closed Hold</Label>
             <div className="relative">
               <Input type="number" placeholder="e.g. 15" value={eyesClosedTime} onChange={(e) => handleClosedTimeChange(e.target.value)} className="h-10 rounded-xl pr-8 text-xs font-bold" />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">s</span>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">s</span>
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Sway Direction</Label>
+            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Sway Direction</Label>
             <ToggleGroup type="single" value={swayDirection} onValueChange={handleSwayChange} className="justify-start gap-1">
-              <ToggleGroupItem value="Left" className="rounded-lg border border-slate-200 text-xs font-bold px-2 py-1.5 data-[state=on]:bg-purple-600 data-[state=on]:text-white">L</ToggleGroupItem>
-              <ToggleGroupItem value="Right" className="rounded-lg border border-slate-200 text-xs font-bold px-2 py-1.5 data-[state=on]:bg-purple-600 data-[state=on]:text-white">R</ToggleGroupItem>
-              <ToggleGroupItem value="Anterior" className="rounded-lg border border-slate-200 text-xs font-bold px-2 py-1.5 data-[state=on]:bg-purple-600 data-[state=on]:text-white">Ant</ToggleGroupItem>
-              <ToggleGroupItem value="Posterior" className="rounded-lg border border-slate-200 text-xs font-bold px-2 py-1.5 data-[state=on]:bg-purple-600 data-[state=on]:text-white">Post</ToggleGroupItem>
+              <ToggleGroupItem value="Left" className="rounded-lg border border-border text-xs font-bold px-2 py-1.5 data-[state=on]:bg-purple-600 data-[state=on]:text-primary-foreground">L</ToggleGroupItem>
+              <ToggleGroupItem value="Right" className="rounded-lg border border-border text-xs font-bold px-2 py-1.5 data-[state=on]:bg-purple-600 data-[state=on]:text-primary-foreground">R</ToggleGroupItem>
+              <ToggleGroupItem value="Anterior" className="rounded-lg border border-border text-xs font-bold px-2 py-1.5 data-[state=on]:bg-purple-600 data-[state=on]:text-primary-foreground">Ant</ToggleGroupItem>
+              <ToggleGroupItem value="Posterior" className="rounded-lg border border-border text-xs font-bold px-2 py-1.5 data-[state=on]:bg-purple-600 data-[state=on]:text-primary-foreground">Post</ToggleGroupItem>
             </ToggleGroup>
           </div>
         </div>
@@ -321,7 +321,7 @@ const SharpenedRhombergsTest = ({
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="rhombergsNotes" className="text-sm font-bold text-slate-900 flex items-center gap-2">
+          <Label htmlFor="rhombergsNotes" className="text-sm font-bold text-foreground flex items-center gap-2">
             <FileText size={15} className="text-purple-600" />
             Observations
           </Label>
@@ -330,7 +330,7 @@ const SharpenedRhombergsTest = ({
               <span className="text-[10px] text-muted-foreground font-medium">Saved {lastSaved}</span>
             )}
             {(initialNotes || currentStatus) && (
-              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-7 px-3 rounded-lg border-red-200 text-red-600 hover:bg-red-50 text-[10px]">
+              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-7 px-3 rounded-lg border-destructive/20 text-destructive hover:bg-destructive/5 text-[10px]">
                 <RotateCcw size={12} className="mr-1" /> Reset
               </Button>
             )}
@@ -346,27 +346,27 @@ const SharpenedRhombergsTest = ({
         <p className="text-[10px] text-muted-foreground font-medium">Your notes auto-save as you type.</p>
       </div>
 
-      <Collapsible open={isProtocolOpen} onOpenChange={setIsProtocolOpen} className="border border-slate-100 rounded-2xl overflow-hidden">
+      <Collapsible open={isProtocolOpen} onOpenChange={setIsProtocolOpen} className="border border-border/50 rounded-2xl overflow-hidden">
         <CollapsibleTrigger className="w-full">
-          <div className="flex items-center justify-between p-3 hover:bg-slate-50 transition-colors cursor-pointer">
+          <div className="flex items-center justify-between p-3 hover:bg-muted/50 transition-colors cursor-pointer">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
                 <Scale size={15} />
               </div>
               <div className="text-left">
-                <p className="text-xs font-semibold text-slate-700">Protocol Reference</p>
-                <p className="text-[10px] text-slate-400 font-medium">Sharpened Rhomberg's Test protocol & diagram</p>
+                <p className="text-xs font-semibold text-foreground/80">Protocol Reference</p>
+                <p className="text-[10px] text-muted-foreground font-medium">Sharpened Rhomberg's Test protocol & diagram</p>
               </div>
             </div>
-            <ChevronDown className={cn("h-4 w-4 text-slate-400 transition-transform duration-300", isProtocolOpen && "rotate-180")} />
+            <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-300", isProtocolOpen && "rotate-180")} />
           </div>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="p-4 border-t border-slate-100 space-y-4">
+          <div className="p-4 border-t border-border/50 space-y-4">
             <div className="rounded-xl overflow-hidden">
               <img src="/images/sharpened-rhombergs-test.png" alt="Sharpened Rhombergs Test" className="w-full h-auto rounded-lg object-cover" />
             </div>
-            <ol className="space-y-1.5 text-sm text-slate-600 list-decimal list-inside">
+            <ol className="space-y-1.5 text-sm text-muted-foreground list-decimal list-inside">
               <li>Client places feet together with toes pointing forward (heel-to-toe stance).</li>
               <li>Instruct client to lengthen through the spine.</li>
               <li>Fixate on a target with the eyes.</li>

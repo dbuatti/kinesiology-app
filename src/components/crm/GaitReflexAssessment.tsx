@@ -102,7 +102,7 @@ const GaitReflexAssessment = ({
             <XCircle size={14} className="text-rose-500" />
           )}
         </div>
-        <span className="text-xs font-bold text-slate-900">
+        <span className="text-xs font-bold text-foreground">
           {label}
         </span>
       </button>
@@ -111,22 +111,22 @@ const GaitReflexAssessment = ({
 
   return (
     <div className="space-y-6">
-      <Card className="border-none shadow-lg rounded-2xl bg-white overflow-hidden">
+      <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-100">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-200">
-                <Footprints size={24} className="text-white" />
+                <Footprints size={24} className="text-primary-foreground" />
               </div>
               <div>
-                <CardTitle className="text-xl font-bold text-slate-900">Gait Reflex Integration</CardTitle>
-                <CardDescription className="text-slate-600">Interactive Locomotion Calibration</CardDescription>
+                <CardTitle className="text-xl font-bold text-foreground">Gait Reflex Integration</CardTitle>
+                <CardDescription className="text-muted-foreground">Interactive Locomotion Calibration</CardDescription>
               </div>
             </div>
             <Button 
               variant="outline" 
               size="sm" 
-              className="bg-white border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+              className="bg-card border-emerald-200 text-emerald-700 hover:bg-emerald-50"
               onClick={generateSummary}
             >
               <FileText size={16} className="mr-2" />
@@ -138,11 +138,11 @@ const GaitReflexAssessment = ({
         <CardContent className="p-6 space-y-8">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                 <Eye size={20} className="text-emerald-600" />
                 1. Diagnosis (Reciprocal Inhibition)
               </h3>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
                 <MousePointer2 size={10} /> Click to toggle abnormal (X)
               </p>
             </div>
@@ -170,7 +170,7 @@ const GaitReflexAssessment = ({
 
           {hasAbnormal && (
             <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
-              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                 <Zap size={20} className="text-amber-500" />
                 2. Eye Position Priority
               </h3>
@@ -184,7 +184,7 @@ const GaitReflexAssessment = ({
                       onClick={() => setEyePriority(pos)}
                       className={cn(
                         "h-12 font-bold rounded-xl",
-                        eyePriority === pos ? "bg-amber-500 hover:bg-amber-600" : "border-slate-200"
+                        eyePriority === pos ? "bg-amber-500 hover:bg-amber-600" : "border-border"
                       )}
                     >
                       Eyes {pos}
@@ -196,7 +196,7 @@ const GaitReflexAssessment = ({
                   {eyePriority ? (
                     <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 flex items-start gap-4 h-full">
                       <div className="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-amber-200">
-                        <Move size={24} className="text-white" />
+                        <Move size={24} className="text-primary-foreground" />
                       </div>
                       <div className="space-y-1">
                         <p className="text-xs font-black text-amber-600 uppercase tracking-widest">The Fix</p>
@@ -208,7 +208,7 @@ const GaitReflexAssessment = ({
                       </div>
                     </div>
                   ) : (
-                    <div className="border-2 border-dashed border-slate-200 rounded-2xl p-5 flex flex-col items-center justify-center text-center h-full text-slate-400">
+                    <div className="border-2 border-dashed border-border rounded-2xl p-5 flex flex-col items-center justify-center text-center h-full text-muted-foreground">
                       <Eye size={32} className="mb-2 opacity-20" />
                       <p className="text-sm font-medium">Select the eye position that <br/>brings up the priority response</p>
                     </div>
@@ -218,7 +218,7 @@ const GaitReflexAssessment = ({
             </div>
           )}
 
-          <div className="pt-4 border-t border-slate-100">
+          <div className="pt-4 border-t border-border/50">
             <EditableField
               field="gait_notes"
               label="Gait Integration Notes"

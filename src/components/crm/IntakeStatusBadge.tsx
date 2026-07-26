@@ -35,10 +35,10 @@ export const IntakeStatusBadge = ({ client, showLabel }: IntakeStatusBadgeProps)
   const { filled, total, percent } = calculateIntakeCompletion(client);
 
   const getColor = () => {
-    if (percent === 0) return "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400";
+    if (percent === 0) return "bg-muted text-muted-foreground dark:bg-foreground dark:text-muted-foreground";
     if (percent < 50) return "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
     if (percent < 100) return "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300";
-    return "bg-emerald-500 text-white";
+    return "bg-emerald-500 text-primary-foreground";
   };
 
   return (

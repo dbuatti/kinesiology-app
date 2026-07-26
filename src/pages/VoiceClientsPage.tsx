@@ -312,7 +312,7 @@ const VoiceClientsPage = () => {
  title="Voice Clients"
  subtitle="Student engagement audit — grouped by recency and booking status."
  icon={Mic}
-   iconClassName="bg-destructive text-white "
+   iconClassName="bg-destructive text-primary-foreground "
   actions={
  <div className="flex gap-2">
  <Dialog open={onboardOpen} onOpenChange={setOnboardOpen}>
@@ -427,7 +427,7 @@ const VoiceClientsPage = () => {
  className={cn(
  "text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-lg border transition-all",
  allSelected
- ? "bg-destructive text-white border-rose-500"
+ ? "bg-destructive text-primary-foreground border-rose-500"
  : "bg-card border-border text-muted-foreground hover:text-foreground"
  )}
  >

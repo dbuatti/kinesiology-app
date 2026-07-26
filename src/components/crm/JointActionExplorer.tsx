@@ -214,7 +214,7 @@ const JointActionExplorer = () => {
                 {Object.entries(selectedJoint.actions).map(([plane, actions]) => (
                   <div key={plane} className="space-y-4">
                     <div className="flex items-center gap-2 border-b border-border/50 pb-2">
-                      {plane === 'Sagittal' ? <Zap size={16} className="text-blue-500" /> :
+                      {plane === 'Sagittal' ? <Zap size={16} className="text-primary" /> :
                        plane === 'Frontal' ? <Move size={16} className="text-emerald-500" /> :
                        <RefreshCw size={16} className="text-orange-500" />}
                       <h4 className="text-xs font-black text-muted-foreground uppercase tracking-widest">{plane} Plane Actions</h4>
@@ -223,7 +223,7 @@ const JointActionExplorer = () => {
                       {actions.map((action, idx) => (
                         <div key={idx} className={cn(
                           "p-4 rounded-2xl border-2 transition-all",
-                          action.label === '-' ? "bg-muted/50 border-border/50 opacity-50" : "bg-card border-slate-50 hover:border-indigo-100 shadow-sm"
+                          action.label === '-' ? "bg-muted/50 border-border/50 opacity-50" : "bg-card border-border/30 hover:border-indigo-100 shadow-sm"
                         )}>
                           <div className="flex items-center gap-2 mb-2">
                             <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 border-none font-black text-[10px] uppercase tracking-widest rounded-full">
@@ -254,7 +254,7 @@ const JointActionExplorer = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-5 bg-foreground text-primary-foreground rounded-[2rem] space-y-3">
-                  <div className="flex items-center gap-2 text-blue-400">
+                  <div className="flex items-center gap-2 text-primary">
                     <Brain size={16} />
                     <span className="text-[10px] font-black uppercase tracking-widest">Conscious Logic</span>
                   </div>

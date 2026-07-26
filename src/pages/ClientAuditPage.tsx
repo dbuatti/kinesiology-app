@@ -2446,7 +2446,7 @@ export default function ClientAuditPage() {
                         { label: "$70", count: rateDistribution.r70, color: "bg-orange-500" },
                         { label: "$80", count: rateDistribution.r80, color: "bg-emerald-500" },
                         { label: "$90", count: rateDistribution.r90, color: "bg-teal-500" },
-                        { label: "$100", count: rateDistribution.r100, color: "bg-blue-500" },
+                        { label: "$100", count: rateDistribution.r100, color: "bg-primary" },
                         { label: "$120", count: rateDistribution.r120, color: "bg-indigo-500" },
                         { label: "$150", count: rateDistribution.r150, color: "bg-purple-500" },
                         { label: "Custom", count: rateDistribution.custom, color: "bg-pink-500" },

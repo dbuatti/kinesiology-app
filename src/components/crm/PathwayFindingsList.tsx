@@ -113,7 +113,7 @@ const PathwayFindingsList = ({ priorityPattern, className, showOnlyInhibited = t
               variant="outline" 
               className={cn(
                 "h-4 px-1.5 text-[7px] font-black uppercase tracking-widest border-none",
-                isCleared ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"
+                isCleared ? "bg-emerald-600 text-primary-foreground" : "bg-rose-600 text-primary-foreground"
               )}
             >
               {displayStatus}

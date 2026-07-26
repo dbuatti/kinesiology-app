@@ -116,9 +116,9 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <PlayCircle size={16} className="text-indigo-600" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Interactive Recovery Exercise</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Interactive Recovery Exercise</span>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => setShowExercise(false)} className="h-7 px-2 text-slate-400 hover:text-rose-600">
+                  <Button variant="ghost" size="sm" onClick={() => setShowExercise(false)} className="h-7 px-2 text-muted-foreground hover:text-rose-600">
                     <X size={14} className="mr-1" /> Close Timer
                   </Button>
                 </div>
@@ -151,7 +151,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
                       </div>
                       <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/50 border border-border">
                         <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">25-35s</span>
-                        <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">Functional</span>
+                        <span className="text-[10px] font-bold text-primary dark:text-primary">Functional</span>
                       </div>
                       <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                         <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">40s+</span>

@@ -68,7 +68,7 @@ const Login = () => {
       
       <div className="w-full max-w-md relative z-10 space-y-8">
         <div className="text-center space-y-4">
-          <div className="w-20 h-20 bg-primary rounded-[2rem] flex items-center justify-center text-white font-black text-3xl shadow-3xl mx-auto mb-6 transition-transform hover:scale-105 duration-500">
+          <div className="w-20 h-20 bg-primary rounded-[2rem] flex items-center justify-center text-primary-foreground font-black text-3xl shadow-3xl mx-auto mb-6 transition-transform hover:scale-105 duration-500">
             ✦
           </div>
           <Badge className="bg-muted text-primary border-none font-black text-[10px] uppercase tracking-[0.4em] px-6 py-2 rounded-full">

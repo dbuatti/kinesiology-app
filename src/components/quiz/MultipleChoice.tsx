@@ -23,7 +23,7 @@ const MultipleChoice: FC<MultipleChoiceProps> = ({
 }) => {
   return (
     <div className="space-y-6">
-      <h3 className="text-xl md:text-2xl font-black leading-tight text-slate-900 dark:text-slate-100">
+      <h3 className="text-xl md:text-2xl font-black leading-tight text-foreground dark:text-primary-foreground">
         {question}
       </h3>
       <div className="grid grid-cols-1 gap-3">
@@ -39,11 +39,11 @@ const MultipleChoice: FC<MultipleChoiceProps> = ({
             } else if (isSelected && !isCorrect) {
               className += " border-rose-500 bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400 shadow-rose-100";
             } else {
-              className += " opacity-40 border-slate-100 dark:border-slate-800 grayscale-[0.5]";
+              className += " opacity-40 border-border/50 dark:border-border grayscale-[0.5]";
             }
           } else {
             // Using explicit text colors to prevent theme/variant conflicts
-            className += " bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 text-slate-900 dark:text-slate-100 hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-700 dark:hover:text-indigo-300 hover:shadow-md hover:-translate-y-0.5";
+            className += " bg-card dark:bg-foreground border-border/50 dark:border-border text-foreground dark:text-primary-foreground hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-700 dark:hover:text-indigo-300 hover:shadow-md hover:-translate-y-0.5";
           }
 
           return (
@@ -57,12 +57,12 @@ const MultipleChoice: FC<MultipleChoiceProps> = ({
               <div className="flex items-center justify-between w-full">
                 <span className="flex-1">{option}</span>
                 {selectedAnswer && isThisCorrect && (
-                  <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-white shrink-0 ml-4 animate-in zoom-in duration-300">
+                  <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-primary-foreground shrink-0 ml-4 animate-in zoom-in duration-300">
                     <CheckCircle2 size={16} />
                   </div>
                 )}
                 {selectedAnswer && isSelected && !isCorrect && (
-                  <div className="w-6 h-6 rounded-full bg-rose-500 flex items-center justify-center text-white shrink-0 ml-4 animate-in zoom-in duration-300">
+                  <div className="w-6 h-6 rounded-full bg-rose-500 flex items-center justify-center text-primary-foreground shrink-0 ml-4 animate-in zoom-in duration-300">
                     <XCircle size={16} />
                   </div>
                 )}

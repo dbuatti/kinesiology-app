@@ -57,9 +57,9 @@ const ClinicalHubPage = () => {
       label: 'PEACE V2',
       description: 'Full session wizard — Preliminary → Ease → Align → Correct → Embed',
       icon: Activity,
-      color: 'border-l-blue-500 hover:bg-blue-50/30 dark:hover:bg-blue-950/30',
-      accent: 'text-blue-600 dark:text-blue-400',
-      iconBg: 'bg-blue-100 dark:bg-blue-950/50',
+      color: 'border-l-primary hover:bg-primary/30 dark:hover:bg-primary/30',
+      accent: 'text-primary dark:text-primary',
+      iconBg: 'bg-primary/10 dark:bg-primary/50',
       badge: 'Interactive',
     },
     {

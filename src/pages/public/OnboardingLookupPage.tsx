@@ -58,8 +58,8 @@ const OnboardingLookupPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted p-6">
       <Card className="max-w-md w-full border-none shadow-2xl rounded-[2.5rem] overflow-hidden">
-        <div className="bg-indigo-600 p-8 text-center text-white">
-          <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl border border-white/20">
+        <div className="bg-indigo-600 p-8 text-center text-primary-foreground">
+          <div className="w-16 h-16 bg-card/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl border border-primary-foreground/20">
             <CheckCircle2 size={32} />
           </div>
           <CardTitle className="text-2xl font-black tracking-tight">Welcome to FNH</CardTitle>

@@ -65,15 +65,15 @@ const RandomJointCard = () => {
   };
 
   return (
-    <Card className="border border-slate-200 shadow-sm rounded-2xl bg-white overflow-hidden group">
-      <CardHeader className="bg-slate-50 border-b border-slate-200 p-5 text-slate-900 relative overflow-hidden">
+    <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden group">
+      <CardHeader className="bg-muted/50 border-b border-border/50 p-5 text-foreground relative overflow-hidden">
         <div className="flex items-center justify-between relative z-10">
           <div className="space-y-1">
             <div className="flex gap-1.5 mb-1">
-              <Badge className="bg-slate-200 text-slate-800 border-none font-bold text-[7px] uppercase tracking-wider">
+              <Badge className="bg-muted text-foreground border-none font-bold text-[7px] uppercase tracking-wider">
                 {joint.type}
               </Badge>
-              <Badge className="bg-slate-200 text-slate-800 border-none font-bold text-[7px] uppercase tracking-wider">
+              <Badge className="bg-muted text-foreground border-none font-bold text-[7px] uppercase tracking-wider">
                 {joint.region}
               </Badge>
             </div>
@@ -84,7 +84,7 @@ const RandomJointCard = () => {
             size="icon" 
             onClick={handleManualRefresh}
             className={cn(
-              "h-8 w-8 rounded-lg text-slate-500 hover:bg-slate-200 transition-all",
+              "h-8 w-8 rounded-lg text-muted-foreground hover:bg-muted transition-all",
               isRefreshing && "animate-spin"
             )}
           >
@@ -94,42 +94,42 @@ const RandomJointCard = () => {
       </CardHeader>
       <CardContent className="p-5 space-y-4">
         <div className="grid grid-cols-1 gap-2">
-          <div className="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+          <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-xl border border-border/50">
             <div className="flex items-center gap-1.5">
-              <Zap size={12} className="text-slate-600" />
-              <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Sagittal</span>
+              <Zap size={12} className="text-muted-foreground" />
+              <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider">Sagittal</span>
             </div>
-            <span className="text-xs font-bold text-slate-700">
+            <span className="text-xs font-bold text-foreground/80">
               {joint.actions.Sagittal.map(a => a.label).join(', ')}
             </span>
           </div>
           
-          <div className="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+          <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-xl border border-border/50">
             <div className="flex items-center gap-1.5">
-              <Move size={12} className="text-slate-600" />
-              <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Frontal</span>
+              <Move size={12} className="text-muted-foreground" />
+              <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider">Frontal</span>
             </div>
-            <span className="text-xs font-bold text-slate-700">
+            <span className="text-xs font-bold text-foreground/80">
               {joint.actions.Frontal.map(a => a.label).join(', ')}
             </span>
           </div>
 
-          <div className="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-200">
+          <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-xl border border-border/50">
             <div className="flex items-center gap-1.5">
-              <RefreshCw size={12} className="text-slate-600" />
-              <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Transverse</span>
+              <RefreshCw size={12} className="text-muted-foreground" />
+              <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider">Transverse</span>
             </div>
-            <span className="text-xs font-bold text-slate-700">
+            <span className="text-xs font-bold text-foreground/80">
               {joint.actions.Transverse.map(a => a.label).join(', ')}
             </span>
           </div>
         </div>
 
-        <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 relative overflow-hidden">
-          <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-            <Lightbulb size={10} className="text-slate-600" /> Clinical Pearl
+        <div className="p-3.5 bg-muted/50 rounded-xl border border-border/50 relative overflow-hidden">
+          <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
+            <Lightbulb size={10} className="text-muted-foreground" /> Clinical Pearl
           </p>
-          <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
+          <p className="text-[11px] text-muted-foreground font-medium leading-relaxed">
             "{joint.pearl}"
           </p>
         </div>
@@ -138,7 +138,7 @@ const RandomJointCard = () => {
           variant="ghost" 
           onClick={handleManualRefresh}
           disabled={isRefreshing}
-          className="w-full h-9 rounded-xl text-[9px] font-bold uppercase tracking-wider text-slate-700 hover:bg-slate-100"
+          className="w-full h-9 rounded-xl text-[9px] font-bold uppercase tracking-wider text-foreground/80 hover:bg-muted"
         >
           {isRefreshing ? <Loader2 className="animate-spin mr-1.5" size={12} /> : <ChevronRight className="mr-1.5" size={12} />}
           Next Joint

@@ -71,16 +71,16 @@ const LigamentReference = () => {
 
   return (
     <div className="space-y-10">
-      <Alert className="bg-blue-50 border-blue-100">
-        <Info className="h-4 w-4 text-blue-600" />
-        <AlertDescription className="text-blue-900">
+      <Alert className="bg-primary/5 border-primary/20">
+        <Info className="h-4 w-4 text-primary" />
+        <AlertDescription className="text-primary">
           Upload your own reference images for mechanoreceptive corrections. These will be available in the Pathway Logic Wizard.
         </AlertDescription>
       </Alert>
 
       {Object.entries(LIGAMENT_CATEGORIES).map(([key, { title, count }]) => (
         <div key={key} className="space-y-4">
-          <h3 className="text-xl font-bold text-slate-900">{title}</h3>
+          <h3 className="text-xl font-bold text-foreground">{title}</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {Array.from({ length: count }).map((_, index) => (
               <LigamentImageUploader

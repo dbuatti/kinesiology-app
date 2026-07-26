@@ -132,7 +132,7 @@ const SiteAuditPage = () => {
                 {copied ? <Check size={18} className="mr-2" /> : <Copy size={18} className="mr-2" />}
                 Copy Markdown
               </Button>
-              <Button onClick={() => window.print()} className="bg-card hover:bg-card text-white rounded-xl h-12 px-6 font-bold">
+              <Button onClick={() => window.print()} className="bg-card hover:bg-card text-primary-foreground rounded-xl h-12 px-6 font-bold">
                 <Printer size={18} className="mr-2" /> Print Audit
               </Button>
             </div>
@@ -266,7 +266,7 @@ const SiteAuditPage = () => {
         <div className="p-8 bg-foreground text-background rounded-[2rem] border shadow-sm">
           <div className="flex flex-col md:flex-row items-center gap-6">
             <div className="w-16 h-16 rounded-xl bg-indigo-600 flex items-center justify-center shrink-0">
-              <ShieldCheck size={32} className="text-white" />
+              <ShieldCheck size={32} className="text-primary-foreground" />
             </div>
             <div className="space-y-1 text-center md:text-left">
               <h4 className="text-lg font-black">Audit Summary</h4>

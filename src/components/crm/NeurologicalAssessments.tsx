@@ -84,9 +84,9 @@ const NeurologicalAssessments = ({
                   <Hand size={16} /> Frontal
                   {hasFrontalLobeNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-indigo-500 rounded-full" />}
                 </TabsTrigger>
-                <TabsTrigger value="righting" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-xl h-13 font-black uppercase tracking-wider text-[10px] relative">
+                <TabsTrigger value="righting" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-xl h-13 font-black uppercase tracking-wider text-[10px] relative">
                   <RefreshCw size={16} /> Righting
-                  {hasRightingNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full" />}
+                  {hasRightingNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full" />}
                 </TabsTrigger>
               </TabsList>
               
@@ -141,7 +141,7 @@ const NeurologicalAssessments = ({
                     <h4 className="text-lg font-black text-foreground">Righting Reflexes</h4>
                     <p className="text-xs text-muted-foreground font-medium">Ocular & Labyrinthine postural organization</p>
                   </div>
-                  {hasRightingNotes && <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 font-bold">Completed</Badge>}
+                  {hasRightingNotes && <Badge className="bg-primary/10 text-primary dark:text-primary border-primary/20 font-bold">Completed</Badge>}
                 </div>
                 <RightingReflexesAssessment
                   appointmentId={appointmentId}

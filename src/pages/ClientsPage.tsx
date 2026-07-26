@@ -102,7 +102,7 @@ const ClientsPage = () => {
           actions={
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-100 dark:shadow-indigo-900/20 rounded-2xl h-12 px-8 font-black text-xs uppercase tracking-widest">
+                <Button className="bg-primary hover:bg-primary/90 shadow-xl shadow-primary/10 rounded-2xl h-12 px-8 font-black text-xs uppercase tracking-widest">
                   <Plus size={20} className="mr-2" /> New Client
                 </Button>
               </DialogTrigger>
@@ -135,7 +135,7 @@ const ClientsPage = () => {
               variant={view === 'table' ? 'default' : 'ghost'} 
               size="sm" 
               onClick={() => setView('table')}
-              className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", view === 'table' ? "bg-card text-indigo-600 shadow-sm hover:bg-card" : "text-muted-foreground")}
+              className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", view === 'table' ? "bg-card text-primary shadow-sm hover:bg-card" : "text-muted-foreground")}
             >
               <List size={16} className="mr-2" /> Table
             </Button>
@@ -143,7 +143,7 @@ const ClientsPage = () => {
               variant={view === 'grid' ? 'default' : 'ghost'} 
               size="sm" 
               onClick={() => setView('grid')}
-              className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", view === 'grid' ? "bg-card text-indigo-600 shadow-sm hover:bg-card" : "text-muted-foreground")}
+              className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", view === 'grid' ? "bg-card text-primary shadow-sm hover:bg-card" : "text-muted-foreground")}
             >
               <LayoutGrid size={16} className="mr-2" /> Grid
             </Button>
@@ -152,7 +152,7 @@ const ClientsPage = () => {
 
         {loading ? (
           <div className="p-24 flex flex-col items-center justify-center gap-6">
-            <Loader2 className="animate-spin text-indigo-500" size={48} />
+            <Loader2 className="animate-spin text-primary" size={48} />
             <p className="text-muted-foreground font-black text-xs uppercase tracking-widest">Loading clients...</p>
           </div>
         ) : filteredClients.length > 0 ? (
@@ -176,7 +176,7 @@ const ClientsPage = () => {
             </div>
             <p className="text-foreground font-black text-xl">No clients yet</p>
             <p className="text-muted-foreground mt-2 mb-8 font-medium">Add your first client to start building your clinical database.</p>
-            <Button className="h-12 px-8 bg-indigo-600 hover:bg-indigo-700 rounded-2xl font-bold text-primary-foreground" onClick={() => setOpen(true)}>
+            <Button className="h-12 px-8 bg-primary hover:bg-primary/90 rounded-2xl font-bold text-primary-foreground" onClick={() => setOpen(true)}>
               <Plus size={18} className="mr-2" /> Add First Client
             </Button>
           </div>

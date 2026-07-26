@@ -427,7 +427,7 @@ const VoiceClientsPage = () => {
  className={cn(
  "text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-lg border transition-all",
  allSelected
- ? "bg-destructive text-primary-foreground border-rose-500"
+  ? "bg-destructive text-primary-foreground border-destructive"
  : "bg-card border-border text-muted-foreground hover:text-foreground"
  )}
  >
@@ -453,7 +453,7 @@ const VoiceClientsPage = () => {
  className={cn(
  "flex items-center gap-3 bg-card p-4 rounded-xl border transition-all duration-200",
  selected
- ? "border-rose-300 shadow-sm "
+  ? "border-destructive/30 shadow-sm "
  : "border-border hover:border-border "
  )}
  >

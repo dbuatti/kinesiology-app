@@ -96,20 +96,20 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
       {/* Quick Assessment Bar */}
       <div className="flex flex-wrap items-center gap-4 p-4 bg-card rounded-[2rem] border border-border shadow-sm">
         <div className="flex items-center gap-2 px-4 border-r border-border mr-2">
-          <Zap size={18} className="text-amber-500 fill-amber-400" />
+          <Zap size={18} className="text-amber-500 fill-amber-500/40" />
           <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">Quick Assessment</span>
         </div>
         <Button 
           onClick={() => openAssessment('bolt')}
           variant="outline" 
-          className="rounded-xl border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/50 dark:bg-indigo-900/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/20 font-bold h-10"
+          className="rounded-xl border-border bg-primary/5 text-primary hover:bg-primary/10 font-bold h-10"
         >
           <FlaskConical size={16} className="mr-2" /> Log BOLT
         </Button>
         <Button 
           onClick={() => openAssessment('coherence')}
           variant="outline" 
-          className="rounded-xl border-rose-100 dark:border-rose-900/30 bg-rose-50/50 dark:bg-rose-900/10 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/20 font-bold h-10"
+          className="rounded-xl border-border bg-destructive/5 text-destructive hover:bg-destructive/10 font-bold h-10"
         >
           <Activity size={16} className="mr-2" /> Log Coherence
         </Button>
@@ -119,7 +119,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
       <div className="space-y-4">
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-600 text-primary-foreground flex items-center justify-center shadow-lg">
+            <div className="w-10 h-10 rounded-xl bg-chart-primary text-primary-foreground flex items-center justify-center shadow-lg">
               <Brain size={20} />
             </div>
             <div>
@@ -139,7 +139,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
       {/* Neurological History Tracker */}
       <div className="space-y-4">
         <div className="flex items-center gap-3 px-2">
-          <div className="w-10 h-10 rounded-xl bg-indigo-600 text-primary-foreground flex items-center justify-center shadow-lg">
+          <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg">
             <Workflow size={20} />
           </div>
           <div>
@@ -155,21 +155,21 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
         <Card className="lg:col-span-1 border-none shadow-lg rounded-3xl bg-card overflow-hidden">
           <CardHeader className="bg-muted/30 border-b border-border">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <Activity size={20} className="text-indigo-600" /> Clinical Status
+              <Activity size={20} className="text-primary" /> Clinical Status
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
             <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/30">
+              <div className="p-4 rounded-2xl bg-primary/5 border border-border">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Latest BOLT Score</p>
-                  {boltTrend === "up" && <Badge className="bg-emerald-500 text-primary-foreground border-none text-[10px]"><ArrowUpRight size={10} className="mr-1" /> Improving</Badge>}
-                  {boltTrend === "down" && <Badge className="bg-rose-500 text-primary-foreground border-none text-[10px]"><ArrowDownRight size={10} className="mr-1" /> Declining</Badge>}
+                  <p className="text-[10px] font-black text-primary uppercase tracking-widest">Latest BOLT Score</p>
+                  {boltTrend === "up" && <Badge className="bg-chart-emerald text-primary-foreground border-none text-[10px]"><ArrowUpRight size={10} className="mr-1" /> Improving</Badge>}
+                  {boltTrend === "down" && <Badge className="bg-destructive text-primary-foreground border-none text-[10px]"><ArrowDownRight size={10} className="mr-1" /> Declining</Badge>}
                 </div>
                 <div className="flex items-baseline gap-2">
                   <p className={cn(
                     "text-4xl font-black",
-                    latestBolt === null ? "text-muted-foreground/60" : (latestBolt >= 25 ? "text-emerald-600" : "text-rose-600")
+                    latestBolt === null ? "text-muted-foreground/60" : (latestBolt >= 25 ? "text-chart-emerald" : "text-destructive")
                   )}>
                     {latestBolt !== null ? `${latestBolt}s` : "—"}
                   </p>
@@ -177,10 +177,10 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-900/30">
-                <p className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-2">Neurological Resolution</p>
+              <div className="p-4 rounded-2xl bg-chart-emerald/10 border border-chart-emerald/20">
+                <p className="text-[10px] font-black text-chart-emerald uppercase tracking-widest mb-2">Neurological Resolution</p>
                 <div className="flex items-baseline gap-2">
-                  <p className="text-4xl font-black text-emerald-600">{resolutionRate}%</p>
+                  <p className="text-4xl font-black text-chart-emerald">{resolutionRate}%</p>
                   <span className="text-muted-foreground text-sm font-bold">Cleared</span>
                 </div>
               </div>
@@ -189,16 +189,16 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
             <div className="space-y-3">
               <h4 className="text-xs font-black text-muted-foreground uppercase tracking-widest">Clinical Alerts</h4>
               {latestBolt !== null && latestBolt < 25 ? (
-                <div className="flex gap-3 p-3 bg-rose-50 dark:bg-rose-900/20 rounded-xl border border-rose-100 dark:border-rose-900/30">
-                  <AlertCircle className="text-rose-600 dark:text-rose-400 shrink-0" size={18} />
-                  <p className="text-xs text-rose-900 dark:text-rose-100 font-bold leading-tight">
+                <div className="flex gap-3 p-3 bg-destructive/5 rounded-xl border border-destructive/20">
+                  <AlertCircle className="text-destructive shrink-0" size={18} />
+                  <p className="text-xs text-destructive font-bold leading-tight">
                     BOLT score below functional threshold. Breathing Recovery exercise is imperative.
                   </p>
                 </div>
               ) : latestBolt !== null ? (
-                <div className="flex gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
-                  <CheckCircle2 className="text-emerald-600 dark:text-emerald-400 shrink-0" size={18} />
-                  <p className="text-xs text-emerald-900 dark:text-emerald-100 font-bold leading-tight">
+                <div className="flex gap-3 p-3 bg-chart-emerald/10 rounded-xl border border-chart-emerald/20">
+                  <CheckCircle2 className="text-chart-emerald shrink-0" size={18} />
+                  <p className="text-xs text-chart-emerald font-bold leading-tight">
                     BOLT score is functional. Continue monitoring for optimal (40s) goal.
                   </p>
                 </div>
@@ -220,7 +220,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
-                  <TrendingUp size={20} className="text-indigo-600" /> Clinical Trends
+                  <TrendingUp size={20} className="text-primary" /> Clinical Trends
                 </CardTitle>
                 <CardDescription>Long-term BOLT and Brainstem Threat progress</CardDescription>
               </div>
@@ -309,18 +309,18 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
         </div>
         
         <div className="space-y-6">
-          <Card className="border-none shadow-lg rounded-3xl bg-indigo-900 text-primary-foreground overflow-hidden relative">
+          <Card className="border-none shadow-lg rounded-3xl bg-foreground text-primary-foreground overflow-hidden relative">
             <div className="absolute top-0 right-0 p-8 opacity-10">
               <Zap size={120} />
             </div>
             <CardHeader>
               <CardTitle className="text-xl font-black flex items-center gap-2">
-                <Zap size={20} className="text-amber-400 fill-amber-400" /> Case Strategy
+                <Zap size={20} className="text-amber-500 fill-amber-500/40" /> Case Strategy
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 relative z-10">
               <div className="p-4 bg-card/10 rounded-2xl border border-primary-foreground/10 shadow-inner">
-                <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-2">Primary Focus</p>
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">Primary Focus</p>
                 <p className="text-sm font-bold leading-relaxed">
                   {latestBolt !== null && latestBolt < 25 
                     ? "Prioritize CO2 tolerance and respiratory mechanics. Shift from SNS to Receptive state."
@@ -328,8 +328,8 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
                 </p>
               </div>
               <div className="p-4 bg-card/10 rounded-2xl border border-primary-foreground/10 shadow-inner">
-                <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-2">Shared Responsibility</p>
-                <p className="text-xs text-indigo-100 leading-relaxed italic">
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">Shared Responsibility</p>
+                <p className="text-xs text-foreground/80 leading-relaxed italic">
                   "There needs to be a balance of shared responsibility, but ultimately the client must drive their own healing process."
                 </p>
               </div>
@@ -339,7 +339,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
           <Card className="border-none shadow-lg rounded-3xl bg-card">
             <CardHeader>
               <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Brain size={18} className="text-emerald-500" /> Neuro Integration
+                <Brain size={18} className="text-chart-emerald" /> Neuro Integration
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">

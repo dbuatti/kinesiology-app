@@ -131,6 +131,13 @@ const SessionDocumentView = ({
   // Quick Session dialog state
   const [quickSessionOpen, setQuickSessionOpen] = useState(false);
 
+  const currentPathway = (metadata as any)?.priority_pathway || "";
+
+  const handleSetPriorityPathway = useCallback(async (pathway: string) => {
+    await saveField('metadata', { ...metadata, priority_pathway: pathway });
+    onUpdate();
+  }, [metadata, saveField, onUpdate]);
+
   // Session switcher state — shows recent appointments in chronological order
   const [sessionSearchOpen, setSessionSearchOpen] = useState(false);
   const [recentSessions, setRecentSessions] = useState<{ id: string; date: string; client_name: string }[]>([]);
@@ -351,7 +358,7 @@ const SessionDocumentView = ({
           {/* A - ALIGN */}
           <section>
             <SectionHeader id="a-sec" title="A — Align the Hierarchy" subtitle="Neurological Findings & Patterns" />
-            <AlignSection pattern={unifiedPattern} onToggle={handleTogglePatternItem} />
+            <AlignSection pattern={unifiedPattern} onToggle={handleTogglePatternItem} onSetPriorityPathway={handleSetPriorityPathway} currentPathway={currentPathway} />
           </section>
 
           {/* C - CORRECT */}

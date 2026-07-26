@@ -64,11 +64,11 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
         >
           <CardContent className="p-8 space-y-6">
             <div className="flex items-start justify-between">
-              <div className="w-16 h-16 rounded-[1.5rem] bg-indigo-600 text-primary-foreground flex items-center justify-center text-2xl font-black uppercase shadow-xl shadow-indigo-100 dark:shadow-indigo-900/20 group-hover:scale-110 transition-transform">
+              <div className="w-16 h-16 rounded-[1.5rem] bg-primary text-primary-foreground flex items-center justify-center text-2xl font-black uppercase shadow-xl shadow-primary/10 group-hover:scale-110 transition-transform">
                 {client.name.charAt(0)}
               </div>
               <div className="flex flex-col items-end">
-                <Badge className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-none font-black text-[10px] uppercase tracking-widest mb-2">
+                <Badge className="bg-chart-emerald/10 text-chart-emerald border-none font-black text-[10px] uppercase tracking-widest mb-2">
                   {client.session_count} Sessions
                 </Badge>
                 <div className="flex items-center gap-1 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
@@ -80,7 +80,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <h3 className={cn(
-                  "text-2xl font-black text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate",
+                  "text-2xl font-black text-foreground group-hover:text-primary transition-colors truncate",
                   isPrivate && "blur-sm select-none"
                 )}>{client.name}</h3>
                 <IntakeStatusBadge client={client} />
@@ -99,14 +99,14 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
             <div className="grid grid-cols-2 gap-3">
               <div className={cn(
                 "p-3 rounded-2xl border flex flex-col items-center text-center",
-                client.latest_bolt === null ? "bg-muted/30 border-border" : (client.latest_bolt >= 25 ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-900/30" : "bg-rose-100 dark:bg-rose-900/30 border-rose-200 dark:border-rose-900/50")
+                client.latest_bolt === null ? "bg-muted/30 border-border" : (client.latest_bolt >= 25 ? "bg-chart-emerald/10 border-chart-emerald/20" : "bg-destructive/10 border-destructive/20")
               )}>
-                <FlaskConical size={14} className={cn("mb-1.5", client.latest_bolt === null ? "text-muted-foreground" : (client.latest_bolt >= 25 ? "text-emerald-600" : "text-rose-600"))} />
+                <FlaskConical size={14} className={cn("mb-1.5", client.latest_bolt === null ? "text-muted-foreground" : (client.latest_bolt >= 25 ? "text-chart-emerald" : "text-destructive"))} />
                 <p className="text-[8px] font-black uppercase tracking-widest opacity-60">Latest BOLT</p>
                 <p className="text-lg font-black">{client.latest_bolt !== null ? `${client.latest_bolt}s` : "—"}</p>
               </div>
               <div className="p-3 rounded-2xl border border-border bg-muted/30 flex flex-col items-center text-center">
-                <Activity size={14} className="mb-1 text-indigo-500" />
+                <Activity size={14} className="mb-1 text-primary" />
                 <p className="text-[8px] font-black uppercase tracking-widest opacity-60">Sessions</p>
                 <p className="text-lg font-black">{client.session_count}</p>
               </div>
@@ -116,7 +116,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
               {client.email && (
                 <div className="flex items-center justify-between group/contact">
                   <div className={cn("flex items-center gap-3 text-xs font-bold text-muted-foreground", isPrivate && "blur-[2px] select-none")}>
-                    <Mail size={14} className="text-indigo-400" /> {client.email}
+                    <Mail size={14} className="text-muted-foreground" /> {client.email}
                   </div>
                   <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity" asChild onClick={(e) => e.stopPropagation()}>
                     <a href={`mailto:${client.email}`}><ArrowRight size={12} className="-rotate-45" /></a>
@@ -126,7 +126,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
               {client.phone && (
                 <div className="flex items-center justify-between group/contact">
                   <div className={cn("flex items-center gap-3 text-xs font-bold text-muted-foreground", isPrivate && "blur-[2px] select-none")}>
-                    <Phone size={14} className="text-indigo-400" /> {client.phone}
+                    <Phone size={14} className="text-muted-foreground" /> {client.phone}
                   </div>
                   <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity" asChild onClick={(e) => e.stopPropagation()}>
                     <a href={`tel:${client.phone}`}><ArrowRight size={12} className="-rotate-45" /></a>
@@ -140,7 +140,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="p-0 text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-widest hover:bg-transparent"
+                  className="p-0 text-primary font-black text-[10px] uppercase tracking-widest hover:bg-transparent"
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickBook(client.id); }}
                 >
                   <CalendarPlus size={14} className="mr-2" /> Quick Book
@@ -151,7 +151,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 rounded-xl text-muted-foreground hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                        className="h-8 w-8 rounded-xl text-muted-foreground hover:text-amber-600 hover:bg-amber-500/10"
                         disabled={sendingId === client.id}
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSendOnboarding(client); }}
                       >
@@ -164,7 +164,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
                   </Tooltip>
                 )}
               </div>
-              <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-indigo-600 group-hover:text-primary-foreground transition-all shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all shrink-0">
                 <ArrowRight size={16} />
               </div>
             </div>

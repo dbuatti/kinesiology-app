@@ -129,7 +129,7 @@ const ClinicalOversightPage = () => {
  </CardHeader>
  <CardContent>
  <p className="text-4xl font-semibold">{imperativeCount}</p>
- <p className="text-xs font-medium text-rose-100 mt-1">Clients with BOLT score {"<"} 25s</p>
+ <p className="text-xs font-medium text-primary-foreground/80 mt-1">Clients with BOLT score {"<"} 25s</p>
  </CardContent>
  </Card>
 
@@ -142,7 +142,7 @@ const ClinicalOversightPage = () => {
  </CardHeader>
  <CardContent>
  <p className="text-4xl font-semibold">{functionalCount}</p>
- <p className="text-xs font-medium text-emerald-100 mt-1">Clients with BOLT score ≥ 25s</p>
+ <p className="text-xs font-medium text-primary-foreground/80 mt-1">Clients with BOLT score ≥ 25s</p>
  </CardContent>
  </Card>
 
@@ -155,7 +155,7 @@ const ClinicalOversightPage = () => {
  </CardHeader>
  <CardContent>
  <p className="text-4xl font-semibold">{clients.length}</p>
- <p className="text-xs font-medium text-indigo-100 mt-1">Active clinical cases</p>
+ <p className="text-xs font-medium text-primary-foreground/80 mt-1">Active clinical cases</p>
  </CardContent>
  </Card>
  </div>

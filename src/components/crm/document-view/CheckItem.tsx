@@ -39,10 +39,10 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
     if (isMuscle) {
       if (!status) nextStatus = 'Inhibited';
       else if (status === 'Inhibited') nextStatus = 'Hypertonic';
-      else nextStatus = 'Inhibited';
+      else nextStatus = 'Clear';
     } else {
       if (!status) nextStatus = 'Inhibited';
-      else nextStatus = 'Inhibited';
+      else nextStatus = 'Clear';
     }
 
     onToggle(category, name, nextStatus, side);

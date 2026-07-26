@@ -156,8 +156,8 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
   if (createdClientId) {
     return (
       <div className="flex flex-col items-center text-center space-y-8 py-8">
-        <div className="w-20 h-20 rounded-3xl bg-emerald-50 flex items-center justify-center">
-          <CheckCircle2 size={40} className="text-emerald-500" />
+        <div className="w-20 h-20 rounded-3xl bg-chart-emerald/10 flex items-center justify-center">
+          <CheckCircle2 size={40} className="text-chart-emerald" />
         </div>
         <div className="space-y-2">
           <h3 className="text-2xl font-bold text-foreground dark:text-primary-foreground tracking-tight">
@@ -169,7 +169,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full">
           <Button
-            className="flex-1 bg-indigo-600 hover:bg-indigo-700 h-12 rounded-2xl font-black text-xs uppercase tracking-widest gap-2"
+            className="flex-1 bg-primary hover:bg-primary/90 h-12 rounded-2xl font-black text-xs uppercase tracking-widest gap-2"
             onClick={() => onSuccess(createdClientId)}
           >
             <CalendarPlus size={16} />
@@ -192,7 +192,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 pb-6">
         {/* Personal Section */}
         <div className="space-y-4">
-          <SectionHeader icon={User} title="Personal Details" color="text-indigo-600" />
+          <SectionHeader icon={User} title="Personal Details" color="text-primary" />
           <FormField
             control={form.control}
             name="name"
@@ -282,7 +282,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
 
         {/* Clinical Section */}
         <div className="space-y-4">
-          <SectionHeader icon={Activity} title="Clinical Context" color="text-rose-600" />
+          <SectionHeader icon={Activity} title="Clinical Context" color="text-destructive" />
           <FormField
             control={form.control}
             name="medical_history"
@@ -347,7 +347,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               <FormItem className="space-y-4 p-6 bg-muted/50 rounded-2xl border border-border/50">
                 <div className="flex items-center justify-between">
                   <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Current Stress Level</FormLabel>
-                  <span className="text-2xl font-black text-indigo-600">{field.value}</span>
+                  <span className="text-2xl font-black text-primary">{field.value}</span>
                 </div>
                 <FormControl>
                   <Slider
@@ -449,7 +449,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
         </div>
 
         <div className="sticky bottom-0 pt-4 bg-card/80 backdrop-blur-sm border-t border-border/50">
-          <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 h-14 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100" disabled={submitting}>
+          <Button type="submit" className="w-full bg-primary hover:bg-primary/90 h-14 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-primary/10" disabled={submitting}>
             {submitting ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />

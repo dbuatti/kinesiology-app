@@ -40,13 +40,13 @@ const DataIntegrityCheck = ({ clients }: DataIntegrityCheckProps) => {
 
   if (clientsWithMissingData.length === 0) {
     return (
-      <Card className="border-none shadow-lg rounded-[2.5rem] bg-emerald-50 border-2 border-emerald-100">
+      <Card className="border-none shadow-lg rounded-[2.5rem] bg-chart-emerald/10 border-2 border-chart-emerald/20">
         <CardContent className="p-10 text-center space-y-4">
           <div className="w-16 h-16 bg-card rounded-2xl flex items-center justify-center mx-auto shadow-sm">
-            <CheckCircle2 size={32} className="text-emerald-500" />
+            <CheckCircle2 size={32} className="text-chart-emerald" />
           </div>
-          <h3 className="text-xl font-black text-emerald-900">Data Integrity: 100%</h3>
-          <p className="text-emerald-700 font-medium">All clients have complete pivotal data profiles.</p>
+          <h3 className="text-xl font-black text-chart-emerald">Data Integrity: 100%</h3>
+          <p className="text-chart-emerald/80 font-medium">All clients have complete pivotal data profiles.</p>
         </CardContent>
       </Card>
     );
@@ -72,14 +72,14 @@ const DataIntegrityCheck = ({ clients }: DataIntegrityCheckProps) => {
           {clientsWithMissingData.map((client) => (
             <div key={client.id} className="p-6 border-b border-border hover:bg-muted/20 transition-colors flex items-center justify-between group">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-black">
                   {client.name.charAt(0)}
                 </div>
                 <div>
-                  <p className="font-black text-foreground group-hover:text-indigo-600 transition-colors">{client.name}</p>
+                  <p className="font-black text-foreground group-hover:text-primary transition-colors">{client.name}</p>
                   <div className="flex flex-wrap gap-2 mt-1.5">
                     {client.missingFields.map((field: any) => (
-                      <span key={field.label} className="inline-flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-rose-500 bg-rose-50 dark:bg-rose-950/20 px-2 py-0.5 rounded-md border border-rose-100 dark:border-rose-900/30">
+                      <span key={field.label} className="inline-flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-destructive bg-destructive/5 px-2 py-0.5 rounded-md border border-destructive/20">
                         <field.icon size={8} /> Missing {field.label}
                       </span>
                     ))}
@@ -87,7 +87,7 @@ const DataIntegrityCheck = ({ clients }: DataIntegrityCheckProps) => {
                 </div>
               </div>
               <Link to={`/clients/${client.id}`}>
-                <Button variant="ghost" size="icon" className="rounded-xl hover:bg-indigo-50 hover:text-indigo-600">
+                <Button variant="ghost" size="icon" className="rounded-xl hover:bg-primary/10 hover:text-primary">
                   <ArrowRight size={18} />
                 </Button>
               </Link>

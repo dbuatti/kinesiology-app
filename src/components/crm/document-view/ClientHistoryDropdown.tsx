@@ -51,7 +51,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
         <CollapsibleTrigger asChild>
           <div className="p-4 flex items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-chart-primary flex items-center justify-center shadow-sm">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 text-chart-primary flex items-center justify-center shadow-sm">
                 <History size={18} />
               </div>
               <div>
@@ -80,13 +80,13 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {pastSessions.slice(0, 4).map((session) => (
                   <div key={session.id} className="p-3 bg-muted border border-border/50 rounded-xl flex items-start gap-3">
-                    <Calendar size={14} className="text-indigo-500 shrink-0 mt-0.5" />
+                    <Calendar size={14} className="text-primary shrink-0 mt-0.5" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-semibold text-muted-foreground uppercase">
                           {format(new Date(session.date), "MMM d, yyyy")}
                         </span>
-                        <Badge className="bg-emerald-500 text-primary-foreground border-none font-semibold text-[7px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm">
+                        <Badge className="bg-chart-emerald text-primary-foreground border-none font-semibold text-[7px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm">
                           {session.status}
                         </Badge>
                       </div>
@@ -100,7 +100,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                             href={session.notion_link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-[9px] font-semibold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-1.5 py-0.5 rounded transition-colors"
+                            className="inline-flex items-center gap-1 text-[9px] font-semibold text-primary hover:text-primary/80 bg-primary/10 hover:bg-primary/15 px-1.5 py-0.5 rounded transition-colors"
                             title="Open in Notion"
                           >
                             <ExternalLink size={10} /> Notion
@@ -163,7 +163,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                             <div className="col-span-4 flex items-center gap-3 min-w-0">
                               <div className={cn(
                                 "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
-                                finding.isResolved ? "bg-emerald-50 text-chart-emerald" : "bg-rose-50 text-chart-destructive"
+                                finding.isResolved ? "bg-chart-emerald/10 text-chart-emerald" : "bg-destructive/10 text-chart-destructive"
                               )}>
                                 <Icon size={14} />
                               </div>
@@ -175,7 +175,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                                   {side && (
                                     <Badge className={cn(
                                       "border-none font-semibold text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm leading-none",
-                                      side === 'L' ? "bg-primary/10 text-primary" : "bg-rose-100 text-rose-700"
+                                       side === 'L' ? "bg-primary/10 text-primary" : "bg-destructive/10 text-destructive"
                                     )}>
                                       {side === 'L' ? 'Left' : 'Right'}
                                     </Badge>
@@ -199,7 +199,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                             <div className="col-span-2 text-center">
                               <Badge className={cn(
                                 "border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-0.5 rounded-sm",
-                                finding.isResolved ? "bg-emerald-500 text-primary-foreground" : "bg-rose-500 text-primary-foreground"
+                                finding.isResolved ? "bg-chart-emerald text-primary-foreground" : "bg-destructive text-primary-foreground"
                               )}>
                                 {finding.isResolved ? "Clear" : "Unclear"}
                               </Badge>
@@ -215,7 +215,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                                       key={i} 
                                       className={cn(
                                         "w-1.5 h-1.5 rounded-full",
-                                        isClear ? "bg-emerald-500" : "bg-rose-500"
+                                           isClear ? "bg-chart-emerald" : "bg-destructive"
                                       )} 
                                       title={`${h.date}: ${h.status}`}
                                     />
@@ -239,14 +239,14 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                                         {/* Timeline Node Dot */}
                                         <div className={cn(
                                           "absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full border-2 border-primary-foreground/20 shadow-sm",
-                                          isClear ? "bg-emerald-500" : "bg-rose-500"
+                                        isClear ? "bg-chart-emerald" : "bg-destructive"
                                         )} />
                                         
                                         <div className="flex items-center gap-3">
                                           <span className="text-[10px] font-semibold text-muted-foreground uppercase">{h.date}</span>
                                           <Badge variant="outline" className={cn(
                                             "text-[7px] font-semibold uppercase tracking-wider px-1.5 py-0 border-none",
-                                            isClear ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"
+                                             isClear ? "bg-chart-emerald/10 text-chart-emerald" : "bg-destructive/10 text-destructive"
                                           )}>
                                             {h.status}
                                           </Badge>

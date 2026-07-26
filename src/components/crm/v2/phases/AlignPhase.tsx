@@ -1,9 +1,8 @@
 import { useState, useMemo } from "react";
-import { GitBranch, Target, AlertCircle, Zap, Dumbbell, Baby, Brain, Star } from "lucide-react";
+import { GitBranch, Target, AlertCircle, Zap, Dumbbell, Baby, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { safeParse } from "@/utils/safe-json";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { PhaseHeader } from "@/components/crm/v2/PhaseComponents";
 import type { PhaseProps } from "@/components/crm/v2/v2-types";
 
@@ -26,7 +25,7 @@ interface Finding {
   category: string;
   status: string;
   side?: 'L' | 'R';
-  priorityLevel: 'primary' | 'priority' | null;
+  priorityLevel: 'priority' | null;
 }
 
 const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, onJumpToPhase }: PhaseProps) => {
@@ -40,7 +39,6 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
   const priorities = pattern?.priorities || {};
 
   const [showOnlyPriority, setShowOnlyPriority] = useState(false);
-  const [showOnlyPrimary, setShowOnlyPrimary] = useState(false);
 
   const allFindings = useMemo(() => {
     const items: Finding[] = [];
@@ -52,14 +50,14 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
           const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
           const baseName = name.replace(/ \([LR]\)$/, '');
           const priorityKey = `${catKey}|${name}`;
-          const pLevel = priorities[priorityKey] as 'primary' | 'priority' | undefined || null;
+          const pLevel = priorities[priorityKey] as 'priority' | undefined || null;
           items.push({ name: baseName, category: catKey, status: status as string, side, priorityLevel: pLevel });
         }
       });
     });
     items.sort((a, b) => {
-      const scoreA = a.priorityLevel === 'primary' ? 2 : a.priorityLevel === 'priority' ? 1 : 0;
-      const scoreB = b.priorityLevel === 'primary' ? 2 : b.priorityLevel === 'priority' ? 1 : 0;
+      const scoreA = a.priorityLevel === 'priority' ? 1 : 0;
+      const scoreB = b.priorityLevel === 'priority' ? 1 : 0;
       if (scoreA !== scoreB) return scoreB - scoreA;
       return a.name.localeCompare(b.name);
     });
@@ -68,21 +66,19 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
 
   const filteredFindings = useMemo(() => {
     return allFindings.filter(f => {
-      if (showOnlyPrimary && f.priorityLevel !== 'primary') return false;
-      if (showOnlyPriority && f.priorityLevel !== 'priority' && f.priorityLevel !== 'primary') return false;
+      if (showOnlyPriority && f.priorityLevel !== 'priority') return false;
       return true;
     });
-  }, [allFindings, showOnlyPrimary, showOnlyPriority]);
+  }, [allFindings, showOnlyPriority]);
 
   const priorityPathway = (meta as any)?.priority_pathway || "";
 
-  const primaryCount = allFindings.filter(f => f.priorityLevel === 'primary').length;
   const priorityCount = allFindings.filter(f => f.priorityLevel === 'priority').length;
 
-  const handleSetPriority = async (finding: Finding, level: 'primary' | 'priority') => {
+  const handleSetPriority = async (finding: Finding) => {
     const key = `${finding.category}|${finding.name}${finding.side ? ` (${finding.side})` : ''}`;
     const currentLevel = priorities[key];
-    const nextLevel = currentLevel === level ? null : level;
+    const nextLevel = currentLevel === 'priority' ? null : 'priority';
     await updatePriorityPattern('priorities', key, nextLevel || 'Clear');
     onUpdate();
   };
@@ -101,10 +97,10 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
       {allFindings.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
           <button
-            onClick={() => { setShowOnlyPrimary(false); setShowOnlyPriority(false); }}
+            onClick={() => setShowOnlyPriority(false)}
             className={cn(
               "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-all",
-              !showOnlyPrimary && !showOnlyPriority
+              !showOnlyPriority
                 ? "bg-foreground text-primary-foreground border-foreground"
                 : "bg-card border-border text-muted-foreground hover:border-foreground/40"
             )}
@@ -112,18 +108,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
             All ({allFindings.length})
           </button>
           <button
-            onClick={() => { setShowOnlyPrimary(!showOnlyPrimary); setShowOnlyPriority(false); }}
-            className={cn(
-              "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-all flex items-center gap-1.5",
-              showOnlyPrimary
-                ? "bg-chart-primary text-primary-foreground border-chart-primary"
-                : "bg-card border-border text-muted-foreground hover:border-chart-primary/40"
-            )}
-          >
-            <Star size={10} /> 1° ({primaryCount})
-          </button>
-          <button
-            onClick={() => { setShowOnlyPriority(!showOnlyPriority); setShowOnlyPrimary(false); }}
+            onClick={() => setShowOnlyPriority(!showOnlyPriority)}
             className={cn(
               "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-all flex items-center gap-1.5",
               showOnlyPriority
@@ -131,7 +116,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                 : "bg-card border-border text-muted-foreground hover:border-chart-emerald/40"
             )}
           >
-            <Target size={10} /> 2° ({priorityCount})
+            <Target size={10} /> 1° ({priorityCount})
           </button>
         </div>
       )}
@@ -157,12 +142,11 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                   </div>
                   <div className="divide-y divide-border border border-border rounded-lg">
                     {findings.map((item, i) => {
-                      const isPrimary = item.priorityLevel === 'primary';
                       const isPriority = item.priorityLevel === 'priority';
                       return (
                         <div key={`${item.category}-${item.name}-${item.side || ''}-${i}`} className={cn(
                           "flex items-center justify-between gap-4 py-3 px-4 transition-colors",
-                          isPrimary ? "bg-chart-primary/8" : isPriority ? "bg-chart-emerald/8" : "hover:bg-muted/30"
+                          isPriority ? "bg-chart-emerald/8" : "hover:bg-muted/30"
                         )}>
                           <div className="flex items-center gap-3 min-w-0">
                             {Icon && <Icon size={16} className="shrink-0 text-muted-foreground" />}
@@ -178,23 +162,12 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
                             <button
-                              onClick={() => handleSetPriority(item, 'priority')}
+                              onClick={() => handleSetPriority(item)}
                               className={cn(
                                 "px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider border transition-all",
                                 isPriority
                                   ? "bg-chart-emerald text-primary-foreground border-chart-emerald"
                                   : "bg-card border-border text-muted-foreground hover:border-chart-emerald/50 hover:text-chart-emerald"
-                              )}
-                            >
-                              2°
-                            </button>
-                            <button
-                              onClick={() => handleSetPriority(item, 'primary')}
-                              className={cn(
-                                "px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider border transition-all",
-                                isPrimary
-                                  ? "bg-chart-primary text-primary-foreground border-chart-primary"
-                                  : "bg-card border-border text-muted-foreground hover:border-chart-primary/50 hover:text-chart-primary"
                               )}
                             >
                               1°

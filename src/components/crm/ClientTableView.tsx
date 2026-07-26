@@ -64,16 +64,16 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
         </TableHeader>
         <TableBody>
           {clients.map((client) => (
-            <TableRow key={client.id} className="hover:bg-indigo-50/30 dark:hover:bg-indigo-900/10 transition-colors group border-border">
+            <TableRow key={client.id} className="hover:bg-primary/5 transition-colors group border-border">
               <TableCell className="px-8 py-5">
                 <Link to={`/clients/${client.id}`} className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-lg font-black uppercase shadow-sm group-hover:bg-card transition-colors">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center text-lg font-black uppercase shadow-sm group-hover:bg-card transition-colors">
                     {client.name.charAt(0)}
                   </div>
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
                       <span className={cn(
-                        "font-black text-foreground text-lg group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors",
+                        "font-black text-foreground text-lg group-hover:text-primary transition-colors",
                         isPrivate && "blur-sm select-none"
                       )}>{client.name}</span>
                       <IntakeStatusBadge client={client} />
@@ -92,7 +92,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
                 <div className="flex flex-col">
                   <span className="text-sm font-bold text-foreground">{client.born ? `${calculateAge(client.born)} yrs` : "-"}</span>
                   {client.born && (
-                    <span className="text-[10px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                    <span className="text-[10px] font-black text-amber-600 uppercase tracking-wider flex items-center gap-1">
                       <Clock size={10} /> {getStarSign(client.born)}
                     </span>
                   )}
@@ -100,7 +100,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
-                  <CalendarPlus size={14} className="text-indigo-400" />
+                  <CalendarPlus size={14} className="text-muted-foreground" />
                   {client.last_session_at ? format(new Date(client.last_session_at), "MMM d, yyyy") : "Never"}
                 </div>
               </TableCell>
@@ -138,7 +138,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-9 w-9 rounded-xl text-muted-foreground hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                          className="h-9 w-9 rounded-xl text-muted-foreground hover:text-amber-600 hover:bg-amber-500/10"
                           disabled={sendingId === client.id}
                           onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSendOnboarding(client); }}
                         >
@@ -155,7 +155,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-9 w-9 rounded-xl text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20"
+                        className="h-9 w-9 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickBook(client.id); }}
                       >
                         <CalendarPlus size={18} />

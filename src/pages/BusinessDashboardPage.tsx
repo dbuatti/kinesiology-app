@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   TrendingUp, Users, DollarSign, Mic, Calendar, ChevronRight, Clock,
+  AlertCircle, RefreshCw,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -38,14 +39,14 @@ const BusinessDashboardPage = () => {
     });
   }, []);
 
-  const { data: voiceData } = useQuery({
+  const { data: voiceData, error: voiceErr } = useQuery({
     queryKey: ['biz-dash-voice'],
     queryFn: async () => {
       const { data } = await supabase.from('voice_bookings').select('*');
       return (data || []) as VoiceBooking[];
     },
   });
-  const { data: appointments } = useQuery({
+  const { data: appointments, error: apptErr } = useQuery({
     queryKey: ['biz-dash-appts'],
     queryFn: async () => {
       const { data } = await supabase
@@ -66,6 +67,23 @@ const BusinessDashboardPage = () => {
   });
 
   const isLoading = !voiceData || !appointments || !clients;
+  const queryError = voiceErr || apptErr;
+
+  if (queryError) {
+    return (
+      <AppLayout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+          <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+            <AlertCircle size={28} className="text-destructive" />
+          </div>
+          <p className="text-destructive font-semibold text-sm">Failed to load business dashboard</p>
+          <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="rounded-xl text-xs gap-2">
+            <RefreshCw size={14} /> Retry
+          </Button>
+        </div>
+      </AppLayout>
+    );
+  }
 
   const derived = useMemo(() => {
     if (!voiceData || !appointments || !clients) return null;

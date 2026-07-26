@@ -6,7 +6,7 @@ import {
  Activity, FlaskConical, Brain, AlertCircle, 
  CheckCircle2, ArrowRight, Search, Loader2, 
  TrendingUp, Users, Zap, Wind, ShieldCheck,
-  CalendarClock, MessageSquare
+  CalendarClock, MessageSquare, RefreshCw
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,7 @@ import PageHeader from "@/components/shared/PageHeader";
 const ClinicalOversightPage = () => {
  const [clients, setClients] = useState<any[]>([]);
  const [loading, setLoading] = useState(true);
+ const [error, setError] = useState<string | null>(null);
  const [search, setSearch] = useState("");
 
  useEffect(() => {
@@ -64,7 +65,8 @@ const ClinicalOversightPage = () => {
 
  setClients(processed);
  } catch (err) {
- console.error("Error fetching clinical oversight data:", err);
+  console.error("Error fetching clinical oversight data:", err);
+  setError("Failed to load clinical data. Please try again.");
  } finally {
  setLoading(false);
  }
@@ -86,9 +88,23 @@ const ClinicalOversightPage = () => {
  </div>
  );
 
+ if (error) return (
+ <AppLayout>
+ <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+ <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+ <AlertCircle size={28} className="text-destructive" />
+ </div>
+ <p className="text-destructive font-semibold text-sm">{error}</p>
+ <Button variant="outline" size="sm" onClick={() => { setError(null); setLoading(true); }} className="rounded-xl text-xs gap-2">
+ <RefreshCw size={14} /> Retry
+ </Button>
+ </div>
+ </AppLayout>
+ );
+
  return (
  <AppLayout>
- <div className="space-y-10">
+ <div className="space-y-8">
  <PageHeader 
  title="Clinical Oversight"
  subtitle="Practice-wide health monitoring, data integrity, and case management."

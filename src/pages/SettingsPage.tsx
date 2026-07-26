@@ -80,7 +80,7 @@ const SettingsPage = () => {
             <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
               <div className="p-8">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                     <ClipboardList size={20} />
                   </div>
                   <div>
@@ -90,9 +90,9 @@ const SettingsPage = () => {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <button onClick={() => window.open("/onboarding/welcome", "_blank")} className="flex items-center justify-between p-4 bg-muted/40 rounded-2xl border border-border group hover:border-indigo-400/50 transition-all text-left">
+                  <button onClick={() => window.open("/onboarding/welcome", "_blank")} className="flex items-center justify-between p-4 bg-muted/40 rounded-2xl border border-border group hover:border-primary/50 transition-all text-left">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-background border border-border shadow-sm flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform">
+                      <div className="w-10 h-10 rounded-xl bg-background border border-border shadow-sm flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                         <Eye size={20} />
                       </div>
                       <div>
@@ -100,12 +100,12 @@ const SettingsPage = () => {
                         <p className="text-[10px] text-muted-foreground font-medium">See what clients see</p>
                       </div>
                     </div>
-                    <ExternalLink size={16} className="text-muted-foreground/40 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all shrink-0" />
+                    <ExternalLink size={16} className="text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
                   </button>
 
-                  <button onClick={() => { copyToClipboard(intakeDirectUrl); }} className="flex items-center justify-between p-4 bg-muted/40 rounded-2xl border border-border group hover:border-indigo-400/50 transition-all text-left">
+                  <button onClick={() => { copyToClipboard(intakeDirectUrl); }} className="flex items-center justify-between p-4 bg-muted/40 rounded-2xl border border-border group hover:border-primary/50 transition-all text-left">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-background border border-border shadow-sm flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform">
+                      <div className="w-10 h-10 rounded-xl bg-background border border-border shadow-sm flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                         <Share2 size={20} />
                       </div>
                       <div>
@@ -113,7 +113,7 @@ const SettingsPage = () => {
                         <p className="text-[10px] text-muted-foreground font-medium">Replace {`{clientId}`} with actual ID</p>
                       </div>
                     </div>
-                    <ExternalLink size={16} className="text-muted-foreground/40 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all shrink-0" />
+                    <ExternalLink size={16} className="text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
                   </button>
                 </div>
 
@@ -121,23 +121,23 @@ const SettingsPage = () => {
                   <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">How it works</div>
                   <ul className="space-y-1.5 text-xs text-muted-foreground">
                     <li className="flex items-start gap-2">
-                      <span className="text-indigo-400 mt-0.5 shrink-0">1.</span>
+                      <span className="text-primary mt-0.5 shrink-0">1.</span>
                       <span>When a booking is created, <code className="text-xs bg-muted px-1 py-0.5 rounded font-mono">send-manual-onboarding</code> checks intake form completeness.</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-indigo-400 mt-0.5 shrink-0">2.</span>
+                      <span className="text-primary mt-0.5 shrink-0">2.</span>
                       <span>If &lt;50% of fields are filled, the email includes a "Complete Intake Form" CTA.</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-indigo-400 mt-0.5 shrink-0">3.</span>
+                      <span className="text-primary mt-0.5 shrink-0">3.</span>
                       <span>Client opens <code className="text-xs bg-muted px-1 py-0.5 rounded font-mono">/onboarding/:id</code> — 40+ fields across 10 sections.</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-indigo-400 mt-0.5 shrink-0">4.</span>
+                      <span className="text-primary mt-0.5 shrink-0">4.</span>
                       <span>Submissions update the <code className="text-xs bg-muted px-1 py-0.5 rounded font-mono">clients</code> table directly.</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-indigo-400 mt-0.5 shrink-0">5.</span>
+                      <span className="text-primary mt-0.5 shrink-0">5.</span>
                       <span>Payment link is <strong>always</strong> sent regardless of intake completion.</span>
                     </li>
                   </ul>
@@ -194,7 +194,7 @@ const SettingsPage = () => {
             <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
               <div className="p-8">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-chart-emerald/10 text-chart-emerald flex items-center justify-center">
                     <Workflow size={20} />
                   </div>
                   <div>
@@ -204,21 +204,21 @@ const SettingsPage = () => {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                   <div className="p-3 bg-muted/30 rounded-xl border border-border/50 text-center">
-                    <div className="text-lg font-black text-amber-600">11</div>
+                    <div className="text-lg font-black text-chart-emerald">11</div>
                     <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Workflows</div>
                   </div>
                   <div className="p-3 bg-muted/30 rounded-xl border border-border/50 text-center">
-                    <div className="text-lg font-black text-amber-600">12</div>
+                    <div className="text-lg font-black text-chart-emerald">12</div>
                     <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Edge Functions</div>
                   </div>
                   <div className="p-3 bg-muted/30 rounded-xl border border-border/50 text-center">
-                    <div className="text-lg font-black text-amber-600">10</div>
+                    <div className="text-lg font-black text-chart-emerald">10</div>
                     <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Client States</div>
                   </div>
                 </div>
-                <button onClick={() => navigate("/settings/workflows")} className="w-full flex items-center justify-between p-4 bg-muted/40 rounded-2xl border border-border group hover:border-amber-400/50 transition-all text-left">
+                <button onClick={() => navigate("/settings/workflows")} className="w-full flex items-center justify-between p-4 bg-muted/40 rounded-2xl border border-border group hover:border-chart-emerald/50 transition-all text-left">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-background border border-border shadow-sm flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
+                    <div className="w-10 h-10 rounded-xl bg-background border border-border shadow-sm flex items-center justify-center text-chart-emerald group-hover:scale-110 transition-transform">
                       <Workflow size={20} />
                     </div>
                     <div>
@@ -226,7 +226,7 @@ const SettingsPage = () => {
                       <p className="text-[10px] text-muted-foreground font-medium">Inspect, filter, and expand all workflows</p>
                     </div>
                   </div>
-                  <ExternalLink size={16} className="text-muted-foreground/40 group-hover:text-amber-500 group-hover:translate-x-0.5 transition-all shrink-0" />
+                  <ExternalLink size={16} className="text-muted-foreground/40 group-hover:text-chart-emerald group-hover:translate-x-0.5 transition-all shrink-0" />
                 </button>
               </div>
             </div>
@@ -235,7 +235,7 @@ const SettingsPage = () => {
             <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden">
               <div className="p-8">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center">
                     <Bug size={20} />
                   </div>
                   <div>

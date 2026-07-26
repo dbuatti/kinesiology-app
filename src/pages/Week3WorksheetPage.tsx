@@ -1,4 +1,4 @@
-import { AppLayout } from '@/components/layout/AppLayout';
+import AppLayout from '@/components/crm/AppLayout';
 import Week3Worksheet from '@/components/worksheets/Week3Worksheet';
 
 const Week3WorksheetPage = () => {

@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutDashboard, Zap } from "lucide-react";
+import { LayoutDashboard, Zap, AlertCircle, RefreshCw } from "lucide-react";
 import { format, isToday, differenceInMinutes, subDays, startOfWeek } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ const Index = () => {
   const [todaySessions, setTodaySessions] = useState<AppointmentWithClient[]>([]);
   const [activeSession, setActiveSession] = useState<AppointmentWithClient | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [morningProgress, setMorningProgress] = useState(0);
   const [quickSessionOpen, setQuickSessionOpen] = useState(false);
@@ -114,6 +115,7 @@ const Index = () => {
       setActiveSession(active || null);
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
+      setError("Failed to load dashboard data. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -123,7 +125,7 @@ const Index = () => {
     fetchDashboardData();
   }, []);
 
-  if (loading) return (
+   if (loading) return (
     <AppLayout>
       <div className="space-y-8 animate-in fade-in duration-300">
         <div className="space-y-3">
@@ -145,6 +147,20 @@ const Index = () => {
     </AppLayout>
   );
 
+  if (error) return (
+    <AppLayout>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+          <AlertCircle size={28} className="text-destructive" />
+        </div>
+        <p className="text-destructive font-semibold text-sm">{error}</p>
+        <Button variant="outline" size="sm" onClick={() => { setError(null); setLoading(true); fetchDashboardData(); }} className="rounded-xl text-xs gap-2">
+          <RefreshCw size={14} /> Retry
+        </Button>
+      </div>
+    </AppLayout>
+  );
+
   return (
     <AppLayout>
       <div className="space-y-6 md:space-y-8">
@@ -152,7 +168,7 @@ const Index = () => {
           title="Dashboard"
           subtitle="Welcome back, Daniele. Here is your clinical landscape for today."
           icon={LayoutDashboard}
-          iconClassName="bg-gradient-to-br from-amber-500 to-rose-500 text-primary-foreground shadow-lg shadow-amber-500/20"
+          iconClassName="bg-gradient-to-br from-chart-primary to-chart-destructive text-primary-foreground shadow-lg shadow-primary/20"
           actions={
             <div className="flex items-center gap-4 bg-card px-4 py-2 rounded-xl border border-border shadow-sm">
               <div className="pr-4 border-r border-border">
@@ -169,7 +185,7 @@ const Index = () => {
 
         <Button
           onClick={() => setQuickSessionOpen(true)}
-          className="w-full bg-amber-500 hover:bg-amber-600 h-16 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-amber-100 flex items-center justify-center gap-3"
+          className="w-full bg-primary hover:bg-primary/90 h-16 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/10 flex items-center justify-center gap-3"
         >
           <Zap size={22} />
           Quick Session — Start instantly, no booking needed
@@ -182,17 +198,17 @@ const Index = () => {
           morningProgress={morningProgress}
         />
 
-        <div className="p-5 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl shadow-sm">
+        <div className="p-5 bg-muted/50 border border-border rounded-2xl shadow-sm">
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0 text-lg">
+            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0 text-lg">
               💬
             </div>
             <div className="space-y-1">
-              <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Client Love</p>
-              <p className="text-sm text-emerald-900/80 font-medium leading-relaxed italic">
+              <p className="text-[10px] font-black text-chart-emerald uppercase tracking-widest">Client Love</p>
+              <p className="text-sm text-foreground/80 font-medium leading-relaxed italic">
                 "Thank you for your valuable work yesterday — I slept well and now feeling relaxed and balanced today!!"
               </p>
-              <p className="text-[10px] font-semibold text-emerald-500 uppercase tracking-wider">— Client (Jul 14)</p>
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">— Client (Jul 14)</p>
             </div>
           </div>
         </div>

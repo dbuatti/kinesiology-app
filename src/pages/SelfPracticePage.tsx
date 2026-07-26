@@ -9,7 +9,7 @@ import {
  Heart, Activity, FlaskConical, Brain, Plus, 
  Calendar, Clock, TrendingUp, ArrowRight, 
  Zap, Info, History, Sparkles, CheckCircle2, Target, Move, Footprints,
- LayoutDashboard, Trash2
+ LayoutDashboard, Trash2, Loader2
 } from "lucide-react";
 import { format, isToday, startOfToday, differenceInDays } from "date-fns";
 import { Link, useSearchParams } from "react-router-dom";

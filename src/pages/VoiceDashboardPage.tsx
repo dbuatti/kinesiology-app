@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import {
  Mic, Users, Calendar, Mail, Phone, ExternalLink, Plus,
  Loader2, ArrowUpRight, Music, Clock, AlertCircle, MessageCircle,
- CreditCard, BarChart3, BookOpen
+ CreditCard, BarChart3, BookOpen, RefreshCw
 } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
@@ -50,7 +50,7 @@ const VoiceDashboardPage = () => {
   const navigate = useNavigate();
   const [disciplineFilter, setDisciplineFilter] = useState<DisciplineFilter>("all");
 
- const { data: students = [], isLoading: studentsLoading } = useQuery<VoiceStudent[]>({
+ const { data: students = [], isLoading: studentsLoading, error: studentsErr } = useQuery<VoiceStudent[]>({
  queryKey: ["voice-students"],
  queryFn: async () => {
  const { data, error } = await supabase.functions.invoke("voice-clients");
@@ -60,7 +60,7 @@ const VoiceDashboardPage = () => {
  staleTime: 5 * 60 * 1000,
  });
 
- const { data: lessons = [], isLoading: lessonsLoading } = useQuery<VoiceLesson[]>({
+ const { data: lessons = [], isLoading: lessonsLoading, error: lessonsErr } = useQuery<VoiceLesson[]>({
  queryKey: ["voice-lessons"],
  queryFn: async () => {
  const { data, error } = await supabase.functions.invoke("voice-lessons");
@@ -71,6 +71,7 @@ const VoiceDashboardPage = () => {
  });
 
   const isLoading = studentsLoading || lessonsLoading;
+  const queryError = studentsErr || lessonsErr;
 
   const filteredLessons = useMemo(() => {
     if (disciplineFilter === "all") return lessons;
@@ -93,10 +94,10 @@ const VoiceDashboardPage = () => {
   }, [filteredLessons, students]);
 
  const quickActions = [
- { label: "Add Student", icon: Plus, path: "/voice/clients", color: "bg-destructive", onClick: () => navigate("/voice/clients") },
- { label: "Book Lesson", icon: Calendar, path: "/voice/book", color: "bg-primary", onClick: () => navigate("/voice/book") },
- { label: "View Calendar", icon: BarChart3, path: "/voice/calendar", color: "bg-chart-emerald", onClick: () => navigate("/voice/calendar") },
- { label: "Clients", icon: Users, path: "/voice/clients", color: "bg-muted", onClick: () => navigate("/voice/clients") },
+ { label: "Add Student", icon: Plus, path: "/voice/clients", bgColor: "bg-destructive/10", iconColor: "text-destructive", onClick: () => navigate("/voice/clients") },
+ { label: "Book Lesson", icon: Calendar, path: "/voice/book", bgColor: "bg-primary/10", iconColor: "text-primary", onClick: () => navigate("/voice/book") },
+ { label: "View Calendar", icon: BarChart3, path: "/voice/calendar", bgColor: "bg-chart-emerald/10", iconColor: "text-chart-emerald", onClick: () => navigate("/voice/calendar") },
+ { label: "Clients", icon: Users, path: "/voice/clients", bgColor: "bg-muted", iconColor: "text-muted-foreground", onClick: () => navigate("/voice/clients") },
  ];
 
  if (isLoading) {
@@ -105,6 +106,22 @@ const VoiceDashboardPage = () => {
  <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
  <Loader2 className="animate-spin text-destructive" size={48} />
  <p className="text-muted-foreground font-semibold text-xs uppercase tracking-wider">Loading voice studio...</p>
+ </div>
+ </AppLayout>
+ );
+ }
+
+ if (queryError) {
+ return (
+ <AppLayout>
+ <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+ <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+ <AlertCircle size={28} className="text-destructive" />
+ </div>
+ <p className="text-destructive font-semibold text-sm">Failed to load voice studio</p>
+ <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="rounded-xl text-xs gap-2">
+ <RefreshCw size={14} /> Retry
+ </Button>
  </div>
  </AppLayout>
  );
@@ -174,8 +191,8 @@ const VoiceDashboardPage = () => {
  onClick={action.onClick}
  className="flex items-center gap-3 bg-card border border-border rounded-xl p-4 hover:border-border transition-all text-left group"
  >
- <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", action.color.replace("bg-", "bg-").replace("500", "100 "))}>
- <action.icon size={18} className={action.color.replace("bg-", "text-")} />
+ <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", action.bgColor)}>
+ <action.icon size={18} className={action.iconColor} />
  </div>
  <span className="font-medium text-sm text-foreground flex-1">{action.label}</span>
  <ArrowUpRight size={14} className="text-muted-foreground group-hover:text-destructive transition-colors shrink-0" />

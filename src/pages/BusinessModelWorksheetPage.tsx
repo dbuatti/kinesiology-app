@@ -1,4 +1,4 @@
-import { AppLayout } from '@/components/layout/AppLayout';
+import AppLayout from '@/components/crm/AppLayout';
 import BusinessModelWorksheet from '@/components/worksheets/BusinessModelWorksheet';
 
 const BusinessModelWorksheetPage = () => {

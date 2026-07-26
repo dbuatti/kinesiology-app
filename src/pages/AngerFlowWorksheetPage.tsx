@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppLayout } from '@/components/layout/AppLayout';
+import AppLayout from '@/components/crm/AppLayout';
 import AngerFlowWorksheet from '@/components/worksheets/AngerFlowWorksheet';
 
 const AngerFlowWorksheetPage = () => {

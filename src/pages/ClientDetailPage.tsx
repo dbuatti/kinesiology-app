@@ -312,7 +312,19 @@ const ClientDetailPage = () => {
     </div>
   );
 
-  if (!client) return <div className="p-12 text-center">Client not found</div>;
+  if (!client) return (
+    <AppLayout variant="workspace">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+          <User size={28} className="text-muted-foreground" />
+        </div>
+        <p className="text-muted-foreground font-semibold text-sm">Client not found</p>
+        <Button variant="outline" size="sm" onClick={() => navigate("/clients")} className="rounded-xl text-xs gap-2">
+          <ArrowLeft size={14} /> Back to Clients
+        </Button>
+      </div>
+    </AppLayout>
+  );
 
   const rollups = getClientRollups(appointments);
 
@@ -326,6 +338,14 @@ const ClientDetailPage = () => {
 
           actions={
             <div className="flex flex-wrap gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="bg-muted border-border text-foreground hover:bg-muted rounded-xl font-semibold text-[10px] uppercase tracking-wider h-10 px-4"
+                onClick={() => navigate("/clients")}
+              >
+                <ArrowLeft size={14} className="mr-2" /> Back
+              </Button>
               <Button 
                 variant="outline" 
                 size="sm" 

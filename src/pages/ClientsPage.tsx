@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Loader2, LayoutGrid, List, Users } from "lucide-react";
+import { Plus, Search, Loader2, LayoutGrid, List, Users, AlertCircle, RefreshCw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -34,6 +34,7 @@ const ClientsPage = () => {
   const [view, setView] = useState<'table' | 'grid'>('table');
   const [clients, setClients] = useState<ClientWithStats[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [bookOpen, setBookOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
@@ -72,6 +73,7 @@ const ClientsPage = () => {
       setClients(mapped);
     } catch (err) {
       console.error("Error fetching clients:", err);
+      setError("Failed to load clients. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -124,7 +126,7 @@ const ClientsPage = () => {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
             <Input 
               placeholder="Search by name, email, or suburb..." 
-              className="pl-12 bg-muted/50 border-none focus:ring-2 focus:ring-indigo-500 h-12 rounded-xl font-medium"
+              className="pl-12 bg-muted/50 border-none focus:ring-2 focus:ring-primary h-12 rounded-xl font-medium"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -150,7 +152,17 @@ const ClientsPage = () => {
           </div>
         </div>
 
-        {loading ? (
+        {error ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+              <AlertCircle size={28} className="text-destructive" />
+            </div>
+            <p className="text-destructive font-semibold text-sm">{error}</p>
+            <Button variant="outline" size="sm" onClick={() => { setError(null); setLoading(true); fetchClients(); }} className="rounded-xl text-xs gap-2">
+              <RefreshCw size={14} /> Retry
+            </Button>
+          </div>
+        ) : loading ? (
           <div className="p-24 flex flex-col items-center justify-center gap-6">
             <Loader2 className="animate-spin text-primary" size={48} />
             <p className="text-muted-foreground font-black text-xs uppercase tracking-widest">Loading clients...</p>

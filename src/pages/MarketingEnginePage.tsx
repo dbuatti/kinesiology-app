@@ -170,7 +170,7 @@ Please provide the final output ready to be reviewed.`;
  </TabsList>
 
   <TabsContent value="guide" className="space-y-6 mt-0">
- <Card className="border-none shadow-sm rounded-xl bg-muted border-2 border-border overflow-hidden">
+ <Card className="shadow-sm rounded-xl bg-muted border border-border overflow-hidden">
  <CardHeader className="p-8 pb-4">
  <CardTitle className="text-2xl font-semibold flex items-center gap-3 text-foreground">
  <Mic size={28} className="text-chart-emerald" /> The Thought Catcher
@@ -210,7 +210,7 @@ Please provide the final output ready to be reviewed.`;
  <Card key={win.id} className="border-none shadow-md rounded-xl bg-card hover:shadow-sm transition-all group cursor-pointer" onClick={() => { setSelectedWin(win.id); setActiveTab('studio'); }}>
  <CardContent className="p-6 space-y-4">
  <div className="flex items-start justify-between">
- <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-muted0 group-hover:text-muted-foreground transition-all">
+ <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-muted/50 group-hover:text-muted-foreground transition-all">
  <Star size={20} className="fill-current" />
  </div>
  <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">{format(new Date(win.date), "MMM d")}</span>
@@ -240,7 +240,7 @@ Please provide the final output ready to be reviewed.`;
  <Card key={win.id} className="border-none shadow-md rounded-xl bg-card hover:shadow-sm transition-all group cursor-pointer" onClick={() => { setSelectedWin(`vault-${win.id}`); setActiveTab('studio'); }}>
  <CardContent className="p-6 space-y-4">
  <div className="flex items-start justify-between">
- <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-chart-destructive group-hover:bg-muted0 group-hover:text-muted-foreground transition-all">
+ <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-chart-destructive group-hover:bg-muted/50 group-hover:text-muted-foreground transition-all">
  <Quote size={20} className="fill-current" />
  </div>
  <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">{format(new Date(win.created_at), "MMM d")}</span>
@@ -260,7 +260,7 @@ Please provide the final output ready to be reviewed.`;
  <TabsContent value="studio" className="mt-0 space-y-6">
  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
  <div className="lg:col-span-5 space-y-6">
- <Card className="border-none shadow-sm rounded-xl bg-card border-2 border-border/50">
+ <Card className="shadow-sm rounded-xl bg-card border border-border/50">
  <CardHeader className="p-6 pb-4 border-b border-border bg-muted/30">
  <CardTitle className="text-lg font-semibold flex items-center gap-2 text-foreground">
  <Target size={20} className="text-chart-emerald" /> Prompt Configuration
@@ -339,10 +339,10 @@ Please provide the final output ready to be reviewed.`;
  </div>
 
  <div className="lg:col-span-7">
- <Card className="border-none shadow-sm rounded-xl bg-card text-card-foreground border border-border overflow-hidden h-full flex flex-col">
+ <Card className="shadow-sm rounded-xl bg-card text-card-foreground border border-border overflow-hidden h-full flex flex-col">
  <CardHeader className="p-6 pb-4 border-b border-border flex flex-row items-center justify-between">
  <div className="flex items-center gap-3">
- <div className="w-10 h-10 rounded-xl bg-muted0/20 text-chart-emerald flex items-center justify-center">
+ <div className="w-10 h-10 rounded-xl bg-muted/20 text-chart-emerald flex items-center justify-center">
  <Wand2 size={20} />
  </div>
  <div>

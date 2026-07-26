@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AppLayout } from '@/components/layout/AppLayout';
+import AppLayout from '@/components/crm/AppLayout';
 import WhereYourValueBeginsWorksheet from '@/components/worksheets/WhereYourValueBeginsWorksheet';
 
 const ValueWorksheetPage = () => {

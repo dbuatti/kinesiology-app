@@ -1,13 +1,16 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, PlayCircle, Fingerprint, Info } from "lucide-react";
+import { BookOpen, PlayCircle, Fingerprint, Info, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import IdentityShiftingBackground from "@/components/crm/IdentityShiftingBackground";
 import IdentityShiftingTool from "@/components/crm/IdentityShiftingTool";
 import PageHeader from "@/components/shared/PageHeader";
+import { Button } from "@/components/ui/button";
 
 import AppLayout from '@/components/crm/AppLayout';
 
 const IdentityShiftingPage = () => {
+ const navigate = useNavigate();
  return (
  <AppLayout>
   <div className="max-w-5xl mx-auto space-y-4">
@@ -15,6 +18,11 @@ const IdentityShiftingPage = () => {
     title="Identity Shifting"
     subtitle="Explore the nature of the self and dissolve problematic identities."
     icon={Fingerprint}
+    actions={
+      <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
+        <ArrowLeft size={14} /> Back
+      </Button>
+    }
   />
 
  <Tabs defaultValue="practice" className="w-full">

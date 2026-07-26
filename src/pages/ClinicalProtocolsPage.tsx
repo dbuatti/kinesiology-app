@@ -40,6 +40,8 @@ export default function ClinicalProtocolsPage() {
   const navigate = useNavigate();
   const { appointment, loading, updatePriorityPattern, saveField } = useAppointment(id);
   const [activeTab, setActiveTab] = useState("cranial-nerves");
+  const [integrationNote, setIntegrationNote] = useState(appointment?.integration_note || "");
+  const [savingIntegration, setSavingIntegration] = useState(false);
 
   // Global UI Settings
   const [showImages, setShowImages] = useState(() => {
@@ -276,10 +278,25 @@ export default function ClinicalProtocolsPage() {
               <textarea 
                 className="w-full min-h-[250px] bg-background border-2 border-border rounded-xl p-10 text-lg font-medium leading-relaxed focus:ring-4 focus:ring-chart-primary/10 focus:border-chart-primary transition-all shadow-inner placeholder:text-muted-foreground/30"
                 placeholder="Document the primary correction and prescribed homework here..."
+                value={integrationNote}
+                onChange={(e) => setIntegrationNote(e.target.value)}
               />
               <div className="mt-6 flex justify-end">
-                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-14 px-12 font-semibold text-xs uppercase tracking-wider shadow-sm">
-                  <Save size={18} className="mr-2" /> Save Integration
+                <Button 
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-14 px-12 font-semibold text-xs uppercase tracking-wider shadow-sm"
+                  disabled={savingIntegration}
+                  onClick={async () => {
+                    if (!id) return;
+                    setSavingIntegration(true);
+                    try {
+                      await saveField("integration_note", integrationNote);
+                    } finally {
+                      setSavingIntegration(false);
+                    }
+                  }}
+                >
+                  {savingIntegration ? <Loader2 size={18} className="mr-2 animate-spin" /> : <Save size={18} className="mr-2" />} 
+                  Save Integration
                 </Button>
               </div>
             </div>

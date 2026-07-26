@@ -1,13 +1,16 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, PlayCircle, Info, Target } from "lucide-react";
+import { BookOpen, PlayCircle, Info, Target, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import IdentityAlignmentBackground from '@/components/crm/IdentityAlignmentBackground';
 import IdentityAlignmentTool from '@/components/crm/IdentityAlignmentTool';
 import AppLayout from '@/components/crm/AppLayout';
 import PageHeader from "@/components/shared/PageHeader";
+import { Button } from "@/components/ui/button";
 
 
 const IdentityAlignmentPage = () => {
+ const navigate = useNavigate();
  return (
  <AppLayout>
   <div className="max-w-5xl mx-auto space-y-4">
@@ -15,6 +18,11 @@ const IdentityAlignmentPage = () => {
     title="Identity Alignment"
     subtitle="Neural Reconsolidation & Autonomic Safety Protocol."
     icon={Target}
+    actions={
+      <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
+        <ArrowLeft size={14} /> Back
+      </Button>
+    }
   />
 
  <Tabs defaultValue="practice" className="w-full">

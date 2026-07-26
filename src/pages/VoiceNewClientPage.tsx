@@ -30,7 +30,7 @@ const VoiceNewClientPage = () => {
         />
 
         <div className="bg-card rounded-[2.5rem] border border-border p-8 shadow-xl">
-          <VoiceOnboardingForm onSuccess={() => navigate("/")} />
+          <VoiceOnboardingForm onSuccess={() => navigate("/voice/clients")} />
         </div>
       </div>
     </AppLayout>

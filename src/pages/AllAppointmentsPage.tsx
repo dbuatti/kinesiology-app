@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Search, Loader2, ListOrdered, ExternalLink, User, Calendar, DollarSign } from "lucide-react";
+import { Search, Loader2, ListOrdered, ExternalLink, User, Calendar, DollarSign, AlertCircle, RefreshCw, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -42,11 +42,13 @@ interface AppRow {
 }
 
 const AllAppointmentsPage = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [tagFilter, setTagFilter] = useState("all");
   const [apps, setApps] = useState<AppRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetch = async () => {
@@ -75,6 +77,7 @@ const AllAppointmentsPage = () => {
         setApps(mapped);
       } catch (err) {
         console.error("Error fetching appointments:", err);
+        setError("Failed to load appointments. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -118,6 +121,11 @@ const AllAppointmentsPage = () => {
           title="All Appointments"
           subtitle={`${filtered.length} of ${apps.length} total`}
           icon={ListOrdered}
+          actions={
+            <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
+              <ArrowLeft size={14} /> Back
+            </Button>
+          }
         />
 
         <div className="flex flex-wrap items-center gap-3">
@@ -156,7 +164,17 @@ const AllAppointmentsPage = () => {
           </Select>
         </div>
 
-        {loading ? (
+        {error ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+              <AlertCircle size={28} className="text-destructive" />
+            </div>
+            <p className="text-destructive font-semibold text-sm">{error}</p>
+            <Button variant="outline" size="sm" onClick={() => { setError(null); setLoading(true); }} className="rounded-xl text-xs gap-2">
+              <RefreshCw size={14} /> Retry
+            </Button>
+          </div>
+        ) : loading ? (
           <div className="flex items-center justify-center py-20 text-muted-foreground gap-2">
             <Loader2 className="h-5 w-5 animate-spin" />
             Loading appointments...

@@ -5,6 +5,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { showError } from "@/utils/toast";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft, Loader2, Activity, FileText,
@@ -190,11 +191,17 @@ const AppointmentV2Page = () => {
               saveField={saveField}
               updatePriorityPattern={updatePriorityPattern}
               onFinalise={async () => {
-                await supabase
-                  .from('appointments')
-                  .update({ status: 'Completed' })
-                  .eq('id', id);
-                navigate(`/appointments/${id}`);
+                try {
+                  const { error } = await supabase
+                    .from('appointments')
+                    .update({ status: 'Completed' })
+                    .eq('id', id);
+                  if (error) throw error;
+                  navigate(`/appointments/${id}`);
+                } catch (err) {
+                  console.error("Failed to finalise session:", err);
+                  showError("Failed to complete session. Please try again.");
+                }
               }}
             />
           </ErrorBoundary>

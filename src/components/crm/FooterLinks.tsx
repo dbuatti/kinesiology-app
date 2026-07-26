@@ -1,11 +1,22 @@
 import { Link } from "react-router-dom";
-import { Printer, Globe, GraduationCap, Workflow, BookOpen, ExternalLink } from "lucide-react";
+import { Printer, Globe, GraduationCap, Workflow, BookOpen, ExternalLink, Home } from "lucide-react";
 
 const FooterLinks = () => {
   return (
     <footer className="border-t border-border bg-muted/30 mt-8">
       <div className="max-w-6xl mx-auto px-4 md:px-8 py-8">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+
+          <div>
+            <h4 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-3">Navigate</h4>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5">
+                  <Home size={11} /> Home
+                </Link>
+              </li>
+            </ul>
+          </div>
 
           <div>
             <h4 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-3">Clinical Assets</h4>

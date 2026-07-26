@@ -682,7 +682,7 @@ Correction Method: ${method}`;
       </div>
 
       {/* AFFERENT PROTOCOLS SECTION */}
-      <div id="c-afferent" className="space-y-6 scroll-mt-24">
+      <div id="c-afferent" className="space-y-6 scroll-mt-24 px-4 md:px-6">
         <div className="flex items-center gap-2 border-b border-foreground/20 pb-2">
           <ArrowDownCircle size={16} className="text-primary" />
           <h4 className="text-sm font-semibold uppercase tracking-wider text-primary">Afferent (Bottom-Up) Protocols</h4>
@@ -740,7 +740,7 @@ Correction Method: ${method}`;
       </div>
 
       {/* EFFERENT PROTOCOLS SECTION */}
-      <div id="c-efferent" className="space-y-6 scroll-mt-24">
+      <div id="c-efferent" className="space-y-6 scroll-mt-24 px-4 md:px-6">
         <div className="flex items-center gap-2 border-b border-foreground/20 pb-2">
           <ArrowUpCircle size={16} className="text-purple-600" />
           <h4 className="text-sm font-semibold uppercase tracking-wider text-purple-600">Efferent (Top-Down) Protocols</h4>

@@ -132,7 +132,7 @@ const Sidebar = () => {
   const location = useLocation();
   const { isPrivate, togglePrivacy } = usePrivacyMode();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
-    "Identity Work": true,
+    "Identity Work": false,
   });
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => {

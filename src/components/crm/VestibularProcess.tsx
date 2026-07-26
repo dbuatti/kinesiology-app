@@ -97,7 +97,7 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
   );
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+    <div className="py-4 space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
       {step === 'CANAL_SELECT' && (
         <div className="space-y-6">
           <StepHeader title="1. Localize Canal / Position" sub="Which head position triggers the inhibition?" />

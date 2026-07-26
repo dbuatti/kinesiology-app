@@ -14,7 +14,7 @@ interface DocumentSidebarProps {
 }
 
 export const OUTLINE_ITEMS = [
-  { id: "p-sec",       label: "P — Preliminary",             icon: Compass,         letter: "P", color: "text-muted-foreground dark:text-slate-300" },
+  { id: "p-sec",       label: "P — Preliminary",             icon: Compass,         letter: "P", color: "text-muted-foreground" },
   { id: "e-sec",       label: "E — Ease System",             icon: ShieldCheck,     letter: "E", color: "text-primary dark:text-primary" },
   { id: "a-sec",       label: "A — Align Hierarchy",         icon: List,            letter: "A", color: "text-violet-600 dark:text-violet-400" },
   { id: "c-sec",       label: "C — Correct",                 icon: Zap,             letter: "C", color: "text-amber-600 dark:text-amber-400" },

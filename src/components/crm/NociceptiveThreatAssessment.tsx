@@ -480,8 +480,8 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
   const currentIndex = stepOrder.indexOf(currentStep);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-      <div className="lg:col-span-8 relative">
+    <div className="py-4 space-y-4">
+      <div className="relative">
         <div className="flex items-center justify-between mb-3 mt-4">
           <div>
             <h2 className="text-sm font-medium text-foreground">Nociception — Quick Screen</h2>
@@ -548,46 +548,6 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
         )}
 
         <div className="flex flex-col justify-center">{renderStep()}</div>
-      </div>
-
-      <div className={cn(
-        "lg:col-span-4 space-y-4 transition-all duration-300",
-        !showHistory && "hidden"
-      )}>
-        <div className="p-4 rounded-lg bg-muted border border-border h-full flex flex-col">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-xs font-medium text-foreground flex items-center gap-1.5">
-              <Layers size={12} className="text-chart-primary" /> Layer History
-            </h3>
-            <Badge className="bg-primary text-primary-foreground border-none text-[9px]">
-              {layers.length} Cleared
-            </Badge>
-          </div>
-          <div className="flex-1 overflow-y-auto pr-1 space-y-2">
-            {layers.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center space-y-2">
-                <div className="w-8 h-8 rounded-full bg-background flex items-center justify-center text-muted-foreground">
-                  <History size={14} />
-                </div>
-                <p className="text-xs text-muted-foreground">No layers cleared yet.</p>
-              </div>
-            ) : (
-              layers.map((layer, idx) => (
-                <div key={idx} className="p-3 bg-background rounded-lg border border-border relative overflow-hidden">
-                  <div className="absolute left-0 top-0 w-0.5 h-full bg-primary" />
-                  <div className="flex justify-between items-start mb-1">
-                    <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wider">Layer {layer.id}</span>
-                    <CheckCircle2 size={10} className="text-chart-primary" />
-                  </div>
-                  <h4 className="font-medium text-foreground text-xs mb-1">{layer.site}</h4>
-                  <Badge variant="secondary" className="text-[9px] bg-muted text-chart-primary border-none">
-                    {stimulusLabel(layer.stimulus)}
-                  </Badge>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
       </div>
     </div>
   );

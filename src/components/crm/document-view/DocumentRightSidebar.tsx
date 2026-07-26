@@ -104,7 +104,7 @@ const DocumentRightSidebar = ({
                 "w-full rounded-xl border-2 flex flex-col items-center justify-center py-2 transition-all duration-300",
                 isActive
                   ? "bg-indigo-600 border-indigo-600 text-primary-foreground scale-[1.02] shadow-lg shadow-indigo-500/20"
-                  : "bg-card dark:bg-foreground border-foreground/20 dark:border-slate-600 text-foreground dark:text-muted-foreground/60 hover:bg-foreground hover:text-primary-foreground dark:hover:bg-card hover:scale-[1.02]"
+                  : "bg-card dark:bg-foreground border-foreground/20 dark:border-border text-foreground dark:text-muted-foreground/60 hover:bg-foreground hover:text-primary-foreground dark:hover:bg-card hover:scale-[1.02]"
               )}
               title={isActive ? "Click to stop" : `Start ${preset.label} timer — ${preset.note}`}
             >

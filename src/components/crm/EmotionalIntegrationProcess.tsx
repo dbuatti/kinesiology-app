@@ -106,7 +106,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
   );
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+    <div className="py-4 space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
       {step === 'INITIAL_TL' && (
         <div className="space-y-6">
           <div className="bg-muted/50 p-4 rounded-xl text-center space-y-4">

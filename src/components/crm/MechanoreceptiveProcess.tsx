@@ -103,7 +103,7 @@ const MechanoreceptiveProcess = ({
   };
 
   return (
-    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+    <div className="py-4 space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
 
       <div className="mb-4">
         <p className="text-xs text-muted-foreground mb-2">{stepNames[step]}</p>

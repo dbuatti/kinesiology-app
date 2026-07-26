@@ -17,7 +17,7 @@ const DocumentHeader = ({ clientName, date, displayId, id }: DocumentHeaderProps
       <div className="text-right space-y-1">
         <p className="text-xl font-black">{clientName}</p>
         <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{format(date, "EEEE, MMMM d, yyyy")}</p>
-        <p className="text-[9px] font-mono text-slate-300 uppercase">{displayId || id}</p>
+        <p className="text-[9px] font-mono text-muted-foreground uppercase">{displayId || id}</p>
       </div>
     </div>
   );

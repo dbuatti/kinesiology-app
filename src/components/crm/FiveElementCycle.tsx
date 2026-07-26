@@ -36,7 +36,7 @@ const ELEMENTS = [
   },
   { 
     name: "Metal", 
-    color: "bg-slate-400", 
+    color: "bg-muted", 
     textColor: "text-foreground/80",
     meridians: ["Lung", "Large Intestine"],
     sheng: "Water", 

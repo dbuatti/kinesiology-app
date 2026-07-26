@@ -612,7 +612,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                   {item.cancelled ? (
                     <Badge className="bg-muted text-muted-foreground border-none text-[10px] font-semibold rounded-full px-2.5 py-0.5">Cancelled</Badge>
                   ) : item.isFree ? (
-                    <Badge className="bg-muted text-muted-foreground dark:bg-foreground dark:text-slate-300 border-none text-[10px] font-semibold rounded-full px-2.5 py-0.5">Free</Badge>
+                    <Badge className="bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground border-none text-[10px] font-semibold rounded-full px-2.5 py-0.5">Free</Badge>
                   ) : !item.paid ? (
                     <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-none text-[10px] font-semibold rounded-full px-2.5 py-0.5">Unpaid</Badge>
                   ) : null}

@@ -852,7 +852,7 @@ const CalcomSlotsView = () => {
                           <div className="flex items-center gap-4">
                             <div className={cn(
                               "w-12 h-12 rounded-2xl flex items-center justify-center shadow-xl transition-all duration-500",
-                              isBlocked ? "bg-slate-400 scale-95" : "bg-gradient-to-br from-amber-500 to-rose-500"
+                              isBlocked ? "bg-muted scale-95" : "bg-gradient-to-br from-amber-500 to-rose-500"
                             )}>
                               {isBlocked ? <Ban size={24} className="text-primary-foreground" /> : <Calendar size={24} className="text-primary-foreground" />}
                             </div>

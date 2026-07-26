@@ -275,7 +275,7 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
   );
 
   return (
-    <div className="relative overflow-hidden">
+    <div className="py-4 relative overflow-hidden">
       <div className="flex items-center justify-between mb-6 mt-2">
         <div className="flex items-center gap-3">
           <h2 className="text-sm font-medium text-foreground">Efferent Integration</h2>

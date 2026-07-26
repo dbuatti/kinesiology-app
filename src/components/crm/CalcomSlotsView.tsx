@@ -14,7 +14,6 @@ import {
   AlertCircle,
   CheckCircle2,
   CalendarDays,
-  Info,
   Settings2,
   Copy,
   Check,
@@ -553,200 +552,200 @@ const CalcomSlotsView = () => {
   }, [dateRange]);
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-700">
-      {/* Availability Logic Alert */}
-      <div className="p-6 bg-foreground text-primary-foreground rounded-[2.5rem] shadow-xl relative overflow-hidden group border border-foreground/20">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-slate-950 to-purple-900/40" />
-        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
-          <ShieldAlert size={120} />
+    <div className="space-y-4 animate-in fade-in duration-700">
+      {/* Row 1: Stats + Week Nav + Open Cal.com */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-card p-5 rounded-[2rem] border border-border shadow-sm">
+        <div className="flex items-center gap-6">
+          <div className="flex flex-col">
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Available Slots</p>
+            <div className="flex items-center gap-2">
+              <span className="text-3xl font-black text-emerald-600">{stats.totalSlots}</span>
+              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-100 font-bold">Open</Badge>
+            </div>
+          </div>
+          <div className="w-px h-10 bg-border hidden md:block" />
+          <div className="flex flex-col">
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Upcoming Bookings</p>
+            <div className="flex items-center gap-2">
+              <span className="text-3xl font-black text-indigo-600">{stats.totalBookings}</span>
+              <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100 font-bold">Confirmed</Badge>
+            </div>
+          </div>
         </div>
-        <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-          <div className="w-14 h-14 rounded-2xl bg-card/10 flex items-center justify-center text-amber-400 border border-primary-foreground/10 shrink-0">
-            <Info size={28} />
+
+        <div className="flex items-center gap-3">
+          <div className="flex bg-muted p-1 rounded-xl">
+            {[2, 4, 8].map(w => (
+              <Button 
+                key={w}
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setWeeks(w)}
+                className={cn(
+                  "h-8 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest",
+                  weeks === w ? "bg-card text-amber-600 shadow-sm ring-1 ring-amber-200/60" : "text-muted-foreground"
+                )}
+              >
+                {w}W
+              </Button>
+            ))}
           </div>
-          <div className="space-y-1">
-            <h4 className="text-xl font-black">Availability Logic</h4>
-            <p className="text-sm text-muted-foreground/60 leading-relaxed font-medium max-w-3xl">
-              Blocking a day creates an "Out of Office" entry in Cal.com. This overrides your standard schedule and prevents any new bookings for that date.
-            </p>
+
+          <div className="flex bg-muted p-1 rounded-xl">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setWeeksOffset(prev => prev - 1)}
+              disabled={weeksOffset <= 0}
+              className="h-8 w-8 rounded-lg"
+            >
+              <ArrowLeft size={16} />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setWeeksOffset(prev => prev + 1)}
+              className="h-8 w-8 rounded-lg"
+            >
+              <ArrowRight size={16} />
+            </Button>
           </div>
+
+          <div className="w-px h-6 bg-border hidden md:block" />
+
+          <a
+            href="https://cal.com/dashboard"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ExternalLink size={12} />
+            Open Cal.com
+          </a>
         </div>
       </div>
 
-      {/* Summary & Controls Bar */}
-      <div className="space-y-4">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-card p-5 rounded-[2rem] border border-border shadow-sm">
-          <div className="flex items-center gap-6">
-            <div className="flex flex-col">
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Available Slots</p>
-              <div className="flex items-center gap-2">
-                <span className="text-3xl font-black text-emerald-600">{stats.totalSlots}</span>
-                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-100 font-bold">Open</Badge>
-              </div>
+      {/* Row 2: Filters + Actions */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowOnlyAvailable(!showOnlyAvailable)}
+            className="flex items-center gap-2 group"
+          >
+            <div className={cn(
+              "w-4 h-4 rounded border-2 flex items-center justify-center transition-all",
+              showOnlyAvailable ? "bg-indigo-600 border-indigo-600" : "border-border group-hover:border-indigo-400"
+            )}>
+              {showOnlyAvailable && <Check size={10} className="text-primary-foreground" />}
             </div>
-            <div className="w-px h-10 bg-border hidden md:block" />
-            <div className="flex flex-col">
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Upcoming Bookings</p>
-              <div className="flex items-center gap-2">
-                <span className="text-3xl font-black text-indigo-600">{stats.totalBookings}</span>
-                <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100 font-bold">Confirmed</Badge>
-              </div>
-            </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
+              Show only available days
+            </span>
+          </button>
+
+          <div className="w-px h-4 bg-border" />
+
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Session Type:</span>
+            <Select value={eventTypeId} onValueChange={(val) => {
+              setEventTypeId(val);
+              setTimeout(fetchSlots, 100);
+            }}>
+              <SelectTrigger className="h-8 w-[180px] rounded-xl bg-card border-border font-bold text-[10px] uppercase tracking-widest">
+                <SelectValue placeholder="Select Type" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-none shadow-2xl">
+                {CALCOM_CONFIG.EVENT_TYPES.map(type => (
+                  <SelectItem key={type.id} value={type.id} className="rounded-lg text-[10px] font-bold uppercase tracking-widest">
+                    {type.name} (${type.price})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex bg-muted p-1 rounded-xl">
-              {[2, 4, 8].map(w => (
-                <Button 
-                  key={w}
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => setWeeks(w)}
-                  className={cn(
-                    "h-8 px-4 rounded-lg text-[10px] font-black uppercase tracking-widest",
-                    weeks === w ? "bg-card text-amber-600 shadow-sm ring-1 ring-amber-200/60" : "text-muted-foreground"
-                  )}
-                >
-                  {w}W
-                </Button>
-              ))}
-            </div>
+          <div className="w-px h-4 bg-border hidden md:block" />
 
-            <div className="flex bg-muted p-1 rounded-xl">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setWeeksOffset(prev => prev - 1)}
-                disabled={weeksOffset <= 0}
-                className="h-8 w-8 rounded-lg"
-              >
-                <ArrowLeft size={16} />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setWeeksOffset(prev => prev + 1)}
-                className="h-8 w-8 rounded-lg"
-              >
-                <ArrowRight size={16} />
-              </Button>
-            </div>
-            
-            <Button 
-              variant="outline"
-              onClick={handleCopyBookings}
-              disabled={loading}
-              className="rounded-xl h-10 px-4 border-amber-200/60 text-amber-700 hover:bg-amber-100/70 rounded-xl font-black text-[10px] uppercase tracking-widest"
-            >
-              {copied === 'bookings' ? <Check size={14} className="mr-2" /> : <Copy size={14} className="mr-2" />}
-              Copy Bookings
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={handleCopyAll}
-              disabled={loading}
-              className="rounded-xl h-10 px-4 border-amber-200/60 text-amber-700 hover:bg-amber-100/70 rounded-xl font-black text-[10px] uppercase tracking-widest"
-            >
-              {copied === 'all' ? <Check size={14} className="mr-2" /> : <Copy size={14} className="mr-2" />}
-              Copy All
-            </Button>
-            <Button 
-              onClick={fetchSlots} 
-              disabled={loading}
-              className="rounded-xl h-10 px-6 bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-primary-foreground font-black text-[10px] uppercase tracking-widest shadow-lg shadow-amber-200/50"
-            >
-              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw size={14} className="mr-2" />}
-              Refresh
-            </Button>
-          </div>
-        </div>
-
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-4">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowOnlyAvailable(!showOnlyAvailable)}
-              className="flex items-center gap-2 group"
-            >
-              <div className={cn(
-                "w-4 h-4 rounded border-2 flex items-center justify-center transition-all",
-                showOnlyAvailable ? "bg-indigo-600 border-indigo-600" : "border-border group-hover:border-indigo-400"
-              )}>
-                {showOnlyAvailable && <Check size={10} className="text-primary-foreground" />}
-              </div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
-                Show only available days
-              </span>
-            </button>
-
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Session Type:</span>
-              <Select value={eventTypeId} onValueChange={(val) => {
-                setEventTypeId(val);
-                setTimeout(fetchSlots, 100);
-              }}>
-                <SelectTrigger className="h-8 w-[180px] rounded-xl bg-card border-border font-bold text-[10px] uppercase tracking-widest">
-                  <SelectValue placeholder="Select Type" />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl border-none shadow-2xl">
-                  {CALCOM_CONFIG.EVENT_TYPES.map(type => (
-                    <SelectItem key={type.id} value={type.id} className="rounded-lg text-[10px] font-bold uppercase tracking-widest">
-                      {type.name} (${type.price})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          
           <Collapsible open={configOpen} onOpenChange={setConfigOpen}>
             <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-indigo-600">
+              <Button variant="ghost" size="sm" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground">
                 <Settings2 size={14} className="mr-2" />
-                Advanced Settings
-                {configOpen ? <ChevronUp size={14} className="ml-1" /> : <ChevronDown size={14} className="ml-1" />}
+                Advanced
+                {configOpen ? <ChevronUp size={12} className="ml-1" /> : <ChevronDown size={12} className="ml-1" />}
               </Button>
             </CollapsibleTrigger>
           </Collapsible>
         </div>
 
-        {/* Copy by Day Bar */}
-        <div className="px-4 py-3 bg-indigo-50/50 dark:bg-indigo-900/10 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 flex flex-wrap items-center gap-3 animate-in slide-in-from-top-2 duration-500">
-          <div className="flex items-center gap-2 mr-2">
-            <Sparkles size={14} className="text-amber-500" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">Quick Copy:</span>
-          </div>
-          
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline"
+            size="sm"
+            onClick={handleCopyBookings}
+            disabled={loading}
+            className="h-8 px-3 rounded-lg border-amber-200/60 text-amber-700 hover:bg-amber-100/70 font-black text-[10px] uppercase tracking-widest"
+          >
+            {copied === 'bookings' ? <Check size={12} className="mr-1.5" /> : <Copy size={12} className="mr-1.5" />}
+            Copy Bookings
+          </Button>
+          <Button 
+            variant="outline"
+            size="sm"
+            onClick={handleCopyAll}
+            disabled={loading}
+            className="h-8 px-3 rounded-lg border-amber-200/60 text-amber-700 hover:bg-amber-100/70 font-black text-[10px] uppercase tracking-widest"
+          >
+            {copied === 'all' ? <Check size={12} className="mr-1.5" /> : <Copy size={12} className="mr-1.5" />}
+            Copy All
+          </Button>
+          <Button 
+            size="sm"
+            onClick={fetchSlots} 
+            disabled={loading}
+            className="h-8 px-3 rounded-lg bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-primary-foreground font-black text-[10px] uppercase tracking-widest"
+          >
+            {loading ? <Loader2 className="mr-1.5 h-3 w-3 animate-spin" /> : <RefreshCw size={12} className="mr-1.5" />}
+            Refresh
+          </Button>
+        </div>
+      </div>
+
+      {/* Row 3: Quick Copy */}
+      <div className="px-4 py-2.5 bg-muted/50 rounded-xl border border-border/60 flex flex-wrap items-center gap-2">
+        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mr-1">Quick Copy</span>
+        <div className="w-px h-3 bg-border" />
+        
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleCopyInstaNote}
+          className={cn(
+            "h-7 px-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+            copied === 'insta' ? "bg-rose-50 text-primary-foreground hover:bg-rose-600" : "text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-900/30"
+          )}
+        >
+          {copied === 'insta' ? <Check size={11} className="mr-1" /> : <Instagram size={11} className="mr-1" />}
+          Insta Note
+        </Button>
+
+        <div className="w-px h-3 bg-border" />
+
+        {availableDaysOfWeek.map(day => (
           <Button
+            key={day}
             variant="ghost"
             size="sm"
-            onClick={handleCopyInstaNote}
+            onClick={() => handleCopyDay(day)}
             className={cn(
-              "h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
-              copied === 'insta' ? "bg-rose-50 text-primary-foreground hover:bg-rose-600" : "text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-900/30"
+              "h-7 px-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
+              copied === day ? "bg-emerald-500 text-primary-foreground hover:bg-emerald-600" : "text-muted-foreground hover:bg-amber-100/70 dark:hover:bg-amber-950/30 hover:text-amber-700"
             )}
           >
-            {copied === 'insta' ? <Check size={12} className="mr-1.5" /> : <Instagram size={12} className="mr-1.5" />}
-            Insta Note (Next Week)
+            {copied === day ? <Check size={11} className="mr-1" /> : <Copy size={11} className="mr-1" />}
+            {day.slice(0, 3)}
           </Button>
-
-          <div className="w-px h-4 bg-indigo-200 dark:bg-indigo-800 mx-1" />
-
-          {availableDaysOfWeek.map(day => (
-            <Button
-              key={day}
-              variant="ghost"
-              size="sm"
-              onClick={() => handleCopyDay(day)}
-              className={cn(
-                "h-8 px-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all",
-                copied === day ? "bg-emerald-500 text-primary-foreground hover:bg-emerald-600" : "text-muted-foreground hover:bg-amber-100/70 dark:hover:bg-amber-950/30 hover:text-amber-700"
-              )}
-            >
-              {copied === day ? <Check size={12} className="mr-1.5" /> : <Copy size={12} className="mr-1.5" />}
-              {day}s
-            </Button>
-          ))}
-        </div>
+        ))}
+      </div>
 
         <Collapsible open={configOpen}>
           <CollapsibleContent className="animate-in slide-in-from-top-2 duration-300">
@@ -774,7 +773,6 @@ const CalcomSlotsView = () => {
             </Card>
           </CollapsibleContent>
         </Collapsible>
-      </div>
 
       {error && (
         <Alert variant="destructive" className="bg-rose-50 border-rose-200 rounded-2xl">

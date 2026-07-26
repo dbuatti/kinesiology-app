@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, PlayCircle, Fingerprint, Info } from "lucide-react";
 import IdentityShiftingBackground from "@/components/crm/IdentityShiftingBackground";
 import IdentityShiftingTool from "@/components/crm/IdentityShiftingTool";
+import PageHeader from "@/components/shared/PageHeader";
 
 import AppLayout from '@/components/crm/AppLayout';
 
@@ -10,15 +11,11 @@ const IdentityShiftingPage = () => {
  return (
  <AppLayout>
   <div className="max-w-5xl mx-auto space-y-4">
- <div className="flex items-center gap-3">
-  <div className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center">
-    <Fingerprint size={16} />
-  </div>
-  <div>
-    <h1 className="text-xl font-serif font-semibold tracking-tight">Identity Shifting</h1>
-    <p className="text-sm text-muted-foreground">Explore the nature of the self and dissolve problematic identities.</p>
-  </div>
- </div>
+  <PageHeader 
+    title="Identity Shifting"
+    subtitle="Explore the nature of the self and dissolve problematic identities."
+    icon={Fingerprint}
+  />
 
  <Tabs defaultValue="practice" className="w-full">
   <div className="flex justify-center mb-3">

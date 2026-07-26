@@ -553,7 +553,7 @@ const CalcomSlotsView = () => {
   }, [dateRange]);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-6 animate-in fade-in duration-700">
       {/* Availability Logic Alert */}
       <div className="p-6 bg-foreground text-primary-foreground rounded-[2.5rem] shadow-xl relative overflow-hidden group border border-foreground/20">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-slate-950 to-purple-900/40" />
@@ -574,8 +574,8 @@ const CalcomSlotsView = () => {
       </div>
 
       {/* Summary & Controls Bar */}
-      <div className="space-y-6">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-card p-6 rounded-[2.5rem] border border-border shadow-sm">
+      <div className="space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-card p-5 rounded-[2rem] border border-border shadow-sm">
           <div className="flex items-center gap-6">
             <div className="flex flex-col">
               <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Available Slots</p>
@@ -661,8 +661,8 @@ const CalcomSlotsView = () => {
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-4">
-          <div className="flex items-center gap-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setShowOnlyAvailable(!showOnlyAvailable)}
               className="flex items-center gap-2 group"
@@ -794,9 +794,9 @@ const CalcomSlotsView = () => {
           <p className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground">Syncing with Cal.com...</p>
         </div>
       ) : (
-        <div className="space-y-16">
+        <div className="space-y-10">
           {groupedWeeks.map((week, weekIdx) => (
-            <div key={weekIdx} className="space-y-8">
+            <div key={weekIdx} className="space-y-6">
               <div className="flex items-center gap-4 px-4">
                 <div className="w-10 h-10 rounded-xl bg-amber-100/70 dark:bg-amber-950/30 flex items-center justify-center text-amber-600 shadow-sm">
                   <CalendarDays size={20} />

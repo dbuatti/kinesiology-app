@@ -4,21 +4,18 @@ import { BookOpen, PlayCircle, Info, Target } from "lucide-react";
 import IdentityAlignmentBackground from '@/components/crm/IdentityAlignmentBackground';
 import IdentityAlignmentTool from '@/components/crm/IdentityAlignmentTool';
 import AppLayout from '@/components/crm/AppLayout';
+import PageHeader from "@/components/shared/PageHeader";
 
 
 const IdentityAlignmentPage = () => {
  return (
  <AppLayout>
   <div className="max-w-5xl mx-auto space-y-4">
- <div className="flex items-center gap-3">
-  <div className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center">
-    <Target size={16} />
-  </div>
-  <div>
-    <h1 className="text-xl font-serif font-semibold tracking-tight">Identity Alignment</h1>
-    <p className="text-sm text-muted-foreground">Neural Reconsolidation & Autonomic Safety Protocol.</p>
-  </div>
- </div>
+  <PageHeader 
+    title="Identity Alignment"
+    subtitle="Neural Reconsolidation & Autonomic Safety Protocol."
+    icon={Target}
+  />
 
  <Tabs defaultValue="practice" className="w-full">
   <div className="flex justify-center mb-3">

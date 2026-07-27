@@ -444,10 +444,11 @@ const UnifiedCalendarPage = () => {
     matchedEmail.add(`${booking.lesson_date}|${booking.student_email}`);
     }
     const is45 = /45/.test((l.name || "").toLowerCase());
-    // Use Notion's Cost property as the source of truth when available.
-    // Cost=75 → 45min, Cost=95 → 60min. Falls back to title regex detection.
+    // Price priority: Notion Cost property > voice_bookings.cost > event_pricing table > defaults
     const notionCost = l.cost ?? null;
-    const resolvedIs45 = notionCost != null ? notionCost <= 75 : is45;
+    const bookingCost = booking?.cost ?? null;
+    const resolvedCost = notionCost ?? bookingCost;
+    const resolvedIs45 = resolvedCost != null ? resolvedCost <= 75 : is45;
     const resolvedEventTypeId = resolvedIs45 ? "5925021" : "1945081";
     // Voice paid signal comes from Notion's Payment property OR a voice_bookings row
     // marked paid (covers Stripe + manually-recorded external payments).
@@ -469,9 +470,8 @@ const UnifiedCalendarPage = () => {
     cancelled: booking?.status === "cancelled",
     paid: voicePaid,
     isFree: false,
-    // Read voice price from event_pricing (Voice 45 = 5925021, Voice 60 = 1945081),
-    // falling back to the prior defaults if the table has no row.
-    amount: notionCost ?? priceFor(resolvedEventTypeId) ?? (resolvedIs45 ? 75 : 95),
+    // Read voice price: Notion Cost > voice_bookings.cost > event_pricing table > defaults
+    amount: resolvedCost ?? priceFor(resolvedEventTypeId) ?? (resolvedIs45 ? 75 : 95),
     calcomUid: booking?.calcom_booking_id ?? null,
     notionLessonId1: booking?.notion_lesson_id_1 ?? null,
     notionLessonId2: booking?.notion_lesson_id_2 ?? null,

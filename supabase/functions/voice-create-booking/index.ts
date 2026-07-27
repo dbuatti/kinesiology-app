@@ -91,17 +91,29 @@ serve(async (req) => {
           // Update DB 1 lesson (has Date + Breakthroughs properties)
           if (notionLessonId1) {
             try {
+              // Fetch current title to extract lesson type and student name
+              const existingPage = await fetch(`https://api.notion.com/v1/pages/${notionLessonId1}`, {
+                method: "GET",
+                headers: notionHeaders,
+              });
+              const pageData = await existingPage.json();
+              const currentTitle = pageData.properties?.Name?.title?.map((t: any) => t.plain_text).join("") || "";
+              // Rebuild title with new date: "Voice Lesson — StudentName — 2026-08-11"
+              const nameMatch = currentTitle.match(/^(.+?)\s*—\s*.+$/);
+              const newTitle = nameMatch ? `${nameMatch[1]} — ${newDate}` : currentTitle.replace(/\d{4}-\d{2}-\d{2}$/, newDate);
+
               await fetch(`https://api.notion.com/v1/pages/${notionLessonId1}`, {
                 method: "PATCH",
                 headers: notionHeaders,
                 body: JSON.stringify({
                   properties: {
+                    Name: { title: [{ text: { content: newTitle } }] },
                     Date: { date: { start: newDate } },
                     Breakthroughs: { rich_text: [{ text: { content: newTime } }] },
                   },
                 }),
               });
-              console.log(`[${functionName}] Updated DB 1 lesson ${notionLessonId1}`);
+              console.log(`[${functionName}] Updated DB 1 lesson ${notionLessonId1} — title: "${newTitle}"`);
             } catch (notionErr) {
               console.error(`[${functionName}] DB 1 update error:`, notionErr.message);
             }
@@ -110,17 +122,28 @@ serve(async (req) => {
           // Update DB 2 lesson (has Title, Date, Details properties)
           if (notionLessonId2) {
             try {
+              // Fetch current title to rebuild with new date
+              const existingPage2 = await fetch(`https://api.notion.com/v1/pages/${notionLessonId2}`, {
+                method: "GET",
+                headers: notionHeaders,
+              });
+              const pageData2 = await existingPage2.json();
+              const currentTitle2 = pageData2.properties?.Title?.title?.map((t: any) => t.plain_text).join("") || "";
+              const nameMatch2 = currentTitle2.match(/^(.+?)\s*—\s*.+$/);
+              const newTitle2 = nameMatch2 ? `${nameMatch2[1]} — ${newDate}` : currentTitle2.replace(/\d{4}-\d{2}-\d{2}$/, newDate);
+
               await fetch(`https://api.notion.com/v1/pages/${notionLessonId2}`, {
                 method: "PATCH",
                 headers: notionHeaders,
                 body: JSON.stringify({
                   properties: {
+                    Title: { title: [{ text: { content: newTitle2 } }] },
                     Date: { date: { start: newDate } },
                     Details: { rich_text: [{ text: { content: newTime } }] },
                   },
                 }),
               });
-              console.log(`[${functionName}] Updated DB 2 lesson ${notionLessonId2}`);
+              console.log(`[${functionName}] Updated DB 2 lesson ${notionLessonId2} — title: "${newTitle2}"`);
             } catch (notionErr) {
               console.error(`[${functionName}] DB 2 update error:`, notionErr.message);
             }
@@ -130,6 +153,12 @@ serve(async (req) => {
         // Update voice_bookings table
         try {
           const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
+          // Look up cost from old booking before marking it rescheduled
+          const { data: oldBooking } = await supabase
+            .from("voice_bookings")
+            .select("cost, lesson_time")
+            .eq("calcom_booking_id", bookingUid)
+            .maybeSingle();
           // Mark old booking as rescheduled
           await supabase
             .from("voice_bookings")
@@ -143,6 +172,8 @@ serve(async (req) => {
               student_email: studentEmail,
               student_name: studentName,
               lesson_date: cleanStartTime.split("T")[0],
+              lesson_time: oldBooking?.lesson_time || null,
+              cost: oldBooking?.cost ?? null,
               status: "scheduled",
               discipline: discipline || "voice",
               notion_lesson_id_1: notionLessonId1 || null,

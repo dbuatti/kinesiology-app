@@ -10,6 +10,7 @@ import { PRIMITIVE_REFLEXES, PrimitiveReflex } from "@/data/primitive-reflex-dat
 import { MUSCLE_INFO_DETAILS } from "@/data/muscle-info-data";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
 import { AppointmentWithClient } from "@/types/crm";
+import { CATEGORY_LABELS } from "@/components/crm/v2/categoryConstants";
 import {
   Search, HelpCircle, Target, CheckCircle2, RotateCcw
 } from "lucide-react";
@@ -37,18 +38,11 @@ interface RecheckTabV2Props {
 
 type Action = 'carry_forward' | 'resolved' | 'unsure';
 
-const CATEGORY_MAP: Record<string, string> = {
-  primitiveReflexes: 'Primitive Reflex',
-  cranialNerves: 'Cranial Nerve',
-  muscles: 'Muscle',
-  brainZones: 'Brain Zone',
-};
-
 const CATEGORY_COLORS: Record<string, string> = {
-  primitiveReflexes: 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20',
-  cranialNerves: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
-  muscles: 'bg-rose-500/10 text-rose-600 border-rose-500/20',
-  brainZones: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+  primitiveReflexes: 'bg-primary/10 text-primary border-primary/20',
+  cranialNerves: 'bg-muted text-muted-foreground border-border',
+  muscles: 'bg-destructive/10 text-destructive border-destructive/20',
+  brainZones: 'bg-chart-emerald/10 text-chart-emerald border-chart-emerald/20',
 };
 
 const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, saveField, onJumpToPhase }: RecheckTabV2Props) => {
@@ -154,7 +148,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
   };
 
   const handleSetPrimary = async (item: RecheckItemData) => {
-    const label = CATEGORY_MAP[item.rawCategory] || item.rawCategory;
+    const label = CATEGORY_LABELS[item.rawCategory] || item.rawCategory;
     const val = `${item.name}${item.side ? ` (${item.side})` : ''} — ${label}`;
     await saveField('metadata', { ...currentMeta, priority_pathway: val });
     showSuccess(`${item.name} set as 1° priority`);
@@ -272,7 +266,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
               {/* Category */}
               <div className="mb-4">
                 <span className={cn("inline-block text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border", catColor)}>
-                  {CATEGORY_MAP[item.rawCategory] || item.rawCategory}
+                  {CATEGORY_LABELS[item.rawCategory] || item.rawCategory}
                 </span>
               </div>
 

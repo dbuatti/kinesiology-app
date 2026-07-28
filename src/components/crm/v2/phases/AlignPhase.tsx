@@ -1,24 +1,11 @@
 import { useState, useMemo } from "react";
-import { GitBranch, Target, AlertCircle, Zap, Dumbbell, Baby, Brain } from "lucide-react";
+import { GitBranch, Target, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { safeParse } from "@/utils/safe-json";
 import { Button } from "@/components/ui/button";
 import { PhaseHeader } from "@/components/crm/v2/PhaseComponents";
+import { CATEGORY_LABELS, CATEGORY_ICONS } from "@/components/crm/v2/categoryConstants";
 import type { PhaseProps } from "@/components/crm/v2/v2-types";
-
-const CATEGORY_LABELS: Record<string, string> = {
-  primitiveReflexes: 'Primitive Reflex',
-  cranialNerves: 'Cranial Nerve',
-  muscles: 'Muscle',
-  brainZones: 'Brain Zone',
-};
-
-const CATEGORY_ICONS: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
-  primitiveReflexes: Baby,
-  cranialNerves: Zap,
-  muscles: Dumbbell,
-  brainZones: Brain,
-};
 
 interface Finding {
   name: string;

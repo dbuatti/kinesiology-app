@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Target, Activity, Info, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,15 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import EditableField from "@/components/shared/EditableField";
 import PathwayLogicWizard from "@/components/crm/PathwayLogicWizard";
 import { PhaseHeader } from "@/components/crm/v2/PhaseComponents";
+import { CATEGORY_LABELS } from "@/components/crm/v2/categoryConstants";
 import { safeParse } from "@/utils/safe-json";
 import type { PhaseProps } from "@/components/crm/v2/v2-types";
-
-const CATEGORY_LABELS: Record<string, string> = {
-  primitiveReflexes: 'Primitive Reflex',
-  cranialNerves: 'Cranial Nerve',
-  muscles: 'Muscle',
-  brainZones: 'Brain Zone',
-};
 
 const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
   const [pathModalOpen, setPathModalOpen] = useState(false);
@@ -31,6 +25,12 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
 
   const priorityPathway = (meta as any)?.priority_pathway || "";
   const isCustom = priorityPathway === 'CUSTOM';
+
+  useEffect(() => {
+    if (priorityPathway && priorityPathway !== 'CUSTOM') {
+      setCustomPathway(priorityPathway);
+    }
+  }, [priorityPathway]);
 
   const pattern = safeParse(appointment.priority_pattern, {} as any);
   const pathwayFindings = useMemo(() => {

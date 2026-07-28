@@ -38,7 +38,8 @@ const SUB_TABS: { id: SubTab; label: string; icon: any }[] = [
 ];
 
 const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePriorityPattern, onJumpToPhase }: PhaseProps) => {
-  const [subTab, setSubTab] = useState<SubTab>('recheck');
+  const hasHistory = history.length >= 2;
+  const [subTab, setSubTab] = useState<SubTab>(hasHistory ? 'recheck' : 'intake');
 
   const previousSession = history.length >= 2 ? history[1] : null;
   const lastSessionDate = previousSession?.date;

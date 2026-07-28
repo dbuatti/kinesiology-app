@@ -4,6 +4,7 @@ import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 import IntegrationStatus from "../components/crm/settings/IntegrationStatus";
 import StripeSettings from "../components/crm/settings/StripeSettings";

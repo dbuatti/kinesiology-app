@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/AuthProvider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Search, Loader2, ListOrdered, ExternalLink, User, Calendar, DollarSign, AlertCircle, RefreshCw, ArrowLeft, Music } from "lucide-react";
@@ -59,8 +60,30 @@ function parseVoiceTime(dateStr: string, timeStr: string | null): Date {
   return d;
 }
 
+function voiceTimeDuration(time: string): number | null {
+  const parts = time.split(/\u2013|\u2014|\u2212|-/).map((s) => s.trim());
+  if (parts.length !== 2) return null;
+  const parseT = (s: string) => {
+    const cleaned = s.replace(/(?:UTC|AEST|AEDT|GMT[+-]\d+|EST|EDST?|ACST|ACDT|AWST|AWDT)\b/gi, "").trim();
+    const m = cleaned.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
+    if (!m) return null;
+    let h = parseInt(m[1]);
+    const min = parseInt(m[2]);
+    if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
+    if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
+    return h * 60 + min;
+  };
+  const start = parseT(parts[0]);
+  const end = parseT(parts[1]);
+  if (start === null || end === null) return null;
+  if (end < start) return end + 1440 - start;
+  return end - start;
+}
+
 const AllAppointmentsPage = () => {
   const navigate = useNavigate();
+  const { session } = useAuth();
+  const practitionerEmail = session?.user?.email || "";
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [tagFilter, setTagFilter] = useState("all");
@@ -75,7 +98,7 @@ const AllAppointmentsPage = () => {
         const [apptResult, voiceResult] = await Promise.all([
           supabase
             .from("appointments")
-            .select("id, display_id, date, name, status, tag, client_id, price_amount, payment_received, bolt_score, clients(name, standard_rate)")
+            .select("id, display_id, date, name, status, tag, client_id, price_amount, payment_received, bolt_score, clients(name, standard_rate, is_practitioner)")
             .order("date", { ascending: false }),
           supabase
             .from("voice_bookings")
@@ -84,38 +107,44 @@ const AllAppointmentsPage = () => {
 
         if (apptResult.error) throw apptResult.error;
 
-        const kinesiology: AppRow[] = (apptResult.data || []).map((a: any) => ({
-          id: a.id,
-          display_id: a.display_id,
-          date: new Date(a.date),
-          name: a.name,
-          status: a.status,
-          tag: a.tag,
-          clientId: a.client_id,
-          clientName: a.clients?.name ?? null,
-          priceAmount: a.clients?.standard_rate ?? a.price_amount ?? null,
-          isPaid: a.payment_received === true,
-          boltScore: a.bolt_score ?? null,
-          source: "kinesiology" as SourceType,
-        }));
+        const kinesiology: AppRow[] = (apptResult.data || [])
+          .filter((a: any) => !a.clients?.is_practitioner)
+          .map((a: any) => ({
+            id: a.id,
+            display_id: a.display_id,
+            date: new Date(a.date),
+            name: a.name,
+            status: a.status,
+            tag: a.tag,
+            clientId: a.client_id,
+            clientName: a.clients?.name ?? null,
+            priceAmount: a.clients?.standard_rate ?? a.price_amount ?? null,
+            isPaid: a.payment_received === true,
+            boltScore: a.bolt_score ?? null,
+            source: "kinesiology" as SourceType,
+          }));
 
         const voice: AppRow[] = (voiceResult.data || [])
-          .filter((vb: any) => vb.lesson_date && vb.student_name)
-          .map((vb: any, idx: number) => ({
-            id: `vb-${vb.calcom_booking_id || idx}`,
-            display_id: vb.calcom_booking_id ? `VB-${String(vb.calcom_booking_id).slice(0, 6)}` : `VB-${idx}`,
-            date: parseVoiceTime(vb.lesson_date, vb.lesson_time),
-            name: vb.lesson_time || "Voice Lesson",
-            status: vb.status || "booked",
-            tag: "Voice",
-            clientId: null,
-            clientName: vb.student_name || vb.student_email || null,
-            priceAmount: vb.cost ?? null,
-            isPaid: vb.status === "paid",
-            boltScore: null,
-            source: "voice" as SourceType,
-            notionUrl: vb.notion_lesson_id_2 ? `https://notion.so/${vb.notion_lesson_id_2.replace(/-/g, "")}` : null,
-          }));
+          .filter((vb: any) => vb.lesson_date && vb.student_name && vb.student_email !== practitionerEmail)
+          .map((vb: any, idx: number) => {
+            const dur = vb.lesson_time ? voiceTimeDuration(vb.lesson_time) : null;
+            const derivedCost = vb.cost ?? (dur === 45 ? 75 : dur === 60 ? 95 : null);
+            return {
+              id: `vb-${vb.calcom_booking_id || idx}`,
+              display_id: vb.calcom_booking_id ? `VB-${String(vb.calcom_booking_id).slice(0, 6)}` : `VB-${idx}`,
+              date: parseVoiceTime(vb.lesson_date, vb.lesson_time),
+              name: vb.lesson_time || "Voice Lesson",
+              status: vb.status || "booked",
+              tag: "Voice",
+              clientId: null,
+              clientName: vb.student_name || vb.student_email || null,
+              priceAmount: derivedCost,
+              isPaid: vb.status === "paid",
+              boltScore: null,
+              source: "voice" as SourceType,
+              notionUrl: vb.notion_lesson_id_2 ? `https://notion.so/${vb.notion_lesson_id_2.replace(/-/g, "")}` : null,
+            };
+          });
 
         const all = [...kinesiology, ...voice].sort((a, b) => b.date.getTime() - a.date.getTime());
         setApps(all);

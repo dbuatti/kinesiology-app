@@ -249,6 +249,27 @@ serve(async (req) => {
       : "";
     const lessonTime = endTimeStr ? `${startTimeStr} – ${endTimeStr}` : startTimeStr;
 
+    // Guard against duplicate creation: Cal.com fires both BOOKING_RESCHEDULED and
+    // BOOKING_CREATED for a reschedule. If the reschedule handler already updated an
+    // existing voice_bookings row for this student+date, skip creating new Notion pages.
+    {
+      const checkSupabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
+      const { data: existingForDate } = await checkSupabase
+        .from("voice_bookings")
+        .select("calcom_booking_id")
+        .eq("student_email", attendeeEmail)
+        .eq("lesson_date", lessonDate)
+        .neq("status", "cancelled")
+        .maybeSingle();
+      if (existingForDate && existingForDate.calcom_booking_id !== calcomBookingUid) {
+        console.log(`[${functionName}] Skipping duplicate creation — existing booking ${existingForDate.calcom_booking_id} for ${attendeeEmail} on ${lessonDate}`);
+        return new Response(JSON.stringify({ success: true, message: "Already exists" }), {
+          status: 200,
+          headers: corsHeaders,
+        });
+      }
+    }
+
     // Find the student in Notion Voice Clients DB by email
     console.log(`[${functionName}] Searching for student by email: ${attendeeEmail}`);
 
@@ -343,6 +364,25 @@ serve(async (req) => {
 
     console.log(`[${functionName}] Resolved student ${studentId}. Invoking voice-schedule-lesson...`);
 
+    // Resolve the price for this event type from the editable event_pricing table.
+    // Must happen BEFORE calling voice-schedule-lesson so cost is persisted in voice_bookings.
+    const eventTypeId = payload.eventTypeId || payload.eventType?.id || payload.type?.id || null;
+    let cost = 0;
+    let duration = null;
+    let sendLink = true;
+    if (eventTypeId) {
+      const { data: pricing } = await supabase
+        .from("event_pricing")
+        .select("price, duration_minutes, send_payment_link")
+        .eq("calcom_event_type_id", eventTypeId)
+        .maybeSingle();
+      if (pricing) {
+        sendLink = pricing.send_payment_link;
+        duration = pricing.duration_minutes;
+        cost = sendLink ? Number(pricing.price) || 0 : 0;
+      }
+    }
+
     // Invoke the voice-schedule-lesson edge function internally
     const scheduleRes = await fetch(
       `${SUPABASE_URL}/functions/v1/voice-schedule-lesson`,
@@ -356,6 +396,7 @@ serve(async (req) => {
           studentId,
           date: lessonDate,
           time: lessonTime,
+          cost: cost || null,
           studentName: attendee.name || null,
           studentEmail: attendeeEmail,
           calcomBookingUid,
@@ -393,29 +434,6 @@ serve(async (req) => {
     const bookingSource = payload.metadata?.source || payload.data?.metadata?.source || null;
     if (bookingSource !== "Voice Studio CRM") {
       try {
-        const supabase = createClient(
-          Deno.env.get("SUPABASE_URL") ?? "",
-          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-        );
-
-        // Resolve the price for this event type from the editable event_pricing table.
-        const eventTypeId = payload.eventTypeId || payload.eventType?.id || payload.type?.id || null;
-        let cost = 0;
-        let duration = null;
-        let sendLink = true;
-        if (eventTypeId) {
-          const { data: pricing } = await supabase
-            .from("event_pricing")
-            .select("price, duration_minutes, send_payment_link")
-            .eq("calcom_event_type_id", eventTypeId)
-            .maybeSingle();
-          if (pricing) {
-            sendLink = pricing.send_payment_link;
-            duration = pricing.duration_minutes;
-            cost = sendLink ? Number(pricing.price) || 0 : 0;
-          }
-        }
-
         await fetch(`${SUPABASE_URL}/functions/v1/voice-send-onboarding`, {
           method: "POST",
           headers: {

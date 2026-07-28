@@ -75,7 +75,7 @@ const AllAppointmentsPage = () => {
         const [apptResult, voiceResult] = await Promise.all([
           supabase
             .from("appointments")
-            .select("id, display_id, date, name, status, tag, client_id, price_amount, is_paid, bolt_score, clients(name)")
+            .select("id, display_id, date, name, status, tag, client_id, price_amount, payment_received, bolt_score, clients(name, standard_rate)")
             .order("date", { ascending: false }),
           supabase
             .from("voice_bookings")
@@ -93,8 +93,8 @@ const AllAppointmentsPage = () => {
           tag: a.tag,
           clientId: a.client_id,
           clientName: a.clients?.name ?? null,
-          priceAmount: a.price_amount ?? null,
-          isPaid: a.is_paid === true,
+          priceAmount: a.clients?.standard_rate ?? a.price_amount ?? null,
+          isPaid: a.payment_received === true,
           boltScore: a.bolt_score ?? null,
           source: "kinesiology" as SourceType,
         }));
@@ -314,10 +314,13 @@ const AllAppointmentsPage = () => {
                       <span className="text-sm font-medium tabular-nums">
                         {a.priceAmount != null ? `$${a.priceAmount}` : "—"}
                       </span>
-                      {a.priceAmount != null && (
+                      {a.priceAmount != null && a.priceAmount > 0 && (
                         <span className={`block text-[10px] font-semibold uppercase tracking-wider ${a.isPaid ? 'text-emerald-600' : 'text-amber-600'}`}>
                           {a.isPaid ? "Paid" : "Due"}
                         </span>
+                      )}
+                      {a.priceAmount === 0 && (
+                        <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Free</span>
                       )}
                     </TableCell>
                     <TableCell>

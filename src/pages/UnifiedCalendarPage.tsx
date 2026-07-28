@@ -48,7 +48,7 @@ function voiceDateISO(date: string, time: string): string {
   const [year, month, day] = date.split("-").map(Number);
   if (!year || !month || !day) return date;
   const isUTC = /UTC/i.test(time);
-  const t = time.replace(/\s*–.*/, "").trim().replace(/UTC/i, "").trim();
+  const t = time.replace(/[\s]*[\u2013\u2014\u2212\u002D]+.*/, "").trim().replace(/UTC/i, "").trim();
   const m = t.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
   if (!m) return date;
   let h = parseInt(m[1]);

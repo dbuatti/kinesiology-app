@@ -54,7 +54,24 @@ export interface BookingListItem {
 type Tab = "upcoming" | "past" | "cancelled";
 type SourceFilter = "all" | "voice" | "kinesiology";
 
-const itemTime = (i: BookingListItem) => new Date(i.datetime || i.date).getTime();
+const itemTime = (i: BookingListItem) => {
+  const dt = i.datetime;
+  if (dt && dt.includes("T")) return new Date(dt).getTime();
+  // datetime is date-only (e.g. "2026-07-28") — midnight UTC = 10 AM AEST,
+  // which is always "past" after morning.  Combine date + start time instead.
+  const dateStr = dt || i.date;
+  if (i.time) {
+    const m = i.time.match(/^(\d+):(\d+)\s*(AM|PM)/i);
+    if (m) {
+      let h = parseInt(m[1]);
+      const min = parseInt(m[2]);
+      if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
+      if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
+      return new Date(`${dateStr}T${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}:00`).getTime();
+    }
+  }
+  return new Date(dateStr).getTime();
+};
 
 const AVATAR_COLORS = [
   "bg-chart-primary", "bg-pink-600", "bg-chart-emerald", "bg-amber-600", "bg-purple-600",

@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Search, Loader2, ListOrdered, ExternalLink, User, Calendar, DollarSign, AlertCircle, RefreshCw, ArrowLeft } from "lucide-react";
+import { Search, Loader2, ListOrdered, ExternalLink, User, Calendar, DollarSign, AlertCircle, RefreshCw, ArrowLeft, Music } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -26,6 +26,9 @@ import { format } from "date-fns";
 
 const APPOINTMENT_TAGS = ["Kinesiology", "Community Kinesiology", "Consultation", "Initial Session", "Follow-up", "Quick Session"];
 const APPOINTMENT_STATUSES = ["Scheduled", "Completed", "Cancelled", "No Show"];
+const VOICE_STATUSES = ["booked", "paid", "cancelled", "rescheduled"];
+
+type SourceType = "all" | "kinesiology" | "voice";
 
 interface AppRow {
   id: string;
@@ -39,6 +42,21 @@ interface AppRow {
   priceAmount: number | null;
   isPaid: boolean;
   boltScore: number | null;
+  source: SourceType;
+  notionUrl?: string | null;
+}
+
+function parseVoiceTime(dateStr: string, timeStr: string | null): Date {
+  if (!timeStr) return new Date(dateStr);
+  const m = timeStr.match(/^(\d+):(\d+)\s*(AM|PM)/i);
+  if (!m) return new Date(dateStr);
+  const d = new Date(dateStr);
+  let h = parseInt(m[1]);
+  const min = parseInt(m[2]);
+  if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
+  if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
+  d.setHours(h, min, 0, 0);
+  return d;
 }
 
 const AllAppointmentsPage = () => {
@@ -46,21 +64,27 @@ const AllAppointmentsPage = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [tagFilter, setTagFilter] = useState("all");
+  const [sourceFilter, setSourceFilter] = useState<SourceType>("all");
   const [apps, setApps] = useState<AppRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchAll = async () => {
       try {
-        const { data, error } = await supabase
-          .from("appointments")
-          .select("id, display_id, date, name, status, tag, client_id, price_amount, is_paid, bolt_score, clients(name)")
-          .order("date", { ascending: false });
+        const [apptResult, voiceResult] = await Promise.all([
+          supabase
+            .from("appointments")
+            .select("id, display_id, date, name, status, tag, client_id, price_amount, is_paid, bolt_score, clients(name)")
+            .order("date", { ascending: false }),
+          supabase
+            .from("voice_bookings")
+            .select("calcom_booking_id, student_name, student_email, lesson_date, lesson_time, cost, status, notion_lesson_id_2"),
+        ]);
 
-        if (error) throw error;
+        if (apptResult.error) throw apptResult.error;
 
-        const mapped: AppRow[] = (data || []).map((a: any) => ({
+        const kinesiology: AppRow[] = (apptResult.data || []).map((a: any) => ({
           id: a.id,
           display_id: a.display_id,
           date: new Date(a.date),
@@ -72,9 +96,29 @@ const AllAppointmentsPage = () => {
           priceAmount: a.price_amount ?? null,
           isPaid: a.is_paid === true,
           boltScore: a.bolt_score ?? null,
+          source: "kinesiology" as SourceType,
         }));
 
-        setApps(mapped);
+        const voice: AppRow[] = (voiceResult.data || [])
+          .filter((vb: any) => vb.lesson_date && vb.student_name)
+          .map((vb: any, idx: number) => ({
+            id: `vb-${vb.calcom_booking_id || idx}`,
+            display_id: vb.calcom_booking_id ? `VB-${String(vb.calcom_booking_id).slice(0, 6)}` : `VB-${idx}`,
+            date: parseVoiceTime(vb.lesson_date, vb.lesson_time),
+            name: vb.lesson_time || "Voice Lesson",
+            status: vb.status || "booked",
+            tag: "Voice",
+            clientId: null,
+            clientName: vb.student_name || vb.student_email || null,
+            priceAmount: vb.cost ?? null,
+            isPaid: vb.status === "paid",
+            boltScore: null,
+            source: "voice" as SourceType,
+            notionUrl: vb.notion_lesson_id_2 ? `https://notion.so/${vb.notion_lesson_id_2.replace(/-/g, "")}` : null,
+          }));
+
+        const all = [...kinesiology, ...voice].sort((a, b) => b.date.getTime() - a.date.getTime());
+        setApps(all);
       } catch (err) {
         console.error("Error fetching appointments:", err);
         setError("Failed to load appointments. Please try again.");
@@ -82,7 +126,7 @@ const AllAppointmentsPage = () => {
         setLoading(false);
       }
     };
-    fetch();
+    fetchAll();
   }, []);
 
   const filtered = apps.filter((a) => {
@@ -95,21 +139,30 @@ const AllAppointmentsPage = () => {
 
     const matchStatus = statusFilter === "all" || a.status === statusFilter;
     const matchTag = tagFilter === "all" || a.tag === tagFilter;
+    const matchSource = sourceFilter === "all" || a.source === sourceFilter;
 
-    return matchSearch && matchStatus && matchTag;
+    return matchSearch && matchStatus && matchTag && matchSource;
   });
 
-  const statusBadge = (status: string) => {
-    const colors: Record<string, string> = {
+  const statusBadge = (status: string, source: SourceType) => {
+    const voiceStatusColors: Record<string, string> = {
+      booked: "bg-chart-primary/10 text-chart-primary border-chart-primary/20",
+      paid: "bg-emerald-100 text-emerald-700 border-emerald-200",
+      cancelled: "bg-red-100 text-red-700 border-destructive/20",
+      rescheduled: "bg-amber-100 text-amber-700 border-amber-200",
+    };
+    const kinesiologyColors: Record<string, string> = {
       Scheduled: "bg-chart-primary/10 text-chart-primary border-chart-primary/20",
       Completed: "bg-emerald-100 text-emerald-700 border-emerald-200",
       Cancelled: "bg-red-100 text-red-700 border-destructive/20",
       "No Show": "bg-amber-100 text-amber-700 border-amber-200",
       AP: "bg-muted text-muted-foreground border-border",
     };
+    const colors = source === "voice" ? voiceStatusColors : kinesiologyColors;
+    const label = source === "voice" ? status.charAt(0).toUpperCase() + status.slice(1) : status;
     return (
       <Badge variant="outline" className={colors[status] || "bg-muted text-muted-foreground"}>
-        {status}
+        {label}
       </Badge>
     );
   };
@@ -138,6 +191,17 @@ const AllAppointmentsPage = () => {
               className="pl-9"
             />
           </div>
+
+          <Select value={sourceFilter} onValueChange={(v) => setSourceFilter(v as SourceType)}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="kinesiology">Kinesiology</SelectItem>
+              <SelectItem value="voice">Voice</SelectItem>
+            </SelectContent>
+          </Select>
 
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-[140px]">
@@ -216,13 +280,20 @@ const AllAppointmentsPage = () => {
                     </TableCell>
                     <TableCell>
                       {a.clientName ? (
-                        <Link
-                          to={`/clients/${a.clientId}`}
-                          className="flex items-center gap-1.5 text-sm font-medium hover:text-primary transition-colors"
-                        >
-                          <User size={14} className="text-muted-foreground shrink-0" />
-                          <span>{a.clientName}</span>
-                        </Link>
+                        a.source === "voice" ? (
+                          <span className="flex items-center gap-1.5 text-sm font-medium">
+                            <Music size={14} className="text-muted-foreground shrink-0" />
+                            <span>{a.clientName}</span>
+                          </span>
+                        ) : (
+                          <Link
+                            to={`/clients/${a.clientId}`}
+                            className="flex items-center gap-1.5 text-sm font-medium hover:text-primary transition-colors"
+                          >
+                            <User size={14} className="text-muted-foreground shrink-0" />
+                            <span>{a.clientName}</span>
+                          </Link>
+                        )
                       ) : (
                         <span className="text-sm text-muted-foreground italic">No client</span>
                       )}
@@ -230,10 +301,11 @@ const AllAppointmentsPage = () => {
                     <TableCell className="hidden md:table-cell text-sm text-muted-foreground max-w-[240px] truncate">
                       {a.name}
                     </TableCell>
-                    <TableCell>{statusBadge(a.status)}</TableCell>
+                    <TableCell>{statusBadge(a.status, a.source)}</TableCell>
                     <TableCell className="hidden lg:table-cell">
                       {a.tag && (
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className={`text-xs ${a.source === "voice" ? "bg-destructive/10 text-destructive border-destructive/20" : ""}`}>
+                          {a.source === "voice" ? <Music size={10} className="mr-1" /> : null}
                           {a.tag}
                         </Badge>
                       )}
@@ -249,14 +321,25 @@ const AllAppointmentsPage = () => {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Link
-                        to={`/appointments/${a.id}`}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <ExternalLink size={14} />
-                        </Button>
-                      </Link>
+                      {a.source === "kinesiology" ? (
+                        <Link
+                          to={`/appointments/${a.id}`}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <ExternalLink size={14} />
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Link
+                          to="/calendar"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Calendar size={14} />
+                          </Button>
+                        </Link>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

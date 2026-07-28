@@ -176,6 +176,7 @@ serve(async (req) => {
           success_url: `${APP_ORIGIN}/voice/paid`,
           cancel_url: `${APP_ORIGIN}/voice-onboarding/${encodeURIComponent(studentEmail)}`,
           metadata,
+          expires_at: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
         });
         paymentUrl = session.url;
       } catch (stripeErr) {

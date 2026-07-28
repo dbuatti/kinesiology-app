@@ -54,6 +54,7 @@ serve(async (req) => {
       ...(email ? { customer_email: email } : {}),
       success_url: `${Deno.env.get("SITE_URL") || "https://kinesiology-app.vercel.app"}/voice/paid`,
       cancel_url: `${Deno.env.get("SITE_URL") || "https://kinesiology-app.vercel.app"}/voice/calendar`,
+      expires_at: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
     });
 
     console.log(`[${functionName}] Created checkout session: ${session.id} for ${lessonTitle}`);

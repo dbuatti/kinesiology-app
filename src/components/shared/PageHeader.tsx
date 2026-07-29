@@ -45,7 +45,7 @@ const PageHeader = ({
                 <Icon size={20} className="md:w-6 md:h-6" />
               </div>
             )}
-            <h1 className="text-2xl md:text-4xl font-serif font-bold text-foreground dark:text-primary-foreground leading-none">
+            <h1 className="text-2xl md:text-4xl font-serif font-bold text-foreground leading-none">
               {title}
             </h1>
           </div>

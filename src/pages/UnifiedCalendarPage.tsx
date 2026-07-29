@@ -202,6 +202,7 @@ function parseTimeToEvent(item: CalendarItem): CalendarEvent | null {
 const SLOT_SERVICES = [
   { key: "voice60", group: "Voice", label: "Voice & Piano — 60 min", kind: "voice", duration: "60" },
   { key: "voice45", group: "Voice", label: "Voice & Piano — 45 min", kind: "voice", duration: "45" },
+  { key: "voice30", group: "Voice", label: "Voice & Piano — 30 min", kind: "voice", duration: "30" },
   { key: "fnhCurrent", group: "FNH", label: "Current rate", kind: "fnh", eventTypeId: "4279898" as const, price: undefined as number | undefined },
   { key: "fnhNew", group: "FNH", label: "New client · $70", kind: "fnh", eventTypeId: "4279898" as const, price: 70 },
   { key: "fnhFree", group: "FNH", label: "FNH Community · Free", kind: "fnh", eventTypeId: "5927215" as const, price: 0 },
@@ -236,6 +237,7 @@ const UnifiedCalendarPage = () => {
   const handleNewBooking = (service: string) => {
     if (service === "voice60") openVoiceBooking("60");
     else if (service === "voice45") openVoiceBooking("45");
+    else if (service === "voice30") openVoiceBooking("30");
     else if (service === "fnhStandard" || service === "fnhFull") { setFnhPrefillPrice(70); setFnhPickOpen(true); }
     else if (service === "fnhFree") { setFnhPrefillPrice(0); setFnhPickOpen(true); }
   };

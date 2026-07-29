@@ -8,7 +8,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { FlaskConical, Activity, Loader2, CheckCircle2 } from "lucide-react";
+import { FlaskConical, Activity } from "lucide-react";
 import BoltTimer from "./BoltTimer";
 import CoherenceAssessment from "./CoherenceAssessment";
 import { supabase } from "@/integrations/supabase/client";

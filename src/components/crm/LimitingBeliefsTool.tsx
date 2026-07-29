@@ -2,7 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Mic, MicOff, RefreshCw, Loader2, Check, Brain, RotateCcw, ArrowRight, ChevronDown, ThumbsUp, ThumbsDown, Lock, HelpCircle } from 'lucide-react';
+import { Mic, MicOff, RefreshCw, Loader2, Check, Brain, ArrowRight, ThumbsUp, ThumbsDown, Lock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { showSuccess, showError } from '@/utils/toast';

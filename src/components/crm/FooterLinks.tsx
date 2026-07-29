@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Printer, Globe, GraduationCap, Workflow, BookOpen, ExternalLink, Home } from "lucide-react";
+import { ExternalLink, Home } from "lucide-react";
 
 const FooterLinks = () => {
   return (

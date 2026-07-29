@@ -2,7 +2,7 @@
 	import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, EyeOff, Info, Save, Loader2, RotateCcw, Zap, Activity, RefreshCw, CheckCircle2, ArrowRightLeft } from "lucide-react";
+import { Eye, EyeOff, Save, Loader2, RotateCcw, Zap, Activity, RefreshCw, CheckCircle2, ArrowRightLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";

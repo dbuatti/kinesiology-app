@@ -5,7 +5,7 @@ import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Copy, Check, Sparkles, ClipboardList, ArrowLeft } from "lucide-react";
+import { Copy, Check, Sparkles, ArrowLeft } from "lucide-react";
 import { showSuccess } from "@/utils/toast";
 
 const PROMPT = `You are a clinical documentation AI for a Functional Neuro Health (FNH) kinesiology practice. Analyze session transcripts and extract structured clinical data.

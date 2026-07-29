@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/components/AuthProvider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Search, Loader2, ListOrdered, ExternalLink, User, Calendar, DollarSign, AlertCircle, RefreshCw, ArrowLeft, Music } from "lucide-react";
+import { Search, Loader2, ListOrdered, ExternalLink, User, Calendar, AlertCircle, RefreshCw, ArrowLeft, Music } from "lucide-react";
+import { voiceTimeDuration, parseVoiceTime } from "@/utils/availability";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -45,39 +46,6 @@ interface AppRow {
   boltScore: number | null;
   source: SourceType;
   notionUrl?: string | null;
-}
-
-function parseVoiceTime(dateStr: string, timeStr: string | null): Date {
-  if (!timeStr) return new Date(dateStr);
-  const m = timeStr.match(/^(\d+):(\d+)\s*(AM|PM)/i);
-  if (!m) return new Date(dateStr);
-  const d = new Date(dateStr);
-  let h = parseInt(m[1]);
-  const min = parseInt(m[2]);
-  if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
-  if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
-  d.setHours(h, min, 0, 0);
-  return d;
-}
-
-function voiceTimeDuration(time: string): number | null {
-  const parts = time.split(/\u2013|\u2014|\u2212|-/).map((s) => s.trim());
-  if (parts.length !== 2) return null;
-  const parseT = (s: string) => {
-    const cleaned = s.replace(/(?:UTC|AEST|AEDT|GMT[+-]\d+|EST|EDST?|ACST|ACDT|AWST|AWDT)\b/gi, "").trim();
-    const m = cleaned.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
-    if (!m) return null;
-    let h = parseInt(m[1]);
-    const min = parseInt(m[2]);
-    if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
-    if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
-    return h * 60 + min;
-  };
-  const start = parseT(parts[0]);
-  const end = parseT(parts[1]);
-  if (start === null || end === null) return null;
-  if (end < start) return end + 1440 - start;
-  return end - start;
 }
 
 const AllAppointmentsPage = () => {

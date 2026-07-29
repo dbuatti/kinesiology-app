@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { cn } from '@/lib/utils';
-import { Clock, Zap } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import { format, differenceInMinutes } from 'date-fns';
 import { TCM_CHANNELS } from '@/data/tcm-channel-data';
 

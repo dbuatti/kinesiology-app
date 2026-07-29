@@ -1,6 +1,6 @@
 
 	import { useState, useEffect, useRef } from "react";
-import { Activity, ChevronDown, Heart, Brain, RotateCcw, RefreshCw, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Activity, ChevronDown, Heart, Brain, RotateCcw, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { showSuccess, showError } from "@/utils/toast";

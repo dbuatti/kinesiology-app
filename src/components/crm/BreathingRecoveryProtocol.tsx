@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wind, Timer, Clock, AlertCircle, CheckCircle2, ArrowRight, PlayCircle } from "lucide-react";
+import { Wind, Timer, Clock, AlertCircle, PlayCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";

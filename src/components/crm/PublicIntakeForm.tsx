@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, CheckCircle2, Sparkles, Heart, ShieldAlert, Activity, Zap, User, Mail, Brain, Bed, AlertTriangle } from "lucide-react";
+import { Loader2, CheckCircle2, Heart, ShieldAlert, Activity, Zap, User, Brain, Bed, AlertTriangle } from "lucide-react";
 import { Client } from "@/types/crm";
 import { cn } from "@/lib/utils";
 

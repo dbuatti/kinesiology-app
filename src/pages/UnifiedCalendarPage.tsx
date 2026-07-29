@@ -41,45 +41,7 @@ import { CALCOM_CONFIG } from "@/config/integrations";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { useAuth } from "@/components/AuthProvider";
-import { formatVoiceTime } from "@/utils/availability";
-
-/** Parse voice lesson date + time string into an ISO datetime for sorting. */
-function voiceDateISO(date: string, time: string): string {
-  const [year, month, day] = date.split("-").map(Number);
-  if (!year || !month || !day) return date;
-  const isUTC = /UTC/i.test(time);
-  const t = time.replace(/[\s]*[\u2013\u2014\u2212\u002D]+.*/, "").trim().replace(/UTC/i, "").trim();
-  const m = t.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
-  if (!m) return date;
-  let h = parseInt(m[1]);
-  const min = parseInt(m[2]);
-  if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
-  if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
-  const d = isUTC
-    ? new Date(Date.UTC(year, month - 1, day, h, min))
-    : new Date(year, month - 1, day, h, min);
-  return d.toISOString();
-}
-
-function voiceTimeDuration(time: string): number | null {
-  const parts = time.split("–").map((s) => s.trim());
-  if (parts.length !== 2) return null;
-  const parseT = (s: string) => {
-    const cleaned = s.replace(/UTC/i, "").trim();
-    const m = cleaned.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
-    if (!m) return null;
-    let h = parseInt(m[1]);
-    const min = parseInt(m[2]);
-    if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
-    if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
-    return h * 60 + min;
-  };
-  const start = parseT(parts[0]);
-  const end = parseT(parts[1]);
-  if (start === null || end === null) return null;
-  if (end < start) return end + 1440 - start;
-  return end - start;
-}
+import { formatVoiceTime, voiceTimeDuration, voiceDateISO } from "@/utils/availability";
 
 interface VoiceLesson {
   id: string;

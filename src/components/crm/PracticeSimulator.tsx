@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
-import { Activity, CheckCircle2, XCircle, Play, Pause, RotateCcw, Zap, ShieldAlert, Move, Brain, Sparkles } from 'lucide-react';
+import { Activity, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PracticeSimulatorProps {

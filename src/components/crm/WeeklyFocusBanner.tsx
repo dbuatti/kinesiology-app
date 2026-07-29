@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useMemo, Fragment } from 'react';
-import { Target, Sparkles, Zap, CheckCircle2, ChevronDown, Trophy, AlertCircle, PlayCircle, HelpCircle, ChevronsUp, MousePointer2 } from 'lucide-react';
+import { Target, Sparkles, Zap, CheckCircle2, ChevronDown, AlertCircle, PlayCircle, HelpCircle, ChevronsUp, MousePointer2 } from 'lucide-react';
 import { getWeeklyFocus } from '@/utils/weekly-focus';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';

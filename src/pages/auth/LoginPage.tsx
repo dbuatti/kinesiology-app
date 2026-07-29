@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { showError, showSuccess } from '@/utils/toast';
-import { Loader2, Mail, Lock, Sparkles, ShieldCheck } from 'lucide-react';
+import { Loader2, Mail, Lock, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const Login = () => {

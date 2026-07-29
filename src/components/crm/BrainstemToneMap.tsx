@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { calculateBrainstemTone, Nuclei } from '@/utils/brainstem-logic';
 import { cn } from '@/lib/utils';
-import { ShieldAlert, Activity, Zap, Layers, Brain, Info, Workflow, FilterX, ArrowDownCircle, ArrowUpCircle, ChevronRight } from 'lucide-react';
+import { Activity, Zap, Layers, Brain, Workflow, FilterX, ArrowDownCircle, ArrowUpCircle, ChevronRight } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 

@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, RotateCcw, Zap, Sparkles, Trash2, Filter, Clock } from "lucide-react";
+import { Loader2, Zap, Sparkles, Trash2, Filter, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";

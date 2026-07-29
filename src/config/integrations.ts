@@ -16,6 +16,12 @@ export const CALCOM_CONFIG = {
   VOICE_COACHING_URL: "https://cal.com/danielebuatti/voice-and-piano-coaching-60",
   VOICE_COACHING_45_URL: "https://cal.com/danielebuatti/voice-and-piano-coaching-45",
   VOICE_COACHING_30_URL: "https://cal.com/danielebuatti/voice-and-piano-coaching-30-minutes",
+
+  // Voice Studio event type IDs
+  VOICE_EVENT_TYPE_60: "1945081",
+  VOICE_EVENT_TYPE_45: "5925021",
+  VOICE_EVENT_TYPE_30: "6488157",
+  VOICE_EVENT_TYPE_IDS: [1945081, 5925021, 6488157] as const,
   
   // Only these IDs will be processed by the CRM webhooks and sync functions
   CLINICAL_EVENT_IDS: [4279898, 5302336, 5927215],
@@ -44,6 +50,8 @@ export const CALCOM_CONFIG = {
     }
   ]
 };
+
+export const TIMEZONE = "Australia/Melbourne";
 
 export const NOTION_CONFIG = {
   MAIN_DB_ID: "171f7156cdc645e8b689af13d217bc7c",

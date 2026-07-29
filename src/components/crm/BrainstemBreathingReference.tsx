@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wind, Zap, Layers, Activity, Info, ShieldAlert, Eye, Volume2, ArrowDownCircle } from "lucide-react";
+import { Wind, Info, ShieldAlert, ArrowDownCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 

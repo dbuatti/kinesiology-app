@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Footprints, Scale, Brain, ChevronDown, Hand, CheckCircle2, Info, AlertCircle, RefreshCw } from "lucide-react";
+import { Footprints, Scale, Brain, ChevronDown, Hand, Info, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import FakudaStepTest from "./FakudaStepTest";
 import SharpenedRhombergsTest from "./SharpenedRhombergsTest";

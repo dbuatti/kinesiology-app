@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, X, Loader2, Plus, Target } from 'lucide-react';
+import { Upload, X, Loader2, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";

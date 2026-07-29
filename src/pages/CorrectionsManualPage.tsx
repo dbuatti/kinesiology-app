@@ -1,6 +1,6 @@
 import { Navigate, Link } from "react-router-dom";
 import { useAuth } from "@/components/AuthProvider";
-import { BookOpen, FileText, LayoutDashboard } from "lucide-react";
+import { BookOpen, LayoutDashboard } from "lucide-react";
 import CorrectionsManualContent from "@/components/crm/CorrectionsManualContent";
 import FooterLinks from "@/components/crm/FooterLinks";
 

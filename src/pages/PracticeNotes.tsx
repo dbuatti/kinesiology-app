@@ -9,7 +9,7 @@ import { PRIMARY_EMOTIONS, SIGNS_OF_SHIFT } from "@/data/emotion-data";
 import { VAGUS_ASSOCIATIONS } from "@/data/vagus-data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, Printer, ChevronDown, ChevronUp, Loader2, RefreshCw, Activity, Zap } from "lucide-react";
+import { RotateCcw, Printer, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import FooterLinks from "@/components/crm/FooterLinks";

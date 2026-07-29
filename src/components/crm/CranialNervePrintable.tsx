@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { CRANIAL_NERVES } from '@/data/cranial-nerve-data';
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from '@/lib/utils';
-import { Zap, Activity, Brain, Layers } from 'lucide-react';
+import { Zap } from 'lucide-react';
 
 const CranialNervePrintable = () => {
   const [customImages, setCustomImages] = useState<Record<string, { primary: string | null, secondary: string | null }>>({});

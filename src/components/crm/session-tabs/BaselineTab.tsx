@@ -7,7 +7,7 @@ import NeurologicalAssessments from '../NeurologicalAssessments';
 import IntrinsicMusclesAssessment from '../IntrinsicMusclesAssessment';
 import EditableField from '@/components/shared/EditableField';
 import { AppointmentWithClient } from '@/types/crm';
-import { Target, ClipboardList, Activity, ShieldAlert, Compass, AlertTriangle, Info, Hand, Dumbbell } from 'lucide-react';
+import { ClipboardList, Activity, ShieldAlert, Compass, AlertTriangle, Dumbbell } from 'lucide-react';
 import { differenceInDays } from 'date-fns';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { cn } from "@/lib/utils";

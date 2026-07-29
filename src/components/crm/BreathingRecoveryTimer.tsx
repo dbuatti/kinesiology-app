@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Square, RotateCcw, Wind, Timer, CheckCircle2, Trophy, Info } from 'lucide-react';
+import { Square, RotateCcw, Wind, Timer, Trophy, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
 

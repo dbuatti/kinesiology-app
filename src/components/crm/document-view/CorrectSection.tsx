@@ -1,7 +1,7 @@
 
 import { useMemo, useState, useEffect, useRef } from 'react'; import type { ReactNode } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Zap, BookOpen, ExternalLink, Info, CheckCircle2, Sparkles, Brain, Activity, Heart, ShieldAlert, Wind, Droplets, ArrowDownCircle, ArrowUpCircle, Layers, Copy, Check, History, Trash2, ArrowLeftRight } from 'lucide-react';
+import { Zap, ExternalLink, Info, CheckCircle2, Brain, Activity, Heart, ShieldAlert, Droplets, ArrowDownCircle, ArrowUpCircle, Layers, Copy, Check, History, Trash2 } from 'lucide-react';
 import DocInput from './DocInput';
 import { cn } from '@/lib/utils';
 import { AFFERENT_PATHWAYS, EFFERENT_PATHWAYS } from '@/data/pathway-logic-data';

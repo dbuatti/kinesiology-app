@@ -17,7 +17,7 @@ const corsHeaders = {
 
 const GRACE_MS = 15 * 60 * 1000; // don't touch rows created in the last 15 min (avoid racing a fresh booking)
 
-const VOICE_EVENT_IDS = new Set([1945081, 5925021]);
+const VOICE_EVENT_IDS = new Set([1945081, 5925021, 6488157]);
 const FNH_EVENT_IDS = new Set([4279898, 5302336, 5927215]);
 
 async function archiveNotionPages(notionKey: string, pageIds: (string | null | undefined)[]) {

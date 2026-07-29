@@ -443,13 +443,15 @@ const UnifiedCalendarPage = () => {
     if (booking) {
     matchedEmail.add(`${booking.lesson_date}|${booking.student_email}`);
     }
+    const is30 = /30/.test((l.name || "").toLowerCase());
     const is45 = /45/.test((l.name || "").toLowerCase());
     // Price priority: Notion Cost property > voice_bookings.cost > event_pricing table > defaults
     const notionCost = l.cost ?? null;
     const bookingCost = booking?.cost ?? null;
     const resolvedCost = notionCost ?? bookingCost;
-    const resolvedIs45 = resolvedCost != null ? resolvedCost <= 75 : is45;
-    const resolvedEventTypeId = resolvedIs45 ? "5925021" : "1945081";
+    const resolvedIs30 = resolvedCost != null ? resolvedCost <= 50 : is30;
+    const resolvedIs45 = !resolvedIs30 && (resolvedCost != null ? resolvedCost <= 75 : is45);
+    const resolvedEventTypeId = resolvedIs30 ? "6488157" : resolvedIs45 ? "5925021" : "1945081";
     // Voice paid signal comes from Notion's Payment property OR a voice_bookings row
     // marked paid (covers Stripe + manually-recorded external payments).
     // NB: must exclude "Unpaid" — a naive /paid/ test matches it.
@@ -471,7 +473,7 @@ const UnifiedCalendarPage = () => {
     paid: voicePaid,
     isFree: false,
     // Read voice price: Notion Cost > voice_bookings.cost > event_pricing table > defaults
-    amount: resolvedCost ?? priceFor(resolvedEventTypeId) ?? (resolvedIs45 ? 75 : 95),
+    amount: resolvedCost ?? priceFor(resolvedEventTypeId) ?? (resolvedIs30 ? 50 : resolvedIs45 ? 75 : 95),
     calcomUid: booking?.calcom_booking_id ?? null,
     notionLessonId1: booking?.notion_lesson_id_1 ?? null,
     notionLessonId2: booking?.notion_lesson_id_2 ?? null,
@@ -507,7 +509,9 @@ const UnifiedCalendarPage = () => {
     // Skip cancelled
     if (vb.status === "cancelled") return;
     const dur = vb.lesson_time ? voiceTimeDuration(vb.lesson_time) : null;
+    const is30 = dur === 30;
     const is45 = dur === 45;
+    const eventTypeId = is30 ? "6488157" : is45 ? "5925021" : "1945081";
     items.push({
     id: `vb-${vb.calcom_booking_id}`,
     source: "voice",
@@ -523,11 +527,11 @@ const UnifiedCalendarPage = () => {
     cancelled: false,
     paid: vb.status === "paid",
     isFree: vb.cost === 0,
-    amount: priceFor(is45 ? "5925021" : "1945081") ?? (vb.cost ?? null),
+    amount: priceFor(eventTypeId) ?? (vb.cost ?? null),
     calcomUid: vb.calcom_booking_id ?? null,
     notionLessonId1: vb.notion_lesson_id_1 ?? null,
     notionLessonId2: vb.notion_lesson_id_2 ?? null,
-    eventTypeId: is45 ? "5925021" : "1945081",
+    eventTypeId,
     lessonId: null,
     studentEmail: vb.student_email,
     studentName: vb.student_name,

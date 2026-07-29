@@ -50,5 +50,6 @@ $$;
 INSERT INTO public.event_pricing (calcom_event_type_id, slug, label, duration_minutes, price, currency, send_payment_link)
 VALUES
   (1945081, 'voice-and-piano-coaching-60', 'Voice and Piano Coaching (60 minutes)', 60, 95, 'aud', true),
-  (5925021, 'voice-and-piano-coaching-45', 'Voice and Piano Coaching (45 minutes)', 45, 75, 'aud', true)
+  (5925021, 'voice-and-piano-coaching-45', 'Voice and Piano Coaching (45 minutes)', 45, 75, 'aud', true),
+  (6488157, 'voice-and-piano-coaching-30-minutes', 'Voice and Piano Coaching (30 minutes)', 30, 50, 'aud', true)
 ON CONFLICT (calcom_event_type_id) DO NOTHING;

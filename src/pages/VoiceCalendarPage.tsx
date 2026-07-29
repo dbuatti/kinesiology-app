@@ -78,6 +78,7 @@ interface VoiceBooking {
 const EVENT_TYPES = [
  { key: "60", label: "60 min", eventTypeId: "1945081", price: "$95" },
  { key: "45", label: "45 min", eventTypeId: "5925021", price: "$75" },
+ { key: "30", label: "30 min", eventTypeId: "6488157", price: "$50" },
 ];
 
 const VoiceCalendarPage = () => {
@@ -129,7 +130,7 @@ const VoiceCalendarPage = () => {
   queryKey: ["voice-week-slots", format(weekStart, "yyyy-MM-dd")],
   queryFn: async () => {
   const weekEnd = endOfWeek(weekStart);
-  const eventTypes = ["1945081", "5925021"];
+  const eventTypes = ["1945081", "5925021", "6488157"];
   const merged: Record<string, any[]> = {};
   for (const etId of eventTypes) {
   const res = await supabase.functions.invoke("get-calcom-slots", {

@@ -126,8 +126,8 @@ serve(async (req) => {
                 
                 <div style="text-align: left; margin-top: 48px; line-height: 1.8; font-size: 17px; color: #334155;">
                   <p>Hi ${client.name.split(' ')[0]},</p>
-                  <p>Welcome to Resonance Kinesiology! We're looking forward to working with you.</p>
-                  <p>Before your first session, please complete your clinical intake form. This helps us understand your health history and prepare a personalised approach.</p>
+                  <p>Welcome to Resonance Kinesiology! I'm looking forward to working with you.</p>
+                  <p>Before your first session, please complete your clinical intake form. This helps me understand your health history and prepare a personalised approach.</p>
                   
                   ${!intakeFilled ? `
                     <div style="margin-top: 40px; text-align: center;">

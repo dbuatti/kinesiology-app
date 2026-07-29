@@ -314,7 +314,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
 
                   let body: string;
                   if (freshCount === 0) {
-                    body = `Hi ${firstName},\n\nI've got some time coming up. You can book a session here:\n\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-60\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-45\n\nBest,\nDaniele Buatti`;
+                    body = `Hi ${firstName},\n\nI've got some time coming up. You can book a session here:\n\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-60\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-45\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-30-minutes\n\nBest,\nDaniele Buatti`;
                   } else if (freshCount <= 3) {
                     const slotLines = freshDates.slice(0, 5).map((k) => {
                       const times = freshSlotsByDate[k].map((s: any) => s.time);
@@ -326,9 +326,9 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
                       const times = freshSlotsByDate[k].map((s: any) => s.time);
                       return formatDateLine(k, times);
                     }).join("\n");
-                    body = `Hi ${firstName},\n\nI've got some time coming up. Here's my availability:\n\n${slotLines}\n\nWould any of these work? Or feel free to book directly at:\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-60\n\nBest,\nDaniele Buatti`;
+                    body = `Hi ${firstName},\n\nI've got some time coming up. Here's my availability:\n\n${slotLines}\n\nWould any of these work? Or feel free to book directly at:\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-60\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-45\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-30-minutes\n\nBest,\nDaniele Buatti`;
                   } else {
-                    body = `Hi ${firstName},\n\nI've got lots of availability coming up. Best to pick a time that works for you here:\n\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-60\n\nBest,\nDaniele Buatti`;
+                    body = `Hi ${firstName},\n\nI've got lots of availability coming up. Best to pick a time that works for you here:\n\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-60\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-45\nhttps://cal.com/danielebuatti/voice-and-piano-coaching-30-minutes\n\nBest,\nDaniele Buatti`;
                   }
                   handleEmail("Availability — Voice Coaching", body);
                 }}

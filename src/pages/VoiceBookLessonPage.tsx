@@ -7,11 +7,12 @@ import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import { CALCOM_CONFIG } from "@/config/integrations";
 
-type DurationOption = "60" | "45";
+type DurationOption = "60" | "45" | "30";
 
 const DURATIONS: { key: DurationOption; label: string; url: string; price: string }[] = [
   { key: "60", label: "60 minutes", url: CALCOM_CONFIG.VOICE_COACHING_URL, price: "$95" },
   { key: "45", label: "45 minutes", url: CALCOM_CONFIG.VOICE_COACHING_45_URL, price: "$75" },
+  { key: "30", label: "30 minutes", url: CALCOM_CONFIG.VOICE_COACHING_30_URL, price: "$50" },
 ];
 
 const VoiceBookLessonPage = () => {

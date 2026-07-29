@@ -128,7 +128,7 @@ const AllAppointmentsPage = () => {
           .filter((vb: any) => vb.lesson_date && vb.student_name && vb.student_email !== practitionerEmail)
           .map((vb: any, idx: number) => {
             const dur = vb.lesson_time ? voiceTimeDuration(vb.lesson_time) : null;
-            const derivedCost = vb.cost ?? (dur === 45 ? 75 : dur === 60 ? 95 : null);
+            const derivedCost = vb.cost ?? (dur === 30 ? 50 : dur === 45 ? 75 : dur === 60 ? 95 : null);
             return {
               id: `vb-${vb.calcom_booking_id || idx}`,
               display_id: vb.calcom_booking_id ? `VB-${String(vb.calcom_booking_id).slice(0, 6)}` : `VB-${idx}`,

@@ -39,6 +39,7 @@ interface SimpleBookDialogProps {
 const EVENT_TYPES = [
   { key: "60", label: "60 min", eventTypeId: "1945081", price: "$95" },
   { key: "45", label: "45 min", eventTypeId: "5925021", price: "$75" },
+  { key: "30", label: "30 min", eventTypeId: "6488157", price: "$50" },
 ];
 
 const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefillStudentId, prefillDuration }: SimpleBookDialogProps) => {

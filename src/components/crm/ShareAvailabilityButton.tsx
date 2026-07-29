@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 const SERVICES = [
   { key: "voice60", label: "Voice 60", eventTypeId: "1945081" },
   { key: "voice45", label: "Voice 45", eventTypeId: "5925021" },
+  { key: "voice30", label: "Voice 30", eventTypeId: "6488157" },
   { key: "fnh", label: "FNH", eventTypeId: "4279898" },
 ];
 

@@ -474,9 +474,9 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                 onClick={() => setStatusFilter(statusFilter === "unpaid" ? "all" : "unpaid")}
                 className={cn(
                   "tabular-nums transition-all rounded-full px-3 py-1 border font-semibold",
-                  statusFilter === "unpaid"
-                    ? "bg-amber-500 text-primary-foreground border-amber-500 shadow-sm"
-                    : "bg-amber-100/60 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200/50 dark:border-amber-900/40 hover:bg-amber-100"
+                    statusFilter === "unpaid"
+                      ? "bg-chart-destructive text-primary-foreground border-chart-destructive shadow-sm"
+                      : "bg-chart-destructive/10 text-chart-destructive border-chart-destructive/20 hover:bg-chart-destructive/15"
                 )}
               >
                 ${summary.outstanding} outstanding
@@ -574,7 +574,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                 }}
               />
               <span className="font-serif text-sm font-semibold text-foreground/85 tracking-tight">{format(new Date(dateLabel + "T12:00:00"), "EEEE, MMMM d")}</span>
-              <span className="text-[10px] font-bold text-amber-700/70 dark:text-amber-500/70 bg-amber-100/60 dark:bg-amber-950/30 rounded-full px-1.5 py-0.5">{dateItems.length}</span>
+              <span className="text-[10px] font-bold text-muted-foreground bg-muted rounded-full px-1.5 py-0.5">{dateItems.length}</span>
             </div>
             {dateItems.map((item) => {
           const isVoice = item.source === "voice";
@@ -585,7 +585,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
           return (
             <div
               key={item.id}
-              className="flex items-center gap-3 px-5 py-3.5 border-b border-border/30 last:border-b-0 border-l-2 border-l-transparent hover:border-l-amber-400 hover:bg-amber-50/40 dark:hover:bg-amber-950/10 hover:pl-6 transition-all duration-200 cursor-pointer"
+              className="flex items-center gap-3 px-5 py-3.5 border-b border-border/30 last:border-b-0 border-l-2 border-l-transparent hover:border-l-primary/30 hover:bg-muted/40 hover:pl-6 transition-all duration-200 cursor-pointer"
               onClick={() => {
                 if (item.source === "kinesiology" && item.url) {
                   navigate(item.url);
@@ -631,7 +631,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                   ) : item.isFree ? (
                     <Badge className="bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground border-none text-[10px] font-semibold rounded-full px-2.5 py-0.5">Free</Badge>
                   ) : !item.paid ? (
-                    <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-none text-[10px] font-semibold rounded-full px-2.5 py-0.5">Unpaid</Badge>
+                    <Badge className="bg-chart-destructive/10 text-chart-destructive border-none text-[10px] font-semibold rounded-full px-2.5 py-0.5">Unpaid</Badge>
                   ) : null}
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -654,7 +654,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                 {item.isFree ? (
                   <span className="text-xs font-bold text-muted-foreground">Free</span>
                 ) : item.amount != null ? (
-                  <span className={cn("text-sm font-bold tabular-nums", item.paid ? "text-chart-emerald" : "text-orange-600 dark:text-orange-400")}>${item.amount}</span>
+                  <span className={cn("text-sm font-bold tabular-nums", item.paid ? "text-chart-emerald" : "text-chart-destructive")}>${item.amount}</span>
                 ) : (
                   <span className="text-xs text-muted-foreground">—</span>
                 )}
@@ -850,7 +850,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                       onClick={() => setRescheduleAt(iso)}
                       className={cn(
                         "text-left text-xs rounded-lg border px-2.5 py-2 transition-all",
-                        selected ? "border-amber-400 bg-amber-50/70 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 font-semibold" : "border-border hover:border-amber-300/60"
+                        selected ? "border-chart-primary/30 bg-chart-primary/5 text-chart-primary font-semibold" : "border-border hover:border-chart-primary/20"
                       )}
                     >
                       {format(new Date(iso), "EEE d MMM · h:mma").toLowerCase()}

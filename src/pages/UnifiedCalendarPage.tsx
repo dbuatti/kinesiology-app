@@ -707,42 +707,42 @@ const UnifiedCalendarPage = () => {
          onClick={() => setViewMode("list")}
          className={cn(
            "px-4 py-2 rounded-[10px] text-xs font-semibold transition-all",
-           viewMode === "list"
-           ? "bg-card text-amber-700 dark:text-amber-400 shadow-sm ring-1 ring-amber-200/60 dark:ring-amber-900/40"
-           : "text-muted-foreground hover:text-foreground"
-         )}
-       >
-         List
-       </button>
-       <button
-         onClick={() => setViewMode("month")}
-         className={cn(
-           "px-4 py-2 rounded-[10px] text-xs font-semibold transition-all",
-           viewMode === "month"
-           ? "bg-card text-amber-700 dark:text-amber-400 shadow-sm ring-1 ring-amber-200/60 dark:ring-amber-900/40"
-           : "text-muted-foreground hover:text-foreground"
-         )}
-       >
-         Month
-       </button>
-       <button
-         onClick={() => setViewMode("week")}
-         className={cn(
-           "px-4 py-2 rounded-[10px] text-xs font-semibold transition-all",
-           viewMode === "week"
-           ? "bg-card text-amber-700 dark:text-amber-400 shadow-sm ring-1 ring-amber-200/60 dark:ring-amber-900/40"
-           : "text-muted-foreground hover:text-foreground"
-         )}
-       >
-         Week
-       </button>
-       <button
-         onClick={() => setViewMode("overview")}
-         className={cn(
-           "px-4 py-2 rounded-[10px] text-xs font-semibold transition-all",
-           viewMode === "overview"
-           ? "bg-card text-amber-700 dark:text-amber-400 shadow-sm ring-1 ring-amber-200/60 dark:ring-amber-900/40"
-           : "text-muted-foreground hover:text-foreground"
+            viewMode === "list"
+            ? "bg-card text-chart-primary shadow-sm ring-1 ring-chart-primary/20"
+            : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          List
+        </button>
+        <button
+          onClick={() => setViewMode("month")}
+          className={cn(
+            "px-4 py-2 rounded-[10px] text-xs font-semibold transition-all",
+            viewMode === "month"
+            ? "bg-card text-chart-primary shadow-sm ring-1 ring-chart-primary/20"
+            : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Month
+        </button>
+        <button
+          onClick={() => setViewMode("week")}
+          className={cn(
+            "px-4 py-2 rounded-[10px] text-xs font-semibold transition-all",
+            viewMode === "week"
+            ? "bg-card text-chart-primary shadow-sm ring-1 ring-chart-primary/20"
+            : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Week
+        </button>
+        <button
+          onClick={() => setViewMode("overview")}
+          className={cn(
+            "px-4 py-2 rounded-[10px] text-xs font-semibold transition-all",
+            viewMode === "overview"
+            ? "bg-card text-chart-primary shadow-sm ring-1 ring-chart-primary/20"
+            : "text-muted-foreground hover:text-foreground"
          )}
        >
          Overview
@@ -782,7 +782,7 @@ const UnifiedCalendarPage = () => {
    <span className="text-[10px] font-medium text-muted-foreground">Paid</span>
    </div>
    <div className="flex items-center gap-1.5">
-   <span className="w-2 h-2 rounded-full bg-amber-500" />
+   <span className="w-2 h-2 rounded-full bg-chart-destructive" />
    <span className="text-[10px] font-medium text-muted-foreground">Unpaid</span>
    </div>
    <div className="flex items-center gap-1.5">
@@ -849,7 +849,7 @@ const UnifiedCalendarPage = () => {
    className={cn(
    "min-h-[130px] p-3 border-r border-b border-border/50 transition-colors",
    !isCurrent && "bg-muted/20 opacity-40",
-   isCurrentDay && "bg-amber-50/60 dark:bg-amber-950/15 ring-1 ring-inset ring-amber-300/50 dark:ring-amber-800/40"
+    isCurrentDay && "bg-chart-primary/5 ring-1 ring-inset ring-chart-primary/20"
    )}
    >
    <div className="flex justify-between items-start mb-2">

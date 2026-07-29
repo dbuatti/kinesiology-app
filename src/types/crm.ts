@@ -141,3 +141,19 @@ export interface Client {
 export interface AppointmentWithClient extends Appointment {
   clients: Client;
 }
+
+export type SeriesFrequency = 'weekly' | 'fortnightly';
+
+export interface RecurringSeries {
+  id: string;
+  frequency: SeriesFrequency;
+  day_of_week: number;
+  time_of_day: string;
+  duration_minutes: number;
+  start_date: string;
+  total_occurrences: number;
+  discipline?: string | null;
+  event_type_id?: string;
+  cost?: number;
+  created_at: string;
+}

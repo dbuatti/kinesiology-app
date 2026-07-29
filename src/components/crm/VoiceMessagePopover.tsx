@@ -112,7 +112,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
       const res = await supabase.functions.invoke("get-calcom-slots", {
         body: {
           start: new Date().toISOString(),
-          end: addDays(new Date(), 60).toISOString(),
+          end: addDays(new Date(), 365).toISOString(),
           eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_60,
           timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         },
@@ -304,7 +304,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
                   const res = await supabase.functions.invoke("get-calcom-slots", {
                     body: {
                       start: new Date().toISOString(),
-                      end: addDays(new Date(), 60).toISOString(),
+                      end: addDays(new Date(), 365).toISOString(),
                       eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_60,
                       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                     },
@@ -354,7 +354,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
                   const res = await supabase.functions.invoke("get-calcom-slots", {
                     body: {
                       start: new Date().toISOString(),
-                      end: addDays(new Date(), 60).toISOString(),
+                      end: addDays(new Date(), 365).toISOString(),
                       eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_60,
                       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                     },

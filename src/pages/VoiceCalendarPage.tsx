@@ -6,6 +6,7 @@ import {
   CreditCard, Copy, Check, DollarSign, Trash2, CalendarSync,
    XCircle, Search, ChevronDown, CalendarPlus
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { CALCOM_CONFIG } from "@/config/integrations";
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, 
   startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, 
@@ -74,6 +75,10 @@ interface VoiceBooking {
   discipline?: string | null;
   notion_lesson_id_1: string | null;
   notion_lesson_id_2: string | null;
+  series_id?: string | null;
+  series_frequency?: string | null;
+  series_occurrence?: number | null;
+  series_total?: number | null;
 }
 
 const EVENT_TYPES = [
@@ -92,6 +97,7 @@ const VoiceCalendarPage = () => {
   const [payAmount, setPayAmount] = useState("");
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const [cancelLesson, setCancelLesson] = useState<{ lesson: VoiceLesson; booking: VoiceBooking } | null>(null);
+  const [cancelSeries, setCancelSeries] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [rescheduleLesson, setRescheduleLesson] = useState<{ lesson: VoiceLesson; booking: VoiceBooking } | null>(null);
   const [rescheduleSlot, setRescheduleSlot] = useState<string | null>(null);
@@ -271,27 +277,32 @@ const VoiceCalendarPage = () => {
  },
  });
 
- const handleCancel = async () => {
- if (!cancelLesson) return;
- setCancelling(true);
- try {
- const { error } = await supabase.functions.invoke("voice-cancel-lesson", {
- body: {
- calcomBookingId: cancelLesson.booking.calcom_booking_id,
- notionLessonId1: cancelLesson.booking.notion_lesson_id_1,
- notionLessonId2: cancelLesson.booking.notion_lesson_id_2,
- },
- });
- if (error) throw error;
- showSuccess("Lesson cancelled in Cal.com and archived in Notion.");
- queryClient.invalidateQueries({ queryKey: ["voice-lessons"] });
- queryClient.invalidateQueries({ queryKey: ["voice-bookings"] });
- setCancelLesson(null);
- } catch (err: any) {
- showError(err.message || "Failed to cancel lesson");
- }
- setCancelling(false);
- };
+  const handleCancel = async () => {
+  if (!cancelLesson) return;
+  setCancelling(true);
+  try {
+  const { error } = await supabase.functions.invoke("voice-cancel-lesson", {
+  body: {
+  calcomBookingId: cancelLesson.booking.calcom_booking_id,
+  notionLessonId1: cancelLesson.booking.notion_lesson_id_1,
+  notionLessonId2: cancelLesson.booking.notion_lesson_id_2,
+  seriesId: cancelSeries ? cancelLesson.booking.series_id : undefined,
+  },
+  });
+  if (error) throw error;
+  const msg = cancelSeries
+    ? `Series cancelled (${cancelLesson.booking.series_total || "all"} lessons archived).`
+    : "Lesson cancelled in Cal.com and archived in Notion.";
+  showSuccess(msg);
+  queryClient.invalidateQueries({ queryKey: ["voice-lessons"] });
+  queryClient.invalidateQueries({ queryKey: ["voice-bookings"] });
+  setCancelLesson(null);
+  setCancelSeries(false);
+  } catch (err: any) {
+  showError(err.message || "Failed to cancel lesson");
+  }
+  setCancelling(false);
+  };
 
  const handleReschedule = async () => {
  if (!rescheduleLesson || !rescheduleSlot) return;
@@ -803,8 +814,8 @@ const VoiceCalendarPage = () => {
  </div>
 
  {/* Cancel Confirmation Dialog */}
- <Dialog open={!!cancelLesson} onOpenChange={(o) => !o && setCancelLesson(null)}>
- <DialogContent className="sm:max-w-[400px] rounded-xl">
+ <Dialog open={!!cancelLesson} onOpenChange={(o) => { if (!o) { setCancelLesson(null); setCancelSeries(false); }}}>
+ <DialogContent className="sm:max-w-[420px] rounded-xl">
  <DialogHeader>
  <DialogTitle>Cancel Lesson</DialogTitle>
  <DialogDescription>
@@ -824,8 +835,29 @@ const VoiceCalendarPage = () => {
  <p className="text-xs text-muted-foreground">Student: {cancelLesson.lesson.studentName}</p>
  </div>
  )}
+ {cancelLesson?.booking.series_id && (
+ <div
+  onClick={() => setCancelSeries(!cancelSeries)}
+  className={cn(
+    "flex items-center gap-3 rounded-xl border-2 p-4 transition-all cursor-pointer",
+    cancelSeries ? "bg-destructive/10 border-destructive/40" : "bg-card border-border hover:border-destructive/30"
+  )}
+ >
+  <div className={cn("w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-all", cancelSeries ? "bg-destructive border-destructive" : "border-muted-foreground/30")}>
+    {cancelSeries && <Check size={12} className="text-primary-foreground" />}
+  </div>
+  <div>
+    <p className="text-xs font-bold">Cancel entire series</p>
+    <p className="text-[10px] text-muted-foreground">
+      {cancelLesson.booking.series_total
+        ? `Cancel all ${cancelLesson.booking.series_total} ${cancelLesson.booking.series_frequency === "fortnightly" ? "fortnightly" : "weekly"} sessions`
+        : "Cancel all sessions in this series"}
+    </p>
+  </div>
+ </div>
+ )}
  <DialogFooter className="flex gap-2">
- <Button variant="outline" onClick={() => setCancelLesson(null)} className="rounded-xl font-medium text-xs">
+ <Button variant="outline" onClick={() => { setCancelLesson(null); setCancelSeries(false); }} className="rounded-xl font-medium text-xs">
  Keep
  </Button>
  <Button
@@ -834,7 +866,7 @@ const VoiceCalendarPage = () => {
  className="bg-destructive hover:bg-destructive/80 rounded-xl font-medium text-xs gap-2"
  >
  {cancelling ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
- {cancelling ? "Cancelling..." : "Confirm Cancel"}
+ {cancelling ? "Cancelling..." : cancelSeries ? "Cancel Series" : "Confirm Cancel"}
  </Button>
  </DialogFooter>
  </DialogContent>
@@ -981,7 +1013,7 @@ const RescheduleSlotPicker = ({
  const res = await supabase.functions.invoke("get-calcom-slots", {
  body: {
   start: new Date().toISOString(),
-  end: addDays(new Date(), 30).toISOString(),
+  end: addDays(new Date(), 365).toISOString(),
   eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_60,
    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   },

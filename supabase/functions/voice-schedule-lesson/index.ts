@@ -21,7 +21,7 @@ serve(async (req) => {
     const NOTION_KEY = Deno.env.get("NOTION_API_KEY");
     if (!NOTION_KEY) throw new Error("Missing NOTION_API_KEY in Supabase Secrets.");
 
-    const { studentId, date, time, cost, studentName, studentEmail, calcomBookingUid, discipline } = await req.json();
+    const { studentId, date, time, cost, studentName, studentEmail, calcomBookingUid, discipline, seriesId, seriesFrequency, seriesOccurrence, seriesTotal } = await req.json();
 
     if (!studentId || !date || !time) {
       throw new Error("Missing required fields: studentId, date, time");
@@ -123,6 +123,10 @@ serve(async (req) => {
             discipline: discipline || "voice",
             notion_lesson_id_1: result1.id || null,
             notion_lesson_id_2: result2.id || null,
+            series_id: seriesId || null,
+            series_frequency: seriesFrequency || null,
+            series_occurrence: seriesOccurrence || null,
+            series_total: seriesTotal || null,
           }, { onConflict: 'calcom_booking_id' });
         if (upsertError) {
           console.error(`[${functionName}] voice_bookings upsert error:`, upsertError.message);

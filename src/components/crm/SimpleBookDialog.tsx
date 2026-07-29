@@ -52,6 +52,8 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
   const [time, setTime] = useState(prefillTime || "10:00");
   const [duration, setDuration] = useState(prefillDuration || "60");
   const [discipline, setDiscipline] = useState<"voice" | "piano">("voice");
+  const [repeat, setRepeat] = useState<"none" | "weekly" | "fortnightly">("none");
+  const [repeatCount, setRepeatCount] = useState(4);
   const [sendOnboarding, setSendOnboarding] = useState(true);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -195,39 +197,62 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
     const dateStr = format(new Date(date + "T" + time), "yyyy-MM-dd");
     const timeStr = format(new Date(date + "T" + time), "h:mm a");
 
-    // If the student is from kinesiology clients, create them in Notion first
-    const notionStudentId = await ensureNotionStudent();
-
     const lessonType = discipline === "piano" ? "Piano Lesson" : "Voice Lesson";
-    const { data: bookingData, error: bookingError } = await supabase.functions.invoke("voice-create-booking", {
-      body: {
-        studentName: selectedStudent.name || lessonType,
-        studentEmail: studentEmail || "",
-        startTime: startTimeIso,
-        eventTypeId: eventType.eventTypeId,
-        title: `${lessonType} — ${dateStr}`,
-        notes: `Booked via Simple Book (${duration} min)`,
-        force: forceBooking,
-        discipline,
-      },
-    });
-    if (bookingError) throw bookingError;
+    const notionStudentId = await ensureNotionStudent();
+    const seriesId = repeat !== "none" ? crypto.randomUUID() : undefined;
 
-    const { data: lessonData, error: lessonError } = await supabase.functions.invoke("voice-schedule-lesson", {
-      body: {
-        studentId: notionStudentId,
-        date: dateStr,
-        time: timeStr,
-        cost: costVal,
-        studentName: selectedStudent.name,
-        studentEmail: studentEmail || selectedStudent.email,
-        calcomBookingUid: bookingData?.uid,
-        discipline,
-      },
-    });
-    if (lessonError) throw lessonError;
+    const occurrences = repeat !== "none"
+      ? Array.from({ length: repeatCount }, (_, i) => {
+          const d = new Date(date + "T" + time);
+          d.setDate(d.getDate() + i * (repeat === "fortnightly" ? 14 : 7));
+          return {
+            dateStr: format(d, "yyyy-MM-dd"),
+            timeStr: format(d, "h:mm a"),
+            startIso: d.toISOString(),
+            occurrence: i + 1,
+          };
+        })
+      : [{ dateStr, timeStr, startIso: startTimeIso, occurrence: 1 }];
 
-    return bookingData;
+    let lastUid: string | undefined;
+    for (const occ of occurrences) {
+      const { data: bookingData, error: bookingError } = await supabase.functions.invoke("voice-create-booking", {
+        body: {
+          studentName: selectedStudent.name || lessonType,
+          studentEmail: studentEmail || "",
+          startTime: occ.startIso,
+          eventTypeId: eventType.eventTypeId,
+          title: `${lessonType} — ${occ.dateStr}`,
+          notes: seriesId
+            ? `Series ${seriesId.slice(0, 8)} · ${occ.occurrence}/${repeatCount}`
+            : `Booked via Simple Book (${duration} min)`,
+          force: forceBooking,
+          discipline,
+        },
+      });
+      if (bookingError) throw bookingError;
+      lastUid = bookingData?.uid;
+
+      const { error: lessonError } = await supabase.functions.invoke("voice-schedule-lesson", {
+        body: {
+          studentId: notionStudentId,
+          date: occ.dateStr,
+          time: occ.timeStr,
+          cost: costVal,
+          studentName: selectedStudent.name,
+          studentEmail: studentEmail || selectedStudent.email,
+          calcomBookingUid: bookingData?.uid,
+          discipline,
+          seriesId,
+          seriesFrequency: repeat !== "none" ? repeat : undefined,
+          seriesOccurrence: occ.occurrence,
+          seriesTotal: repeat !== "none" ? repeatCount : undefined,
+        },
+      });
+      if (lessonError) throw lessonError;
+    }
+
+    return { uid: lastUid, seriesId };
   };
 
   const [lastBookingUid, setLastBookingUid] = useState<string | null>(null);
@@ -413,6 +438,45 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
             </div>
           </div>
 
+          {/* Repeat */}
+          {selectedStudent && (
+            <div className="space-y-2">
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Repeat</p>
+              <div className="flex gap-2">
+                {(["none", "weekly", "fortnightly"] as const).map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setRepeat(r)}
+                    className={cn(
+                      "flex-1 py-2.5 rounded-xl text-xs font-black transition-all border-2",
+                      repeat === r
+                        ? "bg-rose-600 border-rose-600 text-primary-foreground shadow-lg"
+                        : "bg-card border-border text-foreground hover:border-rose-300 dark:hover:border-rose-700"
+                    )}
+                  >
+                    {r === "none" ? "No repeat" : r === "weekly" ? "Weekly" : "Fortnightly"}
+                  </button>
+                ))}
+              </div>
+              {repeat !== "none" && (
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-xs font-semibold text-muted-foreground">For</span>
+                  <select
+                    value={repeatCount}
+                    onChange={(e) => setRepeatCount(Number(e.target.value))}
+                    className="h-8 px-2 rounded-lg border border-border bg-card text-xs font-bold focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  >
+                    {Array.from({ length: 24 }, (_, i) => i + 2).map((n) => (
+                      <option key={n} value={n}>
+                        {n} sessions ({n * (repeat === "fortnightly" ? 14 : 7)} weeks)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Date & Time */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -543,6 +607,11 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
               <div className="flex items-center gap-2 text-sm font-bold">
                 <Calendar size={14} className="text-rose-500" />
                 {format(new Date(date + "T" + time), "EEEE, MMMM d, yyyy")}
+                {repeat !== "none" && (
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    + {repeatCount - 1} more {repeat === "weekly" ? "weekly" : "fortnightly"}
+                  </span>
+                )}
               </div>
               <div className="flex items-center gap-2 text-sm font-bold">
                 <Clock size={14} className="text-rose-500" />

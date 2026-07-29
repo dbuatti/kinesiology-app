@@ -120,7 +120,7 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
  if (!open || availableSlots !== null) return;
  setLoadingSlots(true);
  const start = new Date().toISOString();
- const end = addDays(new Date(), 60).toISOString();
+  const end = addDays(new Date(), 365).toISOString();
  supabase.functions.invoke('get-calcom-slots', {
  body: { start, end, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }
  }).then(({ data }) => {

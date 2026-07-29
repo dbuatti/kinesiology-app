@@ -42,8 +42,8 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
     setError(null);
     try {
       const start = startOfToday().toISOString();
-      // Scan 30 days ahead to ensure we find available days
-      const end = endOfDay(addDays(startOfToday(), 30)).toISOString();
+      // Scan 365 days ahead to ensure we find available days
+      const end = endOfDay(addDays(startOfToday(), 365)).toISOString();
       
       const { data, error: invokeError } = await supabase.functions.invoke('get-calcom-slots', {
         body: { 
@@ -83,7 +83,7 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
   // Generate all 30 days, marking which have slots
   const allDays = useMemo(() => {
     const today = startOfToday();
-    const days = eachDayOfInterval({ start: today, end: addDays(today, 29) });
+    const days = eachDayOfInterval({ start: today, end: addDays(today, 364) });
     return days.map(date => {
       const dateKey = format(date, 'yyyy-MM-dd');
       const hasSlots = (slots[dateKey] || []).length > 0;

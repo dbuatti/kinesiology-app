@@ -88,7 +88,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
       const res = await supabase.functions.invoke("get-calcom-slots", {
         body: {
           start: new Date().toISOString(),
-          end: addDays(new Date(), 30).toISOString(),
+          end: addDays(new Date(), 365).toISOString(),
           eventTypeId: CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID,
           timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         },

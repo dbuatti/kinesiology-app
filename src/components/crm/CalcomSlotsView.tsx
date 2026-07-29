@@ -576,7 +576,7 @@ const CalcomSlotsView = () => {
 
         <div className="flex items-center gap-3">
           <div className="flex bg-muted p-1 rounded-xl">
-            {[2, 4, 8].map(w => (
+            {[2, 4, 8, 12, 24, 52].map(w => (
               <Button 
                 key={w}
                 variant="ghost" 

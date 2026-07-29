@@ -68,6 +68,10 @@ interface VoiceBookingRow {
   discipline?: string | null;
   notion_lesson_id_1: string | null;
   notion_lesson_id_2: string | null;
+  series_id?: string | null;
+  series_frequency?: string | null;
+  series_occurrence?: number | null;
+  series_total?: number | null;
 }
 
 interface KinesiologyAppt {
@@ -116,6 +120,7 @@ interface CalendarItem {
   appointmentId?: string | null;
   eventTypeId?: string | null;
   notionLink?: string | null;
+  seriesId?: string | null;
 }
 
 function parseTimeToEvent(item: CalendarItem): CalendarEvent | null {
@@ -496,6 +501,7 @@ const UnifiedCalendarPage = () => {
     notionLessonId1: vb.notion_lesson_id_1 ?? null,
     notionLessonId2: vb.notion_lesson_id_2 ?? null,
     eventTypeId,
+    seriesId: vb.series_id || null,
     lessonId: null,
     studentEmail: vb.student_email,
     studentName: vb.student_name,

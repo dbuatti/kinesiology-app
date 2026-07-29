@@ -109,6 +109,7 @@ interface BookingsListProps {
 const NEW_BOOKING_SERVICES = [
   { group: "Voice", key: "voice60", label: "Voice & Piano — 60 min" },
   { group: "Voice", key: "voice45", label: "Voice & Piano — 45 min" },
+  { group: "Voice", key: "voice30", label: "Voice & Piano — 30 min" },
   { group: "FNH", key: "fnhStandard", label: "FNH Neuro-Health Assessment" },
   { group: "FNH", key: "fnhFull", label: "FNH — Full Price" },
   { group: "FNH", key: "fnhFree", label: "FNH — Community (Free)" },

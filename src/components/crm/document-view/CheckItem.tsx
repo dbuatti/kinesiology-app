@@ -70,11 +70,11 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
           status === 'Inhibited' 
             ? isCleared 
               ? "bg-chart-emerald border-chart-emerald text-primary-foreground" 
-              : "bg-amber-500 border-amber-500 text-primary-foreground"
+              : "bg-destructive border-destructive text-primary-foreground"
             : status === 'Hypertonic'
               ? isCleared
                 ? "bg-chart-emerald border-chart-emerald text-primary-foreground"
-                : "bg-rose-600 border-rose-600 text-primary-foreground"
+                : "bg-amber-500 border-amber-500 text-primary-foreground"
               : "border-border group-hover:border-foreground bg-background"
         )}>
           {status === 'Inhibited' && (isCleared ? <Check size={10} strokeWidth={4} /> : <ArrowDown size={10} strokeWidth={4} />)}
@@ -84,8 +84,8 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
         <div className="flex flex-col min-w-0">
           <span className={cn(
             "text-[10px] font-bold truncate",
-            status === 'Inhibited' && !isCleared && "text-amber-600 dark:text-amber-300",
-            status === 'Hypertonic' && !isCleared && "text-destructive",
+            status === 'Inhibited' && !isCleared && "text-destructive",
+            status === 'Hypertonic' && !isCleared && "text-amber-600 dark:text-amber-300",
             isCleared && "text-muted-foreground line-through"
           )}>
             {side ? `${side}: ${name}` : name}

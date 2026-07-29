@@ -206,32 +206,32 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
           };
           return (
             <div className="space-y-6">
-              {/* Cranial Nerves */}
-              <div>
-                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Cranial Nerves</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
-                  {CRANIAL_NERVES.map(n => n.isLateralized ? (
-                    <Fragment key={n.name}>
-                      <CheckItem category="cranial_nerves" name={n.name} side="L" pattern={pattern} onToggle={quickToggle} />
-                      <CheckItem category="cranial_nerves" name={n.name} side="R" pattern={pattern} onToggle={quickToggle} />
-                    </Fragment>
-                  ) : (
-                    <CheckItem key={n.name} category="cranial_nerves" name={n.name} pattern={pattern} onToggle={quickToggle} />
-                  ))}
-                </div>
-              </div>
-
               {/* Primitive Reflexes */}
               <div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Primitive Reflexes</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                   {PRIMITIVE_REFLEXES.map(r => r.isLateralized ? (
                     <Fragment key={r.id}>
-                      <CheckItem category="primitive_reflexes" name={r.name} side="L" pattern={pattern} onToggle={quickToggle} />
-                      <CheckItem category="primitive_reflexes" name={r.name} side="R" pattern={pattern} onToggle={quickToggle} />
+                      <CheckItem category="primitiveReflexes" name={r.name} side="L" pattern={pattern} onToggle={quickToggle} />
+                      <CheckItem category="primitiveReflexes" name={r.name} side="R" pattern={pattern} onToggle={quickToggle} />
                     </Fragment>
                   ) : (
-                    <CheckItem key={r.id} category="primitive_reflexes" name={r.name} pattern={pattern} onToggle={quickToggle} />
+                    <CheckItem key={r.id} category="primitiveReflexes" name={r.name} pattern={pattern} onToggle={quickToggle} />
+                  ))}
+                </div>
+              </div>
+
+              {/* Cranial Nerves */}
+              <div>
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Cranial Nerves</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
+                  {CRANIAL_NERVES.map(n => n.isLateralized ? (
+                    <Fragment key={n.name}>
+                      <CheckItem category="cranialNerves" name={n.name} side="L" pattern={pattern} onToggle={quickToggle} />
+                      <CheckItem category="cranialNerves" name={n.name} side="R" pattern={pattern} onToggle={quickToggle} />
+                    </Fragment>
+                  ) : (
+                    <CheckItem key={n.name} category="cranialNerves" name={n.name} pattern={pattern} onToggle={quickToggle} />
                   ))}
                 </div>
               </div>

@@ -346,34 +346,34 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
             )}
 
             {/* Cranial Nerve Assessment */}
-            {(editable || hasPatternCategory('cranial_nerves')) && (
+            {(editable || hasPatternCategory('cranialNerves')) && (
               <div className="mb-4 pb-4 border-b border-border/30">
                 <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Cranial Nerve Assessment</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                   {CRANIAL_NERVES.map(n => n.isLateralized ? (
                     <Fragment key={n.name}>
-                      <CheckItem category="cranial_nerves" name={n.name} side="L" pattern={pattern} onToggle={handleAssessmentToggle} />
-                      <CheckItem category="cranial_nerves" name={n.name} side="R" pattern={pattern} onToggle={handleAssessmentToggle} />
+                      <CheckItem category="cranialNerves" name={n.name} side="L" pattern={pattern} onToggle={handleAssessmentToggle} />
+                      <CheckItem category="cranialNerves" name={n.name} side="R" pattern={pattern} onToggle={handleAssessmentToggle} />
                     </Fragment>
                   ) : (
-                    <CheckItem key={n.name} category="cranial_nerves" name={n.name} pattern={pattern} onToggle={handleAssessmentToggle} />
+                    <CheckItem key={n.name} category="cranialNerves" name={n.name} pattern={pattern} onToggle={handleAssessmentToggle} />
                   ))}
                 </div>
               </div>
             )}
 
             {/* Primitive Reflex Assessment */}
-            {(editable || hasPatternCategory('primitive_reflexes')) && (
+            {(editable || hasPatternCategory('primitiveReflexes')) && (
               <div className="mb-4 pb-4 border-b border-border/30">
                 <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Primitive Reflex Assessment</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                   {PRIMITIVE_REFLEXES.map(r => r.isLateralized ? (
                     <Fragment key={r.id}>
-                      <CheckItem category="primitive_reflexes" name={r.name} side="L" pattern={pattern} onToggle={handleAssessmentToggle} />
-                      <CheckItem category="primitive_reflexes" name={r.name} side="R" pattern={pattern} onToggle={handleAssessmentToggle} />
+                      <CheckItem category="primitiveReflexes" name={r.name} side="L" pattern={pattern} onToggle={handleAssessmentToggle} />
+                      <CheckItem category="primitiveReflexes" name={r.name} side="R" pattern={pattern} onToggle={handleAssessmentToggle} />
                     </Fragment>
                   ) : (
-                    <CheckItem key={r.id} category="primitive_reflexes" name={r.name} pattern={pattern} onToggle={handleAssessmentToggle} />
+                    <CheckItem key={r.id} category="primitiveReflexes" name={r.name} pattern={pattern} onToggle={handleAssessmentToggle} />
                   ))}
                 </div>
               </div>

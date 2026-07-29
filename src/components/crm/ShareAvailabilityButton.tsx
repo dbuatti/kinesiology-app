@@ -6,12 +6,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
+import { CALCOM_CONFIG, TIMEZONE } from "@/config/integrations";
 
 const SERVICES = [
-  { key: "voice60", label: "Voice 60", eventTypeId: "1945081" },
-  { key: "voice45", label: "Voice 45", eventTypeId: "5925021" },
-  { key: "voice30", label: "Voice 30", eventTypeId: "6488157" },
-  { key: "fnh", label: "FNH", eventTypeId: "4279898" },
+  { key: "voice60", label: "Voice 60", eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_60 },
+  { key: "voice45", label: "Voice 45", eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_45 },
+  { key: "voice30", label: "Voice 30", eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_30 },
+  { key: "fnh", label: "FNH", eventTypeId: CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID },
 ];
 
 const RANGES = [
@@ -19,8 +20,6 @@ const RANGES = [
   { key: "2", label: "2 weeks", days: 14 },
   { key: "4", label: "4 weeks", days: 28 },
 ];
-
-const TZ = "Australia/Melbourne";
 
 const ShareAvailabilityButton = () => {
   const [open, setOpen] = useState(false);
@@ -39,7 +38,7 @@ const ShareAvailabilityButton = () => {
       end.setDate(end.getDate() + range.days);
 
       const res = await supabase.functions.invoke("get-calcom-slots", {
-        body: { start: start.toISOString(), end: end.toISOString(), eventTypeId: service.eventTypeId, timeZone: TZ },
+        body: { start: start.toISOString(), end: end.toISOString(), eventTypeId: service.eventTypeId, timeZone: TIMEZONE },
       });
       if (res.error) throw res.error;
       const byDate = (res.data?.data || {}) as Record<string, any[]>;

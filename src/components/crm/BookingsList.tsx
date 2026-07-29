@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { format } from "date-fns";
 import { Mic, User, MoreHorizontal, CalendarClock, X, CreditCard, Loader2, ExternalLink, Plus, CheckCircle2, Circle, Gift } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { TIMEZONE } from "@/config/integrations";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -140,7 +141,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
       const end = new Date();
       end.setDate(end.getDate() + 21);
       const res = await supabase.functions.invoke("get-calcom-slots", {
-        body: { start: start.toISOString(), end: end.toISOString(), eventTypeId: item.eventTypeId, timeZone: "Australia/Melbourne" },
+        body: { start: start.toISOString(), end: end.toISOString(), eventTypeId: item.eventTypeId, timeZone: TIMEZONE },
       });
       const byDate = (res.data?.data || {}) as Record<string, any[]>;
       const all: string[] = [];

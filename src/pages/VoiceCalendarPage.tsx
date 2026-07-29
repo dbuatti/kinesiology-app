@@ -6,6 +6,7 @@ import {
   CreditCard, Copy, Check, DollarSign, Trash2, CalendarSync,
    XCircle, Search, ChevronDown, CalendarPlus
 } from "lucide-react";
+import { CALCOM_CONFIG } from "@/config/integrations";
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, 
   startOfWeek, endOfWeek, isSameMonth, isSameDay, addDays, 
   eachDayOfInterval, isToday, parseISO, addWeeks, subWeeks, parse, getISOWeek } from "date-fns";
@@ -76,9 +77,9 @@ interface VoiceBooking {
 }
 
 const EVENT_TYPES = [
- { key: "60", label: "60 min", eventTypeId: "1945081", price: "$95" },
- { key: "45", label: "45 min", eventTypeId: "5925021", price: "$75" },
- { key: "30", label: "30 min", eventTypeId: "6488157", price: "$50" },
+ { key: "60", label: "60 min", eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_60, price: "$95" },
+ { key: "45", label: "45 min", eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_45, price: "$75" },
+ { key: "30", label: "30 min", eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_30, price: "$50" },
 ];
 
 const VoiceCalendarPage = () => {
@@ -130,7 +131,7 @@ const VoiceCalendarPage = () => {
   queryKey: ["voice-week-slots", format(weekStart, "yyyy-MM-dd")],
   queryFn: async () => {
   const weekEnd = endOfWeek(weekStart);
-  const eventTypes = ["1945081", "5925021", "6488157"];
+  const eventTypes = [CALCOM_CONFIG.VOICE_EVENT_TYPE_60, CALCOM_CONFIG.VOICE_EVENT_TYPE_45, CALCOM_CONFIG.VOICE_EVENT_TYPE_30];
   const merged: Record<string, any[]> = {};
   for (const etId of eventTypes) {
   const res = await supabase.functions.invoke("get-calcom-slots", {
@@ -176,18 +177,18 @@ const VoiceCalendarPage = () => {
  body: {
  start: startOfMonth(currentMonth).toISOString(),
  end: endOfMonth(currentMonth).toISOString(),
- eventTypeId: "1945081",
- timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
- },
- });
- if (res.error) throw res.error;
- return (res.data?.data || {}) as Record<string, any[]>;
- },
- staleTime: 30_000,
- });
+  eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_60,
+  timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  },
+  });
+  if (res.error) throw res.error;
+  return (res.data?.data || {}) as Record<string, any[]>;
+  },
+  staleTime: 30_000,
+  });
 
- const datesWithSlots = useMemo(() => {
- if (!availabilityData) return new Set<string>();
+  const datesWithSlots = useMemo(() => {
+  if (!availabilityData) return new Set<string>();
  const set = new Set<string>();
  for (const [key, slots] of Object.entries(availabilityData)) {
  if (Array.isArray(slots) && slots.length > 0) {
@@ -301,7 +302,7 @@ const VoiceCalendarPage = () => {
  studentName: rescheduleLesson.lesson.studentName,
   studentEmail: rescheduleLesson.lesson.studentEmail,
   startTime: rescheduleSlot,
-  eventTypeId: "1945081",
+  eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_60,
   notionLessonId1: rescheduleLesson.booking.notion_lesson_id_1,
   notionLessonId2: rescheduleLesson.booking.notion_lesson_id_2,
   },
@@ -339,8 +340,8 @@ const VoiceCalendarPage = () => {
   body: {
   start: addDays(now, cfg.startDays).toISOString(),
   end: addDays(now, cfg.endDays).toISOString(),
-  eventTypeId: "1945081",
-  timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_60,
+   timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   },
   });
  if (res.error) throw res.error;
@@ -981,8 +982,8 @@ const RescheduleSlotPicker = ({
  body: {
   start: new Date().toISOString(),
   end: addDays(new Date(), 30).toISOString(),
-  eventTypeId: "1945081",
-  timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_60,
+   timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   },
   });
   if (res.error) throw res.error;

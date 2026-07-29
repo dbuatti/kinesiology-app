@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format, addDays, parseISO, getISOWeek } from "date-fns";
+import { CALCOM_CONFIG } from "@/config/integrations";
 import {
   MessageCircle, Mail, Calendar, CalendarCheck2, CalendarPlus, Smile,
   Loader2, ChevronRight, ExternalLink, Phone, CreditCard
@@ -112,7 +113,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
         body: {
           start: new Date().toISOString(),
           end: addDays(new Date(), 60).toISOString(),
-          eventTypeId: "1945081",
+          eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_60,
           timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         },
       });
@@ -304,7 +305,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
                     body: {
                       start: new Date().toISOString(),
                       end: addDays(new Date(), 60).toISOString(),
-                      eventTypeId: "1945081",
+                      eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_60,
                       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                     },
                   });
@@ -354,7 +355,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
                     body: {
                       start: new Date().toISOString(),
                       end: addDays(new Date(), 60).toISOString(),
-                      eventTypeId: "1945081",
+                      eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_60,
                       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                     },
                   });

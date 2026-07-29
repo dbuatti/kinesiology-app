@@ -13,10 +13,10 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useEventPricing } from "@/hooks/useEventPricing";
 import { cn } from "@/lib/utils";
+import { CALCOM_CONFIG, TIMEZONE } from "@/config/integrations";
 import {
   Loader2, Calendar, Clock, Check, Music, Search, Mail, CalendarPlus, CheckCircle2, User
 } from "lucide-react";
-
 
 interface VoiceStudent {
   id: string;
@@ -37,9 +37,9 @@ interface SimpleBookDialogProps {
 }
 
 const EVENT_TYPES = [
-  { key: "60", label: "60 min", eventTypeId: "1945081", price: "$95" },
-  { key: "45", label: "45 min", eventTypeId: "5925021", price: "$75" },
-  { key: "30", label: "30 min", eventTypeId: "6488157", price: "$50" },
+  { key: "60", label: "60 min", eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_60, price: "$95" },
+  { key: "45", label: "45 min", eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_45, price: "$75" },
+  { key: "30", label: "30 min", eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_30, price: "$50" },
 ];
 
 const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefillStudentId, prefillDuration }: SimpleBookDialogProps) => {
@@ -151,7 +151,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
           start: date,
           end: endDate,
           eventTypeId: eventType.eventTypeId,
-          timeZone: "Australia/Melbourne",
+          timeZone: TIMEZONE,
         },
       });
       if (error) throw error;

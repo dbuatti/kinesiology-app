@@ -237,9 +237,9 @@ const AppointmentForm = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {conflictError && (
-          <Alert variant="destructive" className="bg-rose-50 border-rose-200 rounded-2xl">
-            <AlertCircle className="h-5 w-5 text-rose-600" />
-            <AlertDescription className="text-sm text-rose-900 font-bold">{conflictError}</AlertDescription>
+          <Alert variant="destructive" className="bg-chart-destructive/10 border-chart-destructive/20 rounded-2xl">
+            <AlertCircle className="h-5 w-5 text-chart-destructive" />
+            <AlertDescription className="text-sm text-chart-destructive font-bold">{conflictError}</AlertDescription>
           </Alert>
         )}
 
@@ -270,7 +270,7 @@ const AppointmentForm = ({
             <FormItem>
               <FormLabel className="text-xs font-black text-foreground uppercase tracking-widest">Appointment Title (Optional)</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. Initial Session" {...field} className="h-12 rounded-xl border-2 border-border/50 focus:border-indigo-500 transition-all" />
+                <Input placeholder="e.g. Initial Session" {...field} className="h-12 rounded-xl border-2 border-border/50 focus:border-chart-primary transition-all" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -317,7 +317,7 @@ const AppointmentForm = ({
                 <div className="flex items-center justify-between">
                   <FormLabel className="text-xs font-black text-foreground uppercase tracking-widest">Time</FormLabel>
                   {isTimeLocked && (
-                    <button type="button" onClick={() => setIsTimeLocked(false)} className="text-[8px] font-black text-indigo-600 uppercase tracking-widest flex items-center gap-1 hover:underline">
+                    <button type="button" onClick={() => setIsTimeLocked(false)} className="text-[8px] font-black text-chart-primary uppercase tracking-widest flex items-center gap-1 hover:underline">
                       <Unlock size={10} /> Override Slot
                     </button>
                   )}
@@ -397,8 +397,8 @@ const AppointmentForm = ({
                   className={cn(
                     "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all",
                     selectedPrice === price
-                      ? "bg-indigo-600 border-indigo-600 text-primary-foreground shadow-lg shadow-indigo-100"
-                      : "bg-card border-border/50 text-muted-foreground hover:border-indigo-100"
+                      ? "bg-chart-primary border-chart-primary text-primary-foreground shadow-lg shadow-chart-primary/20"
+                      : "bg-card border-border/50 text-muted-foreground hover:border-chart-primary/20"
                   )}
                 >
                   <span className="text-lg font-black">{price === 0 ? "Free" : `$${price}`}</span>
@@ -416,12 +416,12 @@ const AppointmentForm = ({
                 <FormItem 
                   className={cn(
                     "flex flex-row items-center justify-between rounded-[1.5rem] border-2 p-5 transition-all cursor-pointer",
-                    field.value ? "bg-emerald-50 border-emerald-200" : "bg-card border-border/50 hover:border-emerald-100"
+                    field.value ? "bg-chart-emerald/10 border-chart-emerald/20" : "bg-card border-border/50 hover:border-chart-emerald/10"
                   )}
                   onClick={() => field.onChange(!field.value)}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-colors", field.value ? "bg-emerald-600 text-primary-foreground" : "bg-muted text-emerald-600")}>
+                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-colors", field.value ? "bg-chart-emerald text-primary-foreground" : "bg-muted text-chart-emerald")}>
                       <Mail size={20} />
                     </div>
                     <div className="space-y-0.5">
@@ -429,7 +429,7 @@ const AppointmentForm = ({
                       <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">Automatically email the intake form</p>
                     </div>
                   </div>
-                  <div className={cn("w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all", field.value ? "bg-emerald-600 border-emerald-600" : "border-border")}>
+                  <div className={cn("w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all", field.value ? "bg-chart-emerald border-chart-emerald" : "border-border")}>
                     {field.value && <CheckCircle2 size={16} className="text-primary-foreground" />}
                   </div>
                 </FormItem>
@@ -438,7 +438,7 @@ const AppointmentForm = ({
           )}
         </div>
 
-        <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 h-14 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-indigo-100" disabled={submitting}>
+        <Button type="submit" className="w-full bg-chart-primary hover:bg-chart-primary/80 h-14 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-chart-primary/20" disabled={submitting}>
           {submitting ? (
             <>
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />

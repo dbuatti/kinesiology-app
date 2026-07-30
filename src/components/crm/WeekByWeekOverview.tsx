@@ -149,6 +149,9 @@ const WeekByWeekOverview = ({
 
   const bookMutation = useMutation({
     mutationFn: async ({ clientId, isoTime }: { clientId: string; isoTime: string }) => {
+      const client = (clients || []).find((c: any) => c.id === clientId);
+      const clientName = client?.name || "Unknown Client";
+      const sessionLabel = `${clientName} — Kinesiology (${format(parseISO(isoTime), "MMM d, yyyy")})`;
       const { data: calcomData, error: invokeError } = await supabase.functions.invoke(
         "create-calcom-booking",
         {
@@ -156,7 +159,7 @@ const WeekByWeekOverview = ({
             clientId,
             startTime: isoTime,
             eventTypeId: CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID,
-            title: `FNH Session — ${format(parseISO(isoTime), "MMM d, yyyy")}`,
+            title: sessionLabel,
             notes: "",
             is_paid: true,
           },
@@ -177,7 +180,7 @@ const WeekByWeekOverview = ({
           calcom_booking_id: calcomId,
           price_amount: 50,
           price_currency: "AUD",
-          name: `Session — ${format(parseISO(isoTime), "MMM d, yyyy")}`,
+          name: sessionLabel,
         }, { onConflict: calcomId ? "calcom_booking_id" : "id" })
         .select("id")
         .single();

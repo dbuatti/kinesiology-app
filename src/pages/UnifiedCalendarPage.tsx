@@ -336,8 +336,10 @@ const UnifiedCalendarPage = () => {
       // Use the price/event type chosen in the slot dialog; fall back to the
       // client's standing rate (then $50) when not specified.
       const client = (clients || []).find((c: any) => c.id === clientId);
+      const clientName = client?.name || "Unknown Client";
       const rate = price !== undefined ? price : (client?.standard_rate ?? 50);
       const isPaidSession = rate > 0;
+      const sessionLabel = `${clientName} — Kinesiology (${format(date, "MMM d, yyyy")})`;
       const { data: calcomData, error: invokeError } = await supabase.functions.invoke(
         "create-calcom-booking",
         {
@@ -345,7 +347,7 @@ const UnifiedCalendarPage = () => {
             clientId,
             startTime: isoTime,
             eventTypeId: eventTypeId || CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID,
-            title: `FNH Session — ${format(date, "MMM d, yyyy")}`,
+            title: sessionLabel,
             notes: "",
             is_paid: isPaidSession,
           },
@@ -366,7 +368,7 @@ const UnifiedCalendarPage = () => {
           calcom_event_type_id: eventTypeId ? parseInt(eventTypeId, 10) : (CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID ? parseInt(CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID, 10) : null),
           price_amount: rate,
           price_currency: "AUD",
-          name: `Session — ${format(date, "MMM d, yyyy")}`,
+          name: sessionLabel,
         }, { onConflict: calcomId ? "calcom_booking_id" : "id" })
         .select("id")
         .single();

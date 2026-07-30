@@ -29,7 +29,14 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
   }
 
   const clientName = appointment.clients?.name || "Unknown Client";
-  const appointmentName = appointment.name || `Session with ${clientName}`;
+  // Preserve a user-set custom name, but if the stored name looks generic
+  // (e.g. "Session — Aug 3, 2026" without a client), rebuild it client-first so
+  // the Notion page is properly named and dedup-able by client+date.
+  const storedName = appointment.name || "";
+  const looksGeneric = !storedName || /^(Session|FNH Session|Kinesiology Session)\b/i.test(storedName) && !storedName.toLowerCase().includes(clientName.toLowerCase());
+  const appointmentName = looksGeneric
+    ? `${clientName} — Kinesiology (${new Date(appointment.date).toISOString().split("T")[0]})`
+    : (storedName || `Session with ${clientName}`);
 
   console.log(`[appointment-sync] Syncing appointment: ${appointmentName} (${appId})`);
 

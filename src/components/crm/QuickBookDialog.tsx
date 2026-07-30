@@ -212,12 +212,14 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
 
     try {
       let lastAppointmentId: string | null = null;
+      const clientName = clientInfo?.name || "Unknown Client";
 
       for (let i = 0; i < occurrences.length; i++) {
         const occ = occurrences[i];
         const occDate = occ.date;
         const occSlot = occ.slot!;
         let calcomId: string | null = null;
+        const sessionLabel = `${clientName} — Kinesiology (${format(occDate, "MMM d, yyyy")})`;
 
         if (selectedPrice > 0) {
           setSyncStatus("calcom");
@@ -226,7 +228,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
               clientId,
               startTime: occSlot.time,
               eventTypeId,
-              title: `Kinesiology Session - ${format(occDate, "MMM d, yyyy")}`,
+              title: sessionLabel,
               notes: seriesId ? `Series ${seriesId.slice(0, 8)} · ${i + 1}/${totalOccurrences}` : "",
               is_paid: selectedPrice > 0,
             },
@@ -251,7 +253,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
             price_amount: selectedPrice,
             price_currency: "AUD",
             send_onboarding: sendOnboarding && i === 0,
-            name: `Session - ${format(occDate, "MMM d, yyyy")}`,
+            name: sessionLabel,
             series_id: seriesId || null,
             series_frequency: seriesId ? repeat : null,
             series_occurrence: seriesId ? i + 1 : null,

@@ -628,12 +628,25 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
           return (
             <div
               key={item.id}
-              className="flex items-center gap-3 px-5 py-3.5 border-b border-border/30 last:border-b-0 border-l-2 border-l-transparent hover:border-l-primary/30 hover:bg-muted/40 hover:pl-6 transition-all duration-200 cursor-pointer"
+              role="button"
+              tabIndex={0}
+              aria-label={`${person}, ${eventLabel}${item.time ? ` at ${item.time}` : ""}`}
+              className="flex items-center gap-3 px-5 py-3.5 border-b border-border/30 last:border-b-0 border-l-2 border-l-transparent hover:border-l-primary/30 hover:bg-muted/40 hover:pl-6 transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
               onClick={() => {
                 if (item.source === "kinesiology" && item.url) {
                   navigate(item.url);
                 } else if (item.source === "voice" && item.url) {
                   window.open(item.url, "_blank");
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  if (item.source === "kinesiology" && item.url) {
+                    navigate(item.url);
+                  } else if (item.source === "voice" && item.url) {
+                    window.open(item.url, "_blank");
+                  }
                 }
               }}
             >
@@ -659,11 +672,23 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span
-                    className="font-semibold text-sm text-foreground truncate cursor-pointer hover:underline"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`View ${person} profile`}
+                    className="font-semibold text-sm text-foreground truncate cursor-pointer hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
                     onClick={(e) => {
                       e.stopPropagation();
                       if (item.source === "kinesiology" && item.clientId) {
                         navigate(`/clients/${item.clientId}`);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (item.source === "kinesiology" && item.clientId) {
+                          navigate(`/clients/${item.clientId}`);
+                        }
                       }
                     }}
                   >

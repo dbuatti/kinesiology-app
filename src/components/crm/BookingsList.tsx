@@ -583,7 +583,28 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
       {/* Date-grouped list with sticky headers */}
       <div className="bg-card rounded-[1.75rem] border border-border/60 shadow-[0_4px_30px_-12px_rgba(120,90,40,0.18)] overflow-hidden">
         {grouped.length === 0 && (
-          <div className="px-6 py-20 text-center text-sm text-muted-foreground font-serif italic">No {tab} bookings.</div>
+          <div className="px-6 py-20 text-center">
+            <div className="inline-flex flex-col items-center gap-3 text-muted-foreground">
+              <div className="w-14 h-14 rounded-full bg-muted/60 flex items-center justify-center">
+                {tab === "upcoming" ? <CalendarClock size={22} className="opacity-60" /> : <X size={22} className="opacity-60" />}
+              </div>
+              <div className="text-sm font-serif italic">
+                {rows.length === 0
+                  ? "No bookings match your filters."
+                  : `No ${tab} bookings.`}
+              </div>
+              {(statusFilter !== "all" || sourceFilter !== "all" || searchQuery.trim()) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl text-xs font-semibold h-8"
+                  onClick={() => { setStatusFilter("all"); setSourceFilter("all"); setSearchQuery(""); }}
+                >
+                  <X size={12} className="mr-1" /> Clear filters
+                </Button>
+              )}
+            </div>
+          </div>
         )}
         {grouped.map(([dateLabel, dateItems]) => (
           <div key={dateLabel}>

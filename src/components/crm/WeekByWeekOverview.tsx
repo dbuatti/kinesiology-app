@@ -37,7 +37,7 @@ import { CALCOM_CONFIG } from "@/config/integrations";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { useAuth } from "@/components/AuthProvider";
-import { formatVoiceTime } from "@/utils/availability";
+import { formatVoiceTime, parseAmPmToMinutes } from "@/utils/availability";
 import { calcSummary, fmtHours, fmtCurrency, WeeklySummary } from "@/components/crm/WeeklyTimeGrid";
 
 interface VoiceLesson {
@@ -89,16 +89,6 @@ interface WeekByWeekOverviewProps {
 const NUM_WEEKS = 6;
 const DAY_START_HOUR = 9;
 const DAY_END_HOUR = 19;
-
-function parseTimeToMin(timeStr: string): number | null {
-  const m = timeStr.match(/^(\d+):(\d+)\s*(AM|PM)/i);
-  if (!m) return null;
-  let h = parseInt(m[1]);
-  const min = parseInt(m[2]);
-  if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
-  if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
-  return h * 60 + min;
-}
 
 const WeekByWeekOverview = ({
   weekStart,
@@ -265,7 +255,7 @@ const WeekByWeekOverview = ({
       if (l.date === dateKey && l.time) {
         const timeStr = formatVoiceTime(l.date, l.time);
         if (timeStr) {
-          const timeMin = parseTimeToMin(timeStr);
+          const timeMin = parseAmPmToMinutes(timeStr);
           if (timeMin !== null && timeMin >= DAY_START_HOUR * 60 && timeMin < DAY_END_HOUR * 60) {
             slots.push({
               timeMin,
@@ -310,12 +300,12 @@ const WeekByWeekOverview = ({
         if (l.date === format(day, "yyyy-MM-dd") && l.time) {
           const timeStr = formatVoiceTime(l.date, l.time);
           if (timeStr) {
-            const startMin = parseTimeToMin(timeStr);
+            const startMin = parseAmPmToMinutes(timeStr);
             if (startMin !== null) {
               const parts = timeStr.split("–").map((s) => s.trim());
               let endMin = startMin + 60;
               if (parts.length === 2) {
-                const endParsed = parseTimeToMin(parts[1]);
+                const endParsed = parseAmPmToMinutes(parts[1]);
                 if (endParsed !== null) endMin = endParsed;
               }
               events.push({

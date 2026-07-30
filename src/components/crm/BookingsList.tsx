@@ -25,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import { nameHash, nameInitials, avatarColor } from "@/utils/avatar";
+import { parseAmPmToMinutes } from "@/utils/availability";
 
 export interface BookingListItem {
   id: string;
@@ -73,16 +74,6 @@ const itemTime = (i: BookingListItem) => {
     }
   }
   return new Date(dateStr).getTime();
-};
-
-const parseTime = (t: string) => {
-  const m = t.match(/^(\d+):(\d+)\s*(AM|PM)/i);
-  if (!m) return 0;
-  let h = parseInt(m[1]);
-  const min = parseInt(m[2]);
-  if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
-  if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
-  return h * 60 + min;
 };
 
 interface BookingsListProps {
@@ -164,15 +155,15 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
     }
     upcoming.sort((a, b) => {
       const dc = a.date.localeCompare(b.date);
-      return dc !== 0 ? dc : parseTime(a.time || "") - parseTime(b.time || "");
+      return dc !== 0 ? dc : (parseAmPmToMinutes(a.time || "") ?? 0) - (parseAmPmToMinutes(b.time || "") ?? 0);
     });
     past.sort((a, b) => {
       const dc = b.date.localeCompare(a.date);
-      return dc !== 0 ? dc : parseTime(b.time || "") - parseTime(a.time || "");
+      return dc !== 0 ? dc : (parseAmPmToMinutes(b.time || "") ?? 0) - (parseAmPmToMinutes(a.time || "") ?? 0);
     });
     cancelled.sort((a, b) => {
       const dc = b.date.localeCompare(a.date);
-      return dc !== 0 ? dc : parseTime(b.time || "") - parseTime(a.time || "");
+      return dc !== 0 ? dc : (parseAmPmToMinutes(b.time || "") ?? 0) - (parseAmPmToMinutes(a.time || "") ?? 0);
     });
     return { upcoming, past, cancelled };
   }, [items, now, sourceFilter, statusFilter, searchQuery]);

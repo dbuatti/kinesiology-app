@@ -1,5 +1,15 @@
 import { format, parseISO } from "date-fns";
 
+export function parseAmPmToMinutes(t: string): number | null {
+  const m = t.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
+  if (!m) return null;
+  let h = parseInt(m[1], 10);
+  const min = parseInt(m[2], 10);
+  if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
+  if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
+  return h * 60 + min;
+}
+
 function formatClockTime(isoString: string): string {
   const m = isoString.match(/T(\d{2}):(\d{2})/);
   if (!m) return format(parseISO(isoString), "h:mm a");

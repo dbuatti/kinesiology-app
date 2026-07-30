@@ -142,6 +142,7 @@ const AppointmentForm = ({
         if (!existingAppointment && rate !== null) {
           setSelectedPrice(rate);
           form.setValue('is_paid', rate > 0);
+          form.setValue('send_onboarding', rate > 0);
         }
       });
   }, [selectedClientId, existingAppointment, form]);
@@ -458,6 +459,7 @@ const AppointmentForm = ({
                     setSelectedSessionKey(s.key);
                     setSelectedPrice(s.price);
                     form.setValue('is_paid', s.price > 0);
+                    form.setValue('send_onboarding', s.price > 0);
                   }}
                   className={cn(
                     "flex flex-col items-center justify-center p-3 rounded-2xl border-2 transition-all relative",
@@ -498,6 +500,7 @@ const AppointmentForm = ({
                     const matched = SESSION_OPTIONS.find((s: SessionOption) => s.price === opt.price);
                     if (matched) setSelectedSessionKey(matched.key);
                     form.setValue('is_paid', opt.price > 0);
+                    form.setValue('send_onboarding', opt.price > 0);
                   }}
                   className={cn(
                     "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all relative",

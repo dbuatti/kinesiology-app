@@ -346,6 +346,8 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
             startTime,
             studentName: item.studentName,
             studentEmail: item.studentEmail,
+            notionLessonId1: item.notionLessonId1,
+            notionLessonId2: item.notionLessonId2,
           },
         });
         if (res.error) throw res.error;

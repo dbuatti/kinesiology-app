@@ -24,6 +24,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
+import { nameHash, nameInitials, avatarColor } from "@/utils/avatar";
 
 export interface BookingListItem {
   id: string;
@@ -73,22 +74,6 @@ const itemTime = (i: BookingListItem) => {
   }
   return new Date(dateStr).getTime();
 };
-
-const AVATAR_COLORS = [
-  "bg-chart-primary", "bg-pink-600", "bg-chart-emerald", "bg-amber-600", "bg-purple-600",
-  "bg-cyan-600", "bg-rose-700", "bg-lime-600", "bg-teal-600", "bg-fuchsia-600",
-  "bg-primary", "bg-yellow-600", "bg-green-600", "bg-violet-600", "bg-orange-600",
-];
-
-function nameHash(name: string): number {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
-  return Math.abs(h);
-}
-
-function nameInitials(name: string): string {
-  return name.replace(/[^a-zA-Z\s]/g, "").split(/\s+/).filter(Boolean).map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
-}
 
 const parseTime = (t: string) => {
   const m = t.match(/^(\d+):(\d+)\s*(AM|PM)/i);
@@ -664,7 +649,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                 className="shrink-0"
               />
               <div
-                className={`${AVATAR_COLORS[nameHash(person) % AVATAR_COLORS.length]} w-9 h-9 rounded-full flex items-center justify-center shrink-0 font-bold text-xs text-primary-foreground shadow-sm ring-2 ring-background`}
+                className={`${avatarColor(person)} w-9 h-9 rounded-full flex items-center justify-center shrink-0 font-bold text-xs text-primary-foreground shadow-sm ring-2 ring-background`}
               >
                 {nameInitials(person)}
               </div>

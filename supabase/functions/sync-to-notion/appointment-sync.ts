@@ -387,9 +387,14 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
   }
 
   // 4. Amount/Price (Finance specific)
+  // ALWAYS use the client's CURRENT standing rate (standard_rate) so the
+  // Planner reflects current pricing, not historical. Fall back to the
+  // appointment's stored price, then $50.
   const amountProp = findSchemaProperty(plannerSchema, ['Amount', 'Price', 'Cost', 'Value', 'Income', 'Earnings', 'Fee', 'Dollars']);
   if (amountProp) {
-    const price = Number(appointment.price_amount) || 50;
+    const clientRate = Number(appointment.clients?.standard_rate);
+    const apptPrice = Number(appointment.price_amount);
+    const price = clientRate > 0 ? clientRate : (apptPrice > 0 ? apptPrice : 50);
     if (amountProp.schema.type === 'number') {
       plannerProps[amountProp.name] = { number: price };
     } else if (amountProp.schema.type === 'rich_text') {

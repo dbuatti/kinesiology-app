@@ -100,6 +100,10 @@ export interface Appointment {
   medications_supplements?: string | null;
   send_onboarding?: boolean;
   intrinsic_muscle_findings?: string;
+  series_id?: string | null;
+  series_frequency?: string | null;
+  series_occurrence?: number | null;
+  series_total?: number | null;
   metadata?: any;
 }
 

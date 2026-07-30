@@ -43,6 +43,8 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [selectedPrice, setSelectedPrice] = useState(0);
+  const [repeat, setRepeat] = useState<"none" | "weekly" | "fortnightly">("none");
+  const [repeatCount, setRepeatCount] = useState(4);
   const [sendOnboarding, setSendOnboarding] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [syncStatus, setSyncStatus] = useState<"idle" | "calcom" | "email">("idle");
@@ -69,6 +71,8 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
       setSelectedDate(null);
       setSelectedSlot(null);
       setSelectedPrice(0);
+      setRepeat("none");
+      setRepeatCount(4);
       setSendOnboarding(true);
       setSubmitting(false);
       setSyncStatus("idle");
@@ -181,58 +185,98 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
     setSubmitting(true);
     setConflictError(null);
 
+    const eventTypeId = priceEventType?.id ?? CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID;
+    const seriesId = repeat !== "none" ? crypto.randomUUID() : undefined;
+    const totalOccurrences = repeat !== "none" ? repeatCount : 1;
+    const stepDays = repeat === "fortnightly" ? 14 : 7;
+
+    const origTimeLabel = format(parseISO(selectedSlot.time), "h:mm a");
+
+    const occurrences: { date: Date; slot: Slot | null }[] = [];
+    for (let i = 0; i < totalOccurrences; i++) {
+      const occDate = i === 0 ? selectedDate : new Date(selectedDate.getTime() + i * stepDays * 24 * 60 * 60 * 1000);
+      const dateKey = format(occDate, "yyyy-MM-dd");
+      const daySlots = slotsByDate[dateKey] || [];
+      const match = i === 0
+        ? selectedSlot
+        : daySlots.find((s) => format(parseISO(s.time), "h:mm a") === origTimeLabel) || null;
+      occurrences.push({ date: occDate, slot: match });
+    }
+
+    const missingDates = occurrences.filter((o) => !o.slot).map((o) => format(o.date, "MMM d"));
+    if (missingDates.length > 0) {
+      setConflictError(`No available slot at ${origTimeLabel} on: ${missingDates.join(", ")}. Pick a different repeat count or time.`);
+      setSubmitting(false);
+      return;
+    }
+
     try {
-      let calcomId: string | null = null;
+      let lastAppointmentId: string | null = null;
 
-      if (selectedPrice > 0) {
-        setSyncStatus("calcom");
-        const eventTypeId = priceEventType?.id ?? CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID;
-        const { data: calcomData, error: invokeError } = await supabase.functions.invoke("create-calcom-booking", {
-          body: {
-            clientId,
-            startTime: selectedSlot.time,
-            eventTypeId,
-            title: `Kinesiology Session - ${format(selectedDate, "MMM d, yyyy")}`,
-            notes: "",
+      for (let i = 0; i < occurrences.length; i++) {
+        const occ = occurrences[i];
+        const occDate = occ.date;
+        const occSlot = occ.slot!;
+        let calcomId: string | null = null;
+
+        if (selectedPrice > 0) {
+          setSyncStatus("calcom");
+          const { data: calcomData, error: invokeError } = await supabase.functions.invoke("create-calcom-booking", {
+            body: {
+              clientId,
+              startTime: occSlot.time,
+              eventTypeId,
+              title: `Kinesiology Session - ${format(occDate, "MMM d, yyyy")}`,
+              notes: seriesId ? `Series ${seriesId.slice(0, 8)} · ${i + 1}/${totalOccurrences}` : "",
+              is_paid: selectedPrice > 0,
+            },
+          });
+
+          if (invokeError) throw invokeError;
+          calcomId = calcomData?.uid || calcomData?.bookingId || null;
+        }
+
+        setSyncStatus("idle");
+        const { data: newApp, error: dbError } = await supabase
+          .from("appointments")
+          .upsert({
+            user_id: session.user.id,
+            client_id: clientId,
+            date: occSlot.time,
+            tag: "Kinesiology",
+            status: "Scheduled",
             is_paid: selectedPrice > 0,
-          },
-        });
+            calcom_booking_id: calcomId,
+            calcom_event_type_id: priceEventType?.id ? parseInt(priceEventType.id, 10) : null,
+            price_amount: selectedPrice,
+            price_currency: "AUD",
+            send_onboarding: sendOnboarding && i === 0,
+            name: `Session - ${format(occDate, "MMM d, yyyy")}`,
+            series_id: seriesId || null,
+            series_frequency: seriesId ? repeat : null,
+            series_occurrence: seriesId ? i + 1 : null,
+            series_total: seriesId ? totalOccurrences : null,
+          }, { onConflict: calcomId ? "calcom_booking_id" : "id" })
+          .select("id")
+          .single();
 
-        if (invokeError) throw invokeError;
-        calcomId = calcomData?.uid || calcomData?.bookingId || null;
+        if (dbError) throw dbError;
+        if (i === 0) lastAppointmentId = newApp?.id ?? null;
       }
 
-      const { data: newApp, error: dbError } = await supabase
-        .from("appointments")
-        .upsert({
-          user_id: session.user.id,
-          client_id: clientId,
-          date: selectedSlot.time,
-          tag: "Kinesiology",
-          status: "Scheduled",
-          is_paid: selectedPrice > 0,
-          calcom_booking_id: calcomId,
-          calcom_event_type_id: priceEventType?.id ? parseInt(priceEventType.id, 10) : null,
-          price_amount: selectedPrice,
-          price_currency: "AUD",
-          send_onboarding: sendOnboarding,
-          name: `Session - ${format(selectedDate, "MMM d, yyyy")}`,
-        }, { onConflict: calcomId ? "calcom_booking_id" : "id" })
-        .select("id")
-        .single();
-
-      if (dbError) throw dbError;
-
-      if (sendOnboarding) {
+      if (sendOnboarding && lastAppointmentId) {
         setSyncStatus("email");
-        // force: true makes this toggle authoritative — it overrides the function's
-        // 6-month auto-skip so a checked box always sends the link/intake.
         await supabase.functions.invoke("send-manual-onboarding", {
-          body: { clientId, appointmentId: newApp?.id, force: true },
+          body: { clientId, appointmentId: lastAppointmentId, force: true },
         });
       }
 
-      showSuccess(sendOnboarding ? "Session booked and onboarding email sent!" : "Appointment scheduled.");
+      const msg = repeat !== "none"
+        ? `Recurring series booked — ${totalOccurrences} sessions scheduled.`
+        : sendOnboarding
+          ? "Session booked and onboarding email sent!"
+          : "Appointment scheduled.";
+      showSuccess(msg);
       queryClient.invalidateQueries({ queryKey: ["client-appointments"] });
       onSuccess();
     } catch (err: any) {
@@ -419,6 +463,46 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                 </div>
               )}
 
+              {/* Repeat */}
+              {selectedSlot && (
+                <div className="space-y-3 animate-in fade-in duration-300 mt-6">
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Repeat</p>
+                  <div className="flex gap-2">
+                    {(["none", "weekly", "fortnightly"] as const).map((r) => (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => setRepeat(r)}
+                        className={cn(
+                          "flex-1 py-2.5 rounded-xl text-xs font-black transition-all border-2",
+                          repeat === r
+                            ? "bg-indigo-600 border-indigo-600 text-primary-foreground shadow-lg"
+                            : "bg-card border-border text-foreground hover:border-indigo-300"
+                        )}
+                      >
+                        {r === "none" ? "No repeat" : r === "weekly" ? "Weekly" : "Fortnightly"}
+                      </button>
+                    ))}
+                  </div>
+                  {repeat !== "none" && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-xs font-semibold text-muted-foreground">For</span>
+                      <select
+                        value={repeatCount}
+                        onChange={(e) => setRepeatCount(Number(e.target.value))}
+                        className="h-8 px-2 rounded-lg border border-border bg-card text-xs font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        {Array.from({ length: 24 }, (_, i) => i + 2).map((n) => (
+                          <option key={n} value={n}>
+                            {n} sessions ({n * (repeat === "fortnightly" ? 14 : 7)} weeks)
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Send Onboarding Email */}
               {selectedSlot && (
                 <div
@@ -458,7 +542,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                   ) : (
                     <>
                       <Calendar size={18} className="mr-2" />
-                      Schedule Appointment
+                      {repeat !== "none" ? `Schedule ${repeatCount} Sessions` : "Schedule Appointment"}
                     </>
                   )}
                 </Button>

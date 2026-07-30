@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -22,11 +22,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2, Mail, Clock, CheckCircle2, AlertCircle, Unlock, Save } from "lucide-react";
+import { CalendarIcon, Loader2, Mail, Clock, CheckCircle2, AlertCircle, Unlock, Save, Sparkles, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { APPOINTMENT_TAGS, APPOINTMENT_STATUSES } from "@/data/appointment-data";
@@ -59,6 +58,22 @@ interface AppointmentFormProps {
   existingAppointment?: any; 
 }
 
+const PRICES = Array.from(new Set(CALCOM_CONFIG.EVENT_TYPES.map((t: { price: number }) => t.price))).sort((a: number, b: number) => a - b);
+
+interface SessionOption {
+  key: string;
+  label: string;
+  price: number;
+  eventTypeId: string;
+}
+
+const SESSION_OPTIONS: SessionOption[] = CALCOM_CONFIG.EVENT_TYPES.map((t: { id: string; name: string; price: number }) => ({
+  key: t.id,
+  label: t.name,
+  price: t.price,
+  eventTypeId: t.id,
+}));
+
 const AppointmentForm = ({ 
   onSuccess, 
   initialClientId, 
@@ -76,6 +91,7 @@ const AppointmentForm = ({
   const [conflictError, setConflictError] = useState<string | null>(null);
   const [isTimeLocked, setIsTimeLocked] = useState(!!initialSlotTime);
   const [currentSlotTime] = useState(initialSlotTime);
+  const [clientRate, setClientRate] = useState<number | null>(null);
 
   const isEditMode = !!existingAppointment;
 
@@ -95,6 +111,8 @@ const AppointmentForm = ({
     },
   });
 
+  const selectedClientId = form.watch("clientId");
+
   useEffect(() => {
     const fetchClients = async () => {
       const { data, error } = await supabase
@@ -108,23 +126,66 @@ const AppointmentForm = ({
       }
       setLoadingClients(false);
     };
-
     fetchClients();
   }, []);
 
+  useEffect(() => {
+    if (!selectedClientId) return;
+    supabase
+      .from("clients")
+      .select("standard_rate")
+      .eq("id", selectedClientId)
+      .single()
+      .then(({ data }) => {
+        const rate = data?.standard_rate ?? null;
+        setClientRate(rate);
+        if (!existingAppointment && rate !== null) {
+          setSelectedPrice(rate);
+          form.setValue('is_paid', rate > 0);
+        }
+      });
+  }, [selectedClientId, existingAppointment, form]);
+
   const currentEventTypeId = propEventTypeId || localStorage.getItem('calcom_preferred_event_id') || CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID;
+
   const [selectedPrice, setSelectedPrice] = useState<number>(() => {
     if (existingAppointment) return existingAppointment.price_amount || 0;
     if (initialTime || currentSlotTime) {
-      const type = CALCOM_CONFIG.EVENT_TYPES.find(t => t.id === currentEventTypeId);
+      const type = CALCOM_CONFIG.EVENT_TYPES.find((t: { id: string }) => t.id === currentEventTypeId);
       return type?.price || 70;
     }
     return 0; 
   });
-  const [customPrice, setCustomPrice] = useState<string>("");
 
-  const currentEventType = CALCOM_CONFIG.EVENT_TYPES.find(t => t.price === selectedPrice) || CALCOM_CONFIG.EVENT_TYPES[0];
-  const effectivePrice = selectedPrice === -1 ? (parseInt(customPrice) || 0) : selectedPrice;
+  const [selectedSessionKey, setSelectedSessionKey] = useState<string | null>(() => {
+    if (existingAppointment) {
+      const t = CALCOM_CONFIG.EVENT_TYPES.find((e: { price: number }) => e.price === existingAppointment.price_amount);
+      return t?.id || null;
+    }
+    return null;
+  });
+
+  const currentEventType = CALCOM_CONFIG.EVENT_TYPES.find((t: { price: number }) => t.price === selectedPrice) || CALCOM_CONFIG.EVENT_TYPES[0];
+
+  const priceOptions = useMemo(() => {
+    const options: { price: number; label: string; sublabel: string }[] = [];
+    if (clientRate !== null) {
+      options.push({
+        price: clientRate,
+        label: clientRate === 0 ? "Free" : `$${clientRate}`,
+        sublabel: clientRate === 0 ? "No Charge" : "Current rate",
+      });
+    }
+    PRICES.forEach((p: number) => {
+      if (p === clientRate) return;
+      options.push({
+        price: p,
+        label: p === 0 ? "Free" : `$${p}`,
+        sublabel: p === 0 ? "No Charge" : "Paid Session",
+      });
+    });
+    return options;
+  }, [clientRate]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!session?.user?.id) {
@@ -382,61 +443,113 @@ const AppointmentForm = ({
           />
         </div>
 
-        <div className="grid grid-cols-1 gap-4">
-          <div className="space-y-3">
-            <FormLabel className="text-xs font-black text-foreground uppercase tracking-widest ml-1">Session Price</FormLabel>
-            <div className="grid grid-cols-3 gap-3">
-              {[0, 50, 100].map((price) => (
+        {/* Session Picker */}
+        <div className="space-y-3">
+          <FormLabel className="text-xs font-black text-foreground uppercase tracking-widest">Session</FormLabel>
+          <div className="grid grid-cols-3 gap-2">
+            {SESSION_OPTIONS.map((s) => {
+              const isSelected = selectedSessionKey === s.key;
+              const isClientRate = clientRate !== null && s.price === clientRate;
+              return (
                 <button
-                  key={price}
+                  key={s.key}
                   type="button"
                   onClick={() => {
-                    setSelectedPrice(price);
-                    form.setValue('is_paid', price > 0);
+                    setSelectedSessionKey(s.key);
+                    setSelectedPrice(s.price);
+                    form.setValue('is_paid', s.price > 0);
                   }}
                   className={cn(
-                    "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all",
-                    selectedPrice === price
+                    "flex flex-col items-center justify-center p-3 rounded-2xl border-2 transition-all relative",
+                    isSelected
                       ? "bg-chart-primary border-chart-primary text-primary-foreground shadow-lg shadow-chart-primary/20"
                       : "bg-card border-border/50 text-muted-foreground hover:border-chart-primary/20"
                   )}
                 >
-                  <span className="text-lg font-black">{price === 0 ? "Free" : `$${price}`}</span>
-                  <span className="text-[8px] font-bold uppercase tracking-widest opacity-70">{price === 0 ? "No Charge" : "Paid Session"}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {!isEditMode && (
-            <FormField
-              control={form.control}
-              name="send_onboarding"
-              render={({ field }) => (
-                <FormItem 
-                  className={cn(
-                    "flex flex-row items-center justify-between rounded-[1.5rem] border-2 p-5 transition-all cursor-pointer",
-                    field.value ? "bg-chart-emerald/10 border-chart-emerald/20" : "bg-card border-border/50 hover:border-chart-emerald/10"
+                  {isClientRate && !isSelected && (
+                    <span className="absolute -top-2 right-2 bg-chart-emerald text-primary-foreground text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full z-10">
+                      Rate
+                    </span>
                   )}
-                  onClick={() => field.onChange(!field.value)}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-colors", field.value ? "bg-chart-emerald text-primary-foreground" : "bg-muted text-chart-emerald")}>
-                      <Mail size={20} />
-                    </div>
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base font-black text-foreground cursor-pointer">Send Onboarding Email</FormLabel>
-                      <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">Automatically email the intake form</p>
-                    </div>
-                  </div>
-                  <div className={cn("w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all", field.value ? "bg-chart-emerald border-chart-emerald" : "border-border")}>
-                    {field.value && <CheckCircle2 size={16} className="text-primary-foreground" />}
-                  </div>
-                </FormItem>
-              )}
-            />
-          )}
+                  {isClientRate && isSelected && (
+                    <Sparkles size={12} className="absolute top-2 right-2 opacity-70" />
+                  )}
+                  <Package size={16} className="mb-1 opacity-60" />
+                  <span className="text-[9px] font-black leading-tight text-center">{s.label}</span>
+                  <span className="text-[10px] font-bold mt-0.5">{s.price === 0 ? "Free" : `$${s.price}`}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
+
+        <div className="space-y-3">
+          <FormLabel className="text-xs font-black text-foreground uppercase tracking-widest">Session Price</FormLabel>
+          <div className="grid grid-cols-3 gap-3">
+            {priceOptions.map((opt) => {
+              const isCurrentRate = opt.sublabel === "Current rate";
+              const isSelected = selectedPrice === opt.price;
+              return (
+                <button
+                  key={opt.price}
+                  type="button"
+                  onClick={() => {
+                    setSelectedPrice(opt.price);
+                    const matched = SESSION_OPTIONS.find((s: SessionOption) => s.price === opt.price);
+                    if (matched) setSelectedSessionKey(matched.key);
+                    form.setValue('is_paid', opt.price > 0);
+                  }}
+                  className={cn(
+                    "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all relative",
+                    isSelected
+                      ? "bg-chart-primary border-chart-primary text-primary-foreground shadow-lg shadow-chart-primary/20"
+                      : "bg-card border-border/50 text-muted-foreground hover:border-chart-primary/20"
+                  )}
+                >
+                  {isCurrentRate && !isSelected && (
+                    <span className="absolute -top-2 right-2 bg-chart-emerald text-primary-foreground text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full z-10">
+                      Rate
+                    </span>
+                  )}
+                  {isCurrentRate && isSelected && (
+                    <Sparkles size={12} className="absolute top-2 right-2 opacity-70" />
+                  )}
+                  <span className="text-lg font-black">{opt.label}</span>
+                  <span className="text-[8px] font-bold uppercase tracking-widest opacity-70">{opt.sublabel}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {!isEditMode && (
+          <FormField
+            control={form.control}
+            name="send_onboarding"
+            render={({ field }) => (
+              <FormItem 
+                className={cn(
+                  "flex flex-row items-center justify-between rounded-[1.5rem] border-2 p-5 transition-all cursor-pointer",
+                  field.value ? "bg-chart-emerald/10 border-chart-emerald/20" : "bg-card border-border/50 hover:border-chart-emerald/10"
+                )}
+                onClick={() => field.onChange(!field.value)}
+              >
+                <div className="flex items-center gap-4">
+                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-colors", field.value ? "bg-chart-emerald text-primary-foreground" : "bg-muted text-chart-emerald")}>
+                    <Mail size={20} />
+                  </div>
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base font-black text-foreground cursor-pointer">Send Onboarding Email</FormLabel>
+                    <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">Automatically email the intake form</p>
+                  </div>
+                </div>
+                <div className={cn("w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all", field.value ? "bg-chart-emerald border-chart-emerald" : "border-border")}>
+                  {field.value && <CheckCircle2 size={16} className="text-primary-foreground" />}
+                </div>
+              </FormItem>
+            )}
+          />
+        )}
 
         <Button type="submit" className="w-full bg-chart-primary hover:bg-chart-primary/80 h-14 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-chart-primary/20" disabled={submitting}>
           {submitting ? (

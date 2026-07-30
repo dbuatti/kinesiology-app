@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, ExternalLink, Mic, User, RotateCcw, Plus, BookOpen
+  ArrowLeft, Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, ExternalLink, Mic, User, RotateCcw, Plus, BookOpen, Search
 } from "lucide-react";
 import {
   format, addMonths, subMonths, addWeeks, subWeeks, startOfMonth, endOfMonth,
@@ -190,9 +190,11 @@ const UnifiedCalendarPage = () => {
   const [fnhPickOpen, setFnhPickOpen] = useState(false);
   const [fnhClientId, setFnhClientId] = useState<string | null>(null);
   const [fnhPrefillPrice, setFnhPrefillPrice] = useState<number>(70);
+  const [fnhClientSearch, setFnhClientSearch] = useState("");
   const [rebookFrom, setRebookFrom] = useState<string | null>(null);
   // Slot-click flow (Week/Overview): chosen service for the clicked slot
   const [bookSvc, setBookSvc] = useState<string | null>(null);
+  const [bookClientSearch, setBookClientSearch] = useState("");
 
   const openVoiceBooking = (duration: string, date?: string, time?: string) => {
     setVoicePrefillDuration(duration);
@@ -1049,9 +1051,25 @@ const UnifiedCalendarPage = () => {
           </div>
         </div>
       </DialogHeader>
-      <div className="px-6 py-5">
-        <div className="max-h-72 overflow-y-auto space-y-1.5">
-          {(clients || []).map((c: any) => (
+      <div className="px-6 py-5 space-y-3">
+        <div className="relative">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search clients..."
+            value={fnhClientSearch}
+            onChange={(e) => setFnhClientSearch(e.target.value)}
+            className="w-full h-10 pl-9 pr-3 rounded-xl border-2 border-border bg-card text-sm font-medium focus:outline-none focus:border-chart-primary transition-all"
+          />
+        </div>
+        <div className="max-h-64 overflow-y-auto space-y-1.5">
+          {(clients || [])
+            .filter((c: any) => {
+              if (!fnhClientSearch.trim()) return true;
+              const q = fnhClientSearch.toLowerCase();
+              return c.name?.toLowerCase().includes(q);
+            })
+            .map((c: any) => (
             <button
               key={c.id}
               onClick={() => { setFnhClientId(c.id); setFnhPickOpen(false); }}
@@ -1063,7 +1081,7 @@ const UnifiedCalendarPage = () => {
               <span className="text-sm font-medium truncate">{c.name}</span>
             </button>
           ))}
-          {(clients || []).length === 0 && (
+          {(clients || []).filter((c: any) => !fnhClientSearch.trim() || c.name?.toLowerCase().includes(fnhClientSearch.toLowerCase())).length === 0 && (
             <p className="text-xs text-muted-foreground text-center py-4">No clients found</p>
           )}
         </div>
@@ -1133,31 +1151,46 @@ const UnifiedCalendarPage = () => {
           </div>
         ) : (
           <>
-            <div className="px-6 py-5 space-y-4">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Select Client</p>
-                <div className="max-h-64 overflow-y-auto space-y-1.5">
-                  {(clients || []).map((c: any) => (
-                    <button
-                      key={c.id}
-                      onClick={() => setBookClient(c.id)}
-                      className={cn(
-                        "w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left",
-                        bookClient === c.id ? "border-chart-primary bg-chart-primary/5" : "border-border hover:border-chart-primary/30"
-                      )}
-                    >
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                        <User size={14} className="text-primary" />
-                      </div>
-                      <span className="text-sm font-medium truncate">{c.name}</span>
-                    </button>
-                  ))}
-                  {(clients || []).length === 0 && (
-                    <p className="text-xs text-muted-foreground text-center py-4">No clients found</p>
-                  )}
-                </div>
-              </div>
-            </div>
+<div className="px-6 py-5 space-y-4">
+               <div>
+                 <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Select Client</p>
+                 <div className="relative mb-2">
+                   <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                   <input
+                     type="text"
+                     placeholder="Search clients..."
+                     value={bookClientSearch}
+                     onChange={(e) => setBookClientSearch(e.target.value)}
+                     className="w-full h-10 pl-9 pr-3 rounded-xl border-2 border-border bg-card text-sm font-medium focus:outline-none focus:border-chart-primary transition-all"
+                   />
+                 </div>
+                 <div className="max-h-56 overflow-y-auto space-y-1.5">
+                   {(clients || [])
+                     .filter((c: any) => {
+                       if (!bookClientSearch.trim()) return true;
+                       return c.name?.toLowerCase().includes(bookClientSearch.toLowerCase());
+                     })
+                     .map((c: any) => (
+                     <button
+                       key={c.id}
+                       onClick={() => setBookClient(c.id)}
+                       className={cn(
+                         "w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left",
+                         bookClient === c.id ? "border-chart-primary bg-chart-primary/5" : "border-border hover:border-chart-primary/30"
+                       )}
+                     >
+                       <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                         <User size={14} className="text-primary" />
+                       </div>
+                       <span className="text-sm font-medium truncate">{c.name}</span>
+                     </button>
+                   ))}
+                   {(clients || []).filter((c: any) => !bookClientSearch.trim() || c.name?.toLowerCase().includes(bookClientSearch.toLowerCase())).length === 0 && (
+                     <p className="text-xs text-muted-foreground text-center py-4">No clients found</p>
+                   )}
+                 </div>
+               </div>
+             </div>
             <div className="px-6 pb-6 pt-2 border-t border-border flex gap-2">
               <Button variant="outline" onClick={() => { setBookSvc(null); setBookClient(null); }} className="h-12 rounded-xl font-semibold text-sm">
                 Back

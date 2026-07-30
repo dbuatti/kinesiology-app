@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { format } from "date-fns";
-import { Mic, User, MoreHorizontal, CalendarClock, X, CreditCard, Loader2, ExternalLink, Plus, CheckCircle2, Circle, Gift } from "lucide-react";
+import { Mic, User, MoreHorizontal, CalendarClock, X, CreditCard, Loader2, ExternalLink, Plus, CheckCircle2, Circle, Gift, Copy } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { TIMEZONE } from "@/config/integrations";
 import { Badge } from "@/components/ui/badge";
@@ -383,6 +383,35 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
     }
   };
 
+  const handleCopyAll = async () => {
+    const visibleRows = rows;
+    if (visibleRows.length === 0) { showError("No appointments to copy."); return; }
+
+    const lines: string[] = [];
+    lines.push("Date\tTime\tClient\tType\tStatus\tAmount\tPaid\tSource");
+
+    for (const item of visibleRows) {
+      const dt = item.datetime || item.date;
+      const dateStr = (() => {
+        try { return format(new Date(dt), "EEE, d MMM yyyy"); } catch { return item.date; }
+      })();
+      const timeStr = item.time || "";
+      const client = item.source === "voice" ? (item.subtitle || item.studentName || item.title) : item.title;
+      const typeLabel = item.source === "voice" ? (item.title || "Voice Lesson") : "FNH Neuro-Health Assessment";
+      const status = item.cancelled ? "Cancelled" : (item.status || "Scheduled");
+      const amount = item.isFree ? "Free" : (item.amount != null ? `$${item.amount}` : "");
+      const paid = item.isFree ? "Free" : (item.paid ? "Yes" : "No");
+      lines.push([dateStr, timeStr, client, typeLabel, status, amount, paid, item.source].join("\t"));
+    }
+
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      showSuccess(`${visibleRows.length} appointment${visibleRows.length !== 1 ? "s" : ""} copied to clipboard.`);
+    } catch {
+      showError("Couldn't access clipboard.");
+    }
+  };
+
   const TabButton = ({ id, label, count }: { id: Tab; label: string; count: number }) => (
     <button
       onClick={() => setTab(id)}
@@ -443,6 +472,16 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
             <FilterButton id="voice" label="Voice" />
             <FilterButton id="kinesiology" label="FNH" />
           </div>
+          {rows.length > 0 && (
+            <Button
+              onClick={handleCopyAll}
+              variant="outline"
+              className="rounded-lg font-semibold text-xs h-8 px-3 border-border hover:bg-muted active:scale-95 transition-transform"
+              title="Copy all visible appointments to clipboard (paste into a spreadsheet)"
+            >
+              <Copy size={14} className="mr-1" /> Copy all
+            </Button>
+          )}
           {onNewBooking && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

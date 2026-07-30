@@ -106,6 +106,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
   const [rescheduleAt, setRescheduleAt] = useState("");
   const [slotOptions, setSlotOptions] = useState<string[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
+  const [copiedAll, setCopiedAll] = useState(false);
 
   // Load real open slots (next 21 days) for the booking being rescheduled.
   const loadSlots = async (item: BookingListItem) => {
@@ -383,6 +384,8 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
     try {
       await navigator.clipboard.writeText(lines.join("\n"));
       showSuccess(`${visibleRows.length} appointment${visibleRows.length !== 1 ? "s" : ""} copied to clipboard.`);
+      setCopiedAll(true);
+      setTimeout(() => setCopiedAll(false), 1500);
     } catch {
       showError("Couldn't access clipboard.");
     }
@@ -464,7 +467,12 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
               className="rounded-lg font-semibold text-xs h-8 px-3 border-border hover:bg-muted active:scale-95 transition-transform"
               title="Copy all visible appointments to clipboard (paste into a spreadsheet)"
             >
-              <Copy size={14} className="mr-1" /> Copy all
+              {copiedAll ? (
+                <CheckCircle2 size={14} className="mr-1 text-chart-emerald" />
+              ) : (
+                <Copy size={14} className="mr-1" />
+              )}
+              {copiedAll ? "Copied!" : "Copy all"}
             </Button>
           )}
           {onNewBooking && (

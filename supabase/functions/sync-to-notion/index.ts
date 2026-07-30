@@ -854,6 +854,116 @@ serve(async (req) => {
       });
     }
 
+    // Flow: Bulk-archive orphaned Notion pages (active in Notion, no Supabase backing)
+    if (action === 'archive-orphans') {
+      const dryRun = body.dryRun !== false; // safe by default
+      const beforeDate = body.beforeDate || null; // ISO date cutoff, e.g. "2026-08-01"
+      const onlyReasons = body.reasons || ['no_client_relation', 'client_not_in_supabase', 'no_date', 'unknown'];
+      const pageIdFilter = body.pageIds || null; // specific page IDs to archive
+
+      console.log(`[${functionName}] archive-orphans: dryRun=${dryRun} beforeDate=${beforeDate} reasons=${onlyReasons.join(',')}`);
+
+      // Build Supabase lookup: notion_page_id → appointment
+      const { data: allAppts } = await supabase.from('appointments').select('id, client_id, date, name, notion_page_id, status');
+      const supabaseByNotionId: Record<string, any> = {};
+      for (const a of allAppts || []) {
+        if (a.notion_page_id) supabaseByNotionId[a.notion_page_id] = a;
+      }
+
+      // Build Notion client lookup
+      const { data: allClients } = await supabase.from('clients').select('id, name, notion_page_id');
+      const clientByNid: Record<string, any> = {};
+      for (const c of allClients || []) {
+        if (c.notion_page_id) clientByNid[c.notion_page_id] = c;
+      }
+
+      const schema = await fetchDatabaseSchema(MAIN_DB_ID, notionHeaders);
+      const orphansToArchive: any[] = [];
+      let total = 0;
+
+      let hasMore = true;
+      let startCursor = undefined;
+      while (hasMore) {
+        const qb: any = { page_size: 100 };
+        if (startCursor) qb.start_cursor = startCursor;
+        const res = await fetchWithRetry(`https://api.notion.com/v1/databases/${MAIN_DB_ID}/query`, {
+          method: 'POST', headers: notionHeaders, body: JSON.stringify(qb)
+        });
+        if (!res.ok) throw new Error(`Notion query failed: ${await res.text()}`);
+        const data = await res.json();
+        for (const page of (data.results || [])) {
+          total++;
+          if (page.archived) continue; // already archived
+          if (supabaseByNotionId[page.id]) continue; // has Supabase backing
+
+          const props = page.properties;
+          const dateProp = findSchemaProperty(schema, ['Date']);
+          const dateVal = dateProp ? extractNotionPropertyValue(props[dateProp.name]) : null;
+          const nameProp = findSchemaProperty(schema, ['Name', 'Title']);
+          const nameVal = nameProp ? extractNotionPropertyValue(props[nameProp.name]) : null;
+          const relProp = Object.keys(schema).find(k => {
+            const p = schema[k];
+            return p.type === 'relation' && p.relation?.database_id && normalizeId(p.relation.database_id) === normalizeId(CLIENTS_DB_ID);
+          });
+          const notionClientId = relProp && props[relProp]?.relation?.[0]?.id;
+
+          const reason = !dateVal ? 'no_date' : (!notionClientId ? 'no_client_relation' : (!clientByNid[notionClientId] ? 'client_not_in_supabase' : 'unknown'));
+
+          if (!onlyReasons.includes(reason)) continue;
+
+          // Date cutoff filter
+          if (beforeDate && dateVal) {
+            const pageDate = dateVal.split('T')[0];
+            if (pageDate >= beforeDate) continue;
+          }
+
+          // Specific page ID filter
+          if (pageIdFilter && !pageIdFilter.includes(page.id)) continue;
+
+          orphansToArchive.push({
+            notion_page_id: page.id,
+            notion_url: page.url,
+            name: nameVal,
+            date: dateVal,
+            reason,
+          });
+        }
+        hasMore = data.has_more;
+        startCursor = data.next_cursor;
+      }
+
+      if (dryRun) {
+        const msg = `Dry run: would archive ${orphansToArchive.length} orphan pages (out of ${total} total active).`;
+        console.log(`[${functionName}] ${msg}`);
+        return new Response(JSON.stringify({ success: true, dryRun: true, wouldArchive: orphansToArchive.length, details: orphansToArchive }), {
+          status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      let archived = 0;
+      const failed: string[] = [];
+      for (const orphan of orphansToArchive) {
+        const res = await fetchWithRetry(`https://api.notion.com/v1/pages/${orphan.notion_page_id}`, {
+          method: 'PATCH',
+          headers: notionHeaders,
+          body: JSON.stringify({ archived: true }),
+        });
+        if (res.ok) {
+          archived++;
+          console.log(`[${functionName}] Archived: ${orphan.name} (${orphan.notion_page_id})`);
+        } else {
+          failed.push(orphan.notion_page_id);
+          console.error(`[${functionName}] Failed to archive ${orphan.notion_page_id}: ${await res.text()}`);
+        }
+      }
+
+      const msg = `Archived ${archived}/${orphansToArchive.length} orphan pages.`;
+      console.log(`[${functionName}] ${msg}`);
+      return new Response(JSON.stringify({ success: true, archived, total: orphansToArchive.length, failed }), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     // Flow 1: Sync Client Only
     if (clientId && !appointmentId) {
       const { data: client, error: clientError } = await supabase

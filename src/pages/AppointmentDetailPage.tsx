@@ -485,7 +485,7 @@ const AppointmentDetailPage = () => {
                 )}
                 {medicalHistoryEditing && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/20" onClick={() => setMedicalHistoryEditing(false)}>
-                    <div className="w-96 p-4 rounded-xl border border-border bg-card shadow-lg" onClick={(e) => e.stopPropagation()}>
+                    <div className="w-96 p-4 rounded-xl border border-border bg-card shadow-lg" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => { if (e.key === "Escape") setMedicalHistoryEditing(false); }}>
                       <textarea
                         value={medicalHistoryValue}
                         onChange={(e) => setMedicalHistoryValue(e.target.value)}

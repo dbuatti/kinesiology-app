@@ -688,6 +688,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                   <span
                     role="button"
                     tabIndex={0}
+                    title={person}
                     aria-label={`View ${person} profile`}
                     className="font-semibold text-sm text-foreground truncate cursor-pointer hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
                     onClick={(e) => {
@@ -727,7 +728,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                       {discipline}
                     </Badge>
                   )}
-                  <span className="text-xs text-muted-foreground truncate">{eventLabel}</span>
+                  <span className="text-xs text-muted-foreground truncate" title={eventLabel}>{eventLabel}</span>
                 </div>
               </div>
 

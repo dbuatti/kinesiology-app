@@ -550,7 +550,15 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                 </Button>
               )}
             </>
-          ) : null}
+          ) : (
+            <div className="text-center py-16 px-6">
+              <div className="w-16 h-16 rounded-full bg-muted/60 flex items-center justify-center mx-auto mb-4">
+                <Clock size={24} className="opacity-40" />
+              </div>
+              <p className="text-sm font-bold text-muted-foreground">No available slots</p>
+              <p className="text-xs text-muted-foreground mt-1">Try a different date range or check back later.</p>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

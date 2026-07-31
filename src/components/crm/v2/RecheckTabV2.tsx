@@ -60,9 +60,10 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
   const priorityPathway = (currentMeta as any)?.priority_pathway || "";
 
   const previousSession = useMemo(() => {
-    if (!history || history.length < 2) return null;
-    return history[1];
-  }, [history]);
+    if (!appointment?.date || !history || history.length === 0) return null;
+    const currentTs = new Date(appointment.date).getTime();
+    return history.find((h) => new Date(h.date).getTime() < currentTs) || null;
+  }, [history, appointment]);
 
   const prevModesBalances = previousSession?.modes_balances || "";
 

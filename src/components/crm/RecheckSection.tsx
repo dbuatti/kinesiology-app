@@ -29,7 +29,14 @@ export const RecheckSection = ({
 }: RecheckSectionProps) => {
   const [expanded, setExpanded] = useState(true);
 
-  const previousSession = history[0];
+  const previousSession = useMemo(() => {
+    if (!currentAppointment?.date) return history[0];
+    const currentTs = new Date(currentAppointment.date).getTime();
+    return history.find((h) => {
+      const ts = new Date(h.date).getTime();
+      return ts < currentTs;
+    }) || null;
+  }, [history, currentAppointment]);
 
   const recheckItems = useMemo(() => {
     if (!previousSession) return [];

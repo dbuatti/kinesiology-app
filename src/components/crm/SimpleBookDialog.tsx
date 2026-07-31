@@ -11,11 +11,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { showError } from "@/utils/toast";
 import { useEventPricing } from "@/hooks/useEventPricing";
 import { cn } from "@/lib/utils";
 import { CALCOM_CONFIG, TIMEZONE } from "@/config/integrations";
 import {
-  Loader2, Calendar, Clock, Check, Music, Search, Mail, CalendarPlus, CheckCircle2, User
+  Loader2, Calendar, Clock, Check, Music, Search, Mail, CalendarPlus, CheckCircle2, User, Plus
 } from "lucide-react";
 
 interface VoiceStudent {
@@ -48,6 +49,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
   const [studentSearch, setStudentSearch] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<VoiceStudent | null>(null);
   const [manualEmail, setManualEmail] = useState("");
+  const [savingNewStudent, setSavingNewStudent] = useState(false);
   const [date, setDate] = useState(prefillDate || format(addDays(new Date(), 1), "yyyy-MM-dd"));
   const [time, setTime] = useState(prefillTime || "10:00");
   const [duration, setDuration] = useState(prefillDuration || "60");
@@ -397,7 +399,59 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                     </button>
                   ))}
                   {filteredStudents.length === 0 && (
-                    <p className="text-xs text-muted-foreground text-center py-4">No students found</p>
+                    studentSearch.trim() ? (
+                      <div className="space-y-2 px-1">
+                        <p className="text-xs text-muted-foreground text-center py-1">No students found</p>
+                        <div className="bg-muted/50 rounded-xl p-3 space-y-2 border border-dashed border-border">
+                          <p className="text-xs font-semibold">
+                            Create student: <span className="font-black">{studentSearch.trim()}</span>
+                          </p>
+                          <Input
+                            placeholder="Email address (required)"
+                            value={manualEmail}
+                            onChange={(e) => setManualEmail(e.target.value)}
+                            className="h-8 rounded-lg text-xs"
+                          />
+                          <Button
+                            size="sm"
+                            className="w-full h-8 rounded-lg font-semibold text-xs bg-gradient-to-br from-rose-500 to-rose-600"
+                            disabled={!manualEmail.trim() || savingNewStudent}
+                            onClick={async () => {
+                              if (!manualEmail.trim()) return;
+                              setSavingNewStudent(true);
+                              try {
+                                const { data, error } = await supabase.functions.invoke("voice-onboard", {
+                                  body: { name: studentSearch.trim(), email: manualEmail.trim() },
+                                });
+                                if (error) throw error;
+                                const newStudent: VoiceStudent = {
+                                  id: data?.notionPageId || `new-${Date.now()}`,
+                                  name: studentSearch.trim(),
+                                  email: manualEmail.trim(),
+                                  phone: null,
+                                  _source: "notion",
+                                };
+                                setSelectedStudent(newStudent);
+                                setStudentSearch("");
+                              } catch (err: any) {
+                                showError(err.message || "Failed to create student");
+                              } finally {
+                                setSavingNewStudent(false);
+                              }
+                            }}
+                          >
+                            {savingNewStudent ? (
+                              <Loader2 size={12} className="animate-spin mr-1" />
+                            ) : (
+                              <Plus size={12} className="mr-1" />
+                            )}
+                            {savingNewStudent ? "Creating…" : "Create Student"}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground text-center py-4">No students found</p>
+                    )
                   )}
                 </div>
               </div>

@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, ExternalLink, Mic, User, RotateCcw, Plus, BookOpen, Search
+  ArrowLeft, Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, ExternalLink, Mic, User, RotateCcw, Plus, BookOpen, Search, CheckCircle2, CreditCard
 } from "lucide-react";
 import {
   format, addMonths, subMonths, addWeeks, subWeeks, startOfMonth, endOfMonth,
@@ -42,6 +42,7 @@ import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { useAuth } from "@/components/AuthProvider";
 import { formatVoiceTime, voiceTimeDuration, voiceDateISO } from "@/utils/availability";
+import { convertVoiceToAppointment } from "@/utils/voiceToFnh";
 
 interface VoiceLesson {
   id: string;
@@ -398,6 +399,90 @@ const UnifiedCalendarPage = () => {
       showError(err.message || "Failed to book session");
     },
   });
+
+  const [voiceBusyId, setVoiceBusyId] = useState<string | null>(null);
+
+  const refreshVoiceData = () => {
+    refetchVoice();
+    refetchVoiceBookings();
+    queryClient.invalidateQueries({ queryKey: ["unified-kinesiology-appts"] });
+    refetchKinesiology();
+  };
+
+  // Manually record/clear a voice lesson payment (writes Notion Payment +
+  // voice_bookings.status, so it works even without a linked booking row).
+  const handleVoiceMarkPaid = async (item: CalendarItem, paid: boolean) => {
+    setVoiceBusyId(item.id);
+    try {
+      const { error } = await supabase.functions.invoke("voice-mark-paid", {
+        body: {
+          lessonId: item.lessonId,
+          notionLessonId2: item.notionLessonId2,
+          calcomBookingId: item.calcomUid,
+          paid,
+        },
+      });
+      if (error) throw error;
+      showSuccess(paid ? "Marked as paid." : "Marked as unpaid.");
+      refreshVoiceData();
+    } catch (err: any) {
+      showError(err.message || "Failed to update payment status");
+    } finally {
+      setVoiceBusyId(null);
+    }
+  };
+
+  const handleVoicePaymentLink = async (item: CalendarItem) => {
+    setVoiceBusyId(item.id);
+    try {
+      const res = await supabase.functions.invoke("voice-payment-link", {
+        body: {
+          amount: (item.amount ?? 95) * 100, // voice-payment-link expects cents
+          lessonTitle: item.title,
+          lessonId: item.lessonId,
+          email: item.studentEmail || undefined,
+          studentName: item.studentName || undefined,
+        },
+      });
+      if (res.error) throw res.error;
+      if (res.data?.url) {
+        await navigator.clipboard.writeText(res.data.url).catch(() => {});
+        showSuccess("Payment link created & copied to clipboard.");
+      } else {
+        showSuccess("Payment link created.");
+      }
+    } catch (err: any) {
+      showError(err.message || "Failed to create payment link");
+    } finally {
+      setVoiceBusyId(null);
+    }
+  };
+
+  const handleVoiceConvert = async (item: CalendarItem) => {
+    if (!session?.user?.id) return;
+    setVoiceBusyId(item.id);
+    try {
+      await convertVoiceToAppointment(
+        {
+          studentEmail: item.studentEmail,
+          studentName: item.studentName,
+          title: item.title,
+          datetime: item.datetime,
+          date: item.date,
+          amount: item.amount,
+          paid: item.paid,
+        },
+        session.user.id
+      );
+      showSuccess("Converted to an FNH appointment.");
+      queryClient.invalidateQueries({ queryKey: ["unified-kinesiology-appts"] });
+      refetchKinesiology();
+    } catch (err: any) {
+      showError(err.message || "Failed to convert");
+    } finally {
+      setVoiceBusyId(null);
+    }
+  };
 
   const calendarItems: CalendarItem[] = useMemo(() => {
  const items: CalendarItem[] = [];
@@ -969,13 +1054,59 @@ const UnifiedCalendarPage = () => {
    {item.isFree ? "Free" : item.paid ? `Paid · $${item.amount ?? ""}` : `Unpaid · $${item.amount ?? ""}`}
    </Badge>
    </div>
-   {item.url && item.source === "voice" && (
-   <div className="flex items-center gap-1 text-[10px] text-destructive">
-   <ExternalLink size={10} /> Open in Notion
-   </div>
-   )}
-   </div>
-   </TooltipContent>
+    {item.source === "voice" && (
+    <div className="border-t border-border/60 pt-2 mt-1 space-y-1.5">
+    {item.url && (
+    <a
+    href={item.url}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-flex items-center gap-1 text-[10px] font-semibold text-chart-primary hover:underline"
+    >
+    <ExternalLink size={10} /> Open in Notion
+    </a>
+    )}
+    <div className="flex flex-wrap items-center gap-1.5">
+    {!item.isFree && (
+    <button
+    onClick={(e) => { e.stopPropagation(); handleVoiceMarkPaid(item, !item.paid); }}
+    disabled={voiceBusyId === item.id}
+    className={cn(
+    "inline-flex items-center gap-1 text-[10px] font-semibold rounded-md px-2 py-1 border transition-colors",
+    item.paid
+    ? "border-border text-muted-foreground hover:text-foreground"
+    : "border-chart-emerald/30 bg-chart-emerald/10 text-chart-emerald hover:bg-chart-emerald/15"
+    )}
+    >
+    <CheckCircle2 size={10} /> {item.paid ? "Mark unpaid" : "Mark paid"}
+    </button>
+    )}
+    {!item.isFree && (
+    <button
+    onClick={(e) => { e.stopPropagation(); handleVoicePaymentLink(item); }}
+    disabled={voiceBusyId === item.id}
+    className="inline-flex items-center gap-1 text-[10px] font-semibold rounded-md px-2 py-1 border border-border text-muted-foreground hover:text-foreground transition-colors"
+    >
+    <CreditCard size={10} /> Payment link
+    </button>
+    )}
+    <button
+    onClick={(e) => { e.stopPropagation(); handleVoiceConvert(item); }}
+    disabled={voiceBusyId === item.id}
+    className="inline-flex items-center gap-1 text-[10px] font-semibold rounded-md px-2 py-1 border border-border text-muted-foreground hover:text-foreground transition-colors"
+    >
+    <Plus size={10} /> Convert to FNH
+    </button>
+    </div>
+    {voiceBusyId === item.id && (
+    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+    <Loader2 size={10} className="animate-spin" /> Working…
+    </div>
+    )}
+    </div>
+    )}
+    </div>
+    </TooltipContent>
    </Tooltip>
    ))}
 

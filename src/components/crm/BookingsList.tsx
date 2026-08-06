@@ -26,6 +26,8 @@ import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import { nameHash, nameInitials, avatarColor } from "@/utils/avatar";
 import { parseAmPmToMinutes } from "@/utils/availability";
+import { convertVoiceToAppointment } from "@/utils/voiceToFnh";
+import { useAuth } from "@/components/AuthProvider";
 
 export interface BookingListItem {
   id: string;
@@ -94,6 +96,7 @@ const NEW_BOOKING_SERVICES = [
 
 const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsListProps) => {
   const navigate = useNavigate();
+  const { session } = useAuth();
   const [tab, setTab] = useState<Tab>("upcoming");
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -266,6 +269,33 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
       onChanged();
     } catch (err: any) {
       showError(err.message || "Failed to update");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  // Spin up an FNH appointment from a voice lesson (reuses/creates a client by
+  // email and carries the voice payment state over).
+  const convertToFnh = async (item: BookingListItem) => {
+    if (!session?.user?.id) return;
+    setBusyId(item.id);
+    try {
+      await convertVoiceToAppointment(
+        {
+          studentEmail: item.studentEmail,
+          studentName: item.studentName || item.subtitle || null,
+          title: item.title,
+          datetime: item.datetime,
+          date: item.date,
+          amount: item.amount,
+          paid: item.paid,
+        },
+        session.user.id
+      );
+      showSuccess("Converted to an FNH appointment.");
+      onChanged();
+    } catch (err: any) {
+      showError(err.message || "Failed to convert");
     } finally {
       setBusyId(null);
     }
@@ -816,6 +846,11 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                       onClick={(e) => { e.stopPropagation(); setRescheduleTarget(item); setRescheduleAt(""); loadSlots(item); }}
                     >
                       <CalendarClock size={14} className="mr-2" /> Reschedule
+                    </DropdownMenuItem>
+                  )}
+                  {item.source === "voice" && (
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); convertToFnh(item); }}>
+                      <User size={14} className="mr-2" /> Convert to FNH appointment
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem

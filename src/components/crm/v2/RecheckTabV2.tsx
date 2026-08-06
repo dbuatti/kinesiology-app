@@ -11,8 +11,9 @@ import { MUSCLE_INFO_DETAILS } from "@/data/muscle-info-data";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
 import { AppointmentWithClient } from "@/types/crm";
 import { CATEGORY_LABELS } from "@/components/crm/v2/categoryConstants";
+import { getInhibitedFindings } from "@/components/crm/v2/v2-utils";
 import {
-  Search, HelpCircle, Target, CheckCircle2, RotateCcw
+  Search, HelpCircle, Route, CheckCircle2, RotateCcw
 } from "lucide-react";
 
 interface RecheckItemData {
@@ -46,7 +47,10 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, saveField, onJumpToPhase }: RecheckTabV2Props) => {
-  const [actions, setActions] = useState<Record<string, Action>>({});
+  const [actions, setActions] = useState<Record<string, Action>>(() => {
+    const meta = safeParse(appointment.metadata, {});
+    return (meta as any)?.recheck_actions || {};
+  });
   const [saving, setSaving] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [onlyInhibited, setOnlyInhibited] = useState(true);
@@ -69,38 +73,27 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
 
   const rawItems = useMemo(() => {
     if (!previousSession) return [];
-    const pattern = safeParse(previousSession.priority_pattern, {} as any);
-    const list: RecheckItemData[] = [];
+    const list: RecheckItemData[] = getInhibitedFindings(previousSession.priority_pattern).map(f => {
+      const reflex = PRIMITIVE_REFLEXES.find(r => r.name === f.baseName || r.id === f.baseName);
+      const muscleKey = Object.keys(MUSCLE_INFO_DETAILS).find(
+        k => k.toLowerCase() === f.baseName.toLowerCase() || f.baseName.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(f.baseName.toLowerCase())
+      );
+      const muscleInfo = muscleKey ? MUSCLE_INFO_DETAILS[muscleKey] : undefined;
+      const brainPoint = BRAIN_REFLEX_POINTS.find(p => p.name === f.baseName || p.id === f.baseName);
+      const isLateralized = reflex?.isLateralized ?? true;
+      const wasPriority = prevModesBalances.toLowerCase().includes(f.baseName.toLowerCase());
 
-    Object.entries(pattern).forEach(([rawCategory, categoryItems]: [string, any]) => {
-      Object.entries(categoryItems).forEach(([fullName, status]) => {
-        if (status !== 'Inhibited' && status !== 'Inhibition' && status !== 'Hypertonic') return;
-
-        const sideMatch = fullName.match(/\(([LR])\)$/);
-        const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
-        const baseName = fullName.replace(/ \([LR]\)$/, '').trim();
-
-        const reflex = PRIMITIVE_REFLEXES.find(r => r.name === baseName || r.id === baseName);
-        const muscleKey = Object.keys(MUSCLE_INFO_DETAILS).find(
-          k => k.toLowerCase() === baseName.toLowerCase() || baseName.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(baseName.toLowerCase())
-        );
-        const muscleInfo = muscleKey ? MUSCLE_INFO_DETAILS[muscleKey] : undefined;
-        const brainPoint = BRAIN_REFLEX_POINTS.find(p => p.name === baseName || p.id === baseName);
-        const isLateralized = reflex?.isLateralized ?? true;
-        const wasPriority = prevModesBalances.toLowerCase().includes(baseName.toLowerCase());
-
-        list.push({
-          name: baseName,
-          rawCategory,
-          status,
-          side,
-          isLateralized,
-          wasPriority,
-          reflex,
-          muscleInfo,
-          brainPoint,
-        });
-      });
+      return {
+        name: f.baseName,
+        rawCategory: f.catKey,
+        status: f.status,
+        side: f.side,
+        isLateralized,
+        wasPriority,
+        reflex,
+        muscleInfo,
+        brainPoint,
+      };
     });
 
     return list.sort((a, b) => {
@@ -132,13 +125,12 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
         await updatePriorityPattern(item.rawCategory, item.name, item.status, item.side);
       } else if (action === 'unsure') {
         await updatePriorityPattern(item.rawCategory, item.name, 'Unsure', item.side);
-      } else {
-        const existingMeta = safeParse(appointment.metadata, {});
-        await saveField('metadata', {
-          ...existingMeta,
-          recheck_resolved: { ...(existingMeta?.recheck_resolved || {}), [key]: true },
-        });
       }
+      const existingMeta = safeParse(appointment.metadata, {});
+      await saveField('metadata', {
+        ...existingMeta,
+        recheck_actions: { ...(existingMeta?.recheck_actions || {}), [key]: action },
+      });
       setActions(prev => ({ ...prev, [key]: action }));
       onUpdate();
     } catch {
@@ -152,7 +144,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
     const label = CATEGORY_LABELS[item.rawCategory] || item.rawCategory;
     const val = `${item.name}${item.side ? ` (${item.side})` : ''} — ${label}`;
     await saveField('metadata', { ...currentMeta, priority_pathway: val });
-    showSuccess(`${item.name} set as 1° priority`);
+    showSuccess(`${item.name} set as 1° pathway`);
     onUpdate();
     onJumpToPhase?.(3);
   };
@@ -211,7 +203,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
               className={cn(
                 "bg-card border rounded-xl p-5 transition-all",
                 priorityPathway.startsWith(item.name)
-                  ? "border-red-300 ring-1 ring-red-100"
+                  ? "border-destructive/30 ring-1 ring-destructive/10"
                   : "border-border",
                 act && "opacity-50"
               )}
@@ -294,9 +286,10 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
                     disabled={!!isSaving}
                     size="sm"
                     variant="outline"
+                    title="Choose this finding as the correction pathway and open Correct"
                     className="h-7 px-3 rounded-md text-[10px] font-bold uppercase tracking-wider border-primary/20 text-primary hover:bg-primary/5"
                   >
-                    <Target size={11} className="mr-1" /> Set 1°
+                    <Route size={11} className="mr-1" /> Set Pathway
                   </Button>
                   <ActionButton
                     onClick={() => handleAction(item, 'resolved')}

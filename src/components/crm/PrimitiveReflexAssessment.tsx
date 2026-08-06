@@ -24,6 +24,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { safeParse } from "@/utils/safe-json";
 import { PrimitiveReflexTest } from "@/types/crm";
+import StimResultsSummary from "@/components/crm/StimResultsSummary";
 
 function HighlightPattern({ text }: { text: string }) {
   const parts = text.split(/(flexors|extensors|flexor|extensor)/gi);
@@ -252,6 +253,14 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
           </Button>
         </div>
       </div>
+
+      <StimResultsSummary
+        kind="reflex"
+        reflexId={reflex.id}
+        reflexName={reflex.name}
+        stimResults={test.stim_results}
+        className="mt-1.5 pt-1.5 border-t border-border/50"
+      />
 
       {!compact && (
         <>

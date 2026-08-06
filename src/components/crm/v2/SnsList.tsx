@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,11 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import {
   Droplets, Heart, Zap, Wind, Activity,
   ChevronDown, Timer, Play, Pause, RotateCcw,
-  CheckCircle2
+  CheckCircle2, Check
 } from "lucide-react";
+import { safeParse } from "@/utils/safe-json";
 
 interface SnsItemProps {
-  id: string;
   title: string;
   subtitle: string;
   icon: any;
@@ -20,10 +20,12 @@ interface SnsItemProps {
   hasTimer?: boolean;
   protocol?: string[];
   purpose?: string;
+  completed?: boolean;
+  onToggleComplete?: () => void;
   onSaveField: (field: string, value: string | null) => Promise<void>;
 }
 
-const SnsItem = ({ title, subtitle, icon: Icon, iconColor, notes, notesField, hasTimer, protocol, purpose, onSaveField }: SnsItemProps) => {
+const SnsItem = ({ title, subtitle, icon: Icon, iconColor, notes, notesField, hasTimer, protocol, purpose, completed, onToggleComplete, onSaveField }: SnsItemProps) => {
   const [open, setOpen] = useState(false);
   const [localNotes, setLocalNotes] = useState(notes || "");
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
@@ -52,18 +54,35 @@ const SnsItem = ({ title, subtitle, icon: Icon, iconColor, notes, notesField, ha
   return (
     <div className="border-b border-border last:border-b-0">
       {/* Row header */}
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between gap-4 py-4 px-2 hover:bg-muted/30 transition-colors text-left"
-      >
-        <div className="flex items-center gap-3 min-w-0">
+      <div className="group flex items-center justify-between gap-4 py-4 px-2 hover:bg-muted/30 transition-colors">
+        <button
+          onClick={() => setOpen(!open)}
+          className="flex items-center gap-3 min-w-0 text-left"
+          aria-expanded={open}
+        >
           <Icon size={18} className={cn("shrink-0", iconColor)} />
           <div className="min-w-0">
             <p className="text-sm font-semibold text-foreground truncate">{title}</p>
             <p className="text-[10px] text-muted-foreground font-medium">{subtitle}</p>
           </div>
-        </div>
+        </button>
         <div className="flex items-center gap-3 shrink-0">
+          {onToggleComplete && (
+            <button
+              type="button"
+              onClick={onToggleComplete}
+              title={completed ? "Mark as not completed in this session" : "Mark as completed in this session"}
+              aria-label={`${completed ? "Un-tick" : "Tick"} ${title} as completed`}
+              className={cn(
+                "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all shrink-0",
+                completed
+                  ? "bg-chart-emerald border-chart-emerald text-white"
+                  : "border-border text-transparent hover:border-chart-emerald hover:bg-chart-emerald/10"
+              )}
+            >
+              <Check size={13} strokeWidth={3} />
+            </button>
+          )}
           {hasNotes ? (
             <Badge variant="outline" className="text-[9px] font-medium uppercase tracking-wider bg-chart-emerald/10 text-chart-emerald border-chart-emerald/20">
               Recorded
@@ -71,9 +90,15 @@ const SnsItem = ({ title, subtitle, icon: Icon, iconColor, notes, notesField, ha
           ) : (
             <span className="text-[10px] text-muted-foreground/50">Not yet recorded</span>
           )}
-          <ChevronDown size={16} className={cn("text-muted-foreground transition-transform", open && "rotate-180")} />
+          <button
+            onClick={() => setOpen(!open)}
+            className="p-1 -mr-1 rounded-md hover:bg-muted transition-colors"
+            aria-label={open ? "Collapse" : "Expand"}
+          >
+            <ChevronDown size={16} className={cn("text-muted-foreground transition-transform", open && "rotate-180")} />
+          </button>
         </div>
-      </button>
+      </div>
 
       {/* Expanded content */}
       {open && (
@@ -136,14 +161,25 @@ const SnsItem = ({ title, subtitle, icon: Icon, iconColor, notes, notesField, ha
 interface SnsListProps {
   appointment: any;
   onSaveField: (field: string, value: string | null) => Promise<void>;
-  onUpdate: () => void;
 }
 
 const SnsList = ({ appointment, onSaveField }: SnsListProps) => {
+  const metadata = useMemo(() => {
+    if (!appointment.metadata) return {};
+    if (typeof appointment.metadata === 'string') return safeParse(appointment.metadata, {});
+    return appointment.metadata;
+  }, [appointment.metadata]);
+
+  const completedMap: Record<string, boolean> = metadata.sns_resets || {};
+
+  const toggleComplete = async (key: string, current: boolean) => {
+    const next = { ...metadata, sns_resets: { ...completedMap, [key]: !current } };
+    await onSaveField('metadata', next as any);
+  };
+
   return (
     <div className="divide-y divide-border">
       <SnsItem
-        id="lymphatic"
         title="Lymphatic Cranial Reflex Zone"
         subtitle="FNH Foundations · Ease the System"
         icon={Droplets}
@@ -160,10 +196,11 @@ const SnsList = ({ appointment, onSaveField }: SnsListProps) => {
           "Ask permission to correct, then hold the position of ease for 45–90 seconds.",
           "Re-test suture for restored glide.",
         ]}
+        completed={!!completedMap.lymphatic}
+        onToggleComplete={() => toggleComplete('lymphatic', !!completedMap.lymphatic)}
         onSaveField={onSaveField}
       />
       <SnsItem
-        id="harmonic"
         title="Harmonic Rocking Protocol"
         subtitle="Nervous system down-regulation"
         icon={Heart}
@@ -177,10 +214,11 @@ const SnsList = ({ appointment, onSaveField }: SnsListProps) => {
           "Ask how many minutes (usually 3) or observe client dropping into a safe state.",
           "Signs of shift: diaphragmatic breathing improves, sigh, yawn, or felt relaxation.",
         ]}
+        completed={!!completedMap.harmonic}
+        onToggleComplete={() => toggleComplete('harmonic', !!completedMap.harmonic)}
         onSaveField={onSaveField}
       />
       <SnsItem
-        id="t1"
         title="T1 (Sympathetic Chain Reset)"
         subtitle="Mechanical SNS integration"
         icon={Zap}
@@ -197,10 +235,11 @@ const SnsList = ({ appointment, onSaveField }: SnsListProps) => {
           "Monitor the tender spot and move the ipsilateral shoulder into external rotation until tenderness dissolves (45–90 seconds).",
           "Re-assess tenderness and Psoas.",
         ]}
+        completed={!!completedMap.t1}
+        onToggleComplete={() => toggleComplete('t1', !!completedMap.t1)}
         onSaveField={onSaveField}
       />
       <SnsItem
-        id="diaphragm"
         title="Manual Reset of the Diaphragm"
         subtitle="Phrenic Nerve integration"
         icon={Wind}
@@ -215,10 +254,11 @@ const SnsList = ({ appointment, onSaveField }: SnsListProps) => {
           "Palpate the muscle in the neck at C4 level (usually opposite to the sternum tender point).",
           "Move the ribcage up towards the neck and hold for 45–90 seconds. Release very slowly.",
         ]}
+        completed={!!completedMap.diaphragm}
+        onToggleComplete={() => toggleComplete('diaphragm', !!completedMap.diaphragm)}
         onSaveField={onSaveField}
       />
       <SnsItem
-        id="vagus"
         title="Vagus Nerve Process"
         subtitle="Screen & Reset"
         icon={Activity}
@@ -226,16 +266,19 @@ const SnsList = ({ appointment, onSaveField }: SnsListProps) => {
         notes={appointment.vagus_nerve_notes}
         notesField="vagus_nerve_notes"
         purpose="Screen and reset vagal nerve function to improve parasympathetic tone and social engagement."
+        completed={!!completedMap.vagus}
+        onToggleComplete={() => toggleComplete('vagus', !!completedMap.vagus)}
         onSaveField={onSaveField}
       />
       <SnsItem
-        id="other"
         title="Other Techniques"
         subtitle="ESR, additional notes"
         icon={CheckCircle2}
         iconColor="text-muted-foreground"
         notes={appointment.additional_notes}
         notesField="additional_notes"
+        completed={!!completedMap.other}
+        onToggleComplete={() => toggleComplete('other', !!completedMap.other)}
         onSaveField={onSaveField}
       />
     </div>

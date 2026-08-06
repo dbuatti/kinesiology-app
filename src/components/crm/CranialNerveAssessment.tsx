@@ -28,6 +28,7 @@ import { CranialNerveTest } from "@/types/crm";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import StimResultsSummary from "@/components/crm/StimResultsSummary";
 
 interface NerveTestItemProps {
   nerve: CranialNerve;
@@ -203,6 +204,13 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
           </div>
         </div>
       </div>
+
+      <StimResultsSummary
+        kind="nerve"
+        nerve={nerve}
+        stimResults={test.stim_results}
+        className={cn(compact ? "pt-1.5 border-t border-border/50" : "pb-1")}
+      />
 
       {!compact && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">

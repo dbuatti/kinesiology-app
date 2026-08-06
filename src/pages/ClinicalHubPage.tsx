@@ -8,8 +8,9 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { useIpadMode } from "@/hooks/use-ipad-mode";
 import {
-  Activity, FileText, BookMarked, Plus, Loader2, Zap, Clock, User, Calendar
+  Activity, FileText, BookMarked, Plus, Loader2, Zap, Clock, User, Calendar, Tablet
 } from "lucide-react";
 import { format } from "date-fns";
 import FooterLinks from "@/components/crm/FooterLinks";
@@ -24,6 +25,7 @@ interface RecentSession {
 const ClinicalHubPage = () => {
   const { session } = useAuth();
   const navigate = useNavigate();
+  const { enabled: ipadMode, toggle: toggleIpadMode } = useIpadMode();
   const [quickSessionOpen, setQuickSessionOpen] = useState(false);
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,14 +91,29 @@ const ClinicalHubPage = () => {
       <div className="max-w-4xl mx-auto px-6 py-12">
         {/* Header */}
         <div className="mb-10">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Zap size={20} className="text-primary" />
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Zap size={20} className="text-primary" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold tracking-tight">Clinical Hub</h1>
+                <p className="text-xs text-muted-foreground font-medium">PEACE V2 · DOC V2 · Corrections Manual</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight">Clinical Hub</h1>
-              <p className="text-xs text-muted-foreground font-medium">PEACE V2 · DOC V2 · Corrections Manual</p>
-            </div>
+            <button
+              onClick={toggleIpadMode}
+              className={cn(
+                "flex items-center gap-2 px-3 h-9 rounded-xl text-[10px] font-bold uppercase tracking-wider border transition-colors shrink-0",
+                ipadMode
+                  ? "bg-primary/10 border-primary/30 text-primary"
+                  : "border-border text-muted-foreground hover:text-foreground hover:bg-muted"
+              )}
+              title={ipadMode ? "Exit iPad Mode — restore the sidebar" : "Enter iPad Mode — no sidebar, straight to the hub"}
+            >
+              <Tablet size={14} />
+              {ipadMode ? "iPad Mode: On" : "iPad Mode"}
+            </button>
           </div>
         </div>
 

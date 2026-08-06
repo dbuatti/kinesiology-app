@@ -8,9 +8,12 @@ import {
   nerveStimLines,
   nerveGroupRowSpan,
   primitiveStimKey,
+  primitiveStimKeyAt,
+  primitiveStimCount,
   primitiveSideKey,
   cranialStimKey,
   cranialSideKey,
+  cranialNerveInhibKey,
   isLateralStim,
   primitiveReflexMatches,
   cranialLineMatches,
@@ -45,46 +48,51 @@ const PathwayReflexStimSheet = ({ checked: externalChecked, onToggle, query }: P
     }
   };
 
-  const StimCheck = ({ checkedKey }: { checkedKey: string }) => {
+  const StimCheck = ({ checkedKey, highlight }: { checkedKey: string; highlight?: boolean }) => {
     const isChecked = Boolean(checked[checkedKey]);
     return (
       <button
         type="button"
         onClick={() => toggle(checkedKey)}
         aria-pressed={isChecked}
-        aria-label={isChecked ? "Pattern showing — click to clear" : "Mark pattern as showing"}
-        title={isChecked ? "Showing — click to clear" : "Click to mark showing"}
+        aria-label={isChecked ? "Pattern showing — click to unmark" : "Mark pattern as showing"}
+        title={isChecked ? "Showing — click to unmark" : "Click to mark showing"}
         className={`w-5 h-5 border-2 border-black mx-auto flex items-center justify-center cursor-pointer rounded-[3px] transition-all duration-100 active:scale-75 hover:bg-black/[0.03] focus-visible:ring-2 focus-visible:ring-chart-primary focus-visible:ring-offset-1 print:cursor-default ${
           isChecked ? "bg-black/[0.08]" : ""
-        }`}
+        } ${highlight ? "bg-yellow-200/70" : ""}`}
       >
         {isChecked && <HandwrittenX />}
       </button>
     );
   };
 
-  const SideCheck = ({ lKey, rKey }: { lKey: string; rKey: string }) => {
+  const SideCheck = ({ lKey, rKey, activeSide }: { lKey: string; rKey: string; activeSide?: "L" | "R" | "both" }) => {
     const l = Boolean(checked[lKey]);
     const r = Boolean(checked[rKey]);
-    const half = (key: string, side: "L" | "R", isMarked: boolean) => (
-      <button
-        type="button"
-        onClick={() => toggle(key)}
-        aria-pressed={isMarked}
-        aria-label={`${side} side — ${isMarked ? "showing, click to clear" : "mark showing"}`}
-        title={isMarked ? `${side} — click to clear` : `Mark ${side} showing`}
-        className="relative flex-1 flex items-center justify-center cursor-pointer transition-colors duration-100 active:bg-black/[0.05] hover:bg-black/[0.02] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-chart-primary print:cursor-default"
-      >
-        <span aria-hidden="true" className="text-xl font-black leading-none text-neutral-400 select-none pointer-events-none">
-          {side}
-        </span>
-        {isMarked && (
-          <span className="absolute inset-0 p-1 pointer-events-none">
-            <HandwrittenX />
+    const half = (key: string, side: "L" | "R", isMarked: boolean) => {
+      const active = activeSide === side || activeSide === "both";
+      return (
+        <button
+          type="button"
+          onClick={() => toggle(key)}
+          aria-pressed={isMarked}
+          aria-label={`${side} side — ${isMarked ? "showing, click to unmark" : "mark showing"}`}
+          title={isMarked ? `${side} — click to unmark` : `Mark ${side} showing`}
+          className={`relative flex-1 flex items-center justify-center cursor-pointer transition-colors duration-100 active:bg-black/[0.05] hover:bg-black/[0.02] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-chart-primary print:cursor-default ${
+            active ? "bg-yellow-200/70" : ""
+          }`}
+        >
+          <span aria-hidden="true" className="text-xl font-black leading-none text-neutral-400 select-none pointer-events-none">
+            {side}
           </span>
-        )}
-      </button>
-    );
+          {isMarked && (
+            <span className="absolute inset-0 p-1 pointer-events-none">
+              <HandwrittenX />
+            </span>
+          )}
+        </button>
+      );
+    };
     return (
       <div className="flex w-full min-h-[36px] divide-x-2 divide-black">
         {half(lKey, "L", l)}
@@ -128,58 +136,71 @@ const PathwayReflexStimSheet = ({ checked: externalChecked, onToggle, query }: P
             <React.Fragment key={track.title}>
               {track.reflexes.map((reflex, ri) => {
                 const lateralized = Boolean(reflex.lateralized);
-                const reflexKeys = lateralized
+                const stimLabels = reflex.stims ?? [reflex.stimulus];
+                const rowKeys = lateralized
                   ? [primitiveSideKey(reflex, "L"), primitiveSideKey(reflex, "R")]
-                  : [primitiveStimKey(reflex)];
-                const rowMarked = reflexKeys.some((k) => checked[k]);
+                  : stimLabels.map((_, i) => primitiveStimKeyAt(reflex, i));
+                const rowMarked = rowKeys.some((k) => checked[k]);
                 const isMatch = primitiveReflexMatches(reflex, query ?? "");
                 return (
-                  <tr
-                    key={reflex.short}
-                    id={`prim-row-${reflex.short}`}
-                    className={`break-inside-avoid transition-colors ${
-                      isMatch
-                        ? "bg-yellow-100/80"
-                        : interactive
-                          ? rowMarked
-                            ? "bg-black/[0.04] hover:bg-black/[0.07]"
-                            : "hover:bg-black/[0.03]"
-                          : ""
-                    }`}
-                  >
-                    {ri === 0 ? (
-                      <td
-                        rowSpan={track.reflexes.length}
-                        className={`${track.color} text-white p-1 pl-2 align-top font-black uppercase tracking-wider border-2 border-black border-t-0`}
+                  <React.Fragment key={reflex.short}>
+                    {stimLabels.map((label, si) => (
+                      <tr
+                        key={si}
+                        id={si === 0 ? `prim-row-${reflex.short}` : undefined}
+                        className={`break-inside-avoid transition-colors ${
+                          isMatch
+                            ? "bg-yellow-100/80"
+                            : interactive
+                              ? rowMarked
+                                ? "bg-black/[0.04] hover:bg-black/[0.07]"
+                                : "hover:bg-black/[0.03]"
+                              : ""
+                        }`}
                       >
-                        {track.title}
-                      </td>
-                    ) : null}
-                    <td className="border-2 border-black border-t-0 p-1 pl-2 align-middle font-black">
-                      <Tooltip delayDuration={200}>
-                        <TooltipTrigger asChild>
-                          <Link to="/resources?tab=primitive" className="hover:underline">
-                            {reflex.short} —{" "}
-                            <span className="font-bold uppercase text-[8px] tracking-wider">{reflex.name}</span>
-                          </Link>
-                        </TooltipTrigger>
-                        <TooltipContent side="right" className="rounded-xl max-w-[260px] text-[10px] leading-relaxed bg-foreground text-background border-none shadow-xl">
-                          <p className="font-black uppercase tracking-wider text-[9px] mb-1">{reflex.short} — Inhibition</p>
-                          <p className="font-medium">{reflex.inhibition}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </td>
-                    <td className="border-2 border-black border-t-0 p-1 align-middle">
-                      {reflex.stimulus}
-                    </td>
-                    <td className={`border-2 border-black border-t-0 ${lateralized ? "p-0" : "p-1 text-center align-middle"}`}>
-                      {lateralized ? (
-                        <SideCheck lKey={primitiveSideKey(reflex, "L")} rKey={primitiveSideKey(reflex, "R")} />
-                      ) : (
-                        <StimCheck checkedKey={primitiveStimKey(reflex)} />
-                      )}
-                    </td>
-                  </tr>
+                        {ri === 0 && si === 0 ? (
+                          <td
+                            rowSpan={track.reflexes.reduce((acc, r) => acc + primitiveStimCount(r), 0)}
+                            className={`${track.color} text-white p-1 pl-2 align-top font-black uppercase tracking-wider border-2 border-black border-t-0`}
+                          >
+                            {track.title}
+                          </td>
+                        ) : null}
+                        <td className="border-2 border-black border-t-0 p-1 pl-2 align-middle font-black">
+                          {si === 0 ? (
+                            <Tooltip delayDuration={200}>
+                              <TooltipTrigger asChild>
+                                <Link to="/resources?tab=primitive" className="hover:underline">
+                                  {reflex.short} —{" "}
+                                  <span className="font-bold uppercase text-[8px] tracking-wider">{reflex.name}</span>
+                                </Link>
+                              </TooltipTrigger>
+                              <TooltipContent side="right" className="rounded-xl max-w-[260px] text-[10px] leading-relaxed bg-foreground text-background border-none shadow-xl">
+                                <p className="font-black uppercase tracking-wider text-[9px] mb-1">{reflex.short} — Inhibition</p>
+                                <p className="font-medium">{reflex.inhibition}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <span className="font-black text-[8px] uppercase tracking-wider text-black/30">{reflex.short} · {si + 1}</span>
+                          )}
+                        </td>
+                        <td className="border-2 border-black border-t-0 p-1 align-middle">
+                          {label}
+                        </td>
+                        <td className={`border-2 border-black border-t-0 ${lateralized ? "p-0" : "p-1 text-center align-middle"}`}>
+                          {lateralized ? (
+                            si === 0 ? (
+                              <SideCheck lKey={primitiveSideKey(reflex, "L")} rKey={primitiveSideKey(reflex, "R")} />
+                            ) : null
+                          ) : reflex.stims?.length ? (
+                            <StimCheck checkedKey={primitiveStimKeyAt(reflex, si)} />
+                          ) : (
+                            <StimCheck checkedKey={primitiveStimKey(reflex)} />
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </React.Fragment>
                 );
               })}
             </React.Fragment>
@@ -201,6 +222,16 @@ const PathwayReflexStimSheet = ({ checked: externalChecked, onToggle, query }: P
                       : [cranialStimKey(nerve.id, i)];
                     const rowMarked = lineKeys.some((k) => checked[k]);
                     const isMatch = cranialLineMatches(nerve, line, query ?? "");
+                    const nerveActiveSide: "L" | "R" | "both" | undefined = nerve.isLateralized
+                      ? checked[cranialNerveInhibKey(nerve.id, "L")] && checked[cranialNerveInhibKey(nerve.id, "R")]
+                        ? "both"
+                        : checked[cranialNerveInhibKey(nerve.id, "L")]
+                          ? "L"
+                          : checked[cranialNerveInhibKey(nerve.id, "R")]
+                            ? "R"
+                            : undefined
+                      : undefined;
+                    const nerveInhibited = Boolean(checked[cranialNerveInhibKey(nerve.id)]);
                     return (
                     <tr
                       key={i}
@@ -241,6 +272,39 @@ const PathwayReflexStimSheet = ({ checked: externalChecked, onToggle, query }: P
                               <p className="font-medium">{nerve.reflexPoint}</p>
                             </TooltipContent>
                           </Tooltip>
+                          <div className="mt-1 flex items-center gap-1">
+                            {nerve.isLateralized ? (
+                              <div className="flex divide-x-2 divide-black border-2 border-black rounded-[3px] overflow-hidden">
+                                {(["L", "R"] as const).map((side) => {
+                                  const key = cranialNerveInhibKey(nerve.id, side);
+                                  const marked = Boolean(checked[key]);
+                                  return (
+                                    <button
+                                      key={side}
+                                      type="button"
+                                      onClick={() => toggle(key)}
+                                      aria-pressed={marked}
+                                      title={`${side} ${nerve.name} — ${marked ? "inhibited, click to unmark" : "mark inhibited"}`}
+                                      className="w-6 h-6 relative flex items-center justify-center cursor-pointer transition-colors hover:bg-black/[0.04] active:bg-black/[0.06] print:cursor-default"
+                                    >
+                                      <span className="text-[9px] font-black text-neutral-500">{side}</span>
+                                      {marked && <span className="absolute inset-0 p-0.5 pointer-events-none"><HandwrittenX /></span>}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => toggle(cranialNerveInhibKey(nerve.id))}
+                                aria-pressed={Boolean(checked[cranialNerveInhibKey(nerve.id)])}
+                                title={`${nerve.name} — ${checked[cranialNerveInhibKey(nerve.id)] ? "inhibited, click to unmark" : "mark inhibited"}`}
+                                className="w-6 h-6 border-2 border-black rounded-[3px] relative flex items-center justify-center cursor-pointer transition-colors hover:bg-black/[0.04] active:bg-black/[0.06] print:cursor-default"
+                              >
+                                {checked[cranialNerveInhibKey(nerve.id)] && <span className="absolute inset-0 p-0.5 pointer-events-none"><HandwrittenX /></span>}
+                              </button>
+                            )}
+                          </div>
                         </td>
                       ) : null}
                       <td className="border-2 border-black border-t-0 p-1 align-middle">
@@ -256,9 +320,9 @@ const PathwayReflexStimSheet = ({ checked: externalChecked, onToggle, query }: P
                       </td>
                       <td className={`border-2 border-black border-t-0 ${lateralized ? "p-0" : "p-1 text-center align-middle"}`}>
                         {lateralized ? (
-                          <SideCheck lKey={cranialSideKey(nerve.id, i, "L")} rKey={cranialSideKey(nerve.id, i, "R")} />
+                          <SideCheck lKey={cranialSideKey(nerve.id, i, "L")} rKey={cranialSideKey(nerve.id, i, "R")} activeSide={nerveActiveSide} />
                         ) : (
-                          <StimCheck checkedKey={cranialStimKey(nerve.id, i)} />
+                          <StimCheck checkedKey={cranialStimKey(nerve.id, i)} highlight={nerveInhibited} />
                         )}
                       </td>
                     </tr>

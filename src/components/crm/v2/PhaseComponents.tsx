@@ -35,9 +35,3 @@ export const SectionHeading = ({ icon: Icon, title, badge }: {
     {badge}
   </div>
 );
-
-export const Divider = () => (
-  <div className="flex items-center gap-3 pb-3 border-b border-border">
-    <div className="w-1 h-4 rounded-full bg-muted-foreground/20" />
-  </div>
-);

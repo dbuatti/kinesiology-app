@@ -13,6 +13,12 @@ import { safeParse } from "@/utils/safe-json";
 import { showSuccess, showError } from "@/utils/toast";
 import EditableField from "@/components/shared/EditableField";
 import PathwayFindingsList from "@/components/crm/PathwayFindingsList";
+import StimResultsSummary from "@/components/crm/StimResultsSummary";
+import { usePrimitiveReflexTests } from "@/hooks/usePrimitiveReflexTests";
+import { useCranialNerveTests } from "@/hooks/useCranialNerveTests";
+import { CRANIAL_NERVES, CranialNerve } from "@/data/cranial-nerve-data";
+import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
+import { getInhibitedFindings } from "@/components/crm/v2/v2-utils";
 import { PhaseHeader } from "@/components/crm/v2/PhaseComponents";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
@@ -24,12 +30,23 @@ import AppointmentForm from "@/components/crm/AppointmentForm";
 import CompactAvailabilityPicker from "@/components/crm/CompactAvailabilityPicker";
 import type { PhaseProps } from "@/components/crm/v2/v2-types";
 
+interface InhibitedItem {
+  id: string;
+  name: string;
+  category: string;
+  type: 'pattern' | 'muscle';
+  status: string;
+  side?: 'L' | 'R';
+}
+
 const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
   const [muscleTests, setMuscleTests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [clearingId, setClearingId] = useState<string | null>(null);
   const [bookNextOpen, setBookNextOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{ date: Date; time: string; slotTime: string } | null>(null);
+  const { tests: reflexTests } = usePrimitiveReflexTests(appointment.id, appointment.priority_pattern);
+  const { tests: nerveTests } = useCranialNerveTests(appointment.id, appointment.priority_pattern);
 
   const metadata = useMemo(() => {
     if (!appointment.metadata) return {};
@@ -60,17 +77,9 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
   }, [fetchMuscleTests]);
 
   const inhibitedItems = useMemo(() => {
-    const items: { id: string; name: string; category: string; type: 'pattern' | 'muscle'; status: string; side?: 'L' | 'R' }[] = [];
-    const pattern = safeParse(appointment.priority_pattern, {} as any);
-    Object.entries(pattern).forEach(([catKey, categoryItems]: [string, any]) => {
-      Object.entries(categoryItems).forEach(([name, status]) => {
-        if (status === 'Inhibited' || status === 'Inhibition' || status === 'Hypertonic') {
-          const sideMatch = name.match(/\(([LR])\)$/);
-          const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
-          const baseName = name.replace(/ \([LR]\)$/, '');
-          items.push({ id: `${catKey}-${name}`, name: baseName, category: catKey, type: 'pattern', status: status as string, side });
-        }
-      });
+    const items: InhibitedItem[] = [];
+    getInhibitedFindings(appointment.priority_pattern).forEach(f => {
+      items.push({ id: `${f.catKey}-${f.fullName}`, name: f.baseName, category: f.catKey, type: 'pattern', status: f.status, side: f.side });
     });
     muscleTests.forEach(test => {
       if (test.status !== 'Normotonic') {
@@ -89,6 +98,37 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
     return inhibitedItems.filter(item => !clearedFindings.has(item.id));
   }, [inhibitedItems, clearedFindings]);
 
+  const stimLookup = useMemo(() => {
+    const map: Record<string, { nerve?: CranialNerve; reflexId?: string; reflexName?: string; stimResults: Record<string, boolean> }> = {};
+    CRANIAL_NERVES.forEach((n) => {
+      const test = nerveTests.find((t) => t.nerve_id === n.id.toString());
+      if (!test?.stim_results) return;
+      map[`${n.name}: ${n.latinName}`] = { nerve: n, stimResults: test.stim_results };
+    });
+    reflexTests.forEach((t) => {
+      const reflex = PRIMITIVE_REFLEXES.find((r) => r.id === t.reflex_id);
+      if (!reflex || !t.stim_results) return;
+      map[reflex.name] = { reflexId: reflex.id, reflexName: reflex.name, stimResults: t.stim_results };
+    });
+    return map;
+  }, [nerveTests, reflexTests]);
+
+  const ItemStimSummary = ({ item }: { item: InhibitedItem }) => {
+    const stim = stimLookup[item.name];
+    if (!stim) return null;
+    return (
+      <StimResultsSummary
+        kind={stim.nerve ? "nerve" : "reflex"}
+        nerve={stim.nerve}
+        reflexId={stim.reflexId}
+        reflexName={stim.reflexName}
+        stimResults={stim.stimResults}
+        filterSide={item.side}
+        className="mt-2"
+      />
+    );
+  };
+
   const clearedItems = useMemo(() => {
     return inhibitedItems.filter(item => clearedFindings.has(item.id));
   }, [inhibitedItems, clearedFindings]);
@@ -102,7 +142,11 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
         await fetchMuscleTests();
       }
       const newCleared = [...(metadata.cleared_findings || []), item.id];
-      await saveField('metadata', { ...metadata, cleared_findings: newCleared });
+      const clearedMuscleStatus = {
+        ...(metadata.cleared_muscle_status || {}),
+        ...(item.type === 'muscle' ? { [item.id]: item.status } : {}),
+      };
+      await saveField('metadata', { ...metadata, cleared_findings: newCleared, cleared_muscle_status: clearedMuscleStatus });
       showSuccess(`${item.name} marked as Clear.`);
       onUpdate();
     } catch {
@@ -115,8 +159,18 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
   const handleUndoClear = async (item: any) => {
     setClearingId(item.id);
     try {
+      if (item.type === 'muscle') {
+        const priorStatus = (metadata.cleared_muscle_status || {})[item.id];
+        if (priorStatus) {
+          const { error } = await supabase.from('muscle_tests').update({ status: priorStatus }).eq('id', item.id);
+          if (error) throw error;
+        }
+        await fetchMuscleTests();
+      }
       const newCleared = (metadata.cleared_findings || []).filter((id: string) => id !== item.id);
-      await saveField('metadata', { ...metadata, cleared_findings: newCleared });
+      const clearedMuscleStatus = { ...(metadata.cleared_muscle_status || {}) };
+      delete clearedMuscleStatus[item.id];
+      await saveField('metadata', { ...metadata, cleared_findings: newCleared, cleared_muscle_status: clearedMuscleStatus });
       showSuccess(`${item.name} restored.`);
       onUpdate();
     } catch {
@@ -134,7 +188,7 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
     return Brain;
   };
 
-  const hasSnsResets = !!(appointment.harmonic_rocking_notes || appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes);
+  const hasSnsResets = !!(appointment.lymphatic_notes || appointment.harmonic_rocking_notes || appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes);
 
   return (
     <div className="space-y-12">
@@ -181,6 +235,7 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
                         )}
                       </div>
                       <p className="text-[10px] font-medium text-muted-foreground">{item.status}</p>
+                      <ItemStimSummary item={item} />
                     </div>
                   </div>
                   <Button
@@ -245,6 +300,7 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
                           )}
                         </div>
                         <p className="text-[9px] font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1"><CheckCircle2 size={8} /> Cleared</p>
+                        <ItemStimSummary item={item} />
                       </div>
                     </div>
                     <Button
@@ -289,6 +345,7 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
             {hasSnsResets && (
               <div className="space-y-2">
                 <p className="text-[10px] font-medium text-muted-foreground">SNS Resets</p>
+                {appointment.lymphatic_notes && <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1"><CheckCircle2 size={12} className="text-chart-emerald" /> Lymphatic</p>}
                 {appointment.harmonic_rocking_notes && <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1"><CheckCircle2 size={12} className="text-chart-emerald" /> Harmonic Rocking</p>}
                 {appointment.t1_reset_notes && <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1"><CheckCircle2 size={12} className="text-chart-emerald" /> T1 Reset</p>}
                 {appointment.diaphragm_reset_notes && <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1"><CheckCircle2 size={12} className="text-chart-emerald" /> Diaphragm Reset</p>}

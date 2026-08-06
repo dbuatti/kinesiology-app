@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -35,7 +35,7 @@ interface PeaceWizardProps {
   onUpdate: () => void;
   saveField: (field: string, value: any) => Promise<void>;
   updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | 'Unsure' | null, side?: 'L' | 'R') => Promise<void>;
-  onJumpToPhase: (index: number) => void;
+  onJumpToPhase?: (index: number) => void;
   onFinalise?: () => void;
 }
 
@@ -72,6 +72,23 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
     scrollToTop();
   }, [scrollToTop]);
 
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        goNext();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        goBack();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [goNext, goBack]);
+
   const jumpTo = useCallback((index: number) => {
     setPhaseDirection(index > activePhase ? 'forward' : 'backward');
     setActivePhase(index);
@@ -98,6 +115,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
           variant="outline"
           onClick={goBack}
           disabled={activePhase === 0}
+          title="Previous phase (←)"
           className="rounded-xl h-10 px-5 font-medium"
         >
           <ChevronLeft size={18} className="mr-1.5" /> Back
@@ -130,6 +148,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
         {activePhase < PEACE_PHASES.length - 1 ? (
           <Button
             onClick={goNext}
+            title="Next phase (→)"
             className="rounded-xl h-10 px-5 font-medium"
           >
             Next <ChevronRight size={18} className="ml-1.5" />

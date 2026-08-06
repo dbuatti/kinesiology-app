@@ -1,7 +1,8 @@
 
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { usePrivacyMode } from "@/hooks/use-privacy-mode";
+import { setIpadMode } from "@/hooks/use-ipad-mode";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -40,6 +41,7 @@ import {
   Layers,
   Mic,
   Briefcase,
+  Tablet,
 } from "lucide-react";
 
 interface NavItem {
@@ -130,6 +132,7 @@ const NAV_GROUPS: NavGroup[] = [
 
 const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { isPrivate, togglePrivacy } = usePrivacyMode();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     "Identity Work": false,
@@ -319,6 +322,20 @@ const Sidebar = () => {
 
       {/* Bottom Actions */}
       <div className="shrink-0 border-t border-border py-3 px-3 space-y-0.5">
+        <button
+          onClick={() => {
+            setIpadMode(true);
+            navigate('/practice/clinical-hub');
+          }}
+          title={collapsed ? "iPad Mode" : undefined}
+          className={cn(
+            "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-muted transition-colors",
+            collapsed && "justify-center px-2"
+          )}
+        >
+          <Tablet size={16} className="text-chart-emerald shrink-0" />
+          <span className={cn("transition-opacity duration-200", collapsed && "hidden")}>iPad Mode</span>
+        </button>
         <button
           onClick={togglePrivacy}
           title={collapsed ? (isPrivate ? "Disable Privacy" : "Enable Privacy") : undefined}

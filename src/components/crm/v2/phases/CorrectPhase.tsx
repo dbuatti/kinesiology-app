@@ -9,13 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import EditableField from "@/components/shared/EditableField";
 import PathwayLogicWizard from "@/components/crm/PathwayLogicWizard";
 import { PhaseHeader } from "@/components/crm/v2/PhaseComponents";
-import { CATEGORY_LABELS } from "@/components/crm/v2/categoryConstants";
+import { getInhibitedFindings, findingLabel } from "@/components/crm/v2/v2-utils";
 import { safeParse } from "@/utils/safe-json";
 import type { PhaseProps } from "@/components/crm/v2/v2-types";
 
 const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
   const [pathModalOpen, setPathModalOpen] = useState(false);
   const [customPathway, setCustomPathway] = useState("");
+  const [customMode, setCustomMode] = useState(false);
 
   const meta = useMemo(() => {
     if (!appointment.metadata) return {};
@@ -32,35 +33,41 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
     }
   }, [priorityPathway]);
 
-  const pattern = safeParse(appointment.priority_pattern, {} as any);
   const pathwayFindings = useMemo(() => {
-    const items: { value: string; label: string; category: string }[] = [];
-    Object.entries(pattern).forEach(([catKey, categoryItems]: [string, any]) => {
-      Object.entries(categoryItems).forEach(([name, status]) => {
-        if (status === 'Inhibited' || status === 'Inhibition' || status === 'Hypertonic') {
-          const sideMatch = name.match(/\(([LR])\)$/);
-          const side = sideMatch ? sideMatch[1] as 'L' | 'R' : undefined;
-          const baseName = name.replace(/ \([LR]\)$/, '');
-          const catLabel = CATEGORY_LABELS[catKey] || catKey;
-          const val = `${baseName}${side ? ` (${side})` : ''} — ${catLabel}`;
-          items.push({ value: val, label: val, category: catKey });
-        }
-      });
-    });
-    return items;
-  }, [pattern]);
+    return getInhibitedFindings(appointment.priority_pattern).map(f => ({
+      value: findingLabel(f.catKey, f.baseName, f.side),
+      category: f.catKey,
+    }));
+  }, [appointment.priority_pattern]);
 
   const initialFinding = useMemo(() => {
     if (!priorityPathway) return undefined;
     return priorityPathway.split(' — ')[0];
   }, [priorityPathway]);
 
+  const selectPathway = async (val: string) => {
+    if (val === 'CUSTOM') {
+      setCustomMode(true);
+      return;
+    }
+    setCustomMode(false);
+    await saveField('metadata', { ...meta, priority_pathway: val });
+    onUpdate();
+  };
+
+  const saveCustom = async () => {
+    if (!customPathway.trim()) return;
+    setCustomMode(false);
+    await saveField('metadata', { ...meta, priority_pathway: customPathway.trim() });
+    onUpdate();
+  };
+
   return (
     <div className="space-y-10">
       <PhaseHeader icon={Target} title="Correct" description="Determine afferent vs efferent, identify coordinates, and apply the correction." />
 
       {/* Priority Pathway Banner */}
-      {priorityPathway && (
+      {priorityPathway && priorityPathway !== 'CUSTOM' && (
         <div className="flex items-center gap-3 p-4 bg-destructive/5 border border-destructive/20 rounded-xl">
           <div className="w-9 h-9 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
             <Target size={16} />
@@ -73,7 +80,15 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
             variant="ghost"
             size="sm"
             onClick={() => setPathModalOpen(true)}
-            className="rounded-lg h-8 w-8 p-0 text-muted-foreground hover:bg-destructive/10"
+            className="rounded-lg h-8 px-2.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:bg-destructive/10 shrink-0"
+          >
+            Change
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setPathModalOpen(true)}
+            className="rounded-lg h-8 w-8 p-0 text-muted-foreground hover:bg-destructive/10 shrink-0"
           >
             <Info size={16} />
           </Button>
@@ -81,16 +96,13 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
       )}
 
       <div>
-        {/* Inhibition/Hypertonic Finding Selector */}
-        {pathwayFindings.length > 0 && (
+        {/* Inhibition/Hypertonic Finding Selector (hidden once a real pathway is set) */}
+        {pathwayFindings.length > 0 && (!priorityPathway || isCustom || customMode) && (
           <div className="mb-4 p-3 bg-muted/50 rounded-xl border border-border">
             <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Select Finding to Correct</p>
             <Select
-              value={priorityPathway || ''}
-              onValueChange={async (val) => {
-                await saveField('metadata', { ...meta, priority_pathway: val });
-                onUpdate();
-              }}
+              value={priorityPathway && priorityPathway !== 'CUSTOM' ? priorityPathway : ''}
+              onValueChange={selectPathway}
             >
               <SelectTrigger className="w-full h-10 rounded-lg border-border text-xs">
                 <SelectValue placeholder="Choose an inhibited finding..." />
@@ -98,7 +110,7 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
               <SelectContent className="rounded-xl border-border max-h-[200px]">
                 {pathwayFindings.map(f => (
                   <SelectItem key={f.value} value={f.value} className="rounded-lg py-2 text-xs font-medium">
-                    {f.label}
+                    {f.value}
                   </SelectItem>
                 ))}
                 <SelectItem value="CUSTOM" className="rounded-lg py-2 text-xs font-medium text-chart-primary">
@@ -106,7 +118,7 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
                 </SelectItem>
               </SelectContent>
             </Select>
-            {priorityPathway === 'CUSTOM' && (
+            {(isCustom || customMode) && (
               <div className="flex items-center gap-2 mt-2">
                 <Input
                   value={customPathway}
@@ -118,10 +130,7 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
                 <Button
                   size="sm"
                   disabled={!customPathway.trim()}
-                  onClick={async () => {
-                    await saveField('metadata', { ...meta, priority_pathway: customPathway.trim() });
-                    onUpdate();
-                  }}
+                  onClick={saveCustom}
                   className="rounded-lg h-9 px-3 text-xs font-medium"
                 >
                   Save
@@ -196,11 +205,10 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
             <div className="space-y-2">
               <p className="text-xs font-medium text-muted-foreground">Correction Target</p>
               <Select
-                value={priorityPathway}
-                onValueChange={async (val) => {
+                value={priorityPathway && priorityPathway !== 'CUSTOM' ? priorityPathway : ''}
+                onValueChange={(val) => {
                   setCustomPathway("");
-                  await saveField('metadata', { ...meta, priority_pathway: val });
-                  onUpdate();
+                  selectPathway(val);
                 }}
               >
                 <SelectTrigger className="w-full h-12 rounded-xl border-border">
@@ -209,7 +217,7 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
                 <SelectContent className="rounded-xl border-border">
                   {pathwayFindings.map(f => (
                     <SelectItem key={f.value} value={f.value} className="rounded-lg py-2.5 font-medium">
-                      {f.label}
+                      {f.value}
                     </SelectItem>
                   ))}
                   <SelectItem value="CUSTOM" className="rounded-lg py-2.5 font-medium text-chart-primary">
@@ -217,7 +225,7 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
                   </SelectItem>
                 </SelectContent>
               </Select>
-              {isCustom && (
+              {(isCustom || customMode) && (
                 <div className="flex items-center gap-2 mt-2">
                   <Input
                     value={customPathway}
@@ -229,10 +237,7 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
                   <Button
                     size="sm"
                     disabled={!customPathway.trim()}
-                    onClick={async () => {
-                      await saveField('metadata', { ...meta, priority_pathway: customPathway.trim() });
-                      onUpdate();
-                    }}
+                    onClick={saveCustom}
                     className="rounded-xl h-10 px-4 text-xs font-medium"
                   >
                     Save

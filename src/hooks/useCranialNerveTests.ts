@@ -51,10 +51,10 @@ export function useCranialNerveTests(
         
         // Wait for the priority pattern to update and get the absolute latest pattern
         if (isLat && !side) {
-          await updatePriorityPattern('cranialNerves', nerveName, updates.is_inhibited ? 'Inhibited' : 'Clear', 'L');
-          latestPattern = await updatePriorityPattern('cranialNerves', nerveName, updates.is_inhibited ? 'Inhibited' : 'Clear', 'R');
+          await updatePriorityPattern('cranialNerves', nerveName, updates.is_inhibited ? 'Inhibited' : null, 'L');
+          latestPattern = await updatePriorityPattern('cranialNerves', nerveName, updates.is_inhibited ? 'Inhibited' : null, 'R');
         } else if (side) {
-          latestPattern = await updatePriorityPattern('cranialNerves', nerveName, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
+          latestPattern = await updatePriorityPattern('cranialNerves', nerveName, updates.is_inhibited ? 'Inhibited' : null, side);
         }
         
         // Determine if the nerve is still inhibited globally (either L or R) using the latest pattern
@@ -139,7 +139,9 @@ export function useCranialNerveTests(
   ) => {
     const existing = tests.find(t => t.nerve_id === nerveId);
     const current = (existing && existing.stim_results) || {};
-    const next = { ...current, [stimKey]: checked };
+    const next = { ...current };
+    if (checked) next[stimKey] = true;
+    else delete next[stimKey];
     const isInhibited = Object.values(next).some(Boolean);
     await updateTest(nerveId, {
       stim_results: next,

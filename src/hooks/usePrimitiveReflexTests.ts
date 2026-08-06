@@ -50,12 +50,12 @@ export function usePrimitiveReflexTests(
         const isLat = reflexData?.isLateralized;
 
         if (isLat && !side) {
-          await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : 'Clear', 'L');
-          latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : 'Clear', 'R');
+          await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : null, 'L');
+          latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : null, 'R');
         } else if (side) {
-          latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : 'Clear', side);
+          latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : null, side);
         } else {
-          latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : 'Clear');
+          latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : null);
         }
         
         // Determine if the reflex is still inhibited globally (either L or R) using the latest pattern
@@ -146,7 +146,9 @@ export function usePrimitiveReflexTests(
   ) => {
     const existing = tests.find(t => t.reflex_id === reflexId);
     const current = (existing && existing.stim_results) || {};
-    const next = { ...current, [stimKey]: checked };
+    const next = { ...current };
+    if (checked) next[stimKey] = true;
+    else delete next[stimKey];
     const isInhibited = Object.values(next).some(Boolean);
     await updateTest(
       reflexId,

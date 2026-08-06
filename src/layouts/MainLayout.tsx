@@ -7,11 +7,14 @@ import BackToTop from '@/components/shared/BackToTop';
 import UpcomingMarquee from '@/components/crm/UpcomingMarquee';
 import FooterLinks from '@/components/crm/FooterLinks';
 import { useAppMode } from '@/components/ModeProvider';
+import { useIpadMode } from '@/hooks/use-ipad-mode';
 import { cn } from '@/lib/utils';
 import { showSuccess } from '@/utils/toast';
+import { Tablet } from 'lucide-react';
 
 const MainLayout = () => {
   const { mode, setMode } = useAppMode();
+  const { enabled: ipadMode, toggle: toggleIpadMode } = useIpadMode();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -77,6 +80,19 @@ const MainLayout = () => {
   const shouldHideHeader = (isFullScreen && isInSession) || isDocView;
   const shouldHideSidebar = shouldHideHeader || isDocView;
 
+  // iPad Mode: non-session, non-practice routes funnel to the Clinical Hub so
+  // the practitioner can just work with clients, free of the sidebar.
+  const shouldRedirectToHub =
+    ipadMode &&
+    !location.pathname.startsWith('/practice/') &&
+    !location.pathname.startsWith('/appointments/');
+
+  useEffect(() => {
+    if (shouldRedirectToHub) {
+      navigate('/practice/clinical-hub', { replace: true });
+    }
+  }, [shouldRedirectToHub, navigate]);
+
   return (
     <div className="flex h-screen transition-all duration-1000 relative overflow-hidden bg-background">
       {/* BACKGROUND ORBS */}
@@ -94,7 +110,22 @@ const MainLayout = () => {
 
       <div className="relative z-10 flex h-full w-full">
         {/* Sidebar */}
-        {!shouldHideSidebar && <Sidebar />}
+        {!shouldHideSidebar && !ipadMode && <Sidebar />}
+
+        {/* iPad Mode Exit Button */}
+        {ipadMode && !shouldHideHeader && (
+          <button
+            onClick={() => {
+              toggleIpadMode();
+              showSuccess("iPad Mode Disabled — sidebar restored");
+            }}
+            title="Exit iPad Mode — restore the full sidebar"
+            className="fixed bottom-6 left-6 z-40 flex items-center gap-2 px-4 h-12 rounded-2xl bg-primary text-primary-foreground shadow-xl hover:bg-primary/90 transition-colors"
+          >
+            <Tablet size={18} />
+            <span className="text-[10px] font-bold uppercase tracking-wider">iPad</span>
+          </button>
+        )}
 
         {/* Main Content Area */}
         <div className="flex flex-col flex-1 min-w-0 h-full">

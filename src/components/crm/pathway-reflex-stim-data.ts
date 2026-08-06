@@ -7,6 +7,7 @@ export interface PrimitiveGridReflex {
   stimulus: string;
   inhibition: string;
   lateralized?: boolean;
+  stims?: string[];
 }
 
 export interface PrimitiveTrack {
@@ -46,6 +47,10 @@ export const PRIMITIVE_TRACKS: PrimitiveTrack[] = [
         short: "TLR",
         name: "Tonic Labyrinthine Reflex",
         stimulus: "Supine: patient actively flexes OR extends BOTH head + lumbar simultaneously",
+        stims: [
+          "Flexion — actively flex head + lumbar simultaneously",
+          "Extension — actively extend head + lumbar simultaneously",
+        ],
         inhibition:
           "Flexion → all extensors inhibit (erectors, glutes, hamstrings, triceps). Extension → all flexors inhibit (hip flexors, biceps, abs)",
       },
@@ -54,6 +59,10 @@ export const PRIMITIVE_TRACKS: PrimitiveTrack[] = [
         short: "STNR",
         name: "Symmetric Tonic Neck Reflex",
         stimulus: "Seated: tip neck into flexion, then extension",
+        stims: [
+          "Flexion — tip neck into flexion",
+          "Extension — tip neck into extension",
+        ],
         inhibition:
           "Neck flexion → neck extensors + triceps + hamstrings inhibit. Neck extension → neck flexors + biceps + glutes inhibit",
       },
@@ -134,7 +143,8 @@ export const MULTI_STIMS: Record<number, string[]> = {
     "Shine light into the eye — direct",
     "From above",
     "From below",
-    "From the sides",
+    "From the lateral side",
+    "From the medial side",
   ],
   3: [
     "Move eyes up",
@@ -195,13 +205,13 @@ export const nerveStimLines = (nerve: CranialNerve): string[] =>
   MULTI_STIMS[nerve.id] ?? [nerve.stimulus];
 
 export const LATERAL_STIMS: Record<number, number[]> = {
-  1: [0],
-  2: [0, 1, 2, 3],
-  3: [5],
+  2: [0, 1, 2, 3, 4],
+  3: [0, 1, 2, 3, 4, 5],
   4: [0],
-  5: [0, 1, 2],
+  5: [0, 1, 2, 4],
+  6: [0, 1],
   7: [0, 1, 2],
-  8: [0],
+  8: [0, 1, 2, 3, 4, 5, 6],
   10: [5],
   11: [0, 1],
 };
@@ -225,11 +235,20 @@ export const primitiveStimKey = (reflex: PrimitiveGridReflex): string =>
 export const primitiveSideKey = (reflex: PrimitiveGridReflex, side: "L" | "R"): string =>
   `prim-${reflex.short}-${side}`;
 
+export const primitiveStimCount = (reflex: PrimitiveGridReflex): number =>
+  reflex.stims?.length ?? 1;
+
+export const primitiveStimKeyAt = (reflex: PrimitiveGridReflex, index: number): string =>
+  `prim-${reflex.short}-${index}`;
+
 export const cranialStimKey = (nerveId: number, index: number): string =>
   `cn-${nerveId}-${index}`;
 
 export const cranialSideKey = (nerveId: number, index: number, side: "L" | "R"): string =>
   `cn-${nerveId}-${index}-${side}`;
+
+export const cranialNerveInhibKey = (nerveId: number, side?: "L" | "R"): string =>
+  side ? `cn-${nerveId}-INHIB-${side}` : `cn-${nerveId}-INHIB`;
 
 export const primitiveReflexMatches = (reflex: PrimitiveGridReflex, query: string): boolean => {
   const q = query.trim().toLowerCase();
@@ -243,4 +262,60 @@ export const cranialLineMatches = (nerve: CranialNerve, line: string, query: str
   const q = query.trim().toLowerCase();
   if (!q) return false;
   return [nerve.name, nerve.latinName, line].some((t) => t.toLowerCase().includes(q));
+};
+
+export interface MarkedStim {
+  label: string;
+  side?: "L" | "R";
+}
+
+export const findGridReflex = (id: string, name?: string): PrimitiveGridReflex | undefined =>
+  PRIMITIVE_TRACKS.flatMap((t) => t.reflexes).find(
+    (r) => r.id === id || (name && r.name === name)
+  );
+
+export const describePrimitiveStims = (
+  reflexId: string,
+  reflexName: string,
+  stimResults: Record<string, boolean> | undefined | null
+): MarkedStim[] => {
+  if (!stimResults) return [];
+  const reflex = findGridReflex(reflexId, reflexName);
+  if (!reflex) return [];
+  const entries: MarkedStim[] = [];
+  if (reflex.lateralized) {
+    (["L", "R"] as const).forEach((side) => {
+      const key = primitiveSideKey(reflex, side);
+      if (stimResults[key]) entries.push({ label: reflex.stimulus, side });
+    });
+  } else if (reflex.stims?.length) {
+    reflex.stims.forEach((label, i) => {
+      const key = primitiveStimKeyAt(reflex, i);
+      if (stimResults[key]) entries.push({ label });
+    });
+  } else {
+    const key = primitiveStimKey(reflex);
+    if (stimResults[key]) entries.push({ label: reflex.stimulus });
+  }
+  return entries;
+};
+
+export const describeNerveStims = (
+  nerve: CranialNerve,
+  stimResults: Record<string, boolean> | undefined | null
+): MarkedStim[] => {
+  if (!stimResults) return [];
+  const entries: MarkedStim[] = [];
+  nerveStimLines(nerve).forEach((line, i) => {
+    if (isLateralStim(nerve.id, i)) {
+      (["L", "R"] as const).forEach((side) => {
+        const key = cranialSideKey(nerve.id, i, side);
+        if (stimResults[key]) entries.push({ label: line, side });
+      });
+    } else {
+      const key = cranialStimKey(nerve.id, i);
+      if (stimResults[key]) entries.push({ label: line });
+    }
+  });
+  return entries;
 };

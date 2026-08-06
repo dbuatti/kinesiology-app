@@ -39,7 +39,7 @@ const PageHeader = ({
           <div className="flex items-center gap-4 md:gap-6">
             {Icon && (
               <div className={cn(
-                "w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-[1rem] bg-card text-primary-foreground flex items-center justify-center shrink-0 dark:bg-card dark:text-foreground shadow-xl transition-transform hover:scale-105 duration-500",
+                "w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-[1rem] bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-xl transition-transform hover:scale-105 duration-500",
                 iconClassName
               )}>
                 <Icon size={20} className="md:w-6 md:h-6" />

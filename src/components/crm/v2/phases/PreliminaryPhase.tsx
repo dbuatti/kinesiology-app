@@ -240,14 +240,17 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
               <div>
                 <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Cranial Nerves</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
-                  {CRANIAL_NERVES.map(n => n.isLateralized ? (
-                    <Fragment key={n.name}>
-                      <CheckItem category="cranialNerves" name={n.name} side="L" pattern={pattern} onToggle={quickToggle} />
-                      <CheckItem category="cranialNerves" name={n.name} side="R" pattern={pattern} onToggle={quickToggle} />
-                    </Fragment>
-                  ) : (
-                    <CheckItem key={n.name} category="cranialNerves" name={n.name} pattern={pattern} onToggle={quickToggle} />
-                  ))}
+                  {CRANIAL_NERVES.map(n => {
+                    const nerveName = `${n.name}: ${n.latinName}`;
+                    return n.isLateralized ? (
+                      <Fragment key={n.name}>
+                        <CheckItem category="cranialNerves" name={nerveName} side="L" pattern={pattern} onToggle={quickToggle} />
+                        <CheckItem category="cranialNerves" name={nerveName} side="R" pattern={pattern} onToggle={quickToggle} />
+                      </Fragment>
+                    ) : (
+                      <CheckItem key={n.name} category="cranialNerves" name={nerveName} pattern={pattern} onToggle={quickToggle} />
+                    );
+                  })}
                 </div>
               </div>
 

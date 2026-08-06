@@ -1,5 +1,5 @@
 import { useState, useEffect, type MouseEvent } from "react";
-import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { getClientRollups } from "@/utils/crm-utils";
@@ -7,11 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  ArrowLeft, Mail, Phone, MapPin, Calendar, 
+  ArrowLeft, Mail, Phone, MapPin,
   Loader2, Briefcase, Heart, Baby,
-  Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Clock, Brain,
-  LayoutDashboard, History, ArrowRight, Copy, Check, Sparkles, Plus, Link as LinkIcon,
-  Zap, Send, ShieldCheck, ExternalLink, RefreshCw, ShieldAlert, Info, User, Star, CreditCard, DollarSign, QrCode
+  Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Brain,
+  LayoutDashboard, History, ArrowRight, Sparkles, Plus, Link as LinkIcon,
+  Zap, Send, ShieldCheck, ExternalLink, RefreshCw, ShieldAlert, Info, User, CreditCard, LayoutGrid
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -41,9 +41,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientProgressTab from "@/components/crm/ClientProgressTab";
 import ClientProfileCard from "@/components/crm/ClientProfileCard";
 import AppLayout from "@/components/crm/AppLayout";
-import { generateAICasePrompt, generateSessionSummary } from "@/utils/summary-generator";
+import { generateAICasePrompt } from "@/utils/summary-generator";
 import QuickAssessmentModal from "@/components/crm/QuickAssessmentModal";
 import PageHeader from "@/components/shared/PageHeader";
+import { useClientGridData } from "@/hooks/useClientGridData";
+import ClientGridSummaryTab from "@/components/crm/ClientGridSummaryTab";
+import ClientAppointmentCard from "@/components/crm/ClientAppointmentCard";
 
 const ClientDetailPage = () => {
   const { id } = useParams();
@@ -56,7 +59,6 @@ const ClientDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [appOpen, setAppOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [copiedField, setCopiedField] = useState<string | null>(null);
   const [aiCopying, setAiCopying] = useState(false);
   const [linkCopying, setLinkCopying] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -70,6 +72,7 @@ const ClientDetailPage = () => {
   const [contactLogNote, setContactLogNote] = useState("");
   const [savingContact, setSavingContact] = useState(false);
   const { addRecentClient } = useRecentClients();
+  const { gridFor } = useClientGridData(appointments);
 
   const fetchClientData = async () => {
     try {
@@ -195,12 +198,6 @@ const ClientDetailPage = () => {
     }
   };
 
-  const handleCopy = (text: string, field: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedField(field);
-    setTimeout(() => setCopiedField(null), 2000);
-  };
-
   const handleCopyOnboardingLink = () => {
     if (!client) return;
     setLinkCopying(true);
@@ -282,14 +279,6 @@ const ClientDetailPage = () => {
     setTimeout(() => setAiCopying(false), 2000);
   };
 
-  const handleCopyFullSummary = (app: any) => {
-    if (!client) return;
-    const fullApp = { ...app, clients: client };
-    const summary = generateSessionSummary(fullApp);
-    navigator.clipboard.writeText(summary);
-    showSuccess("Full session summary copied!");
-  };
-
   const executeDelete = async () => {
     setShowDeleteConfirm(false);
     try {
@@ -341,7 +330,7 @@ const ClientDetailPage = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-muted border-border text-foreground hover:bg-muted rounded-xl font-semibold text-[10px] uppercase tracking-wider h-10 px-4"
+                className="bg-muted border-border text-foreground rounded-xl font-semibold text-[10px] uppercase tracking-wider h-10 px-4"
                 onClick={() => navigate("/clients")}
               >
                 <ArrowLeft size={14} className="mr-2" /> Back
@@ -349,7 +338,7 @@ const ClientDetailPage = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-muted border-border text-chart-primary hover:bg-muted rounded-xl font-semibold text-[10px] uppercase tracking-wider h-10 px-4"
+                className="bg-muted border-border text-chart-primary rounded-xl font-semibold text-[10px] uppercase tracking-wider h-10 px-4"
                 onClick={() => setAssessmentModal({ open: true, type: 'bolt' })}
               >
                 <FlaskConical size={14} className="mr-2" /> Log BOLT
@@ -357,35 +346,15 @@ const ClientDetailPage = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-muted border-border text-chart-destructive hover:bg-muted rounded-xl font-semibold text-[10px] uppercase tracking-wider h-10 px-4"
+                className="bg-muted border-border text-chart-destructive rounded-xl font-semibold text-[10px] uppercase tracking-wider h-10 px-4"
                 onClick={() => setAssessmentModal({ open: true, type: 'coherence' })}
               >
                 <Activity size={14} className="mr-2" /> Log COH
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-muted border-border text-chart-primary hover:bg-muted rounded-xl font-medium h-10"
-                onClick={handleSendOnboardingEmail}
-                disabled={sendingEmail || !client.email}
-              >
-                {sendingEmail ? <Loader2 size={16} className="mr-2 animate-spin" /> : <Send size={16} className="mr-2" />}
-                Send Onboarding
-              </Button>
-              {client.notion_link && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-muted border-border text-chart-primary hover:bg-muted rounded-xl font-semibold text-[10px] uppercase tracking-wider h-10 px-4"
-                  onClick={() => window.open(client.notion_link, '_blank')}
-                >
-                  <ExternalLink size={14} className="mr-2" /> Open in Notion
-                </Button>
-              )}
               <Dialog open={editOpen} onOpenChange={setEditOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="bg-card rounded-xl border-border h-10">
-                    <Edit3 size={16} className="mr-2" /> Edit Profile
+                  <Button variant="outline" size="sm" className="bg-muted rounded-xl border-border h-10 px-4 font-semibold text-[10px] uppercase tracking-wider">
+                    <Edit3 size={14} className="mr-2" /> Edit Profile
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto rounded-xl p-0">
@@ -412,6 +381,22 @@ const ClientDetailPage = () => {
                       </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="rounded-xl p-2 shadow-sm border-none bg-card">
+                      <DropdownMenuItem
+                        onClick={handleSendOnboardingEmail}
+                        disabled={sendingEmail || !client.email}
+                        className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"
+                      >
+                        {sendingEmail ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} className="text-chart-primary" />}
+                        Send Onboarding
+                      </DropdownMenuItem>
+                      {client.notion_link && (
+                        <DropdownMenuItem
+                          onClick={() => window.open(client.notion_link!, '_blank')}
+                          className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3"
+                        >
+                          <ExternalLink size={16} className="text-chart-primary" /> Open in Notion
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem onClick={handleCopyOnboardingLink} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
                         <LinkIcon size={16} className="text-chart-primary" /> Copy Onboarding Link
                       </DropdownMenuItem>
@@ -432,15 +417,18 @@ const ClientDetailPage = () => {
         />
 
         <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 h-14 bg-muted p-1.5 rounded-xl mb-8">
-            <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
+          <TabsList className="grid w-full grid-cols-4 h-14 bg-muted p-1.5 rounded-xl mb-8 border border-border">
+            <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
               <LayoutDashboard size={14} /> Overview
             </TabsTrigger>
-            <TabsTrigger value="appointments" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
+            <TabsTrigger value="appointments" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
               <History size={14} /> Appointments
             </TabsTrigger>
-            <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
-              <TrendingUp size={14} /> Progress & Protocols
+            <TabsTrigger value="grid" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
+              <LayoutGrid size={14} /> Grid
+            </TabsTrigger>
+            <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
+              <TrendingUp size={14} /> Progress
             </TabsTrigger>
           </TabsList>
 
@@ -453,7 +441,7 @@ const ClientDetailPage = () => {
                 <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
                   <CardHeader className="pb-3 bg-muted/50 border-b border-border">
                     <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                      <Zap size={16} className="text-chart-primary" /> Automation Status
+                      <Zap size={16} className="text-chart-primary" /> Integrations
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 space-y-4">
@@ -462,17 +450,18 @@ const ClientDetailPage = () => {
                         <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-chart-primary">
                           <Mail size={16} />
                         </div>
-                        <span className="text-xs font-medium text-foreground">Kit Sync</span>
+                        <span className="text-xs font-medium text-foreground">Kit</span>
                       </div>
                       <Button 
                         variant="ghost" 
                         size="sm" 
                         onClick={handleManualKitSync}
                         disabled={syncingKit}
-                        className="h-8 text-[10px] font-semibold uppercase tracking-wider text-chart-primary hover:bg-muted"
+                        className="h-8 px-2.5 text-[10px] font-semibold uppercase tracking-wider text-chart-primary"
+                        title="Sync client to Kit"
                       >
                         {syncingKit ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
-                        Sync Now
+                        Sync
                       </Button>
                     </div>
                     <div className="flex items-center justify-between">
@@ -480,33 +469,42 @@ const ClientDetailPage = () => {
                         <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-chart-primary">
                           <CreditCard size={16} />
                         </div>
-                        <span className="text-xs font-medium text-foreground">Stripe Sync</span>
+                        <span className="text-xs font-medium text-foreground">Stripe</span>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleSyncToStripe}
-                        disabled={syncingStripe}
-                        className="h-8 text-[10px] font-semibold uppercase tracking-wider text-chart-primary hover:bg-muted"
-                      >
-                        {syncingStripe ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
-                        {(client as any).stripe_customer_id ? 'Update' : 'Sync'}
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <span className={cn("text-[10px] font-semibold uppercase tracking-wider", (client as any).stripe_customer_id ? "text-chart-emerald" : "text-muted-foreground/70")}>
+                          {(client as any).stripe_customer_id ? "Linked" : "Not linked"}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleSyncToStripe}
+                          disabled={syncingStripe}
+                          className="h-8 px-2.5 text-[10px] font-semibold uppercase tracking-wider text-chart-primary"
+                          title="Sync client to Stripe"
+                        >
+                          {syncingStripe ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
+                          Sync
+                        </Button>
+                      </div>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-chart-primary">
                           <ExternalLink size={16} />
                         </div>
-                        <span className="text-xs font-medium text-foreground">Notion Sync</span>
+                        <span className="text-xs font-medium text-foreground">Notion</span>
                       </div>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className={cn("text-[10px] font-semibold uppercase tracking-wider", client.notion_link ? "text-chart-emerald" : "text-muted-foreground/70")}>
+                          {client.notion_link ? "Linked" : "Not linked"}
+                        </span>
                         {client.notion_link && (
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => window.open(client.notion_link, '_blank')}
-                            className="h-8 w-8 text-chart-primary hover:bg-muted rounded-lg"
+                            onClick={() => window.open(client.notion_link!, '_blank')}
+                            className="h-8 w-8 text-chart-primary rounded-lg"
                             title="Open in Notion"
                           >
                             <ExternalLink size={14} />
@@ -517,10 +515,11 @@ const ClientDetailPage = () => {
                           size="sm"
                           onClick={handleSyncToNotion}
                           disabled={syncingNotion}
-                          className="h-8 text-[10px] font-semibold uppercase tracking-wider text-chart-primary hover:bg-muted"
+                          className="h-8 px-2.5 text-[10px] font-semibold uppercase tracking-wider text-chart-primary"
+                          title="Sync client to Notion"
                         >
                           {syncingNotion ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
-                          {client.notion_link ? 'Update' : 'Sync'}
+                          Sync
                         </Button>
                       </div>
                     </div>
@@ -568,31 +567,17 @@ const ClientDetailPage = () => {
                       </div>
                     )}
                     <hr className="border-border" />
-                    <div className="flex items-center justify-between group/contact p-2 rounded-lg hover:bg-muted transition-colors">
-                      <div className="flex items-center gap-3 text-sm">
-                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
-                            <Mail size={16} />
-                        </div>
-                        <span className="text-foreground font-medium">{client.email || 'No email'}</span>
+                    <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-muted transition-colors">
+                      <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
+                          <Mail size={16} />
                       </div>
-                      {client.email && (
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity" onClick={() => handleCopy(client.email!, 'email')}>
-                          {copiedField === 'email' ? <Check size={14} className="text-chart-emerald" /> : <Copy size={14} className="text-muted-foreground/60" />}
-                        </Button>
-                      )}
+                      <span className="text-foreground font-medium">{client.email || 'No email'}</span>
                     </div>
-                    <div className="flex items-center justify-between group/contact p-2 rounded-lg hover:bg-muted transition-colors">
-                      <div className="flex items-center gap-3 text-sm">
-                        <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
-                            <Phone size={16} />
-                        </div>
-                        <span className="text-foreground font-medium">{client.phone || 'No phone'}</span>
+                    <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-muted transition-colors">
+                      <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
+                          <Phone size={16} />
                       </div>
-                      {client.phone && (
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg opacity-0 group-hover/contact:opacity-100 transition-opacity" onClick={() => handleCopy(client.phone!, 'phone')}>
-                          {copiedField === 'phone' ? <Check size={14} className="text-chart-emerald" /> : <Copy size={14} className="text-muted-foreground/60" />}
-                        </Button>
-                      )}
+                      <span className="text-foreground font-medium">{client.phone || 'No phone'}</span>
                     </div>
                     <div className="flex items-center gap-3 text-sm p-2 rounded-lg hover:bg-muted transition-colors">
                       <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground">
@@ -829,59 +814,13 @@ const ClientDetailPage = () => {
 
                 <div className="grid gap-4">
                   {appointments.slice(0, 3).map(app => (
-                    <div key={app.id} className="relative group">
-                      <Link to={`/appointments/${app.id}`}>
-                        <Card className="hover:shadow-md transition-all border-border bg-card group rounded-xl overflow-hidden cursor-pointer">
-                          <CardContent className="p-6">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                              <div className="space-y-3 flex-1">
-                                <div className="flex items-center gap-3">
-                                  <Badge variant="secondary" className="font-medium bg-muted text-muted-foreground">{(app as any).display_id || app.id.slice(0,8)}</Badge>
-                                  <span className="font-medium text-lg text-foreground group-hover:text-chart-primary transition-colors">{app.name || format(app.date, "MMM d, yyyy")}</span>
-                                </div>
-                                <div className="flex items-center gap-4 text-sm text-muted-foreground font-medium">
-                                  <span className="flex items-center gap-1.5"><Calendar size={14} className="text-chart-primary" /> {format(app.date, "MMM d")}</span>
-                                  <span className={cn(
-                                      "px-2 py-0.5 rounded-full text-xs font-medium",
-                                      app.status === 'Completed' ? "bg-muted text-chart-emerald" : "bg-muted text-muted-foreground"
-                                  )}>
-                                    {app.status}
-                                  </span>
-                                  {app.is_paid && !app.payment_received && (
-                                    <Badge className="bg-muted text-muted-foreground border-none font-semibold text-[10px] uppercase tracking-wider">Payment Due</Badge>
-                                  )}
-                                </div>
-                              </div>
-                              
-                              <div className="flex items-center gap-2">
-                                {app.is_paid && !app.payment_received && (
-                                  <Button 
-                                    size="sm" 
-                                    className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-9 px-4 font-semibold text-[10px] uppercase tracking-wider shadow-sm"
-                                    onClick={(e) => handleGeneratePaymentLink(e, app)}
-                                    disabled={generatingLink === app.id}
-                                  >
-                                    {generatingLink === app.id ? <Loader2 size={14} className="animate-spin mr-2" /> : <QrCode size={14} className="mr-2" />}
-                                    Generate Link
-                                  </Button>
-                                )}
-                                <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground/60 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
-                                  <ArrowRight size={16} />
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </Link>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="absolute top-4 right-4 h-8 w-8 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground/60 hover:text-chart-primary hover:bg-muted"
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleCopyFullSummary(app); }}
-                      >
-                        <Copy size={14} />
-                      </Button>
-                    </div>
+                    <ClientAppointmentCard
+                      key={app.id}
+                      app={app}
+                      grid={gridFor[app.id]}
+                      generatingLink={generatingLink}
+                      onGeneratePaymentLink={handleGeneratePaymentLink}
+                    />
                   ))}
                 </div>
               </div>
@@ -915,63 +854,24 @@ const ClientDetailPage = () => {
 
             <div className="grid gap-4">
               {appointments.map(app => (
-                <div key={app.id} className="relative group">
-                  <Link to={`/appointments/${app.id}`}>
-                    <Card className="hover:shadow-md transition-all border-border bg-card group rounded-xl overflow-hidden cursor-pointer">
-                      <CardContent className="p-6">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                          <div className="space-y-3 flex-1">
-                            <div className="flex items-center gap-3">
-                              <Badge variant="secondary" className="font-medium bg-muted text-muted-foreground">{(app as any).display_id || app.id.slice(0,8)}</Badge>
-                              <span className="font-medium text-lg text-foreground group-hover:text-chart-primary transition-colors">{app.name || format(app.date, "MMM d, yyyy")}</span>
-                              <Badge className="bg-muted text-chart-primary hover:bg-muted border-none">{app.tag}</Badge>
-                            </div>
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground font-medium">
-                              <span className="flex items-center gap-1.5"><Calendar size={14} className="text-chart-primary" /> {format(app.date, "EEEE, MMM d")}</span>
-                              <span className="flex items-center gap-1.5"><Clock size={14} className="text-chart-primary" /> {format(app.date, "h:mm a")}</span>
-                              <span className={cn(
-                                  "px-2 py-0.5 rounded-full text-xs font-medium",
-                                  app.status === 'Completed' ? "bg-muted text-chart-emerald" : "bg-muted text-muted-foreground"
-                              )}>
-                                {app.status}
-                              </span>
-                              {app.is_paid && !app.payment_received && (
-                                <Badge className="bg-muted text-muted-foreground border-none font-semibold text-[10px] uppercase tracking-wider">Payment Due</Badge>
-                              )}
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            {app.is_paid && !app.payment_received && (
-                              <Button 
-                                size="sm" 
-                                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-9 px-4 font-semibold text-[10px] uppercase tracking-wider shadow-sm"
-                                onClick={(e) => handleGeneratePaymentLink(e, app)}
-                                disabled={generatingLink === app.id}
-                              >
-                                {generatingLink === app.id ? <Loader2 size={14} className="animate-spin mr-2" /> : <QrCode size={14} className="mr-2" />}
-                                Generate Link
-                              </Button>
-                            )}
-                            <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground/60 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
-                              <ArrowRight size={16} />
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="absolute top-4 right-4 h-8 w-8 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground/60 hover:text-chart-primary hover:bg-muted"
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleCopyFullSummary(app); }}
-                  >
-                    <Copy size={14} />
-                  </Button>
-                </div>
+                <ClientAppointmentCard
+                  key={app.id}
+                  app={app}
+                  grid={gridFor[app.id]}
+                  showTag
+                  generatingLink={generatingLink}
+                  onGeneratePaymentLink={handleGeneratePaymentLink}
+                />
               ))}
             </div>
+          </TabsContent>
+
+          <TabsContent value="grid" className="space-y-6">
+            <ClientGridSummaryTab
+              clientName={client?.name || "Client"}
+              appointments={appointments}
+              gridFor={gridFor}
+            />
           </TabsContent>
 
           <TabsContent value="progress">

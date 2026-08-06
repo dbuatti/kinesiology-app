@@ -215,17 +215,17 @@ const ClinicalHubPage = () => {
           </DialogHeader>
           <div className="flex flex-col gap-2">
             <Button
-              onClick={() => { setSelectedSession(null); navigate(`/appointments/${selectedSession?.id}/v2`); }}
+              onClick={() => { setSelectedSession(null); navigate(`/appointments/${selectedSession?.id}`); }}
               className="w-full rounded-xl h-11 gap-2"
             >
-              <Activity size={16} /> Open in PEACE V2
+              <Activity size={16} /> Open in PEACE
             </Button>
             <Button
               variant="outline"
-              onClick={() => { setSelectedSession(null); navigate(`/appointments/${selectedSession?.id}/v2?view=doc`); }}
+              onClick={() => { setSelectedSession(null); navigate(`/appointments/${selectedSession?.id}?view=doc`); }}
               className="w-full rounded-xl h-11 gap-2"
             >
-              <FileText size={16} /> Open in DOC V2
+              <FileText size={16} /> Open in DOC
             </Button>
           </div>
         </DialogContent>

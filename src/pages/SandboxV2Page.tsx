@@ -201,7 +201,7 @@ const SandboxV2Page = () => {
 
       showSuccess("Session saved");
       setSaveOpen(false);
-      navigate(`/appointments/${appt.id}/v2`);
+      navigate(`/appointments/${appt.id}`);
     } catch (err: any) {
       console.error("Save failed:", err);
       showError("Failed to save session");

@@ -350,14 +350,17 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
               <div className="mb-4 pb-4 border-b border-border/30">
                 <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Cranial Nerve Assessment</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
-                  {CRANIAL_NERVES.map(n => n.isLateralized ? (
-                    <Fragment key={n.name}>
-                      <CheckItem category="cranialNerves" name={n.name} side="L" pattern={pattern} onToggle={handleAssessmentToggle} />
-                      <CheckItem category="cranialNerves" name={n.name} side="R" pattern={pattern} onToggle={handleAssessmentToggle} />
-                    </Fragment>
-                  ) : (
-                    <CheckItem key={n.name} category="cranialNerves" name={n.name} pattern={pattern} onToggle={handleAssessmentToggle} />
-                  ))}
+                  {CRANIAL_NERVES.map(n => {
+                    const nerveName = `${n.name}: ${n.latinName}`;
+                    return n.isLateralized ? (
+                      <Fragment key={n.name}>
+                        <CheckItem category="cranialNerves" name={nerveName} side="L" pattern={pattern} onToggle={handleAssessmentToggle} />
+                        <CheckItem category="cranialNerves" name={nerveName} side="R" pattern={pattern} onToggle={handleAssessmentToggle} />
+                      </Fragment>
+                    ) : (
+                      <CheckItem key={n.name} category="cranialNerves" name={nerveName} pattern={pattern} onToggle={handleAssessmentToggle} />
+                    );
+                  })}
                 </div>
               </div>
             )}

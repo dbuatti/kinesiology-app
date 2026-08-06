@@ -389,10 +389,10 @@ const AppointmentDetailPage = () => {
                   <FileText size={13} />
                   <span className="hidden md:inline ml-1.5">Doc View</span>
                 </Link>
-                <Link to={`/appointments/${id}/v2`}
+                <Link to={`/appointments/${id}`}
                   className="h-8 px-3 gap-1.5 border-chart-primary/30 bg-chart-primary/5 rounded-lg text-xs font-bold text-chart-primary hover:bg-chart-primary/10 transition-colors inline-flex items-center border no-underline">
                   <Sparkles size={13} />
-                  <span className="hidden md:inline ml-1">V2</span>
+                  <span className="hidden md:inline ml-1">New View</span>
                 </Link>
                 {appointment.clients.phone && (
                   <Button variant="outline" size="sm"

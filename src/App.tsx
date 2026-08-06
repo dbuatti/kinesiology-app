@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
 import { ModeProvider } from "./components/ModeProvider";
 import { ThemeProvider } from "./components/theme-provider";
@@ -74,6 +74,7 @@ const HeartWallPrintPage = lazy(() => import("./pages/HeartWallPrintPage"));
 const BrainZonePrintPage = lazy(() => import("./pages/BrainZonePrintPage"));
 const JointActionPrintPage = lazy(() => import("./pages/JointActionPrintPage"));
 const PathwayReflexStimPage = lazy(() => import("./pages/PathwayReflexStimPage"));
+const GridSheetPage = lazy(() => import("./pages/GridSheetPage"));
 
 // --- Voice Studio ---
 const VoiceDashboardPage = lazy(() => import("./pages/VoiceDashboardPage"));
@@ -98,6 +99,11 @@ const SiteAuditPage = lazy(() => import("./pages/SiteAuditPage"));
 const WorkflowDebuggerPage = lazy(() => import("./pages/WorkflowDebuggerPage"));
 
 const queryClient = new QueryClient();
+
+const AppointmentV2Redirect = () => {
+  const { id } = useParams();
+  return <Navigate to={`/appointments/${id}`} replace />;
+};
 
 const FullScreenLoader = ({ label }: { label: string }) => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
@@ -140,6 +146,7 @@ const AppRoutes = () => {
         <Route path="/resources/cranial-nerves/worksheet" element={session ? <CranialNerveWorksheetPage /> : <Navigate to="/login" replace />} />
         <Route path="/resources/primitive-reflexes/worksheet" element={session ? <PrimitiveReflexWorksheetPage /> : <Navigate to="/login" replace />} />
         <Route path="/resources/pathway-reflex-stim/print" element={session ? <PathwayReflexStimPage /> : <Navigate to="/login" replace />} />
+        <Route path="/appointments/:id/grid-sheet" element={session ? <GridSheetPage /> : <Navigate to="/login" replace />} />
         <Route path="/resources/heart-wall/print" element={session ? <HeartWallPrintPage /> : <Navigate to="/login" replace />} />
         <Route path="/resources/brain-zones/print" element={session ? <BrainZonePrintPage /> : <Navigate to="/login" replace />} />
         <Route path="/resources/joint-actions/print" element={session ? <JointActionPrintPage /> : <Navigate to="/login" replace />} />
@@ -160,8 +167,9 @@ const AppRoutes = () => {
           <Route path="/availability" element={<SchedulePage />} />
           {/* Consolidated: sessions now live in the unified Calendar */}
           <Route path="/schedule" element={<Navigate to="/calendar" replace />} />
-          <Route path="/appointments/:id" element={<AppointmentDetailPage />} />
-          <Route path="/appointments/:id/v2" element={<AppointmentV2Page />} />
+          <Route path="/appointments/:id" element={<AppointmentV2Page />} />
+          <Route path="/appointments/:id/archive" element={<AppointmentDetailPage />} />
+          <Route path="/appointments/:id/v2" element={<AppointmentV2Redirect />} />
           <Route path="/appointments/:id/protocols" element={<ClinicalProtocolsPage />} />
           <Route path="/oversight" element={<ClinicalOversightPage />} />
           <Route path="/oversight/follow-up" element={<FollowUpPage />} />

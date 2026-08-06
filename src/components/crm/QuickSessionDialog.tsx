@@ -63,7 +63,6 @@ const formSchema = z.object({
 interface QuickSessionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  v2?: boolean;
 }
 
 function getCurrentTimeRounded(): string {
@@ -77,7 +76,7 @@ function getCurrentTimeRounded(): string {
   return format(now, "HH:mm");
 }
 
-export function QuickSessionDialog({ open, onOpenChange, v2 }: QuickSessionDialogProps) {
+export function QuickSessionDialog({ open, onOpenChange }: QuickSessionDialogProps) {
   const navigate = useNavigate();
   const { session } = useAuth();
   const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
@@ -210,7 +209,7 @@ export function QuickSessionDialog({ open, onOpenChange, v2 }: QuickSessionDialo
 
       showSuccess(`Session created for ${values.clientName}`);
       onOpenChange(false);
-      navigate(v2 ? `/appointments/${newApp.id}/v2` : `/appointments/${newApp.id}`);
+      navigate(`/appointments/${newApp.id}`);
     } catch (error) {
       showError(error instanceof Error ? error.message : "Failed to create session");
     } finally {

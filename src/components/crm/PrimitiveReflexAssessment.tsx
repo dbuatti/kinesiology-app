@@ -107,7 +107,8 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
 
   return (
     <section className={cn(
-      "p-2 px-3 rounded-xl border transition-all",
+      "rounded-xl border transition-all",
+      compact ? "p-2 space-y-1" : "p-3 space-y-1.5",
       test.is_primary_priority ? "bg-indigo-50/40 border-indigo-300 ring-1 ring-indigo-100" : 
       test.is_priority ? "bg-amber-50/40 border-amber-200" : 
       !isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') ? "bg-emerald-50/30 border-emerald-200" :
@@ -116,7 +117,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1 min-w-0 space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <h2 className="text-sm font-medium text-foreground truncate">
+            <h2 className="text-sm font-semibold text-foreground truncate">
               {reflex.name}
             </h2>
             {reflex.isBoss && (
@@ -177,9 +178,9 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                     id={`inhib-l-${reflex.id}`}
                     checked={statusL === 'Inhibited'}
                     onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, 'L', reflex.name)}
-                    className="h-3 w-3 border-border rounded-none"
+                    className="h-3.5 w-3.5 border-border rounded-none"
                   />
-                  <label htmlFor={`inhib-l-${reflex.id}`} className="text-[8px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
+                  <label htmlFor={`inhib-l-${reflex.id}`} className="text-[9px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
                     L
                   </label>
                 </div>
@@ -188,9 +189,9 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                     id={`inhib-r-${reflex.id}`}
                     checked={statusR === 'Inhibited'}
                     onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, 'R', reflex.name)}
-                    className="h-3 w-3 border-border rounded-none"
+                    className="h-3.5 w-3.5 border-border rounded-none"
                   />
-                  <label htmlFor={`inhib-r-${reflex.id}`} className="text-[8px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
+                  <label htmlFor={`inhib-r-${reflex.id}`} className="text-[9px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
                     R
                   </label>
                 </div>
@@ -199,9 +200,9 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                     id={`inhib-both-${reflex.id}`}
                     checked={isBilateral}
                     onCheckedChange={(checked) => handleBilateralToggle(!!checked)}
-                    className="h-3 w-3 border-primary rounded-none data-[state=checked]:bg-primary"
+                    className="h-3.5 w-3.5 border-primary rounded-none data-[state=checked]:bg-primary"
                   />
-                  <label htmlFor={`inhib-both-${reflex.id}`} className="text-[8px] font-medium uppercase tracking-wider cursor-pointer text-chart-primary">
+                  <label htmlFor={`inhib-both-${reflex.id}`} className="text-[9px] font-medium uppercase tracking-wider cursor-pointer text-chart-primary">
                     Both
                   </label>
                 </div>
@@ -212,9 +213,9 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                   id={`inhib-mid-${reflex.id}`}
                   checked={statusMidline === 'Inhibited'}
                   onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, undefined, reflex.name)}
-                  className="h-3 w-3 border-border rounded-none"
+                  className="h-3.5 w-3.5 border-border rounded-none"
                 />
-                <label htmlFor={`inhib-mid-${reflex.id}`} className="text-[8px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
+                <label htmlFor={`inhib-mid-${reflex.id}`} className="text-[9px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
                   Inhib
                 </label>
               </div>
@@ -226,10 +227,10 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
               id={`priority-reflex-${reflex.id}`}
               checked={test.is_priority}
               onCheckedChange={(checked) => onUpdate(reflex.id, { is_priority: !!checked })}
-              className="h-3 w-3 border-border rounded-none"
+              className="h-3.5 w-3.5 border-border rounded-none"
             />
-            <label htmlFor={`priority-reflex-${reflex.id}`} className="text-[8px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
-              Prio
+            <label htmlFor={`priority-reflex-${reflex.id}`} className="text-[9px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
+              Priority
             </label>
           </div>
           <Button 
@@ -237,7 +238,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
             size="sm" 
             onClick={() => onUpdate(reflex.id, { is_primary_priority: !test.is_primary_priority })}
             className={cn(
-              "h-5 px-1.5 text-[7px] font-medium uppercase tracking-wider transition-all rounded",
+              "h-5 px-2 text-[7px] font-medium uppercase tracking-wider transition-all rounded-md",
               test.is_primary_priority ? "bg-foreground text-primary-foreground" : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -247,7 +248,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
             variant="ghost" 
             size="sm" 
             onClick={handleClear}
-            className="h-5 px-1.5 text-[7px] font-medium uppercase tracking-wider text-emerald-600 hover:bg-emerald-50 rounded"
+            className="h-5 px-2 text-[7px] font-medium uppercase tracking-wider text-chart-emerald hover:bg-muted rounded-md"
           >
             <CheckCircle2 size={10} className="mr-1" /> Clear
           </Button>
@@ -264,13 +265,15 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
 
       {!compact && (
         <>
-          <div className="mt-1.5 pt-1.5 border-t border-border/50 flex items-center gap-2">
-            <FileText size={10} className="text-muted-foreground/60 shrink-0" />
-            <input 
+          <div className="mt-1.5 pt-1.5 border-t border-border/50 space-y-1">
+            <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              <FileText size={10} /> Notes
+            </div>
+            <textarea 
               value={localNotes}
               onChange={(e) => handleNotesChange(e.target.value)}
-              className="flex-1 bg-transparent border-none p-0 text-[10px] font-medium focus:ring-0 placeholder:text-muted-foreground/60"
-              placeholder="Add assessment findings..."
+              className="w-full min-h-[40px] bg-muted/30 border-none rounded-lg p-2 text-xs font-medium focus:ring-1 focus:ring-primary transition-all resize-none"
+              placeholder="Findings..."
             />
           </div>
 
@@ -410,7 +413,7 @@ export function PrimitiveReflexAssessment({
               onCheckedChange={setShowOnlyInhibited}
               className="data-[state=checked]:bg-destructive scale-[0.6]"
             />
-            <Label htmlFor="inhibited-filter-reflex" className="text-[8px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
+            <Label htmlFor="inhibited-filter-reflex" className="text-[9px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
               Only Inhibited
             </Label>
           </div>

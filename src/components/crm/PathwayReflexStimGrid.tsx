@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2, Printer, Eraser, Search, X, Maximize2, Minimize2, ChevronDown, LayoutList, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { usePrimitiveReflexTests } from "@/hooks/usePrimitiveReflexTests";
 import { useCranialNerveTests } from "@/hooks/useCranialNerveTests";
 import PathwayReflexStimGridBoard from "./PathwayReflexStimGridBoard";
 import PathwayReflexStimGridSummary from "./PathwayReflexStimGridSummary";
+import { buildCheckedMap } from "./grid-checked";
 import { StimXMark } from "./StimXMark";
 import {
   PRIMITIVE_TRACKS,
@@ -21,7 +23,6 @@ import {
   primitiveReflexMatches,
   cranialLineMatches,
 } from "./pathway-reflex-stim-data";
-import { safeParse } from "@/utils/safe-json";
 
 interface PathwayReflexStimGridProps {
   appointmentId: string;
@@ -55,60 +56,7 @@ export function PathwayReflexStimGrid({
 
   useEffect(() => {
     if (seeded.current || reflexLoading || nerveLoading) return;
-    const map: Record<string, boolean> = {};
-    PRIMITIVE_TRACKS.forEach((track) =>
-      track.reflexes.forEach((reflex) => {
-        const test = reflexTests.find((t) => t.reflex_id === reflex.id);
-        if (reflex.lateralized) {
-          (["L", "R"] as const).forEach((side) => {
-            const key = primitiveSideKey(reflex, side);
-            if (test?.stim_results?.[key]) map[key] = true;
-          });
-        } else if (reflex.stims?.length) {
-          reflex.stims.forEach((_, i) => {
-            const key = primitiveStimKeyAt(reflex, i);
-            if (test?.stim_results?.[key]) map[key] = true;
-          });
-        } else {
-          const key = primitiveStimKey(reflex);
-          if (test?.stim_results?.[key]) map[key] = true;
-        }
-      })
-    );
-    NERVE_GROUPS.forEach((group) =>
-      group.items.forEach((nerve) => {
-        const test = nerveTests.find((t) => t.nerve_id === nerve.id.toString());
-        nerveStimLines(nerve).forEach((_, i) => {
-          if (isLateralStim(nerve.id, i)) {
-            (["L", "R"] as const).forEach((side) => {
-              const key = cranialSideKey(nerve.id, i, side);
-              if (test?.stim_results?.[key]) map[key] = true;
-            });
-          } else {
-            const key = cranialStimKey(nerve.id, i);
-            if (test?.stim_results?.[key]) map[key] = true;
-          }
-        });
-      })
-    );
-    // Seed nerve-level inhibition marks from the priority pattern
-    const pattern = safeParse(priorityPattern, {});
-    const nervePattern = pattern.cranialNerves || {};
-    NERVE_GROUPS.forEach((group) =>
-      group.items.forEach((nerve) => {
-        const nerveName = `${nerve.name}: ${nerve.latinName}`;
-        if (nerve.isLateralized) {
-          (["L", "R"] as const).forEach((side) => {
-            const status = nervePattern[`${nerveName} (${side})`] || "";
-            if (status.startsWith("Inhibited")) map[cranialNerveInhibKey(nerve.id, side)] = true;
-          });
-        } else {
-          const status = nervePattern[nerveName] || "";
-          if (status.startsWith("Inhibited")) map[cranialNerveInhibKey(nerve.id)] = true;
-        }
-      })
-    );
-    setChecked(map);
+    setChecked(buildCheckedMap({ reflexTests, nerveTests, priorityPattern }));
     seeded.current = true;
   }, [reflexTests, nerveTests, reflexLoading, nerveLoading]);
 
@@ -300,59 +248,33 @@ export function PathwayReflexStimGrid({
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-start justify-between gap-3 bg-muted/50 p-3 rounded-xl border border-border print:hidden">
-        <div className="min-w-0">
-          <h2 className="text-base font-semibold text-foreground uppercase tracking-wider">
-            Pathway / Reflex / Stim Grid
-          </h2>
-          <p className="text-xs text-muted-foreground mt-1">
-            Tap a square to mark showing — saved instantly.
-            {activeCount > 0 && (
-              <span className="text-foreground font-semibold"> · {activeCount} active</span>
-            )}
-            {saveState === "saving" && (
-              <span className="text-chart-primary font-semibold"> · Saving…</span>
-            )}
-            {saveState === "saved" && (
-              <span className="text-chart-emerald font-semibold"> · Saved ✓</span>
-            )}
-          </p>
-          <div className="mt-2.5 flex flex-wrap gap-2">
-            {PRIMITIVE_TRACKS.map((track, ti) => (
-              <span
-                key={track.title}
-                title={track.title}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-background border border-border text-muted-foreground"
-              >
-                <span className={`w-2 h-2 rounded-full ${track.color}`} />
-                T{ti + 1} · {trackCounts[ti]}
-              </span>
-            ))}
-            <span className="w-px h-5 bg-border" />
-            {NERVE_GROUPS.map((group, gi) => (
-              <span
-                key={group.label}
-                title={`${group.label} nuclei`}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider bg-background border border-border text-muted-foreground"
-              >
-                <span className={`w-2 h-2 rounded-full ${NUCLEI_COLORS[group.label]}`} />
-                {group.label} · {nucleiCounts[gi]}
-              </span>
-            ))}
+      <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden print:hidden">
+        {/* Header */}
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 pt-4 pb-3">
+          <div className="min-w-0">
+            <h2 className="text-base font-semibold text-foreground tracking-tight">
+              Pathway / Reflex / Stim Grid
+            </h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Tap a square to mark showing — saved instantly.
+              {saveState === "saving" && (
+                <span className="text-chart-primary font-semibold"> · Saving…</span>
+              )}
+              {saveState === "saved" && (
+                <span className="text-chart-emerald font-semibold"> · Saved ✓</span>
+              )}
+            </p>
           </div>
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] font-medium text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-background border border-border">
-              <StimXMark className="w-4 h-4 text-chart-destructive" />
-              showing / inhibited
+          {activeCount > 0 && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold tabular-nums bg-chart-destructive/10 text-chart-destructive border border-chart-destructive/20 shrink-0">
+              <StimXMark className="w-3.5 h-3.5" /> {activeCount} active
             </span>
-            <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-yellow-100/70 border border-yellow-300/70 text-yellow-800">
-              <span className="w-3.5 h-3.5 rounded-md bg-yellow-200 border-2 border-yellow-400" />
-              nerve side active
-            </span>
-          </div>
+          )}
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative">
+
+        {/* Toolbar */}
+        <div className="flex flex-wrap items-center gap-2 px-5 pb-4">
+          <div className="relative flex-1 min-w-[220px] max-w-md">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <input
               value={query}
@@ -363,9 +285,9 @@ export function PathwayReflexStimGrid({
                   jumpToFirstMatch();
                 }
               }}
-              placeholder="Search… (⏎ jump)"
+              placeholder="Search reflexes and nerves…"
               aria-label="Search reflexes and nerves"
-              className="h-11 w-52 pl-9 pr-8 rounded-lg border border-border bg-background text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-chart-primary/50 transition-shadow"
+              className="h-11 w-full pl-9 pr-8 rounded-lg border border-border bg-muted/30 text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-chart-primary/50 transition-shadow"
             />
             {query && (
               <button
@@ -378,18 +300,7 @@ export function PathwayReflexStimGrid({
               </button>
             )}
           </div>
-          {q && (
-            <button
-              type="button"
-              onClick={jumpToFirstMatch}
-              className="inline-flex items-center gap-1.5 px-3 h-11 rounded-lg text-xs font-semibold uppercase tracking-wider bg-background border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
-              title="Jump to first match"
-            >
-              {matchCount} {matchCount === 1 ? "match" : "matches"}
-              <ChevronDown size={14} className="opacity-60" />
-            </button>
-          )}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => scrollToSection("primitive-reflexes")}
@@ -397,7 +308,7 @@ export function PathwayReflexStimGrid({
               title="Jump to primitive reflexes"
             >
               <span className="w-2 h-2 rounded-full bg-chart-primary" />
-              Primitive {primCount}
+              Primitive <span className="tabular-nums text-foreground">{primCount}</span>
             </button>
             <button
               type="button"
@@ -406,58 +317,116 @@ export function PathwayReflexStimGrid({
               title="Jump to cranial nerves"
             >
               <span className="w-2 h-2 rounded-full bg-muted-foreground" />
-              Cranial {cranialCount}
+              Cranial <span className="tabular-nums text-foreground">{cranialCount}</span>
             </button>
+            {q && (
+              <button
+                type="button"
+                onClick={jumpToFirstMatch}
+                className="inline-flex items-center gap-1.5 px-3 h-11 rounded-lg text-xs font-semibold uppercase tracking-wider bg-background border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                title="Jump to first match"
+              >
+                {matchCount} {matchCount === 1 ? "match" : "matches"}
+                <ChevronDown size={14} className="opacity-60" />
+              </button>
+            )}
           </div>
-          <div className="w-px h-7 bg-border mx-1 hidden sm:block" />
-          <Button
-            variant={view === 'summary' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setView(v => v === 'board' ? 'summary' : 'board')}
-            className="h-11 px-3 text-xs font-medium uppercase tracking-wider rounded-lg"
-            title={view === 'summary' ? 'Back to the interactive grid' : 'Show a clean summary of everything marked'}
-          >
-            {view === 'summary'
-              ? <LayoutGrid size={15} className="mr-1.5" />
-              : <LayoutList size={15} className="mr-1.5" />}
-            {view === 'summary' ? 'Grid' : 'Summary'}
-          </Button>
-          {activeCount > 0 && (
-            <Button
-              variant={confirmClear ? "destructive" : "ghost"}
-              size="sm"
-              onClick={handleClearClick}
-              className={`h-11 px-3 text-xs font-medium uppercase tracking-wider rounded-lg ${
-                confirmClear
-                  ? "text-white"
-                  : "text-destructive hover:bg-destructive/10"
-              }`}
-              title="Erase all marked Xs (returns every reflex/nerve to its natural, unmarked state)"
-            >
-              <Eraser size={15} className="mr-1.5" /> {confirmClear ? "Erase all?" : "Erase"}
-            </Button>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.open("/resources/pathway-reflex-stim/print", "_blank")}
-            className="h-11 px-3 text-xs font-medium uppercase tracking-wider rounded-lg"
-            title="Open the printable reference sheet in a new tab"
-          >
-            <Printer size={15} className="mr-1.5" /> Print
-          </Button>
-          {onToggleFullScreen && (
+          <div className="flex items-center gap-1.5 ml-auto">
+            <div className="inline-flex items-center gap-1 p-1 rounded-lg border border-border bg-background">
+              <button
+                type="button"
+                onClick={() => setView('board')}
+                className={cn(
+                  "inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-md text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer",
+                  view === 'board' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+                title="Show the interactive reflex and nerve grid"
+              >
+                <LayoutGrid size={14} /> Grid
+              </button>
+              <button
+                type="button"
+                onClick={() => setView('summary')}
+                className={cn(
+                  "inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-md text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer",
+                  view === 'summary' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+                title="Show a clean summary of everything marked"
+              >
+                <LayoutList size={14} /> Summary
+              </button>
+            </div>
+            {activeCount > 0 && (
+              <Button
+                variant={confirmClear ? "destructive" : "ghost"}
+                size="sm"
+                onClick={handleClearClick}
+                className={`h-11 px-3 text-xs font-medium uppercase tracking-wider rounded-lg ${
+                  confirmClear
+                    ? "text-white"
+                    : "text-destructive hover:bg-destructive/10"
+                }`}
+                title="Erase all marked Xs (returns every reflex/nerve to its natural, unmarked state)"
+              >
+                <Eraser size={15} className="mr-1.5" /> {confirmClear ? "Erase all?" : "Erase"}
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
-              onClick={onToggleFullScreen}
-              className="h-11 w-11 p-0 rounded-lg"
-              title={isFullScreen ? "Exit fullscreen" : "Fullscreen"}
-              aria-label={isFullScreen ? "Exit fullscreen" : "Enter fullscreen"}
+              onClick={() => window.open(`/appointments/${appointmentId}/grid-sheet`, "_blank")}
+              className="h-11 px-3 text-xs font-medium uppercase tracking-wider rounded-lg"
+              title="Open a printable sheet of this appointment's marks in a new tab"
             >
-              {isFullScreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+              <Printer size={15} className="mr-1.5" /> Print
             </Button>
-          )}
+            {onToggleFullScreen && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onToggleFullScreen}
+                className="h-11 w-11 p-0 rounded-lg"
+                title={isFullScreen ? "Exit fullscreen" : "Fullscreen"}
+                aria-label={isFullScreen ? "Exit fullscreen" : "Enter fullscreen"}
+              >
+                {isFullScreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Distribution + legend */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-5 py-2.5 bg-muted/30 border-t border-border/50">
+          {PRIMITIVE_TRACKS.map((track, ti) => (
+            <span
+              key={track.title}
+              title={track.title}
+              className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+            >
+              <span className={`w-2 h-2 rounded-full ${track.color}`} />
+              T{ti + 1} <span className="text-foreground tabular-nums">{trackCounts[ti]}</span>
+            </span>
+          ))}
+          <span className="w-px h-4 bg-border" />
+          {NERVE_GROUPS.map((group, gi) => (
+            <span
+              key={group.label}
+              title={`${group.label} nuclei`}
+              className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+            >
+              <span className={`w-2 h-2 rounded-full ${NUCLEI_COLORS[group.label]}`} />
+              {group.label} <span className="text-foreground tabular-nums">{nucleiCounts[gi]}</span>
+            </span>
+          ))}
+          <span className="flex-1" />
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+            <StimXMark className="w-3.5 h-3.5 text-chart-destructive" />
+            showing / inhibited
+          </span>
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-yellow-800">
+            <span className="w-3 h-3 rounded-md bg-yellow-200 border border-yellow-400" />
+            nerve side active
+          </span>
         </div>
       </div>
 

@@ -12,9 +12,9 @@ interface ClientProfileCardProps {
 const ClientProfileCard = ({ client }: ClientProfileCardProps) => {
   return (
     <Card className="overflow-hidden border-none shadow-lg bg-card rounded-2xl">
-      <div className="h-24 bg-gradient-to-r from-indigo-600 to-indigo-500 relative">
+      <div className="h-24 bg-gradient-to-r from-chart-primary to-chart-primary/70 relative">
           <div className="absolute bottom-0 left-6 translate-y-1/2 p-1 bg-card rounded-full shadow-md">
-              <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center text-3xl font-bold text-indigo-600 border-2 border-indigo-100">
+              <div className="w-20 h-20 bg-chart-primary/10 rounded-full flex items-center justify-center text-3xl font-bold text-chart-primary border-2 border-chart-primary/20">
                 {client.name.charAt(0)}
               </div>
           </div>
@@ -27,7 +27,7 @@ const ClientProfileCard = ({ client }: ClientProfileCardProps) => {
         <div className="flex flex-wrap gap-2">
           {client.born && (
             <>
-              <Badge className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border-none px-3 py-1 rounded-full">
+              <Badge className="bg-chart-primary/10 text-chart-primary hover:bg-chart-primary/20 border-none px-3 py-1 rounded-full">
                 {calculateAge(client.born)} years old
               </Badge>
               <Badge variant="outline" className="flex gap-1 items-center px-3 py-1 border-border rounded-full">

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import {
   ArrowLeft, Loader2, Activity, FileText,
   Maximize2, Minimize2, Calendar, Clock, User, BookOpen,
-  Plus, BookMarked, LayoutGrid
+  Plus, BookMarked, LayoutGrid, Archive
 } from "lucide-react";
 import {
   HoverCard, HoverCardContent, HoverCardTrigger,
@@ -110,7 +110,13 @@ const AppointmentV2Page = () => {
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <p className="text-sm font-semibold text-foreground truncate">{appointment.clients?.name || "Unknown"}</p>
+                  <Link
+                    to={`/clients/${appointment.clients?.id}`}
+                    className="text-sm font-semibold text-foreground truncate hover:text-chart-primary hover:underline underline-offset-2 transition-colors"
+                    title="Open client page"
+                  >
+                    {appointment.clients?.name || "Unknown"}
+                  </Link>
                   {(() => {
                     const notes = appointment.clients?.journal ? parseClientJournal(appointment.clients.journal).notes : null;
                     if (!notes) return null;
@@ -170,6 +176,17 @@ const AppointmentV2Page = () => {
               <Plus size={13} /> New
             </button>
             <div className="w-px h-6 bg-border mx-1" />
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="rounded-xl text-muted-foreground hover:text-foreground"
+              title="Open the archived (legacy) session page"
+            >
+              <Link to={`/appointments/${id}/archive`}>
+                <Archive size={16} />
+              </Link>
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -240,7 +257,7 @@ const AppointmentV2Page = () => {
         </div>
       )}
 
-      <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} v2 />
+      <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} />
     </div>
   );
 };

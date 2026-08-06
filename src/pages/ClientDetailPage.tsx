@@ -1,5 +1,5 @@
-import { useState, useEffect, type MouseEvent } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useState, useEffect, useMemo, type MouseEvent } from "react";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { getClientRollups } from "@/utils/crm-utils";
@@ -11,7 +11,8 @@ import {
   Loader2, Briefcase, Heart, Baby,
   Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Brain,
   LayoutDashboard, History, ArrowRight, Sparkles, Plus, Link as LinkIcon,
-  Zap, Send, ShieldCheck, ExternalLink, RefreshCw, ShieldAlert, Info, User, CreditCard, LayoutGrid
+  Zap, Send, ShieldCheck, ExternalLink, RefreshCw, ShieldAlert, Info, User, CreditCard, LayoutGrid,
+  CalendarClock
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -73,6 +74,14 @@ const ClientDetailPage = () => {
   const [savingContact, setSavingContact] = useState(false);
   const { addRecentClient } = useRecentClients();
   const { gridFor } = useClientGridData(appointments);
+
+  const nextAppointment = useMemo(() => {
+    const now = new Date();
+    const upcoming = appointments
+      .filter(a => a.date >= now && a.status !== 'Cancelled')
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
+    return upcoming[0] || null;
+  }, [appointments]);
 
   const fetchClientData = async () => {
     try {
@@ -316,6 +325,13 @@ const ClientDetailPage = () => {
   );
 
   const rollups = getClientRollups(appointments);
+
+  const daysUntil = (d: Date): string => {
+    const diff = Math.ceil((d.getTime() - Date.now()) / 86400000);
+    if (diff <= 0) return "Today";
+    if (diff === 1) return "Tomorrow";
+    return `In ${diff} days`;
+  };
 
   return (
     <AppLayout variant="workspace">
@@ -593,6 +609,35 @@ const ClientDetailPage = () => {
 
               {/* Right Column: Clinical Profile & History */}
               <div className="lg:col-span-8 space-y-8">
+                {nextAppointment && (
+                  <Card className="border-none shadow-sm rounded-xl bg-card border-t-4 border-chart-primary overflow-hidden">
+                    <div className="p-6 flex flex-col md:flex-row md:items-center gap-4">
+                      <div className="w-11 h-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm shrink-0">
+                        <CalendarClock size={22} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Next Session</h3>
+                          <Badge className="bg-chart-emerald/10 text-chart-emerald border-none font-semibold text-[10px] uppercase tracking-wider">
+                            {daysUntil(nextAppointment.date)}
+                          </Badge>
+                        </div>
+                        <p className="text-lg font-semibold text-foreground mt-0.5">
+                          {format(nextAppointment.date, "EEEE, MMM d · h:mm a")}
+                        </p>
+                        <p className="text-xs text-muted-foreground/70 font-medium">
+                          {nextAppointment.name || `Session ${nextAppointment.display_id || nextAppointment.id.slice(0, 8)}`}
+                        </p>
+                      </div>
+                      <Button asChild size="sm" className="rounded-xl h-10 px-4 font-semibold text-[10px] uppercase tracking-wider shrink-0">
+                        <Link to={`/appointments/${nextAppointment.id}`}>
+                          Open Session <ArrowRight size={14} className="ml-1.5" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </Card>
+                )}
+
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
                   <Card className="border-none shadow-sm rounded-xl bg-card border-t-4 border-chart-primary">
                     <CardHeader className="pb-2">

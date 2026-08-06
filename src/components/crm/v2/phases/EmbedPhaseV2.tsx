@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   ClipboardCheck, RefreshCw, CheckCircle2, Loader2, ShieldCheck,
   CalendarPlus, Plus, Calendar, Target, Zap,
-  FileText, Brain, Dumbbell, Baby
+  FileText, Brain, Dumbbell, Baby, X
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -13,12 +13,21 @@ import { safeParse } from "@/utils/safe-json";
 import { showSuccess, showError } from "@/utils/toast";
 import EditableField from "@/components/shared/EditableField";
 import PathwayFindingsList from "@/components/crm/PathwayFindingsList";
-import StimResultsSummary from "@/components/crm/StimResultsSummary";
 import { usePrimitiveReflexTests } from "@/hooks/usePrimitiveReflexTests";
 import { useCranialNerveTests } from "@/hooks/useCranialNerveTests";
-import { CRANIAL_NERVES, CranialNerve } from "@/data/cranial-nerve-data";
+import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { getInhibitedFindings } from "@/components/crm/v2/v2-utils";
+import {
+  findGridReflex,
+  primitiveSideKey,
+  primitiveStimKey,
+  primitiveStimKeyAt,
+  nerveStimLines,
+  isLateralStim,
+  cranialSideKey,
+  cranialStimKey,
+} from "@/components/crm/pathway-reflex-stim-data";
 import { PhaseHeader } from "@/components/crm/v2/PhaseComponents";
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
@@ -39,14 +48,15 @@ interface InhibitedItem {
   side?: 'L' | 'R';
 }
 
-const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
+const EmbedPhaseV2 = ({ appointment, onUpdate, saveField, updatePriorityPattern }: PhaseProps) => {
   const [muscleTests, setMuscleTests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [clearingId, setClearingId] = useState<string | null>(null);
+  const [clearingStimId, setClearingStimId] = useState<string | null>(null);
   const [bookNextOpen, setBookNextOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<{ date: Date; time: string; slotTime: string } | null>(null);
-  const { tests: reflexTests } = usePrimitiveReflexTests(appointment.id, appointment.priority_pattern);
-  const { tests: nerveTests } = useCranialNerveTests(appointment.id, appointment.priority_pattern);
+  const { tests: reflexTests, refresh: refreshReflexTests, updateTest: reflexUpdate } = usePrimitiveReflexTests(appointment.id, appointment.priority_pattern);
+  const { tests: nerveTests, refresh: refreshNerveTests, updateTest: nerveUpdate } = useCranialNerveTests(appointment.id, appointment.priority_pattern);
 
   const metadata = useMemo(() => {
     if (!appointment.metadata) return {};
@@ -98,34 +108,107 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
     return inhibitedItems.filter(item => !clearedFindings.has(item.id));
   }, [inhibitedItems, clearedFindings]);
 
-  const stimLookup = useMemo(() => {
-    const map: Record<string, { nerve?: CranialNerve; reflexId?: string; reflexName?: string; stimResults: Record<string, boolean> }> = {};
-    CRANIAL_NERVES.forEach((n) => {
-      const test = nerveTests.find((t) => t.nerve_id === n.id.toString());
-      if (!test?.stim_results) return;
-      map[`${n.name}: ${n.latinName}`] = { nerve: n, stimResults: test.stim_results };
-    });
-    reflexTests.forEach((t) => {
-      const reflex = PRIMITIVE_REFLEXES.find((r) => r.id === t.reflex_id);
-      if (!reflex || !t.stim_results) return;
-      map[reflex.name] = { reflexId: reflex.id, reflexName: reflex.name, stimResults: t.stim_results };
-    });
-    return map;
-  }, [nerveTests, reflexTests]);
+  // List the marked stims for a finding, each mapped back to its storage key so
+  // individual stims can be cleared during re-challenge.
+  const itemStims = (item: InhibitedItem) => {
+    if (item.category === 'cranialNerves') {
+      const nerve = CRANIAL_NERVES.find(n => `${n.name}: ${n.latinName}` === item.name || n.name === item.name);
+      const test = nerve && nerveTests.find(t => t.nerve_id === nerve.id.toString());
+      if (!nerve || !test?.stim_results) return null;
+      const stims: { key: string; label: string; side?: 'L' | 'R' }[] = [];
+      nerveStimLines(nerve).forEach((line, i) => {
+        if (isLateralStim(nerve.id, i)) {
+          (['L', 'R'] as const).forEach((side) => {
+            const key = cranialSideKey(nerve.id, i, side);
+            if (test.stim_results![key]) stims.push({ key, label: line, side });
+          });
+        } else {
+          const key = cranialStimKey(nerve.id, i);
+          if (test.stim_results![key]) stims.push({ key, label: line });
+        }
+      });
+      return { stims: item.side ? stims.filter(s => s.side === item.side) : stims };
+    }
+    if (item.category === 'primitiveReflexes') {
+      const reflex = PRIMITIVE_REFLEXES.find(r => r.name === item.name);
+      const gridReflex = findGridReflex(reflex?.id || '', reflex?.name);
+      const test = reflex && reflexTests.find(t => t.reflex_id === reflex.id);
+      if (!reflex || !gridReflex || !test?.stim_results) return null;
+      const stims: { key: string; label: string; side?: 'L' | 'R' }[] = [];
+      if (gridReflex.lateralized) {
+        (['L', 'R'] as const).forEach((side) => {
+          const key = primitiveSideKey(gridReflex, side);
+          if (test.stim_results![key]) stims.push({ key, label: reflex.stimulus, side });
+        });
+      } else if (gridReflex.stims?.length) {
+        gridReflex.stims.forEach((label, i) => {
+          const key = primitiveStimKeyAt(gridReflex, i);
+          if (test.stim_results![key]) stims.push({ key, label });
+        });
+      } else {
+        const key = primitiveStimKey(gridReflex);
+        if (test.stim_results![key]) stims.push({ key, label: reflex.stimulus });
+      }
+      return { stims: item.side ? stims.filter(s => s.side === item.side) : stims };
+    }
+    return null;
+  };
 
-  const ItemStimSummary = ({ item }: { item: InhibitedItem }) => {
-    const stim = stimLookup[item.name];
-    if (!stim) return null;
+  const clearStim = async (item: InhibitedItem, stimKey: string) => {
+    setClearingStimId(stimKey);
+    try {
+      if (item.category === 'cranialNerves') {
+        const nerve = CRANIAL_NERVES.find(n => `${n.name}: ${n.latinName}` === item.name || n.name === item.name);
+        if (!nerve) return;
+        const existing = nerveTests.find(t => t.nerve_id === nerve.id.toString());
+        const current = (existing && existing.stim_results) || {};
+        const next = { ...current };
+        delete next[stimKey];
+        const isInhibited = Object.values(next).some(Boolean);
+        await nerveUpdate(nerve.id.toString(), { stim_results: next, is_inhibited: isInhibited });
+      } else if (item.category === 'primitiveReflexes') {
+        const reflex = PRIMITIVE_REFLEXES.find(r => r.name === item.name);
+        if (!reflex) return;
+        const existing = reflexTests.find(t => t.reflex_id === reflex.id);
+        const current = (existing && existing.stim_results) || {};
+        const next = { ...current };
+        delete next[stimKey];
+        const isInhibited = Object.values(next).some(Boolean);
+        await reflexUpdate(reflex.id, { stim_results: next, is_inhibited: isInhibited }, item.side, reflex.name);
+      }
+    } finally {
+      setClearingStimId(null);
+    }
+  };
+
+  const ClearableStims = ({ item }: { item: InhibitedItem }) => {
+    const data = itemStims(item);
+    if (!data || data.stims.length === 0) return null;
     return (
-      <StimResultsSummary
-        kind={stim.nerve ? "nerve" : "reflex"}
-        nerve={stim.nerve}
-        reflexId={stim.reflexId}
-        reflexName={stim.reflexName}
-        stimResults={stim.stimResults}
-        filterSide={item.side}
-        className="mt-2"
-      />
+      <div className="mt-2 space-y-1.5">
+        <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+          Marked Stims ({data.stims.length})
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {data.stims.map((s) => (
+            <span
+              key={s.key}
+              className="inline-flex items-center gap-1 pl-1.5 pr-0.5 py-0.5 rounded-md text-[9px] font-medium bg-chart-destructive/10 text-chart-destructive border border-chart-destructive/20"
+            >
+              {s.side && <span className="font-black">{s.side}</span>}
+              <span className="max-w-[200px] truncate leading-snug">{s.label}</span>
+              <button
+                onClick={() => clearStim(item, s.key)}
+                disabled={clearingStimId === s.key}
+                className="rounded p-0.5 text-chart-destructive hover:bg-chart-destructive hover:text-white transition-colors"
+                title={`Clear "${s.label}"`}
+              >
+                {clearingStimId === s.key ? <Loader2 size={10} className="animate-spin" /> : <X size={10} />}
+              </button>
+            </span>
+          ))}
+        </div>
+      </div>
     );
   };
 
@@ -133,13 +216,75 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
     return inhibitedItems.filter(item => clearedFindings.has(item.id));
   }, [inhibitedItems, clearedFindings]);
 
-  const handleClearItem = async (item: any) => {
+  // Clear the underlying stim marks (and the priority_pattern entry) for a
+  // pattern finding, so the GRID reflects the cleared state after re-challenge.
+  const clearStims = async (item: InhibitedItem) => {
+    if (item.category === 'cranialNerves') {
+      const nerve = CRANIAL_NERVES.find(n => `${n.name}: ${n.latinName}` === item.name || n.name === item.name);
+      const test = nerve && nerveTests.find(t => t.nerve_id === nerve.id.toString());
+      if (nerve && test?.stim_results) {
+        const next = { ...test.stim_results };
+        if (item.side && nerve.isLateralized) {
+          nerveStimLines(nerve).forEach((_, i) => {
+            if (isLateralStim(nerve.id, i)) delete next[cranialSideKey(nerve.id, i, item.side!)];
+          });
+        } else {
+          nerveStimLines(nerve).forEach((_, i) => {
+            if (isLateralStim(nerve.id, i)) {
+              delete next[cranialSideKey(nerve.id, i, 'L')];
+              delete next[cranialSideKey(nerve.id, i, 'R')];
+            } else {
+              delete next[cranialStimKey(nerve.id, i)];
+            }
+          });
+        }
+        const isInhibited = Object.values(next).some(Boolean);
+        const { error } = await supabase
+          .from('cranial_nerve_tests')
+          .update({ stim_results: next, is_inhibited: isInhibited, updated_at: new Date().toISOString() })
+          .eq('id', test.id);
+        if (error) throw error;
+      }
+      if (nerve) {
+        await updatePriorityPattern('cranialNerves', `${nerve.name}: ${nerve.latinName}`, null, item.side);
+      }
+    } else if (item.category === 'primitiveReflexes') {
+      const reflex = PRIMITIVE_REFLEXES.find(r => r.name === item.name);
+      const gridReflex = findGridReflex(reflex?.id || '', reflex?.name);
+      const test = reflex && reflexTests.find(t => t.reflex_id === reflex.id);
+      if (reflex && gridReflex && test?.stim_results) {
+        const next = { ...test.stim_results };
+        if (item.side && gridReflex.lateralized) {
+          delete next[primitiveSideKey(gridReflex, item.side)];
+        } else if (gridReflex.stims?.length) {
+          gridReflex.stims.forEach((_, i) => delete next[primitiveStimKeyAt(gridReflex, i)]);
+        } else {
+          delete next[primitiveStimKey(gridReflex)];
+        }
+        const isInhibited = Object.values(next).some(Boolean);
+        const { error } = await supabase
+          .from('primitive_reflex_tests')
+          .update({ stim_results: next, is_inhibited: isInhibited, updated_at: new Date().toISOString() })
+          .eq('id', test.id);
+        if (error) throw error;
+      }
+      if (reflex) {
+        await updatePriorityPattern('primitiveReflexes', reflex.name, null, item.side);
+      }
+    }
+  };
+
+  const handleClearItem = async (item: InhibitedItem) => {
     setClearingId(item.id);
     try {
       if (item.type === 'muscle') {
         const { error } = await supabase.from('muscle_tests').update({ status: 'Normotonic' }).eq('id', item.id);
         if (error) throw error;
         await fetchMuscleTests();
+      } else {
+        await clearStims(item);
+        refreshNerveTests();
+        refreshReflexTests();
       }
       const newCleared = [...(metadata.cleared_findings || []), item.id];
       const clearedMuscleStatus = {
@@ -235,7 +380,7 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
                         )}
                       </div>
                       <p className="text-[10px] font-medium text-muted-foreground">{item.status}</p>
-                      <ItemStimSummary item={item} />
+                      <ClearableStims item={item} />
                     </div>
                   </div>
                   <Button
@@ -300,7 +445,6 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField }: PhaseProps) => {
                           )}
                         </div>
                         <p className="text-[9px] font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1"><CheckCircle2 size={8} /> Cleared</p>
-                        <ItemStimSummary item={item} />
                       </div>
                     </div>
                     <Button

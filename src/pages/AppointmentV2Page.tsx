@@ -99,7 +99,7 @@ const AppointmentV2Page = () => {
               variant="ghost"
               size="sm"
               onClick={() => navigate('/practice/clinical-hub')}
-              className="rounded-xl text-muted-foreground hover:text-foreground"
+              className="rounded-xl text-muted-foreground shrink-0"
             >
               <ArrowLeft size={16} className="mr-1.5" /> Back
             </Button>
@@ -136,7 +136,7 @@ const AppointmentV2Page = () => {
                     );
                   })()}
                 </div>
-                <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium">
+                <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium hidden min-[520px]:flex">
                   <Calendar size={10} />
                   <span>{format(new Date(appointment.date), "EEE, MMM d")}</span>
                   <Clock size={10} className="ml-1" />
@@ -146,8 +146,8 @@ const AppointmentV2Page = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-1 shrink-0">
-            <div className="flex items-center gap-0.5 mr-3 border-r border-border pr-3">
+          <div className="flex items-center gap-1 min-w-0">
+            <div className="flex items-center gap-0.5 mr-2 md:mr-3 border-r border-border pr-2 md:pr-3 overflow-x-auto whitespace-nowrap min-w-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               {MODE_TABS.map(tab => {
                 const Icon = tab.icon;
                 const isActive = viewMode === tab.id;
@@ -156,7 +156,7 @@ const AppointmentV2Page = () => {
                     key={tab.id}
                     onClick={() => setViewMode(tab.id)}
                     className={cn(
-                      "flex items-center gap-1.5 px-3 h-8 text-[10px] font-bold uppercase tracking-wider transition-colors rounded-lg",
+                      "flex items-center gap-1.5 px-2.5 md:px-3 h-8 text-[10px] font-bold uppercase tracking-wider transition-colors rounded-lg shrink-0 whitespace-nowrap",
                       isActive
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -170,17 +170,17 @@ const AppointmentV2Page = () => {
             </div>
             <button
               onClick={() => setQuickSessionOpen(true)}
-              className="flex items-center gap-1.5 px-3 h-8 text-[10px] font-bold uppercase tracking-wider border border-foreground/20 hover:bg-foreground hover:text-background transition-colors rounded-lg"
+              className="flex items-center gap-1.5 px-2 md:px-3 h-8 text-[10px] font-bold uppercase tracking-wider border border-foreground/20 hover:bg-foreground hover:text-background transition-colors rounded-lg shrink-0 whitespace-nowrap"
               title="FILE > NEW — Create a new session"
             >
-              <Plus size={13} /> New
+              <Plus size={13} /> <span className="hidden md:inline">New</span>
             </button>
-            <div className="w-px h-6 bg-border mx-1" />
+            <div className="w-px h-6 bg-border mx-0.5 shrink-0" />
             <Button
               variant="ghost"
               size="sm"
               asChild
-              className="rounded-xl text-muted-foreground hover:text-foreground"
+              className="rounded-xl text-muted-foreground shrink-0"
               title="Open the archived (legacy) session page"
             >
               <Link to={`/appointments/${id}/archive`}>
@@ -191,7 +191,7 @@ const AppointmentV2Page = () => {
               variant="ghost"
               size="sm"
               onClick={toggleFullScreen}
-              className="rounded-xl text-muted-foreground hover:text-foreground"
+              className="rounded-xl text-muted-foreground shrink-0"
             >
               {isFullScreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
             </Button>

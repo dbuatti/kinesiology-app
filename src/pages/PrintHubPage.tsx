@@ -57,18 +57,27 @@ const PRINTABLES = [
  color: "text-chart-primary",
  bgColor: "bg-chart-primary/10"
  },
- {
- id: "hw-ref",
- label: "Heart Wall Table",
- desc: "Subconscious barrier emotions and muscles.",
- icon: Heart,
- path: "/resources/heart-wall/print",
- color: "text-destructive",
- bgColor: "bg-chart-destructive/10"
- }
- ]
- },
- {
+  {
+  id: "hw-ref",
+  label: "Heart Wall Table",
+  desc: "Subconscious barrier emotions and muscles.",
+  icon: Heart,
+  path: "/resources/heart-wall/print",
+  color: "text-destructive",
+  bgColor: "bg-chart-destructive/10"
+  },
+  {
+  id: "prs-ref",
+  label: "Pathway / Reflex / Stim Grid",
+  desc: "Primitive reflexes & cranial nerves by pathway with stims.",
+  icon: Zap,
+  path: "/resources/pathway-reflex-stim/print",
+  color: "text-foreground",
+  bgColor: "bg-muted"
+  }
+  ]
+  },
+  {
  category: "Assessment Worksheets",
  description: "Structured logs for recording findings during a session.",
  items: [

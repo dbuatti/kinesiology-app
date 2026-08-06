@@ -138,6 +138,24 @@ export function usePrimitiveReflexTests(
     }
   };
 
+  const toggleStim = async (
+    reflexId: string,
+    stimKey: string,
+    checked: boolean,
+    reflexName?: string
+  ) => {
+    const existing = tests.find(t => t.reflex_id === reflexId);
+    const current = (existing && existing.stim_results) || {};
+    const next = { ...current, [stimKey]: checked };
+    const isInhibited = Object.values(next).some(Boolean);
+    await updateTest(
+      reflexId,
+      { stim_results: next, is_inhibited: isInhibited },
+      undefined,
+      reflexName
+    );
+  };
+
   useEffect(() => {
     fetchTests();
   }, [fetchTests]);
@@ -146,6 +164,7 @@ export function usePrimitiveReflexTests(
     tests,
     loading,
     updateTest,
+    toggleStim,
     refresh: fetchTests
   };
 }

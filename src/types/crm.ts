@@ -20,6 +20,7 @@ export interface CranialNerveTest {
   is_priority: boolean;
   is_primary_priority: boolean;
   notes: string | null;
+  stim_results?: Record<string, boolean>;
   created_at: string;
   updated_at: string;
 }
@@ -34,6 +35,7 @@ export interface PrimitiveReflexTest {
   is_priority: boolean;
   is_primary_priority: boolean;
   notes: string | null;
+  stim_results?: Record<string, boolean>;
   created_at: string;
   updated_at: string;
 }

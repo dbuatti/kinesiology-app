@@ -132,6 +132,21 @@ export function useCranialNerveTests(
     }
   };
 
+  const toggleStim = async (
+    nerveId: string,
+    stimKey: string,
+    checked: boolean
+  ) => {
+    const existing = tests.find(t => t.nerve_id === nerveId);
+    const current = (existing && existing.stim_results) || {};
+    const next = { ...current, [stimKey]: checked };
+    const isInhibited = Object.values(next).some(Boolean);
+    await updateTest(nerveId, {
+      stim_results: next,
+      is_inhibited: isInhibited
+    });
+  };
+
   useEffect(() => {
     fetchTests();
   }, [fetchTests]);
@@ -140,6 +155,7 @@ export function useCranialNerveTests(
     tests,
     loading,
     updateTest,
+    toggleStim,
     refresh: fetchTests
   };
 }

@@ -73,6 +73,7 @@ const PrimitiveReflexWorksheetPage = lazy(() => import("./pages/PrimitiveReflexW
 const HeartWallPrintPage = lazy(() => import("./pages/HeartWallPrintPage"));
 const BrainZonePrintPage = lazy(() => import("./pages/BrainZonePrintPage"));
 const JointActionPrintPage = lazy(() => import("./pages/JointActionPrintPage"));
+const PathwayReflexStimPage = lazy(() => import("./pages/PathwayReflexStimPage"));
 
 // --- Voice Studio ---
 const VoiceDashboardPage = lazy(() => import("./pages/VoiceDashboardPage"));
@@ -138,6 +139,7 @@ const AppRoutes = () => {
         <Route path="/resources/cranial-nerves/print" element={session ? <CranialNervePrintPage /> : <Navigate to="/login" replace />} />
         <Route path="/resources/cranial-nerves/worksheet" element={session ? <CranialNerveWorksheetPage /> : <Navigate to="/login" replace />} />
         <Route path="/resources/primitive-reflexes/worksheet" element={session ? <PrimitiveReflexWorksheetPage /> : <Navigate to="/login" replace />} />
+        <Route path="/resources/pathway-reflex-stim/print" element={session ? <PathwayReflexStimPage /> : <Navigate to="/login" replace />} />
         <Route path="/resources/heart-wall/print" element={session ? <HeartWallPrintPage /> : <Navigate to="/login" replace />} />
         <Route path="/resources/brain-zones/print" element={session ? <BrainZonePrintPage /> : <Navigate to="/login" replace />} />
         <Route path="/resources/joint-actions/print" element={session ? <JointActionPrintPage /> : <Navigate to="/login" replace />} />

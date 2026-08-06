@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import {
   ArrowLeft, Loader2, Activity, FileText,
   Maximize2, Minimize2, Calendar, Clock, User, BookOpen,
-  Plus, BookMarked
+  Plus, BookMarked, LayoutGrid
 } from "lucide-react";
 import {
   HoverCard, HoverCardContent, HoverCardTrigger,
@@ -20,6 +20,7 @@ import PeaceWizard from "@/components/crm/v2/PeaceWizard";
 import AppointmentV2DocView from "@/components/crm/v2/AppointmentV2DocView";
 import CorrectionsManualContent from "@/components/crm/CorrectionsManualContent";
 import { QuickSessionDialog } from "@/components/crm/QuickSessionDialog";
+import PathwayReflexStimGrid from "@/components/crm/PathwayReflexStimGrid";
 import { parseClientJournal } from "@/utils/journal-helper";
 
 
@@ -37,7 +38,7 @@ const AppointmentV2Page = () => {
     refresh
   } = useAppointment(id);
 
-  const [viewMode, setViewMode] = useState<'peace' | 'doc' | 'manual'>(() => {
+  const [viewMode, setViewMode] = useState<'peace' | 'grid' | 'doc' | 'manual'>(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get('view') === 'doc' ? 'doc' : 'peace';
   });
@@ -83,6 +84,7 @@ const AppointmentV2Page = () => {
 
   const MODE_TABS = [
     { id: 'peace' as const, label: 'PEACE', icon: Activity },
+    { id: 'grid' as const, label: 'GRID', icon: LayoutGrid },
     { id: 'doc' as const, label: 'DOC', icon: FileText },
     { id: 'manual' as const, label: 'MANUAL', icon: BookMarked },
   ];
@@ -203,6 +205,20 @@ const AppointmentV2Page = () => {
                   showError("Failed to complete session. Please try again.");
                 }
               }}
+            />
+          </ErrorBoundary>
+        </div>
+      )}
+
+      {viewMode === 'grid' && (
+        <div className="px-4 md:px-8 py-6 max-w-6xl mx-auto">
+          <ErrorBoundary>
+            <PathwayReflexStimGrid
+              appointmentId={appointment.id}
+              priorityPattern={appointment.priority_pattern}
+              updatePriorityPattern={updatePriorityPattern}
+              isFullScreen={isFullScreen}
+              onToggleFullScreen={toggleFullScreen}
             />
           </ErrorBoundary>
         </div>

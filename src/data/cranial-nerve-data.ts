@@ -56,7 +56,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
       "Direct limbic system connection (bypasses thalamus)",
       "Appetite and food recognition"
     ],
-    stimulus: "Hold Yin Tang (between and just above eyebrows) as the reflex point. Stimulus: smell an essential oil in the nostril. CN I bypasses the thalamus entirely and projects directly to the olfactory cortex and limbic system.",
+    stimulus: "Smell an essential oil in the nostril. CN I bypasses the thalamus entirely and projects directly to the olfactory cortex and limbic system.",
     clinicalPearl: "CN I is the only cranial nerve that bypasses the thalamus and projects directly to the limbic system — making it a powerful emotional and memory pathway. Olfactory dysfunction is common in post-concussion, post-viral, and neurodegenerative presentations. Olfactory stim can be used as a limbic entry point when direct emotional work is blocked.",
     color: "bg-purple-50",
     isLateralized: true,
@@ -79,7 +79,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
       "Light sensitivity regulation (pupillary reflex via CN III)",
       "Visual field mapping"
     ],
-    stimulus: "Hold BL2 (inner end of eyebrow) as the reflex point. Stimulus: shine light into the eye in any possible direction — direct, from above, from below, from the sides. Input crosses over at the optic chiasm — right eye projects to left occipital cortex.",
+    stimulus: "Shine light into the eye in any possible direction — direct, from above, from below, from the sides. Input crosses over at the optic chiasm — right eye projects to left occipital cortex.",
     clinicalPearl: "CN II stim and visual cortex stim are the same thing. Input decussates (crosses over) at the optic chiasm — right visual field → left occipital cortex. In post-concussion presentations, CN II dysfunction is often the primary driver of light sensitivity and cognitive fatigue. BL2 (inner end of eyebrow) is the reflex point; the stim is light directed into the eye from any angle.",
     color: "bg-purple-600",
     isLateralized: true,
@@ -101,7 +101,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
       "Eyelid elevation (levator palpebrae)",
       "Lens accommodation (near focus)"
     ],
-    stimulus: "Lightly touch the eye lids as the reflex point. Stimulus: move eyes up, down, medial towards bridge of nose, up and left, down and left, open eyelid slowly. Shares midbrain housing with CN IV.",
+    stimulus: "Move eyes up, down, medial towards bridge of nose, up and left, down and left, open eyelid slowly. Shares midbrain housing with CN IV.",
     clinicalPearl: "CN III shares midbrain nuclei with CN IV. Midbrain stim (GV26 + clavicle + ear cupping) addresses both simultaneously. Ptosis and pupil asymmetry are red flags — rule out structural causes before applying stim. In FNH, CN III dysfunction often presents alongside CN IV and is addressed as a midbrain complex.",
     color: "bg-amber-500",
     isLateralized: true,
@@ -122,7 +122,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
       "Stabilises eye during head tilt",
       "Critical for reading and descending stairs"
     ],
-    stimulus: "Lightly touch the eyes as the reflex point. Stimulus: move eyes towards the tip of the nose (downward and inward convergence). CN IV is the only cranial nerve that exits dorsally from the brainstem.",
+    stimulus: "Move eyes towards the tip of the nose (downward and inward convergence). CN IV is the only cranial nerve that exits dorsally from the brainstem.",
     clinicalPearl: "CN IV is the smallest cranial nerve and the only one to exit dorsally. It is frequently overlooked clinically. Unexplained head tilt — especially in children — is a classic CN IV presentation. Midbrain stim (GV26) addresses CN III and IV together. Always check for compensatory head tilt as a diagnostic clue.",
     color: "bg-amber-600",
     isLateralized: true,
@@ -144,7 +144,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
       "Corneal reflex (V1 afferent limb)",
       "Largest cranial nerve by volume"
     ],
-    stimulus: "Place hand across the mandible (cheek) as the reflex point. CN V has three sensory branches and a motor division — each requires targeted stimulation.",
+    stimulus: "Targeted stimulation of each branch: V1 — light touch to the forehead and supraorbital region. V2 — light touch to the cheek and upper lip. V3 — light touch to the jaw and lower lip, plus jaw clenching (masseter) and lateral jaw movement (pterygoids). Very light sound stimulus (soft click or gentle tone) for the tensor tympani branch.",
     clinicalPearl: "CN V is the largest cranial nerve and the primary sensory nerve of the face. GV26 → trigeminal nucleus → midbrain is a key pathway. Pons correction (GV17/EOP) is the primary stim for the CN V–VIII group. TMJ dysfunction and chronic headaches are common presentations of CN V involvement in FNH practice.",
     color: "bg-indigo-500",
     isLateralized: true,
@@ -165,7 +165,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
       "Lateral eye movement — abduction (looking outward away from midline)",
       "Coordinates with CN III for conjugate gaze"
     ],
-    stimulus: "Lightly touch the eyes as the reflex point. Stimulus: move eyes laterally — look as far left as possible, then as far right as possible. Tests the lateral rectus muscle (sole muscle innervated by CN VI).",
+    stimulus: "Move eyes laterally — look as far left as possible, then as far right as possible. Tests the lateral rectus muscle (sole muscle innervated by CN VI).",
     clinicalPearl: "CN VI palsy is a well-known sign of raised intracranial pressure and is often the first cranial nerve affected in post-concussion presentations. Pons stim (GV17) addresses CN V–VIII together. Horizontal diplopia that worsens at distance is a classic CN VI presentation.",
     color: "bg-indigo-600",
     isLateralized: true,
@@ -187,7 +187,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
       "Lacrimation (tear production) and salivation (submandibular/sublingual glands)",
       "Stapedius muscle — sound dampening in middle ear"
     ],
-    stimulus: "Place hand along the temporal/TMJ area as the reflex point. Stimulus: squeeze eye shut, produce different facial expressions, loud sound stimulus (activates the stapedius branch). Test facial symmetry and expression quality before and after.",
+    stimulus: "Squeeze eye shut, produce different facial expressions, loud sound stimulus (activates the stapedius branch). Test facial symmetry and expression quality before and after.",
     clinicalPearl: "CN VII has both motor and sensory divisions. The stapedius branch is clinically significant — CN VII dysfunction can cause hyperacusis (sound hypersensitivity), which is common in post-concussion and stress presentations. Pons stim (GV17/EOP) is the primary correction. Bell's palsy is the classic CN VII presentation.",
     color: "bg-indigo-700",
     isLateralized: true,
@@ -209,7 +209,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
       "Vestibulo-ocular reflex (gaze stabilisation during head movement)",
       "Projects to cerebellum (vestibular division) and temporal lobe (cochlear division)"
     ],
-    stimulus: "Place finger in the ear canal as the reflex point. CN VIII has two distinct divisions requiring separate stimulation techniques.",
+    stimulus: "Cochlear (Auditory) Stim: click fingers next to the ear (auditory input to the cochlear division). Vestibular Stim: move head in different directions — rotate left, rotate right, tilt left, tilt right, up, down.",
     clinicalPearl: "Auditory cortex stim and CN VIII stim are the same intervention. The vestibular division projects heavily to the cerebellum — CN VIII dysfunction frequently presents alongside cerebellar signs (balance, coordination). Tinnitus, vertigo, and motion sickness are common FNH presentations. Pons stim (GV17) + rocking/vestibular input is the standard protocol.",
     color: "bg-indigo-800",
     isLateralized: true,
@@ -233,7 +233,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
       "Carotid body/sinus monitoring (blood pressure and O2 levels)",
       "Parotid gland salivation"
     ],
-    stimulus: "Hold GB21 (halfway between the neck and shoulder tip, in the belly of the Upper Trapezius) as the reflex point. Stimulus: humming or swallowing. Test indicator muscle before and after to assess CN IX function.",
+    stimulus: "Humming or swallowing. Test indicator muscle before and after to assess CN IX function.",
     clinicalPearl: "CN IX and CN X share medullary nuclei (nucleus ambiguus and nucleus solitarius). GB12 is the primary medulla stim point for the CN IX–XII group. Carotid sinus hypersensitivity (CN IX) can present as unexplained syncope or dizziness with neck pressure. Always assess CN IX and X together.",
     color: "bg-rose-50",
     isLateralized: false,
@@ -255,7 +255,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
       "Gut-brain axis — bidirectional communication",
       "Heart rate variability (HRV) — ventral vagal tone"
     ],
-    stimulus: "Place flat hand across the Occiput-Atlas joint (base of skull / C1 junction) as the reflex point. Use the Cymba Concha auricular point (the upper hollow of the ear bowl, above the Concha Cavum, below the antihelix — Auricular Branch of the Vagus Nerve) to lateralise — right Cymba Concha for right vagus, left for left. Stimulus options: humming, swallowing, 'Aaah' vocalisation, clean roof of mouth with tongue, slow heart rate breathing (extended exhale).",
+    stimulus: "Use the Cymba Concha auricular point (the upper hollow of the ear bowl, above the Concha Cavum, below the antihelix — Auricular Branch of the Vagus Nerve) to lateralise — right Cymba Concha for right vagus, left for left. Stimulus options: humming, swallowing, 'Aaah' vocalisation, clean roof of mouth with tongue, slow heart rate breathing (extended exhale).",
     clinicalPearl: "CN X is the most clinically significant cranial nerve in FNH. Critically: ~90% of CN X fibres are AFFERENT — they carry sensory information from the visceral organs (heart, lungs, gut) UP to the Nucleus Tractus Solitarius (NTS) in the medulla. This means organ dysfunction (digestive, cardiac, respiratory) often presents as an AFFERENT correction need, not efferent. Dorsal vagal shutdown = freeze/collapse/dissociation. Ventral vagal = safe, connected, regulated. GB12 + humming is a powerful vagal reset. The PRE slow exhale test directly assesses vagal tone and is both a diagnostic and therapeutic tool.",
     color: "bg-rose-600",
     isLateralized: false,
@@ -276,7 +276,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
       "Motor to upper trapezius — shoulder elevation and scapular stabilisation",
       "Dual origin: medulla + upper cervical cord (C1–C5)"
     ],
-    stimulus: "Hold the bilateral posterior ramus of the jaw (both sides simultaneously) as the reflex point. Stimulus: ipsilateral SCM contraction + contralateral upper trapezius contraction. Test SCM and upper trapezius strength as indicator muscles before and after.",
+    stimulus: "Ipsilateral SCM contraction + contralateral upper trapezius contraction. Test SCM and upper trapezius strength as indicator muscles before and after.",
     clinicalPearl: "CN XI is the only cranial nerve with dual origin (brainstem + spinal cord). SCM weakness is a common finding in post-concussion, whiplash, and chronic neck pain presentations. GB12 is the medulla correction point. Upper trapezius inhibition (not just tension) is a key diagnostic finding — test it as an IM. GB21 (trapezius belly) can also be used as a touch point for the trapezius division.",
     color: "bg-rose-700",
     isLateralized: true,
@@ -299,7 +299,7 @@ export const CRANIAL_NERVES: CranialNerve[] = [
       "Swallowing — oral phase (tongue propulsion of bolus)",
       "Tongue posture and resting position"
     ],
-    stimulus: "Hold the sulcus under the chin (anterior mandible) as the reflex point. Stimulus: tongue movement — forwards, right, left, up, and any other direction. Test tongue strength and deviation on protrusion before and after.",
+    stimulus: "Tongue movement — forwards, right, left, up, and any other direction. Test tongue strength and deviation on protrusion before and after.",
     clinicalPearl: "Tongue deviation on protrusion is a key diagnostic sign — the tongue deviates toward the ipsilateral (same side as lesion) weak side. CN XII dysfunction is a common finding in post-stroke, post-concussion, and speech/swallowing presentations. GB12 medulla correction + tongue exercises is the standard protocol. Articulation quality is a useful functional re-test after correction.",
     color: "bg-rose-800",
     isLateralized: false,

@@ -12,7 +12,7 @@ import {
   Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Brain,
   LayoutDashboard, History, ArrowRight, Sparkles, Plus, Link as LinkIcon,
   Zap, Send, ShieldCheck, ExternalLink, RefreshCw, ShieldAlert, Info, User, CreditCard, LayoutGrid,
-  CalendarClock
+  CalendarClock, Mic
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -49,6 +49,37 @@ import { useClientGridData } from "@/hooks/useClientGridData";
 import ClientGridSummaryTab from "@/components/crm/ClientGridSummaryTab";
 import ClientAppointmentCard from "@/components/crm/ClientAppointmentCard";
 
+interface VoiceHistoryEntry {
+  key: string;
+  date: Date;
+  time: string | null;
+  discipline?: string | null;
+  cost: number | null;
+  paid: boolean;
+  free: boolean;
+  url: string | null;
+}
+
+interface VoiceLessonRow {
+  id?: string;
+  notionUrl?: string | null;
+  date?: string | null;
+  time?: string | null;
+  studentEmail?: string | null;
+  paymentStatus?: string | null;
+  cost?: number | null;
+  discipline?: string | null;
+}
+
+interface VoiceBookingRow {
+  calcom_booking_id?: string | null;
+  lesson_date?: string | null;
+  lesson_time?: string | null;
+  cost?: number | null;
+  status?: string | null;
+  discipline?: string | null;
+}
+
 const ClientDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -72,8 +103,14 @@ const ClientDetailPage = () => {
   const [contactLogOpen, setContactLogOpen] = useState(false);
   const [contactLogNote, setContactLogNote] = useState("");
   const [savingContact, setSavingContact] = useState(false);
+  const [voiceHistory, setVoiceHistory] = useState<VoiceHistoryEntry[]>([]);
+  const [voiceLoading, setVoiceLoading] = useState(false);
   const { addRecentClient } = useRecentClients();
   const { gridFor } = useClientGridData(appointments);
+
+  const voiceOutstanding = useMemo(() =>
+    voiceHistory.reduce((sum, l) => sum + (l.free || l.paid ? 0 : (l.cost ?? 0)), 0),
+  [voiceHistory]);
 
   const nextAppointment = useMemo(() => {
     const now = new Date();
@@ -82,6 +119,68 @@ const ClientDetailPage = () => {
       .sort((a, b) => a.date.getTime() - b.date.getTime());
     return upcoming[0] || null;
   }, [appointments]);
+
+  const loadVoiceHistory = async (email: string) => {
+    setVoiceLoading(true);
+    try {
+      const entries: VoiceHistoryEntry[] = [];
+      const seen = new Set<string>();
+      const slotKey = (date: string, time: string | null) => {
+        const m = (time || "").match(/^(\d+):(\d+)\s*(AM|PM)/i);
+        return m ? `${date}|${m[1]}:${m[2]}` : date;
+      };
+      // Notion lessons are the primary record (carry URL + payment status).
+      const { data: lessonsRes } = await supabase.functions.invoke("voice-lessons");
+      for (const l of (lessonsRes?.lessons || []) as VoiceLessonRow[]) {
+        if (!l.date || !l.studentEmail || String(l.studentEmail).toLowerCase() !== email.toLowerCase()) continue;
+        const sk = slotKey(l.date, l.time || null);
+        if (seen.has(sk)) continue;
+        seen.add(sk);
+        const ps = (l.paymentStatus || "").toLowerCase();
+        const paid = ps.includes("paid") && !ps.includes("unpaid");
+        const cost = l.cost ?? null;
+        entries.push({
+          key: `n-${l.id}`,
+          date: new Date(l.date),
+          time: l.time || null,
+          discipline: l.discipline || null,
+          cost,
+          paid,
+          free: cost === 0,
+          url: l.notionUrl || null,
+        });
+      }
+      // voice_bookings rows fill the gaps (Cal.com lessons without a Notion page yet).
+      const { data: vbs } = await supabase
+        .from("voice_bookings")
+        .select("calcom_booking_id, lesson_date, lesson_time, cost, status, discipline")
+        .eq("student_email", email)
+        .order("lesson_date", { ascending: false });
+      for (const vb of (vbs || []) as VoiceBookingRow[]) {
+        if (!vb.lesson_date) continue;
+        const sk = slotKey(vb.lesson_date, vb.lesson_time || null);
+        if (seen.has(sk)) continue;
+        seen.add(sk);
+        entries.push({
+          key: `t-${vb.calcom_booking_id}`,
+          date: new Date(`${vb.lesson_date}T12:00:00`),
+          time: vb.lesson_time || null,
+          discipline: vb.discipline || null,
+          cost: vb.cost ?? null,
+          paid: vb.status === "paid",
+          free: vb.cost === 0,
+          url: null,
+        });
+      }
+      entries.sort((a, b) => b.date.getTime() - a.date.getTime());
+      setVoiceHistory(entries);
+    } catch (err) {
+      console.error("Failed to load voice history:", err);
+      setVoiceHistory([]);
+    } finally {
+      setVoiceLoading(false);
+    }
+  };
 
   const fetchClientData = async () => {
     try {
@@ -115,6 +214,10 @@ const ClientDetailPage = () => {
         ...a,
         date: new Date(a.date)
       })) as unknown as Appointment[]);
+
+      if (clientData.email) {
+        await loadVoiceHistory(clientData.email);
+      }
 
     } catch (err) {
       console.error("Error fetching client details:", err);
@@ -682,6 +785,71 @@ const ClientDetailPage = () => {
                     </CardContent>
                   </Card>
                 </div>
+
+                {/* Voice Studio — voice lessons matched to this client's email */}
+                <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+                  <CardHeader className="bg-muted/50 border-b border-border flex items-center justify-between space-y-0 pb-3">
+                    <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                      <Mic size={14} className="text-chart-destructive" /> Voice Studio
+                    </CardTitle>
+                    {!voiceLoading && voiceHistory.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-muted text-foreground border-none font-semibold text-[10px]">{voiceHistory.length} lessons</Badge>
+                        {voiceOutstanding > 0 && (
+                          <Badge className="bg-chart-destructive/10 text-chart-destructive border-none font-semibold text-[10px]">${voiceOutstanding} outstanding</Badge>
+                        )}
+                      </div>
+                    )}
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    {voiceLoading ? (
+                      <div className="flex items-center justify-center py-6 text-muted-foreground gap-2 text-sm">
+                        <Loader2 size={16} className="animate-spin" /> Loading voice lessons…
+                      </div>
+                    ) : voiceHistory.length === 0 ? (
+                      <p className="text-sm text-muted-foreground/70 py-6 text-center border border-dashed border-border rounded-xl">
+                        {client.email ? `No voice lessons found for ${client.email}.` : "No email on this client — add one to match voice lessons."}
+                      </p>
+                    ) : (
+                      <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                        {voiceHistory.map((l) => (
+                          <div key={l.key} className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30 border border-border">
+                            <div className="w-8 h-8 rounded-lg bg-chart-destructive/10 flex items-center justify-center shrink-0">
+                              <Mic size={14} className="text-chart-destructive" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-sm font-medium text-foreground">{format(l.date, "EEE, MMM d, yyyy")}</span>
+                                {l.discipline && (
+                                  <Badge className={cn("text-[9px] font-semibold uppercase tracking-wider border-none px-1.5 py-0",
+                                    l.discipline === "piano" ? "bg-chart-primary/10 text-chart-primary" : "bg-chart-destructive/10 text-chart-destructive")}>
+                                    {l.discipline}
+                                  </Badge>
+                                )}
+                              </div>
+                              {l.time && <p className="text-xs text-muted-foreground">{l.time}</p>}
+                            </div>
+                            <div className="text-right shrink-0">
+                              <div className={cn("text-sm font-bold tabular-nums", l.free ? "text-muted-foreground" : l.paid ? "text-chart-emerald" : "text-chart-destructive")}>
+                                {l.free ? "Free" : `$${l.cost ?? ""}`}
+                              </div>
+                              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                {l.free ? "Complimentary" : l.paid ? "Paid" : "Unpaid"}
+                              </div>
+                            </div>
+                            {l.url && (
+                              <a href={l.url} target="_blank" rel="noopener noreferrer"
+                                 className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+                                 title="Open lesson in Notion">
+                                <ExternalLink size={14} />
+                              </a>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
 
                 {/* Comprehensive Clinical Profile Section */}
                 <div className="space-y-6">

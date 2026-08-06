@@ -44,12 +44,15 @@ interface VoiceStudent {
 }
 
 interface VoiceLesson {
- id: string;
- notionUrl: string;
- name: string | null;
- date: string | null;
- time: string | null;
- studentIds: string[];
+  id: string;
+  notionUrl: string;
+  name: string | null;
+  date: string | null;
+  time: string | null;
+  studentIds: string[];
+  paymentStatus: string | null;
+  cost: number | null;
+  discipline?: string | null;
 }
 
 const now = new Date();
@@ -138,27 +141,51 @@ const VoiceClientsPage = () => {
  return m;
  }, [voiceOnboarding]);
 
- const enriched = useMemo(() => {
- return students.map((s) => {
- const studentLessons = lessons.filter((l) => l.studentIds.includes(s.id));
- const pastLessons = studentLessons.filter((l) => l.date && new Date(l.date) <= now);
- const futureLessons = studentLessons.filter((l) => l.date && new Date(l.date) > now);
- pastLessons.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
- const lastSeenDate = s.latestDate
- ? new Date(s.latestDate)
- : pastLessons.length > 0
- ? new Date(pastLessons[0].date!)
- : null;
- const nextLesson = futureLessons.sort((a, b) => (a.date || "").localeCompare(b.date || ""))[0] || null;
- return {
- ...s,
- lastSeenDate,
- nextLessonDate: nextLesson?.date || null,
- hasUpcoming: futureLessons.length > 0,
- lessonCount: studentLessons.length,
- };
- });
- }, [students, lessons]);
+  const enriched = useMemo(() => {
+  return students.map((s) => {
+  const studentLessons = lessons.filter((l) => l.studentIds.includes(s.id));
+  const pastLessons = studentLessons.filter((l) => l.date && new Date(l.date) <= now);
+  const futureLessons = studentLessons.filter((l) => l.date && new Date(l.date) > now);
+  pastLessons.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+  const lastSeenDate = s.latestDate
+  ? new Date(s.latestDate)
+  : pastLessons.length > 0
+  ? new Date(pastLessons[0].date!)
+  : null;
+  const nextLesson = futureLessons.sort((a, b) => (a.date || "").localeCompare(b.date || ""))[0] || null;
+  let outstandingBalance = 0, collectedAmount = 0, unpaidLessonCount = 0, freeLessonCount = 0;
+  for (const l of studentLessons) {
+    const ps = (l.paymentStatus || "").toLowerCase();
+    const isPaid = ps.includes("paid") && !ps.includes("unpaid");
+    const cost = l.cost ?? 0;
+    if (cost === 0) freeLessonCount++;
+    else if (isPaid) collectedAmount += cost;
+    else { outstandingBalance += cost; unpaidLessonCount++; }
+  }
+  return {
+  ...s,
+  lastSeenDate,
+  nextLessonDate: nextLesson?.date || null,
+  hasUpcoming: futureLessons.length > 0,
+  lessonCount: studentLessons.length,
+  outstandingBalance,
+  collectedAmount,
+  unpaidLessonCount,
+  freeLessonCount,
+  };
+  });
+  }, [students, lessons]);
+
+  const ledgerTotals = useMemo(() => {
+    let outstanding = 0, collected = 0, unpaid = 0, free = 0;
+    for (const s of enriched) {
+      outstanding += s.outstandingBalance;
+      collected += s.collectedAmount;
+      unpaid += s.unpaidLessonCount;
+      free += s.freeLessonCount;
+    }
+    return { outstanding, collected, unpaid, free };
+  }, [enriched]);
 
   const filtered = useMemo(() => {
     let result = enriched;
@@ -362,24 +389,33 @@ const VoiceClientsPage = () => {
   </div>
 
   {/* Summary strip */}
-  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
- <div className="bg-card rounded-xl border border-border p-5 flex flex-col gap-1">
- <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Students</span>
- <span className="text-3xl font-semibold text-foreground">{students.length}</span>
- </div>
- <div className="bg-card rounded-xl border border-border p-5 flex flex-col gap-1">
- <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Active & Upcoming</span>
- <span className="text-3xl font-semibold text-chart-emerald">{groups.active.length}</span>
- </div>
- <div className="bg-card rounded-xl border border-border p-5 flex flex-col gap-1">
- <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">1\u20133 Months</span>
- <span className="text-3xl font-semibold text-muted-foreground">{groups.oneToThree.length}</span>
- </div>
- <div className="bg-card rounded-xl border border-border p-5 flex flex-col gap-1">
- <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">3+ Months</span>
- <span className="text-3xl font-semibold text-chart-destructive">{groups.threePlus.length}</span>
- </div>
- </div>
+  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+  <div className="bg-card rounded-xl border border-border p-5 flex flex-col gap-1">
+  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Students</span>
+  <span className="text-3xl font-semibold text-foreground">{students.length}</span>
+  </div>
+  <div className="bg-card rounded-xl border border-border p-5 flex flex-col gap-1">
+  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Active & Upcoming</span>
+  <span className="text-3xl font-semibold text-chart-emerald">{groups.active.length}</span>
+  </div>
+  <div className="bg-card rounded-xl border border-border p-5 flex flex-col gap-1">
+  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">1\u20133 Months</span>
+  <span className="text-3xl font-semibold text-muted-foreground">{groups.oneToThree.length}</span>
+  </div>
+  <div className="bg-card rounded-xl border border-border p-5 flex flex-col gap-1">
+  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">3+ Months</span>
+  <span className="text-3xl font-semibold text-chart-destructive">{groups.threePlus.length}</span>
+  </div>
+  <div className="bg-card rounded-xl border border-chart-destructive/20 p-5 flex flex-col gap-1">
+  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Outstanding</span>
+  <span className="text-3xl font-semibold tabular-nums text-chart-destructive">${ledgerTotals.outstanding}</span>
+  <span className="text-[10px] font-semibold text-muted-foreground/70">{ledgerTotals.unpaid} unpaid · {ledgerTotals.free} free</span>
+  </div>
+  <div className="bg-card rounded-xl border border-chart-emerald/20 p-5 flex flex-col gap-1">
+  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Collected</span>
+  <span className="text-3xl font-semibold tabular-nums text-chart-emerald">${ledgerTotals.collected}</span>
+  </div>
+  </div>
 
  {/* Search */}
  <div className="relative max-w-md">
@@ -513,13 +549,25 @@ const VoiceClientsPage = () => {
  <div className="font-medium text-foreground">{formatRelativeDate(student.lastCommunication ? new Date(student.lastCommunication) : null)}</div>
  <div className="text-[10px]">Contacted</div>
  </span>
- {student.lessonCount > 0 && (
- <span className="text-right">
- <div className="font-medium text-foreground">{student.lessonCount}</div>
- <div className="text-[10px]">Lessons</div>
- </span>
- )}
- </div>
+  {student.lessonCount > 0 && (
+  <span className="text-right">
+  <div className="font-medium text-foreground">{student.lessonCount}</div>
+  <div className="text-[10px]">Lessons</div>
+  </span>
+  )}
+  {student.outstandingBalance > 0 && (
+  <span className="text-right">
+  <div className="font-bold tabular-nums text-chart-destructive">${student.outstandingBalance}</div>
+  <div className="text-[10px]">Owing</div>
+  </span>
+  )}
+  {student.collectedAmount > 0 && (
+  <span className="text-right">
+  <div className="font-bold tabular-nums text-chart-emerald">${student.collectedAmount}</div>
+  <div className="text-[10px]">Collected</div>
+  </span>
+  )}
+  </div>
 
  <div className="flex items-center gap-1 shrink-0">
  <VoiceMessagePopover

@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, ExternalLink, Mic, User, RotateCcw, Plus, BookOpen, Search, CheckCircle2, CreditCard
+  ArrowLeft, Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, ExternalLink, Mic, User, RotateCcw, Plus, BookOpen, Search, CheckCircle2, CreditCard, Circle, Gift
 } from "lucide-react";
 import {
   format, addMonths, subMonths, addWeeks, subWeeks, startOfMonth, endOfMonth,
@@ -122,6 +122,9 @@ interface CalendarItem {
   eventTypeId?: string | null;
   notionLink?: string | null;
   seriesId?: string | null;
+  seriesFrequency?: string | null;
+  seriesOccurrence?: number | null;
+  seriesTotal?: number | null;
 }
 
 function parseTimeToEvent(item: CalendarItem): CalendarEvent | null {
@@ -491,15 +494,34 @@ const UnifiedCalendarPage = () => {
     // was fetched but skipped below for a missing date must NOT suppress its
     // voice_bookings fallback, or the booking vanishes from the calendar entirely.
     const notionLessonIds = new Set((voiceLessons || []).filter((l) => l.date).map((l) => l.id));
+    // Dedup keys include the start time so a same-day second lesson (series
+    // occurrence or double booking) is never suppressed by the first.
+    const startKey = (date: string | null, time: string | null | undefined) => {
+      const m = (time || "").match(/^(\d+):(\d+)\s*(AM|PM)/i);
+      let hm = "00:00";
+      if (m) {
+        let h = parseInt(m[1]);
+        if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
+        if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
+        hm = `${String(h).padStart(2, "0")}:${m[2]}`;
+      }
+      return `${date}|${hm}`;
+    };
+    // Matches recorded by email OR by name (covers students who changed email).
     const matchedEmail = new Set<string>();
+    const matchedName = new Set<string>();
 
     (voiceLessons || []).forEach((l) => {
     if (!l.date) return;
     const booking = (voiceBookings || []).find(
-      (b) => b.lesson_date === l.date && b.student_email === l.studentEmail
+      (b) => b.lesson_date === l.date && startKey(b.lesson_date, b.lesson_time) === startKey(l.date, l.time) &&
+        (b.student_email === l.studentEmail ||
+         (b.student_name && l.studentName &&
+          b.student_name.trim().toLowerCase() === l.studentName.trim().toLowerCase()))
     );
     if (booking) {
-    matchedEmail.add(`${booking.lesson_date}|${booking.student_email}`);
+    matchedEmail.add(`${startKey(booking.lesson_date, booking.lesson_time)}|${booking.student_email}`);
+    if (booking.student_name) matchedName.add(`${startKey(booking.lesson_date, booking.lesson_time)}|${booking.student_name.trim().toLowerCase()}`);
     }
     const is30 = /30/.test((l.name || "").toLowerCase());
     const is45 = /45/.test((l.name || "").toLowerCase());
@@ -548,7 +570,7 @@ const UnifiedCalendarPage = () => {
     const notionNamesOnDate = new Set<string>();
     (voiceLessons || []).forEach((l) => {
       if (l.date && l.studentName) {
-        notionNamesOnDate.add(`${l.date}|${l.studentName.trim().toLowerCase()}`);
+        notionNamesOnDate.add(`${startKey(l.date, l.time)}|${l.studentName.trim().toLowerCase()}`);
       }
     });
     (voiceBookings || []).forEach((vb) => {
@@ -560,10 +582,12 @@ const UnifiedCalendarPage = () => {
     // Skip if already linked to a Notion lesson that exists
     if (vb.notion_lesson_id_1 && notionLessonIds.has(vb.notion_lesson_id_1)) return;
     if (vb.notion_lesson_id_2 && notionLessonIds.has(vb.notion_lesson_id_2)) return;
-    // Skip if already matched by email+date
-    if (matchedEmail.has(`${vb.lesson_date}|${vb.student_email}`)) return;
-    // Skip if a Notion lesson already exists for this student on this date by name
-    if (notionNamesOnDate.has(`${vb.lesson_date}|${vb.student_name.trim().toLowerCase()}`)) return;
+    // Skip if already matched by email+time or name+time
+    const vKey = startKey(vb.lesson_date, vb.lesson_time);
+    if (matchedEmail.has(`${vKey}|${vb.student_email}`)) return;
+    if (matchedName.has(`${vKey}|${vb.student_name.trim().toLowerCase()}`)) return;
+    // Skip if a Notion lesson already exists for this student at this time
+    if (notionNamesOnDate.has(`${vKey}|${vb.student_name.trim().toLowerCase()}`)) return;
     // Skip cancelled
     if (vb.status === "cancelled") return;
     const dur = vb.lesson_time ? voiceTimeDuration(vb.lesson_time) : null;
@@ -591,6 +615,9 @@ const UnifiedCalendarPage = () => {
     notionLessonId2: vb.notion_lesson_id_2 ?? null,
     eventTypeId,
     seriesId: vb.series_id || null,
+    seriesFrequency: vb.series_frequency || null,
+    seriesOccurrence: vb.series_occurrence ?? null,
+    seriesTotal: vb.series_total ?? null,
     lessonId: null,
     studentEmail: vb.student_email,
     studentName: vb.student_name,
@@ -661,6 +688,24 @@ const UnifiedCalendarPage = () => {
    });
    return deduped;
    }, [voiceLessons, kinesiologyAppts, voiceBookings, pricing, session]);
+
+   // Income/payment summary for the visible month (used in the Month header).
+   const monthSummary = useMemo(() => {
+     let voiceIncome = 0, fnhIncome = 0, collected = 0, outstanding = 0, free = 0;
+     const ms = startOfMonth(currentMonth);
+     const me = endOfMonth(currentMonth);
+     for (const i of calendarItems) {
+       if (i.cancelled) continue;
+       const d = parseISO(i.date);
+       if (d < ms || d > me) continue;
+       const amt = i.isFree ? 0 : (i.amount ?? 0);
+       if (i.source === "voice") voiceIncome += amt; else fnhIncome += amt;
+       if (i.isFree) free++;
+       else if (i.paid) collected += amt;
+       else outstanding += amt;
+     }
+     return { voiceIncome, fnhIncome, collected, outstanding, free, total: voiceIncome + fnhIncome };
+   }, [calendarItems, currentMonth]);
 
    function parseStartTime(t: string): number {
      const m = t.match(/^(\d+):(\d+)\s*(AM|PM)/i);
@@ -863,6 +908,30 @@ const UnifiedCalendarPage = () => {
    <p className="text-muted-foreground font-medium text-sm mt-1">
    {calendarItems.length} item{calendarItems.length !== 1 ? "s" : ""} scheduled
    </p>
+   <div className="flex flex-wrap items-center gap-2 mt-3">
+   <span className="inline-flex items-center gap-1 text-[10px] font-bold rounded-full px-2.5 py-1 bg-card border border-border">
+   <CreditCard size={10} className="text-muted-foreground" /> ${monthSummary.total.toLocaleString()} expected
+   </span>
+   <span className="inline-flex items-center gap-1 text-[10px] font-semibold rounded-full px-2.5 py-1 bg-chart-destructive/10 text-chart-destructive border border-chart-destructive/20">
+   <Mic size={10} /> Voice ${monthSummary.voiceIncome.toLocaleString()}
+   </span>
+   <span className="inline-flex items-center gap-1 text-[10px] font-semibold rounded-full px-2.5 py-1 bg-chart-primary/10 text-chart-primary border border-chart-primary/20">
+   <User size={10} /> FNH ${monthSummary.fnhIncome.toLocaleString()}
+   </span>
+   <span className="inline-flex items-center gap-1 text-[10px] font-semibold rounded-full px-2.5 py-1 bg-chart-emerald/10 text-chart-emerald border border-chart-emerald/20">
+   <CheckCircle2 size={10} /> ${monthSummary.collected.toLocaleString()} collected
+   </span>
+   {monthSummary.outstanding > 0 && (
+   <span className="inline-flex items-center gap-1 text-[10px] font-semibold rounded-full px-2.5 py-1 bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/40">
+   <Circle size={10} /> ${monthSummary.outstanding.toLocaleString()} outstanding
+   </span>
+   )}
+   {monthSummary.free > 0 && (
+   <span className="inline-flex items-center gap-1 text-[10px] font-semibold rounded-full px-2.5 py-1 bg-muted text-muted-foreground border border-border">
+   <Gift size={10} /> {monthSummary.free} free
+   </span>
+   )}
+   </div>
    </div>
    <div className="flex gap-2 items-center">
    <Button variant="outline" size="icon" onClick={prevMonth} className="rounded-xl h-12 w-12">
@@ -896,14 +965,7 @@ const UnifiedCalendarPage = () => {
    const kinesiologyCount = dayItems.filter((i) => i.source === "kinesiology").length;
 
    const dayIncome = dayItems.reduce((sum, item) => {
-     if (item.source === "kinesiology") {
-       return sum + (item.standardRate ?? item.priceAmount ?? 50);
-     }
-     const timeStr = item.time || "";
-     const hasEnd = /–/.test(timeStr);
-     const nameLower = (item.title || "").toLowerCase();
-     const is45 = /45/.test(nameLower);
-     return sum + (hasEnd ? (is45 ? 75 : 95) : 95);
+     return sum + (item.isFree ? 0 : (item.amount ?? 0));
    }, 0);
 
    return (
@@ -1032,6 +1094,11 @@ const UnifiedCalendarPage = () => {
    {item.subtitle && (
    <div className="text-[10px] text-muted-foreground font-medium">
    {item.source === "voice" ? "Student" : "Client"}: {item.subtitle}
+   </div>
+   )}
+   {item.seriesId && (
+   <div className="text-[10px] font-semibold text-muted-foreground">
+   Series · {item.seriesOccurrence && item.seriesTotal ? `${item.seriesOccurrence} of ${item.seriesTotal}` : "recurring"}{item.seriesFrequency ? ` · ${item.seriesFrequency}` : ""}
    </div>
    )}
     <div className="flex items-center gap-1.5 flex-wrap">

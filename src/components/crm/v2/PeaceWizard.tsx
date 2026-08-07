@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   Activity, Zap, GitBranch, Target, ClipboardCheck,
-  ChevronLeft, ChevronRight, CheckCircle2, Heart, Brain
+  ChevronLeft, ChevronRight, CheckCircle2, Heart, Brain, ExternalLink
 } from "lucide-react";
 import { AppointmentWithClient } from "@/types/crm";
 import {
@@ -122,6 +122,18 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
         </Button>
 
         <div className="flex items-center gap-2">
+          {appointment.notion_link && (
+            <a
+              href={appointment.notion_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-xl h-10 px-3 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              title="Open appointment in Notion"
+            >
+              <ExternalLink size={16} />
+              <span className="text-xs font-semibold">Notion</span>
+            </a>
+          )}
           <Button
             variant="ghost"
             size="sm"

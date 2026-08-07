@@ -204,6 +204,7 @@ const WeekByWeekOverview = ({
     const seen = new Map<string, KinesiologyAppt>();
     const standalone: KinesiologyAppt[] = [];
     for (const a of kinesiologyAppts) {
+      if (a.status === "Cancelled") continue;
       if (a.calcomUid) {
         const existing = seen.get(a.calcomUid);
         if (!existing || new Date(a.date) > new Date(existing.date)) {

@@ -295,25 +295,6 @@ const UnifiedCalendarPage = () => {
     staleTime: 60_000,
   });
 
-  // Merge cost into voice lessons for the Week Overview price display.
-  // Preference: Notion Cost property > voice_bookings.cost > null
-  const voiceLessonsWithPrice = useMemo(() => {
-    if (!voiceLessons) return [];
-    const costByNotionId = new Map<string, number>();
-    for (const vb of voiceBookings || []) {
-      const nid = vb.notion_lesson_id_1?.replace(/-/g, "").toLowerCase();
-      if (nid && vb.cost != null) costByNotionId.set(nid, vb.cost);
-    }
-    return voiceLessons.map((l) => {
-      const notionCost = l.cost;
-      const bookingCost = costByNotionId.get(l.id?.replace(/-/g, "").toLowerCase()) ?? null;
-      return {
-        ...l,
-        priceAmount: notionCost ?? bookingCost ?? null,
-      };
-    });
-  }, [voiceLessons, voiceBookings]);
-
   // Voice prices come from the editable event_pricing table (Settings → Pricing),
   // kept separate from the client rate ladder used for FNH.
   const { priceFor, pricing } = useEventPricing();
@@ -686,10 +667,30 @@ const UnifiedCalendarPage = () => {
    if (dateCmp !== 0) return dateCmp;
    return parseStartTime(a.time || "") - parseStartTime(b.time || "");
    });
-   return deduped;
-   }, [voiceLessons, kinesiologyAppts, voiceBookings, pricing, session]);
+    return deduped;
+    }, [voiceLessons, kinesiologyAppts, voiceBookings, pricing, session]);
 
-   // Income/payment summary for the visible month (used in the Month header).
+    // Voice lessons for the Week Overview, derived from the canonical merge so
+    // fallback voice_bookings (no matching Notion page, e.g. Anah) appear too —
+    // same layered dedup as List/Month. CalendarItem.time is already localised,
+    // and formatVoiceTime is idempotent on a TZ-free "h:mm a – h:mm a" string.
+    const overviewVoiceLessons = useMemo(() => {
+    return (calendarItems || [])
+    .filter((i) => i.source === "voice" && !i.cancelled)
+    .map((i) => ({
+    id: i.id,
+    notionUrl: i.notionLink ?? i.url,
+    name: i.title,
+    date: i.date,
+    time: i.time,
+    studentName: i.studentName ?? i.subtitle,
+    studentEmail: i.studentEmail ?? null,
+    cost: i.isFree ? 0 : (i.amount ?? null),
+    priceAmount: i.isFree ? 0 : (i.amount ?? null),
+    }));
+    }, [calendarItems]);
+
+    // Income/payment summary for the visible month (used in the Month header).
    const monthSummary = useMemo(() => {
      let voiceIncome = 0, fnhIncome = 0, collected = 0, outstanding = 0, free = 0;
      const ms = startOfMonth(currentMonth);
@@ -1202,7 +1203,7 @@ const UnifiedCalendarPage = () => {
 
     <WeekByWeekOverview
       weekStart={weekStart}
-      voiceLessons={voiceLessonsWithPrice}
+      voiceLessons={overviewVoiceLessons}
       kinesiologyAppts={kinesiologyAppts || []}
       onPrevWeek={prevWeek}
       onNextWeek={nextWeek}

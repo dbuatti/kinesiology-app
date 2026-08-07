@@ -313,7 +313,7 @@ const WeekByWeekOverview = ({
                 startMin,
                 endMin,
                 variant: "voice",
-                priceAmount: null,
+                priceAmount: l.priceAmount ?? null,
                 standardRate: null,
               });
             }

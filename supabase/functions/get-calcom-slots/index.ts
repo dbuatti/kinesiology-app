@@ -7,6 +7,20 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
 }
 
+// Normalise the raw slots payload into a stable shape: each date maps to an
+// array of { start, time } entries. The legacy endpoint returned `time`, the
+// 2024-09-04 endpoint returns `start` — consumers expect either.
+const normalizeSlots = (raw) => {
+  const out = {};
+  for (const [date, slots] of Object.entries(raw || {})) {
+    out[date] = (slots || []).map((s) => {
+      const str = typeof s === "string" ? s : (s?.start || s?.time);
+      return { start: str, time: str };
+    });
+  }
+  return out;
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -56,9 +70,9 @@ serve(async (req) => {
       })
     }
 
-    const slotDates = Object.keys(slotsData?.data?.slots || slotsData?.data || {});
+    const slotsMap = normalizeSlots(slotsData?.data?.slots || slotsData?.data || {});
+    const slotDates = Object.keys(slotsMap);
     console.log(`[get-calcom-slots] Got ${slotDates.length} available dates with slots`);
-    
     // 2. Fetch Out-of-Office Blocks
     const oooResponse = await fetch('https://api.cal.com/v2/me/ooo', { method: 'GET', headers })
     const oooData = await oooResponse.json()
@@ -106,7 +120,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       status: 'success',
-      data: slotsData?.data?.slots || slotsData?.data || {},
+      data: slotsMap,
       blockedDates: blockedDates,
       bookings: bookingsByDate
     }), { 

@@ -26,11 +26,14 @@ serve(async (req) => {
 
     // 1. Fetch Available Slots
     const targetEventTypeId = eventTypeId || "4279898";
-    // The slots endpoint needs the 2024-09-04 version to honour bookingUidToReschedule
+    // The 2024-09-04 slots endpoint (GET /v2/slots) is the only one that honours
+    // bookingUidToReschedule. It uses start/end params and returns the date→slots
+    // map directly under `data` (the older /v2/slots/available route nested it
+    // under `data.slots` and used startTime/endTime params).
     const slotsHeaders = { ...headers, 'cal-api-version': '2024-09-04' };
-    const slotsUrl = new URL('https://api.cal.com/v2/slots/available')
-    slotsUrl.searchParams.set('startTime', start)
-    slotsUrl.searchParams.set('endTime', end)
+    const slotsUrl = new URL('https://api.cal.com/v2/slots')
+    slotsUrl.searchParams.set('start', start)
+    slotsUrl.searchParams.set('end', end)
     slotsUrl.searchParams.set('eventTypeId', targetEventTypeId)
     if (timeZone) slotsUrl.searchParams.set('timeZone', timeZone)
     // When rescheduling, exclude the booking being moved from busy-time
@@ -53,7 +56,7 @@ serve(async (req) => {
       })
     }
 
-    const slotDates = Object.keys(slotsData?.data?.slots || {});
+    const slotDates = Object.keys(slotsData?.data?.slots || slotsData?.data || {});
     console.log(`[get-calcom-slots] Got ${slotDates.length} available dates with slots`);
     
     // 2. Fetch Out-of-Office Blocks
@@ -103,7 +106,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       status: 'success',
-      data: slotsData?.data?.slots || {},
+      data: slotsData?.data?.slots || slotsData?.data || {},
       blockedDates: blockedDates,
       bookings: bookingsByDate
     }), { 

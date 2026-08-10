@@ -5,6 +5,7 @@ import { PrimitiveReflexTest } from "@/types/crm";
 import { showError } from "@/utils/toast";
 import { safeParse } from "@/utils/safe-json";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
+import { findGridReflex, primitiveSideKey } from "@/components/crm/pathway-reflex-stim-data";
 
 export function usePrimitiveReflexTests(
   appointmentId: string | undefined,
@@ -49,12 +50,21 @@ export function usePrimitiveReflexTests(
         const reflexData = PRIMITIVE_REFLEXES.find(r => r.id === reflexId || r.name === reflexName);
         const isLat = reflexData?.isLateralized;
 
-        if (isLat && !side) {
-          await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : null, 'L');
-          latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : null, 'R');
-        } else if (side) {
-          latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : null, side);
-        } else {
+        if (isLat && side) {
+          // Side-specific write. When the caller supplies per-side stim_results
+          // (grid toggles), sync each side from its own state so marking one
+          // side never mirrors to the other and stale mirrored entries heal.
+          const gridReflex = findGridReflex(reflexId, reflexName);
+          if (gridReflex && updates.stim_results !== undefined) {
+            for (const s of ['L', 'R'] as const) {
+              const sideKey = primitiveSideKey(gridReflex, s);
+              const marked = !!updates.stim_results[sideKey];
+              await updatePriorityPattern('primitiveReflexes', patternKey, marked ? 'Inhibited' : null, s);
+            }
+          } else {
+            latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : null, side);
+          }
+        } else if (isLat && !side) {
           latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : null);
         }
         

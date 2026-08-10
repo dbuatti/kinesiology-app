@@ -91,7 +91,10 @@ export function PathwayReflexStimGrid({
           if (nextValue) next[key] = true;
           else delete next[key];
           const isInhibited = Object.values(next).some(Boolean);
-          await updateReflex(reflex.id, { stim_results: next, is_inhibited: isInhibited }, undefined, reflex.name);
+          const side = reflex.lateralized
+            ? (key.slice(key.lastIndexOf("-") + 1) as "L" | "R")
+            : undefined;
+          await updateReflex(reflex.id, { stim_results: next, is_inhibited: isInhibited }, side, reflex.name);
         } else if (key.startsWith("cn-")) {
           const nerveId = key.slice("cn-".length).split("-")[0];
           const test = nerveTests.find((t) => t.nerve_id === nerveId);
@@ -100,7 +103,9 @@ export function PathwayReflexStimGrid({
           if (nextValue) next[key] = true;
           else delete next[key];
           const isInhibited = Object.values(next).some(Boolean);
-          await updateNerve(nerveId, { stim_results: next, is_inhibited: isInhibited });
+          const sideMatch = key.match(/-(L|R)$/);
+          const side = (sideMatch ? sideMatch[1] : undefined) as "L" | "R" | undefined;
+          await updateNerve(nerveId, { stim_results: next, is_inhibited: isInhibited }, side);
         }
       } finally {
         pendingWrites.current -= 1;

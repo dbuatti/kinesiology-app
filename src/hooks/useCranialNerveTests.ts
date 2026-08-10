@@ -5,6 +5,7 @@ import { CranialNerveTest } from "@/types/crm";
 import { showError } from "@/utils/toast";
 import { safeParse } from "@/utils/safe-json";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
+import { isLateralStim, cranialSideKey, nerveStimLines } from "@/components/crm/pathway-reflex-stim-data";
 
 export function useCranialNerveTests(
   appointmentId: string | undefined,
@@ -50,7 +51,17 @@ export function useCranialNerveTests(
         const isLat = nerveData?.isLateralized;
         
         // Wait for the priority pattern to update and get the absolute latest pattern
-        if (isLat && !side) {
+        if (isLat && updates.stim_results !== undefined) {
+          // Grid path: per-side stim_results are authoritative. Sync each side
+          // from its own lateral stim keys so one side never mirrors to the
+          // other, and stale mirrored entries heal.
+          for (const s of ['L', 'R'] as const) {
+            const marked = nerveStimLines(nerveData!).some(
+              (_, i) => isLateralStim(nerveData!.id, i) && !!updates.stim_results![cranialSideKey(nerveData!.id, i, s)]
+            );
+            await updatePriorityPattern('cranialNerves', nerveName, marked ? 'Inhibited' : null, s);
+          }
+        } else if (isLat && !side) {
           await updatePriorityPattern('cranialNerves', nerveName, updates.is_inhibited ? 'Inhibited' : null, 'L');
           latestPattern = await updatePriorityPattern('cranialNerves', nerveName, updates.is_inhibited ? 'Inhibited' : null, 'R');
         } else if (side) {

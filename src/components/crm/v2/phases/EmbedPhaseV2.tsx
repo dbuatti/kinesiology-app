@@ -165,7 +165,7 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField, updatePriorityPattern 
         const next = { ...current };
         delete next[stimKey];
         const isInhibited = Object.values(next).some(Boolean);
-        await nerveUpdate(nerve.id.toString(), { stim_results: next, is_inhibited: isInhibited });
+        await nerveUpdate(nerve.id.toString(), { stim_results: next, is_inhibited: isInhibited }, item.side);
       } else if (item.category === 'primitiveReflexes') {
         const reflex = PRIMITIVE_REFLEXES.find(r => r.name === item.name);
         if (!reflex) return;

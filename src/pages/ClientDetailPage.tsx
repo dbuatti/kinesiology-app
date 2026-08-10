@@ -12,7 +12,7 @@ import {
   Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Brain,
   LayoutDashboard, History, ArrowRight, Sparkles, Plus, Link as LinkIcon,
   Zap, Send, ShieldCheck, ExternalLink, RefreshCw, ShieldAlert, Info, User, CreditCard, LayoutGrid,
-  CalendarClock, Mic
+  CalendarClock, Mic, Table2
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -47,6 +47,7 @@ import QuickAssessmentModal from "@/components/crm/QuickAssessmentModal";
 import PageHeader from "@/components/shared/PageHeader";
 import { useClientGridData } from "@/hooks/useClientGridData";
 import ClientGridSummaryTab from "@/components/crm/ClientGridSummaryTab";
+import ClientHistoryMatrixTab from "@/components/crm/ClientHistoryMatrixTab";
 import ClientAppointmentCard from "@/components/crm/ClientAppointmentCard";
 
 interface VoiceHistoryEntry {
@@ -536,12 +537,15 @@ const ClientDetailPage = () => {
         />
 
         <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 h-14 bg-muted p-1.5 rounded-xl mb-8 border border-border">
+          <TabsList className="grid w-full grid-cols-5 h-14 bg-muted p-1.5 rounded-xl mb-8 border border-border">
             <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
               <LayoutDashboard size={14} /> Overview
             </TabsTrigger>
             <TabsTrigger value="appointments" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
               <History size={14} /> Appointments
+            </TabsTrigger>
+            <TabsTrigger value="history" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
+              <Table2 size={14} /> History
             </TabsTrigger>
             <TabsTrigger value="grid" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
               <LayoutGrid size={14} /> Grid
@@ -1084,6 +1088,13 @@ const ClientDetailPage = () => {
               clientName={client?.name || "Client"}
               appointments={appointments}
               gridFor={gridFor}
+            />
+          </TabsContent>
+
+          <TabsContent value="history" className="space-y-6">
+            <ClientHistoryMatrixTab
+              clientName={client?.name || "Client"}
+              appointments={appointments}
             />
           </TabsContent>
 

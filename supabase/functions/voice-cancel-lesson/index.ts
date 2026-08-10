@@ -18,8 +18,9 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const { calcomBookingId, notionLessonId1, notionLessonId2, seriesId } = await req.json();
-    if (!calcomBookingId && !seriesId) throw new Error("Missing calcomBookingId or seriesId");
+    const { calcomBookingId, notionLessonId, notionLessonId1, notionLessonId2, seriesId } = await req.json();
+    if (!calcomBookingId && !seriesId && !notionLessonId && !notionLessonId1 && !notionLessonId2)
+      throw new Error("Missing calcomBookingId, seriesId or notionLessonId");
 
     const CALCOM_KEY = Deno.env.get("CALCOM_API_KEY");
     const NOTION_KEY = Deno.env.get("NOTION_API_KEY");
@@ -28,7 +29,7 @@ serve(async (req) => {
     const results: Record<string, unknown> = {};
 
     // Resolve all bookings to cancel
-    let targets = [{ calcomBookingId, notionLessonId1, notionLessonId2 }];
+    let targets = [{ calcomBookingId, notionLessonId, notionLessonId1, notionLessonId2 }];
 
     if (seriesId) {
       const { data: seriesBookings } = await supabase
@@ -39,6 +40,7 @@ serve(async (req) => {
       if (seriesBookings) {
         targets = seriesBookings.map((b: Record<string, unknown>) => ({
           calcomBookingId: b.calcom_booking_id,
+          notionLessonId: null,
           notionLessonId1: b.notion_lesson_id_1,
           notionLessonId2: b.notion_lesson_id_2,
         }));
@@ -46,7 +48,7 @@ serve(async (req) => {
     }
 
     for (const target of targets) {
-      const { calcomBookingId: cid, notionLessonId1: n1, notionLessonId2: n2 } = target;
+      const { calcomBookingId: cid, notionLessonId: n0, notionLessonId1: n1, notionLessonId2: n2 } = target;
 
       // 1. Cancel in Cal.com
       if (CALCOM_KEY && cid) {
@@ -75,11 +77,12 @@ serve(async (req) => {
                 .catch((e) => label + " failed: " + e.message)
             : Promise.resolve(label + " skipped");
 
-        const [r1, r2] = await Promise.all([
+        const [r1, r2, r0] = await Promise.all([
           archive(n1 as string, `notion1_${cid}`),
           archive(n2 as string, `notion2_${cid}`),
+          archive(n0 as string, `notion_lesson_${cid}`),
         ]);
-        results[`notion_${cid}`] = { n1: r1, n2: r2 };
+        results[`notion_${cid}`] = { n1: r1, n2: r2, n0: r0 };
       }
 
       // 3. Update voice_bookings status

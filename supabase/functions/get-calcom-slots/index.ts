@@ -13,7 +13,7 @@ serve(async (req) => {
   console.log("--- [get-calcom-slots] v7 SLOTS + BOOKINGS + EMAILS ---");
 
   try {
-    let { start, end, eventTypeId, timeZone } = await req.json()
+    let { start, end, eventTypeId, timeZone, bookingUidToReschedule } = await req.json()
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
 
     if (!CALCOM_KEY) throw new Error("Missing CALCOM_API_KEY in Supabase Secrets.")
@@ -26,15 +26,20 @@ serve(async (req) => {
 
     // 1. Fetch Available Slots
     const targetEventTypeId = eventTypeId || "4279898";
+    // The slots endpoint needs the 2024-09-04 version to honour bookingUidToReschedule
+    const slotsHeaders = { ...headers, 'cal-api-version': '2024-09-04' };
     const slotsUrl = new URL('https://api.cal.com/v2/slots/available')
     slotsUrl.searchParams.set('startTime', start)
     slotsUrl.searchParams.set('endTime', end)
     slotsUrl.searchParams.set('eventTypeId', targetEventTypeId)
     if (timeZone) slotsUrl.searchParams.set('timeZone', timeZone)
+    // When rescheduling, exclude the booking being moved from busy-time
+    // calculations so its own slot (and overlapping ones) become available.
+    if (bookingUidToReschedule) slotsUrl.searchParams.set('bookingUidToReschedule', bookingUidToReschedule)
 
     console.log("[get-calcom-slots] Fetching slots:", { start, end, eventTypeId: targetEventTypeId, timeZone });
 
-    const slotsResponse = await fetch(slotsUrl.toString(), { method: 'GET', headers })
+    const slotsResponse = await fetch(slotsUrl.toString(), { method: 'GET', headers: slotsHeaders })
     const slotsData = await slotsResponse.json()
 
     if (!slotsResponse.ok) {

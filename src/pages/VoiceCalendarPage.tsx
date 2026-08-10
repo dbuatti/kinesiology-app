@@ -284,6 +284,7 @@ const VoiceCalendarPage = () => {
   const { error } = await supabase.functions.invoke("voice-cancel-lesson", {
   body: {
   calcomBookingId: cancelLesson.booking.calcom_booking_id,
+  notionLessonId: cancelLesson.lesson.id,
   notionLessonId1: cancelLesson.booking.notion_lesson_id_1,
   notionLessonId2: cancelLesson.booking.notion_lesson_id_2,
   seriesId: cancelSeries ? cancelLesson.booking.series_id : undefined,

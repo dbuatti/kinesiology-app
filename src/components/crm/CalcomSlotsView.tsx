@@ -147,7 +147,7 @@ const CalcomSlotsView = () => {
     return DAYS_OF_WEEK.filter(d => days.has(d));
   }, [dateRange, slots, blockedDates]);
 
-  const fetchSlots = async () => {
+  const fetchSlots = async (bookingUidToReschedule?: string) => {
     setLoading(true);
     setError(null);
     try {
@@ -160,7 +160,8 @@ const CalcomSlotsView = () => {
           start, 
           end,
           eventTypeId: eventTypeId || undefined,
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          bookingUidToReschedule: bookingUidToReschedule || undefined
         }
       });
 
@@ -701,7 +702,7 @@ const CalcomSlotsView = () => {
           </Button>
           <Button 
             size="sm"
-            onClick={fetchSlots} 
+            onClick={() => fetchSlots()} 
             disabled={loading}
             className="h-8 px-3 rounded-lg bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-primary-foreground font-black text-[10px] uppercase tracking-widest"
           >
@@ -939,7 +940,7 @@ const CalcomSlotsView = () => {
                                           size="icon"
                                           className="h-8 w-8 rounded-lg text-indigo-300 hover:text-amber-400 hover:bg-amber-500/20 opacity-0 group-hover/booking:opacity-100 transition-all"
                                           title="Reschedule"
-                                          onClick={() => setRescheduleBooking(booking)}
+                                          onClick={() => { setRescheduleBooking(booking); fetchSlots(booking.uid); }}
                                         >
                                           <CalendarClock size={14} />
                                         </Button>
@@ -1042,7 +1043,7 @@ const CalcomSlotsView = () => {
           </div>
           <p className="text-foreground font-black text-2xl">No availability found</p>
           <p className="text-muted-foreground mt-2 mb-10 font-medium max-w-xs mx-auto">Try increasing the lookahead range or check your Cal.com settings.</p>
-          <Button variant="outline" className="h-14 px-10 border-border hover:bg-card rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg" onClick={fetchSlots}>
+          <Button variant="outline" className="h-14 px-10 border-border hover:bg-card rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg" onClick={() => fetchSlots()}>
             Retry Sync
           </Button>
         </div>

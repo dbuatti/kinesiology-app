@@ -121,7 +121,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
       const end = new Date();
       end.setDate(end.getDate() + 21);
       const res = await supabase.functions.invoke("get-calcom-slots", {
-        body: { start: start.toISOString(), end: end.toISOString(), eventTypeId: item.eventTypeId, timeZone: TIMEZONE },
+        body: { start: start.toISOString(), end: end.toISOString(), eventTypeId: item.eventTypeId, timeZone: TIMEZONE, bookingUidToReschedule: item.calcomUid || undefined },
       });
       const byDate = (res.data?.data || {}) as Record<string, any[]>;
       const all: string[] = [];
@@ -310,6 +310,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
         const res = await supabase.functions.invoke("voice-cancel-lesson", {
           body: {
             calcomBookingId: item.calcomUid,
+            notionLessonId: item.lessonId,
             notionLessonId1: item.notionLessonId1,
             notionLessonId2: item.notionLessonId2,
           },

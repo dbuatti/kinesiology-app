@@ -180,12 +180,13 @@ const PathwayReflexStimSheet = ({ externalChecked, muscleState, onToggle, query 
           </tr>
         </thead>
         <tbody>
+          {[
           <tr id="primitive-reflexes">
             <td colSpan={4} style={{ backgroundColor: "#000", color: "#fff" }} className="border-2 border-black p-1 font-black uppercase tracking-[0.2em] sticky top-[34px] z-[5]">
               Primitive Reflexes
             </td>
-          </tr>
-          {PRIMITIVE_TRACKS.map((track) => (
+          </tr>,
+          ...PRIMITIVE_TRACKS.map((track) => (
             <React.Fragment key={track.title}>
               {track.reflexes.map((reflex, ri) => {
                 const lateralized = Boolean(reflex.lateralized);
@@ -257,14 +258,13 @@ const PathwayReflexStimSheet = ({ externalChecked, muscleState, onToggle, query 
                 );
               })}
             </React.Fragment>
-          ))}
-
+          )),
           <tr id="cranial-nerves">
             <td colSpan={4} style={{ backgroundColor: "#000", color: "#fff" }} className="border-2 border-black p-1 font-black uppercase tracking-[0.2em] sticky top-[34px] z-[5]">
               Cranial Nerves
             </td>
-          </tr>
-          {NERVE_GROUPS.map((group) => (
+          </tr>,
+          ...NERVE_GROUPS.map((group) => (
             <React.Fragment key={group.label}>
               {group.items.map((nerve, ni) => (
                 <React.Fragment key={nerve.id}>                  {nerveStimLines(nerve).map((line, i) => {
@@ -383,14 +383,13 @@ const PathwayReflexStimSheet = ({ externalChecked, muscleState, onToggle, query 
                 </React.Fragment>
               ))}
             </React.Fragment>
-          ))}
-
+          )),
           <tr id="intrinsic-muscles">
             <td colSpan={4} style={{ backgroundColor: "#000", color: "#fff" }} className="border-2 border-black p-1 font-black uppercase tracking-[0.2em] sticky top-[34px] z-[5]">
               Intrinsic Muscles
             </td>
-          </tr>
-          {INTRINSIC_GRID_MUSCLES.map((muscle) => {
+          </tr>,
+          ...INTRINSIC_GRID_MUSCLES.map((muscle) => {
             const info = getMuscleInfo(muscle.name);
             const state = muscleState?.[muscleMidlineKey(muscle.name)];
             const lState = muscleState?.[muscleSideKey(muscle.name, "L")];
@@ -416,7 +415,8 @@ const PathwayReflexStimSheet = ({ externalChecked, muscleState, onToggle, query 
                 </td>
               </tr>
             );
-          })}
+          }),
+          ]}
         </tbody>
       </table>
 

@@ -181,7 +181,7 @@ const PathwayReflexStimSheet = ({ externalChecked, muscleState, onToggle, query 
         </thead>
         <tbody>
           {[
-          <tr id="primitive-reflexes">
+          <tr key="primitive-reflexes" id="primitive-reflexes">
             <td colSpan={4} style={{ backgroundColor: "#000", color: "#fff" }} className="border-2 border-black p-1 font-black uppercase tracking-[0.2em] sticky top-[34px] z-[5]">
               Primitive Reflexes
             </td>
@@ -259,7 +259,7 @@ const PathwayReflexStimSheet = ({ externalChecked, muscleState, onToggle, query 
               })}
             </React.Fragment>
           )),
-          <tr id="cranial-nerves">
+          <tr key="cranial-nerves" id="cranial-nerves">
             <td colSpan={4} style={{ backgroundColor: "#000", color: "#fff" }} className="border-2 border-black p-1 font-black uppercase tracking-[0.2em] sticky top-[34px] z-[5]">
               Cranial Nerves
             </td>
@@ -267,7 +267,8 @@ const PathwayReflexStimSheet = ({ externalChecked, muscleState, onToggle, query 
           ...NERVE_GROUPS.map((group) => (
             <React.Fragment key={group.label}>
               {group.items.map((nerve, ni) => (
-                <React.Fragment key={nerve.id}>                  {nerveStimLines(nerve).map((line, i) => {
+                <React.Fragment key={nerve.id}>
+                  {nerveStimLines(nerve).map((line, i) => {
                     const lateralized = isLateralStim(nerve.id, i);
                     const lineKeys = lateralized
                       ? [cranialSideKey(nerve.id, i, "L"), cranialSideKey(nerve.id, i, "R")]
@@ -384,7 +385,7 @@ const PathwayReflexStimSheet = ({ externalChecked, muscleState, onToggle, query 
               ))}
             </React.Fragment>
           )),
-          <tr id="intrinsic-muscles">
+          <tr key="intrinsic-muscles" id="intrinsic-muscles">
             <td colSpan={4} style={{ backgroundColor: "#000", color: "#fff" }} className="border-2 border-black p-1 font-black uppercase tracking-[0.2em] sticky top-[34px] z-[5]">
               Intrinsic Muscles
             </td>

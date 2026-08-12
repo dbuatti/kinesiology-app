@@ -59,8 +59,8 @@ export function useClientGridData(appointments: Appointment[]) {
         checked,
         muscleState,
         muscleCount,
-        activeCount: marks + muscleCount,
         ...gridSummaryMetrics(checked),
+        activeCount: marks + muscleCount,
       };
     });
     return map;

@@ -1,6 +1,6 @@
 
 import type { MouseEvent } from 'react';
-import { Check, ArrowDown, ArrowUp, Zap } from 'lucide-react';
+import { Check, ArrowDown, ArrowUp, Zap, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
@@ -29,7 +29,7 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
   const baseStatus = rawStatus?.replace('_Cleared', '') || null;
 
   const status = isMuscle
-    ? (baseStatus === 'Inhibition' || baseStatus === 'Inhibited' ? 'Inhibited' : baseStatus === 'Hypertonic' ? 'Hypertonic' : null)
+    ? (baseStatus === 'Hypotonic' ? 'Hypotonic' : baseStatus === 'Inhibition' || baseStatus === 'Inhibited' ? 'Inhibited' : baseStatus === 'Hypertonic' ? 'Hypertonic' : null)
     : (baseStatus === 'Inhibited' ? 'Inhibited' : null);
 
   const handleCycle = (e: MouseEvent) => {
@@ -37,8 +37,8 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
     let nextStatus: string;
 
     if (isMuscle) {
-      if (!status) nextStatus = 'Inhibited';
-      else if (status === 'Inhibited') nextStatus = 'Hypertonic';
+      if (!status) nextStatus = 'Hypotonic';
+      else if (status === 'Hypotonic') nextStatus = 'Inhibited';
       else nextStatus = 'Clear';
     } else {
       if (!status) nextStatus = 'Inhibited';
@@ -60,7 +60,11 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
             ? isCleared
               ? "bg-chart-emerald/8 border-chart-emerald/25 text-foreground/80"
               : "bg-amber-500/8 border-amber-500/25 text-amber-600 dark:text-amber-300"
-            : "hover:bg-muted/50 border-transparent text-muted-foreground"
+            : status === 'Hypotonic'
+              ? isCleared
+                ? "bg-chart-emerald/8 border-chart-emerald/25 text-foreground/80"
+                : "bg-sky-500/8 border-sky-500/25 text-sky-600 dark:text-sky-300"
+              : "hover:bg-muted/50 border-transparent text-muted-foreground"
       )}
       onClick={handleCycle}
     >
@@ -75,10 +79,15 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
               ? isCleared
                 ? "bg-chart-emerald border-chart-emerald text-primary-foreground"
                 : "bg-amber-500 border-amber-500 text-primary-foreground"
-              : "border-border group-hover:border-foreground bg-background"
+              : status === 'Hypotonic'
+                ? isCleared
+                  ? "bg-chart-emerald border-chart-emerald text-primary-foreground"
+                  : "bg-sky-500 border-sky-500 text-primary-foreground"
+                : "border-border group-hover:border-foreground bg-background"
         )}>
-          {status === 'Inhibited' && (isCleared ? <Check size={10} strokeWidth={4} /> : <ArrowDown size={10} strokeWidth={4} />)}
+          {status === 'Inhibited' && (isCleared ? <Check size={10} strokeWidth={4} /> : isMuscle ? <X size={10} strokeWidth={4} /> : <ArrowDown size={10} strokeWidth={4} />)}
           {status === 'Hypertonic' && (isCleared ? <Check size={10} strokeWidth={4} /> : <ArrowUp size={10} strokeWidth={4} />)}
+          {status === 'Hypotonic' && (isCleared ? <Check size={10} strokeWidth={4} /> : <ArrowDown size={10} strokeWidth={4} />)}
         </div>
 
         <div className="flex flex-col min-w-0">
@@ -86,6 +95,7 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
             "text-[10px] font-bold truncate",
             status === 'Inhibited' && !isCleared && "text-destructive",
             status === 'Hypertonic' && !isCleared && "text-amber-600 dark:text-amber-300",
+            status === 'Hypotonic' && !isCleared && "text-sky-600 dark:text-sky-300",
             isCleared && "text-muted-foreground line-through"
           )}>
             {side ? `${side}: ${name}` : name}

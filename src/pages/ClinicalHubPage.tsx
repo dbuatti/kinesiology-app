@@ -12,7 +12,7 @@ import { useIpadMode } from "@/hooks/use-ipad-mode";
 import {
   Activity, FileText, BookMarked, Plus, Loader2, Zap, Clock, User, Calendar, Tablet
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, isToday, differenceInMinutes } from "date-fns";
 import FooterLinks from "@/components/crm/FooterLinks";
 
 interface RecentSession {
@@ -28,6 +28,7 @@ const ClinicalHubPage = () => {
   const { enabled: ipadMode, toggle: toggleIpadMode } = useIpadMode();
   const [quickSessionOpen, setQuickSessionOpen] = useState(false);
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>([]);
+  const [upNext, setUpNext] = useState<RecentSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSession, setSelectedSession] = useState<RecentSession | null>(null);
 
@@ -50,6 +51,42 @@ const ClinicalHubPage = () => {
         setLoading(false);
       });
   }, [session]);
+
+  useEffect(() => {
+    if (!session) return;
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    supabase
+      .from("appointments")
+      .select("id, date, clients!inner(name), tag")
+      .or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: "clients" })
+      .neq("status", "Cancelled")
+      .gte("date", startOfToday.toISOString())
+      .order("date", { ascending: true })
+      .limit(12)
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setUpNext(data.map((a: { id: string; date: string; clients?: { name: string | null } | null; tag?: string | null }) => ({
+            id: a.id,
+            date: a.date,
+            client_name: a.clients?.name || "Unknown",
+            tag: a.tag,
+          })));
+        }
+      });
+  }, [session]);
+
+  const nextTimeLabel = (date: string) => {
+    const d = new Date(date);
+    const diff = differenceInMinutes(d, new Date());
+    if (isToday(d)) {
+      if (diff <= 0) return "Today · now";
+      if (diff < 60) return `Today · in ${diff}m`;
+      return `Today · ${format(d, "h:mm a")}`;
+    }
+    const days = Math.ceil((d.getTime() - Date.now()) / 86400000);
+    return days <= 1 ? "Tomorrow · " + format(d, "h:mm a") : format(d, "EEE MMM d · h:mm a");
+  };
 
   if (!session) return <Navigate to="/login" replace />;
 
@@ -160,6 +197,50 @@ const ClinicalHubPage = () => {
             <Plus size={20} />
             <span className="font-bold text-sm uppercase tracking-wider">New Session</span>
           </button>
+        </div>
+
+        {/* Up Next — Today & Upcoming */}
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+              Up Next — Today & Upcoming
+            </h2>
+            {upNext.length > 0 && (
+              <span className="text-[10px] font-bold uppercase tracking-wider text-chart-destructive">
+                {upNext.length} scheduled
+              </span>
+            )}
+          </div>
+          {upNext.length === 0 ? (
+            <div className="text-center py-8 border border-dashed border-border rounded-xl">
+              <p className="text-xs text-muted-foreground font-medium">Nothing scheduled from today onward.</p>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {upNext.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => setSelectedSession(s)}
+                  className="w-full flex items-center gap-4 px-4 py-3 rounded-xl border border-border/60 bg-card hover:bg-muted/50 hover:border-chart-destructive/30 transition-colors text-left group"
+                >
+                  <div className="w-8 h-8 rounded-full bg-chart-destructive/10 flex items-center justify-center shrink-0">
+                    <Calendar size={14} className="text-chart-destructive" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate">{s.client_name}</p>
+                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium">
+                      <Clock size={9} />
+                      <span>{nextTimeLabel(s.date)}</span>
+                      {s.tag && <span className="truncate">· {s.tag}</span>}
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-medium text-muted-foreground group-hover:text-foreground transition-colors uppercase tracking-wider">
+                    Open →
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Recent Sessions */}

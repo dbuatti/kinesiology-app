@@ -49,9 +49,12 @@ export function useCranialNerveTests(
         const nerveData = CRANIAL_NERVES.find(n => n.id.toString() === nerveId);
         const nerveName = nerveData ? `${nerveData.name}: ${nerveData.latinName}` : `CN ${nerveId}`;
         const isLat = nerveData?.isLateralized;
-        
+        const hasLatStims = nerveData
+          ? nerveStimLines(nerveData).some((_, i) => isLateralStim(nerveData.id, i))
+          : false;
+
         // Wait for the priority pattern to update and get the absolute latest pattern
-        if (isLat && updates.stim_results !== undefined) {
+        if (hasLatStims && updates.stim_results !== undefined) {
           // Grid path: per-side stim_results are authoritative. Sync each side
           // from its own lateral stim keys so one side never mirrors to the
           // other, and stale mirrored entries heal.

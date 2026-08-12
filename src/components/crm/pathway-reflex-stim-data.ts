@@ -205,6 +205,7 @@ export const nerveStimLines = (nerve: CranialNerve): string[] =>
   MULTI_STIMS[nerve.id] ?? [nerve.stimulus];
 
 export const LATERAL_STIMS: Record<number, number[]> = {
+  1: [0],
   2: [0, 1, 2, 3, 4],
   3: [0, 1, 2, 3, 4, 5],
   4: [0],

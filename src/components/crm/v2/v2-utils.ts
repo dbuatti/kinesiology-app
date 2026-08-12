@@ -1,7 +1,7 @@
 import { CATEGORY_LABELS } from "./categoryConstants";
 import { safeParse } from "@/utils/safe-json";
 
-export const INHIBITED_STATUSES = ["Inhibited", "Inhibition", "Hypertonic"] as const;
+export const INHIBITED_STATUSES = ["Inhibited", "Inhibition", "Hypertonic", "Hypotonic"] as const;
 
 export const isInhibitedStatus = (status: string): boolean =>
   (INHIBITED_STATUSES as readonly string[]).includes(status);

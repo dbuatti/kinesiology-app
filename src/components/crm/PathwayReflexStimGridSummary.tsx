@@ -1,6 +1,8 @@
+import { useMemo } from "react";
 import { StimXMark } from "./StimXMark";
 import { cn } from "@/lib/utils";
 import { gridSummarySections, type GridSummaryChip } from "./grid-summary";
+import { muscleSummaryItems, type MuscleGridState, type MuscleGridChip } from "./muscle-grid-data";
 
 const Chip = ({ chip }: { chip: GridSummaryChip }) => (
   <span
@@ -17,10 +19,62 @@ const Chip = ({ chip }: { chip: GridSummaryChip }) => (
   </span>
 );
 
-export function PathwayReflexStimGridSummary({ checked }: { checked: Record<string, boolean> }) {
-  const activeCount = Object.values(checked).filter(Boolean).length;
+const MUSCLE_CHIP_STYLES: Record<MuscleGridState, string> = {
+  Hypotonic: "bg-sky-500/15 text-sky-700 border-sky-500/25",
+  Inhibited: "bg-chart-destructive/15 text-chart-destructive border-chart-destructive/25",
+  Hypertonic: "bg-amber-500/15 text-amber-700 border-amber-500/25",
+};
+
+const MUSCLE_CHIP_LABEL: Record<MuscleGridState, string> = {
+  Hypotonic: "Hypo",
+  Inhibited: "Inhib",
+  Hypertonic: "Hyper",
+};
+
+const MuscleChip = ({ chip }: { chip: MuscleGridChip }) => (
+  <span
+    className={cn(
+      "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium border",
+      MUSCLE_CHIP_STYLES[chip.status]
+    )}
+  >
+    {chip.status === "Inhibited" && <StimXMark className="w-3 h-3" />}
+    {chip.side && <span className="font-black">{chip.side}</span>}
+    <span className="max-w-[260px] truncate leading-snug">{chip.label}</span>
+    <span className="text-[8px] font-bold uppercase tracking-wider opacity-70">{MUSCLE_CHIP_LABEL[chip.status]}</span>
+  </span>
+);
+
+export function PathwayReflexStimGridSummary({
+  checked,
+  muscleState,
+}: {
+  checked: Record<string, boolean>;
+  muscleState?: Record<string, MuscleGridState>;
+}) {
+  const activeCount = Object.values(checked).filter(Boolean).length + Object.values(muscleState ?? {}).length;
   const { tracks, nuclei } = gridSummarySections(checked);
-  const hasAny = tracks.length > 0 || nuclei.length > 0;
+
+  const muscleSections = useMemo(() => {
+    if (!muscleState) return [];
+    const items = muscleSummaryItems(muscleState);
+    const byGroup: { group: string; items: typeof items }[] = [];
+    items.forEach((x) => {
+      let g = byGroup.find((y) => y.group === x.muscle.group);
+      if (!g) {
+        g = { group: x.muscle.group, items: [] };
+        byGroup.push(g);
+      }
+      g.items.push(x);
+    });
+    return byGroup.map((g) => ({
+      group: g.group,
+      items: g.items,
+      total: g.items.reduce((acc, x) => acc + x.chips.length, 0),
+    }));
+  }, [muscleState]);
+
+  const hasAny = tracks.length > 0 || nuclei.length > 0 || muscleSections.length > 0;
 
   return (
     <div className="border border-border rounded-xl bg-card shadow-sm">
@@ -83,6 +137,29 @@ export function PathwayReflexStimGridSummary({ checked }: { checked: Record<stri
                     <p className="shrink-0 text-sm font-semibold text-foreground">{nerve.name} — {nerve.latinName}</p>
                     <div className="flex flex-wrap gap-1.5">
                       {chips.map((chip, i) => <Chip key={i} chip={chip} />)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+
+          {muscleSections.map((section) => (
+            <section key={section.group}>
+              <header className="flex items-center gap-2 bg-muted/30 px-4 py-2.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-sky-500" />
+                <p className="text-[10px] font-black uppercase tracking-wider text-foreground/80">{section.group}</p>
+                <span className="ml-auto text-[10px] font-bold tabular-nums text-muted-foreground">{section.total}</span>
+              </header>
+              <div className="divide-y divide-border/40">
+                {section.items.map(({ muscle, chips }) => (
+                  <div
+                    key={muscle.name}
+                    className="flex flex-col gap-1.5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <p className="shrink-0 text-sm font-semibold text-foreground">{muscle.name}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {chips.map((chip, i) => <MuscleChip key={i} chip={chip} />)}
                     </div>
                   </div>
                 ))}

@@ -1,8 +1,17 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { StimXMark } from "./StimXMark";
+import { getMuscleInfo } from "@/data/muscle-info-data";
+import {
+  INTRINSIC_GRID_MUSCLES,
+  muscleMidlineKey,
+  muscleSideKey,
+  muscleMatches,
+  type MuscleGridState,
+} from "./muscle-grid-data";
 import {
   PRIMITIVE_TRACKS,
   NERVE_GROUPS,
@@ -23,6 +32,9 @@ interface PathwayReflexStimGridBoardProps {
   checked: Record<string, boolean>;
   onToggle: (key: string) => void;
   query: string;
+  activeTab: "reflexes" | "nerves" | "muscles";
+  muscleState?: Record<string, MuscleGridState>;
+  onMuscleToggle?: (key: string) => void;
 }
 
 const SectionHeader = ({ children }: { children: React.ReactNode }) => (
@@ -345,56 +357,240 @@ const NerveBlock = ({
   );
 };
 
-export function PathwayReflexStimGridBoard({ checked, onToggle, query }: PathwayReflexStimGridBoardProps) {
+const toneIcon = (state?: MuscleGridState, className?: string) => {
+  if (state === "Hypotonic") return <ArrowDown size={18} className={className} />;
+  if (state === "Inhibited") return <StimXMark className={className} />;
+  if (state === "Hypertonic") return <ArrowUp size={18} className={className} />;
+  return null;
+};
+
+const MuscleMarkButton = ({
+  keyName,
+  state,
+  title,
+  onClick,
+}: {
+  keyName: string;
+  state?: MuscleGridState;
+  title: string;
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-pressed={!!state}
+    title={title}
+    className={cn(
+      "relative flex h-10 w-10 items-center justify-center rounded-lg border-2 transition-all cursor-pointer active:scale-95",
+      state === "Hypotonic" && "border-sky-500/70 bg-sky-500/15 text-sky-700",
+      state === "Inhibited" && "border-chart-destructive/60 bg-chart-destructive/15 text-chart-destructive",
+      state === "Hypertonic" && "border-amber-500/70 bg-amber-100/80 text-amber-700",
+      !state && "border-border text-muted-foreground hover:border-sky-500/40 hover:bg-sky-500/5"
+    )}
+  >
+    {toneIcon(state, "w-6 h-6")}
+  </button>
+);
+
+const MuscleSideSplit = ({
+  lKey,
+  rKey,
+  stateL,
+  stateR,
+  onToggle,
+  itemTitle,
+}: {
+  lKey: string;
+  rKey: string;
+  stateL?: MuscleGridState;
+  stateR?: MuscleGridState;
+  onToggle: (key: string) => void;
+  itemTitle: string;
+}) => (
+  <div className="flex overflow-hidden rounded-lg border-2 border-border">
+    {([
+      ["L", lKey, stateL],
+      ["R", rKey, stateR],
+    ] as const).map(([side, key, state], i) => (
+      <button
+        key={side}
+        type="button"
+        onClick={() => onToggle(key)}
+        aria-pressed={!!state}
+        title={`${side} — ${itemTitle}`}
+        className={cn(
+          "relative flex h-10 w-11 items-center justify-center transition-colors cursor-pointer active:scale-95",
+          i === 0 && "border-r border-border",
+          state === "Hypotonic" && "bg-sky-500/15 text-sky-700",
+          state === "Inhibited" && "bg-chart-destructive/15 text-chart-destructive",
+          state === "Hypertonic" && "bg-amber-100/80 text-amber-700",
+          !state && "text-muted-foreground hover:bg-muted"
+        )}
+      >
+        {toneIcon(state, "w-5 h-5") || <span className="text-sm font-black">{side}</span>}
+      </button>
+    ))}
+  </div>
+);
+
+const MuscleRow = ({
+  name,
+  midline,
+  group,
+  checked,
+  onToggle,
+  query,
+}: {
+  name: string;
+  midline: boolean;
+  group: string;
+  checked: Record<string, MuscleGridState>;
+  onToggle: (key: string) => void;
+  query: string;
+}) => {
+  const info = getMuscleInfo(name);
+  const match = muscleMatches({ name, midline, group }, query);
+  return (
+    <div
+      id={`mus-row-${name}`}
+      className={cn(
+        "flex items-stretch border-t border-border/50 transition-colors",
+        match && "bg-yellow-100/60"
+      )}
+    >
+      <div className="flex w-72 shrink-0 items-center border-r border-border/50 bg-muted/30 px-4 py-3">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-foreground truncate">{name}</p>
+          <p className="text-[9px] uppercase tracking-wider text-muted-foreground/60">{info.meridian}</p>
+        </div>
+      </div>
+      <div className="flex flex-1 items-center px-4 py-3 text-xs font-medium text-foreground/75">
+        {info.testingPosition || info.description || "Standard muscle test"}
+      </div>
+      <div className="flex w-24 shrink-0 items-center justify-center border-l border-border/50 bg-muted/30 px-3 py-3">
+        {midline ? (
+          <MuscleMarkButton
+            keyName={muscleMidlineKey(name)}
+            state={checked[muscleMidlineKey(name)]}
+            title={`${name} — tap to cycle Normotonic → Hypotonic → Inhibited`}
+            onClick={() => onToggle(muscleMidlineKey(name))}
+          />
+        ) : (
+          <MuscleSideSplit
+            lKey={muscleSideKey(name, "L")}
+            rKey={muscleSideKey(name, "R")}
+            stateL={checked[muscleSideKey(name, "L")]}
+            stateR={checked[muscleSideKey(name, "R")]}
+            onToggle={onToggle}
+            itemTitle={`${name} — tap to cycle Normotonic → Hypotonic → Inhibited`}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+export function PathwayReflexStimGridBoard({
+  checked,
+  onToggle,
+  query,
+  activeTab,
+  muscleState = {},
+  onMuscleToggle,
+}: PathwayReflexStimGridBoardProps) {
+  const muscleToggle = onMuscleToggle ?? onToggle;
   return (
     <div className="bg-card">
-      <section id="primitive-reflexes" className="scroll-mt-4">
-        <SectionHeader>Primitive Reflexes</SectionHeader>
-        <ColumnHeader cellLabel="Mark" />
-        {PRIMITIVE_TRACKS.map((track) => (
-          <div key={track.title}>
-            <div className="flex items-center gap-2 bg-muted/40 px-4 py-2">
-              <span className={cn("h-2.5 w-2.5 rounded-full", track.color)} />
-              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                {track.title}
-              </p>
+      {activeTab === "reflexes" && (
+        <section id="primitive-reflexes" className="scroll-mt-4">
+          <SectionHeader>Primitive Reflexes</SectionHeader>
+          <ColumnHeader cellLabel="Mark" />
+          {PRIMITIVE_TRACKS.map((track) => (
+            <div key={track.title}>
+              <div className="flex items-center gap-2 bg-muted/40 px-4 py-2">
+                <span className={cn("h-2.5 w-2.5 rounded-full", track.color)} />
+                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  {track.title}
+                </p>
+              </div>
+              {track.reflexes.map((reflex) => (
+                <ReflexRow
+                  key={reflex.id}
+                  reflex={reflex}
+                  checked={checked}
+                  onToggle={onToggle}
+                  query={query}
+                />
+              ))}
             </div>
-            {track.reflexes.map((reflex) => (
-              <ReflexRow
-                key={reflex.id}
-                reflex={reflex}
-                checked={checked}
-                onToggle={onToggle}
-                query={query}
-              />
-            ))}
-          </div>
-        ))}
-      </section>
+          ))}
+        </section>
+      )}
 
-      <section id="cranial-nerves" className="scroll-mt-4 border-t-2 border-border">
-        <SectionHeader>Cranial Nerves</SectionHeader>
-        <ColumnHeader cellLabel="Mark" />
-        {NERVE_GROUPS.map((group) => (
-          <div key={group.label}>
-            <div className="flex items-center gap-2 bg-muted/40 px-4 py-2">
-              <span className={cn("h-2.5 w-2.5 rounded-full", NUCLEI_COLORS[group.label])} />
-              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                {group.label} Nuclei
-              </p>
+      {activeTab === "nerves" && (
+        <section id="cranial-nerves" className="scroll-mt-4 border-t-2 border-border">
+          <SectionHeader>Cranial Nerves</SectionHeader>
+          <ColumnHeader cellLabel="Mark" />
+          {NERVE_GROUPS.map((group) => (
+            <div key={group.label}>
+              <div className="flex items-center gap-2 bg-muted/40 px-4 py-2">
+                <span className={cn("h-2.5 w-2.5 rounded-full", NUCLEI_COLORS[group.label])} />
+                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  {group.label} Nuclei
+                </p>
+              </div>
+              {group.items.map((nerve) => (
+                <NerveBlock
+                  key={nerve.id}
+                  nerve={nerve}
+                  checked={checked}
+                  onToggle={onToggle}
+                  query={query}
+                />
+              ))}
             </div>
-            {group.items.map((nerve) => (
-              <NerveBlock
-                key={nerve.id}
-                nerve={nerve}
-                checked={checked}
-                onToggle={onToggle}
-                query={query}
-              />
-            ))}
-          </div>
-        ))}
-      </section>
+          ))}
+        </section>
+      )}
+
+      {activeTab === "muscles" && (
+        <section id="intrinsic-muscles" className="scroll-mt-4 border-t-2 border-border">
+          <SectionHeader>Intrinsic Muscles</SectionHeader>
+          <ColumnHeader cellLabel="Tone" />
+          {INTRINSIC_GRID_MUSCLES.reduce<{ group: string; muscles: typeof INTRINSIC_GRID_MUSCLES }[]>(
+            (acc, m) => {
+              let g = acc.find((x) => x.group === m.group);
+              if (!g) {
+                g = { group: m.group, muscles: [] };
+                acc.push(g);
+              }
+              g.muscles.push(m);
+              return acc;
+            },
+            []
+          ).map(({ group, muscles }) => (
+            <div key={group}>
+              <div className="flex items-center gap-2 bg-muted/40 px-4 py-2">
+                <span className="h-2.5 w-2.5 rounded-full bg-chart-primary" />
+                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  {group}
+                </p>
+              </div>
+              {muscles.map((m) => (
+                <MuscleRow
+                  key={m.name}
+                  name={m.name}
+                  midline={m.midline}
+                  group={m.group}
+                  checked={muscleState}
+                  onToggle={muscleToggle}
+                  query={query}
+                />
+              ))}
+            </div>
+          ))}
+        </section>
+      )}
     </div>
   );
 }

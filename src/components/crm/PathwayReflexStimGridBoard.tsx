@@ -528,7 +528,7 @@ export function PathwayReflexStimGridBoard({
       )}
 
       {activeTab === "nerves" && (
-        <section id="cranial-nerves" className="scroll-mt-4 border-t-2 border-border">
+        <section id="cranial-nerves" className="scroll-mt-4">
           <SectionHeader>Cranial Nerves</SectionHeader>
           <ColumnHeader cellLabel="Mark" />
           {NERVE_GROUPS.map((group) => (
@@ -554,7 +554,7 @@ export function PathwayReflexStimGridBoard({
       )}
 
       {activeTab === "muscles" && (
-        <section id="intrinsic-muscles" className="scroll-mt-4 border-t-2 border-border">
+        <section id="intrinsic-muscles" className="scroll-mt-4">
           <SectionHeader>Intrinsic Muscles</SectionHeader>
           <ColumnHeader cellLabel="Tone" />
           {INTRINSIC_GRID_MUSCLES.reduce<{ group: string; muscles: typeof INTRINSIC_GRID_MUSCLES }[]>(

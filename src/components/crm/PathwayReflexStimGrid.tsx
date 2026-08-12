@@ -350,39 +350,6 @@ export function PathwayReflexStimGrid({
           )}
         </div>
 
-        {/* Category tabs */}
-        <div className="px-5 pb-3">
-          <div className="inline-flex items-center gap-1 p-1 rounded-xl border border-border bg-muted/30">
-            {GRID_TABS.map((tab) => {
-              const Icon = tab.icon;
-              const count = tab.id === "reflexes" ? primCount : tab.id === "nerves" ? cranialCount : muscleCount;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id)}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 h-9 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer",
-                    activeTab === tab.id
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  )}
-                  title={tab.id === "muscles" ? "Intrinsic Stabilisation — tap to cycle Normotonic → Hypotonic → Inhibited" : undefined}
-                >
-                  <Icon size={13} />
-                  {tab.label}
-                  <span className={cn(
-                    "tabular-nums",
-                    activeTab === tab.id ? "text-primary-foreground/80" : "text-foreground"
-                  )}>
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         {/* Toolbar */}
         <div className="flex flex-wrap items-center gap-2 px-5 pb-4">
           <div className="relative flex-1 min-w-[220px] max-w-md">
@@ -536,19 +503,57 @@ export function PathwayReflexStimGrid({
           <Loader2 className="animate-spin text-chart-primary" size={28} />
           <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Loading Grid...</p>
         </div>
-      ) : view === 'summary' ? (
-        <PathwayReflexStimGridSummary checked={checked} muscleState={muscleState} />
       ) : (
-        <div className="overflow-x-auto border border-border rounded-xl shadow-sm print:overflow-visible print:border-0 print:shadow-none">
-          <PathwayReflexStimGridBoard
-            checked={checked}
-            onToggle={handleToggle}
-            query={query}
-            activeTab={activeTab}
-            muscleState={muscleState}
-            onMuscleToggle={handleMuscleToggle}
-          />
-        </div>
+        <>
+          <div className="flex justify-center print:hidden">
+            <div className="inline-flex items-center gap-1.5 p-1.5 rounded-2xl border border-border bg-card shadow-sm">
+              {GRID_TABS.map((tab) => {
+                const Icon = tab.icon;
+                const count = tab.id === "reflexes" ? primCount : tab.id === "nerves" ? cranialCount : muscleCount;
+                const active = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    className={cn(
+                      "flex items-center gap-2 px-4 h-10 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer",
+                      active
+                        ? "bg-primary text-primary-foreground shadow-md ring-2 ring-chart-primary/30"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    )}
+                    title={tab.id === "muscles" ? "Intrinsic Stabilisation — tap to cycle Normotonic → Hypotonic → Inhibited" : undefined}
+                  >
+                    <Icon size={14} />
+                    {tab.label}
+                    <span
+                      className={cn(
+                        "tabular-nums rounded-full px-1.5 py-0.5 text-[10px] font-black transition-colors",
+                        active ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-foreground/70"
+                      )}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          {view === 'summary' ? (
+            <PathwayReflexStimGridSummary checked={checked} muscleState={muscleState} />
+          ) : (
+            <div className="overflow-x-auto border border-border rounded-xl shadow-sm print:overflow-visible print:border-0 print:shadow-none">
+              <PathwayReflexStimGridBoard
+                checked={checked}
+                onToggle={handleToggle}
+                query={query}
+                activeTab={activeTab}
+                muscleState={muscleState}
+                onMuscleToggle={handleMuscleToggle}
+              />
+            </div>
+          )}
+        </>
       )}
     </div>
   );

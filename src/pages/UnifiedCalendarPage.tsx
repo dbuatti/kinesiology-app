@@ -239,8 +239,11 @@ const UnifiedCalendarPage = () => {
  const startDate = startOfWeek(monthStart);
  const endDate = endOfWeek(monthEnd);
 
- const fetchStart = subMonths(startDate, 1).toISOString();
- const fetchEnd = addMonths(endDate, 1).toISOString();
+ // Generous window: ~3 months of past + ~6 months ahead of the visible month,
+ // so far-future bookings (e.g. a session booked for October while viewing
+ // August) still show in the default List view, which has no month navigation.
+ const fetchStart = subMonths(startDate, 3).toISOString();
+ const fetchEnd = addMonths(endDate, 6).toISOString();
 
  const { data: voiceLessons, isLoading: voiceLoading, isError: voiceError, refetch: refetchVoice } = useQuery({
  queryKey: ["unified-voice-lessons", currentMonth.toISOString()],
@@ -692,21 +695,33 @@ const UnifiedCalendarPage = () => {
 
     // Income/payment summary for the visible month (used in the Month header).
    const monthSummary = useMemo(() => {
-     let voiceIncome = 0, fnhIncome = 0, collected = 0, outstanding = 0, free = 0;
-     const ms = startOfMonth(currentMonth);
-     const me = endOfMonth(currentMonth);
-     for (const i of calendarItems) {
-       if (i.cancelled) continue;
-       const d = parseISO(i.date);
-       if (d < ms || d > me) continue;
-       const amt = i.isFree ? 0 : (i.amount ?? 0);
-       if (i.source === "voice") voiceIncome += amt; else fnhIncome += amt;
-       if (i.isFree) free++;
-       else if (i.paid) collected += amt;
-       else outstanding += amt;
-     }
-     return { voiceIncome, fnhIncome, collected, outstanding, free, total: voiceIncome + fnhIncome };
-   }, [calendarItems, currentMonth]);
+      let voiceIncome = 0, fnhIncome = 0, collected = 0, outstanding = 0, free = 0;
+      const ms = startOfMonth(currentMonth);
+      const me = endOfMonth(currentMonth);
+      for (const i of calendarItems) {
+        if (i.cancelled) continue;
+        const d = parseISO(i.date);
+        if (d < ms || d > me) continue;
+        const amt = i.isFree ? 0 : (i.amount ?? 0);
+        if (i.source === "voice") voiceIncome += amt; else fnhIncome += amt;
+        if (i.isFree) free++;
+        else if (i.paid) collected += amt;
+        else outstanding += amt;
+      }
+      return { voiceIncome, fnhIncome, collected, outstanding, free, total: voiceIncome + fnhIncome };
+    }, [calendarItems, currentMonth]);
+
+    // Count of non-cancelled bookings in the visible month (Month view header).
+    // Uses the same filter as monthSummary — not the whole fetch window.
+    const monthItemCount = useMemo(() => {
+      let count = 0;
+      for (const i of calendarItems) {
+        if (i.cancelled) continue;
+        const d = parseISO(i.date);
+        if (d >= monthStart && d <= monthEnd) count++;
+      }
+      return count;
+    }, [calendarItems, monthStart, monthEnd]);
 
    function parseStartTime(t: string): number {
      const m = t.match(/^(\d+):(\d+)\s*(AM|PM)/i);
@@ -906,9 +921,9 @@ const UnifiedCalendarPage = () => {
    <h2 className="text-3xl font-semibold text-foreground tracking-tight">
    {format(currentMonth, "MMMM yyyy")}
    </h2>
-   <p className="text-muted-foreground font-medium text-sm mt-1">
-   {calendarItems.length} item{calendarItems.length !== 1 ? "s" : ""} scheduled
-   </p>
+    <p className="text-muted-foreground font-medium text-sm mt-1">
+    {monthItemCount} item{monthItemCount !== 1 ? "s" : ""} scheduled in {format(currentMonth, "MMMM")}
+    </p>
    <div className="flex flex-wrap items-center gap-2 mt-3">
    <span className="inline-flex items-center gap-1 text-[10px] font-bold rounded-full px-2.5 py-1 bg-card border border-border">
    <CreditCard size={10} className="text-muted-foreground" /> ${monthSummary.total.toLocaleString()} expected

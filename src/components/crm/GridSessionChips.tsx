@@ -23,6 +23,15 @@ export const GridSessionChips = ({ grid }: { grid?: ClientGridData }) => {
           <span className="text-[9px] font-bold tabular-nums text-muted-foreground">{n.count}</span>
         </span>
       ))}
+      {grid.muscleCount > 0 && (
+        <>
+          {(grid.tracks.length > 0 || grid.nuclei.length > 0) && <span className="h-3 w-px bg-border" />}
+          <span className="inline-flex items-center gap-1" title="Intrinsic muscles with tone findings">
+            <span className="h-2 w-2 rounded-full bg-sky-500" />
+            <span className="text-[9px] font-bold tabular-nums text-muted-foreground">{grid.muscleCount}</span>
+          </span>
+        </>
+      )}
     </div>
   );
 };

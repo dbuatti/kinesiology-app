@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { getMuscleInfo } from "@/data/muscle-info-data";
+import {
+  INTRINSIC_GRID_MUSCLES,
+  muscleMidlineKey,
+  muscleSideKey,
+  type MuscleGridState,
+} from "./muscle-grid-data";
 import {
   PRIMITIVE_TRACKS,
   NUCLEI_COLORS,
@@ -30,11 +37,57 @@ const HandwrittenX = () => (
 
 interface PathwayReflexStimSheetProps {
   checked?: Record<string, boolean>;
+  muscleState?: Record<string, MuscleGridState>;
   onToggle?: (key: string) => void;
   query?: string;
 }
 
-const PathwayReflexStimSheet = ({ checked: externalChecked, onToggle, query }: PathwayReflexStimSheetProps) => {
+const TONE_SYMBOL: Record<MuscleGridState, string> = {
+  Hypotonic: "↓",
+  Inhibited: "✕",
+  Hypertonic: "↑",
+};
+
+const ToneCell = ({ state, title }: { state?: MuscleGridState; title: string }) => (
+  <div
+    title={`${title} — ${state ?? "Normotonic"}`}
+    className="w-5 h-5 border-2 border-black mx-auto flex items-center justify-center rounded-[3px]"
+  >
+    {state && <span className="text-base font-black leading-none">{TONE_SYMBOL[state]}</span>}
+  </div>
+);
+
+const ToneSideSplit = ({
+  lState,
+  rState,
+  title,
+}: {
+  lState?: MuscleGridState;
+  rState?: MuscleGridState;
+  title: string;
+}) => (
+  <div className="flex w-full min-h-[36px] divide-x-2 divide-black">
+    {(
+      [
+        ["L", lState],
+        ["R", rState],
+      ] as const
+    ).map(([side, state]) => (
+      <div key={side} className="relative flex-1 flex items-center justify-center">
+        <span aria-hidden="true" className="text-xl font-black leading-none text-neutral-400 select-none pointer-events-none">
+          {side}
+        </span>
+        {state && (
+          <span title={`${title} ${side} — ${state}`} className="absolute inset-0 flex items-center justify-center text-base font-black">
+            {TONE_SYMBOL[state]}
+          </span>
+        )}
+      </div>
+    ))}
+  </div>
+);
+
+const PathwayReflexStimSheet = ({ externalChecked, muscleState, onToggle, query }: PathwayReflexStimSheetProps) => {
   const [localChecked, setLocalChecked] = useState<Record<string, boolean>>({});
 
   const checked = externalChecked ?? localChecked;
@@ -110,7 +163,7 @@ const PathwayReflexStimSheet = ({ checked: externalChecked, onToggle, query }: P
         </div>
         <div className="text-right text-[9px] font-bold uppercase tracking-widest">
           <p>A4 Portrait</p>
-          <p className="mt-0.5">Primitive Reflexes &amp; Cranial Nerves</p>
+          <p className="mt-0.5">Reflexes · Cranial Nerves · Intrinsic Muscles</p>
         </div>
       </div>
 
@@ -214,8 +267,7 @@ const PathwayReflexStimSheet = ({ checked: externalChecked, onToggle, query }: P
           {NERVE_GROUPS.map((group) => (
             <React.Fragment key={group.label}>
               {group.items.map((nerve, ni) => (
-                <React.Fragment key={nerve.id}>
-                  {nerveStimLines(nerve).map((line, i) => {
+                <React.Fragment key={nerve.id}>                  {nerveStimLines(nerve).map((line, i) => {
                     const lateralized = isLateralStim(nerve.id, i);
                     const lineKeys = lateralized
                       ? [cranialSideKey(nerve.id, i, "L"), cranialSideKey(nerve.id, i, "R")]
@@ -332,12 +384,45 @@ const PathwayReflexStimSheet = ({ checked: externalChecked, onToggle, query }: P
               ))}
             </React.Fragment>
           ))}
+
+          <tr id="intrinsic-muscles">
+            <td colSpan={4} style={{ backgroundColor: "#000", color: "#fff" }} className="border-2 border-black p-1 font-black uppercase tracking-[0.2em] sticky top-[34px] z-[5]">
+              Intrinsic Muscles
+            </td>
+          </tr>
+          {INTRINSIC_GRID_MUSCLES.map((muscle) => {
+            const info = getMuscleInfo(muscle.name);
+            const state = muscleState?.[muscleMidlineKey(muscle.name)];
+            const lState = muscleState?.[muscleSideKey(muscle.name, "L")];
+            const rState = muscleState?.[muscleSideKey(muscle.name, "R")];
+            return (
+              <tr key={muscle.name} className="break-inside-avoid">
+                <td className="border-2 border-black border-t-0 p-1 pl-2 align-middle">
+                  <span className="text-[8px] font-black uppercase tracking-wider text-black/40">{muscle.group}</span>
+                </td>
+                <td className="border-2 border-black border-t-0 p-1 pl-2 align-middle font-semibold">
+                  {muscle.name}
+                  <div className="text-[7px] font-bold uppercase tracking-wider text-black/40">{info.meridian}</div>
+                </td>
+                <td className="border-2 border-black border-t-0 p-1 align-middle">
+                  {info.testingPosition || info.description || "Standard muscle test"}
+                </td>
+                <td className="border-2 border-black border-t-0 p-0 text-center align-middle">
+                  {muscle.midline ? (
+                    <ToneCell state={state} title={muscle.name} />
+                  ) : (
+                    <ToneSideSplit lState={lState} rState={rState} title={muscle.name} />
+                  )}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 
       <div className="mt-2 pt-1 border-t-2 border-black flex justify-between text-[8px] font-black uppercase tracking-widest">
         <p>Resonance Clinical Infrastructure • Prototype Grid v0.5</p>
-        <p className="text-right">L / R = per-side showing • Stim lines are indicative</p>
+        <p className="text-right">L / R = per-side showing • ↓ Hypo · ✕ Inhib · ↑ Hyper</p>
       </div>
 
       <style>{`

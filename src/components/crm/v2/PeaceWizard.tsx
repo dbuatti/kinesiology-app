@@ -22,11 +22,11 @@ import CorrectPhase from "./phases/CorrectPhase";
 import EmbedPhaseV2 from "./phases/EmbedPhaseV2";
 
 export const PEACE_PHASES = [
-  { id: "p", label: "P", fullLabel: "Preliminary", icon: Activity },
-  { id: "e1", label: "E", fullLabel: "Ease", icon: Zap },
-  { id: "a", label: "A", fullLabel: "Align", icon: GitBranch },
-  { id: "c", label: "C", fullLabel: "Correct", icon: Target },
-  { id: "e2", label: "E", fullLabel: "Embed", icon: ClipboardCheck },
+  { id: "p", label: "P", fullLabel: "Preliminary", icon: Activity, hint: "Capture the session goal & issue" },
+  { id: "e1", label: "E", fullLabel: "Ease", icon: Zap, hint: "Run at least one Ease technique (lymphatic, rocking, T1, diaphragm, vagus)" },
+  { id: "a", label: "A", fullLabel: "Align", icon: GitBranch, hint: "Record a finding in the priority pattern grid" },
+  { id: "c", label: "C", fullLabel: "Correct", icon: Target, hint: "Log the modes & balances work" },
+  { id: "e2", label: "E", fullLabel: "Embed", icon: ClipboardCheck, hint: "Set the session north star" },
 ] as const;
 
 interface PeaceWizardProps {
@@ -238,6 +238,26 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
               </button>
             );
           })}
+        </div>
+
+        {/* Phase completion hint */}
+        <div className="flex items-center justify-center gap-2 text-center">
+          {(() => {
+            const activeIsComplete = (phaseStatus as any)[PEACE_PHASES[activePhase].id];
+            return (
+              <>
+                <span className={cn(
+                  "text-[10px] font-black uppercase tracking-wider",
+                  activeIsComplete ? "text-chart-emerald" : "text-muted-foreground/70"
+                )}>
+                  {activeIsComplete ? "Complete" : "To complete this phase"}
+                </span>
+                <span className="text-[10px] font-medium text-muted-foreground">
+                  {PEACE_PHASES[activePhase].hint}
+                </span>
+              </>
+            );
+          })()}
         </div>
       </div>
 

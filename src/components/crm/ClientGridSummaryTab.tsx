@@ -32,7 +32,7 @@ export const ClientGridSummaryTab = ({ clientName, appointments, gridFor }: Clie
           <div className="min-w-0 flex-1">
             <h2 className="text-xl font-bold text-foreground tracking-tight">Pathway / Reflex / Stim Grid</h2>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Every marked reflex, stim, and nerve inhibition captured across {clientName}'s sessions.
+              Every marked reflex, stim, nerve inhibition, and intrinsic muscle tone captured across {clientName}'s sessions.
             </p>
           </div>
           <div className="flex items-center gap-4 shrink-0">
@@ -55,7 +55,7 @@ export const ClientGridSummaryTab = ({ clientName, appointments, gridFor }: Clie
             </div>
             <p className="text-sm font-medium text-foreground">No grid marks yet.</p>
             <p className="mt-1 text-xs text-muted-foreground/70 max-w-sm mx-auto">
-              Marks are captured during sessions in the pathway grid — inhibited reflexes, tested stims, and nerve-level inhibition. They'll appear here as a timeline.
+              Marks are captured during sessions in the pathway grid — inhibited reflexes, tested stims, nerve-level inhibition, and intrinsic muscle tone. They'll appear here as a timeline.
             </p>
           </div>
         ) : (
@@ -97,6 +97,15 @@ export const ClientGridSummaryTab = ({ clientName, appointments, gridFor }: Clie
                             <span className="text-[10px] font-bold tabular-nums text-muted-foreground">{n.count}</span>
                           </span>
                         ))}
+                        {g.muscleCount > 0 && (
+                          <>
+                            {(g.tracks.length > 0 || g.nuclei.length > 0) && <span className="h-4 w-px bg-border" />}
+                            <span className="flex items-center gap-1.5" title="Intrinsic muscles with tone findings">
+                              <span className="h-2.5 w-2.5 rounded-full bg-sky-500" />
+                              <span className="text-[10px] font-bold tabular-nums text-muted-foreground">{g.muscleCount}</span>
+                            </span>
+                          </>
+                        )}
                       </div>
 
                       <div className="text-right">
@@ -130,7 +139,7 @@ export const ClientGridSummaryTab = ({ clientName, appointments, gridFor }: Clie
 
                   {isOpen && (
                     <div className="p-4 pt-2 border-t border-border/50">
-                      <PathwayReflexStimGridSummary checked={g.checked} />
+                      <PathwayReflexStimGridSummary checked={g.checked} muscleState={g.muscleState} />
                     </div>
                   )}
                 </div>

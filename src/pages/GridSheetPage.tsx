@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, Printer, Loader2 } from "lucide-react";
 import PathwayReflexStimSheet from "@/components/crm/PathwayReflexStimSheet";
 import { buildCheckedMap } from "@/components/crm/grid-checked";
+import { seedMuscleState } from "@/components/crm/muscle-grid-data";
 import { useAppointment } from "@/hooks/useAppointment";
 import { useCranialNerveTests } from "@/hooks/useCranialNerveTests";
 import { usePrimitiveReflexTests } from "@/hooks/usePrimitiveReflexTests";
+import { safeParse } from "@/utils/safe-json";
 
 const GridSheetPage = () => {
   const navigate = useNavigate();
@@ -28,9 +30,15 @@ const GridSheetPage = () => {
     [reflexTests, nerveTests, appointment?.priority_pattern]
   );
 
+  const muscleState = useMemo(
+    () => seedMuscleState(safeParse(appointment?.priority_pattern, {})),
+    [appointment?.priority_pattern]
+  );
+
   const loading = appLoading || nerveLoading || reflexLoading;
 
-  const activeCount = Object.values(checked).filter(Boolean).length;
+  const activeCount =
+    Object.values(checked).filter(Boolean).length + Object.keys(muscleState).length;
   const clientName = appointment?.clients?.name || "Client";
   const dateLabel = appointment?.date ? format(new Date(appointment.date), "EEEE, MMMM d, yyyy") : "";
 
@@ -89,7 +97,7 @@ const GridSheetPage = () => {
         </div>
       ) : (
         <div className="bg-white shadow-2xl print:shadow-none min-h-[0] w-full">
-          <PathwayReflexStimSheet checked={checked} />
+          <PathwayReflexStimSheet checked={checked} muscleState={muscleState} />
         </div>
       )}
     </div>

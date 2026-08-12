@@ -2,11 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Appointment, CranialNerveTest, PrimitiveReflexTest } from "@/types/crm";
 import { buildCheckedMap } from "@/components/crm/grid-checked";
+import { seedMuscleState, type MuscleGridState } from "@/components/crm/muscle-grid-data";
 import { gridSummaryMetrics, type GridNucleiMetric, type GridTrackMetric } from "@/components/crm/grid-summary";
+import { safeParse } from "@/utils/safe-json";
 
 export interface ClientGridData {
   checked: Record<string, boolean>;
+  muscleState: Record<string, MuscleGridState>;
   activeCount: number;
+  muscleCount: number;
   tracks: GridTrackMetric[];
   nuclei: GridNucleiMetric[];
 }
@@ -48,7 +52,16 @@ export function useClientGridData(appointments: Appointment[]) {
         nerveTests: gridTests.nerves[app.id] || [],
         priorityPattern: app.priority_pattern,
       });
-      map[app.id] = { checked, ...gridSummaryMetrics(checked) };
+      const muscleState = seedMuscleState(safeParse(app.priority_pattern, {}));
+      const muscleCount = Object.keys(muscleState).length;
+      const marks = Object.values(checked).filter(Boolean).length;
+      map[app.id] = {
+        checked,
+        muscleState,
+        muscleCount,
+        activeCount: marks + muscleCount,
+        ...gridSummaryMetrics(checked),
+      };
     });
     return map;
   }, [appointments, gridTests]);

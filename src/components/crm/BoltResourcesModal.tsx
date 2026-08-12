@@ -16,7 +16,8 @@ import {
   CheckCircle2,
   Wind,
   Timer,
-  TrendingUp
+  TrendingUp,
+  PlayCircle
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -25,10 +26,48 @@ interface BoltResourcesModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   currentScore?: number | null;
+  onStartBolt?: () => void;
 }
 
-const BoltResourcesModal = ({ open, onOpenChange, currentScore }: BoltResourcesModalProps) => {
-  const needsImprovement = currentScore !== null && currentScore !== undefined && currentScore < 25;
+const BoltResourcesModal = ({ open, onOpenChange, currentScore, onStartBolt }: BoltResourcesModalProps) => {
+  const hasScore = currentScore !== null && currentScore !== undefined;
+  const needsImprovement = hasScore && currentScore < 25;
+  const isOnTrack = hasScore && currentScore >= 25 && currentScore < 40;
+  const isOptimal = hasScore && currentScore >= 40;
+  const progress = hasScore ? Math.min(100, Math.round((currentScore / 40) * 100)) : 0;
+
+  const scoreBanner = needsImprovement
+    ? {
+        container: "border-amber-200 bg-amber-50",
+        bar: "bg-amber-500",
+        badge: "bg-amber-500 text-primary-foreground",
+        badgeIcon: null,
+        title: "Needs Improvement",
+        detail: "Prioritise the Breathing Recovery exercise below",
+        sub: "Target: 25s minimum · Optimal: 40s+",
+        subClass: "text-amber-700",
+      }
+    : isOptimal
+      ? {
+          container: "border-emerald-200 bg-emerald-50",
+          bar: "bg-emerald-500",
+          badge: "bg-emerald-500 text-primary-foreground",
+          badgeIcon: <CheckCircle2 size={14} className="mr-1" />,
+          title: "Optimal",
+          detail: "Maintain with daily recovery practice",
+          sub: "Keep it up — you're in the 40s+ range",
+          subClass: "text-emerald-700",
+        }
+      : {
+          container: "border-indigo-200 bg-indigo-50",
+          bar: "bg-indigo-500",
+          badge: "bg-indigo-500 text-primary-foreground",
+          badgeIcon: <TrendingUp size={14} className="mr-1" />,
+          title: "On Track",
+          detail: "Keep practising to reach the 40s optimal target",
+          sub: `Target: 25s minimum · ${currentScore}s of 40s`,
+          subClass: "text-indigo-700",
+        };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -46,29 +85,32 @@ const BoltResourcesModal = ({ open, onOpenChange, currentScore }: BoltResourcesM
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {currentScore !== null && currentScore !== undefined && (
-            <Card className={`border-2 ${needsImprovement ? 'border-amber-200 bg-amber-50' : 'border-emerald-200 bg-emerald-50'}`}>
+          {hasScore && (
+            <Card className={`border-2 ${scoreBanner.container}`}>
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-1">Current BOLT Score</p>
-                    <p className="text-4xl font-black text-foreground">{currentScore}s</p>
+                    <p className="text-4xl font-black text-foreground tabular-nums">{currentScore}s</p>
+                    <p className={`text-xs font-medium mt-1 ${scoreBanner.subClass}`}>{scoreBanner.sub}</p>
                   </div>
                   <div className="text-right">
-                    {needsImprovement ? (
-                      <>
-                        <Badge className="bg-amber-500 text-primary-foreground mb-2">Needs Improvement</Badge>
-                        <p className="text-xs text-amber-800 font-medium">Target: 25s minimum</p>
-                        <p className="text-xs text-amber-700">Optimal: 40s+</p>
-                      </>
-                    ) : (
-                      <>
-                        <Badge className="bg-emerald-500 text-primary-foreground mb-2">
-                          <CheckCircle2 size={14} className="mr-1" /> Good Score
-                        </Badge>
-                        <p className="text-xs text-emerald-800 font-medium">Keep practicing!</p>
-                      </>
-                    )}
+                    <Badge className={`${scoreBanner.badge} mb-2`}>
+                      {scoreBanner.badgeIcon} {scoreBanner.title}
+                    </Badge>
+                    <p className="text-xs font-medium text-foreground/80">{scoreBanner.detail}</p>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <div className="h-2 bg-white/60 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${scoreBanner.bar} rounded-full transition-all duration-700 ease-out`}
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between mt-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                    <span>25s Functional</span>
+                    <span>40s+ Optimal</span>
                   </div>
                 </div>
               </CardContent>
@@ -208,18 +250,21 @@ const BoltResourcesModal = ({ open, onOpenChange, currentScore }: BoltResourcesM
         <div className="flex gap-3 pt-4 border-t">
           <Button 
             variant="outline" 
-            onClick={() => onOpenChange(false)}
-            className="flex-1"
-          >
-            Close
-          </Button>
-          <Button 
             onClick={() => {
               window.print();
             }}
-            className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+            className="flex-1"
           >
             Print Resources
+          </Button>
+          <Button 
+            onClick={() => {
+              onOpenChange(false);
+              onStartBolt?.();
+            }}
+            className="flex-1 bg-indigo-600 hover:bg-indigo-700"
+          >
+            <PlayCircle size={16} className="mr-2" /> Run BOLT Test
           </Button>
         </div>
       </DialogContent>

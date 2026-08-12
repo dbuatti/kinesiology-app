@@ -105,7 +105,7 @@ export const ClientAppointmentCard = ({
 
         {expanded && (
           <div className="px-6 pb-6">
-            <PathwayReflexStimGridSummary checked={grid?.checked ?? {}} />
+            <PathwayReflexStimGridSummary checked={grid?.checked ?? {}} muscleState={grid?.muscleState} />
           </div>
         )}
       </Card>

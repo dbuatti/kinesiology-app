@@ -30,6 +30,13 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
   const [resourcesOpen, setResourcesOpen] = useState(false);
   const [showExercise, setShowExercise] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [timerStartSignal, setTimerStartSignal] = useState(0);
+
+  const handleStartBoltFromResources = () => {
+    setResourcesOpen(false);
+    setIsOpen(true);
+    setTimerStartSignal(s => s + 1);
+  };
 
   const pastBoltScores = history
     .filter((a: any) => a.bolt_score != null)
@@ -140,7 +147,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                   <div className="max-w-xs mx-auto w-full">
-                    <BoltTimer initialScore={initialBoltScore} onScoreRecorded={handleSaveScore} isSaving={loading} />
+                    <BoltTimer initialScore={initialBoltScore} onScoreRecorded={handleSaveScore} isSaving={loading} startSignal={timerStartSignal} />
                   </div>
 
                   <div className="space-y-4">
@@ -201,7 +208,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
         </div>
       )}
 
-      <BoltResourcesModal open={resourcesOpen} onOpenChange={setResourcesOpen} currentScore={initialBoltScore} />
+      <BoltResourcesModal open={resourcesOpen} onOpenChange={setResourcesOpen} currentScore={initialBoltScore} onStartBolt={handleStartBoltFromResources} />
 
       <ConfirmDialog
         open={showResetConfirm}

@@ -8,9 +8,10 @@ interface BoltTimerProps {
   initialScore: number | null | undefined;
   onScoreRecorded: (score: number) => Promise<void>;
   isSaving: boolean;
+  startSignal?: number;
 }
 
-const BoltTimer = ({ initialScore, onScoreRecorded, isSaving }: BoltTimerProps) => {
+const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: BoltTimerProps) => {
   const [time, setTime] = useState(initialScore || 0);
   const [isRunning, setIsRunning] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
@@ -38,6 +39,15 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving }: BoltTimerProps) 
       setTime(initialScore);
     }
   }, [initialScore]);
+
+  useEffect(() => {
+    if (startSignal && startSignal > 0) {
+      setTime(0);
+      setIsFinished(false);
+      setIsRunning(true);
+      setShowInstructions(false);
+    }
+  }, [startSignal]);
 
   const startTimer = () => {
     setTime(0);

@@ -65,10 +65,17 @@ export const ClientGridSummaryTab = ({ clientName, appointments, gridFor }: Clie
               const isOpen = expandedGrid === app.id;
               return (
                 <div key={app.id} className="bg-card rounded-xl border border-border overflow-hidden">
-                  <button
-                    type="button"
+                  <div
+                    role="button"
+                    tabIndex={0}
                     onClick={() => setExpandedGrid(isOpen ? null : app.id)}
-                    className="w-full flex items-center justify-between gap-4 p-4 hover:bg-muted/40 transition-colors text-left cursor-pointer"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setExpandedGrid(isOpen ? null : app.id);
+                      }
+                    }}
+                    className="w-full flex items-center justify-between gap-4 p-4 hover:bg-muted/40 transition-colors text-left cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-chart-primary/50"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center shrink-0">
@@ -135,7 +142,7 @@ export const ClientGridSummaryTab = ({ clientName, appointments, gridFor }: Clie
                         <ChevronDown size={16} className={cn("text-muted-foreground transition-transform", isOpen && "rotate-180")} />
                       </div>
                     </div>
-                  </button>
+                  </div>
 
                   {isOpen && (
                     <div className="p-4 pt-2 border-t border-border/50">

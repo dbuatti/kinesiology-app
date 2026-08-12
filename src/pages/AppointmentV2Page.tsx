@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import {
   ArrowLeft, Loader2, Activity, FileText,
   Maximize2, Minimize2, Calendar, Clock, User, BookOpen,
-  Plus, BookMarked, LayoutGrid, Archive
+  Plus, BookMarked, LayoutGrid, Archive, StickyNote
 } from "lucide-react";
 import {
   HoverCard, HoverCardContent, HoverCardTrigger,
@@ -21,6 +21,7 @@ import AppointmentV2DocView from "@/components/crm/v2/AppointmentV2DocView";
 import CorrectionsManualContent from "@/components/crm/CorrectionsManualContent";
 import { QuickSessionDialog } from "@/components/crm/QuickSessionDialog";
 import PathwayReflexStimGrid from "@/components/crm/PathwayReflexStimGrid";
+import QuickNotesDialog from "@/components/crm/QuickNotesDialog";
 import { parseClientJournal } from "@/utils/journal-helper";
 
 
@@ -44,11 +45,26 @@ const AppointmentV2Page = () => {
   });
   const [isFullScreen, setIsFullScreen] = useState(() => localStorage.getItem('rk_v2_fullscreen') === 'true');
   const [quickSessionOpen, setQuickSessionOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
 
   useEffect(() => {
     const handler = () => setIsFullScreen(localStorage.getItem('rk_v2_fullscreen') === 'true');
     window.addEventListener('antigravity_fullscreen_change', handler);
     return () => window.removeEventListener('antigravity_fullscreen_change', handler);
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        setNotesOpen(true);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
   const toggleFullScreen = () => {
@@ -175,6 +191,13 @@ const AppointmentV2Page = () => {
             >
               <Plus size={13} /> <span className="hidden md:inline">New</span>
             </button>
+            <button
+              onClick={() => setNotesOpen(true)}
+              className="flex items-center gap-1.5 px-2 md:px-3 h-8 text-[10px] font-bold uppercase tracking-wider border border-foreground/20 hover:bg-foreground hover:text-background transition-colors rounded-lg shrink-0 whitespace-nowrap"
+              title="Quick notes — open a notes box from anywhere (N)"
+            >
+              <StickyNote size={13} /> <span className="hidden md:inline">Notes</span>
+            </button>
             <div className="w-px h-6 bg-border mx-0.5 shrink-0" />
             <Button
               variant="ghost"
@@ -258,6 +281,14 @@ const AppointmentV2Page = () => {
       )}
 
       <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} />
+      <QuickNotesDialog
+        open={notesOpen}
+        onOpenChange={setNotesOpen}
+        initialValue={appointment.notes}
+        onSave={saveField}
+        title={`Quick Notes — ${appointment.clients?.name || "Session"}`}
+        subtitle={format(new Date(appointment.date), "EEE, MMM d · h:mm a")}
+      />
     </div>
   );
 };

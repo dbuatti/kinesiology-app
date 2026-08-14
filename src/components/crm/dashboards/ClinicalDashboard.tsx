@@ -30,7 +30,7 @@ interface ClinicalDashboardProps {
 const ClinicalDashboard = ({ stats, todaySessions, activeSession, morningProgress }: ClinicalDashboardProps) => {
   const missions = [
     { label: "Grounding", status: morningProgress >= 25 ? 'done' : 'pending', icon: Sparkles, path: "/morning-program" },
-    { label: "Review Alerts", status: stats.imperativeAlerts === 0 ? 'done' : 'pending', icon: ShieldAlert, path: "/oversight" },
+    { label: "Review Alerts", status: stats.imperativeAlerts === 0 ? 'done' : 'pending', icon: ShieldAlert, path: "/clients?tool=oversight" },
     { label: "Session Prep", status: 'pending', icon: ClipboardCheck, path: "/schedule" },
   ];
 

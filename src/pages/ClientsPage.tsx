@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Loader2, LayoutGrid, List, Users, AlertCircle, RefreshCw, ArrowLeft } from "lucide-react";
+import { Plus, Search, Loader2, LayoutGrid, List, Users, AlertCircle, RefreshCw, TrendingUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -13,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientForm from "@/components/crm/ClientForm";
 import AppointmentForm from "@/components/crm/AppointmentForm";
 import { Client } from "@/types/crm";
@@ -22,6 +22,7 @@ import PageHeader from "@/components/shared/PageHeader";
 import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 import ClientTableView from "@/components/crm/ClientTableView";
 import ClientGridView from "@/components/crm/ClientGridView";
+import { ClinicalOversightTool } from "@/pages/ClinicalOversightPage";
 
 interface ClientWithStats extends Client {
   session_count: number;
@@ -29,7 +30,7 @@ interface ClientWithStats extends Client {
   latest_bolt: number | null;
 }
 
-const ClientsPage = () => {
+export function ClientsTool() {
   const [search, setSearch] = useState("");
   const [view, setView] = useState<'table' | 'grid'>('table');
   const [clients, setClients] = useState<ClientWithStats[]>([]);
@@ -39,7 +40,6 @@ const ClientsPage = () => {
   const [bookOpen, setBookOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const { isPrivate } = usePrivacyMode();
-  const navigate = useNavigate();
   
   const fetchClients = async () => {
     try {
@@ -95,7 +95,7 @@ const ClientsPage = () => {
   );
 
   return (
-    <AppLayout>
+    <>
       <div className="flex flex-col gap-8">
         <PageHeader 
           title="Client Database"
@@ -103,9 +103,6 @@ const ClientsPage = () => {
           icon={Users}
           actions={
             <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
-              <ArrowLeft size={14} /> Back
-            </Button>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button className="bg-primary hover:bg-primary/90 shadow-xl shadow-primary/10 rounded-2xl h-12 px-8 font-black text-xs uppercase tracking-widest">
@@ -220,7 +217,37 @@ const ClientsPage = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </AppLayout>
+    </>
+  );
+};
+
+const ClientsPage = () => {
+  const [tab, setTab] = useState(() => {
+    const tool = new URLSearchParams(window.location.search).get("tool");
+    return tool === "oversight" ? "oversight" : "database";
+  });
+
+  return (
+    <Tabs value={tab} onValueChange={setTab} className="w-full">
+      <div className="sticky top-0 z-10 bg-background border-b border-border px-4 pt-3">
+        <TabsList className="w-full justify-start overflow-x-auto">
+          <TabsTrigger value="database" className="gap-2">
+            <Users size={14} />
+            <span className="whitespace-nowrap">Client Database</span>
+          </TabsTrigger>
+          <TabsTrigger value="oversight" className="gap-2">
+            <TrendingUp size={14} />
+            <span className="whitespace-nowrap">Clinical Oversight</span>
+          </TabsTrigger>
+        </TabsList>
+      </div>
+      <TabsContent value="database" className="m-0">
+        <ClientsTool />
+      </TabsContent>
+      <TabsContent value="oversight" className="m-0">
+        <ClinicalOversightTool />
+      </TabsContent>
+    </Tabs>
   );
 };
 

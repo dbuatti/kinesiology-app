@@ -22,7 +22,7 @@ const BusinessPage = () => {
   });
 
   return (
-    <div className="flex flex-col">
+    <Tabs value={tab} onValueChange={setTab} className="w-full">
       <div className="sticky top-0 z-10 bg-background border-b border-border px-4 pt-3">
         <TabsList className="w-full justify-start overflow-x-auto">
           {TABS.map((t) => (
@@ -33,8 +33,7 @@ const BusinessPage = () => {
           ))}
         </TabsList>
       </div>
-      <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <TabsContent value="dashboard" className="m-0">
+      <TabsContent value="dashboard" className="m-0">
           <BusinessDashboardTool />
         </TabsContent>
         <TabsContent value="overview" className="m-0">
@@ -49,8 +48,7 @@ const BusinessPage = () => {
         <TabsContent value="follow-up" className="m-0">
           <FollowUpTool />
         </TabsContent>
-      </Tabs>
-    </div>
+    </Tabs>
   );
 };
 

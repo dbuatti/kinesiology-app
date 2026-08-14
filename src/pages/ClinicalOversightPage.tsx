@@ -6,12 +6,12 @@ import {
  Activity, FlaskConical, Brain, AlertCircle, 
  CheckCircle2, ArrowRight, Search, Loader2, 
  TrendingUp, Users, Zap, Wind, ShieldCheck,
-  CalendarClock, MessageSquare, RefreshCw, ArrowLeft
+  CalendarClock, MessageSquare, RefreshCw
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
 import DataIntegrityCheck from "@/components/crm/DataIntegrityCheck";
@@ -19,12 +19,11 @@ import FollowUpTracker from "@/components/crm/FollowUpTracker";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 
-const ClinicalOversightPage = () => {
+export function ClinicalOversightTool() {
  const [clients, setClients] = useState<any[]>([]);
  const [loading, setLoading] = useState(true);
  const [error, setError] = useState<string | null>(null);
  const [search, setSearch] = useState("");
- const navigate = useNavigate();
 
  useEffect(() => {
  const fetchClinicalData = async () => {
@@ -90,48 +89,42 @@ const ClinicalOversightPage = () => {
  );
 
  if (error) return (
- <AppLayout>
- <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
- <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
- <AlertCircle size={28} className="text-destructive" />
- </div>
- <p className="text-destructive font-semibold text-sm">{error}</p>
- <Button variant="outline" size="sm" onClick={() => { setError(null); setLoading(true); }} className="rounded-xl text-xs gap-2">
- <RefreshCw size={14} /> Retry
- </Button>
- </div>
- </AppLayout>
- );
+  <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+  <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+  <AlertCircle size={28} className="text-destructive" />
+  </div>
+  <p className="text-destructive font-semibold text-sm">{error}</p>
+  <Button variant="outline" size="sm" onClick={() => { setError(null); setLoading(true); }} className="rounded-xl text-xs gap-2">
+  <RefreshCw size={14} /> Retry
+  </Button>
+  </div>
+  );
 
  return (
- <AppLayout>
- <div className="space-y-8">
- <PageHeader 
- title="Clinical Oversight"
- subtitle="Practice-wide health monitoring, data integrity, and case management."
-  icon={TrendingUp}
-  actions={
- <div className="flex items-center gap-3">
- <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2 shrink-0">
- <ArrowLeft size={14} /> Back
- </Button>
- <div className="relative w-full md:w-72">
- <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
- <Input 
- placeholder="Search clients..." 
- className="pl-10 bg-card border-border rounded-xl shadow-sm h-12"
- value={search}
- onChange={(e) => setSearch(e.target.value)}
- />
- </div>
+  <div className="space-y-8">
+  <PageHeader 
+  title="Clinical Oversight"
+  subtitle="Practice-wide health monitoring, data integrity, and case management."
+   icon={TrendingUp}
+   actions={
+  <div className="flex items-center gap-3">
+  <div className="relative w-full md:w-72">
+  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+  <Input 
+  placeholder="Search clients..." 
+  className="pl-10 bg-card border-border rounded-xl shadow-sm h-12"
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+  />
+  </div>
    <Button asChild variant="outline" size="sm" className="rounded-xl h-10 px-4 gap-2 shrink-0">
-     <Link to="/oversight/follow-up" className="no-underline">
+     <Link to="/business?tool=follow-up" className="no-underline">
        <MessageSquare size={14} /> Follow Up
      </Link>
    </Button>
- </div>
-  }
- />
+  </div>
+   }
+  />
 
  {/* Practice Management Tools */}
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -243,16 +236,21 @@ const ClinicalOversightPage = () => {
  </div>
 
  {filteredClients.length === 0 && (
- <div className="text-center py-32 bg-muted/30 rounded-xl border-2 border-dashed border-border">
- <Users size={48} className="mx-auto text-muted-foreground mb-4" />
- <h3 className="text-xl font-semibold text-foreground">No clients found</h3>
- <p className="text-muted-foreground font-medium">Try adjusting your search or add new clients to monitor.</p>
- </div>
- )}
- </div>
- </div>
- </AppLayout>
- );
+  <div className="text-center py-32 bg-muted/30 rounded-xl border-2 border-dashed border-border">
+  <Users size={48} className="mx-auto text-muted-foreground mb-4" />
+  <h3 className="text-xl font-semibold text-foreground">No clients found</h3>
+  <p className="text-muted-foreground font-medium">Try adjusting your search or add new clients to monitor.</p>
+  </div>
+  )}
+  </div>
+  </div>
+  );
 };
+
+const ClinicalOversightPage = () => (
+  <AppLayout>
+    <ClinicalOversightTool />
+  </AppLayout>
+);
 
 export default ClinicalOversightPage;

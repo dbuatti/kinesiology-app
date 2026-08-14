@@ -49,6 +49,7 @@ Several top-level nav items are multi-pane or tabbed hubs that wrap previously s
 - `/practice` — `PracticeHubPage.tsx` (UnifiedEditor two-pane: Self Practice, Procedures, Quiz, Quick Calibrate, Corrections). Old `/practice/*` routes redirect to `/practice?tool=<id>`.
 - `/identity` — `IdentityWorkspacePage.tsx` (UnifiedEditor two-pane: Map, Shifting, Alignment, Limiting Beliefs, Fractals). Old `/lab`, `/identity-map`, etc. redirect to `/identity?tool=<id>`.
 - `/business` — `BusinessPage.tsx` (internal Tabs: Dashboard, Overview, Client Audit, Marketing, Follow-Up). Old `/business/*` routes redirect to `/business?tool=<id>`.
+- `/clients` — `ClientsPage.tsx` (internal Tabs: Client Database, Clinical Oversight). `/oversight` redirects to `/clients?tool=oversight`; `/oversight/follow-up` redirects to `/business?tool=follow-up`.
 - `/sessions` — `ClinicalHubPage.tsx` (bridge; previously `/practice/clinical-hub`).
 
 The unified editor primitive is `src/components/crm/UnifiedEditor.tsx` (`sections` with id/label/icon/group/render, `selectedId`/`onSelect`, left tree + right pane, mobile collapse).

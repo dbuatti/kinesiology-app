@@ -40,31 +40,16 @@ interface NavGroup {
 
 const NAV_GROUPS: NavGroup[] = [
   {
-    label: "Clinic",
+    label: "Workspace",
     items: [
       { label: "Home", icon: LayoutDashboard, path: "/" },
       { label: "Calendar", icon: CalendarDays, path: "/calendar" },
       { label: "Clients", icon: Users, path: "/clients" },
       { label: "Sessions", icon: Activity, path: "/sessions" },
-    ],
-  },
-  {
-    label: "Practise",
-    items: [
       { label: "Morning Program", icon: Sun, path: "/morning-program" },
       { label: "Journal", icon: MessageSquare, path: "/journal" },
       { label: "Practice Hub", icon: Heart, path: "/practice" },
-    ],
-  },
-  {
-    label: "Library",
-    items: [
       { label: "Library", icon: BookOpen, path: "/library" },
-    ],
-  },
-  {
-    label: "Identity",
-    items: [
       { label: "Identity Work", icon: Brain, path: "/identity" },
     ],
   },
@@ -192,7 +177,7 @@ const Sidebar = () => {
       </div>
 
       {/* Nav Groups */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
+      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-4">
         {groups.map((group) => (
           <div key={group.label}>
             <p className={cn(

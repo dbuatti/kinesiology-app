@@ -230,14 +230,14 @@ const ClientsPage = () => {
   return (
     <Tabs value={tab} onValueChange={setTab} className="w-full">
       <div className="sticky top-0 z-10 bg-background border-b border-border px-4 pt-3">
-        <TabsList className="w-full justify-start overflow-x-auto">
+        <TabsList className="w-full flex-wrap gap-1 bg-muted/60 rounded-xl p-1">
           <TabsTrigger value="database" className="gap-2">
             <Users size={14} />
-            <span className="whitespace-nowrap">Client Database</span>
+            <span>Client Database</span>
           </TabsTrigger>
           <TabsTrigger value="oversight" className="gap-2">
             <TrendingUp size={14} />
-            <span className="whitespace-nowrap">Clinical Oversight</span>
+            <span>Clinical Oversight</span>
           </TabsTrigger>
         </TabsList>
       </div>

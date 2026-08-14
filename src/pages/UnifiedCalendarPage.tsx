@@ -764,7 +764,7 @@ const UnifiedCalendarPage = () => {
  if (hasError) {
  return (
  <AppLayout variant="workspace">
- <div className="space-y-6 max-w-7xl mx-auto">
+ <div className="space-y-6">
  <PageHeader
  title="Calendar"
  subtitle="Kinesiology appointments and voice lessons at a glance."
@@ -789,7 +789,7 @@ const UnifiedCalendarPage = () => {
 
  return (
  <AppLayout variant="workspace">
- <div className="space-y-6 max-w-7xl mx-auto">
+ <div className="space-y-6">
  <PageHeader
  title="Calendar"
  subtitle="Kinesiology appointments and voice lessons at a glance."

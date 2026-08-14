@@ -30,36 +30,20 @@ const AppointmentV2Page = lazy(() => import("./pages/AppointmentV2Page"));
 const ClinicalProtocolsPage = lazy(() => import("./pages/ClinicalProtocolsPage"));
 const ClinicalOversightPage = lazy(() => import("./pages/ClinicalOversightPage"));
 const FollowUpPage = lazy(() => import("./pages/FollowUpPage"));
-const AiPromptPage = lazy(() => import("./pages/AiPromptPage"));
 const AllAppointmentsPage = lazy(() => import("./pages/AllAppointmentsPage"));
 
 // --- Practitioner Pages ---
-const LabPage = lazy(() => import("./pages/LabPage"));
+const IdentityWorkspacePage = lazy(() => import("./pages/IdentityWorkspacePage"));
 const JournalPage = lazy(() => import("./pages/JournalPage"));
-const SelfPracticePage = lazy(() => import("./pages/SelfPracticePage"));
-const IdentityShiftingPage = lazy(() => import("./pages/IdentityShiftingPage"));
-const IdentityAlignmentPage = lazy(() => import("./pages/IdentityAlignmentPage"));
-const LimitingBeliefsPage = lazy(() => import("./pages/LimitingBeliefsPage"));
-const FractalToolPage = lazy(() => import("./pages/FractalToolPage"));
+const PracticeHubPage = lazy(() => import("./pages/PracticeHubPage"));
 const MorningProgramPage = lazy(() => import("./pages/MorningProgramPage"));
 
-// --- Worksheets ---
-const NorthStarPage = lazy(() => import("./pages/NorthStarPage"));
-const Week3WorksheetPage = lazy(() => import("./pages/Week3WorksheetPage"));
-const FearCreativityWorksheetPage = lazy(() => import("./pages/FearCreativityWorksheetPage"));
-const InnerAwarenessWorksheetPage = lazy(() => import("./pages/InnerAwarenessWorksheetPage"));
-const AngerFlowWorksheetPage = lazy(() => import("./pages/AngerFlowWorksheetPage"));
-const BusinessModelWorksheetPage = lazy(() => import("./pages/BusinessModelWorksheetPage"));
-const ValueWorksheetPage = lazy(() => import("./pages/ValueWorksheetPage"));
+// --- Worksheets (consolidated into Library panes) ---
 
 // --- Reference Pages ---
-const ResourcesPage = lazy(() => import("./pages/ResourcesPage"));
+const LibraryPage = lazy(() => import("./pages/LibraryPage"));
 const PEACEFrameworkPage = lazy(() => import("./pages/PEACEFrameworkPage"));
 const CogsLearningPage = lazy(() => import("./pages/CogsLearningPage"));
-const ProceduresPage = lazy(() => import("./pages/ProceduresPage"));
-const QuizPage = lazy(() => import("./pages/QuizPage"));
-const QuickCalibratePage = lazy(() => import("./pages/QuickCalibratePage"));
-const CorrectionsReferencePage = lazy(() => import("./pages/CorrectionsReferencePage"));
 const CorrectionsManualPage = lazy(() => import("./pages/CorrectionsManualPage"));
 const ClinicalHubPage = lazy(() => import("./pages/ClinicalHubPage"));
 const SandboxV2Page = lazy(() => import("./pages/SandboxV2Page"));
@@ -87,10 +71,7 @@ const OnboardingSuccessPage = lazy(() => import("./pages/public/OnboardingSucces
 const UnifiedCalendarPage = lazy(() => import("./pages/UnifiedCalendarPage"));
 
 // --- Business & System ---
-const BusinessOverviewPage = lazy(() => import("./pages/BusinessOverviewPage"));
-const BusinessDashboardPage = lazy(() => import("./pages/BusinessDashboardPage"));
-const ClientAuditPage = lazy(() => import("./pages/ClientAuditPage"));
-const MarketingEnginePage = lazy(() => import("./pages/MarketingEnginePage"));
+const BusinessPage = lazy(() => import("./pages/BusinessPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const ImportPage = lazy(() => import("./pages/ImportPage"));
 const DebugAppointmentPage = lazy(() => import("./pages/DebugAppointmentPage"));
@@ -173,36 +154,44 @@ const AppRoutes = () => {
           <Route path="/appointments/:id/protocols" element={<ClinicalProtocolsPage />} />
           <Route path="/oversight" element={<ClinicalOversightPage />} />
           <Route path="/oversight/follow-up" element={<FollowUpPage />} />
-          <Route path="/resources/ai-prompt" element={<AiPromptPage />} />
           <Route path="/calendar" element={<UnifiedCalendarPage />} />
+          {/* Sessions — consolidated Clinical Hub */}
+          <Route path="/sessions" element={<ClinicalHubPage />} />
 
-          {/* Practitioner */}
-          <Route path="/identity-map" element={<LabPage />} />
-          <Route path="/practice/journal" element={<JournalPage />} />
-          <Route path="/practice/self" element={<SelfPracticePage />} />
+          {/* Practise */}
           <Route path="/morning-program" element={<MorningProgramPage />} />
-          <Route path="/identity-shifting" element={<IdentityShiftingPage />} />
-          <Route path="/identity-alignment" element={<IdentityAlignmentPage />} />
-          <Route path="/limiting-beliefs" element={<LimitingBeliefsPage />} />
-          <Route path="/fractals" element={<FractalToolPage />} />
+          <Route path="/journal" element={<JournalPage />} />
+          <Route path="/practice/journal" element={<Navigate to="/journal" replace />} />
+          <Route path="/practice" element={<PracticeHubPage />} />
+          <Route path="/practice/self" element={<Navigate to="/practice?tool=self-practice" replace />} />
 
-          {/* Reference */}
-          <Route path="/resources" element={<ResourcesPage />} />
+          {/* Identity Work — consolidated hub */}
+          <Route path="/identity" element={<IdentityWorkspacePage />} />
+          <Route path="/identity-map" element={<Navigate to="/identity?tool=map" replace />} />
+          <Route path="/identity-shifting" element={<Navigate to="/identity?tool=shifting" replace />} />
+          <Route path="/identity-alignment" element={<Navigate to="/identity?tool=alignment" replace />} />
+          <Route path="/limiting-beliefs" element={<Navigate to="/identity?tool=limiting" replace />} />
+          <Route path="/fractals" element={<Navigate to="/identity?tool=fractals" replace />} />
+
+          {/* Library — consolidated reference hub */}
+          <Route path="/library" element={<LibraryPage />} />
+          <Route path="/resources" element={<Navigate to="/library" replace />} />
           <Route path="/resources/cogs" element={<CogsLearningPage />} />
           <Route path="/peace-framework" element={<PEACEFrameworkPage />} />
-          <Route path="/practice/procedures" element={<ProceduresPage />} />
-          <Route path="/practice/quiz" element={<QuizPage />} />
-          <Route path="/practice/calibrate" element={<QuickCalibratePage />} />
-          <Route path="/practice/corrections" element={<CorrectionsReferencePage />} />
+          {/* Practice tools — consolidated into Practice Hub */}
+          <Route path="/practice/procedures" element={<Navigate to="/practice?tool=procedures" replace />} />
+          <Route path="/practice/quiz" element={<Navigate to="/practice?tool=quiz" replace />} />
+          <Route path="/practice/calibrate" element={<Navigate to="/practice?tool=calibrate" replace />} />
+          <Route path="/practice/corrections" element={<Navigate to="/practice?tool=corrections" replace />} />
 
-          {/* Worksheets */}
-          <Route path="/resources/worksheets/north-star" element={<NorthStarPage />} />
-          <Route path="/resources/worksheets/week-3" element={<Week3WorksheetPage />} />
-          <Route path="/resources/worksheets/fear-creativity" element={<FearCreativityWorksheetPage />} />
-          <Route path="/resources/worksheets/inner-awareness" element={<InnerAwarenessWorksheetPage />} />
-          <Route path="/resources/worksheets/anger-flow" element={<AngerFlowWorksheetPage />} />
-          <Route path="/resources/worksheets/business-model" element={<BusinessModelWorksheetPage />} />
-          <Route path="/resources/worksheets/where-your-value-begins" element={<ValueWorksheetPage />} />
+          {/* Worksheets — consolidated into Library panes */}
+          <Route path="/resources/worksheets/north-star" element={<Navigate to="/library?tab=north-star" replace />} />
+          <Route path="/resources/worksheets/week-3" element={<Navigate to="/library?tab=week-3" replace />} />
+          <Route path="/resources/worksheets/fear-creativity" element={<Navigate to="/library?tab=fear-creativity" replace />} />
+          <Route path="/resources/worksheets/inner-awareness" element={<Navigate to="/library?tab=inner-awareness" replace />} />
+          <Route path="/resources/worksheets/anger-flow" element={<Navigate to="/library?tab=anger-flow" replace />} />
+          <Route path="/resources/worksheets/business-model" element={<Navigate to="/library?tab=business-model" replace />} />
+          <Route path="/resources/worksheets/where-your-value-begins" element={<Navigate to="/library?tab=where-your-value-begins" replace />} />
 
           {/* Voice Studio */}
           <Route path="/voice" element={<VoiceDashboardPage />} />
@@ -212,13 +201,13 @@ const AppRoutes = () => {
           <Route path="/voice/book" element={<Navigate to="/calendar" replace />} />
           <Route path="/voice/calendar" element={<Navigate to="/calendar" replace />} />
 
-          {/* Business Tools */}
-          <Route path="/business" element={<Navigate to="/business/dashboard" replace />} />
-          <Route path="/business/dashboard" element={<BusinessDashboardPage />} />
-          <Route path="/business/overview" element={<BusinessOverviewPage />} />
-          <Route path="/business/marketing-engine" element={<MarketingEnginePage />} />
-          <Route path="/business/client-audit" element={<ClientAuditPage />} />
-          <Route path="/business/follow-up" element={<FollowUpPage />} />
+          {/* Business — consolidated hub */}
+          <Route path="/business" element={<BusinessPage />} />
+          <Route path="/business/dashboard" element={<Navigate to="/business" replace />} />
+          <Route path="/business/overview" element={<Navigate to="/business?tool=overview" replace />} />
+          <Route path="/business/marketing-engine" element={<Navigate to="/business?tool=marketing" replace />} />
+          <Route path="/business/client-audit" element={<Navigate to="/business?tool=client-audit" replace />} />
+          <Route path="/business/follow-up" element={<Navigate to="/business?tool=follow-up" replace />} />
 
           {/* System */}
           <Route path="/settings" element={<SettingsPage />} />
@@ -232,12 +221,12 @@ const AppRoutes = () => {
 
           {/* Legacy Redirects */}
 
-          <Route path="/resources/worksheets" element={<Navigate to="/resources?tab=worksheets" replace />} />
-          <Route path="/lab" element={<Navigate to="/identity-map" replace />} />
-          <Route path="/lab/identity-shifting" element={<Navigate to="/identity-shifting" replace />} />
-          <Route path="/lab/identity-alignment" element={<Navigate to="/identity-alignment" replace />} />
-          <Route path="/lab/limiting-beliefs" element={<Navigate to="/limiting-beliefs" replace />} />
-          <Route path="/lab/fractals" element={<Navigate to="/fractals" replace />} />
+          <Route path="/resources/worksheets" element={<Navigate to="/library?tab=worksheets" replace />} />
+          <Route path="/lab" element={<Navigate to="/identity" replace />} />
+          <Route path="/lab/identity-shifting" element={<Navigate to="/identity?tool=shifting" replace />} />
+          <Route path="/lab/identity-alignment" element={<Navigate to="/identity?tool=alignment" replace />} />
+          <Route path="/lab/limiting-beliefs" element={<Navigate to="/identity?tool=limiting" replace />} />
+          <Route path="/lab/fractals" element={<Navigate to="/identity?tool=fractals" replace />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

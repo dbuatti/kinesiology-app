@@ -27,7 +27,7 @@ import PageHeader from "@/components/shared/PageHeader";
 const CLAUDE_MARKETING_CHAT = "https://claude.ai/chat/e4805343-71a0-48fc-a1e0-4d2dde541a88";
 const GEMINI_BUSINESS_CHAT = "https://gemini.google.com/app/5d5d4bcde141a99a";
 
-const MarketingEnginePage = () => {
+export function MarketingEngineTool() {
  const navigate = useNavigate();
  const { isPrivate } = usePrivacyMode();
  const [activeTab, setActiveTab] = useState("guide");
@@ -133,7 +133,6 @@ Please provide the final output ready to be reviewed.`;
  };
 
  return (
- <AppLayout>
  <div className="space-y-8 animate-in fade-in duration-700 pb-20">
  <PageHeader 
  title="Marketing Engine"
@@ -403,9 +402,14 @@ Please provide the final output ready to be reviewed.`;
  </div>
  </TabsContent>
  </Tabs>
- </div>
- </AppLayout>
- );
+  </div>
+  );
 };
+
+const MarketingEnginePage = () => (
+ <AppLayout>
+  <MarketingEngineTool />
+ </AppLayout>
+);
 
 export default MarketingEnginePage;

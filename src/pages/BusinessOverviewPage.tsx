@@ -43,7 +43,7 @@ const SOURCE_COLORS: Record<string, string> = {
   both: 'bg-indigo-500/10 text-indigo-600 border-indigo-200',
 };
 
-const BusinessOverviewPage = () => {
+export function BusinessOverviewTool() {
   const navigate = useNavigate();
   const [viewFilter, setViewFilter] = useState<ViewFilter>('all');
   const now = useMemo(() => new Date(), []);
@@ -247,16 +247,13 @@ const BusinessOverviewPage = () => {
 
   if (isLoading) {
     return (
-      <AppLayout>
         <PageLoader label="Loading overview..." />
-      </AppLayout>
     );
   }
 
   const d = derived!;
 
   return (
-    <AppLayout variant="wide">
       <div className="flex flex-col gap-8 p-6">
 
         {/* Header + Filter */}
@@ -422,9 +419,14 @@ const BusinessOverviewPage = () => {
         )}
 
       </div>
-    </AppLayout>
   );
 };
+
+const BusinessOverviewPage = () => (
+  <AppLayout>
+    <BusinessOverviewTool />
+  </AppLayout>
+);
 
 const SummaryCard = ({ icon: Icon, label, value, sub, color }: {
   icon: any; label: string; value: string; sub?: string; color: string;

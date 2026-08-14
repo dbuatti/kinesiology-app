@@ -27,7 +27,7 @@ interface ClientRow { id: string; name: string; standard_rate: number | null; }
 
 const fmt = (n: number) => "$" + n.toLocaleString("en-AU", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
-const BusinessDashboardPage = () => {
+export function BusinessDashboardTool() {
   const navigate = useNavigate();
   const now = useMemo(() => new Date(), []);
   const todayStr = useMemo(() => now.toISOString().slice(0, 10), [now]);
@@ -71,7 +71,6 @@ const BusinessDashboardPage = () => {
 
   if (queryError) {
     return (
-      <AppLayout>
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
           <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
             <AlertCircle size={28} className="text-destructive" />
@@ -81,7 +80,6 @@ const BusinessDashboardPage = () => {
             <RefreshCw size={14} /> Retry
           </Button>
         </div>
-      </AppLayout>
     );
   }
 
@@ -150,16 +148,13 @@ const BusinessDashboardPage = () => {
 
   if (isLoading) {
     return (
-      <AppLayout>
         <PageLoader label="Loading dashboard..." />
-      </AppLayout>
     );
   }
 
   const d = derived!;
 
   return (
-    <AppLayout variant="wide">
       <div className="flex flex-col gap-8 p-6">
 
         <PageHeader title="Business Dashboard" subtitle="Today's overview and quick actions" icon={TrendingUp}
@@ -292,9 +287,16 @@ const BusinessDashboardPage = () => {
         </div>
 
       </div>
-    </AppLayout>
   );
 };
+
+const BusinessDashboardPage = () => (
+  <AppLayout>
+    <BusinessDashboardTool />
+  </AppLayout>
+);
+
+export default BusinessDashboardPage;
 
 const SummaryCard = ({ icon: Icon, label, value, sub, color }: {
   icon: any; label: string; value: string; sub?: string; color: string;
@@ -307,5 +309,3 @@ const SummaryCard = ({ icon: Icon, label, value, sub, color }: {
     {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
   </div>
 );
-
-export default BusinessDashboardPage;

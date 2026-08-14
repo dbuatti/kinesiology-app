@@ -5,9 +5,8 @@ import PathwayLogicWizard from "@/components/crm/PathwayLogicWizard";
 import { Zap, ShieldCheck, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-const QuickCalibratePage = () => {
+export function QuickCalibrateTool() {
   return (
-    <AppLayout>
       <div className="space-y-8 w-full">
 
 
@@ -49,8 +48,13 @@ const QuickCalibratePage = () => {
           </p>
         </div>
       </div>
-    </AppLayout>
   );
 };
+
+const QuickCalibratePage = () => (
+  <AppLayout>
+    <QuickCalibrateTool />
+  </AppLayout>
+);
 
 export default QuickCalibratePage;

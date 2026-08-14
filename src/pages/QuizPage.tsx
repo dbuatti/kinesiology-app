@@ -27,6 +27,15 @@ type GameStatus = 'setup' | 'playing' | 'finished';
 
 const QuizPage = () => {
   const navigate = useNavigate();
+  return <QuizTool onExit={() => navigate('/library')} />;
+};
+
+interface QuizToolProps {
+  embedded?: boolean;
+  onExit?: () => void;
+}
+
+export function QuizTool({ embedded = false, onExit }: QuizToolProps = {}) {
   const [status, setStatus] = useState<GameStatus>('setup');
   const [category, setCategory] = useState<QuizCategory>('All');
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
@@ -129,10 +138,12 @@ const QuizPage = () => {
     return (
       <div className="min-h-screen bg-background p-6 md:p-12">
         <div className="max-w-4xl mx-auto">
-          <Button variant="ghost" onClick={() => navigate(-1)} className="mb-8 rounded-xl font-bold text-xs uppercase tracking-widest">
-            <ChevronLeft size={16} className="mr-2" /> Back to Resources
+        {!embedded && onExit && (
+          <Button variant="ghost" onClick={onExit} className="mb-8 rounded-xl font-bold text-xs uppercase tracking-widest">
+            <ChevronLeft size={16} className="mr-2" /> Back to Library
           </Button>
-          <QuizSetup onStart={startQuiz} />
+        )}
+        <QuizSetup onStart={startQuiz} />
         </div>
       </div>
     );
@@ -146,7 +157,7 @@ const QuizPage = () => {
           total={totalAnswered} 
           streak={maxStreak} 
           onRestart={() => setStatus('setup')}
-          onExit={() => navigate('/resources')}
+          onExit={onExit ?? (() => setStatus('setup'))}
         />
       </div>
     );

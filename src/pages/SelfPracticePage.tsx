@@ -22,9 +22,10 @@ import ClientProgressTab from "@/components/crm/ClientProgressTab";
 import AppLayout from "@/components/crm/AppLayout";
 import { PageLoader } from "@/components/shared/PageLoader";
 
-const SelfPracticePage = () => {
+export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) {
  const [searchParams, setSearchParams] = useSearchParams();
- const activeTab = searchParams.get("tab") || "overview";
+ const [internalTab, setInternalTab] = useState("overview");
+ const activeTab = nested ? internalTab : (searchParams.get("tab") || "overview");
  
  const [selfClient, setSelfClient] = useState<any>(null);
  const [sessions, setSessions] = useState<any[]>([]);
@@ -198,7 +199,7 @@ const SelfPracticePage = () => {
  ];
 
  return (
- <AppLayout>
+ <>
  <div className="space-y-6">
 
 
@@ -230,7 +231,7 @@ const SelfPracticePage = () => {
  </div>
  </div>
 
- <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
+ <Tabs value={activeTab} onValueChange={(v) => (nested ? setInternalTab(v) : setSearchParams({ tab: v }))} className="w-full">
  <TabsList className="grid w-full grid-cols-2 h-14 bg-muted p-1.5 rounded-xl mb-8">
  <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-destructive data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
  <LayoutDashboard size={14} /> Practice Dashboard
@@ -458,8 +459,14 @@ const SelfPracticePage = () => {
     description="Are you sure you want to delete this self-practice session?"
     onConfirm={executeDelete}
   />
-  </AppLayout>
+ </>
   );
 };
+
+const SelfPracticePage = () => (
+ <AppLayout>
+  <SelfPracticeTool />
+ </AppLayout>
+);
 
 export default SelfPracticePage;

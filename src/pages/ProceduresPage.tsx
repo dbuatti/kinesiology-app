@@ -57,7 +57,7 @@ import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 
 const SANDBOX_ID = "00000000-0000-0000-0000-000000000000";
 
-const ProceduresPage = () => {
+export function ProceduresTool() {
   const navigate = useNavigate();
   const [stats, setStats] = useState<MasteryStat[]>([]);
   const [loading, setLoading] = useState(true);
@@ -187,7 +187,7 @@ const ProceduresPage = () => {
   );
 
   return (
-    <AppLayout>
+      <>
       <div className="space-y-6">
         <PageHeader 
           title="Procedures"
@@ -538,8 +538,14 @@ const ProceduresPage = () => {
         open={!!selectedBrainPoint}
         onOpenChange={(open) => !open && setSelectedBrainPoint(null)}
       />
-    </AppLayout>
+      </>
   );
 };
+
+const ProceduresPage = () => (
+  <AppLayout>
+    <ProceduresTool />
+  </AppLayout>
+);
 
 export default ProceduresPage;

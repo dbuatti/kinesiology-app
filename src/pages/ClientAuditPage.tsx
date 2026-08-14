@@ -159,7 +159,7 @@ const STATIC_STRATEGIES = [
   }
 ];
 
-export default function ClientAuditPage() {
+export function ClientAuditTool() {
   const navigate = useNavigate();
   const [clients, setClients] = useState<ClientWithAppointments[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1202,7 +1202,7 @@ export default function ClientAuditPage() {
   const activeStrategies = aiSuggestions?.strategies || STATIC_STRATEGIES;
 
   return (
-    <AppLayout variant="wide">
+      <>
       <div className="space-y-8 animate-in fade-in duration-700 pb-20">
         <PageHeader
           title="Client Payment & Audit"
@@ -2891,6 +2891,14 @@ export default function ClientAuditPage() {
           </div>
         </div>
       )}
-    </AppLayout>
+      </>
   );
 }
+
+const ClientAuditPage = () => (
+  <AppLayout variant="wide">
+    <ClientAuditTool />
+  </AppLayout>
+);
+
+export default ClientAuditPage;

@@ -35,9 +35,25 @@ Supabase auth. `session === undefined` = loading, `session === null` = logged ou
 
 ### Layouts
 
-- `MainLayout` — authenticated shell. Contains sticky header stack (UpcomingMarquee → SessionTimer → SpaceHeader), background blur orbs, QuickActions FAB. Listens for `antigravity_fullscreen_change` window events.
+- `MainLayout` — authenticated shell. Contains sidebar navigation, sticky header stack (UpcomingMarquee → SessionTimer), background blur orbs, QuickActions FAB. Listens for `antigravity_fullscreen_change` window events.
 - `AuthLayout` — bare wrapper for login/onboarding.
 - Several pages render without either layout (print pages, `/notes-doc`) — they protect themselves with inline session checks.
+
+**Important**: `MainLayout` wraps the `Outlet` with `key={location.pathname + location.search}` — changing the URL search params remounts the page. Multi-pane pages therefore drive pane/tab selection from internal `useState` initialised from the URL (deep links work as entry points) rather than live `useSearchParams`.
+
+### Consolidated hubs
+
+Several top-level nav items are multi-pane or tabbed hubs that wrap previously separate pages:
+
+- `/library` — `LibraryPage.tsx` (UnifiedEditor two-pane tree: references, worksheets, practice tools). Old worksheet routes redirect to `/library?tab=<id>`.
+- `/practice` — `PracticeHubPage.tsx` (UnifiedEditor two-pane: Self Practice, Procedures, Quiz, Quick Calibrate, Corrections). Old `/practice/*` routes redirect to `/practice?tool=<id>`.
+- `/identity` — `IdentityWorkspacePage.tsx` (UnifiedEditor two-pane: Map, Shifting, Alignment, Limiting Beliefs, Fractals). Old `/lab`, `/identity-map`, etc. redirect to `/identity?tool=<id>`.
+- `/business` — `BusinessPage.tsx` (internal Tabs: Dashboard, Overview, Client Audit, Marketing, Follow-Up). Old `/business/*` routes redirect to `/business?tool=<id>`.
+- `/sessions` — `ClinicalHubPage.tsx` (bridge; previously `/practice/clinical-hub`).
+
+The unified editor primitive is `src/components/crm/UnifiedEditor.tsx` (`sections` with id/label/icon/group/render, `selectedId`/`onSelect`, left tree + right pane, mobile collapse).
+
+**Pane extraction pattern**: full pages are exposed as both a named inner export and a default page wrapper, e.g. `export function ProceduresTool()` in `ProceduresPage.tsx` with `export default () => <AppLayout><ProceduresTool /></AppLayout>`. The hubs import the named inner export. Inner tools must NOT wrap themselves in `AppLayout` and must avoid URL-driven state that would remount the host page (see `SelfPracticeTool nested` prop for the internal-state pattern). Retired routes are kept as redirects so old links never break.
 
 ### Session page (`/appointments/:id`)
 

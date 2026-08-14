@@ -19,7 +19,7 @@ interface ClientSession {
   daysSince: number;
 }
 
-const FollowUpPage = () => {
+export function FollowUpTool() {
   const navigate = useNavigate();
   const [clients, setClients] = useState<ClientSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,16 +76,13 @@ const FollowUpPage = () => {
 
   if (loading) {
     return (
-      <AppLayout>
         <div className="flex items-center justify-center py-32">
           <Loader2 className="animate-spin text-primary" size={32} />
         </div>
-      </AppLayout>
     );
   }
 
   return (
-    <AppLayout>
       <div className="space-y-6">
         <PageHeader
           title="Client Follow-Up"
@@ -194,8 +191,13 @@ const FollowUpPage = () => {
           </div>
         )}
       </div>
-    </AppLayout>
   );
 };
+
+const FollowUpPage = () => (
+  <AppLayout>
+    <FollowUpTool />
+  </AppLayout>
+);
 
 export default FollowUpPage;

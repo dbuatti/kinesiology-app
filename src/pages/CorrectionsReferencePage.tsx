@@ -22,9 +22,8 @@ import {
 import AppLayout from "@/components/crm/AppLayout";
 import { AFFERENT_PATHWAYS, EFFERENT_PATHWAYS, CORRECTION_METHODS } from "@/data/pathway-logic-data";
 
-const CorrectionsReferencePage = () => {
+export function CorrectionsReferenceTool() {
   return (
-    <AppLayout>
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
         {/* Hero Section */}
@@ -545,8 +544,13 @@ const CorrectionsReferencePage = () => {
         </div>
 
       </div>
-    </AppLayout>
   );
 };
+
+const CorrectionsReferencePage = () => (
+  <AppLayout>
+    <CorrectionsReferenceTool />
+  </AppLayout>
+);
 
 export default CorrectionsReferencePage;

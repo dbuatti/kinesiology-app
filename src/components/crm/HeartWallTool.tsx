@@ -20,6 +20,7 @@ import {
 } from "@/types/crm";
 import { ROW_DATA, EMOTION_CODE_CHART } from "@/data/emotion-code-data";
 import PulsePointPicker from "./PulsePointPicker";
+import BrainZonePicker from "./BrainZonePicker";
 
 interface HeartWallToolProps {
   open: boolean;
@@ -751,21 +752,13 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                         </div>
                         <p className="text-xs text-indigo-800 leading-relaxed">
                           Challenge in sequence: Cortical → Subcortical → Cerebellum → Limbic → Prefrontal Cortex, etc.
-                          Find which specific brain zones are involved and write them down.
+                          Select the specific brain zones involved. Click the side label (L/R) to toggle side.
                         </p>
-                        <div className="p-3 bg-white/60 rounded-lg text-[11px] text-indigo-900 space-y-1 font-medium">
-                          <p>Examples from the demo:</p>
-                          <p>• Cerebellum + Thalamus</p>
-                          <p>• Right Prefrontal Cortex + Pons</p>
-                          <p>• Cortical → Subcortical → Left Limbic</p>
-                        </div>
                       </div>
 
-                      <Input
+                      <BrainZonePicker
                         value={pendingLayer.brainZones || ""}
-                        onChange={(e) => setPendingLayer({ ...pendingLayer, brainZones: e.target.value })}
-                        placeholder="e.g. Right Prefrontal Cortex + Pons"
-                        className="rounded-xl bg-muted/50 text-sm"
+                        onChange={(val) => setPendingLayer({ ...pendingLayer, brainZones: val || null })}
                       />
                     </div>
                   )}
@@ -858,9 +851,21 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                           )}
                         </div>
                         {pendingLayer.brainZones && (
-                          <p className="text-xs text-muted-foreground">
-                            <span className="font-semibold">Brain zones:</span> {pendingLayer.brainZones}
-                          </p>
+                          <div className="space-y-1">
+                            <p className="text-xs text-muted-foreground"><span className="font-semibold">Brain zones:</span></p>
+                            <div className="flex flex-wrap gap-1">
+                              {pendingLayer.brainZones.split(", ").map((zone, i) => {
+                                const match = zone.match(/^(.+)\s+\((L|R|B)\)$/);
+                                const name = match ? match[1] : zone;
+                                const side = match ? match[2] : null;
+                                return (
+                                  <Badge key={i} className="bg-indigo-100 text-indigo-800 border-none text-[10px] font-semibold">
+                                    {name}{side ? ` (${side})` : ""}
+                                  </Badge>
+                                );
+                              })}
+                            </div>
+                          </div>
                         )}
                         {pendingLayer.relatedMuscles && (
                           <p className="text-xs text-muted-foreground">
@@ -959,9 +964,29 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                           This collapses the whole circuit — the emotion, organ, muscles, and brain zones all at once.
                         </p>
                         {pendingLayer.brainZones && (
-                          <div className="p-3 bg-white/60 rounded-lg">
-                            <p className="text-[10px] font-bold text-indigo-700 uppercase mb-1">Identified zones</p>
-                            <p className="text-xs font-semibold text-indigo-900">{pendingLayer.brainZones}</p>
+                          <div className="p-3 bg-white/60 rounded-lg space-y-2">
+                            <p className="text-[10px] font-bold text-indigo-700 uppercase">Identified zones — tap each simultaneously</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {pendingLayer.brainZones.split(", ").map((zone, i) => {
+                                const match = zone.match(/^(.+)\s+\((L|R|B)\)$/);
+                                const name = match ? match[1] : zone;
+                                const side = match ? match[2] : null;
+                                return (
+                                  <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-100 text-indigo-800 rounded-lg text-xs font-semibold border border-indigo-200">
+                                    <Brain size={10} />
+                                    {name}
+                                    {side && (
+                                      <span className={cn(
+                                        "text-[9px] font-bold px-1 rounded",
+                                        side === "L" && "bg-blue-100 text-blue-700",
+                                        side === "R" && "bg-rose-100 text-rose-700",
+                                        side === "B" && "bg-amber-100 text-amber-700",
+                                      )}>{side}</span>
+                                    )}
+                                  </span>
+                                );
+                              })}
+                            </div>
                           </div>
                         )}
                         <div className="grid grid-cols-2 gap-3 mt-2">

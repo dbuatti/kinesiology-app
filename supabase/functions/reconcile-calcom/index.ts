@@ -139,16 +139,43 @@ serve(async (req) => {
         triggerEvent: "BOOKING_CREATED",
         payload: { uid, startTime: b.start, endTime: b.end, eventTypeId: b.eventTypeId, attendees: b.attendees, responses: b.responses, metadata: b.metadata },
       };
+      let replayed = false;
       try {
         const r = await fetch(`${SUPABASE_URL}/functions/v1/${target}`, {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${SERVICE}`, apikey: SERVICE },
           body: JSON.stringify(replay),
         });
-        if (r.ok) { if (isVoice) added.voice++; else added.appointments++; known.add(uid); }
+        if (r.ok) { replayed = true; if (isVoice) added.voice++; else added.appointments++; known.add(uid); }
         else console.error(`[${fn}] replay ${uid} → ${target} failed: ${r.status}`);
       } catch (e) {
         console.error(`[${fn}] replay ${uid} error:`, e.message);
+      }
+
+      // Fallback: if the webhook replay failed, create a minimal voice_bookings row
+      // directly so the calendar always shows the booking regardless of Notion status.
+      if (isVoice && !replayed) {
+        const attendee = b.attendees?.[0] || {};
+        const attendeeEmail = (attendee.email || "").toLowerCase().trim();
+        const attendeeName = attendee.name || attendeeEmail.split("@")[0] || "Unknown";
+        const lessonDate = b.start ? b.start.split("T")[0] : null;
+        if (lessonDate && attendeeEmail) {
+          const { error: fbErr } = await supabase
+            .from("voice_bookings")
+            .upsert({
+              calcom_booking_id: uid,
+              student_name: attendeeName,
+              student_email: attendeeEmail,
+              lesson_date: lessonDate,
+              lesson_time: b.start ? new Date(b.start).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "Australia/Melbourne" }) : null,
+              duration: null,
+              cost: null,
+              discipline: "voice",
+              status: "scheduled",
+            }, { onConflict: "calcom_booking_id" });
+          if (!fbErr) { added.voice++; known.add(uid); console.log(`[${fn}] fallback voice_bookings row created for ${uid}`); }
+          else console.error(`[${fn}] fallback voice_bookings insert failed for ${uid}:`, fbErr.message);
+        }
       }
     }
 

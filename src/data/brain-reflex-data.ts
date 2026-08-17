@@ -175,6 +175,53 @@ const CORTICAL_POINTS: BrainReflexPoint[] = [
     ],
     assessmentProtocol: 'No fixed reflex point. Stimulate by running a finger along the eyebrow from lateral (outer) to medial (inner) — direction is important. Alternatively: ask client to sense their own heartbeat while testing IM. Assess bilateral.',
     pearl: 'The Insula has no scalp reflex point. The eyebrow stimulation is a directional technique — always lateral to medial (outward to inward toward nose).'
+  },
+  {
+    id: 'ofc',
+    name: 'Orbitofrontal Cortex (OFC)',
+    category: 'Cortical',
+    acupoint: 'BL1',
+    location: 'BL1 — Inner canthus of the eye, bilateral contact point (NOT light stimulation — contact only)',
+    lateralization: 'Contralateral',
+    functions: [
+      'Integration of emotional and sensory information',
+      'Decision-making based on reward and punishment',
+      'Olfactory processing and integration',
+      'Social and emotional behaviour regulation',
+      'Modulation of the amygdala response'
+    ],
+    dysfunctionSigns: [
+      'Impulsive decision-making',
+      'Difficulty learning from consequences',
+      'Altered olfactory processing',
+      'Social disinhibition',
+      'Emotional decision-making deficits'
+    ],
+    assessmentProtocol: 'Contact BL1 — the inner corner of the eye (inner canthus), bilaterally. This is a gentle contact point only — do NOT shine light into the eye for this zone. Test IM bilaterally.',
+    pearl: 'BL1 (OFC) is a contact point at the inner canthus — completely separate from the Visual Cortex light stimulation. Do not confuse the two.'
+  },
+  {
+    id: 'acc',
+    name: 'Anterior Cingulate Cortex (ACC)',
+    category: 'Cortical',
+    location: 'Auricular reflex point — ear-based stimulation. Associated muscle: Occipitalis',
+    lateralization: 'Mixed',
+    functions: [
+      'Regulation of emotional and cognitive processes',
+      'Conflict monitoring and error detection',
+      'Pain processing and modulation',
+      'Decision-making and performance monitoring',
+      'Initiation and maintenance of goal-directed behaviour'
+    ],
+    dysfunctionSigns: [
+      'Anxiety and fear processing dysregulation',
+      'Difficulty with conflict resolution',
+      'Chronic pain sensitivity',
+      'Poor error detection or perseveration',
+      'Emotional-cognitive integration problems'
+    ],
+    assessmentProtocol: 'Stimulate via the auricular reflex point (ear-based). Associated muscle: Occipitalis. Test IM before and after stimulation. The ACC bridges emotional and cognitive processing — assess when both domains are implicated.',
+    pearl: 'The ACC is located in the medial prefrontal cortex. It bridges limbic (emotional) and prefrontal (cognitive) processing — often relevant in chronic pain, anxiety, and trauma presentations.'
   }
 ];
 
@@ -368,30 +415,6 @@ const SUBCORTICAL_POINTS: BrainReflexPoint[] = [
     pearl: 'GV26 is also a classical emergency resuscitation point in acupuncture — use firm contact, not needling.'
   },
   {
-    id: 'ofc',
-    name: 'Orbitofrontal Cortex (OFC)',
-    category: 'Subcortical',
-    acupoint: 'BL1',
-    location: 'BL1 — Inner canthus of the eye, bilateral contact point (NOT light stimulation — contact only)',
-    lateralization: 'Contralateral',
-    functions: [
-      'Integration of emotional and sensory information',
-      'Decision-making based on reward and punishment',
-      'Olfactory processing and integration',
-      'Social and emotional behaviour regulation',
-      'Modulation of the amygdala response'
-    ],
-    dysfunctionSigns: [
-      'Impulsive decision-making',
-      'Difficulty learning from consequences',
-      'Altered olfactory processing',
-      'Social disinhibition',
-      'Emotional decision-making deficits'
-    ],
-    assessmentProtocol: 'Contact BL1 — the inner corner of the eye (inner canthus), bilaterally. This is a gentle contact point only — do NOT shine light into the eye for this zone. Test IM bilaterally.',
-    pearl: 'BL1 (OFC) is a contact point at the inner canthus — completely separate from the Visual Cortex light stimulation. Do not confuse the two.'
-  },
-  {
     id: 'hypothalamus',
     name: 'Hypothalamus',
     category: 'Subcortical',
@@ -423,29 +446,6 @@ const SUBCORTICAL_POINTS: BrainReflexPoint[] = [
     ],
     assessmentProtocol: 'Primary stim: Client presses the tip of their tongue firmly to the hard palate (roof of mouth) and holds. This activates the palatal reflex pathway directly connected to the hypothalamus via the trigeminal and vagal nuclei. Secondary stim: Contact GV20 at the crown of the skull (vertex, midline). Test IM before and after. Can combine both simultaneously for a stronger stimulus.',
     pearl: 'The Hypothalamus is the master homeostatic regulator — it connects the nervous system to the endocrine system. The tongue-to-palate stim is highly effective because the hard palate is richly innervated by CN V (trigeminal) branches that project directly to hypothalamic nuclei.'
-  },
-  {
-    id: 'acc',
-    name: 'Anterior Cingulate Cortex (ACC)',
-    category: 'Subcortical',
-    location: 'Auricular reflex point — ear-based stimulation. Associated muscle: Occipitalis',
-    lateralization: 'Mixed',
-    functions: [
-      'Regulation of emotional and cognitive processes',
-      'Conflict monitoring and error detection',
-      'Pain processing and modulation',
-      'Decision-making and performance monitoring',
-      'Initiation and maintenance of goal-directed behaviour'
-    ],
-    dysfunctionSigns: [
-      'Anxiety and fear processing dysregulation',
-      'Difficulty with conflict resolution',
-      'Chronic pain sensitivity',
-      'Poor error detection or perseveration',
-      'Emotional-cognitive integration problems'
-    ],
-    assessmentProtocol: 'Stimulate via the auricular reflex point (ear-based). Associated muscle: Occipitalis. Test IM before and after stimulation. The ACC bridges emotional and cognitive processing — assess when both domains are implicated.',
-    pearl: 'The ACC is located in the medial prefrontal cortex. It bridges limbic (emotional) and prefrontal (cognitive) processing — often relevant in chronic pain, anxiety, and trauma presentations.'
   }
 ];
 

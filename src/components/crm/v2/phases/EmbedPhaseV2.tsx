@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   ClipboardCheck, RefreshCw, CheckCircle2, Loader2, ShieldCheck,
   CalendarPlus, Plus, Calendar, Target, Zap,
-  FileText, Brain, Dumbbell, Baby, X
+  FileText, Brain, Dumbbell, Baby, X, ExternalLink
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -48,7 +49,7 @@ interface InhibitedItem {
   side?: 'L' | 'R';
 }
 
-const EmbedPhaseV2 = ({ appointment, onUpdate, saveField, updatePriorityPattern }: PhaseProps) => {
+const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorityPattern }: PhaseProps) => {
   const [muscleTests, setMuscleTests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [clearingId, setClearingId] = useState<string | null>(null);
@@ -63,6 +64,13 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField, updatePriorityPattern 
     if (typeof appointment.metadata === 'string') return safeParse(appointment.metadata, {});
     return appointment.metadata;
   }, [appointment.metadata]);
+
+  const nextSession = useMemo(() => {
+    const now = new Date();
+    return history
+      .filter((a: any) => a.id !== appointment.id && a.status !== 'Cancelled' && new Date(a.date) > now)
+      .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())[0] || null;
+  }, [history, appointment.id]);
 
   const clearedFindings: Set<string> = useMemo(() => {
     return new Set(metadata.cleared_findings || []);
@@ -538,57 +546,77 @@ const EmbedPhaseV2 = ({ appointment, onUpdate, saveField, updatePriorityPattern 
             </div>
             <div>
               <h3 className="text-xl font-semibold">Schedule Follow-up</h3>
-              <p className="text-primary-foreground/80 text-sm font-medium">Lock in the next session for {appointment.clients?.name}.</p>
+              {nextSession ? (
+                <p className="text-primary-foreground/80 text-sm font-medium">
+                  Next session for {appointment.clients?.name} is already booked.
+                </p>
+              ) : (
+                <p className="text-primary-foreground/80 text-sm font-medium">Lock in the next session for {appointment.clients?.name}.</p>
+              )}
             </div>
           </div>
-          <Dialog open={bookNextOpen} onOpenChange={(open) => { setBookNextOpen(open); if (!open) setSelectedSlot(null); }}>
-            <DialogTrigger asChild>
-              <Button className="bg-background/20 backdrop-blur-md text-primary-foreground hover:bg-background/30 border-none rounded-xl h-12 px-8 font-medium text-xs uppercase tracking-wider">
-                <Plus size={18} className="mr-2" /> Book Next Session
+          {nextSession ? (
+            <div className="flex items-center gap-3">
+              <div className="text-right hidden sm:block">
+                <p className="text-xs font-bold uppercase tracking-wider text-primary-foreground/60">Next Session</p>
+                <p className="text-sm font-semibold">{format(new Date(nextSession.date), "EEE, MMM d · h:mm a")}</p>
+              </div>
+              <Button asChild className="bg-background/20 backdrop-blur-md text-primary-foreground hover:bg-background/30 border-none rounded-xl h-12 px-6 font-medium text-xs uppercase tracking-wider">
+                <Link to={`/appointments/${nextSession.id}`}>
+                  <ExternalLink size={16} className="mr-2" /> View Session
+                </Link>
               </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px] rounded-xl p-0 mx-4 w-[calc(100%-2rem)] flex flex-col max-h-[90vh]">
-              <div className="px-8 pt-8 pb-5 border-b border-border shrink-0">
-                <DialogHeader>
-                  <DialogTitle className="text-xl font-semibold">
-                    {selectedSlot ? "Confirm Booking" : "Select Available Time"}
-                  </DialogTitle>
-                  <DialogDescription className="text-sm font-medium">
-                    {selectedSlot ? `Finalise details for ${appointment.clients?.name}.` : `Live availability for ${appointment.clients?.name}.`}
-                  </DialogDescription>
-                </DialogHeader>
-              </div>
-              <div className="overflow-y-auto flex-1 px-8 py-6">
-                {selectedSlot ? (
-                  <div className="space-y-6">
-                    <div className="p-4 bg-card rounded-xl border border-border flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Calendar size={20} className="text-muted-foreground" />
-                        <div>
-                          <p className="text-[10px] text-muted-foreground">Selected Slot</p>
-                          <p className="text-sm font-medium text-foreground">
-                            {format(selectedSlot.date, "EEEE, MMM do")} @ {format(selectedSlot.date, "h:mm a")}
-                          </p>
+            </div>
+          ) : (
+            <Dialog open={bookNextOpen} onOpenChange={(open) => { setBookNextOpen(open); if (!open) setSelectedSlot(null); }}>
+              <DialogTrigger asChild>
+                <Button className="bg-background/20 backdrop-blur-md text-primary-foreground hover:bg-background/30 border-none rounded-xl h-12 px-8 font-medium text-xs uppercase tracking-wider">
+                  <Plus size={18} className="mr-2" /> Book Next Session
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px] rounded-xl p-0 mx-4 w-[calc(100%-2rem)] flex flex-col max-h-[90vh]">
+                <div className="px-8 pt-8 pb-5 border-b border-border shrink-0">
+                  <DialogHeader>
+                    <DialogTitle className="text-xl font-semibold">
+                      {selectedSlot ? "Confirm Booking" : "Select Available Time"}
+                    </DialogTitle>
+                    <DialogDescription className="text-sm font-medium">
+                      {selectedSlot ? `Finalise details for ${appointment.clients?.name}.` : `Live availability for ${appointment.clients?.name}.`}
+                    </DialogDescription>
+                  </DialogHeader>
+                </div>
+                <div className="overflow-y-auto flex-1 px-8 py-6">
+                  {selectedSlot ? (
+                    <div className="space-y-6">
+                      <div className="p-4 bg-card rounded-xl border border-border flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Calendar size={20} className="text-muted-foreground" />
+                          <div>
+                            <p className="text-[10px] text-muted-foreground">Selected Slot</p>
+                            <p className="text-sm font-medium text-foreground">
+                              {format(selectedSlot.date, "EEEE, MMM do")} @ {format(selectedSlot.date, "h:mm a")}
+                            </p>
+                          </div>
                         </div>
+                        <Button variant="ghost" size="sm" onClick={() => setSelectedSlot(null)} className="text-xs text-muted-foreground">
+                          Change
+                        </Button>
                       </div>
-                      <Button variant="ghost" size="sm" onClick={() => setSelectedSlot(null)} className="text-xs text-muted-foreground">
-                        Change
-                      </Button>
+                      <AppointmentForm
+                        initialClientId={appointment.clients?.id}
+                        initialDate={selectedSlot.date}
+                        initialTime={selectedSlot.time}
+                        slotTime={selectedSlot.slotTime}
+                        onSuccess={() => { setBookNextOpen(false); setSelectedSlot(null); onUpdate(); }}
+                      />
                     </div>
-                    <AppointmentForm
-                      initialClientId={appointment.clients?.id}
-                      initialDate={selectedSlot.date}
-                      initialTime={selectedSlot.time}
-                      slotTime={selectedSlot.slotTime}
-                      onSuccess={() => { setBookNextOpen(false); setSelectedSlot(null); onUpdate(); }}
-                    />
-                  </div>
-                ) : (
-                  <CompactAvailabilityPicker onSlotSelect={(date, time, slotTime) => setSelectedSlot({ date, time, slotTime })} />
-                )}
-              </div>
-            </DialogContent>
-          </Dialog>
+                  ) : (
+                    <CompactAvailabilityPicker onSlotSelect={(date, time, slotTime) => setSelectedSlot({ date, time, slotTime })} />
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </div>
 

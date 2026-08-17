@@ -66,6 +66,9 @@ export function usePrimitiveReflexTests(
           }
         } else if (isLat && !side) {
           latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : null);
+        } else {
+          // Non-lateralized reflex (e.g. FPR) — sync inhibition to priority_pattern
+          latestPattern = await updatePriorityPattern('primitiveReflexes', patternKey, updates.is_inhibited ? 'Inhibited' : null);
         }
         
         // Determine if the reflex is still inhibited globally (either L or R) using the latest pattern

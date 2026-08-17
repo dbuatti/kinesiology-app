@@ -163,3 +163,53 @@ export interface RecurringSeries {
   cost?: number;
   created_at: string;
 }
+
+// ─── Heart Wall ──────────────────────────────────────────────
+export type HeartWallLayerPhase =
+  | 'screen'
+  | 'count'
+  | 'find-emotion'
+  | 'assess-muscles'
+  | 'brain-zones'
+  | 'context'
+  | 'confirm'
+  | 'correct-stim'
+  | 'correct-hold'
+  | 'correct-tap'
+  | 'recheck';
+
+export type HeartWallLayerStatus = 'active' | 'cleared' | 'skipped';
+
+export interface HeartWallLayer {
+  id: string;
+  order: number;
+  emotion: string | null;
+  columnA: boolean;
+  organ: string | null;
+  relatedMuscles: string | null;
+  brainZones: string | null;
+  contextAge: string | null;
+  contextEvent: string | null;
+  contextInherited: boolean;
+  contextParent: string | null;
+  status: HeartWallLayerStatus;
+  notes: string | null;
+  phase: HeartWallLayerPhase;
+}
+
+export type HeartWallSessionStatus = 'in-progress' | 'complete' | 'abandoned';
+
+export interface HeartWallSession {
+  id: string;
+  clientId: string;
+  appointmentId: string | null;
+  status: HeartWallSessionStatus;
+  initialLayerCount: number | null;
+  layersRemaining: number | null;
+  isHidden: boolean;
+  layers: HeartWallLayer[];
+  notes: string | null;
+  startedAt: string;
+  completedAt: string | null;
+  createdAt: string;
+}

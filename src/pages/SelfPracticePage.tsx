@@ -21,13 +21,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientProgressTab from "@/components/crm/ClientProgressTab";
 import AppLayout from "@/components/crm/AppLayout";
 import { PageLoader } from "@/components/shared/PageLoader";
+import HeartWallTool from "@/components/crm/HeartWallTool";
 
 export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) {
  const [searchParams, setSearchParams] = useSearchParams();
- const [internalTab, setInternalTab] = useState("overview");
- const activeTab = nested ? internalTab : (searchParams.get("tab") || "overview");
- 
- const [selfClient, setSelfClient] = useState<any>(null);
+  const [internalTab, setInternalTab] = useState("overview");
+  const activeTab = nested ? internalTab : (searchParams.get("tab") || "overview");
+  const [heartWallOpen, setHeartWallOpen] = useState(false);
+  
+  const [selfClient, setSelfClient] = useState<any>(null);
  const [sessions, setSessions] = useState<any[]>([]);
  const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -196,6 +198,7 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  { name: "Coherence", icon: Activity, color: "bg-destructive", goal: "Practice heart-brain synchronization" },
  { name: "Neuro Drills", icon: Brain, color: "bg-chart-emerald", goal: "Practice Fakuda and Rhombergs assessments" },
  { name: "Cogs/ROM", icon: Move, color: "bg-chart-primary", goal: "Practice 3-plane mobility assessment" },
+ { name: "Heart Wall", icon: Heart, color: "bg-rose-600", goal: "Heart Wall Procedure", isHeartWall: true },
  ];
 
  return (
@@ -309,10 +312,10 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  <CardDescription className="text-muted-foreground/60">Quick start specific practice goals</CardDescription>
  </CardHeader>
  <CardContent className="space-y-3 relative z-10">
- {protocols.map((p) => (
- <button
- key={p.name}
- onClick={() => handleNewSelfSession(p.goal)}
+  {protocols.map((p) => (
+  <button
+  key={p.name}
+  onClick={() => (p as any).isHeartWall ? setHeartWallOpen(true) : handleNewSelfSession(p.goal)}
  className="w-full flex items-center justify-between p-3 bg-card/5 hover:bg-card/10 border border-primary-foreground/10 rounded-xl transition-all group"
  >
  <div className="flex items-center gap-3">
@@ -459,8 +462,16 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
     description="Are you sure you want to delete this self-practice session?"
     onConfirm={executeDelete}
   />
+
+  {selfClient && (
+    <HeartWallTool
+      open={heartWallOpen}
+      onOpenChange={setHeartWallOpen}
+      clientId={selfClient.id}
+    />
+  )}
  </>
-  );
+ );
 };
 
 const SelfPracticePage = () => (

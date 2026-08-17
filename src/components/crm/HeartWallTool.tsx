@@ -1,0 +1,942 @@
+
+import { useState, useEffect, useCallback, useMemo } from "react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import {
+  Heart, Shield, Layers, Activity, Dumbbell, Brain, Info,
+  Sparkles, Zap, RefreshCw, ChevronRight, ChevronLeft,
+  CheckCircle2, XCircle, Loader2, SkipForward,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { showError, showSuccess } from "@/utils/toast";
+import { useHeartWallSession } from "@/hooks/useHeartWallSession";
+import {
+  HeartWallSession, HeartWallLayer, HeartWallLayerPhase, HeartWallLayerStatus,
+} from "@/types/crm";
+import { ROW_DATA } from "@/data/emotion-code-data";
+import HeartWallEmotionChart from "./HeartWallEmotionChart";
+
+interface HeartWallToolProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  clientId: string;
+  appointmentId?: string | null;
+}
+
+type SessionUIState = "setup" | "working" | "summary";
+
+const ASSESSMENT_STEPS: { phase: HeartWallLayerPhase; label: string; icon: React.ComponentType<{ size?: number }>; color: string }[] = [
+  { phase: "screen", label: "Screen", icon: Shield, color: "text-rose-500" },
+  { phase: "count", label: "Count", icon: Layers, color: "text-chart-primary" },
+  { phase: "find-emotion", label: "Find Emotion", icon: Heart, color: "text-rose-600" },
+  { phase: "assess-muscles", label: "Muscles", icon: Dumbbell, color: "text-emerald-600" },
+  { phase: "brain-zones", label: "Brain Zones", icon: Brain, color: "text-indigo-600" },
+  { phase: "context", label: "Context", icon: Info, color: "text-amber-600" },
+  { phase: "confirm", label: "Confirm", icon: Sparkles, color: "text-amber-500" },
+];
+
+const CORRECTION_STEPS: { phase: HeartWallLayerPhase; label: string; icon: React.ComponentType<{ size?: number }>; color: string }[] = [
+  { phase: "correct-stim", label: "Stim", icon: Activity, color: "text-rose-500" },
+  { phase: "correct-hold", label: "Hold Point", icon: Dumbbell, color: "text-chart-primary" },
+  { phase: "correct-tap", label: "Tap Zones", icon: Brain, color: "text-indigo-600" },
+  { phase: "recheck", label: "Recheck", icon: RefreshCw, color: "text-emerald-600" },
+];
+
+const ALL_STEPS = [...ASSESSMENT_STEPS, ...CORRECTION_STEPS];
+
+function uuid() {
+  return crypto.randomUUID();
+}
+
+export default function HeartWallTool({ open, onOpenChange, clientId, appointmentId }: HeartWallToolProps) {
+  const { session, loading, createSession, saveSession, refresh } = useHeartWallSession(clientId, appointmentId);
+
+  const [uiState, setUiState] = useState<SessionUIState>("setup");
+  const [stepIndex, setStepIndex] = useState(0);
+  const [layerCountInput, setLayerCountInput] = useState("");
+  const [activeLayerId, setActiveLayerId] = useState<string | null>(null);
+  const [pendingLayer, setPendingLayer] = useState<Partial<HeartWallLayer>>({});
+  const [sessionNotes, setSessionNotes] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  // Derive session state
+  const layers = session?.layers || [];
+  const clearedCount = layers.filter(l => l.status === "cleared").length;
+  const activeLayer = layers.find(l => l.id === activeLayerId) || null;
+  const totalLayers = session?.initialLayerCount ?? layers.length;
+  const layersRemaining = session?.layersRemaining ?? null;
+  const currentStep = ALL_STEPS[stepIndex];
+
+  useEffect(() => {
+    if (!session) return;
+    if (session.status === "complete" || session.status === "abandoned") {
+      setUiState("summary");
+      setSessionNotes(session.notes || "");
+    } else if (session.layers.length > 0) {
+      const last = session.layers[session.layers.length - 1];
+      if (last.status === "active") {
+        setActiveLayerId(last.id);
+        setPendingLayer(last);
+        const stepIdx = ALL_STEPS.findIndex(s => s.phase === last.phase);
+        if (stepIdx >= 0) setStepIndex(stepIdx);
+        setUiState("working");
+      } else {
+        setUiState("working");
+        setStepIndex(0);
+        setPendingLayer({});
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.id]);
+
+  // ─── Setup ────────────────────────────────────────
+  const handleStart = async () => {
+    setSaving(true);
+    try {
+      const count = parseInt(layerCountInput) || null;
+      await createSession(count);
+      setUiState("working");
+      setStepIndex(0);
+    } catch (err) {
+      showError((err instanceof Error ? err.message : null) || "Failed to start session");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ─── Step Navigation ──────────────────────────────
+  const goNext = () => {
+    if (stepIndex < ALL_STEPS.length - 1) setStepIndex(stepIndex + 1);
+  };
+  const goBack = () => {
+    if (stepIndex > 0) setStepIndex(stepIndex - 1);
+  };
+
+  // ─── Layer Management ─────────────────────────────
+  const startNewLayer = useCallback(() => {
+    const newLayer: HeartWallLayer = {
+      id: uuid(),
+      order: layers.length + 1,
+      emotion: null,
+      columnA: false,
+      organ: null,
+      relatedMuscles: null,
+      brainZones: null,
+      contextAge: null,
+      contextEvent: null,
+      contextInherited: false,
+      contextParent: null,
+      status: "active",
+      notes: null,
+      phase: "screen",
+    };
+    setPendingLayer(newLayer);
+    setActiveLayerId(newLayer.id);
+    setStepIndex(0);
+    setUiState("working");
+  }, [layers.length]);
+
+  const saveLayerAndContinue = async (override?: Partial<HeartWallLayer>) => {
+    if (!session) return;
+    setSaving(true);
+    try {
+      const merged = { ...pendingLayer, ...override } as HeartWallLayer;
+      merged.phase = currentStep.phase;
+      const existing = layers.findIndex(l => l.id === merged.id);
+      const newLayers = [...layers];
+      if (existing >= 0) newLayers[existing] = merged;
+      else newLayers.push(merged);
+      await saveSession({ layers: newLayers as unknown as HeartWallLayer[] });
+      setPendingLayer(merged);
+    } catch (err) {
+      showError((err instanceof Error ? err.message : null) || "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const markLayerCleared = async () => {
+    if (!session) return;
+    setSaving(true);
+    try {
+      const merged = { ...pendingLayer, status: "cleared" as HeartWallLayerStatus, phase: currentStep.phase } as HeartWallLayer;
+      const newLayers = layers.map(l => l.id === merged.id ? merged : l);
+      const newRemaining = layersRemaining !== null ? Math.max(0, layersRemaining - 1) : null;
+      await saveSession({ layers: newLayers as unknown as HeartWallLayer[], layersRemaining: newRemaining });
+      showSuccess(`Layer ${merged.order} cleared`);
+
+      if (newRemaining !== null && newRemaining <= 0) {
+        await saveSession({
+          status: "complete",
+          completedAt: new Date().toISOString(),
+          layers: newLayers as unknown as HeartWallLayer[],
+          layersRemaining: newRemaining,
+        });
+        setUiState("summary");
+        return;
+      }
+
+      setActiveLayerId(null);
+      setPendingLayer({});
+      setStepIndex(0);
+    } catch (err) {
+      showError((err instanceof Error ? err.message : null) || "Failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const markLayerSkipped = async () => {
+    if (!session) return;
+    setSaving(true);
+    try {
+      const merged = { ...pendingLayer, status: "skipped" as HeartWallLayerStatus, phase: currentStep.phase } as HeartWallLayer;
+      const newLayers = layers.map(l => l.id === merged.id ? merged : l);
+      await saveSession({ layers: newLayers as unknown as HeartWallLayer[] });
+      setActiveLayerId(null);
+      setPendingLayer({});
+      setStepIndex(0);
+    } catch (err) {
+      showError((err instanceof Error ? err.message : null) || "Failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCompleteSession = async () => {
+    if (!session) return;
+    setSaving(true);
+    try {
+      await saveSession({
+        status: "complete",
+        completedAt: new Date().toISOString(),
+        notes: sessionNotes || null,
+      });
+      setUiState("summary");
+      showSuccess("Session complete");
+    } catch (err) {
+      showError((err instanceof Error ? err.message : null) || "Failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAbandonSession = async () => {
+    if (!session) return;
+    setSaving(true);
+    try {
+      await saveSession({
+        status: "abandoned",
+        completedAt: new Date().toISOString(),
+        notes: sessionNotes || null,
+      });
+      setUiState("summary");
+    } catch (err) {
+      showError((err instanceof Error ? err.message : null) || "Failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-lg p-8 flex items-center justify-center">
+          <Loader2 size={28} className="animate-spin text-muted-foreground" />
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0">
+        {/* ── Header ─────────────────────────────────── */}
+        <DialogHeader className="p-6 pb-4 sticky top-0 bg-card z-10 border-b border-border">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center">
+                <Heart size={20} className="text-rose-600" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg font-semibold tracking-tight">
+                  {uiState === "setup" && "Heart Wall Procedure"}
+                  {uiState === "working" && (
+                    <>
+                      Layer {activeLayer?.order ?? layers.length + 1}
+                      {layersRemaining !== null && (
+                        <span className="text-muted-foreground font-normal text-sm ml-2">
+                          — {layersRemaining} remaining
+                        </span>
+                      )}
+                    </>
+                  )}
+                  {uiState === "summary" && "Session Summary"}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground">
+                  {uiState === "setup" && "Identify and clear subconscious emotional barriers around the heart"}
+                  {uiState === "working" && `${currentStep.label}`}
+                  {uiState === "summary" && (
+                    session?.status === "complete" ? "All layers processed" : "Session ended"
+                  )}
+                </DialogDescription>
+              </div>
+            </div>
+
+            {/* Progress chips */}
+            {uiState === "working" && (
+              <div className="flex items-center gap-2">
+                {session?.initialLayerCount && (
+                  <Badge variant="outline" className="text-[10px] font-semibold border-rose-200 text-rose-700 bg-rose-50">
+                    {clearedCount}/{session.initialLayerCount} cleared
+                  </Badge>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Step progress bar */}
+          {uiState === "working" && (
+            <div className="mt-4 flex items-center gap-0.5">
+              {ALL_STEPS.map((step, i) => {
+                const Icon = step.icon;
+                const isCurrent = i === stepIndex;
+                const isPast = i < stepIndex;
+                return (
+                  <button
+                    key={step.phase}
+                    onClick={() => { setStepIndex(i); }}
+                    className={cn(
+                      "flex-1 h-8 rounded-lg flex items-center justify-center transition-all",
+                      isCurrent && "bg-primary text-primary-foreground shadow-sm ring-2 ring-primary/20",
+                      isPast && "bg-emerald-100 text-emerald-700",
+                      !isCurrent && !isPast && "bg-muted text-muted-foreground hover:bg-muted/80",
+                    )}
+                    title={step.label}
+                  >
+                    <Icon size={14} />
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </DialogHeader>
+
+        {/* ── Body ──────────────────────────────────── */}
+        <div className="p-6 space-y-6">
+
+          {/* ═══ SETUP ═══ */}
+          {uiState === "setup" && (
+            <div className="space-y-6">
+              <div className="p-5 bg-rose-50 rounded-xl border border-rose-100 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Shield size={16} className="text-rose-600" />
+                  <p className="text-sm font-semibold text-rose-900">How many layers?</p>
+                </div>
+                <p className="text-xs text-rose-700 leading-relaxed">
+                  Challenge: "More than 5? More than 10? More than 15? More than 20? More than 25?"
+                  Then narrow: "21? 22? 23?" — until you land on the exact number.
+                  Average is 5–25 layers.
+                </p>
+                <Input
+                  value={layerCountInput}
+                  onChange={(e) => setLayerCountInput(e.target.value.replace(/[^0-9]/g, ""))}
+                  placeholder="Number of layers (optional)"
+                  className="w-full h-11 rounded-xl bg-white border-rose-200 text-center text-lg font-semibold"
+                  type="number"
+                  min={1}
+                />
+              </div>
+
+              <div className="p-5 bg-muted rounded-xl border border-border space-y-3">
+                <p className="text-sm font-medium text-foreground">
+                  Challenge "Do we have permission to assess the Heart Wall?"
+                </p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  If the system isn't ready, respect the boundary — the wall was built for a reason.
+                  Perform Harmonic Rocking first to down-regulate, then re-ask.
+                </p>
+              </div>
+
+              <Button
+                onClick={handleStart}
+                disabled={saving}
+                className="w-full h-12 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold"
+              >
+                {saving ? <Loader2 className="mr-2 animate-spin" /> : <Heart className="mr-2" size={18} />}
+                Begin Assessment
+              </Button>
+            </div>
+          )}
+
+          {/* ═══ WORKING ═══ */}
+          {uiState === "working" && (
+            <div className="space-y-6">
+
+              {/* Assessment steps */}
+              {stepIndex < ASSESSMENT_STEPS.length && (
+                <div className="space-y-4">
+                  {/* ─ Screen ─ */}
+                  {currentStep.phase === "screen" && (
+                    <div className="space-y-4">
+                      <div className="p-5 bg-rose-50 rounded-xl border border-rose-100 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Activity size={16} className="text-rose-600" />
+                          <p className="text-sm font-semibold text-rose-900">Is a Heart Wall present?</p>
+                        </div>
+                        <ol className="space-y-2 text-xs text-rose-800 leading-relaxed pl-4 list-decimal">
+                          <li>Qualify an indicator muscle.</li>
+                          <li>Ask the client to focus on their heart and imagine <span className="underline decoration-rose-300 underline-offset-2">receiving</span> — love, money, acceptance, care.</li>
+                          <li>If the muscle inhibits (weakens), the Heart Wall is present.</li>
+                        </ol>
+                      </div>
+                      <Textarea
+                        value={pendingLayer.notes || ""}
+                        onChange={(e) => setPendingLayer({ ...pendingLayer, notes: e.target.value })}
+                        placeholder="Notes on screening..."
+                        className="rounded-xl bg-muted/50 text-sm min-h-[80px]"
+                      />
+                    </div>
+                  )}
+
+                  {/* ─ Count ─ */}
+                  {currentStep.phase === "count" && (
+                    <div className="space-y-3">
+                      <div className="p-5 bg-primary/5 rounded-xl border border-primary/10 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Layers size={16} className="text-primary" />
+                          <p className="text-sm font-semibold text-foreground">Confirm layer count</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          Current baseline: {session?.initialLayerCount ?? "unknown"} layers.
+                          Re-verify: "How many layers remain?"
+                        </p>
+                      </div>
+                      <Input
+                        value={layerCountInput}
+                        onChange={(e) => setLayerCountInput(e.target.value.replace(/[^0-9]/g, ""))}
+                        placeholder="Layers remaining"
+                        className="h-11 rounded-xl text-center text-lg font-semibold"
+                        type="number"
+                        min={0}
+                      />
+                    </div>
+                  )}
+
+                  {/* ─ Find Emotion ─ */}
+                  {currentStep.phase === "find-emotion" && (
+                    <div className="space-y-3">
+                      <div className="p-4 bg-rose-50 rounded-xl border border-rose-100 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Heart size={16} className="text-rose-600" />
+                          <p className="text-sm font-semibold text-rose-900">Find the priority primary emotion</p>
+                        </div>
+                        <p className="text-xs text-rose-700 leading-relaxed">
+                          Use pulse points to find the organ, then scan the chart.
+                          "Is it in column A? Column B? Top half? This one?"
+                        </p>
+                      </div>
+
+                      <div className="p-3 bg-muted rounded-lg text-xs space-y-1.5">
+                        <p className="font-bold text-foreground">Pulse Point Order:</p>
+                        <ol className="space-y-1 pl-4 list-decimal text-muted-foreground">
+                          <li>Challenge right pulse points → deep touch → Lung / Colon</li>
+                          <li>Challenge left pulse points → deep touch → Liver / Gallbladder</li>
+                          <li>Once organ identified → go directly to that row in the Emotion Chart</li>
+                        </ol>
+                      </div>
+
+                      {pendingLayer.organ && (
+                        <Badge className="bg-rose-100 text-rose-800 border-none text-xs">
+                          Known organ: {pendingLayer.organ}
+                        </Badge>
+                      )}
+
+                      <HeartWallEmotionChart
+                        selectedEmotion={pendingLayer.emotion}
+                        onSelect={(emotion, rowNum) => {
+                          const organ = ROW_DATA[rowNum]?.organ || null;
+                          setPendingLayer({
+                            ...pendingLayer,
+                            emotion,
+                            organ,
+                            relatedMuscles: ROW_DATA[rowNum]?.muscles || null,
+                          });
+                        }}
+                        knownOrganRow={pendingLayer.organ ? Object.entries(ROW_DATA).find(([, v]) => v.organ === pendingLayer.organ)?.[0] ? Number(Object.entries(ROW_DATA).find(([, v]) => v.organ === pendingLayer.organ)?.[0]) : null : null}
+                      />
+                    </div>
+                  )}
+
+                  {/* ─ Assess Muscles ─ */}
+                  {currentStep.phase === "assess-muscles" && (
+                    <div className="space-y-3">
+                      <div className="p-5 bg-emerald-50 rounded-xl border border-emerald-100 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Dumbbell size={16} className="text-emerald-600" />
+                          <p className="text-sm font-semibold text-emerald-900">Assess related muscles</p>
+                        </div>
+                        <p className="text-xs text-emerald-800 leading-relaxed">
+                          Every emotion row has correlated muscles. Test them — they <span className="italic font-semibold">will</span> come up inhibited.
+                          This confirms the circuit is active.
+                        </p>
+                      </div>
+
+                      {pendingLayer.organ && (
+                        <div className="p-4 bg-card rounded-xl border border-border">
+                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                            Muscles to test — {pendingLayer.organ}
+                          </p>
+                          <p className="text-sm text-foreground font-medium leading-relaxed">
+                            {pendingLayer.relatedMuscles}
+                          </p>
+                        </div>
+                      )}
+
+                      <Textarea
+                        value={pendingLayer.notes || ""}
+                        onChange={(e) => setPendingLayer({ ...pendingLayer, notes: e.target.value })}
+                        placeholder="Muscle test findings..."
+                        className="rounded-xl bg-muted/50 text-sm min-h-[80px]"
+                      />
+                    </div>
+                  )}
+
+                  {/* ─ Brain Zones ─ */}
+                  {currentStep.phase === "brain-zones" && (
+                    <div className="space-y-3">
+                      <div className="p-5 bg-indigo-50 rounded-xl border border-indigo-100 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Brain size={16} className="text-indigo-600" />
+                          <p className="text-sm font-semibold text-indigo-900">Find efferent brain zones</p>
+                        </div>
+                        <p className="text-xs text-indigo-800 leading-relaxed">
+                          Challenge Cortical → Subcortical → Cerebellum → Limbic, etc.
+                          Find which specific brain zones are involved.
+                        </p>
+                      </div>
+
+                      <Input
+                        value={pendingLayer.brainZones || ""}
+                        onChange={(e) => setPendingLayer({ ...pendingLayer, brainZones: e.target.value })}
+                        placeholder="e.g. Right Prefrontal Cortex + Pons"
+                        className="rounded-xl bg-muted/50 text-sm"
+                      />
+                    </div>
+                  )}
+
+                  {/* ─ Context ─ */}
+                  {currentStep.phase === "context" && (
+                    <div className="space-y-3">
+                      <div className="p-5 bg-amber-50 rounded-xl border border-amber-100 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Info size={16} className="text-amber-600" />
+                          <p className="text-sm font-semibold text-amber-900">Gather context (optional)</p>
+                        </div>
+                        <p className="text-xs text-amber-800 leading-relaxed">
+                          Challenge: "Do we need more context?" If no, skip — don't get bogged down.
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Age / Period</label>
+                          <Input
+                            value={pendingLayer.contextAge || ""}
+                            onChange={(e) => setPendingLayer({ ...pendingLayer, contextAge: e.target.value })}
+                            placeholder="e.g. Age 8-10"
+                            className="rounded-xl bg-muted/50 text-sm h-10"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Life Event</label>
+                          <Input
+                            value={pendingLayer.contextEvent || ""}
+                            onChange={(e) => setPendingLayer({ ...pendingLayer, contextEvent: e.target.value })}
+                            placeholder="e.g. Parents separation"
+                            className="rounded-xl bg-muted/50 text-sm h-10"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4 p-3 bg-muted/50 rounded-xl">
+                        <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={pendingLayer.contextInherited}
+                            onChange={(e) => setPendingLayer({ ...pendingLayer, contextInherited: e.target.checked })}
+                            className="rounded border-border"
+                          />
+                          Inherited
+                        </label>
+                        {pendingLayer.contextInherited && (
+                          <Input
+                            value={pendingLayer.contextParent || ""}
+                            onChange={(e) => setPendingLayer({ ...pendingLayer, contextParent: e.target.value })}
+                            placeholder="From Mom / Dad"
+                            className="h-9 rounded-xl bg-white text-sm w-40"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ─ Confirm ─ */}
+                  {currentStep.phase === "confirm" && (
+                    <div className="space-y-3">
+                      <div className="p-5 bg-amber-50 rounded-xl border border-amber-100 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Sparkles size={16} className="text-amber-600" />
+                          <p className="text-sm font-semibold text-amber-900">Priority primary confirmed</p>
+                        </div>
+                        <p className="text-xs text-amber-800 leading-relaxed">
+                          You've gathered the full circuit. One correction on this can clear 5–10 layers.
+                        </p>
+                      </div>
+
+                      <div className="p-4 bg-card rounded-xl border border-border space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-rose-100 text-rose-800 border-none text-xs">{pendingLayer.organ}</Badge>
+                          <span className="text-foreground font-semibold text-sm">{pendingLayer.emotion}</span>
+                          {pendingLayer.contextInherited && (
+                            <Badge className="bg-amber-100 text-amber-800 border-none text-[10px]">Inherited{pendingLayer.contextParent ? ` from ${pendingLayer.contextParent}` : ""}</Badge>
+                          )}
+                        </div>
+                        {pendingLayer.brainZones && (
+                          <p className="text-xs text-muted-foreground">
+                            <span className="font-semibold">Brain zones:</span> {pendingLayer.brainZones}
+                          </p>
+                        )}
+                        {pendingLayer.relatedMuscles && (
+                          <p className="text-xs text-muted-foreground">
+                            <span className="font-semibold">Muscles:</span> {pendingLayer.relatedMuscles}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Correction steps */}
+              {stepIndex >= ASSESSMENT_STEPS.length && (
+                <div className="space-y-4">
+                  {/* ─ Stim ─ */}
+                  {currentStep.phase === "correct-stim" && (
+                    <div className="space-y-3">
+                      <div className="p-5 bg-rose-50 rounded-xl border border-rose-100 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Activity size={16} className="text-rose-600" />
+                          <p className="text-sm font-semibold text-rose-900">Stim Heart Visceral Referral Zone</p>
+                        </div>
+                        <p className="text-xs text-rose-800 leading-relaxed">
+                          Lightly rub along the Heart Visceral Referral Zone — from the chest, over the shoulder, and down the ulnar (pinky) side of the left arm.
+                        </p>
+                        <div className="p-3 bg-white/60 rounded-lg text-[11px] text-rose-900 space-y-1 font-medium">
+                          <p>1. Left Chest / Precordium</p>
+                          <p className="font-bold">2. → Left Shoulder & Upper Back</p>
+                          <p className="font-bold">3. → Medial aspect of Left Arm (ulnar/pinky side)</p>
+                          <p>4. Jaw / Neck (occasionally)</p>
+                        </div>
+                      </div>
+
+                      <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+                        <p className="text-xs font-medium text-indigo-800 leading-relaxed">
+                          <strong>Intention cue:</strong> While holding, state in your mind:
+                          "{pendingLayer.organ}, {pendingLayer.emotion}, inherited from {pendingLayer.contextParent || 'origin'}."
+                          Keep repeating for the 3-minute period.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ─ Hold ─ */}
+                  {currentStep.phase === "correct-hold" && (
+                    <div className="space-y-3">
+                      <div className="p-5 bg-primary/5 rounded-xl border border-primary/10 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Dumbbell size={16} className="text-primary" />
+                          <p className="text-sm font-semibold text-foreground">Hold organ pulse point or squeeze muscle</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          Touch and hold the organ-specific pulse point identified during assessment.
+                          You can also squeeze the associated muscle.
+                        </p>
+                        {pendingLayer.relatedMuscles && (
+                          <p className="text-xs text-muted-foreground font-medium">{pendingLayer.relatedMuscles}</p>
+                        )}
+                      </div>
+                      <div className="p-4 bg-amber-50 rounded-xl border border-amber-100">
+                        <p className="text-xs font-medium text-amber-800 leading-relaxed">
+                          <strong>Optional — Client Self-Help:</strong> Ask the client to place one hand on heart, the other on the organ.
+                          "Let them be friends again."
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ─ Tap ─ */}
+                  {currentStep.phase === "correct-tap" && (
+                    <div className="space-y-3">
+                      <div className="p-5 bg-indigo-50 rounded-xl border border-indigo-100 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Brain size={16} className="text-indigo-600" />
+                          <p className="text-sm font-semibold text-indigo-900">Tap efferent brain zones</p>
+                        </div>
+                        <p className="text-xs text-indigo-800 leading-relaxed">
+                          Tap the identified brain zones simultaneously while holding the pulse point.
+                        </p>
+                        {pendingLayer.brainZones && (
+                          <p className="text-xs font-semibold text-indigo-900">{pendingLayer.brainZones}</p>
+                        )}
+                        <div className="grid grid-cols-2 gap-3 mt-2">
+                          <div className="p-3 bg-white/60 rounded-lg">
+                            <p className="text-[10px] font-bold text-indigo-700 uppercase">Standard</p>
+                            <p className="text-xs text-indigo-800 font-medium">3 firm swipes on each zone simultaneously</p>
+                          </div>
+                          <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                            <p className="text-[10px] font-bold text-amber-700 uppercase">If Inherited</p>
+                            <p className="text-xs text-amber-800 font-medium">Tap 10 times to clear the lineage pattern</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-4 bg-muted rounded-xl border border-border">
+                        <p className="text-xs font-medium text-muted-foreground leading-relaxed">
+                          <strong>Alternative — Rocking:</strong> Activate the brain circuits ("activate, activate, activate") then do Harmonic Rocking.
+                          Rocking embodies the correction and generates a stronger somatic release.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ─ Recheck ─ */}
+                  {currentStep.phase === "recheck" && (
+                    <div className="space-y-4">
+                      <div className="p-5 bg-emerald-50 rounded-xl border border-emerald-100 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <RefreshCw size={16} className="text-emerald-600" />
+                          <p className="text-sm font-semibold text-emerald-900">Recheck muscles & count remaining layers</p>
+                        </div>
+                        <p className="text-xs text-emerald-800 leading-relaxed">
+                          Re-test the associated muscles — they should now lock (strong).
+                          Wait for a parasympathetic shift: sigh, yawn, gurgle, or client reporting "a wave came up."
+                        </p>
+                      </div>
+
+                      <div className="p-4 bg-card rounded-xl border border-border space-y-3">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Layers remaining</p>
+                        <Input
+                          value={layerCountInput}
+                          onChange={(e) => setLayerCountInput(e.target.value.replace(/[^0-9]/g, ""))}
+                          placeholder="Layers remaining after this correction"
+                          className="h-11 rounded-xl text-center text-lg font-semibold"
+                          type="number"
+                          min={0}
+                        />
+                      </div>
+
+                      <div className="flex gap-3">
+                        <Button
+                          onClick={markLayerCleared}
+                          disabled={saving}
+                          className="flex-1 h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                        >
+                          {saving ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 className="mr-2" size={18} />}
+                          Layer Cleared
+                        </Button>
+                        <Button
+                          onClick={markLayerSkipped}
+                          disabled={saving}
+                          variant="outline"
+                          className="h-11 rounded-xl font-medium"
+                        >
+                          <XCircle className="mr-2" size={18} />
+                          Skip
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ═══ SUMMARY ═══ */}
+          {uiState === "summary" && (
+            <div className="space-y-4">
+              <div className={cn(
+                "p-6 rounded-xl border space-y-3",
+                session?.status === "complete"
+                  ? "bg-emerald-50 border-emerald-100"
+                  : "bg-amber-50 border-amber-100",
+              )}>
+                <div className="flex items-center gap-2">
+                  {session?.status === "complete" ? (
+                    <CheckCircle2 size={18} className="text-emerald-600" />
+                  ) : (
+                    <XCircle size={18} className="text-amber-600" />
+                  )}
+                  <p className={cn(
+                    "font-semibold",
+                    session?.status === "complete" ? "text-emerald-900" : "text-amber-900",
+                  )}>
+                    {session?.status === "complete" ? "Session Complete" : "Session Abandoned"}
+                  </p>
+                </div>
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div className="p-3 bg-white/60 rounded-lg">
+                    <p className="text-lg font-bold text-foreground">{session?.initialLayerCount ?? "—"}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase">Initial</p>
+                  </div>
+                  <div className="p-3 bg-white/60 rounded-lg">
+                    <p className="text-lg font-bold text-emerald-600">{clearedCount}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase">Cleared</p>
+                  </div>
+                  <div className="p-3 bg-white/60 rounded-lg">
+                    <p className="text-lg font-bold text-foreground">{layersRemaining ?? "—"}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase">Remaining</p>
+                  </div>
+                </div>
+              </div>
+
+              {layers.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Layers Processed</p>
+                  {layers.map((layer) => (
+                    <div key={layer.id} className="flex items-center gap-3 p-3 bg-card rounded-xl border border-border">
+                      <div className={cn(
+                        "w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0",
+                        layer.status === "cleared" && "bg-emerald-100 text-emerald-700",
+                        layer.status === "skipped" && "bg-amber-100 text-amber-700",
+                        layer.status === "active" && "bg-muted text-muted-foreground",
+                      )}>
+                        {layer.order}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {layer.emotion || "No emotion selected"}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">{layer.organ}</p>
+                      </div>
+                      <Badge
+                        className={cn(
+                          "text-[10px] border-none",
+                          layer.status === "cleared" && "bg-emerald-100 text-emerald-700",
+                          layer.status === "skipped" && "bg-amber-100 text-amber-700",
+                          layer.status === "active" && "bg-muted text-muted-foreground",
+                        )}
+                      >
+                        {layer.status}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {session?.status === "complete" && (
+                <Textarea
+                  value={sessionNotes}
+                  onChange={(e) => setSessionNotes(e.target.value)}
+                  placeholder="Session notes (optional)..."
+                  className="rounded-xl bg-muted/50 text-sm min-h-[80px]"
+                  onBlur={async () => {
+                    if (sessionNotes !== (session.notes || "")) {
+                      await saveSession({ notes: sessionNotes || null });
+                    }
+                  }}
+                />
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ── Footer ─────────────────────────────────── */}
+        {uiState === "working" && (
+          <DialogFooter className="p-6 pt-0 sticky bottom-0 bg-card border-t border-border flex-row gap-3">
+            {stepIndex > 0 && (
+              <Button
+                onClick={goBack}
+                variant="outline"
+                className="h-11 rounded-xl font-medium"
+              >
+                <ChevronLeft className="mr-1" size={16} /> Back
+              </Button>
+            )}
+
+            <div className="flex-1" />
+
+            {/* Save progress at each step */}
+            <Button
+              onClick={saveLayerAndContinue}
+              disabled={saving}
+              variant="outline"
+              className="h-11 rounded-xl font-medium"
+            >
+              {saving ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
+              Save
+            </Button>
+
+            {/* Skip context */}
+            {currentStep.phase === "context" && (
+              <Button
+                onClick={() => { saveLayerAndContinue(); goNext(); }}
+                disabled={saving}
+                variant="ghost"
+                className="h-11 rounded-xl font-medium text-muted-foreground"
+              >
+                <SkipForward className="mr-1" size={16} /> Skip
+              </Button>
+            )}
+
+            {stepIndex < ALL_STEPS.length - 1 && currentStep.phase !== "recheck" && (
+              <Button
+                onClick={() => { saveLayerAndContinue(); goNext(); }}
+                disabled={saving}
+                className="h-11 rounded-xl bg-primary hover:bg-primary/90 font-semibold"
+              >
+                Next <ChevronRight className="ml-1" size={16} />
+              </Button>
+            )}
+          </DialogFooter>
+        )}
+
+        {uiState === "setup" && (
+          <DialogFooter className="p-6 pt-0" />
+        )}
+
+        {uiState === "summary" && (
+          <DialogFooter className="p-6 pt-0 sticky bottom-0 bg-card border-t border-border flex-row gap-3">
+            <Button
+              onClick={() => { startNewLayer(); setUiState("working"); }}
+              variant="outline"
+              className="h-11 rounded-xl font-medium"
+            >
+              <Heart className="mr-2" size={16} /> New Layer
+            </Button>
+            <div className="flex-1" />
+            <Button
+              onClick={handleAbandonSession}
+              variant="ghost"
+              className="h-11 rounded-xl font-medium text-muted-foreground"
+            >
+              Abandon
+            </Button>
+            <Button
+              onClick={handleCompleteSession}
+              disabled={saving}
+              className="h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+            >
+              {saving ? <Loader2 className="animate-spin mr-2" size={16} /> : <CheckCircle2 className="mr-2" size={18} />}
+              Complete Session
+            </Button>
+          </DialogFooter>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}

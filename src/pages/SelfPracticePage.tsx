@@ -301,7 +301,7 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  </Card>
 
  <div className="space-y-6">
- <Card className="border-none shadow-sm bg-card text-primary-foreground rounded-3xl overflow-hidden relative">
+ <Card className="border-none shadow-sm bg-foreground text-primary-foreground rounded-3xl overflow-hidden relative">
  <div className="absolute top-0 right-0 p-8 opacity-10">
  <Sparkles size={120} />
  </div>

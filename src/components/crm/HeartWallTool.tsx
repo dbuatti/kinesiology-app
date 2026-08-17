@@ -289,7 +289,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0">
+      <DialogContent className="max-w-2xl h-[700px] flex flex-col p-0">
         {/* ── Header ─────────────────────────────────── */}
         <DialogHeader className="p-6 pb-4 shrink-0 border-b border-border">
           <div className="flex items-center justify-between">

@@ -370,8 +370,11 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
               <div className="p-5 bg-rose-50 rounded-xl border border-rose-100 space-y-3">
                 <div className="flex items-center gap-2">
                   <Shield size={16} className="text-rose-600" />
-                  <p className="text-sm font-semibold text-rose-900">How many layers?</p>
+                  <p className="text-sm font-semibold text-rose-900">Screen first, then count layers</p>
                 </div>
+                <p className="text-xs text-rose-700 leading-relaxed">
+                  The flow: <strong>Screen</strong> (qualify IM → focus on receiving → does it inhibit?) → <strong>Count layers</strong> (baseline) → <strong>Find priority primary</strong> → Correct → Recheck.
+                </p>
                 <p className="text-xs text-rose-700 leading-relaxed">
                   Challenge: "More than 5? More than 10? More than 15? More than 20? More than 25?"
                   Then narrow: "21? 22? 23?" — until you land on the exact number.
@@ -380,7 +383,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                 <Input
                   value={layerCountInput}
                   onChange={(e) => setLayerCountInput(e.target.value.replace(/[^0-9]/g, ""))}
-                  placeholder="Number of layers (optional)"
+                  placeholder="Pre-fill layer count (optional)"
                   className="w-full h-11 rounded-xl bg-white border-rose-200 text-center text-lg font-semibold"
                   type="number"
                   min={1}
@@ -389,7 +392,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
 
               <div className="p-5 bg-muted rounded-xl border border-border space-y-3">
                 <p className="text-sm font-medium text-foreground">
-                  Challenge "Do we have permission to assess the Heart Wall?"
+                  First step: challenge "Do we have permission to assess the Heart Wall?"
                 </p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   If the system isn't ready, respect the boundary — the wall was built for a reason.
@@ -421,14 +424,31 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                       <div className="p-5 bg-rose-50 rounded-xl border border-rose-100 space-y-3">
                         <div className="flex items-center gap-2">
                           <Activity size={16} className="text-rose-600" />
-                          <p className="text-sm font-semibold text-rose-900">Is a Heart Wall present?</p>
+                          <p className="text-sm font-semibold text-rose-900">Screen — Is a Heart Wall present?</p>
                         </div>
                         <ol className="space-y-2 text-xs text-rose-800 leading-relaxed pl-4 list-decimal">
                           <li>Qualify an indicator muscle.</li>
-                          <li>Ask the client to focus on their heart and imagine <span className="underline decoration-rose-300 underline-offset-2">receiving</span> — love, money, acceptance, care.</li>
+                          <li>Ask the client to focus on their heart and imagine <span className="underline decoration-rose-300 underline-offset-2">receiving</span> — love, money, acceptance, care, or whatever is relevant to their situation.</li>
                           <li>If the muscle inhibits (weakens), the Heart Wall is present.</li>
                         </ol>
                       </div>
+
+                      <div className="p-4 bg-muted rounded-xl border border-border space-y-2">
+                        <p className="text-xs font-semibold text-foreground">Client explanation (read if needed):</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed italic">
+                          "You know when you've been through something and you can feel yourself shut down so it doesn't happen again?
+                          Those physiological responses take a lot of bandwidth from the nervous system. We can calibrate that so your system doesn't have to compensate."
+                        </p>
+                      </div>
+
+                      <div className="p-4 bg-rose-50/50 rounded-xl border border-rose-100/60 space-y-2">
+                        <p className="text-xs font-semibold text-rose-800">Permission to assess</p>
+                        <p className="text-xs text-rose-700 leading-relaxed">
+                          Challenge: "Do we have permission to assess the Heart Wall?"
+                          If no — respect the boundary. The wall was built for a reason. Perform Harmonic Rocking to down-regulate, then re-ask.
+                        </p>
+                      </div>
+
                       <Textarea
                         value={pendingLayer.notes || ""}
                         onChange={(e) => setPendingLayer({ ...pendingLayer, notes: e.target.value })}
@@ -444,17 +464,20 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                       <div className="p-5 bg-primary/5 rounded-xl border border-primary/10 space-y-3">
                         <div className="flex items-center gap-2">
                           <Layers size={16} className="text-primary" />
-                          <p className="text-sm font-semibold text-foreground">Confirm layer count</p>
+                          <p className="text-sm font-semibold text-foreground">Count the layers</p>
                         </div>
                         <p className="text-xs text-muted-foreground leading-relaxed">
-                          Current baseline: {session?.initialLayerCount ?? "unknown"} layers.
-                          Re-verify: "How many layers remain?"
+                          Challenge in sequence: "More than 5? More than 10? More than 15? More than 20? More than 25?"
+                          Then narrow: "21? 22? 23?" — until you land on the exact number.
+                        </p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          This baseline lets you measure progress after each priority primary correction.
                         </p>
                       </div>
                       <Input
                         value={layerCountInput}
                         onChange={(e) => setLayerCountInput(e.target.value.replace(/[^0-9]/g, ""))}
-                        placeholder="Layers remaining"
+                        placeholder="How many layers?"
                         className="h-11 rounded-xl text-center text-lg font-semibold"
                         type="number"
                         min={0}
@@ -468,10 +491,11 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                       <div className="p-4 bg-rose-50 rounded-xl border border-rose-100 space-y-2">
                         <div className="flex items-center gap-2">
                           <Heart size={16} className="text-rose-600" />
-                          <p className="text-sm font-semibold text-rose-900">Find the priority primary emotion</p>
+                          <p className="text-sm font-semibold text-rose-900">Find the priority primary</p>
                         </div>
                         <p className="text-xs text-rose-700 leading-relaxed">
-                          Scan step by step: pulse point → organ → column → half → emotion.
+                          This is the highest-impact layer in the stack. One correction on the priority primary can clear 5–10 layers at once.
+                          Use pulse points to find the organ, then scan the chart.
                         </p>
                       </div>
 
@@ -726,9 +750,15 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                           <p className="text-sm font-semibold text-indigo-900">Find efferent brain zones</p>
                         </div>
                         <p className="text-xs text-indigo-800 leading-relaxed">
-                          Challenge Cortical → Subcortical → Cerebellum → Limbic, etc.
-                          Find which specific brain zones are involved.
+                          Challenge in sequence: Cortical → Subcortical → Cerebellum → Limbic → Prefrontal Cortex, etc.
+                          Find which specific brain zones are involved and write them down.
                         </p>
+                        <div className="p-3 bg-white/60 rounded-lg text-[11px] text-indigo-900 space-y-1 font-medium">
+                          <p>Examples from the demo:</p>
+                          <p>• Cerebellum + Thalamus</p>
+                          <p>• Right Prefrontal Cortex + Pons</p>
+                          <p>• Cortical → Subcortical → Left Limbic</p>
+                        </div>
                       </div>
 
                       <Input
@@ -746,10 +776,11 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                       <div className="p-5 bg-amber-50 rounded-xl border border-amber-100 space-y-3">
                         <div className="flex items-center gap-2">
                           <Info size={16} className="text-amber-600" />
-                          <p className="text-sm font-semibold text-amber-900">Gather context (optional)</p>
+                          <p className="text-sm font-semibold text-amber-900">Gather context (if needed)</p>
                         </div>
                         <p className="text-xs text-amber-800 leading-relaxed">
-                          Challenge: "Do we need more context?" If no, skip — don't get bogged down.
+                          Challenge: "Do we need more context?" If <strong>no</strong>, skip — don't get bogged down.
+                          Only go down this pathway if the system indicates more context is needed.
                         </p>
                       </div>
 
@@ -759,9 +790,10 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                           <Input
                             value={pendingLayer.contextAge || ""}
                             onChange={(e) => setPendingLayer({ ...pendingLayer, contextAge: e.target.value })}
-                            placeholder="e.g. Age 8-10"
+                            placeholder="e.g. Age 4, first 5 years"
                             className="rounded-xl bg-muted/50 text-sm h-10"
                           />
+                          <p className="text-[9px] text-muted-foreground/60">Timeline it: first/last half, decade, specific year</p>
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Life Event</label>
@@ -771,27 +803,33 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                             placeholder="e.g. Parents separation"
                             className="rounded-xl bg-muted/50 text-sm h-10"
                           />
+                          <p className="text-[9px] text-muted-foreground/60">Is there a specific event associated?</p>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-4 p-3 bg-muted/50 rounded-xl">
-                        <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={pendingLayer.contextInherited}
-                            onChange={(e) => setPendingLayer({ ...pendingLayer, contextInherited: e.target.checked })}
-                            className="rounded border-border"
-                          />
-                          Inherited
-                        </label>
-                        {pendingLayer.contextInherited && (
-                          <Input
-                            value={pendingLayer.contextParent || ""}
-                            onChange={(e) => setPendingLayer({ ...pendingLayer, contextParent: e.target.value })}
-                            placeholder="From Mom / Dad"
-                            className="h-9 rounded-xl bg-white text-sm w-40"
-                          />
-                        )}
+                      <div className="p-3 bg-muted/50 rounded-xl space-y-3">
+                        <div className="flex items-center gap-4">
+                          <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={pendingLayer.contextInherited}
+                              onChange={(e) => setPendingLayer({ ...pendingLayer, contextInherited: e.target.checked })}
+                              className="rounded border-border"
+                            />
+                            Inherited
+                          </label>
+                          {pendingLayer.contextInherited && (
+                            <Input
+                              value={pendingLayer.contextParent || ""}
+                              onChange={(e) => setPendingLayer({ ...pendingLayer, contextParent: e.target.value })}
+                              placeholder="From Mom / Dad"
+                              className="h-9 rounded-xl bg-white text-sm w-40"
+                            />
+                          )}
+                        </div>
+                        <p className="text-[9px] text-muted-foreground/60">
+                          Was it absorbed from someone else's energy field? From mom or dad?
+                        </p>
                       </div>
                     </div>
                   )}
@@ -805,12 +843,14 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                           <p className="text-sm font-semibold text-amber-900">Priority primary confirmed</p>
                         </div>
                         <p className="text-xs text-amber-800 leading-relaxed">
-                          You've gathered the full circuit. One correction on this can clear 5–10 layers.
+                          You've gathered the full circuit: emotion, organ, related muscles, brain zones, and context.
+                          One correction on this can clear 5–10 layers. That's why thorough assessment matters.
                         </p>
                       </div>
 
-                      <div className="p-4 bg-card rounded-xl border border-border space-y-2">
-                        <div className="flex items-center gap-2">
+                      <div className="p-4 bg-card rounded-xl border border-border space-y-3">
+                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Layer summary</p>
+                        <div className="flex items-center gap-2 flex-wrap">
                           <Badge className="bg-rose-100 text-rose-800 border-none text-xs">{pendingLayer.organ}</Badge>
                           <span className="text-foreground font-semibold text-sm">{pendingLayer.emotion}</span>
                           {pendingLayer.contextInherited && (
@@ -824,7 +864,17 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                         )}
                         {pendingLayer.relatedMuscles && (
                           <p className="text-xs text-muted-foreground">
-                            <span className="font-semibold">Muscles:</span> {pendingLayer.relatedMuscles}
+                            <span className="font-semibold">Related muscles:</span> {pendingLayer.relatedMuscles}
+                          </p>
+                        )}
+                        {pendingLayer.contextAge && (
+                          <p className="text-xs text-muted-foreground">
+                            <span className="font-semibold">Age/period:</span> {pendingLayer.contextAge}
+                          </p>
+                        )}
+                        {pendingLayer.contextEvent && (
+                          <p className="text-xs text-muted-foreground">
+                            <span className="font-semibold">Event:</span> {pendingLayer.contextEvent}
                           </p>
                         )}
                       </div>
@@ -845,21 +895,22 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                           <p className="text-sm font-semibold text-rose-900">Stim Heart Visceral Referral Zone</p>
                         </div>
                         <p className="text-xs text-rose-800 leading-relaxed">
-                          Lightly rub along the Heart Visceral Referral Zone — from the chest, over the shoulder, and down the ulnar (pinky) side of the left arm.
+                          Lightly rub along the Heart Visceral Referral Zone. This is a parasympathetic stimulus — the brain perceives the heart is being stimulated.
+                          <strong> Always do this first</strong> so the brain knows we're working on the Heart Wall.
                         </p>
                         <div className="p-3 bg-white/60 rounded-lg text-[11px] text-rose-900 space-y-1 font-medium">
                           <p>1. Left Chest / Precordium</p>
                           <p className="font-bold">2. → Left Shoulder & Upper Back</p>
-                          <p className="font-bold">3. → Medial aspect of Left Arm (ulnar/pinky side)</p>
+                          <p className="font-bold">3. → All the way down the ulnar (pinky) side of the Left Arm</p>
                           <p>4. Jaw / Neck (occasionally)</p>
                         </div>
                       </div>
 
                       <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
                         <p className="text-xs font-medium text-indigo-800 leading-relaxed">
-                          <strong>Intention cue:</strong> While holding, state in your mind:
-                          "{pendingLayer.organ}, {pendingLayer.emotion}, inherited from {pendingLayer.contextParent || 'origin'}."
-                          Keep repeating for the 3-minute period.
+                          <strong>Intention cue:</strong> While stimulating, state in your mind:
+                          "Heart wall, {pendingLayer.organ || 'organ'}, {pendingLayer.emotion || 'emotion'}{pendingLayer.contextInherited ? `, inherited from ${pendingLayer.contextParent || 'origin'}` : ''}."
+                          Keep repeating this over the 3-minute period — it anchors the correction.
                         </p>
                       </div>
                     </div>
@@ -874,17 +925,22 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                           <p className="text-sm font-semibold text-foreground">Hold organ pulse point or squeeze muscle</p>
                         </div>
                         <p className="text-xs text-muted-foreground leading-relaxed">
-                          Touch and hold the organ-specific pulse point identified during assessment.
-                          You can also squeeze the associated muscle.
+                          Touch and hold the organ-specific pulse point identified during assessment (e.g. deep on the left for Liver).
+                        </p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          Alternatively, because the organ and its muscle are on the same circuit, you can squeeze the associated muscle instead.
                         </p>
                         {pendingLayer.relatedMuscles && (
-                          <p className="text-xs text-muted-foreground font-medium">{pendingLayer.relatedMuscles}</p>
+                          <div className="p-3 bg-muted/50 rounded-lg">
+                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Associated muscles</p>
+                            <p className="text-xs text-foreground font-medium">{pendingLayer.relatedMuscles}</p>
+                          </div>
                         )}
                       </div>
                       <div className="p-4 bg-amber-50 rounded-xl border border-amber-100">
                         <p className="text-xs font-medium text-amber-800 leading-relaxed">
-                          <strong>Optional — Client Self-Help:</strong> Ask the client to place one hand on heart, the other on the organ.
-                          "Let them be friends again."
+                          <strong>Client self-help option:</strong> Ask the client to place one hand on their heart, the other on the organ.
+                          "Let them be friends again." This creates a self-soothing circuit while you hold or tap.
                         </p>
                       </div>
                     </div>
@@ -899,26 +955,31 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                           <p className="text-sm font-semibold text-indigo-900">Tap efferent brain zones</p>
                         </div>
                         <p className="text-xs text-indigo-800 leading-relaxed">
-                          Tap the identified brain zones simultaneously while holding the pulse point.
+                          Tap the identified brain zones <strong>simultaneously</strong> while holding the pulse point.
+                          This collapses the whole circuit — the emotion, organ, muscles, and brain zones all at once.
                         </p>
                         {pendingLayer.brainZones && (
-                          <p className="text-xs font-semibold text-indigo-900">{pendingLayer.brainZones}</p>
+                          <div className="p-3 bg-white/60 rounded-lg">
+                            <p className="text-[10px] font-bold text-indigo-700 uppercase mb-1">Identified zones</p>
+                            <p className="text-xs font-semibold text-indigo-900">{pendingLayer.brainZones}</p>
+                          </div>
                         )}
                         <div className="grid grid-cols-2 gap-3 mt-2">
                           <div className="p-3 bg-white/60 rounded-lg">
-                            <p className="text-[10px] font-bold text-indigo-700 uppercase">Standard</p>
-                            <p className="text-xs text-indigo-800 font-medium">3 firm swipes on each zone simultaneously</p>
+                            <p className="text-[10px] font-bold text-indigo-700 uppercase">Standard (3 min)</p>
+                            <p className="text-xs text-indigo-800 font-medium">Hold points and state the intention for 3 minutes. Keep repeating: "Heart wall, organ, emotion, inherited from…"</p>
                           </div>
                           <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
-                            <p className="text-[10px] font-bold text-amber-700 uppercase">If Inherited</p>
-                            <p className="text-xs text-amber-800 font-medium">Tap 10 times to clear the lineage pattern</p>
+                            <p className="text-[10px] font-bold text-amber-700 uppercase">If Inherited (10 swipes)</p>
+                            <p className="text-xs text-amber-800 font-medium">Tap 10 times if the emotion was inherited from a parent. Extra stimulus clears the lineage pattern.</p>
                           </div>
                         </div>
                       </div>
                       <div className="p-4 bg-muted rounded-xl border border-border">
                         <p className="text-xs font-medium text-muted-foreground leading-relaxed">
                           <strong>Alternative — Rocking:</strong> Activate the brain circuits ("activate, activate, activate") then do Harmonic Rocking.
-                          Rocking embodies the correction and generates a stronger somatic release.
+                          Rocking embodies the correction and often generates a stronger somatic release.
+                          Clients often remark they can feel something "leaving" — an energy moving, or electrical signals changing.
                         </p>
                       </div>
                     </div>
@@ -930,20 +991,24 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                       <div className="p-5 bg-emerald-50 rounded-xl border border-emerald-100 space-y-3">
                         <div className="flex items-center gap-2">
                           <RefreshCw size={16} className="text-emerald-600" />
-                          <p className="text-sm font-semibold text-emerald-900">Recheck muscles & count remaining layers</p>
+                          <p className="text-sm font-semibold text-emerald-900">Recheck — did the correction hold?</p>
                         </div>
-                        <p className="text-xs text-emerald-800 leading-relaxed">
-                          Re-test the associated muscles — they should now lock (strong).
-                          Wait for a parasympathetic shift: sigh, yawn, gurgle, or client reporting "a wave came up."
+                        <div className="space-y-2 text-xs text-emerald-800 leading-relaxed">
+                          <p><strong>1.</strong> Re-test the associated muscles — they should now <span className="italic font-semibold">lock</span> (strong).</p>
+                          <p><strong>2.</strong> Challenge the emotion: state "{pendingLayer.emotion}" again — the indicator should lock.</p>
+                          <p><strong>3.</strong> Re-count the heart wall layers: "More than 10? More than 20? 21, 22…?"</p>
+                        </div>
+                        <p className="text-xs text-emerald-700/70 italic">
+                          Wait for a parasympathetic shift before re-testing: sigh, yawn, gurgle, or client reporting "a wave came up" or "I can feel something leaving."
                         </p>
                       </div>
 
                       <div className="p-4 bg-card rounded-xl border border-border space-y-3">
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Layers remaining</p>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Layers remaining after correction</p>
                         <Input
                           value={layerCountInput}
                           onChange={(e) => setLayerCountInput(e.target.value.replace(/[^0-9]/g, ""))}
-                          placeholder="Layers remaining after this correction"
+                          placeholder="e.g. went from 36 to 22"
                           className="h-11 rounded-xl text-center text-lg font-semibold"
                           type="number"
                           min={0}

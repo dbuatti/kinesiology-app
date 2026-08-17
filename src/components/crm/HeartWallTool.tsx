@@ -18,8 +18,8 @@ import { useHeartWallSession } from "@/hooks/useHeartWallSession";
 import {
   HeartWallSession, HeartWallLayer, HeartWallLayerPhase, HeartWallLayerStatus,
 } from "@/types/crm";
-import { ROW_DATA } from "@/data/emotion-code-data";
-import HeartWallEmotionChart from "./HeartWallEmotionChart";
+import { ROW_DATA, EMOTION_CODE_CHART } from "@/data/emotion-code-data";
+import PulsePointPicker from "./PulsePointPicker";
 
 interface HeartWallToolProps {
   open: boolean;
@@ -63,6 +63,9 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
   const [pendingLayer, setPendingLayer] = useState<Partial<HeartWallLayer>>({});
   const [sessionNotes, setSessionNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [scanStep, setScanStep] = useState<0 | 1 | 2 | 3>(0);
+  const [scanColumn, setScanColumn] = useState<"A" | "B" | null>(null);
+  const [scanHalf, setScanHalf] = useState<"top" | "bottom" | null>(null);
 
   // Derive session state
   const layers = session?.layers || [];
@@ -71,6 +74,18 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
   const totalLayers = session?.initialLayerCount ?? layers.length;
   const layersRemaining = session?.layersRemaining ?? null;
   const currentStep = ALL_STEPS[stepIndex];
+
+  // Derive organ row from pending layer
+  const organRow = pendingLayer.organ
+    ? Number(Object.entries(ROW_DATA).find(([, v]) => v.organ === pendingLayer.organ)?.[0]) || null
+    : null;
+
+  // Derive narrowed emotions for scanning flow
+  const scanEmotions = useMemo(() => {
+    if (!organRow) return { columnA: [], columnB: [], all: [] };
+    const cell = EMOTION_CODE_CHART[organRow];
+    return { columnA: cell.columnA, columnB: cell.columnB, all: [...cell.columnA, ...cell.columnB] };
+  }, [organRow]);
 
   useEffect(() => {
     if (!session) return;
@@ -93,6 +108,25 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.id]);
+
+  // Reset scan step when navigating away from find-emotion or starting fresh
+  useEffect(() => {
+    const step = ALL_STEPS[stepIndex];
+    if (step?.phase !== "find-emotion") {
+      setScanStep(0);
+      setScanColumn(null);
+      setScanHalf(null);
+    } else if (step?.phase === "find-emotion") {
+      // Restore scan progress from pending layer
+      if (pendingLayer.organ && pendingLayer.emotion) {
+        setScanStep(3);
+      } else if (pendingLayer.organ) {
+        setScanStep(1);
+      } else {
+        setScanStep(0);
+      }
+    }
+  }, [stepIndex, pendingLayer.organ, pendingLayer.emotion]);
 
   // ─── Setup ────────────────────────────────────────
   const handleStart = async () => {
@@ -255,9 +289,9 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col p-0">
         {/* ── Header ─────────────────────────────────── */}
-        <DialogHeader className="p-6 pb-4 sticky top-0 bg-card z-10 border-b border-border">
+        <DialogHeader className="p-6 pb-4 shrink-0 border-b border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center">
@@ -328,7 +362,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
         </DialogHeader>
 
         {/* ── Body ──────────────────────────────────── */}
-        <div className="p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto min-h-0 p-6 space-y-6">
 
           {/* ═══ SETUP ═══ */}
           {uiState === "setup" && (
@@ -430,46 +464,222 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
 
                   {/* ─ Find Emotion ─ */}
                   {currentStep.phase === "find-emotion" && (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <div className="p-4 bg-rose-50 rounded-xl border border-rose-100 space-y-2">
                         <div className="flex items-center gap-2">
                           <Heart size={16} className="text-rose-600" />
                           <p className="text-sm font-semibold text-rose-900">Find the priority primary emotion</p>
                         </div>
                         <p className="text-xs text-rose-700 leading-relaxed">
-                          Use pulse points to find the organ, then scan the chart.
-                          "Is it in column A? Column B? Top half? This one?"
+                          Scan step by step: pulse point → organ → column → half → emotion.
                         </p>
                       </div>
 
-                      <div className="p-3 bg-muted rounded-lg text-xs space-y-1.5">
-                        <p className="font-bold text-foreground">Pulse Point Order:</p>
-                        <ol className="space-y-1 pl-4 list-decimal text-muted-foreground">
-                          <li>Challenge right pulse points → deep touch → Lung / Colon</li>
-                          <li>Challenge left pulse points → deep touch → Liver / Gallbladder</li>
-                          <li>Once organ identified → go directly to that row in the Emotion Chart</li>
-                        </ol>
+                      {/* Scan progress */}
+                      <div className="flex items-center gap-1.5">
+                        {["Pulse", "Column", "Half", "Emotion"].map((label, i) => (
+                          <div key={label} className="flex-1 flex flex-col items-center gap-1">
+                            <div className={cn(
+                              "w-full h-1.5 rounded-full transition-colors",
+                              i <= scanStep ? "bg-rose-500" : "bg-muted",
+                            )} />
+                            <span className={cn(
+                              "text-[9px] font-semibold uppercase tracking-wider",
+                              i === scanStep ? "text-rose-700" : "text-muted-foreground/60",
+                            )}>{label}</span>
+                          </div>
+                        ))}
                       </div>
 
-                      {pendingLayer.organ && (
-                        <Badge className="bg-rose-100 text-rose-800 border-none text-xs">
-                          Known organ: {pendingLayer.organ}
-                        </Badge>
+                      {/* Step 0: Pulse Point Picker */}
+                      {scanStep === 0 && (
+                        <div className="space-y-3">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            1. Tap the pulse point — which organ lights up?
+                          </p>
+                          <div className="p-4 bg-card rounded-xl border border-border">
+                            <PulsePointPicker
+                              selectedRow={organRow}
+                              onSelect={(rowNum) => {
+                                const organ = ROW_DATA[rowNum]?.organ || null;
+                                setPendingLayer({
+                                  ...pendingLayer,
+                                  organ,
+                                  relatedMuscles: ROW_DATA[rowNum]?.muscles || null,
+                                });
+                                setScanStep(1);
+                              }}
+                            />
+                          </div>
+                        </div>
                       )}
 
-                      <HeartWallEmotionChart
-                        selectedEmotion={pendingLayer.emotion}
-                        onSelect={(emotion, rowNum) => {
-                          const organ = ROW_DATA[rowNum]?.organ || null;
-                          setPendingLayer({
-                            ...pendingLayer,
-                            emotion,
-                            organ,
-                            relatedMuscles: ROW_DATA[rowNum]?.muscles || null,
-                          });
-                        }}
-                        knownOrganRow={pendingLayer.organ ? Object.entries(ROW_DATA).find(([, v]) => v.organ === pendingLayer.organ)?.[0] ? Number(Object.entries(ROW_DATA).find(([, v]) => v.organ === pendingLayer.organ)?.[0]) : null : null}
-                      />
+                      {/* Step 1: Column A or B */}
+                      {scanStep === 1 && organRow && (
+                        <div className="space-y-3">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            2. Challenge: "Is it in <span className="text-rose-600">Column A</span> or <span className="text-rose-600">Column B</span>?"
+                          </p>
+                          <div className="p-4 bg-card rounded-xl border border-border">
+                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                              {pendingLayer.organ}
+                            </p>
+                            <div className="grid grid-cols-2 gap-3">
+                              <button
+                                onClick={() => { setScanColumn("A"); setScanHalf(null); setScanStep(2); }}
+                                className="p-4 rounded-xl border-2 border-border hover:border-rose-300 hover:bg-rose-50 transition-all text-left group"
+                              >
+                                <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mb-2">Column A</p>
+                                <div className="space-y-1">
+                                  {scanEmotions.columnA.map(e => (
+                                    <p key={e} className="text-xs text-foreground font-medium">{e}</p>
+                                  ))}
+                                </div>
+                              </button>
+                              <button
+                                onClick={() => { setScanColumn("B"); setScanHalf(null); setScanStep(2); }}
+                                className="p-4 rounded-xl border-2 border-border hover:border-rose-300 hover:bg-rose-50 transition-all text-left group"
+                              >
+                                <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mb-2">Column B</p>
+                                <div className="space-y-1">
+                                  {scanEmotions.columnB.map(e => (
+                                    <p key={e} className="text-xs text-foreground font-medium">{e}</p>
+                                  ))}
+                                </div>
+                              </button>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => setScanStep(0)}
+                            className="text-[10px] text-muted-foreground hover:text-foreground font-medium"
+                          >
+                            ← Change organ
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Step 2: Top or Bottom half */}
+                      {scanStep === 2 && scanColumn && organRow && (
+                        <div className="space-y-3">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            3. Challenge: "Top half or bottom half?"
+                          </p>
+                          <div className="p-4 bg-card rounded-xl border border-border">
+                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                              {pendingLayer.organ} — Column {scanColumn}
+                            </p>
+                            {(() => {
+                              const colEmotions = scanColumn === "A" ? scanEmotions.columnA : scanEmotions.columnB;
+                              const mid = Math.ceil(colEmotions.length / 2);
+                              const topHalf = colEmotions.slice(0, mid);
+                              const bottomHalf = colEmotions.slice(mid);
+                              return (
+                                <div className="grid grid-cols-2 gap-3">
+                                  <button
+                                    onClick={() => { setScanHalf("top"); setScanStep(3); }}
+                                    className="p-4 rounded-xl border-2 border-border hover:border-rose-300 hover:bg-rose-50 transition-all text-left"
+                                  >
+                                    <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mb-2">Top Half</p>
+                                    <div className="space-y-1">
+                                      {topHalf.map(e => (
+                                        <p key={e} className="text-xs text-foreground font-medium">{e}</p>
+                                      ))}
+                                    </div>
+                                  </button>
+                                  <button
+                                    onClick={() => { setScanHalf("bottom"); setScanStep(3); }}
+                                    className="p-4 rounded-xl border-2 border-border hover:border-rose-300 hover:bg-rose-50 transition-all text-left"
+                                  >
+                                    <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mb-2">Bottom Half</p>
+                                    <div className="space-y-1">
+                                      {bottomHalf.map(e => (
+                                        <p key={e} className="text-xs text-foreground font-medium">{e}</p>
+                                      ))}
+                                    </div>
+                                  </button>
+                                </div>
+                              );
+                            })()}
+                          </div>
+                          <button
+                            onClick={() => { setScanHalf(null); setScanStep(1); }}
+                            className="text-[10px] text-muted-foreground hover:text-foreground font-medium"
+                          >
+                            ← Change column
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Step 3: Pick the specific emotion */}
+                      {scanStep === 3 && scanColumn && scanHalf && organRow && (
+                        <div className="space-y-3">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            4. Challenge each one: "Is it this one?"
+                          </p>
+                          <div className="p-4 bg-card rounded-xl border border-border">
+                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                              {pendingLayer.organ} — Column {scanColumn} — {scanHalf === "top" ? "Top" : "Bottom"} Half
+                            </p>
+                            {(() => {
+                              const colEmotions = scanColumn === "A" ? scanEmotions.columnA : scanEmotions.columnB;
+                              const mid = Math.ceil(colEmotions.length / 2);
+                              const options = scanHalf === "top" ? colEmotions.slice(0, mid) : colEmotions.slice(mid);
+                              return (
+                                <div className="flex flex-wrap gap-2">
+                                  {options.map(emotion => {
+                                    const isSelected = pendingLayer.emotion === emotion;
+                                    return (
+                                      <button
+                                        key={emotion}
+                                        onClick={() => {
+                                          setPendingLayer({
+                                            ...pendingLayer,
+                                            emotion,
+                                            columnA: scanColumn === "A",
+                                          });
+                                        }}
+                                        className={cn(
+                                          "px-4 py-2.5 rounded-xl text-sm font-semibold transition-all border-2",
+                                          isSelected
+                                            ? "bg-rose-600 text-white border-rose-600 shadow-md"
+                                            : "bg-white text-foreground border-border hover:border-rose-300 hover:bg-rose-50",
+                                        )}
+                                      >
+                                        {emotion}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            })()}
+                          </div>
+                          <button
+                            onClick={() => { setScanHalf(null); setScanStep(2); }}
+                            className="text-[10px] text-muted-foreground hover:text-foreground font-medium"
+                          >
+                            ← Change half
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Selected emotion summary */}
+                      {pendingLayer.emotion && (
+                        <div className="p-3 bg-rose-50 rounded-xl border border-rose-100 flex items-center gap-3">
+                          <CheckCircle2 size={16} className="text-rose-600 shrink-0" />
+                          <div>
+                            <p className="text-sm font-semibold text-rose-900">{pendingLayer.emotion}</p>
+                            <p className="text-[10px] text-rose-600">
+                              {pendingLayer.organ} — Column {pendingLayer.columnA ? "A" : "B"}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => { setPendingLayer({ ...pendingLayer, emotion: null }); setScanStep(3); }}
+                            className="ml-auto text-[10px] text-rose-600 hover:text-rose-800 font-medium"
+                          >
+                            Change
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -857,7 +1067,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
 
         {/* ── Footer ─────────────────────────────────── */}
         {uiState === "working" && (
-          <DialogFooter className="p-6 pt-0 sticky bottom-0 bg-card border-t border-border flex-row gap-3">
+          <DialogFooter className="p-6 pt-4 shrink-0 border-t border-border flex-row gap-3">
             {stepIndex > 0 && (
               <Button
                 onClick={goBack}
@@ -906,11 +1116,11 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
         )}
 
         {uiState === "setup" && (
-          <DialogFooter className="p-6 pt-0" />
+          <DialogFooter className="p-6 pt-4 shrink-0" />
         )}
 
         {uiState === "summary" && (
-          <DialogFooter className="p-6 pt-0 sticky bottom-0 bg-card border-t border-border flex-row gap-3">
+          <DialogFooter className="p-6 pt-4 shrink-0 border-t border-border flex-row gap-3">
             <Button
               onClick={() => { startNewLayer(); setUiState("working"); }}
               variant="outline"

@@ -294,13 +294,17 @@ export const syncClientToNotion = async (client: any, supabase: any, notionHeade
     clientPageUrl = createData.url;
   }
 
-  // Update client in Supabase with Notion details
-  console.log(`[client-sync] Updating client in Supabase with Notion details`);
+  // Update client in Supabase with Notion details + calculated session stats
+  console.log(`[client-sync] Updating client in Supabase with Notion details + session stats`);
   const { error: updateError } = await supabase
     .from('clients')
     .update({
       notion_page_id: clientPageId,
-      notion_link: clientPageUrl
+      notion_link: clientPageUrl,
+      first_session_date: firstSessionDate || null,
+      most_recent_session: mostRecentSession || null,
+      total_sessions: totalSessions || null,
+      status: autoStatus || null,
     })
     .eq('id', client.id);
 

@@ -13,7 +13,38 @@ export const syncClientToNotion = async (client: any, supabase: any, notionHeade
   const schema = await fetchDatabaseSchema(CLIENTS_DB_ID, notionHeaders);
   const emergencyContact = [client.emergency_contact_name, client.emergency_contact_phone].filter(Boolean).join(' - ');
 
+  // Auto-calculate session stats from appointments
+  let firstSessionDate = client.first_session_date;
+  let mostRecentSession = client.most_recent_session;
+  let totalSessions = client.total_sessions;
+  let autoStatus = client.status;
+
+  try {
+    const { data: appointments } = await supabase
+      .from('appointments')
+      .select('date, status')
+      .eq('client_id', client.id)
+      .in('status', ['Completed', 'Scheduled'])
+      .order('date', { ascending: true });
+
+    if (appointments && appointments.length > 0) {
+      firstSessionDate = appointments[0].date;
+      mostRecentSession = appointments[appointments.length - 1].date;
+      totalSessions = appointments.length;
+
+      // Auto-set status based on recency
+      if (!autoStatus || autoStatus === 'Active' || autoStatus === 'Inactive') {
+        const lastDate = new Date(appointments[appointments.length - 1].date);
+        const daysSinceLastSession = Math.floor((Date.now() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+        autoStatus = daysSinceLastSession > 90 ? 'Inactive' : 'Active';
+      }
+    }
+  } catch (e) {
+    console.warn(`[client-sync] Could not calculate session stats for ${client.name}:`, e.message);
+  }
+
   const fieldMappings = [
+    // Existing fields
     { value: client.name, possibleNames: ['Name', 'Client Name', 'Full Name'] },
     { value: client.email, possibleNames: ['Email', 'Email Address'] },
     { value: client.phone, possibleNames: ['Phone', 'Phone Number', 'Contact Number', 'Mobile'] },
@@ -27,7 +58,30 @@ export const syncClientToNotion = async (client: any, supabase: any, notionHeade
     { value: client.current_stress_level, possibleNames: ['Current Stress Level', 'Stress Level', 'Stress'] },
     { value: emergencyContact, possibleNames: ['Emergency Contact', 'Emergency Contact Details'] },
     { value: client.referral_source, possibleNames: ['Referral Source', 'Referral', 'How did you find me'] },
-    { value: `${origin}/clients/${client.id}`, possibleNames: ['CRM Link', 'Link', 'URL', 'Client Link'] }
+    { value: `${origin}/clients/${client.id}`, possibleNames: ['CRM Link', 'Link', 'URL', 'Client Link'] },
+    // New clinical tracking fields
+    { value: client.status, possibleNames: ['Status'] },
+    { value: client.programme, possibleNames: ['Programme', 'Program'] },
+    { value: client.primary_presentation, possibleNames: ['Primary Presentation', 'Presentation'] },
+    { value: client.priority_pathways, possibleNames: ['Priority Pathways', 'Pathways'] },
+    { value: client.corrections_holding, possibleNames: ['Corrections Holding?', 'Corrections Holding', 'Corrections'] },
+    // Session tracking (auto-calculated)
+    { value: firstSessionDate, possibleNames: ['First Session Date', 'First Session'] },
+    { value: mostRecentSession, possibleNames: ['Most Recent Session', 'Last Session', 'Recent Session'] },
+    { value: totalSessions, possibleNames: ['Total Sessions', 'Session Count'] },
+    // Auto-calculated status (only set if we derived it)
+    { value: autoStatus, possibleNames: ['Status'] },
+    // Session notes
+    { value: client.homework_assigned, possibleNames: ['Homework Assigned', 'Homework'] },
+    { value: client.next_session_focus, possibleNames: ['Next Session Focus', 'Next Focus'] },
+    // Admin
+    { value: client.intake_submitted_at ? true : false, possibleNames: ['Intake Form Completed?', 'Intake Completed', 'Intake Form'] },
+    { value: client.consent_signed, possibleNames: ['Consent Signed?', 'Consent Signed', 'Consent'] },
+    { value: client.additional_notes || client.medical_history, possibleNames: ['Notes', 'General Notes'] },
+    // Intake form goals
+    { value: client.goal_working, possibleNames: ['Goal — Working', 'Goal Working', 'What "working" looks like'] },
+    { value: client.goal_12_sessions, possibleNames: ['Goal — 12 Sessions', 'Goal 12 Sessions', '12 Session Goal'] },
+    { value: client.goal_safe_feeling, possibleNames: ['Goal — Safe Feeling', 'Goal Safe Feeling', 'What helps me feel safe'] }
   ];
 
   const clientProps = {};

@@ -1,13 +1,14 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Layers, Sparkles, Users, Calendar } from "lucide-react";
+import { Layers, Sparkles, Users, Calendar, Database } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import SettingsActionCard from "./SettingsActionCard";
 
 const NotionSettings = () => {
   const [configuringNotion, setConfiguringNotion] = useState(false);
+  const [configuringFnh, setConfiguringFnh] = useState(false);
   const [syncingNotionAll, setSyncingNotionAll] = useState(false);
   const [syncingAppointmentsAll, setSyncingAppointmentsAll] = useState(false);
 
@@ -26,6 +27,25 @@ const NotionSettings = () => {
       showError(err.message || "Failed to configure Notion databases. Ensure your Notion integration has edit access.");
     } finally {
       setConfiguringNotion(false);
+    }
+  };
+
+  const handleConfigureFnhSchema = async () => {
+    setConfiguringFnh(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('configure-fnh-schema', {
+        body: { step: 'all' }
+      });
+      if (error) throw error;
+      const results = data.results || {};
+      const summary = Object.entries(results)
+        .map(([k, v]: [string, any]) => `${k}: ${v.success ? '✓' : '✗'}`)
+        .join(', ');
+      showSuccess(`FNH Schema configured! ${summary}`);
+    } catch (err: any) {
+      showError(err.message || "Failed to configure FNH schema.");
+    } finally {
+      setConfiguringFnh(false);
     }
   };
 
@@ -83,6 +103,18 @@ const NotionSettings = () => {
             onClick={handleConfigureNotionSchema}
             loading={configuringNotion}
             themeColor="purple"
+          />
+        </div>
+
+        <div className="w-full">
+          <SettingsActionCard
+            title="FNH Client Database Schema"
+            description="Create the Session Notes database, add clinical tracking fields (Status, Programme, Sessions), and set up the full FNH schema in Notion."
+            buttonText="Configure FNH Schema"
+            buttonIcon={Database}
+            onClick={handleConfigureFnhSchema}
+            loading={configuringFnh}
+            themeColor="violet"
           />
         </div>
 

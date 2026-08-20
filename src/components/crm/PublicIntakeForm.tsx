@@ -65,6 +65,9 @@ const formSchema = z.object({
   most_craved_human_need: z.string().min(1, "This field is required"),
   startled_by_loud_noises: z.string().min(1, "This field is required"),
   emotional_regulation_time: z.string().optional(),
+  goal_working: z.string().optional(),
+  goal_12_sessions: z.string().optional(),
+  goal_safe_feeling: z.string().optional(),
   additional_notes: z.string().optional(),
 });
 
@@ -150,6 +153,9 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
       most_craved_human_need: (initialData as any)?.most_craved_human_need || "",
       startled_by_loud_noises: (initialData as any)?.startled_by_loud_noises || "",
       emotional_regulation_time: (initialData as any)?.emotional_regulation_time || "",
+      goal_working: (initialData as any)?.goal_working || "",
+      goal_12_sessions: (initialData as any)?.goal_12_sessions || "",
+      goal_safe_feeling: (initialData as any)?.goal_safe_feeling || "",
       additional_notes: (initialData as any)?.additional_notes || "",
     },
   });
@@ -201,8 +207,12 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
         most_craved_human_need: values.most_craved_human_need,
         startled_by_loud_noises: values.startled_by_loud_noises,
         emotional_regulation_time: values.emotional_regulation_time || null,
+        goal_working: values.goal_working || null,
+        goal_12_sessions: values.goal_12_sessions || null,
+        goal_safe_feeling: values.goal_safe_feeling || null,
         additional_notes: values.additional_notes || null,
         intake_submitted_at: new Date().toISOString(),
+        status: 'Active',
       };
 
       const { error: clientError } = await supabase
@@ -284,6 +294,13 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
+        {/* Opening Note */}
+        <div className="p-6 bg-muted/30 rounded-xl border border-border">
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Welcome — this form helps me understand what has been happening for you, what your nervous system may be responding to, and what you would most like to change. There are no right or wrong answers, just share what feels true for you right now.
+          </p>
+        </div>
+
         {/* Personal Information */}
         <div className="space-y-6">
           <SectionHeader icon={User} title="Personal Information" color="bg-primary" />
@@ -414,14 +431,14 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             )} />
             <FormField control={form.control} name="chief_complaint" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">What is your Chief Complaint? How long have you been suffering with it? <span className="text-destructive">*</span></FormLabel>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">What is the main thing you would like help with? How long has this been going on? <span className="text-destructive">*</span></FormLabel>
                 <FormControl><Textarea placeholder="Describe your main concern and duration..." className="min-h-[80px] rounded-xl border-border text-base resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="health_problem_severity" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Do you consider your health problems to be:</FormLabel>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">How intense or disruptive does this feel right now?</FormLabel>
                 <FormControl>
                   <RadioGroup value={field.value} onValueChange={field.onChange} className="flex flex-wrap gap-3">
                     {["Mild", "Moderate", "Severe", "Extreme"].map((opt) => (
@@ -437,7 +454,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             )} />
             <FormField control={form.control} name="seen_medical_doctor" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Have you seen a Medical Doctor for these conditions? <span className="text-destructive">*</span></FormLabel>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Have you seen a medical doctor or specialist for this? <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <RadioGroup value={field.value} onValueChange={field.onChange} className="flex gap-4">
                     <div className="flex items-center gap-2"><RadioGroupItem value="true" id="doctor-yes" /><label htmlFor="doctor-yes" className="text-sm cursor-pointer">Yes</label></div>
@@ -456,7 +473,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <FormField control={form.control} name="symptoms_worse_stress" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Do your symptoms get worse with Stress? <span className="text-destructive">*</span></FormLabel>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Do symptoms get worse when stressed? <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <RadioGroup value={field.value} onValueChange={field.onChange} className="flex gap-4">
                     <div className="flex items-center gap-2"><RadioGroupItem value="true" id="stress-yes" /><label htmlFor="stress-yes" className="text-sm cursor-pointer">Yes</label></div>
@@ -468,7 +485,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             )} />
             <FormField control={form.control} name="symptoms_worse_fatigue" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Do your symptoms get worse with Fatigue? <span className="text-destructive">*</span></FormLabel>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Do symptoms get worse when tired or run down? <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <RadioGroup value={field.value} onValueChange={field.onChange} className="flex gap-4">
                     <div className="flex items-center gap-2"><RadioGroupItem value="true" id="fatigue-yes" /><label htmlFor="fatigue-yes" className="text-sm cursor-pointer">Yes</label></div>
@@ -481,10 +498,10 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
           </div>
           <FormField control={form.control} name="pain_movement" render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Is your pain or symptoms better for movement or worse for movement?</FormLabel>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">How does movement affect your symptoms?</FormLabel>
               <FormControl>
                 <RadioGroup value={field.value} onValueChange={field.onChange} className="flex flex-wrap gap-3">
-                  {["Better for movement", "Worse for movement", "Both", "Other"].map((opt) => (
+                  {["Better", "Worse", "Both", "Other"].map((opt) => (
                     <div key={opt} className="flex items-center gap-2">
                       <RadioGroupItem value={opt} id={`movement-${opt}`} />
                       <label htmlFor={`movement-${opt}`} className="text-sm cursor-pointer">{opt}</label>
@@ -498,7 +515,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
           <FormField control={form.control} name="current_stress_level" render={({ field }) => (
             <FormItem className="space-y-4 p-6 bg-muted/30 rounded-xl border border-border">
               <div className="flex items-center justify-between">
-                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Current Stress Level (1-10) <span className="text-destructive">*</span></FormLabel>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Current stress level out of 10 <span className="text-destructive">*</span></FormLabel>
                 <span className="text-2xl font-black text-primary">{field.value}</span>
               </div>
               <FormControl>
@@ -533,8 +550,8 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             )} />
             <FormField control={form.control} name="therapies_success" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">How successful were they?</FormLabel>
-                <FormControl><Input placeholder="e.g. Somewhat, Very, Not at all" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">What helped, what didn't, and did anything make you feel worse?</FormLabel>
+                <FormControl><Textarea placeholder="Your answer..." className="min-h-[80px] rounded-xl border-border text-base resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
@@ -547,14 +564,14 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
           <div className="space-y-5">
             <FormField control={form.control} name="specific_illnesses" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Do you have any specific illnesses occurring from time to time?</FormLabel>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Do you experience illnesses, infections, or flare-ups that come and go? Describe.</FormLabel>
                 <FormControl><Input placeholder="e.g. Migraines, sinus infections, etc." {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />
             <FormField control={form.control} name="allergies_asthma" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Do you have any allergies, asthma or suffer from anaphylaxis? If so what type?</FormLabel>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Do you experience allergies, asthma, anaphylaxis, or immune-type reactions?</FormLabel>
                 <FormControl><Input placeholder="Describe..." {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
@@ -582,10 +599,10 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             </div>
             <FormField control={form.control} name="energy_worse_time" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Is your energy worse in the Morning or Afternoon?</FormLabel>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">When does your energy tend to dip or crash?</FormLabel>
                 <FormControl>
                   <RadioGroup value={field.value} onValueChange={field.onChange} className="flex flex-wrap gap-3">
-                    {["Worse in morning", "Worse in afternoon", "Unsure", "N/A"].map((opt) => (
+                    {["Morning", "Afternoon", "Unsure", "N/A"].map((opt) => (
                       <div key={opt} className="flex items-center gap-2">
                         <RadioGroupItem value={opt} id={`energy-${opt}`} />
                         <label htmlFor={`energy-${opt}`} className="text-sm cursor-pointer">{opt}</label>
@@ -619,7 +636,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
           <div className="space-y-5">
             <FormField control={form.control} name="sleep_schedule" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">What time do you go to bed and wake up?</FormLabel>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Usual sleep/wake times</FormLabel>
                 <FormControl><Input placeholder="e.g. 10:30pm – 6:30am" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
                 <FormMessage />
               </FormItem>
@@ -633,7 +650,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             )} />
             <FormField control={form.control} name="concussion_history" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Do you have a history of Concussions, Head Injury or Whiplash? <span className="text-destructive">*</span></FormLabel>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Have you ever had a concussion, head injury, whiplash, or significant knock to the head? <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <RadioGroup value={field.value} onValueChange={field.onChange} className="flex gap-4">
                     <div className="flex items-center gap-2"><RadioGroupItem value="true" id="concussion-yes" /><label htmlFor="concussion-yes" className="text-sm cursor-pointer">Yes</label></div>
@@ -645,7 +662,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             )} />
             <FormField control={form.control} name="concussion_details" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">How many concussions have you had, at what time and where did you hit your head?</FormLabel>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">If yes — what happened, how old were you, and where did you injure yourself?</FormLabel>
                 <FormControl><Textarea placeholder="Details..." className="min-h-[80px] rounded-xl border-border text-base resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
@@ -658,10 +675,10 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
           <SectionHeader icon={Heart} title="Birth History" color="bg-pink-600" />
           <FormField control={form.control} name="birthing_experience" render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">What was your birthing experience like? <span className="text-destructive">*</span></FormLabel>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Birth experience <span className="text-destructive">*</span></FormLabel>
               <FormControl>
                 <RadioGroup value={field.value} onValueChange={field.onChange} className="flex flex-wrap gap-3">
-                  {["Natural (no complications)", "Cesarian", "Induced", "Premature", "Blood loss/early hospitalisation"].map((opt) => (
+                  {["Natural", "Cesarean", "Induced", "Premature", "Blood loss/early hospitalisation", "Unsure"].map((opt) => (
                     <div key={opt} className="flex items-center gap-2">
                       <RadioGroupItem value={opt} id={`birth-${opt}`} />
                       <label htmlFor={`birth-${opt}`} className="text-sm cursor-pointer">{opt}</label>
@@ -680,7 +697,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
           <div className="space-y-5">
             <FormField control={form.control} name="avoided_emotion" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Which emotion do you avoid feeling the most? <span className="text-destructive">*</span></FormLabel>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Which feeling do you tend to avoid most? <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <RadioGroup value={field.value} onValueChange={field.onChange} className="flex flex-wrap gap-3">
                     {["Fear", "Worry", "Anger", "Sadness", "Hurt"].map((opt) => (
@@ -696,10 +713,10 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             )} />
             <FormField control={form.control} name="craved_emotion" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Which emotion/experience do you crave to experience the most? <span className="text-destructive">*</span></FormLabel>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Which feeling or experience do you most want more of? <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <RadioGroup value={field.value} onValueChange={field.onChange} className="flex flex-wrap gap-3">
-                    {["Love", "Care (to be cared for)", "Acceptance", "Safety/Security", "Feeling Worthy/Valued"].map((opt) => (
+                    {["Love", "Care", "Acceptance", "Safety", "Feeling Worthy"].map((opt) => (
                       <div key={opt} className="flex items-center gap-2">
                         <RadioGroupItem value={opt} id={`crave-${opt}`} />
                         <label htmlFor={`crave-${opt}`} className="text-sm cursor-pointer">{opt}</label>
@@ -712,13 +729,13 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             )} />
             <FormField control={form.control} name="stress_response" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">What is your default response under stress? <span className="text-destructive">*</span></FormLabel>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">When life feels too much, your system usually: <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <RadioGroup value={field.value} onValueChange={field.onChange} className="flex flex-wrap gap-3">
-                    {["Flight (withdraw and run away)", "Fight (get angry or defensive)", "Freeze", "Immobilisation", "Fawn (people pleasing)", "Stay calm (alert without arousal)"].map((opt) => (
+                    {["Flight", "Fight", "Freeze", "Immobilisation", "Fawn/people-pleasing", "Stay calm"].map((opt) => (
                       <div key={opt} className="flex items-center gap-2">
                         <RadioGroupItem value={opt} id={`stress-resp-${opt}`} />
-                        <label htmlFor={`stress-resp-${opt}`} className="text-sm cursor-pointer">{opt.slice(0, 40)}</label>
+                        <label htmlFor={`stress-resp-${opt}`} className="text-sm cursor-pointer">{opt}</label>
                       </div>
                     ))}
                   </RadioGroup>
@@ -728,7 +745,7 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             )} />
             <FormField control={form.control} name="most_craved_human_need" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Which of the following human needs do you crave the most? <span className="text-destructive">*</span></FormLabel>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">What are you craving most right now? <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <RadioGroup value={field.value} onValueChange={field.onChange} className="flex flex-wrap gap-3">
                     {["Certainty/Safety", "Uncertainty/Variety", "Significance", "Connection/Love", "Growth", "Contribution"].map((opt) => (
@@ -744,10 +761,10 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             )} />
             <FormField control={form.control} name="startled_by_loud_noises" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Do you get startled by loud noises? <span className="text-destructive">*</span></FormLabel>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Do loud noises or sudden sounds startle you easily? <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
                   <RadioGroup value={field.value} onValueChange={field.onChange} className="flex flex-wrap gap-3">
-                    {["Yes", "No", "Sometimes/Depends"].map((opt) => (
+                    {["Yes", "No", "Sometimes"].map((opt) => (
                       <div key={opt} className="flex items-center gap-2">
                         <RadioGroupItem value={opt} id={`startle-${opt}`} />
                         <label htmlFor={`startle-${opt}`} className="text-sm cursor-pointer">{opt}</label>
@@ -760,8 +777,36 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
             )} />
             <FormField control={form.control} name="emotional_regulation_time" render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">When you are emotionally triggered, how long does it take to calm yourself down?</FormLabel>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">When emotionally triggered, how long does it usually take to settle?</FormLabel>
                 <FormControl><Input placeholder="e.g. Minutes, Hours, Days" {...field} className="h-12 rounded-xl border-border text-base focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+          </div>
+        </div>
+
+        {/* Goals & Expectations */}
+        <div className="space-y-6">
+          <SectionHeader icon={Brain} title="Goals & Expectations" color="bg-indigo-600" />
+          <div className="space-y-5">
+            <FormField control={form.control} name="goal_working" render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">What would "this is working" look like for you? How much better, and by when?</FormLabel>
+                <FormControl><Textarea placeholder="Your answer..." className="min-h-[80px] rounded-xl border-border text-base resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="goal_12_sessions" render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">If we work together for 12 sessions, what would you most want to be different?</FormLabel>
+                <FormControl><Textarea placeholder="Your answer..." className="min-h-[80px] rounded-xl border-border text-base resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
+            <FormField control={form.control} name="goal_safe_feeling" render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-xs font-bold uppercase tracking-widest text-muted-foreground">What helps you feel safe, supported, calm, or more like yourself?</FormLabel>
+                <FormControl><Textarea placeholder="Your answer..." className="min-h-[80px] rounded-xl border-border text-base resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )} />

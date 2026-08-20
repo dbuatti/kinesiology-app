@@ -16,7 +16,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
-import { Loader2, User, Activity, ShieldAlert, CheckCircle2, CalendarPlus } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, User, Activity, ShieldAlert, CheckCircle2, CalendarPlus, Stethoscope } from "lucide-react";
 import { showSuccess, showError } from "@/utils/toast";
 import { Client } from "@/types/crm";
 import { cn } from "@/lib/utils";
@@ -42,6 +43,12 @@ const formSchema = z.object({
   digestive_health: z.string().optional(),
   medical_history: z.string().optional(),
   referral_source: z.string().optional(),
+  status: z.string().optional(),
+  programme: z.string().optional(),
+  priority_pathways: z.string().optional(),
+  corrections_holding: z.string().optional(),
+  homework_assigned: z.string().optional(),
+  next_session_focus: z.string().optional(),
 });
 
 interface ClientFormProps {
@@ -79,6 +86,12 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
       digestive_health: initialData?.digestive_health || "",
       medical_history: initialData?.medical_history || "",
       referral_source: initialData?.referral_source || "",
+      status: (initialData as any)?.status || "",
+      programme: (initialData as any)?.programme || "",
+      priority_pathways: (initialData as any)?.priority_pathways || "",
+      corrections_holding: (initialData as any)?.corrections_holding || "",
+      homework_assigned: (initialData as any)?.homework_assigned || "",
+      next_session_focus: (initialData as any)?.next_session_focus || "",
     },
   });
 
@@ -117,6 +130,12 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
         digestive_health: values.digestive_health || null,
         medical_history: values.medical_history || null,
         referral_source: values.referral_source || null,
+        status: values.status || null,
+        programme: values.programme || null,
+        priority_pathways: values.priority_pathways || null,
+        corrections_holding: values.corrections_holding || null,
+        homework_assigned: values.homework_assigned || null,
+        next_session_focus: values.next_session_focus || null,
       };
 
       if (initialData?.id) {
@@ -363,6 +382,122 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
                   <span>Low</span>
                   <span>High</span>
                 </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Clinical Tracking Section */}
+        <div className="space-y-4">
+          <SectionHeader icon={Stethoscope} title="Clinical Tracking" color="text-violet-500" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Status</FormLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger className="h-12 rounded-xl border-border">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Active">Active</SelectItem>
+                      <SelectItem value="Inactive">Inactive</SelectItem>
+                      <SelectItem value="On Hold">On Hold</SelectItem>
+                      <SelectItem value="Completed Programme">Completed Programme</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="programme"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Programme</FormLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger className="h-12 rounded-xl border-border">
+                        <SelectValue placeholder="Select programme" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Foundations">Foundations</SelectItem>
+                      <SelectItem value="Mastery">Mastery</SelectItem>
+                      <SelectItem value="Intensive">Intensive</SelectItem>
+                      <SelectItem value="Single Session">Single Session</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <FormField
+            control={form.control}
+            name="priority_pathways"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Priority Pathways</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="Top 3 pathways from first assessment..." className="min-h-[60px] rounded-xl border-border resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="corrections_holding"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Corrections Holding?</FormLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger className="h-12 rounded-xl border-border">
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Yes — holding well">Yes — holding well</SelectItem>
+                      <SelectItem value="Partially">Partially</SelectItem>
+                      <SelectItem value="No — regressing">No — regressing</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="homework_assigned"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Homework Assigned</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. Breathing exercises" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <FormField
+            control={form.control}
+            name="next_session_focus"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Next Session Focus</FormLabel>
+                <FormControl>
+                  <Input placeholder="What to focus on next session..." {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

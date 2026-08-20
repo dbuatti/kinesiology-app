@@ -10,6 +10,7 @@ import { syncClientToNotion } from "./client-sync.ts";
 
 const MAIN_DB_ID = "171f7156cdc645e8b689af13d217bc7c";
 const PLANNER_DB_ID = "11caad21cd0980d8a3eeeffb27fc43c0";
+const SESSION_NOTES_DB_ID = "3c2aad21-cd09-819a-b1d4-e3e44cf015ae";
 
 export const syncSingleAppointment = async (appId: string, supabase: any, notionHeaders: any, origin: string) => {
   // Fetch full appointment details including client
@@ -485,6 +486,94 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
 
   if (updateError) {
     console.error(`[appointment-sync] Failed to update appointment in Supabase:`, updateError);
+  }
+
+  // ─── Session Notes: create/update a row in the Session Notes DB ───
+  try {
+    const sessionNotesSchema = await fetchDatabaseSchema(SESSION_NOTES_DB_ID, notionHeaders);
+
+    // Find the Client relation property in Session Notes DB
+    const clientRelProp = Object.keys(sessionNotesSchema).find(k => {
+      const p = sessionNotesSchema[k];
+      return p.type === 'relation' && p.relation?.database_id && normalizeId(p.relation.database_id) === normalizeId(CLIENTS_DB_ID);
+    });
+
+    const snProps: Record<string, any> = {};
+
+    // Name (title)
+    const snTitleProp = Object.keys(sessionNotesSchema).find(k => sessionNotesSchema[k].type === 'title');
+    if (snTitleProp) {
+      snProps[snTitleProp] = { title: [{ text: { content: `${clientName} — Session ${appointment.display_id || new Date(appointment.date).toISOString().split('T')[0]}` } }] };
+    }
+
+    // Client relation
+    if (clientRelProp && clientPageId) {
+      snProps[clientRelProp] = { relation: [{ id: clientPageId }] };
+    }
+
+    // Session Date
+    const snDateProp = findSchemaProperty(sessionNotesSchema, ['Session Date', 'Date']);
+    if (snDateProp) {
+      snProps[snDateProp.name] = { date: { start: appointment.date } };
+    }
+
+    // Session Number (total sessions for this client)
+    const snNumberProp = findSchemaProperty(sessionNotesSchema, ['Session Number', 'Number']);
+    if (snNumberProp) {
+      // Calculate total sessions for this client
+      const { count } = await supabase
+        .from('appointments')
+        .select('*', { count: 'exact', head: true })
+        .eq('client_id', appointment.client_id)
+        .in('status', ['Completed', 'Scheduled']);
+      if (count) {
+        snProps[snNumberProp.name] = { number: count };
+      }
+    }
+
+    // Key Findings
+    const snFindingsProp = findSchemaProperty(sessionNotesSchema, ['Key Findings', 'Findings']);
+    if (snFindingsProp) {
+      snProps[snFindingsProp.name] = { rich_text: [{ text: { content: appointment.issue || "" } }] };
+    }
+
+    // Corrections Made
+    const snCorrectionsProp = findSchemaProperty(sessionNotesSchema, ['Corrections Made', 'Corrections']);
+    if (snCorrectionsProp) {
+      snProps[snCorrectionsProp.name] = { rich_text: [{ text: { content: appointment.modes_balances || "" } }] };
+    }
+
+    // Practitioner Notes
+    const snNotesProp = findSchemaProperty(sessionNotesSchema, ['Practitioner Notes', 'Notes']);
+    if (snNotesProp) {
+      snProps[snNotesProp.name] = { rich_text: [{ text: { content: appointment.notes || "" } }] };
+    }
+
+    // Next Priority
+    const snNextProp = findSchemaProperty(sessionNotesSchema, ['Next Priority', 'Next Focus']);
+    if (snNextProp) {
+      snProps[snNextProp.name] = { rich_text: [{ text: { content: appointment.next_session_note || "" } }] };
+    }
+
+    if (Object.keys(snProps).length > 1) {
+      const snCreateRes = await fetchWithRetry('https://api.notion.com/v1/pages', {
+        method: 'POST',
+        headers: notionHeaders,
+        body: JSON.stringify({
+          parent: { database_id: SESSION_NOTES_DB_ID },
+          properties: snProps
+        })
+      });
+
+      if (snCreateRes.ok) {
+        console.log(`[appointment-sync] Session Notes row created for ${clientName}`);
+      } else {
+        const err = await snCreateRes.json();
+        console.warn(`[appointment-sync] Failed to create Session Notes row:`, err);
+      }
+    }
+  } catch (snErr) {
+    console.warn(`[appointment-sync] Session Notes creation failed:`, snErr.message);
   }
 
   return { id: mainPageId, url: mainPageUrl };

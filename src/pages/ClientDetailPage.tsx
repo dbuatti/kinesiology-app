@@ -12,7 +12,7 @@ import {
   Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Brain,
   LayoutDashboard, History, ArrowRight, Sparkles, Plus, Link as LinkIcon,
   Zap, Send, ShieldCheck, ExternalLink, RefreshCw, ShieldAlert, Info, User, CreditCard, LayoutGrid,
-  CalendarClock, Mic, Table2
+  CalendarClock, Mic, Table2, Stethoscope
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -789,6 +789,63 @@ const ClientDetailPage = () => {
                     </CardContent>
                   </Card>
                 </div>
+
+                {/* Clinical Tracking Panel */}
+                <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+                  <CardHeader className="bg-muted/50 border-b border-border pb-3">
+                    <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                      <Stethoscope size={14} className="text-violet-500" /> Clinical Tracking
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Status</span>
+                        <Badge className={cn("text-[10px] font-semibold uppercase tracking-wider border-none w-fit",
+                          (client as any).status === 'Active' ? "bg-chart-emerald/10 text-chart-emerald" :
+                          (client as any).status === 'On Hold' ? "bg-yellow-500/10 text-yellow-600" :
+                          (client as any).status === 'Completed Programme' ? "bg-chart-primary/10 text-chart-primary" :
+                          (client as any).status === 'Inactive' ? "bg-muted text-muted-foreground" :
+                          "bg-muted text-muted-foreground"
+                        )}>
+                          {(client as any).status || 'Not set'}
+                        </Badge>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Programme</span>
+                        <span className="text-sm font-medium text-foreground block">{(client as any).programme || '—'}</span>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">First Session</span>
+                        <span className="text-sm font-medium text-foreground block">{(client as any).first_session_date ? format(new Date((client as any).first_session_date), "MMM d, yyyy") : '—'}</span>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Last Session</span>
+                        <span className="text-sm font-medium text-foreground block">{(client as any).most_recent_session ? format(new Date((client as any).most_recent_session), "MMM d, yyyy") : '—'}</span>
+                      </div>
+                    </div>
+                    {(client as any).corrections_holding && (
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Corrections Holding:</span>
+                          <Badge className={cn("text-[10px] font-semibold uppercase tracking-wider border-none",
+                            (client as any).corrections_holding?.includes('holding well') ? "bg-chart-emerald/10 text-chart-emerald" :
+                            (client as any).corrections_holding?.includes('Partially') ? "bg-yellow-500/10 text-yellow-600" :
+                            "bg-chart-destructive/10 text-chart-destructive"
+                          )}>
+                            {(client as any).corrections_holding}
+                          </Badge>
+                        </div>
+                      </div>
+                    )}
+                    {(client as any).priority_pathways && (
+                      <div className="mt-3">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Priority Pathways</span>
+                        <p className="text-sm text-foreground mt-1">{(client as any).priority_pathways}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
 
                 {/* Voice Studio — voice lessons matched to this client's email */}
                 <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">

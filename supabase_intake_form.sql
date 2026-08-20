@@ -19,6 +19,7 @@ ALTER TABLE clients ADD COLUMN IF NOT EXISTS seen_medical_doctor     boolean;
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS symptoms_worse_stress   boolean;
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS symptoms_worse_fatigue  boolean;
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS pain_movement           text;          -- Better / Worse / Both / Other
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS current_stress_level    integer;       -- 1-10
 
 -- Previous Therapies
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS therapies_used          jsonb;         -- multi-select array
@@ -63,3 +64,8 @@ ALTER TABLE clients ADD COLUMN IF NOT EXISTS emotional_regulation_time   text;
 
 -- Open-ended
 ALTER TABLE clients ADD COLUMN IF NOT EXISTS additional_notes            text;
+
+-- Goals & Expectations
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS goal_working               text;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS goal_12_sessions            text;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS goal_safe_feeling           text;

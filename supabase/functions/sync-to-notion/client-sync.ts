@@ -24,7 +24,7 @@ export const syncClientToNotion = async (client: any, supabase: any, notionHeade
       .from('appointments')
       .select('date, status')
       .eq('client_id', client.id)
-      .in('status', ['Completed', 'Scheduled'])
+      .in('status', ['Completed', 'Scheduled', 'AP'])
       .order('date', { ascending: true });
 
     if (appointments && appointments.length > 0) {

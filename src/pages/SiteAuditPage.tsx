@@ -31,6 +31,7 @@ const ACTUAL_ROUTES = new Set([
   "/resources/worksheets/fear-creativity", "/resources/worksheets/inner-awareness",
   "/resources/worksheets/anger-flow", "/resources/worksheets/business-model",
   "/resources/worksheets/where-your-value-begins",
+  "/resources/worksheets/money-security-freedom",
   "/voice", "/voice/clients", "/voice/clients/new",
   "/business", "/business/dashboard", "/business/overview",
   "/business/marketing-engine", "/business/client-audit", "/business/follow-up",

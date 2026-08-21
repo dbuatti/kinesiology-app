@@ -1,6 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Check, Copy, ArrowLeft, DollarSign, Shield, Zap, TreePine, Target, Heart, Sparkles } from 'lucide-react';
+import { Check, Copy, ArrowLeft, DollarSign, Shield, Zap, TreePine, Target, Heart, Sparkles, Loader } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const SECTIONS = [
   { id: 'orientation', label: 'Security vs Freedom', icon: Shield },
@@ -115,6 +116,10 @@ const TrackerRow = ({
 const NEEDS = ['Certainty / security', 'Variety / uncertainty', 'Significance', 'Love & connection', 'Growth', 'Contribution'];
 
 const MoneySecurityFreedomWorksheet = ({ onBack }: { onBack?: () => void }) => {
+  const [userId, setUserId] = useState<string | null>(null);
+  const [localId, setLocalId] = useState<string | null>(null);
+  const autoSaveTimer = useRef<number | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [formData, setFormData] = useState<Record<string, any>>({
@@ -140,6 +145,62 @@ const MoneySecurityFreedomWorksheet = ({ onBack }: { onBack?: () => void }) => {
     commitment: '',
     commitment_date: '',
   });
+
+  // Fetch user ID
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) setUserId(user.id);
+    };
+    fetchUserId();
+  }, []);
+
+  // Load existing or create new row on mount
+  useEffect(() => {
+    if (!userId) return;
+    const init = async () => {
+      const { data: existing } = await supabase
+        .from('money_security_freedom_worksheets' as any)
+        .select('id, form_data')
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (existing) {
+        setLocalId(existing.id);
+        if (existing.form_data) setFormData(existing.form_data);
+      } else {
+        const { data: created } = await supabase
+          .from('money_security_freedom_worksheets' as any)
+          .insert({ user_id: userId, form_data: formData })
+          .select('id')
+          .single();
+        if (created) setLocalId(created.id);
+      }
+    };
+    init();
+  }, [userId]);
+
+  // Auto-save
+  useEffect(() => {
+    if (!userId || !localId) return;
+    const saveData = async () => {
+      setIsSaving(true);
+      try {
+        const { error } = await supabase
+          .from('money_security_freedom_worksheets' as any)
+          .upsert({ id: localId, user_id: userId, form_data: formData, updated_at: new Date().toISOString() });
+        if (error) throw error;
+      } catch (e) {
+        console.error('Error saving money worksheet:', e);
+      } finally {
+        setIsSaving(false);
+      }
+    };
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = window.setTimeout(saveData, 2000);
+    return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current); };
+  }, [userId, localId, formData]);
 
   const updateField = useCallback((field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -590,6 +651,7 @@ const MoneySecurityFreedomWorksheet = ({ onBack }: { onBack?: () => void }) => {
           <p className="text-xs font-bold text-primary tracking-wider uppercase">Mastery · Personal Health &amp; Mindset</p>
           <h2 className="text-lg font-bold text-foreground">Money, Security &amp; Freedom</h2>
         </div>
+        {isSaving && <Loader className="h-4 w-4 animate-spin text-muted-foreground" />}
         <Button onClick={handleCopy} variant="outline" size="sm" className="rounded-xl gap-1.5">
           {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
           {copied ? 'Copied' : 'Copy'}

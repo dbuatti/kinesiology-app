@@ -215,6 +215,15 @@ serve(async (req) => {
     const attendee =
       payload.attendees?.[0] || payload.responses;
 
+    // Supabase client for the main booking flow (price lookup, etc.)
+    // NOTE: previously undeclared here, causing "supabase is not defined" to
+    // throw on every booking that carried an eventTypeId — which silently
+    // aborted the whole flow before any lesson was logged or any email sent.
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
     if (!attendee || !attendee.email) {
       console.warn(`[${functionName}] No attendee email found.`);
       return new Response(JSON.stringify({ success: true, message: "No email" }), {

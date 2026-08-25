@@ -89,6 +89,22 @@ serve(async (req) => {
     }
     const isPiano = discipline === "piano";
 
+    // Human-friendly formatting for the emails. The raw `date` is ISO
+    // ("2026-09-01") and `time` carries a technical "GMT+10" suffix from the
+    // webhook — both are too technical for a client-facing email.
+    const lessonDateObj = new Date(`${date}T00:00:00Z`);
+    const friendlyDate = lessonDateObj.toLocaleDateString("en-AU", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    });
+    const friendlyTime = (time || "")
+      .replace(/\s*GMT\+[\d]+/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
     // 1. Create Notion record if not already there (deduplicate by email)
     if (NOTION_KEY) {
       try {
@@ -176,7 +192,8 @@ serve(async (req) => {
           success_url: `${APP_ORIGIN}/voice/paid`,
           cancel_url: `${APP_ORIGIN}/voice-onboarding/${encodeURIComponent(studentEmail)}`,
           metadata,
-          expires_at: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+          // Stripe caps Checkout Session expiry at < 24h from creation.
+          expires_at: Math.floor(Date.now() / 1000) + 23 * 60 * 60,
         });
         paymentUrl = session.url;
       } catch (stripeErr) {
@@ -240,13 +257,14 @@ serve(async (req) => {
                       <tr>
                         <td style="padding-bottom: 20px;">
                           <div style="font-size: 10px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">Date</div>
-                          <div style="font-size: 22px; font-weight: 700; color: #1E293B;">${date}</div>
+                          <div style="font-size: 22px; font-weight: 700; color: #1E293B;">${friendlyDate}</div>
                         </td>
                       </tr>
                       <tr>
                         <td style="padding-top: 4px; border-top: 1px solid #E2E8F0;">
                           <div style="font-size: 10px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; margin-top: 18px;">Time</div>
-                          <div style="font-size: 22px; font-weight: 700; color: #1E293B;">${time}${duration ? `<span style="color: #94A3B8; font-weight: 400; margin-left: 12px;">${duration} min</span>` : ''}</div>
+                          <div style="font-size: 22px; font-weight: 700; color: #1E293B;">${friendlyTime}</div>
+${duration ? `                          <div style="font-size: 14px; color: #94A3B8; margin-top: 6px;">${duration} minutes</div>` : ''}
                         </td>
                       </tr>
                     </table>
@@ -274,9 +292,62 @@ serve(async (req) => {
       </html>
     `;
 
-    await sendGmail(accessToken, SENDER_EMAIL, studentEmail, subjectLine, htmlBody);
+    // 4a. Send the student onboarding email. Non-fatal — a failure here must not
+    // block the organizer notification below.
+    try {
+      await sendGmail(accessToken, SENDER_EMAIL, studentEmail, subjectLine, htmlBody);
+      console.log(`[${functionName}] Onboarding email sent to ${studentEmail}`);
+    } catch (studentErr) {
+      console.error(`[${functionName}] Student onboarding send failed (non-fatal):`, studentErr?.message || studentErr);
+    }
 
-    console.log(`[${functionName}] Onboarding email sent to ${studentEmail}`);
+    // 4b. Send a dedicated organizer notification directly to the studio inbox.
+    // This is the reliable "you've got a booking" notice — it is addressed TO you
+    // (not a BCC of the student email) so it can't be lost to BCC filtering/spam.
+    try {
+      const organizerEmail = "info@danielebuatti.com";
+      const organizerSubject = `New ${isPiano ? "Piano" : "Voice"} Studio booking — ${studentName} · ${date} ${time}`;
+      const organizerHtml = `
+        <!DOCTYPE html>
+        <html>
+        <body style="margin: 0; padding: 0; font-family: sans-serif;">
+          <center style="width: 100%; padding: 40px 0;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 40px; overflow: hidden;">
+              <tr><td style="height: 6px; background-color: #E11D48;"></td></tr>
+              <tr>
+                <td style="padding: 48px 40px;">
+                  <div style="font-size: 11px; font-weight: 900; letter-spacing: 0.4em; text-transform: uppercase; color: #E11D48;">New Booking</div>
+                  <div style="color: #1E293B; font-size: 26px; font-weight: 700; margin-top: 8px;">${studentName}</div>
+                  <div style="color: #475569; font-size: 14px; margin-top: 4px;">${studentEmail}</div>
+
+                  <div style="background-color: #F8FAFC; border-radius: 24px; padding: 24px; margin: 28px 0; border: 1px solid #E2E8F0;">
+                    <div style="font-size: 10px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">Date</div>
+                    <div style="font-size: 20px; font-weight: 700; color: #1E293B;">${friendlyDate}</div>
+                    <div style="font-size: 10px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.1em; margin: 18px 0 6px;">Time</div>
+                    <div style="font-size: 20px; font-weight: 700; color: #1E293B;">${friendlyTime}</div>
+${duration ? `                    <div style="font-size: 14px; color: #94A3B8; margin-top: 6px;">${duration} minutes</div>` : ""}
+                    <div style="font-size: 10px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.1em; margin: 18px 0 6px;">Fee</div>
+                    <div style="font-size: 20px; font-weight: 700; color: #1E293B;">${cost ? `AU $${cost}` : "—"}</div>
+                  </div>
+
+                  <p style="font-size: 14px; color: #475569; line-height: 1.6; margin: 0;">
+                    ${paymentUrl
+                      ? `A payment link was sent to the student. You can view or copy it here: <a href="${paymentUrl}" style="color: #E11D48; word-break: break-all;">${paymentUrl}</a>`
+                      : `No payment link was generated for this booking${cost ? " (a fee was set but the link was not created — check Stripe)." : "."}`}
+                  </p>
+                  <p style="font-size: 13px; color: #94A3B8; margin-top: 16px;">A separate "Welcome to ${studioName}" email with these details was sent to the student.</p>
+                </td>
+              </tr>
+            </table>
+          </center>
+        </body>
+        </html>
+      `;
+      await sendGmail(accessToken, SENDER_EMAIL, organizerEmail, organizerSubject, organizerHtml);
+      console.log(`[${functionName}] Organizer notification sent to ${organizerEmail}`);
+    } catch (orgErr) {
+      console.error(`[${functionName}] Organizer notification failed (non-fatal):`, orgErr?.message || orgErr);
+    }
 
     return new Response(JSON.stringify({ success: true, paymentUrl }), {
       status: 200,

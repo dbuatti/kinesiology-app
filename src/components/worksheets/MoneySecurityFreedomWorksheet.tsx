@@ -658,44 +658,67 @@ const MoneySecurityFreedomWorksheet = ({ onBack }: { onBack?: () => void }) => {
         </Button>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto px-6 py-6">
-        {activeSection ? (
-          <div className="max-w-2xl mx-auto">
-            {renderSection()}
-            <div className="flex justify-between mt-8 pt-6 border-t border-border/30">
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-xl"
-                onClick={() => {
-                  const idx = SECTIONS.findIndex(s => s.id === activeSection);
-                  if (idx > 0) setActiveSection(SECTIONS[idx - 1].id);
-                }}
-                disabled={SECTIONS[0].id === activeSection}
+      {/* Body: section nav + content */}
+      <div className="flex flex-col sm:flex-row flex-1 overflow-hidden">
+        <nav className="flex gap-2 sm:flex-col sm:gap-1 overflow-x-auto sm:overflow-y-auto border-b sm:border-b-0 sm:border-r border-border/30 p-3 sm:w-56 sm:shrink-0">
+          {SECTIONS.map((s) => {
+            const Icon = s.icon;
+            const isActive = activeSection === s.id;
+            return (
+              <button
+                key={s.id}
+                onClick={() => setActiveSection(s.id)}
+                className={`flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition-colors text-left whitespace-nowrap sm:whitespace-normal ${
+                  isActive
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                }`}
               >
-                ← Previous
-              </Button>
-              <Button
-                size="sm"
-                className="rounded-xl"
-                onClick={() => {
-                  const idx = SECTIONS.findIndex(s => s.id === activeSection);
-                  if (idx < SECTIONS.length - 1) setActiveSection(SECTIONS[idx + 1].id);
-                }}
-                disabled={SECTIONS[SECTIONS.length - 1].id === activeSection}
-              >
-                Next →
-              </Button>
+                <Icon size={16} className={isActive ? 'text-primary' : 'text-muted-foreground/70'} />
+                {s.label}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="flex-1 overflow-y-auto px-6 py-6 min-w-0">
+          {activeSection ? (
+            <div className="max-w-2xl mx-auto">
+              {renderSection()}
+              <div className="flex justify-between mt-8 pt-6 border-t border-border/30">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={() => {
+                    const idx = SECTIONS.findIndex(s => s.id === activeSection);
+                    if (idx > 0) setActiveSection(SECTIONS[idx - 1].id);
+                  }}
+                  disabled={SECTIONS[0].id === activeSection}
+                >
+                  ← Previous
+                </Button>
+                <Button
+                  size="sm"
+                  className="rounded-xl"
+                  onClick={() => {
+                    const idx = SECTIONS.findIndex(s => s.id === activeSection);
+                    if (idx < SECTIONS.length - 1) setActiveSection(SECTIONS[idx + 1].id);
+                  }}
+                  disabled={SECTIONS[SECTIONS.length - 1].id === activeSection}
+                >
+                  Next →
+                </Button>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full text-center p-8">
-            <DollarSign size={48} className="text-primary/30 mb-4" />
-            <p className="text-sm font-semibold text-foreground">Select a section from the left</p>
-            <p className="text-xs text-muted-foreground mt-1">Work through each section in order, or jump to any.</p>
-          </div>
-        )}
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-center p-8">
+              <DollarSign size={48} className="text-primary/30 mb-4" />
+              <p className="text-sm font-semibold text-foreground">Select a section from the left</p>
+              <p className="text-xs text-muted-foreground mt-1">Work through each section in order, or jump to any.</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

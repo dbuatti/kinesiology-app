@@ -26,11 +26,16 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
     `Content-Type: text/html; charset=utf-8`, `MIME-Version: 1.0`, `Subject: ${utf8Subject}`, ``, htmlBody,
   ].join("\n");
   const encoded = btoa(unescape(encodeURIComponent(message))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-  await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+  const response = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
     method: "POST",
     headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
     body: JSON.stringify({ raw: encoded }),
   });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(`Gmail send failed (${response.status}): ${data?.error?.message || data?.message || "unknown"}`);
+  }
+  return data;
 }
 
 // Sends a "payment received" confirmation to the client. Non-fatal on failure.

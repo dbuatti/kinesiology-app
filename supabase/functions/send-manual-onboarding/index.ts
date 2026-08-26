@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import Stripe from 'https://esm.sh/stripe@14.25.0'
 import { requireUser } from "../_shared/auth.ts"
 
 const corsHeaders = {
@@ -54,11 +55,31 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
       body: JSON.stringify({ raw: encodedMessage }),
     }
   );
-  return await response.json();
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(`Gmail send failed (${response.status}): ${data?.error?.message || data?.message || "unknown"}`);
+  }
+  return data;
+}
+
+async function logEmail(supabase, rec) {
+  try {
+    await supabase.from("email_log").insert({
+      function_name: rec.fn,
+      recipient: rec.to,
+      subject: rec.subject ?? null,
+      status: rec.status,
+      error_message: rec.error ?? null,
+      appointment_id: rec.appointment_id ?? null,
+      client_id: rec.client_id ?? null,
+      created_at: new Date().toISOString(),
+    });
+  } catch (e) {
+    console.error(`[${rec.fn}] email_log insert failed:`, e?.message);
+  }
 }
 
 // Fields on the clients table that belong to the intake form.
-// Used to calculate what percentage of the form is filled out.
 const INTAKE_FIELDS = [
   'name', 'email', 'phone', 'born', 'home_address',
   'referral_source', 'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relationship',
@@ -90,25 +111,107 @@ serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const { clientId } = body;
-    
+    const { clientId, appointmentId, force } = body;
+
     if (!clientId) throw new Error("Missing clientId");
 
     const GMAIL_CLIENT_ID = Deno.env.get('GMAIL_CLIENT_ID');
     const GMAIL_CLIENT_SECRET = Deno.env.get('GMAIL_CLIENT_SECRET');
     const GMAIL_REFRESH_TOKEN = Deno.env.get('GMAIL_REFRESH_TOKEN');
     const SENDER_EMAIL = Deno.env.get('GMAIL_USER_EMAIL');
+    const STRIPE_KEY = Deno.env.get('STRIPE_SECRET_KEY');
+    const APP_ORIGIN = Deno.env.get('SITE_URL') || 'https://kinesiology-app.vercel.app';
 
     const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
 
     const { data: client } = await supabase.from('clients').select('*').eq('id', clientId).single();
     if (!client?.email) throw new Error("Client email missing");
 
-    // Build intake form URL (onboarding form only — no appointment/payment details).
-    const intakeFilled = isIntakeFormFilled(client);
-    const intakeUrl = `${Deno.env.get('SITE_URL') || req.headers.get('origin') || 'https://kinesiology-app.vercel.app'}/onboarding/${client.id}`;
+    // Resolve the appointment: a specific id, else the client's most recent.
+    let appointment: any = null;
+    if (appointmentId) {
+      const { data } = await supabase.from('appointments').select('*').eq('id', appointmentId).maybeSingle();
+      appointment = data;
+    } else {
+      const { data } = await supabase.from('appointments').select('*').eq('client_id', clientId).order('date', { ascending: false }).limit(1);
+      appointment = data?.[0] || null;
+    }
 
-    const subject = `Please Complete Your Functional Neuro Health Intake Form`;
+    const priceAmount = appointment?.price_amount ?? 0;
+    const alreadyPaid = appointment?.is_paid === true || appointment?.payment_received === true;
+    const existingLink = appointment?.payment_link;
+    const needsPayment = priceAmount > 0 && !alreadyPaid && !existingLink;
+
+    let friendlyDate = "";
+    let friendlyTime = "";
+    if (appointment?.date) {
+      const d = new Date(appointment.date);
+      friendlyDate = d.toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Australia/Melbourne" });
+      friendlyTime = d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", timeZone: "Australia/Melbourne" });
+    }
+
+    // 1. Create Stripe payment link for paid, unpaid sessions (then persist it).
+    let paymentUrl = existingLink || null;
+    if (needsPayment && STRIPE_KEY) {
+      try {
+        const stripe = new Stripe(STRIPE_KEY, {
+          apiVersion: '2023-10-16',
+          httpClient: Stripe.createFetchHttpClient(),
+        });
+        const session = await stripe.checkout.sessions.create({
+          customer_email: client.email,
+          line_items: [{
+            price_data: {
+              currency: 'aud',
+              product_data: {
+                name: 'Functional Neuro Health Session',
+                description: `FNH session${friendlyDate ? ` on ${friendlyDate}` : ''}`,
+              },
+              unit_amount: Math.round(priceAmount * 100),
+            },
+            quantity: 1,
+          }],
+          mode: 'payment',
+          payment_intent_data: { statement_descriptor: 'RESONANCE KINE' },
+          success_url: `${APP_ORIGIN}/clients`,
+          cancel_url: `${APP_ORIGIN}/clients`,
+          metadata: { appointment_id: appointment?.id, client_id: clientId },
+          expires_at: Math.floor(Date.now() / 1000) + 23 * 60 * 60,
+        });
+        paymentUrl = session.url;
+        if (appointment?.id) {
+          await supabase.from('appointments').update({ payment_link: paymentUrl }).eq('id', appointment.id);
+        }
+      } catch (stripeErr) {
+        console.error("[send-manual-onboarding] Stripe error (non-fatal):", stripeErr.message);
+      }
+    }
+
+    // 2. Build the confirmation email (time + payment link + intake CTA).
+    const intakeFilled = isIntakeFormFilled(client);
+    const intakeUrl = `${APP_ORIGIN}/onboarding/${client.id}`;
+    const subject = `Your FNH Session is Confirmed${friendlyDate ? ` — ${friendlyDate}` : ""}`;
+
+    const paymentSection = paymentUrl ? `
+      <div style="background-color: #FFF1F2; border-radius: 24px; padding: 24px; margin: 28px 0; border: 1px solid #FECDD3; text-align: center;">
+        <div style="font-size: 10px; font-weight: 800; color: #BE123C; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;">Secure Payment (AU $${priceAmount})</div>
+        <p style="margin: 0 0 20px 0; font-size: 14px; color: #475569; line-height: 1.6;">Complete your payment to confirm your session.</p>
+        <a href="${paymentUrl}" style="display: inline-block; background-color: #E11D48; color: #ffffff; padding: 14px 32px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 14px;">Pay Now</a>
+      </div>
+    ` : (priceAmount > 0 ? `
+      <div style="background-color: #FEF3C7; border-radius: 24px; padding: 20px; margin: 28px 0; border: 1px solid #FDE68A; text-align:center; font-size: 14px; color: #92400E;">A payment link could not be generated automatically — Daniele will send your payment details shortly.</div>
+    ` : '');
+
+    const intakeSection = !intakeFilled ? `
+      <div style="margin-top: 8px; text-align: center;">
+        <a href="${intakeUrl}" style="display: inline-block; background-color: #D46A9B; color: #ffffff; padding: 18px 48px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 16px; letter-spacing: 0.02em;">Complete Intake Form</a>
+      </div>
+      <div style="margin-top: 24px; padding: 20px; background-color: #F8FAFC; border-radius: 16px; border: 1px solid #E2E8F0;">
+        <p style="margin: 0; font-size: 14px; color: #64748B;">The form takes about 10 minutes and covers your health background, current concerns, and goals. Your information is kept confidential.</p>
+      </div>
+    ` : `
+      <p>If you have any questions before your session, please don't hesitate to reach out.</p>
+    `;
 
     const htmlBody = `
       <!DOCTYPE html>
@@ -123,24 +226,27 @@ serve(async (req) => {
                   <div style="color: #1E3261; font-size: 28px; font-weight: 700;">✦ Resonance Kinesiology</div>
                   <div style="color: #D46A9B; font-size: 11px; font-weight: 900; letter-spacing: 0.4em; margin-top: 16px; text-transform: uppercase;">Functional Neuro Health</div>
                 </div>
-                
+
                 <div style="text-align: left; margin-top: 48px; line-height: 1.8; font-size: 17px; color: #334155;">
                   <p>Hi ${client.name.split(' ')[0]},</p>
-                  <p>Welcome to Resonance Kinesiology! I'm looking forward to working with you.</p>
-                  <p>Before your first session, please complete your clinical intake form. This helps me understand your health history and prepare a personalised approach.</p>
-                  
-                  ${!intakeFilled ? `
-                    <div style="margin-top: 40px; text-align: center;">
-                      <a href="${intakeUrl}" style="display: inline-block; background-color: #D46A9B; color: #ffffff; padding: 18px 48px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 16px; letter-spacing: 0.02em;">Complete Intake Form</a>
-                    </div>
-                    <div style="margin-top: 24px; padding: 20px; background-color: #F8FAFC; border-radius: 16px; border: 1px solid #E2E8F0;">
-                      <p style="margin: 0; font-size: 14px; color: #64748B;">The form takes about 10 minutes and covers your health background, current concerns, and goals. Your information is kept confidential.</p>
-                    </div>
-                  ` : `
-                    <p>If you have any questions before your session, please don't hesitate to reach out.</p>
-                  `}
+                  <p>Thank you for booking your Functional Neuro Health session. Here are your details:</p>
+
+                  ${appointment?.date ? `
+                  <div style="background-color: #F8FAFC; border-radius: 24px; padding: 28px; margin: 28px 0; border: 1px solid #E2E8F0;">
+                    <div style="font-size: 10px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">Date</div>
+                    <div style="font-size: 22px; font-weight: 700; color: #1E293B;">${friendlyDate}</div>
+                    <div style="font-size: 10px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.1em; margin: 18px 0 6px;">Time</div>
+                    <div style="font-size: 22px; font-weight: 700; color: #1E293B;">${friendlyTime}</div>
+                  </div>
+                  ` : ''}
+
+                  ${paymentSection}
+
+                  <div style="text-align: center; padding: 12px 0 20px;">
+                    ${intakeSection}
+                  </div>
                 </div>
-                
+
                 <div style="border-top: 1px solid #F1F5F9; margin-top: 40px; padding-top: 32px; text-align: left;">
                   <div style="font-weight: 700; color: #1E3261; font-size: 18px;">Daniele Buatti</div>
                   <div style="color: #D46A9B; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">Neuro-Somatic Kinesiologist</div>
@@ -154,19 +260,28 @@ serve(async (req) => {
     `;
 
     const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
-    await sendGmail(accessToken, SENDER_EMAIL, client.email, subject, htmlBody);
+    try {
+      await sendGmail(accessToken, SENDER_EMAIL, client.email, subject, htmlBody);
+      console.log(`[send-manual-onboarding] Confirmation email sent to ${client.email}`);
+      await logEmail(supabase, { fn: "send-manual-onboarding", to: client.email, subject, status: "sent", appointment_id: appointment?.id, client_id: clientId });
+    } catch (sendErr) {
+      console.error(`[send-manual-onboarding] Send failed:`, sendErr?.message || sendErr);
+      await logEmail(supabase, { fn: "send-manual-onboarding", to: client.email, subject, status: "failed", error: sendErr?.message || String(sendErr), appointment_id: appointment?.id, client_id: clientId });
+    }
 
-    return new Response(JSON.stringify({ 
-      success: true, 
+    return new Response(JSON.stringify({
+      success: true,
+      appointmentIncluded: !!appointment?.date,
+      paymentLinkSent: !!paymentUrl,
       intakeFormSent: !intakeFilled,
-    }), { 
-      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    }), {
+      status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
 
   } catch (error) {
     console.error("[send-manual-onboarding] Error:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), { 
-      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 })

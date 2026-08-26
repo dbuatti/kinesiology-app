@@ -1,5 +1,7 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireAuth } from "../_shared/guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,7 +47,12 @@ function buildEmail(from: string, to: string, subject: string, htmlBody: string)
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  const authErr = await requireAuth(req, corsHeaders);
+  if (authErr) return authErr;
+
+  const payload = await req.json().catch(() => ({}));
   try {
+    const supabase = createClient(Deno.env.get("SUPABASE_URL"), Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"));
     const GMAIL_CLIENT_ID = Deno.env.get("GMAIL_CLIENT_ID");
     const GMAIL_CLIENT_SECRET = Deno.env.get("GMAIL_CLIENT_SECRET");
     const GMAIL_REFRESH_TOKEN = Deno.env.get("GMAIL_REFRESH_TOKEN");
@@ -55,7 +62,6 @@ serve(async (req) => {
       throw new Error("Missing Gmail credentials in Supabase Secrets.");
     }
 
-    const payload = await req.json().catch(() => ({}));
     const { clientName, clientEmail, currentRate, targetRate, effectiveMonth } = payload;
 
     const missing: string[] = [];
@@ -139,6 +145,17 @@ Daniele`;
     if (!response.ok) throw new Error(result.error?.message || "Failed to send email");
 
     console.log(`Rate increase email sent to ${clientEmail} — ${currentRate} → ${targetRate}`);
+    try {
+      await supabase.from("email_log").insert({
+        function_name: "send-rate-increase-email",
+        recipient: clientEmail,
+        subject: `Session Rate Update — ${firstName}`,
+        status: "sent",
+        created_at: new Date().toISOString(),
+      });
+    } catch (logErr) {
+      console.error("email_log insert failed:", logErr?.message);
+    }
 
     return new Response(JSON.stringify({ success: true, messageId: result.id }), {
       status: 200,
@@ -146,6 +163,18 @@ Daniele`;
     });
   } catch (error) {
     console.error("Error:", error.message);
+    try {
+      await supabase.from("email_log").insert({
+        function_name: "send-rate-increase-email",
+        recipient: payload?.clientEmail ?? null,
+        subject: payload?.clientEmail ? `Session Rate Update — ${(payload.clientEmail || "").split(" ")[0]}` : null,
+        status: "failed",
+        error_message: error.message,
+        created_at: new Date().toISOString(),
+      });
+    } catch (logErr) {
+      console.error("email_log insert failed:", logErr?.message);
+    }
     return new Response(JSON.stringify({ error: error.message }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

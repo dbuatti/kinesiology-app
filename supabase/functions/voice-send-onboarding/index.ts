@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from 'https://esm.sh/stripe@14.25.0'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { requireAuth } from "../_shared/guard.ts"
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -56,7 +57,27 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
       body: JSON.stringify({ raw: encodedMessage }),
     }
   );
-  return await response.json();
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(`Gmail send failed (${response.status}): ${data?.error?.message || data?.message || "unknown"}`);
+  }
+  return data;
+}
+
+// Best-effort audit log of every email send/failure so delivery is verifiable.
+async function logEmail(supabase, rec) {
+  try {
+    await supabase.from("email_log").insert({
+      function_name: rec.fn,
+      recipient: rec.to,
+      subject: rec.subject ?? null,
+      status: rec.status,
+      error_message: rec.error ?? null,
+      created_at: new Date().toISOString(),
+    });
+  } catch (e) {
+    console.error(`[${rec.fn}] email_log insert failed:`, e?.message);
+  }
 }
 
 serve(async (req) => {
@@ -64,6 +85,9 @@ serve(async (req) => {
   console.log(`[${functionName}] Request received`);
 
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  const authErr = await requireAuth(req, corsHeaders);
+  if (authErr) return authErr;
 
   try {
     const NOTION_KEY = Deno.env.get("NOTION_API_KEY");
@@ -294,12 +318,14 @@ ${duration ? `                          <div style="font-size: 14px; color: #94A
 
     // 4a. Send the student onboarding email. Non-fatal — a failure here must not
     // block the organizer notification below.
-    try {
-      await sendGmail(accessToken, SENDER_EMAIL, studentEmail, subjectLine, htmlBody);
-      console.log(`[${functionName}] Onboarding email sent to ${studentEmail}`);
-    } catch (studentErr) {
-      console.error(`[${functionName}] Student onboarding send failed (non-fatal):`, studentErr?.message || studentErr);
-    }
+     try {
+       await sendGmail(accessToken, SENDER_EMAIL, studentEmail, subjectLine, htmlBody);
+       console.log(`[${functionName}] Onboarding email sent to ${studentEmail}`);
+       await logEmail(supabase, { fn: functionName, to: studentEmail, subject: subjectLine, status: "sent" });
+     } catch (studentErr) {
+       console.error(`[${functionName}] Student onboarding send failed (non-fatal):`, studentErr?.message || studentErr);
+       await logEmail(supabase, { fn: functionName, to: studentEmail, subject: subjectLine, status: "failed", error: studentErr?.message || String(studentErr) });
+     }
 
     // 4b. Send a dedicated organizer notification directly to the studio inbox.
     // This is the reliable "you've got a booking" notice — it is addressed TO you
@@ -345,8 +371,10 @@ ${duration ? `                    <div style="font-size: 14px; color: #94A3B8; m
       `;
       await sendGmail(accessToken, SENDER_EMAIL, organizerEmail, organizerSubject, organizerHtml);
       console.log(`[${functionName}] Organizer notification sent to ${organizerEmail}`);
+      await logEmail(supabase, { fn: functionName, to: organizerEmail, subject: organizerSubject, status: "sent" });
     } catch (orgErr) {
       console.error(`[${functionName}] Organizer notification failed (non-fatal):`, orgErr?.message || orgErr);
+      await logEmail(supabase, { fn: functionName, to: organizerEmail, subject: organizerSubject, status: "failed", error: orgErr?.message || String(orgErr) });
     }
 
     return new Response(JSON.stringify({ success: true, paymentUrl }), {

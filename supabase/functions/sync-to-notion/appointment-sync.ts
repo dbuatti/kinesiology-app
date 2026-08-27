@@ -10,7 +10,6 @@ import { syncClientToNotion } from "./client-sync.ts";
 
 const MAIN_DB_ID = "171f7156cdc645e8b689af13d217bc7c";
 const PLANNER_DB_ID = "11caad21cd0980d8a3eeeffb27fc43c0";
-const SESSION_NOTES_DB_ID = "3c2aad21-cd09-819a-b1d4-e3e44cf015ae";
 
 export const syncSingleAppointment = async (appId: string, supabase: any, notionHeaders: any, origin: string) => {
   // Fetch full appointment details including client
@@ -58,13 +57,49 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
   const mainSchema = await fetchDatabaseSchema(MAIN_DB_ID, notionHeaders);
 
   // Prepare properties for Main Appointments DB
-  const mainProps = {
+  const mainProps: Record<string, any> = {
     "Name": { title: [{ text: { content: appointmentName } }] },
     "Date": { date: { start: appointment.date } },
     "Goal": { rich_text: [{ text: { content: appointment.goal || "" } }] },
     "Issue": { multi_select: [{ name: appointment.tag || "Kinesiology" }] },
     "Notes": { rich_text: [{ text: { content: `${appointment.issue ? `ISSUE: ${appointment.issue}\n\n` : ''}${appointment.notes || ""}` } }] }
   };
+
+  // ─── Clinical fields (consolidated from the retired Session Notes DB) ───
+  // Each is mapped dynamically via the schema so the exact Notion property
+  // name/label doesn't need to be hardcoded. Skipped silently if the property
+  // isn't present on the Notion DB yet.
+  const clinicalMappings: Array<[string[], string | number | null, 'rich_text' | 'number']> = [
+    [['BOLT Score (s)', 'BOLT Score', 'BOLT'], appointment.bolt_score, 'number'],
+    [['Key Findings', 'Findings'], appointment.issue, 'rich_text'],
+    [['Corrections Made', 'Corrections'], appointment.modes_balances, 'rich_text'],
+    [['Next Priority', 'Next Focus'], appointment.next_session_note, 'rich_text'],
+    [['Homework Given', 'Homework'], appointment.homework_given, 'rich_text'],
+    [['What Held From Last Session', 'What Held', 'Carry Over'], appointment.what_held_from_last_session, 'rich_text'],
+  ];
+  for (const [possibleNames, value, kind] of clinicalMappings) {
+    const prop = findSchemaProperty(mainSchema, possibleNames as string[]);
+    if (!prop) continue;
+    if (value === null || value === undefined || value === '') continue;
+    if (kind === 'number') {
+      const num = Number(value);
+      if (!isNaN(num)) mainProps[prop.name] = { number: num };
+    } else {
+      mainProps[prop.name] = { rich_text: [{ text: { content: String(value) } }] };
+    }
+  }
+
+  // Session Number is computed (count of client's appointments) rather than
+  // stored, so it never drifts from reality when bookings are added/deleted.
+  const sessionNumberProp = findSchemaProperty(mainSchema, ['Session Number', 'Session #']);
+  if (sessionNumberProp && appointment.client_id) {
+    const { count } = await supabase
+      .from('appointments')
+      .select('*', { count: 'exact', head: true })
+      .eq('client_id', appointment.client_id)
+      .in('status', ['Completed', 'Scheduled']);
+    if (count) mainProps[sessionNumberProp.name] = { number: count };
+  }
 
   // Dynamically find the relation property pointing to the Clients DB
   const clientRelationProp = Object.keys(mainSchema).find(k => {
@@ -488,93 +523,9 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
     console.error(`[appointment-sync] Failed to update appointment in Supabase:`, updateError);
   }
 
-  // ─── Session Notes: create/update a row in the Session Notes DB ───
-  try {
-    const sessionNotesSchema = await fetchDatabaseSchema(SESSION_NOTES_DB_ID, notionHeaders);
-
-    // Find the Client relation property in Session Notes DB
-    const clientRelProp = Object.keys(sessionNotesSchema).find(k => {
-      const p = sessionNotesSchema[k];
-      return p.type === 'relation' && p.relation?.database_id && normalizeId(p.relation.database_id) === normalizeId(CLIENTS_DB_ID);
-    });
-
-    const snProps: Record<string, any> = {};
-
-    // Name (title)
-    const snTitleProp = Object.keys(sessionNotesSchema).find(k => sessionNotesSchema[k].type === 'title');
-    if (snTitleProp) {
-      snProps[snTitleProp] = { title: [{ text: { content: `${clientName} — Session ${appointment.display_id || new Date(appointment.date).toISOString().split('T')[0]}` } }] };
-    }
-
-    // Client relation
-    if (clientRelProp && clientPageId) {
-      snProps[clientRelProp] = { relation: [{ id: clientPageId }] };
-    }
-
-    // Session Date
-    const snDateProp = findSchemaProperty(sessionNotesSchema, ['Session Date', 'Date']);
-    if (snDateProp) {
-      snProps[snDateProp.name] = { date: { start: appointment.date } };
-    }
-
-    // Session Number (total sessions for this client)
-    const snNumberProp = findSchemaProperty(sessionNotesSchema, ['Session Number', 'Number']);
-    if (snNumberProp) {
-      // Calculate total sessions for this client
-      const { count } = await supabase
-        .from('appointments')
-        .select('*', { count: 'exact', head: true })
-        .eq('client_id', appointment.client_id)
-        .in('status', ['Completed', 'Scheduled']);
-      if (count) {
-        snProps[snNumberProp.name] = { number: count };
-      }
-    }
-
-    // Key Findings
-    const snFindingsProp = findSchemaProperty(sessionNotesSchema, ['Key Findings', 'Findings']);
-    if (snFindingsProp) {
-      snProps[snFindingsProp.name] = { rich_text: [{ text: { content: appointment.issue || "" } }] };
-    }
-
-    // Corrections Made
-    const snCorrectionsProp = findSchemaProperty(sessionNotesSchema, ['Corrections Made', 'Corrections']);
-    if (snCorrectionsProp) {
-      snProps[snCorrectionsProp.name] = { rich_text: [{ text: { content: appointment.modes_balances || "" } }] };
-    }
-
-    // Practitioner Notes
-    const snNotesProp = findSchemaProperty(sessionNotesSchema, ['Practitioner Notes', 'Notes']);
-    if (snNotesProp) {
-      snProps[snNotesProp.name] = { rich_text: [{ text: { content: appointment.notes || "" } }] };
-    }
-
-    // Next Priority
-    const snNextProp = findSchemaProperty(sessionNotesSchema, ['Next Priority', 'Next Focus']);
-    if (snNextProp) {
-      snProps[snNextProp.name] = { rich_text: [{ text: { content: appointment.next_session_note || "" } }] };
-    }
-
-    if (Object.keys(snProps).length > 1) {
-      const snCreateRes = await fetchWithRetry('https://api.notion.com/v1/pages', {
-        method: 'POST',
-        headers: notionHeaders,
-        body: JSON.stringify({
-          parent: { database_id: SESSION_NOTES_DB_ID },
-          properties: snProps
-        })
-      });
-
-      if (snCreateRes.ok) {
-        console.log(`[appointment-sync] Session Notes row created for ${clientName}`);
-      } else {
-        const err = await snCreateRes.json();
-        console.warn(`[appointment-sync] Failed to create Session Notes row:`, err);
-      }
-    }
-  } catch (snErr) {
-    console.warn(`[appointment-sync] Session Notes creation failed:`, snErr.message);
-  }
+  // Session Notes DB has been retired (consolidated into Main Appointments via
+  // the clinical fields mapped above). The previous create-only write to that
+  // DB was the source of duplicate rows; it is intentionally removed here.
 
   return { id: mainPageId, url: mainPageUrl };
 };

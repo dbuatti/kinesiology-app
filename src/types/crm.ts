@@ -106,6 +106,8 @@ export interface Appointment {
   series_frequency?: string | null;
   series_occurrence?: number | null;
   series_total?: number | null;
+  homework_given?: string | null;
+  what_held_from_last_session?: string | null;
   metadata?: any;
 }
 

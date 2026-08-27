@@ -14,6 +14,45 @@ const SECTIONS = [
   { id: 'reflection', label: 'Final Reflection', icon: Check },
 ];
 
+const RATING_LABELS: Record<string, string> = {
+  decide_freedom: 'Decide from freedom, not fear',
+  ease_money: 'Ease around money',
+  smart_risk: 'Willing to take a smart risk',
+  enough: "I feel 'enough' as I am",
+};
+
+const SECTION_FIELDS: Record<string, { key: string; label: string }[]> = {
+  orientation: [
+    { key: 'decision_source', label: 'Where most money decisions come from' },
+    { key: 'small_spends', label: 'Small spends I resist' },
+    { key: 'money_insecurity', label: 'Money-insecurity I notice' },
+  ],
+  family: [
+    { key: 'parents_taught', label: 'What parents/caregivers taught about money' },
+    { key: 'emotional_atmosphere', label: 'Emotional atmosphere around money growing up' },
+    { key: 'wealthy_beliefs', label: 'Family beliefs about wealthy people' },
+    { key: 'root_belief', label: 'Root belief (and whose it was)' },
+    { key: 'truer_version', label: 'A truer, kinder version' },
+  ],
+  needs: [
+    { key: 'significance_question', label: 'Using money / results for significance' },
+    { key: 'over_attachment', label: 'One thing meeting all four needs' },
+  ],
+  risks: [
+    { key: 'risks_list', label: 'Risks that actually paid off' },
+    { key: 'risks_tells_you', label: 'What this tells me about the next risk' },
+  ],
+  'pay-yourself': [
+    { key: 'cup_fills', label: 'What genuinely fills my cup' },
+    { key: 'money_goes', label: 'Where my money goes first' },
+    { key: 'pay_yourself_this_week', label: 'This week I pay myself first by' },
+  ],
+  reflection: [
+    { key: 'commitment', label: "Belief / practice I'll consciously change in 30 days" },
+    { key: 'commitment_date', label: 'Committed to by' },
+  ],
+};
+
 const RatingRow = ({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) => (
   <div className="flex items-center gap-3 py-2">
     <span className="flex-1 text-sm font-medium">{label}</span>
@@ -227,28 +266,40 @@ const MoneySecurityFreedomWorksheet = ({ onBack }: { onBack?: () => void }) => {
   }, []);
 
   const handleCopy = useCallback(() => {
-    const plain = SECTIONS.map(s => {
-      const lines: string[] = [`\n## ${s.label}\n`];
-      Object.entries(formData).forEach(([key, val]) => {
-        if (key === 'tracker' && Array.isArray(val)) {
-          val.forEach((row: any, i: number) => {
-            if (row.decision || row.feeling) {
-              lines.push(`  ${i + 1}. ${row.decision} | ${row.orientation} | ${row.feeling} | ${row.expansive}`);
-            }
-          });
-        } else if (key === 'ratings' && typeof val === 'object') {
-          Object.entries(val).forEach(([k, v]) => {
-            if (v) lines.push(`  ${k}: ${v}/10`);
-          });
-        } else if (key === 'needs_selected' && Array.isArray(val)) {
-          lines.push(`  Selected: ${val.join(', ')}`);
-        } else if (val && typeof val === 'string' && val.trim()) {
-          lines.push(`  ${key}: ${val}`);
-        }
-      });
-      return lines.join('\n');
-    }).join('\n');
-    navigator.clipboard.writeText(plain);
+    const blocks: string[] = [];
+    for (const s of SECTIONS) {
+      const lines: string[] = [`## ${s.label}`];
+      if (s.id === 'orientation') {
+        const r = (formData.ratings || {}) as Record<string, number>;
+        Object.entries(RATING_LABELS).forEach(([k, label]) => {
+          const v = r[k];
+          if (v) lines.push(`- ${label}: ${v}/10`);
+        });
+      }
+      if (s.id === 'needs') {
+        const sel = (formData.needs_selected || []) as string[];
+        if (sel.length) lines.push(`- Needs being met through money: ${sel.join(', ')}`);
+      }
+      if (s.id === 'tracker') {
+        (formData.tracker || []).forEach((row: { decision: string; orientation: string; feeling: string; expansive: string }, i: number) => {
+          if (row.decision || row.feeling) {
+            lines.push(`- ${i + 1}. ${row.decision || '—'} | ${row.orientation || '—'} | ${row.feeling || '—'} | expansive: ${row.expansive || '—'}`);
+          }
+        });
+      }
+      const fields = SECTION_FIELDS[s.id];
+      if (fields) {
+        fields.forEach(({ key, label }) => {
+          const val = formData[key];
+          if (val && typeof val === 'string' && val.trim()) lines.push(`- ${label}: ${val.trim()}`);
+        });
+      }
+      if (lines.length === 1) {
+        lines.push(s.id === 'ai' ? '(instructions only — use the answers above with the prompt on this page)' : '(no answers yet)');
+      }
+      blocks.push(lines.join('\n'));
+    }
+    navigator.clipboard.writeText(blocks.join('\n\n'));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, [formData]);

@@ -4,7 +4,8 @@ import {
   fetchDatabaseSchema, 
   findSchemaProperty, 
   normalizeId,
-  fetchWithRetry
+  fetchWithRetry,
+  extractNotionPropertyValue
 } from "./notion-api.ts";
 import { syncClientToNotion } from "./client-sync.ts";
 
@@ -66,9 +67,12 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
   };
 
   // ─── Clinical fields (consolidated from the retired Session Notes DB) ───
-  // Each is mapped dynamically via the schema so the exact Notion property
-  // name/label doesn't need to be hardcoded. Skipped silently if the property
-  // isn't present on the Notion DB yet.
+  // Built separately so they can be filtered against existing Notion content:
+  // the CRM fills them on first sync (CREATE); after that Notion wins, because
+  // that's where the post-session write-up happens. This prevents pre-session
+  // CRM data (e.g. `issue` = presenting complaint) from overwriting hand-written
+  // session findings already in Notion.
+  const clinicalProps: Record<string, any> = {};
   const clinicalMappings: Array<[string[], string | number | null, 'rich_text' | 'number']> = [
     [['BOLT Score (s)', 'BOLT Score', 'BOLT'], appointment.bolt_score, 'number'],
     [['Key Findings', 'Findings'], appointment.issue, 'rich_text'],
@@ -83,23 +87,24 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
     if (value === null || value === undefined || value === '') continue;
     if (kind === 'number') {
       const num = Number(value);
-      if (!isNaN(num)) mainProps[prop.name] = { number: num };
+      if (!isNaN(num)) clinicalProps[prop.name] = { number: num };
     } else {
-      mainProps[prop.name] = { rich_text: [{ text: { content: String(value) } }] };
+      clinicalProps[prop.name] = { rich_text: [{ text: { content: String(value) } }] };
     }
   }
 
-  // Session Number is computed (count of client's appointments) rather than
-  // stored, so it never drifts from reality when bookings are added/deleted.
-  const sessionNumberProp = findSchemaProperty(mainSchema, ['Session Number', 'Session #']);
-  if (sessionNumberProp && appointment.client_id) {
-    const { count } = await supabase
-      .from('appointments')
-      .select('*', { count: 'exact', head: true })
-      .eq('client_id', appointment.client_id)
-      .in('status', ['Completed', 'Scheduled']);
-    if (count) mainProps[sessionNumberProp.name] = { number: count };
-  }
+  // Returns only clinical props where the Notion side is currently empty.
+  const filterClinicalAgainstNotion = (existingProperties: Record<string, any>): Record<string, any> => {
+    const filtered: Record<string, any> = {};
+    for (const [key, value] of Object.entries(clinicalProps)) {
+      const existingValue = extractNotionPropertyValue(existingProperties[key]);
+      if (existingValue === null || existingValue === undefined || existingValue === '' ||
+          (Array.isArray(existingValue) && existingValue.length === 0)) {
+        filtered[key] = value;
+      }
+    }
+    return filtered;
+  };
 
   // Dynamically find the relation property pointing to the Clients DB
   const clientRelationProp = Object.keys(mainSchema).find(k => {
@@ -118,10 +123,26 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
   // Try updating existing Main page if ID exists
   if (mainPageId) {
     console.log(`[appointment-sync] Updating existing Main page: ${mainPageId}`);
+
+    // Fetch existing page to check which clinical fields are already populated.
+    // Notion wins after first write — only fill clinical fields that are empty.
+    let patchProps = { ...mainProps };
+    const pageRes = await fetchWithRetry(`https://api.notion.com/v1/pages/${mainPageId}`, {
+      method: 'GET',
+      headers: notionHeaders
+    });
+    if (pageRes.ok) {
+      const pageData = await pageRes.json();
+      const filteredClinical = filterClinicalAgainstNotion(pageData.properties || {});
+      patchProps = { ...mainProps, ...filteredClinical };
+    } else {
+      console.warn(`[appointment-sync] Could not fetch existing page for clinical guard; sending base props only.`);
+    }
+
     const updateRes = await fetchWithRetry(`https://api.notion.com/v1/pages/${mainPageId}`, {
       method: 'PATCH',
       headers: notionHeaders,
-      body: JSON.stringify({ properties: mainProps })
+      body: JSON.stringify({ properties: patchProps })
     });
 
     if (!updateRes.ok) {
@@ -170,10 +191,12 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
           console.log(`[appointment-sync] Dedup match — updating existing Main page: ${existing.id}`);
           mainPageId = existing.id;
           mainPageUrl = existing.url;
+          const filteredClinical = filterClinicalAgainstNotion(existing.properties || {});
+          const dedupPatchProps = { ...mainProps, ...filteredClinical };
           const updRes = await fetchWithRetry(`https://api.notion.com/v1/pages/${mainPageId}`, {
             method: 'PATCH',
             headers: notionHeaders,
-            body: JSON.stringify({ properties: mainProps })
+            body: JSON.stringify({ properties: dedupPatchProps })
           });
           if (!updRes.ok) {
             console.warn(`[appointment-sync] Dedup update failed, will try creating:`, await updRes.json());
@@ -368,7 +391,7 @@ export const syncSingleAppointment = async (appId: string, supabase: any, notion
       headers: notionHeaders,
       body: JSON.stringify({
         parent: { database_id: MAIN_DB_ID },
-        properties: mainProps,
+        properties: { ...mainProps, ...clinicalProps },
         children: childrenBlocks
       })
     });

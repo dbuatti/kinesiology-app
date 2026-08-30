@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Bell, Calendar, Clock, CheckCircle, AlertCircle, Loader2, Send, RefreshCw } from "lucide-react";
+import { Bell, Calendar, Clock, CheckCircle, AlertCircle, Loader2, Send, RefreshCw, Mail } from "lucide-react";
 import { format, addDays } from "date-fns";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +25,7 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
   const [stats, setStats] = useState<ReminderStats>({ total: 0, sent: 0, failed: 0 });
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isTestSending, setIsTestSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastRun, setLastRun] = useState<Date | null>(null);
 
@@ -113,6 +114,44 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
     }
   };
 
+  // Send test/debug email to the current user
+  const sendTestEmail = async () => {
+    if (!session?.user?.id) return;
+    
+    setIsTestSending(true);
+    setError(null);
+    
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-session-reminders`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ debug: true }),
+        }
+      );
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to send test email");
+      }
+      
+      const result = await response.json();
+      
+      showSuccess(`Test email sent to ${session.user.email}`);
+      
+    } catch (err: any) {
+      console.error("Error sending test email:", err);
+      showError(err.message || "Failed to send test email");
+      setError(err.message || "Failed to send test email");
+    } finally {
+      setIsTestSending(false);
+    }
+  };
+
   // Load stats on mount
   useEffect(() => {
     fetchStats();
@@ -188,7 +227,7 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
         <div className="flex gap-2">
           <Button
             onClick={sendReminders}
-            disabled={isSending || stats.total === 0}
+            disabled={isSending || isTestSending || stats.total === 0}
             className="flex-1"
             size="sm"
           >
@@ -201,13 +240,29 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
           </Button>
           <Button
             onClick={fetchStats}
-            disabled={isLoading}
+            disabled={isLoading || isSending || isTestSending}
             variant="outline"
             size="sm"
           >
             <RefreshCw className="h-4 w-4" />
           </Button>
         </div>
+
+        {/* Test Email Button */}
+        <Button
+          onClick={sendTestEmail}
+          disabled={isSending || isTestSending}
+          variant="ghost"
+          size="sm"
+          className="w-full text-xs"
+        >
+          {isTestSending ? (
+            <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+          ) : (
+            <Mail className="h-3 w-3 mr-2" />
+          )}
+          Send Test Email to Me ({session?.user?.email})
+        </Button>
 
         {/* Info */}
         <div className="text-xs text-muted-foreground space-y-1">

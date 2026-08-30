@@ -67,7 +67,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
             <TableRow key={client.id} className="hover:bg-primary/5 transition-colors group border-border">
               <TableCell className="px-8 py-5">
                 <Link to={`/clients/${client.id}`} className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center text-lg font-black uppercase shadow-sm group-hover:bg-card transition-colors">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-rose-400 text-white flex items-center justify-center text-lg font-black uppercase shadow-sm group-hover:scale-105 transition-transform">
                     {client.name.charAt(0)}
                   </div>
                   <div className="flex flex-col">

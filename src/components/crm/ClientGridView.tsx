@@ -64,7 +64,7 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
         >
           <CardContent className="p-8 space-y-6">
             <div className="flex items-start justify-between">
-              <div className="w-16 h-16 rounded-[1.5rem] bg-primary text-primary-foreground flex items-center justify-center text-2xl font-black uppercase shadow-xl shadow-primary/10 group-hover:scale-110 transition-transform">
+              <div className="w-16 h-16 rounded-[1.5rem] bg-gradient-to-br from-amber-400 to-rose-400 text-white flex items-center justify-center text-2xl font-black uppercase shadow-xl shadow-rose-500/15 group-hover:scale-110 transition-transform">
                 {client.name.charAt(0)}
               </div>
               <div className="flex flex-col items-end">

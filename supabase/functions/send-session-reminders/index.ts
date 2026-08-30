@@ -168,39 +168,52 @@ function generateTestEmail(userEmail: string): { subject: string; html: string }
     hour12: true,
   });
 
-  const subject = `TEST: Session Reminder System - ${formattedDate}`;
+  const subject = `Preview: Session reminder email`;
 
+  // A branded preview so the "Send test email" button shows exactly what clients
+  // will receive — same look as the real weekly reminder, with a sample session.
   const html = `
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
-        <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 700;">Test Email</h1>
-        <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 14px;">Session Reminder System</p>
-      </div>
-      <div style="background: #f0fdf4; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #bbf7d0;">
-        <p style="color: #1f2937; font-size: 16px; margin: 0 0 20px 0;">This is a test email from the Session Reminder system.</p>
-        <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-          If you're receiving this email, the reminder system is working correctly.
-        </p>
-        <div style="background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; border-left: 4px solid #10b981;">
-          <p style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Test Details</p>
-          <p style="color: #64748b; font-size: 14px; margin: 0 0 4px 0;">
-            <strong>Timestamp:</strong> ${formattedDate} at ${formattedTime}
-          </p>
-          <p style="color: #64748b; font-size: 14px; margin: 0 0 4px 0;">
-            <strong>Recipient:</strong> ${userEmail}
-          </p>
-          <p style="color: #64748b; font-size: 14px; margin: 0;">
-            <strong>Purpose:</strong> Debug/Testing
-          </p>
-        </div>
-        <p style="color: #64748b; font-size: 14px; line-height: 1.6; margin: 0 0 20px 0;">
-          This email was sent as part of a debug/test operation. No action is required.
-        </p>
-        <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; text-align: center;">
-          <p style="color: #94a3b8; font-size: 12px; margin: 0;">This is an automated test message.</p>
-        </div>
-      </div>
-    </div>
+    <!DOCTYPE html>
+    <html>
+    <body style="margin: 0; padding: 0; background-color: #FDFCFB; font-family: sans-serif;">
+      <center style="width: 100%; background-color: #FDFCFB; padding: 40px 0;">
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 40px; overflow: hidden; border: 1px solid #F1E9EF;">
+          <tr><td style="height: 6px; background-color: #D46A9B;"></td></tr>
+          <tr>
+            <td style="padding: 56px 44px;">
+              <div style="text-align: center;">
+                <div style="color: #1E3261; font-size: 26px; font-weight: 700;">✦ Resonance Kinesiology</div>
+                <div style="color: #D46A9B; font-size: 11px; font-weight: 900; letter-spacing: 0.36em; margin-top: 14px; text-transform: uppercase;">Session Reminder</div>
+              </div>
+
+              <div style="text-align: left; margin-top: 44px; line-height: 1.8; font-size: 17px; color: #334155;">
+                <p style="margin: 0 0 18px;">Hi Daniele,</p>
+                <p style="margin: 0 0 8px;">Just a friendly reminder about your next appointment this week:</p>
+
+                <div style="background-color: #F8FAFC; border-radius: 20px; padding: 22px 24px; margin: 14px 0; border: 1px solid #EEF2F7;">
+                  <div style="font-size: 10px; font-weight: 800; color: #D46A9B; text-transform: uppercase; letter-spacing: 0.14em;">FNH Session</div>
+                  <div style="font-size: 20px; font-weight: 700; color: #1E293B; margin-top: 6px;">${formattedDate}</div>
+                  <div style="font-size: 15px; color: #64748B; margin-top: 4px;">${formattedTime}</div>
+                </div>
+
+                <p style="margin: 28px 0 0;">Looking forward to seeing you. If anything changes, just reply to this email and we'll sort it out.</p>
+              </div>
+
+              <div style="margin-top: 40px; text-align: left;">
+                <p style="margin: 0; font-size: 17px; color: #334155;">All the best,</p>
+                <div style="font-weight: 700; color: #1E3261; font-size: 18px; margin-top: 6px;">Daniele</div>
+                <div style="color: #D46A9B; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px;">Resonance Kinesiology</div>
+              </div>
+
+              <div style="border-top: 1px solid #F1F5F9; margin-top: 40px; padding-top: 20px; text-align: center;">
+                <p style="color: #B8C0CC; font-size: 11px; margin: 0;">This is a preview sent to ${userEmail} — clients receive the same design.</p>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </center>
+    </body>
+    </html>
   `;
 
   return { subject, html };
@@ -449,51 +462,60 @@ serve(async (req) => {
       const firstName = clientItems[0].firstName || "there";
 
       try {
-        const rows = clientItems
+        // Each session as a soft, warm card: type + friendly date + time.
+        const sessionCards = clientItems
           .map((it) => {
             const d = new Date(it.dateISO);
-            const formattedDate = isNaN(d.getTime())
+            const friendlyDate = isNaN(d.getTime())
               ? it.dateISO
-              : d.toLocaleDateString("en-AU", { weekday: "short", year: "numeric", month: "short", day: "numeric" });
+              : d.toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long" });
             return `
-              <tr>
-                <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">${formattedDate}</td>
-                <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">${it.timeStr}</td>
-                <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">${it.typeLabel}</td>
-              </tr>`;
+              <div style="background-color: #F8FAFC; border-radius: 20px; padding: 22px 24px; margin: 14px 0; border: 1px solid #EEF2F7;">
+                <div style="font-size: 10px; font-weight: 800; color: #D46A9B; text-transform: uppercase; letter-spacing: 0.14em;">${it.typeLabel}</div>
+                <div style="font-size: 20px; font-weight: 700; color: #1E293B; margin-top: 6px;">${friendlyDate}</div>
+                <div style="font-size: 15px; color: #64748B; margin-top: 4px;">${it.timeStr}</div>
+              </div>`;
           })
           .join("");
 
-        const subject = `Reminder: ${clientItems.length} Upcoming Session${clientItems.length > 1 ? "s" : ""} This Week`;
+        const subject = clientItems.length > 1
+          ? `Looking forward to seeing you this week, ${firstName}`
+          : `A reminder about your session this week, ${firstName}`;
+
         const html = `
-          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
-              <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 700;">Session Reminder</h1>
-              <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 14px;">Your week ahead</p>
-            </div>
-            <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0;">
-              <p style="color: #334155; font-size: 16px; margin: 0 0 20px 0;">Hi ${firstName},</p>
-              <p style="color: #475569; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-                Here ${clientItems.length > 1 ? "are your upcoming sessions" : "is your upcoming session"} this week:
-              </p>
-              <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                <thead>
-                  <tr style="background: #e2e8f0;">
-                    <th style="padding: 10px; text-align: left; font-size: 13px; color: #475569; border-bottom: 2px solid #cbd5e1;">Date</th>
-                    <th style="padding: 10px; text-align: left; font-size: 13px; color: #475569; border-bottom: 2px solid #cbd5e1;">Time</th>
-                    <th style="padding: 10px; text-align: left; font-size: 13px; color: #475569; border-bottom: 2px solid #cbd5e1;">Type</th>
-                  </tr>
-                </thead>
-                <tbody>${rows}</tbody>
+          <!DOCTYPE html>
+          <html>
+          <body style="margin: 0; padding: 0; background-color: #FDFCFB; font-family: sans-serif;">
+            <center style="width: 100%; background-color: #FDFCFB; padding: 40px 0;">
+              <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 40px; overflow: hidden; border: 1px solid #F1E9EF;">
+                <tr><td style="height: 6px; background-color: #D46A9B;"></td></tr>
+                <tr>
+                  <td style="padding: 56px 44px;">
+                    <div style="text-align: center;">
+                      <div style="color: #1E3261; font-size: 26px; font-weight: 700;">✦ Resonance Kinesiology</div>
+                      <div style="color: #D46A9B; font-size: 11px; font-weight: 900; letter-spacing: 0.36em; margin-top: 14px; text-transform: uppercase;">Session Reminder</div>
+                    </div>
+
+                    <div style="text-align: left; margin-top: 44px; line-height: 1.8; font-size: 17px; color: #334155;">
+                      <p style="margin: 0 0 18px;">Hi ${firstName},</p>
+                      <p style="margin: 0 0 8px;">Just a friendly reminder about your ${clientItems.length > 1 ? "upcoming sessions" : "next appointment"} this week:</p>
+
+                      ${sessionCards}
+
+                      <p style="margin: 28px 0 0;">Looking forward to seeing you. If anything changes, just reply to this email and we'll sort it out.</p>
+                    </div>
+
+                    <div style="margin-top: 40px; text-align: left;">
+                      <p style="margin: 0; font-size: 17px; color: #334155;">All the best,</p>
+                      <div style="font-weight: 700; color: #1E3261; font-size: 18px; margin-top: 6px;">Daniele</div>
+                      <div style="color: #D46A9B; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px;">Resonance Kinesiology</div>
+                    </div>
+                  </td>
+                </tr>
               </table>
-              <p style="color: #64748b; font-size: 14px; line-height: 1.6; margin: 0 0 20px 0;">
-                If you need to reschedule or have any questions, just reply to this email.
-              </p>
-              <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; text-align: center;">
-                <p style="color: #94a3b8; font-size: 12px; margin: 0;">Warmly, Daniele Buatti · Resonance Kinesiology</p>
-              </div>
-            </div>
-          </div>`;
+            </center>
+          </body>
+          </html>`;
 
         await sendEmail(accessToken, email, subject, html);
 

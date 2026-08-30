@@ -140,7 +140,7 @@ const PathwayReflexStimSheet = ({
           onClick={() => toggle(key)}
           aria-pressed={isMarked}
           aria-label={`${side} side — ${isMarked ? "showing, click to unmark" : "mark showing"}`}
-          title={isMarked ? `${side} — click to unmark` : `Mark ${side} showing`}
+          title={isMarked ? `${side} — click to unmark" : "Mark ${side} showing"}
           className={`relative flex-1 flex items-center justify-center cursor-pointer transition-colors duration-100 active:bg-black/[0.05] hover:bg-black/[0.02] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-chart-primary print:cursor-default ${
             active ? "bg-yellow-200/70" : ""
           }`}
@@ -193,13 +193,12 @@ const PathwayReflexStimSheet = ({
           </tr>
         </thead>
         <tbody>
-          {[
           <tr key="primitive-reflexes" id="primitive-reflexes">
             <td colSpan={4} style={{ backgroundColor: "#000", color: "#fff" }} className="border-2 border-black p-1 font-black uppercase tracking-[0.2em] sticky top-[34px] z-[5]">
               Primitive Reflexes
             </td>
-          </tr>,
-          ...PRIMITIVE_TRACKS.map((track) => (
+          </tr>
+          {PRIMITIVE_TRACKS.map((track) => (
             <React.Fragment key={track.title}>
               {track.reflexes.map((reflex, ri) => {
                 const lateralized = Boolean(reflex.lateralized);
@@ -268,16 +267,16 @@ const PathwayReflexStimSheet = ({
                       </tr>
                     ))}
                   </React.Fragment>
-                })}
+                )})
               </React.Fragment>
             )
-          )},
+          )}
           <tr key="cranial-nerves" id="cranial-nerves">
             <td colSpan={4} style={{ backgroundColor: "#000", color: "#fff" }} className="border-2 border-black p-1 font-black uppercase tracking-[0.2em] sticky top-[34px] z-[5]">
               Cranial Nerves
             </td>
-          </tr>,
-          ...NERVE_GROUPS.map((group) => (
+          </tr>
+          {NERVE_GROUPS.map((group) => (
             <React.Fragment key={group.label}>
               {group.items.map((nerve, ni) => (
                 <React.Fragment key={nerve.id}>
@@ -396,13 +395,13 @@ const PathwayReflexStimSheet = ({
                 </React.Fragment>
               ))}
             </React.Fragment>
-          )},
+          )}
           <tr key="intrinsic-muscles" id="intrinsic-muscles">
             <td colSpan={4} style={{ backgroundColor: "#000", color: "#fff" }} className="border-2 border-black p-1 font-black uppercase tracking-[0.2em] sticky top-[34px] z-[5]">
               Intrinsic Muscles
             </td>
-          </tr>,
-          ...INTRINSIC_GRID_MUSCLES.map((muscle) => {
+          </tr>
+          {INTRINSIC_GRID_MUSCLES.map((muscle) => {
             const info = getMuscleInfo(muscle.name);
             const state = muscleState?.[muscleMidlineKey(muscle.name)];
             const lState = muscleState?.[muscleSideKey(muscle.name, "L")];

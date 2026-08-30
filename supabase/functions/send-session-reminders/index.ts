@@ -147,64 +147,6 @@ async function sendEmail(
   return true;
 }
 
-function generateReminderEmail(appointment: Appointment): { subject: string; html: string } {
-  const appointmentDate = new Date(appointment.date);
-  const formattedDate = appointmentDate.toLocaleDateString("en-AU", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-
-  const timeStr = appointment.time
-    ? new Date(`1970-01-01T${appointment.time}`).toLocaleTimeString("en-AU", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      })
-    : "TBA";
-
-  const clientName = appointment.clients?.name || "Client";
-  const firstName = appointment.clients?.first_name || clientName.split(" ")[0];
-
-  const subject = `Reminder: Your ${appointment.tag || "session"} on ${formattedDate}`;
-
-  const html = `
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
-        <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 700;">Session Reminder</h1>
-        <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 14px;">Your upcoming appointment</p>
-      </div>
-      <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0;">
-        <p style="color: #334155; font-size: 16px; margin: 0 0 20px 0;">Dear ${firstName},</p>
-        <p style="color: #475569; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-          This is a friendly reminder about your upcoming session:
-        </p>
-        <div style="background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; border-left: 4px solid #6366f1;">
-          <p style="color: #1e293b; font-size: 18px; font-weight: 600; margin: 0 0 8px 0;">${appointment.tag || "Session"}</p>
-          <p style="color: #64748b; font-size: 14px; margin: 0 0 4px 0;">
-            <strong>Date:</strong> ${formattedDate}
-          </p>
-          <p style="color: #64748b; font-size: 14px; margin: 0 0 4px 0;">
-            <strong>Time:</strong> ${timeStr}
-          </p>
-          <p style="color: #64748b; font-size: 14px; margin: 0;">
-            <strong>Client:</strong> ${clientName}
-          </p>
-        </div>
-        <p style="color: #64748b; font-size: 14px; line-height: 1.6; margin: 0 0 20px 0;">
-          If you need to reschedule or have any questions, please don't hesitate to reach out.
-        </p>
-        <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; text-align: center;">
-          <p style="color: #94a3b8; font-size: 12px; margin: 0;">This is an automated reminder. Please don't reply to this email.</p>
-        </div>
-      </div>
-    </div>
-  `;
-
-  return { subject, html };
-}
-
 function generateTestEmail(userEmail: string): { subject: string; html: string } {
   const now = new Date();
   const formattedDate = now.toLocaleDateString("en-AU", {
@@ -419,7 +361,7 @@ serve(async (req) => {
     const { data: appointments, error: dbError } = await supabase
       .from("appointments")
       .select(`
-        id, date, client_id, status, tag, time, reminder_sent,
+        id, date, client_id, status, tag, reminder_sent,
         clients ( id, name, email )
       `)
       .gte("date", today)
@@ -456,9 +398,11 @@ serve(async (req) => {
       const email = (appt.clients?.email || "").toLowerCase().trim();
       if (!email || PRACTITIONER_EMAILS.has(email)) continue;
       const name = appt.clients?.name || "Client";
-      const timeStr = appt.time
-        ? new Date(`1970-01-01T${appt.time}`).toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", hour12: true })
-        : "TBA";
+      // The appointment time lives inside the `date` timestamp; render it in Melbourne.
+      const apptDt = new Date(appt.date);
+      const timeStr = isNaN(apptDt.getTime())
+        ? "TBA"
+        : apptDt.toLocaleTimeString("en-AU", { timeZone: "Australia/Melbourne", hour: "numeric", minute: "2-digit", hour12: true });
       items.push({
         source: "fnh",
         id: appt.id,
@@ -526,7 +470,7 @@ serve(async (req) => {
             const d = new Date(it.dateISO);
             const friendlyDate = isNaN(d.getTime())
               ? it.dateISO
-              : d.toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long" });
+              : d.toLocaleDateString("en-AU", { timeZone: "Australia/Melbourne", weekday: "long", day: "numeric", month: "long" });
             return `
               <div style="background-color: #F8FAFC; border-radius: 20px; padding: 22px 24px; margin: 14px 0; border: 1px solid #EEF2F7;">
                 <div style="font-size: 10px; font-weight: 800; color: #D46A9B; text-transform: uppercase; letter-spacing: 0.14em;">${it.typeLabel}</div>

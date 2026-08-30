@@ -9,6 +9,25 @@ import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 
+// supabase.functions.invoke wraps non-2xx responses in a generic FunctionsHttpError
+// whose real message sits in `.context` (the raw Response). Pull it out so the
+// toast shows the actual server error (e.g. "Gmail Auth Error: invalid_grant").
+async function extractFnError(fnError: any, fallback: string): Promise<string> {
+  try {
+    const ctx = fnError?.context;
+    if (ctx && typeof ctx.json === "function") {
+      const body = await ctx.clone().json();
+      if (body?.error) return body.error;
+    } else if (ctx && typeof ctx.text === "function") {
+      const t = await ctx.clone().text();
+      if (t) return t;
+    }
+  } catch {
+    /* fall through */
+  }
+  return fnError?.message || fallback;
+}
+
 interface ReminderStats {
   total: number;
   sent: number;
@@ -87,7 +106,7 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
         { body: {} }
       );
 
-      if (fnError) throw new Error(fnError.message || "Failed to send reminders");
+      if (fnError) throw new Error(await extractFnError(fnError, "Failed to send reminders"));
 
       showSuccess(`Reminders sent: ${result.result.success} successful, ${result.result.failed} failed`);
 
@@ -116,7 +135,7 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
         { body: { debug: true } }
       );
 
-      if (fnError) throw new Error(fnError.message || "Failed to send test email");
+      if (fnError) throw new Error(await extractFnError(fnError, "Failed to send test email"));
 
       showSuccess(`Test email sent to ${session.user.email}`);
 

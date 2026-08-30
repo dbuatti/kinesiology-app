@@ -221,6 +221,55 @@ serve(async (req) => {
 
     if (appError) throw appError;
 
+    // Send the intake/confirmation email for NEW bookings that came in through the
+    // Cal.com website embed (app-initiated bookings already call send-manual-onboarding
+    // themselves). Without this, externally-booked clients like Lesley never receive
+    // the intake form. Reschedules are skipped to avoid re-spamming existing clients.
+    if (triggerEvent === 'BOOKING_CREATED') {
+      try {
+        // Resolve the appointment id we just wrote so onboarding attaches the right session.
+        let onboardAppointmentId = targetId;
+        if (!onboardAppointmentId) {
+          const { data: justSaved } = await supabase
+            .from('appointments')
+            .select('id')
+            .eq('calcom_booking_id', calcomId)
+            .maybeSingle();
+          onboardAppointmentId = justSaved?.id;
+        }
+
+        const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-manual-onboarding`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ clientId: dbClient.id, appointmentId: onboardAppointmentId }),
+        });
+        if (!resp.ok) {
+          const errText = await resp.text().catch(() => '');
+          console.error(`[${functionName}] Onboarding email call failed (${resp.status}): ${errText}`);
+          await supabase.from('webhook_failures').insert({
+            source: functionName,
+            event_type: 'onboarding-email',
+            reference: calcomId,
+            detail: `Onboarding email failed for ${email} (${resp.status}): ${errText}`.slice(0, 500),
+          }).catch(() => {});
+        } else {
+          console.log(`[${functionName}] Onboarding email dispatched for ${email}`);
+        }
+      } catch (e) {
+        // Never let a mail hiccup fail the booking sync — surface it instead.
+        console.error(`[${functionName}] Onboarding email error (non-fatal):`, e.message);
+        await supabase.from('webhook_failures').insert({
+          source: functionName,
+          event_type: 'onboarding-email',
+          reference: calcomId,
+          detail: `Onboarding email error for ${email}: ${e.message}`.slice(0, 500),
+        }).catch(() => {});
+      }
+    }
+
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
   } catch (error) {
     console.error(`[${functionName}] CRITICAL FAILURE:`, error.message);

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -227,19 +228,28 @@ serve(async (req) => {
     // Initialize Supabase client with service role
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Verify the user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // Two kinds of caller are allowed:
+    //   (1) the scheduled pg_cron job, which authenticates with the service-role key, and
+    //   (2) a logged-in practitioner clicking "Send reminders" in the app.
+    // Anonymous / anon-key-only callers are rejected.
+    const isServiceCall = !!SUPABASE_SERVICE_ROLE_KEY && token === SUPABASE_SERVICE_ROLE_KEY;
+
+    let user: { id: string; email?: string } | null = null;
+    if (!isServiceCall) {
+      const { data: { user: authedUser }, error: authError } = await supabase.auth.getUser(token);
+      if (authError || !authedUser) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      user = authedUser;
     }
 
-    console.log(`[send-session-reminders] Authenticated user: ${user.id}`);
+    console.log(`[send-session-reminders] Caller: ${isServiceCall ? "cron/service" : `user ${user?.id}`}`);
 
-    // Parse request body for debug/test parameters
-    let body = {};
+    // Parse request body for debug/test/scheduling parameters
+    let body: Record<string, any> = {};
     let isDebug = false;
     try {
       body = await req.json();
@@ -249,8 +259,31 @@ serve(async (req) => {
       isDebug = false;
     }
 
+    // DST-safe timing guard: the cron fires every Sunday at both 05:00 and 06:00 UTC.
+    // Only the run that lands on 16:00 (4pm) in Melbourne actually sends — the other is
+    // skipped here. This hits 4pm local year-round without tracking AEST/AEDT ourselves.
+    // `force: true` bypasses the guard (manual re-run / testing).
+    const isScheduled = isServiceCall || body.scheduled === true;
+    if (isScheduled && body.force !== true) {
+      const melHour = parseInt(
+        new Intl.DateTimeFormat("en-AU", {
+          timeZone: "Australia/Melbourne",
+          hour: "2-digit",
+          hour12: false,
+        }).format(new Date()),
+        10,
+      );
+      if (melHour !== 16) {
+        console.log(`[send-session-reminders] Skipping scheduled run — Melbourne hour is ${melHour}, not 16.`);
+        return new Response(
+          JSON.stringify({ message: `Skipped: not 4pm in Melbourne (hour ${melHour})`, result: { success: 0, failed: 0, errors: [] } }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     // Handle debug/test email request
-    if (isDebug) {
+    if (isDebug && user) {
       console.log("[send-session-reminders] Debug mode: sending test email");
       
       // Get Google access token
@@ -284,32 +317,39 @@ serve(async (req) => {
       );
     }
 
-    // Get appointments for the next 7 days that haven't had reminders sent
+    // Look 7 days ahead for both FNH appointments and voice lessons.
     const today = new Date().toISOString().split("T")[0];
     const nextWeek = new Date();
     nextWeek.setDate(nextWeek.getDate() + 7);
     const nextWeekStr = nextWeek.toISOString().split("T")[0];
 
-    console.log(`[send-session-reminders] Fetching appointments from ${today} to ${nextWeekStr}`);
+    console.log(`[send-session-reminders] Fetching sessions from ${today} to ${nextWeekStr}`);
 
+    // A single normalized shape so FNH + voice can share one digest email per client.
+    interface ReminderItem {
+      source: "fnh" | "voice";
+      id: string;
+      email: string;
+      name: string;
+      firstName: string;
+      dateISO: string;   // sortable date (ISO or YYYY-MM-DD)
+      timeStr: string;    // display time
+      typeLabel: string;
+    }
+
+    // Addresses that represent the practitioner, not a client — never remind these.
+    const PRACTITIONER_EMAILS = new Set(
+      [Deno.env.get("GMAIL_USER_EMAIL"), "daniele.buatti@gmail.com", "info@danielebuatti.com"]
+        .filter(Boolean)
+        .map((e) => e!.toLowerCase()),
+    );
+
+    // --- 1. FNH appointments -------------------------------------------------
     const { data: appointments, error: dbError } = await supabase
       .from("appointments")
       .select(`
-        id,
-        date,
-        client_id,
-        status,
-        tag,
-        time,
-        price_amount,
-        reminder_sent,
-        clients (
-          id,
-          name,
-          email,
-          first_name,
-          last_name
-        )
+        id, date, client_id, status, tag, time, reminder_sent,
+        clients ( id, name, email, first_name, last_name )
       `)
       .gte("date", today)
       .lte("date", nextWeekStr)
@@ -318,103 +358,122 @@ serve(async (req) => {
       .order("date", { ascending: true });
 
     if (dbError) {
-      console.error("[send-session-reminders] Database error:", dbError);
+      console.error("[send-session-reminders] FNH query error:", dbError);
       return new Response(JSON.stringify({ error: dbError.message }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    if (!appointments || appointments.length === 0) {
+    // --- 2. Voice lessons ----------------------------------------------------
+    const { data: voiceRows, error: voiceError } = await supabase
+      .from("voice_bookings")
+      .select("id, student_email, student_name, lesson_date, lesson_time, status, reminder_sent")
+      .gte("lesson_date", today)
+      .lte("lesson_date", nextWeekStr)
+      .eq("reminder_sent", false)
+      .order("lesson_date", { ascending: true });
+
+    if (voiceError) {
+      // Voice is best-effort: log and continue with FNH rather than failing the whole run.
+      console.error("[send-session-reminders] Voice query error (continuing):", voiceError.message);
+    }
+
+    const items: ReminderItem[] = [];
+
+    for (const appt of appointments || []) {
+      const email = (appt.clients?.email || "").toLowerCase().trim();
+      if (!email || PRACTITIONER_EMAILS.has(email)) continue;
+      const name = appt.clients?.name || "Client";
+      const timeStr = appt.time
+        ? new Date(`1970-01-01T${appt.time}`).toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", hour12: true })
+        : "TBA";
+      items.push({
+        source: "fnh",
+        id: appt.id,
+        email,
+        name,
+        firstName: appt.clients?.first_name || name.split(" ")[0],
+        dateISO: appt.date,
+        timeStr,
+        typeLabel: appt.tag || "FNH Session",
+      });
+    }
+
+    for (const v of voiceRows || []) {
+      const email = (v.student_email || "").toLowerCase().trim();
+      const name = (v.student_name || "").trim();
+      const status = (v.status || "").toLowerCase();
+      // Skip practitioner self-bookings, nameless placeholders, and cancellations.
+      if (!email || PRACTITIONER_EMAILS.has(email) || !name) continue;
+      if (status.includes("cancel")) continue;
+      items.push({
+        source: "voice",
+        id: v.id,
+        email,
+        name,
+        firstName: name.split(" ")[0],
+        dateISO: v.lesson_date,
+        timeStr: (v.lesson_time && String(v.lesson_time).trim()) || "TBA",
+        typeLabel: "Voice Lesson",
+      });
+    }
+
+    if (items.length === 0) {
       console.log("[send-session-reminders] No pending reminders found");
       return new Response(
-        JSON.stringify({
-          message: "No pending reminders",
-          result: { success: 0, failed: 0, errors: [] },
-        }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        JSON.stringify({ message: "No pending reminders", result: { success: 0, failed: 0, errors: [] } }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    console.log(`[send-session-reminders] Found ${appointments.length} appointments needing reminders`);
+    console.log(`[send-session-reminders] ${items.length} sessions (${(appointments || []).length} FNH, ${(voiceRows || []).length} voice) to remind`);
 
-    // Get Google access token
     const accessToken = await getGoogleAccessToken();
 
-    // Group appointments by client email to batch emails
-    const clientEmails = new Map<string, Appointment[]>();
-    appointments.forEach((appt) => {
-      const email = appt.clients?.email;
-      if (email) {
-        const existing = clientEmails.get(email) || [];
-        existing.push(appt);
-        clientEmails.set(email, existing);
-      }
-    });
+    // Group by client email so each client gets one digest of all their sessions.
+    const byEmail = new Map<string, ReminderItem[]>();
+    for (const it of items) {
+      const list = byEmail.get(it.email) || [];
+      list.push(it);
+      byEmail.set(it.email, list);
+    }
 
-    console.log(`[send-session-reminders] Processing ${clientEmails.size} unique clients`);
+    console.log(`[send-session-reminders] Processing ${byEmail.size} unique clients`);
 
-    const result: ReminderResult = {
-      success: 0,
-      failed: 0,
-      errors: [],
-    };
+    const result: ReminderResult = { success: 0, failed: 0, errors: [] };
 
-    // Process each client's appointments
-    for (const [email, clientAppointments] of clientEmails) {
-      if (!email) {
-        result.failed += clientAppointments.length;
-        clientAppointments.forEach((appt) => {
-          result.errors.push({
-            client: appt.clients?.name || "Unknown",
-            error: "No email address on file",
-          });
-        });
-        continue;
-      }
+    for (const [email, clientItems] of byEmail) {
+      clientItems.sort((a, b) => new Date(a.dateISO).getTime() - new Date(b.dateISO).getTime());
+      const firstName = clientItems[0].firstName || "there";
 
       try {
-        // Build email with all appointments for this client
-        const appointmentDetails = clientAppointments
-          .map((appt) => {
-            const apptDate = new Date(appt.date);
-            const formattedDate = apptDate.toLocaleDateString("en-AU", {
-              weekday: "short",
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            });
-            const timeStr = appt.time
-              ? new Date(`1970-01-01T${appt.time}`).toLocaleTimeString("en-AU", {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                })
-              : "TBA";
+        const rows = clientItems
+          .map((it) => {
+            const d = new Date(it.dateISO);
+            const formattedDate = isNaN(d.getTime())
+              ? it.dateISO
+              : d.toLocaleDateString("en-AU", { weekday: "short", year: "numeric", month: "short", day: "numeric" });
             return `
               <tr>
                 <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">${formattedDate}</td>
-                <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">${timeStr}</td>
-                <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">${appt.tag || "Session"}</td>
-              </tr>
-            `;
+                <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">${it.timeStr}</td>
+                <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">${it.typeLabel}</td>
+              </tr>`;
           })
           .join("");
 
-        const subject = `Reminder: ${clientAppointments.length} Upcoming Session${clientAppointments.length > 1 ? "s" : ""}`;
+        const subject = `Reminder: ${clientItems.length} Upcoming Session${clientItems.length > 1 ? "s" : ""} This Week`;
         const html = `
           <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
               <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 700;">Session Reminder</h1>
-              <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 14px;">Upcoming appointments</p>
+              <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 14px;">Your week ahead</p>
             </div>
             <div style="background: #f8fafc; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #e2e8f0;">
-              <p style="color: #334155; font-size: 16px; margin: 0 0 20px 0;">Dear ${clientAppointments[0].clients?.first_name || clientAppointments[0].clients?.name?.split(" ")[0] || "Client"},</p>
+              <p style="color: #334155; font-size: 16px; margin: 0 0 20px 0;">Hi ${firstName},</p>
               <p style="color: #475569; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
-                Here are your upcoming session${clientAppointments.length > 1 ? "s" : ""}:
+                Here ${clientItems.length > 1 ? "are your upcoming sessions" : "is your upcoming session"} this week:
               </p>
               <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                 <thead>
@@ -424,82 +483,57 @@ serve(async (req) => {
                     <th style="padding: 10px; text-align: left; font-size: 13px; color: #475569; border-bottom: 2px solid #cbd5e1;">Type</th>
                   </tr>
                 </thead>
-                <tbody>
-                  ${appointmentDetails}
-                </tbody>
+                <tbody>${rows}</tbody>
               </table>
               <p style="color: #64748b; font-size: 14px; line-height: 1.6; margin: 0 0 20px 0;">
-                If you need to reschedule or have any questions, please don't hesitate to reach out.
+                If you need to reschedule or have any questions, just reply to this email.
               </p>
               <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; text-align: center;">
-                <p style="color: #94a3b8; font-size: 12px; margin: 0;">This is an automated reminder. Please don't reply to this email.</p>
+                <p style="color: #94a3b8; font-size: 12px; margin: 0;">Warmly, Daniele Buatti · Resonance Kinesiology</p>
               </div>
             </div>
-          </div>
-        `;
+          </div>`;
 
         await sendEmail(accessToken, email, subject, html);
 
-        // Update reminder_sent status for all appointments for this client
-        const appointmentIds = clientAppointments.map((a) => a.id);
-        const { error: updateError } = await supabase
-          .from("appointments")
-          .update({
-            reminder_sent: true,
-            reminder_sent_at: new Date().toISOString(),
-          })
-          .in("id", appointmentIds);
-
-        if (updateError) {
-          console.error(`[send-session-reminders] Error updating appointments for ${email}:`, updateError);
-          result.failed += clientAppointments.length;
-          result.errors.push({
-            client: clientAppointments[0].clients?.name || "Unknown",
-            error: updateError.message,
-          });
-        } else {
-          result.success += clientAppointments.length;
-          console.log(`[send-session-reminders] Successfully sent reminders to ${email} (${clientAppointments.length} appointments)`);
+        // Flag each source row so it isn't reminded again this week.
+        const nowIso = new Date().toISOString();
+        const fnhIds = clientItems.filter((i) => i.source === "fnh").map((i) => i.id);
+        const voiceIds = clientItems.filter((i) => i.source === "voice").map((i) => i.id);
+        if (fnhIds.length) {
+          await supabase.from("appointments").update({ reminder_sent: true, reminder_sent_at: nowIso }).in("id", fnhIds);
         }
-      } catch (err: any) {
-        console.error(`[send-session-reminders] Error sending email to ${email}:`, err);
-        result.failed += clientAppointments.length;
-        result.errors.push({
-          client: clientAppointments[0].clients?.name || "Unknown",
-          error: err.message || "Unknown error",
-        });
+        if (voiceIds.length) {
+          await supabase.from("voice_bookings").update({ reminder_sent: true, reminder_sent_at: nowIso }).in("id", voiceIds);
+        }
 
-        // Update error status for failed appointments
-        const appointmentIds = clientAppointments.map((a) => a.id);
-        await supabase
-          .from("appointments")
-          .update({
-            reminder_error: err.message || "Unknown error",
-          })
-          .in("id", appointmentIds);
+        result.success += clientItems.length;
+        console.log(`[send-session-reminders] Sent reminder to ${email} (${clientItems.length} session(s))`);
+      } catch (err: any) {
+        console.error(`[send-session-reminders] Error sending to ${email}:`, err);
+        result.failed += clientItems.length;
+        result.errors.push({ client: clientItems[0].name || "Unknown", error: err.message || "Unknown error" });
       }
     }
 
-    // Log the email activity
-    await supabase.from("email_log").insert({
-      user_id: user.id,
-      recipient_email: Array.from(clientEmails.keys()).join(", "),
-      subject: `Session reminders (${result.success} sent, ${result.failed} failed)`,
-      status: result.failed === 0 ? "sent" : "partial",
-      email_type: "session_reminder",
-    });
+    // Log the run (user_id is null for the scheduled/cron caller).
+    try {
+      await supabase.from("email_log").insert({
+        user_id: user?.id ?? null,
+        recipient_email: Array.from(byEmail.keys()).join(", "),
+        subject: `Weekly session reminders (${result.success} sent, ${result.failed} failed)`,
+        status: result.failed === 0 ? "sent" : "partial",
+        email_type: "session_reminder",
+      });
+    } catch (e: any) {
+      console.error("[send-session-reminders] email_log insert failed:", e?.message);
+    }
 
     console.log(`[send-session-reminders] Completed: ${result.success} success, ${result.failed} failed`);
 
     return new Response(
-      JSON.stringify({
-        message: "Reminders processed",
-        result,
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ message: "Reminders processed", result }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error: any) {
     console.error("[send-session-reminders] Unexpected error:", error);

@@ -140,7 +140,7 @@ const PathwayReflexStimSheet = ({
           onClick={() => toggle(key)}
           aria-pressed={isMarked}
           aria-label={`${side} side — ${isMarked ? "showing, click to unmark" : "mark showing"}`}
-          title={isMarked ? `${side} — click to unmark" : "Mark ${side} showing"}
+          title={isMarked ? `${side} — click to unmark` : `Mark ${side} showing`}
           className={`relative flex-1 flex items-center justify-center cursor-pointer transition-colors duration-100 active:bg-black/[0.05] hover:bg-black/[0.02] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-chart-primary print:cursor-default ${
             active ? "bg-yellow-200/70" : ""
           }`}
@@ -267,7 +267,7 @@ const PathwayReflexStimSheet = ({
                       </tr>
                     ))}
                   </React.Fragment>
-                )})
+                )})}
               </React.Fragment>
             )
           )}
@@ -294,7 +294,8 @@ const PathwayReflexStimSheet = ({
                           ? "L"
                           : checked[cranialNerveInhibKey(nerve.id, "R")]
                             ? "R"
-                            : undefined;
+                            : undefined
+                      : undefined;
                     const nerveInhibited = Boolean(checked[cranialNerveInhibKey(nerve.id)]);
                     return (
                     <tr
@@ -395,7 +396,7 @@ const PathwayReflexStimSheet = ({
                 </React.Fragment>
               ))}
             </React.Fragment>
-          )}
+          ))}
           <tr key="intrinsic-muscles" id="intrinsic-muscles">
             <td colSpan={4} style={{ backgroundColor: "#000", color: "#fff" }} className="border-2 border-black p-1 font-black uppercase tracking-[0.2em] sticky top-[34px] z-[5]">
               Intrinsic Muscles

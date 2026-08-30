@@ -19,6 +19,52 @@ const GMAIL_USER_EMAIL = Deno.env.get("GMAIL_USER_EMAIL") || "";
 // Google OAuth token endpoint
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 
+// Voice lesson_time is stored as a display string, sometimes in UTC
+// (e.g. "5:15 AM UTC – 6:00 AM UTC") and sometimes already local wall-clock
+// (e.g. "2:15 PM"). This edge function runs in UTC, so UTC strings must be
+// explicitly converted to Melbourne local; non-UTC strings are just tidied.
+function melbourneVoiceTime(dateStr: string, timeStr: string): string {
+  if (!timeStr) return "TBA";
+  const [y, mo, d] = String(dateStr || "").split("-").map(Number);
+  const isUTC = /UTC/i.test(timeStr);
+  const stripTz = (s: string) =>
+    s.replace(/(?:UTC|AEST|AEDT|GMT[+-]\d+|EST|ACST|ACDT|AWST)\b/gi, "").trim();
+
+  const parseHM = (s: string): { h: number; m: number } | null => {
+    const m = stripTz(s).match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (!m) return null;
+    let h = parseInt(m[1], 10);
+    const min = parseInt(m[2], 10);
+    const ap = m[3].toUpperCase();
+    if (ap === "PM" && h !== 12) h += 12;
+    if (ap === "AM" && h === 12) h = 0;
+    return { h, m: min };
+  };
+
+  const fmt = (h: number, min: number): string => {
+    if (isUTC && y && mo && d) {
+      return new Date(Date.UTC(y, mo - 1, d, h, min)).toLocaleTimeString("en-AU", {
+        timeZone: "Australia/Melbourne",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+    const ap = h >= 12 ? "pm" : "am";
+    const hr12 = h % 12 === 0 ? 12 : h % 12;
+    return `${hr12}:${String(min).padStart(2, "0")} ${ap}`;
+  };
+
+  const parts = timeStr.split(/[–—−-]/).map((s) => s.trim());
+  const start = parseHM(parts[0]);
+  if (!start) return stripTz(timeStr) || "TBA";
+  if (parts.length >= 2) {
+    const end = parseHM(parts[1]);
+    if (end) return `${fmt(start.h, start.m)} – ${fmt(end.h, end.m)}`;
+  }
+  return fmt(start.h, start.m);
+}
+
 interface Appointment {
   id: string;
   date: string;
@@ -278,7 +324,7 @@ serve(async (req) => {
     // skipped here. This hits 4pm local year-round without tracking AEST/AEDT ourselves.
     // `force: true` bypasses the guard (manual re-run / testing).
     const isScheduled = isServiceCall || body.scheduled === true;
-    if (isScheduled && body.force !== true) {
+    if (isScheduled && body.force !== true && !isDebug) {
       const melHour = parseInt(
         new Intl.DateTimeFormat("en-AU", {
           timeZone: "Australia/Melbourne",
@@ -296,27 +342,33 @@ serve(async (req) => {
       }
     }
 
-    // Handle debug/test email request
-    if (isDebug && user) {
-      console.log("[send-session-reminders] Debug mode: sending test email");
-      
+    // Handle debug/test email request. Works for both a logged-in user (sends to
+    // them) and a direct service-role curl (sends to GMAIL_USER_EMAIL) so the
+    // pipeline can be verified without touching real clients.
+    if (isDebug) {
+      const testRecipient = user?.email || GMAIL_USER_EMAIL;
+      console.log(`[send-session-reminders] Debug mode: sending test email to ${testRecipient}`);
+      if (!testRecipient) throw new Error("No test recipient (no user email and GMAIL_USER_EMAIL unset)");
+
       // Get Google access token
       const accessToken = await getGoogleAccessToken();
-      
+
       // Generate and send test email
-      const { subject, html } = generateTestEmail(user.email || "");
-      
-      await sendEmail(accessToken, user.email || "", subject, html);
-      
+      const { subject, html } = generateTestEmail(testRecipient);
+
+      await sendEmail(accessToken, testRecipient, subject, html);
+
       // Log the test email
-      await supabase.from("email_log").insert({
-        user_id: user.id,
-        recipient_email: user.email || "",
-        subject: `TEST: Session reminder system test`,
-        status: "sent",
-        email_type: "test_reminder",
-      });
-      
+      try {
+        await supabase.from("email_log").insert({
+          user_id: user?.id ?? null,
+          recipient_email: testRecipient,
+          subject: `TEST: Session reminder system test`,
+          status: "sent",
+          email_type: "test_reminder",
+        });
+      } catch (_e) { /* logging is best-effort */ }
+
       console.log("[send-session-reminders] Test email sent successfully");
       
       return new Response(
@@ -382,7 +434,7 @@ serve(async (req) => {
     // --- 2. Voice lessons ----------------------------------------------------
     const { data: voiceRows, error: voiceError } = await supabase
       .from("voice_bookings")
-      .select("id, student_email, student_name, lesson_date, lesson_time, status, reminder_sent")
+      .select("id, student_email, student_name, lesson_date, lesson_time, status, discipline, reminder_sent")
       .gte("lesson_date", today)
       .lte("lesson_date", nextWeekStr)
       .eq("reminder_sent", false)
@@ -421,6 +473,7 @@ serve(async (req) => {
       // Skip practitioner self-bookings, nameless placeholders, and cancellations.
       if (!email || PRACTITIONER_EMAILS.has(email) || !name) continue;
       if (status.includes("cancel")) continue;
+      const isPiano = String(v.discipline || "").toLowerCase() === "piano";
       items.push({
         source: "voice",
         id: v.id,
@@ -428,8 +481,8 @@ serve(async (req) => {
         name,
         firstName: name.split(" ")[0],
         dateISO: v.lesson_date,
-        timeStr: (v.lesson_time && String(v.lesson_time).trim()) || "TBA",
-        typeLabel: "Voice Lesson",
+        timeStr: v.lesson_time ? melbourneVoiceTime(v.lesson_date, v.lesson_time) : "TBA",
+        typeLabel: isPiano ? "Piano Lesson" : "Voice Lesson",
       });
     }
 

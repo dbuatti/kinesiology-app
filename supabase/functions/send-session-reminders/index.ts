@@ -114,16 +114,21 @@ async function sendEmail(
   subject: string,
   htmlBody: string
 ): Promise<boolean> {
+  // Encode the subject per RFC 2047 so non-ASCII (✦, –, curly quotes) survives.
+  const utf8Subject = `=?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`;
   const rawEmail = [
     `From: ${GMAIL_USER_EMAIL}`,
     `To: ${to}`,
-    `Subject: ${subject}`,
+    "MIME-Version: 1.0",
     "Content-Type: text/html; charset=utf-8",
+    `Subject: ${utf8Subject}`,
     "",
     htmlBody,
   ].join("\n");
 
-  const encodedEmail = btoa(rawEmail).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  // btoa only handles Latin1 — UTF-8-encode first so the branded HTML doesn't throw.
+  const encodedEmail = btoa(unescape(encodeURIComponent(rawEmail)))
+    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 
   const response = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
     method: "POST",
@@ -415,7 +420,7 @@ serve(async (req) => {
       .from("appointments")
       .select(`
         id, date, client_id, status, tag, time, reminder_sent,
-        clients ( id, name, email, first_name, last_name )
+        clients ( id, name, email )
       `)
       .gte("date", today)
       .lte("date", nextWeekStr)
@@ -459,7 +464,7 @@ serve(async (req) => {
         id: appt.id,
         email,
         name,
-        firstName: appt.clients?.first_name || name.split(" ")[0],
+        firstName: name.split(" ")[0],
         dateISO: appt.date,
         timeStr,
         typeLabel: appt.tag || "FNH Session",

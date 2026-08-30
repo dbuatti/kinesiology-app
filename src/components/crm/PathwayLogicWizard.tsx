@@ -60,7 +60,7 @@ const DYSFUNCTIONAL_STATUSES = ['Inhibited', 'Hypertonic', 'Switching', 'Inhibit
 const STEP_LABELS: Record<Step, string> = {
   SELECT_START: 'Select',
   AFFERENT_SELECT: 'Afferent',
-  EFERENT_SELECT: 'Efferent',
+  EFFERENT_SELECT: 'Efferent',
   MECHANO_PROCESS: 'Mechano',
   VESTIBULAR_PROCESS: 'Vestibular',
   NOCICEPTIVE_PROCESS: 'Nociceptive',

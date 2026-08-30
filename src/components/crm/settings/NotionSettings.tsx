@@ -114,7 +114,7 @@ const NotionSettings = () => {
             buttonIcon={Database}
             onClick={handleConfigureFnhSchema}
             loading={configuringFnh}
-            themeColor="violet"
+            themeColor="purple"
           />
         </div>
 

@@ -28,7 +28,8 @@ interface MechanoreceptiveProcessProps {
   onCancel: () => void;
   ligamentImages: Record<string, (string | null)[]>;
   onOpenLigamentCharts: () => void;
-}
+    onOpenActionTable: () => void;
+  }
 
 const REGIONS = ['Upper Body (above T12)', 'Lower Body (below T12)'];
 const SIDES = ['Left', 'Right'];

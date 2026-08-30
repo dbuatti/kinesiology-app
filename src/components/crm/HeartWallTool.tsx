@@ -1172,7 +1172,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
 
             {/* Save progress at each step */}
             <Button
-              onClick={saveLayerAndContinue}
+              onClick={() => saveLayerAndContinue()}
               disabled={saving}
               variant="outline"
               className="h-11 rounded-xl font-medium"

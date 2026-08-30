@@ -126,7 +126,7 @@ export default function BrainZonePicker({ value, onChange }: BrainZonePickerProp
                   z.side === "R" && "text-rose-600",
                   z.side === "B" && "text-amber-600",
                 )}>({z.side})</span>
-                <button onClick={() => toggle(z)} className="text-indigo-400 hover:text-indigo-700 ml-0.5">×</button>
+                <button onClick={() => toggle(BRAIN_REFLEX_POINTS.find(p => p.id === z.id)!)} className="text-indigo-400 hover:text-indigo-700 ml-0.5">×</button>
               </span>
             ))}
           </div>

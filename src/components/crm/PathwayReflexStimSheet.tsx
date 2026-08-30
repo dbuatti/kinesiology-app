@@ -36,6 +36,7 @@ const HandwrittenX = () => (
 );
 
 interface PathwayReflexStimSheetProps {
+  externalChecked?: Record<string, boolean>;
   checked?: Record<string, boolean>;
   muscleState?: Record<string, MuscleGridState>;
   onToggle?: (key: string) => void;
@@ -67,18 +68,22 @@ const ToneSideSplit = ({
   title: string;
 }) => (
   <div className="flex w-full min-h-[36px] divide-x-2 divide-black">
-    {(
-      [
-        ["L", lState],
-        ["R", rState],
-      ] as const
-    ).map(([side, state]) => (
+    {([
+      ["L", lState],
+      ["R", rState],
+    ] as const).map(([side, state]) => (
       <div key={side} className="relative flex-1 flex items-center justify-center">
-        <span aria-hidden="true" className="text-xl font-black leading-none text-neutral-400 select-none pointer-events-none">
+        <span
+          aria-hidden="true"
+          className="text-xl font-black leading-none text-neutral-400 select-none pointer-events-none"
+        >
           {side}
         </span>
         {state && (
-          <span title={`${title} ${side} — ${state}`} className="absolute inset-0 flex items-center justify-center text-base font-black">
+          <span
+            title={`${title} ${side} — ${state}`}
+            className="absolute inset-0 flex items-center justify-center text-base font-black"
+          >
             {TONE_SYMBOL[state]}
           </span>
         )}
@@ -87,7 +92,12 @@ const ToneSideSplit = ({
   </div>
 );
 
-const PathwayReflexStimSheet = ({ externalChecked, muscleState, onToggle, query }: PathwayReflexStimSheetProps) => {
+const PathwayReflexStimSheet = ({
+  externalChecked,
+  muscleState,
+  onToggle,
+  query,
+}: PathwayReflexStimSheetProps) => {
   const [localChecked, setLocalChecked] = useState<Record<string, boolean>>({});
 
   const checked = externalChecked ?? localChecked;
@@ -110,7 +120,7 @@ const PathwayReflexStimSheet = ({ externalChecked, muscleState, onToggle, query 
         aria-pressed={isChecked}
         aria-label={isChecked ? "Pattern showing — click to unmark" : "Mark pattern as showing"}
         title={isChecked ? "Showing — click to unmark" : "Click to mark showing"}
-        className={`w-5 h-5 border-2 border-black mx-auto flex items-center justify-center cursor-pointer rounded-[3px] transition-all duration-100 active:scale-75 hover:bg-black/[0.03] focus-visible:ring-2 focus-visible:ring-chart-primary focus-visible:ring-offset-1 print:cursor-default ${
+        className={`w-5 h-5 border-2 border-black mx-auto flex items-center justify-center cursor-pointer transition-all duration-100 active:scale-75 hover:bg-black/[0.03] focus-visible:ring-2 focus-visible:ring-chart-primary focus-visible:ring-offset-1 print:cursor-default ${
           isChecked ? "bg-black/[0.08]" : ""
         } ${highlight ? "bg-yellow-200/70" : ""}`}
       >
@@ -135,7 +145,10 @@ const PathwayReflexStimSheet = ({ externalChecked, muscleState, onToggle, query 
             active ? "bg-yellow-200/70" : ""
           }`}
         >
-          <span aria-hidden="true" className="text-xl font-black leading-none text-neutral-400 select-none pointer-events-none">
+          <span
+            aria-hidden="true"
+            className="text-xl font-black leading-none text-neutral-400 select-none pointer-events-none"
+          >
             {side}
           </span>
           {isMarked && (
@@ -255,10 +268,10 @@ const PathwayReflexStimSheet = ({ externalChecked, muscleState, onToggle, query 
                       </tr>
                     ))}
                   </React.Fragment>
-                );
-              })}
-            </React.Fragment>
-          )),
+                })}
+              </React.Fragment>
+            )
+          )},
           <tr key="cranial-nerves" id="cranial-nerves">
             <td colSpan={4} style={{ backgroundColor: "#000", color: "#fff" }} className="border-2 border-black p-1 font-black uppercase tracking-[0.2em] sticky top-[34px] z-[5]">
               Cranial Nerves
@@ -282,8 +295,7 @@ const PathwayReflexStimSheet = ({ externalChecked, muscleState, onToggle, query 
                           ? "L"
                           : checked[cranialNerveInhibKey(nerve.id, "R")]
                             ? "R"
-                            : undefined
-                      : undefined;
+                            : undefined;
                     const nerveInhibited = Boolean(checked[cranialNerveInhibKey(nerve.id)]);
                     return (
                     <tr
@@ -384,7 +396,7 @@ const PathwayReflexStimSheet = ({ externalChecked, muscleState, onToggle, query 
                 </React.Fragment>
               ))}
             </React.Fragment>
-          )),
+          )},
           <tr key="intrinsic-muscles" id="intrinsic-muscles">
             <td colSpan={4} style={{ backgroundColor: "#000", color: "#fff" }} className="border-2 border-black p-1 font-black uppercase tracking-[0.2em] sticky top-[34px] z-[5]">
               Intrinsic Muscles
@@ -416,8 +428,7 @@ const PathwayReflexStimSheet = ({ externalChecked, muscleState, onToggle, query 
                 </td>
               </tr>
             );
-          }),
-          ]}
+          })}
         </tbody>
       </table>
 

@@ -382,14 +382,14 @@ export function CranialNerveAssessment({
       const matchesSearch = nerveName.toLowerCase().includes(searchQuery.toLowerCase()) || 
                            nerve.nuclei.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const isAnyInhib = nervePattern[`${nerveName} (L)`] === 'Inhibited' || 
-                        nervePattern[`${nerveName} (R)`] === 'Inhibited' || 
-                        nervePattern[nerveName] === 'Inhibited' || 
+      const isAnyInhib = nervePattern[`${nerveName} (L)`] === 'Inhibited' ||
+                        nervePattern[`${nerveName} (R)`] === 'Inhibited' ||
+                        nervePattern[nerveName] === 'Inhibited' ||
                         test.is_inhibited;
 
       const matchesInhibited = showOnlyInhibited ? isAnyInhib : true;
       
-      const isPriority = test.is_primary_priority;
+      const isPriority = 'is_primary_priority' in test ? test.is_primary_priority : false;
       const matchesPriority = showOnlyPriority ? isPriority : true;
       
       return matchesSearch && matchesInhibited && matchesPriority;

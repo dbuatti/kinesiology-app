@@ -156,23 +156,22 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
     saveField('clients', { ...appointment.clients, name: clientName.trim() });
   };
 
-  const pattern = safeParse(appointment.priority_pattern, {} as any);
-
-  const inhibitedCount = Object.values(pattern).reduce((acc: number, cat: any) => {
-    return acc + Object.values(cat).filter((s: any) => s === 'Inhibited' || s === 'Inhibition' || s === 'Hypertonic').length;
-  }, 0);
-
-  const clearedCount = Object.values(pattern).reduce((acc: number, cat: any) => {
-    return acc + Object.values(cat).filter((s: any) => s === 'Inhibited_Cleared' || s === 'Inhibition_Cleared' || s === 'Hypertonic_Cleared').length;
-  }, 0);
+  const pattern = safeParse(appointment.priority_pattern, {} as Record<string, Record<string, string>>);
+  
+    const inhibitedCount = Object.values(pattern).reduce((acc, cat) => {
+        return acc + Object.values(cat).filter((s) => s === 'Inhibited' || s === 'Inhibition' || s === 'Hypertonic').length;
+      }, 0);
+    const clearedCount = Object.values(pattern).reduce((acc, cat) => {
+        return acc + Object.values(cat).filter((s) => s === 'Inhibited_Cleared' || s === 'Inhibition_Cleared' || s === 'Hypertonic_Cleared').length;
+      }, 0);
 
   const hasAnyVitals = appointment.bolt_score != null || appointment.coherence_score != null || appointment.heart_rate != null || appointment.breath_rate != null;
   const hasAnyCogs = appointment.sagittal_plane_notes || appointment.frontal_plane_notes || appointment.transverse_plane_notes;
   const hasAnyNeuro = appointment.fakuda_notes || appointment.sharpened_rhombergs_notes || appointment.frontal_lobe_notes || appointment.righting_reflex_notes;
   const hasAnySns = appointment.harmonic_rocking_notes || appointment.t1_reset_notes || appointment.diaphragm_reset_notes || appointment.vagus_nerve_notes || appointment.lymphatic_notes;
 
-  const metadata = safeParse(appointment.metadata, {} as any);
-  const priorityPathway = metadata?.priority_pathway || "";
+  const metadata = safeParse<Record<string, any>>(appointment.metadata, {});
+    const priorityPathway = (metadata?.priority_pathway as string) || "";
 
   const muscleDesc = (name: string) => {
     const info = getMuscleInfo(name);

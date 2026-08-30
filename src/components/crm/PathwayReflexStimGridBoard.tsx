@@ -274,6 +274,11 @@ const NerveBlock = ({
     nuclei: string;
     reflexPoint: string;
     isLateralized?: boolean;
+    toneEffect?: string;
+    functions?: string;
+    stimulus?: string;
+    clinicalPearl?: string;
+    color?: string;
   };
   checked: Record<string, boolean>;
   onToggle: (key: string) => void;

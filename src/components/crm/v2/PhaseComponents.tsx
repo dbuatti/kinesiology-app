@@ -29,7 +29,7 @@ export const SectionHeading = ({ icon: Icon, title, badge }: {
 }) => (
   <div className="flex items-center justify-between">
     <div className="flex items-center gap-3">
-      <Icon size={16} className="text-muted-foreground" />
+      <Icon size={16} />
       <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">{title}</h3>
     </div>
     {badge}

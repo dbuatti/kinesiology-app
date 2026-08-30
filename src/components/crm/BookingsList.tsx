@@ -667,8 +667,11 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
             {dateItems.map((item) => {
           const isVoice = item.source === "voice";
           const person = isVoice ? item.subtitle || item.studentName || "—" : item.title;
-          const eventLabel = isVoice ? item.title : "FNH Neuro-Health Assessment";
-          const discipline = isVoice ? item.discipline || "voice" : null;
+          const isPiano = isVoice && (item.discipline || "voice") === "piano";
+          // Keep the secondary line short — the person's name is already shown above,
+          // and the coloured pill carries the voice/piano distinction.
+          const eventLabel = isVoice ? "Lesson" : "FNH Neuro-Health Assessment";
+          const discipline = isVoice ? (isPiano ? "piano" : "voice") : null;
           const busy = busyId === item.id;
           return (
             <div
@@ -756,7 +759,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                         ? "bg-chart-primary/10 text-chart-primary"
                         : "bg-chart-destructive/10 text-chart-destructive"
                     )}>
-                      {discipline}
+                      {discipline === "piano" ? "Piano" : "Voice"}
                     </Badge>
                   )}
                   <span className="text-xs text-muted-foreground truncate" title={eventLabel}>{eventLabel}</span>

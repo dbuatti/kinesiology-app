@@ -8,6 +8,7 @@ import { format, addDays } from "date-fns";
 import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
+import { cn } from "@/lib/utils";
 
 // supabase.functions.invoke wraps non-2xx responses in a generic FunctionsHttpError
 // whose real message sits in `.context` (the raw Response). Pull it out so the
@@ -183,40 +184,43 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
     return <Bell className="h-4 w-4" />;
   };
 
+  const pending = Math.max(0, stats.total - stats.sent);
+
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md rounded-[1.75rem] border-border/60 shadow-[0_10px_34px_-14px_rgba(120,80,40,0.22)] overflow-hidden">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Bell className="h-4 w-4 text-primary" />
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-2xl bg-gradient-to-br from-amber-400 to-rose-400 shadow-sm">
+              <Bell className="h-4 w-4 text-white" />
             </div>
             <div>
-              <CardTitle className="text-lg">Session Reminders</CardTitle>
-              <CardDescription>Manage appointment reminders</CardDescription>
+              <CardTitle className="text-lg font-serif tracking-tight">Session Reminders</CardTitle>
+              <CardDescription>A gentle nudge before the week ahead</CardDescription>
             </div>
           </div>
-          <Badge variant={getStatusColor()} className="flex items-center gap-1">
-            {getStatusIcon()}
-            {stats.total} total
-          </Badge>
+          {pending > 0 && (
+            <Badge className="shrink-0 rounded-full border-none bg-amber-500/15 text-amber-700 dark:text-amber-400 font-semibold px-2.5 py-0.5">
+              {pending} to send
+            </Badge>
+          )}
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         {/* Statistics */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="text-center p-3 rounded-lg bg-muted/50">
-            <div className="text-lg font-bold text-blue-600">{stats.total}</div>
-            <div className="text-xs text-muted-foreground">Total</div>
+        <div className="grid grid-cols-3 gap-2.5">
+          <div className="text-center p-3 rounded-2xl bg-muted/40 border border-border/40">
+            <div className="text-xl font-bold text-foreground font-serif">{stats.total}</div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-0.5">This week</div>
           </div>
-          <div className="text-center p-3 rounded-lg bg-muted/50">
-            <div className="text-lg font-bold text-green-600">{stats.sent}</div>
-            <div className="text-xs text-muted-foreground">Sent</div>
+          <div className="text-center p-3 rounded-2xl bg-chart-emerald/10 border border-chart-emerald/20">
+            <div className="text-xl font-bold text-chart-emerald font-serif">{stats.sent}</div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-0.5">Reminded</div>
           </div>
-          <div className="text-center p-3 rounded-lg bg-muted/50">
-            <div className="text-lg font-bold text-red-600">{stats.failed}</div>
-            <div className="text-xs text-muted-foreground">Failed</div>
+          <div className="text-center p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+            <div className="text-xl font-bold text-amber-600 dark:text-amber-500 font-serif">{pending}</div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-0.5">Pending</div>
           </div>
         </div>
 
@@ -224,13 +228,13 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
         {lastRun && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Clock className="h-3 w-3" />
-            <span>Last sent: {format(lastRun, "MMM d, h:mm a")}</span>
+            <span>Last sent {format(lastRun, "MMM d, h:mm a")}</span>
           </div>
         )}
 
         {/* Error display */}
         {error && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="rounded-2xl">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="text-xs">{error}</AlertDescription>
           </Alert>
@@ -241,7 +245,7 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
           <Button
             onClick={sendReminders}
             disabled={isSending || isTestSending || stats.total === 0}
-            className="flex-1"
+            className="flex-1 rounded-full bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-500 hover:to-rose-600 text-white border-none shadow-sm active:scale-95 transition-transform"
             size="sm"
           >
             {isSending ? (
@@ -256,8 +260,9 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
             disabled={isLoading || isSending || isTestSending}
             variant="outline"
             size="sm"
+            className="rounded-full"
           >
-            <RefreshCw className="h-4 w-4" />
+            <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
           </Button>
         </div>
 
@@ -267,25 +272,25 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
           disabled={isSending || isTestSending}
           variant="ghost"
           size="sm"
-          className="w-full text-xs"
+          className="w-full text-xs rounded-full hover:bg-amber-500/10 hover:text-amber-700"
         >
           {isTestSending ? (
             <Loader2 className="h-3 w-3 mr-2 animate-spin" />
           ) : (
             <Mail className="h-3 w-3 mr-2" />
           )}
-          Send Test Email to Me ({session?.user?.email})
+          Send a test to myself ({session?.user?.email})
         </Button>
 
         {/* Info */}
-        <div className="text-xs text-muted-foreground space-y-1">
-          <div className="flex items-center gap-1">
-            <Calendar className="h-3 w-3" />
-            <span>Targets appointments in next 7 days</span>
+        <div className="text-xs text-muted-foreground space-y-1 pt-1">
+          <div className="flex items-center gap-1.5">
+            <Calendar className="h-3 w-3 text-amber-500" />
+            <span>Covers FNH + voice sessions in the next 7 days</span>
           </div>
-          <div className="flex items-center gap-1">
-            <CheckCircle className="h-3 w-3" />
-            <span>Only sends to clients with email addresses</span>
+          <div className="flex items-center gap-1.5">
+            <CheckCircle className="h-3 w-3 text-chart-emerald" />
+            <span>Sends automatically every Sunday at 4pm</span>
           </div>
         </div>
       </CardContent>

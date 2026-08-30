@@ -152,6 +152,58 @@ function generateReminderEmail(appointment: Appointment): { subject: string; htm
   return { subject, html };
 }
 
+function generateTestEmail(userEmail: string): { subject: string; html: string } {
+  const now = new Date();
+  const formattedDate = now.toLocaleDateString("en-AU", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const formattedTime = now.toLocaleTimeString("en-AU", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  const subject = `TEST: Session Reminder System - ${formattedDate}`;
+
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 700;">Test Email</h1>
+        <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0 0; font-size: 14px;">Session Reminder System</p>
+      </div>
+      <div style="background: #f0fdf4; padding: 30px; border-radius: 0 0 12px 12px; border: 1px solid #bbf7d0;">
+        <p style="color: #1f2937; font-size: 16px; margin: 0 0 20px 0;">This is a test email from the Session Reminder system.</p>
+        <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
+          If you're receiving this email, the reminder system is working correctly.
+        </p>
+        <div style="background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; border-left: 4px solid #10b981;">
+          <p style="color: #1e293b; font-size: 16px; font-weight: 600; margin: 0 0 8px 0;">Test Details</p>
+          <p style="color: #64748b; font-size: 14px; margin: 0 0 4px 0;">
+            <strong>Timestamp:</strong> ${formattedDate} at ${formattedTime}
+          </p>
+          <p style="color: #64748b; font-size: 14px; margin: 0 0 4px 0;">
+            <strong>Recipient:</strong> ${userEmail}
+          </p>
+          <p style="color: #64748b; font-size: 14px; margin: 0;">
+            <strong>Purpose:</strong> Debug/Testing
+          </p>
+        </div>
+        <p style="color: #64748b; font-size: 14px; line-height: 1.6; margin: 0 0 20px 0;">
+          This email was sent as part of a debug/test operation. No action is required.
+        </p>
+        <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; text-align: center;">
+          <p style="color: #94a3b8; font-size: 12px; margin: 0;">This is an automated test message.</p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  return { subject, html };
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -185,6 +237,52 @@ serve(async (req) => {
     }
 
     console.log(`[send-session-reminders] Authenticated user: ${user.id}`);
+
+    // Parse request body for debug/test parameters
+    let body = {};
+    let isDebug = false;
+    try {
+      body = await req.json();
+      isDebug = body.debug === true;
+    } catch (e) {
+      // If body is not JSON, treat as normal request
+      isDebug = false;
+    }
+
+    // Handle debug/test email request
+    if (isDebug) {
+      console.log("[send-session-reminders] Debug mode: sending test email");
+      
+      // Get Google access token
+      const accessToken = await getGoogleAccessToken();
+      
+      // Generate and send test email
+      const { subject, html } = generateTestEmail(user.email || "");
+      
+      await sendEmail(accessToken, user.email || "", subject, html);
+      
+      // Log the test email
+      await supabase.from("email_log").insert({
+        user_id: user.id,
+        recipient_email: user.email || "",
+        subject: `TEST: Session reminder system test`,
+        status: "sent",
+        email_type: "test_reminder",
+      });
+      
+      console.log("[send-session-reminders] Test email sent successfully");
+      
+      return new Response(
+        JSON.stringify({
+          message: "Test email sent successfully",
+          result: { success: 1, failed: 0, errors: [] },
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
 
     // Get appointments for the next 7 days that haven't had reminders sent
     const today = new Date().toISOString().split("T")[0];

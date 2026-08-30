@@ -444,6 +444,7 @@ const ClientDetailPage = () => {
           title={client.name}
           subtitle="Comprehensive client profile, clinical history, and progress tracking."
           icon={User}
+          iconClassName="bg-gradient-to-br from-amber-400 to-rose-400 text-white shadow-rose-500/15"
 
           actions={
             <div className="flex flex-wrap gap-2">

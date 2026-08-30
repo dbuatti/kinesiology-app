@@ -35,6 +35,7 @@ import BookingsList, { type BookingListItem } from "@/components/crm/BookingsLis
 import SimpleBookDialog from "@/components/crm/SimpleBookDialog";
 import QuickBookDialog from "@/components/crm/QuickBookDialog";
 import ShareAvailabilityButton from "@/components/crm/ShareAvailabilityButton";
+import CalendarReminderPanel from "@/components/crm/CalendarReminderPanel";
 import { useEventPricing } from "@/hooks/useEventPricing";
 import { supabase } from "@/integrations/supabase/client";
 import { CALCOM_CONFIG } from "@/config/integrations";
@@ -796,19 +797,20 @@ const UnifiedCalendarPage = () => {
   icon={CalendarIcon}
   iconClassName="bg-gradient-to-br from-amber-500 to-rose-500 text-primary-foreground shadow-lg shadow-amber-500/20"
   actions={
- <div className="flex gap-2 items-center">
- <ShareAvailabilityButton />
- <Button
- variant="outline"
- size="sm"
- onClick={() => navigate(-1)}
- className="h-10 px-4 rounded-xl border-border font-medium text-[10px] uppercase tracking-wider gap-2"
- >
+<div className="flex gap-2 items-center">
+  <CalendarReminderPanel />
+  <ShareAvailabilityButton />
+  <Button
+    variant="outline"
+    size="sm"
+    onClick={() => navigate(-1)}
+    className="h-10 px-4 rounded-xl border-border font-medium text-[10px] uppercase tracking-wider gap-2"
+  >
             <ArrowLeft size={14} />
             Back
           </Button>
           </div>
- }
+}
  />
 
  {isLoading ? (

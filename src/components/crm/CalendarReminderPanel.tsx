@@ -82,29 +82,18 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
     setError(null);
     
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-session-reminders`,
-        {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${session.access_token}`,
-            "Content-Type": "application/json",
-          },
-        }
+      const { data: result, error: fnError } = await supabase.functions.invoke(
+        "send-session-reminders",
+        { body: {} }
       );
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to send reminders");
-      }
-      
-      const result = await response.json();
-      
+
+      if (fnError) throw new Error(fnError.message || "Failed to send reminders");
+
       showSuccess(`Reminders sent: ${result.result.success} successful, ${result.result.failed} failed`);
-      
+
       // Refresh stats after sending
       await fetchStats();
-      
+
     } catch (err: any) {
       console.error("Error sending reminders:", err);
       showError(err.message || "Failed to send reminders");
@@ -122,27 +111,15 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
     setError(null);
     
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-session-reminders`,
-        {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${session.access_token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ debug: true }),
-        }
+      const { error: fnError } = await supabase.functions.invoke(
+        "send-session-reminders",
+        { body: { debug: true } }
       );
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to send test email");
-      }
-      
-      const result = await response.json();
-      
+
+      if (fnError) throw new Error(fnError.message || "Failed to send test email");
+
       showSuccess(`Test email sent to ${session.user.email}`);
-      
+
     } catch (err: any) {
       console.error("Error sending test email:", err);
       showError(err.message || "Failed to send test email");

@@ -60,19 +60,36 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
       const today = new Date().toISOString().split("T")[0];
       const nextWeek = addDays(new Date(), 7).toISOString().split("T")[0];
       
+      // FNH appointments needing reminders this week.
       const { data: appointments, error: apptError } = await supabase
         .from("appointments")
         .select("id, reminder_sent, reminder_sent_at")
         .gte("date", today)
         .lte("date", nextWeek)
         .eq("status", "Scheduled");
-      
+
       if (apptError) throw apptError;
-      
-      const total = appointments?.length || 0;
-      const sent = appointments?.filter(a => a.reminder_sent).length || 0;
-      const failed = total - sent;
-      const lastSent = appointments?.find(a => a.reminder_sent)?.reminder_sent_at;
+
+      // Voice/piano lessons this week (the send covers these too, so the stats must as well).
+      const { data: voice } = await supabase
+        .from("voice_bookings")
+        .select("id, reminder_sent, reminder_sent_at, status")
+        .gte("lesson_date", today)
+        .lte("lesson_date", nextWeek);
+
+      const activeVoice = (voice || []).filter(
+        (v) => !String(v.status || "").toLowerCase().includes("cancel"),
+      );
+
+      const rows = [...(appointments || []), ...activeVoice];
+      const total = rows.length;
+      const sent = rows.filter((r) => r.reminder_sent).length;
+      const failed = 0; // Unsent rows are pending, not failed — failures surface in logs.
+      const lastSent = rows
+        .filter((r) => r.reminder_sent_at)
+        .map((r) => r.reminder_sent_at)
+        .sort()
+        .pop();
       
       const newStats: ReminderStats = {
         total,

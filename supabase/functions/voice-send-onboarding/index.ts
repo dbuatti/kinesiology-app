@@ -116,14 +116,25 @@ serve(async (req) => {
     // Human-friendly formatting for the emails. The raw `date` is ISO
     // ("2026-09-01") and `time` carries a technical "GMT+10" suffix from the
     // webhook — both are too technical for a client-facing email.
-    const lessonDateObj = new Date(`${date}T00:00:00Z`);
-    const friendlyDate = lessonDateObj.toLocaleDateString("en-AU", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-      timeZone: "UTC",
-    });
+    // `date` is usually "2026-09-01", but can arrive as a full ISO timestamp or a
+    // display string. Parse defensively and never render "Invalid Date" to a client.
+    const dateStr = String(date).trim();
+    const isoDay = dateStr.match(/^\d{4}-\d{2}-\d{2}$/);
+    let lessonDateObj = new Date(isoDay ? `${dateStr}T00:00:00Z` : dateStr);
+    if (isNaN(lessonDateObj.getTime())) {
+      // Last resort: pull a YYYY-MM-DD out of whatever was sent.
+      const m = dateStr.match(/\d{4}-\d{2}-\d{2}/);
+      if (m) lessonDateObj = new Date(`${m[0]}T00:00:00Z`);
+    }
+    const friendlyDate = isNaN(lessonDateObj.getTime())
+      ? dateStr
+      : lessonDateObj.toLocaleDateString("en-AU", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+          timeZone: "UTC",
+        });
     const friendlyTime = (time || "")
       .replace(/\s*GMT\+[\d]+/g, "")
       .replace(/\s+/g, " ")

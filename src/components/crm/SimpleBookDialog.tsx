@@ -287,14 +287,15 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
     setSendingEmail(true);
     try {
       const dateObj = new Date(date + "T" + time);
-      const dateStr = format(dateObj, "MMM d, yyyy");
       const timeStr = format(dateObj, "h:mm a");
       const calcomBookingUid = uid || lastBookingUid;
       const { error } = await supabase.functions.invoke("voice-send-onboarding", {
         body: {
           studentName: selectedStudent.name,
           studentEmail: studentEmail || selectedStudent.email,
-          date: dateStr,
+          // Send the raw ISO date (YYYY-MM-DD); the edge function formats it for the
+          // email and stores it as lesson_date, which must stay ISO for date queries.
+          date,
           time: timeStr,
           duration,
           cost: costVal,

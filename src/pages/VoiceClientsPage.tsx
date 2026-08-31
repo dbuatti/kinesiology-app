@@ -521,7 +521,7 @@ const VoiceClientsPage = () => {
                         ? "bg-chart-primary/10 text-chart-primary"
                         : "bg-chart-destructive/10 text-chart-destructive"
                     )}>
-                      {student.discipline || "voice"}
+                      {(student.discipline || "voice") === "piano" ? "Piano" : "Voice"}
                     </Badge>
                   )}
                   {student.tags.length > 0 && student.tags.slice(0, 2).map((tag) => (

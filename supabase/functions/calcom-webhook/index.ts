@@ -225,7 +225,12 @@ serve(async (req) => {
     // Cal.com website embed (app-initiated bookings already call send-manual-onboarding
     // themselves). Without this, externally-booked clients like Lesley never receive
     // the intake form. Reschedules are skipped to avoid re-spamming existing clients.
-    if (triggerEvent === 'BOOKING_CREATED') {
+    //
+    // IDEMPOTENCY: only send when this booking's row did NOT already exist
+    // (`!existingApp`, matched by calcom_booking_id). Cal.com re-delivers webhooks
+    // (retries) and the reconcile replay can re-POST the same event — every repeat
+    // finds the row already saved and skips, so a client is never emailed twice.
+    if (triggerEvent === 'BOOKING_CREATED' && !existingApp) {
       try {
         // Resolve the appointment id we just wrote so onboarding attaches the right session.
         let onboardAppointmentId = targetId;

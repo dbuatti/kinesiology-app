@@ -167,7 +167,10 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
 
       const clientPayload: Record<string, any> = {
         name: fullName,
-        email: values.email,
+        // Normalise casing/whitespace so a client re-typing their email with
+        // different capitalisation doesn't split them into a duplicate record
+        // (webhook lookups match on lowercased email).
+        email: (values.email || '').toLowerCase().trim() || null,
         phone: values.phone || null,
         born: values.born ? new Date(values.born).toISOString() : null,
         home_address: values.home_address || null,

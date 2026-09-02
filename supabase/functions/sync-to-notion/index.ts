@@ -578,6 +578,20 @@ serve(async (req) => {
         console.warn(`[${functionName}] Failed to move client wins:`, winsError.message);
       }
 
+      // 2.6 Move all remaining client-linked clinical history (Heart Wall +
+      // Identity session work). Without this, merging a client silently loses
+      // that data when the source row is deleted below. Best-effort per table so
+      // a missing table on an older schema doesn't abort the whole merge.
+      for (const table of ['heart_wall_sessions', 'identity_shifting_sessions', 'identity_alignment_sessions']) {
+        const { error: moveErr } = await supabase
+          .from(table)
+          .update({ client_id: targetClientId })
+          .eq('client_id', sourceClientId);
+        if (moveErr) {
+          console.warn(`[${functionName}] Failed to move ${table}:`, moveErr.message);
+        }
+      }
+
       // 3. Archive the source client's Notion page if it exists
       if (sourceClient.notion_page_id) {
         console.log(`[${functionName}] Archiving source client page in Notion: ${sourceClient.notion_page_id}`);

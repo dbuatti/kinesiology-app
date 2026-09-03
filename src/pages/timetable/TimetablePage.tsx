@@ -436,7 +436,9 @@ const TimetablePage = () => {
 
   const { suggestions } = useSuggestionEngine({
     appointmentsData,
+    voiceBookingsData,
     enrichedClients,
+    enrichedVoiceStudents,
     slots,
     proposals,
     calcomBookings: bookings,
@@ -809,10 +811,13 @@ const TimetablePage = () => {
                 const slot = s.availableSlots[0];
                 if (!slot) return;
                 const endIso = new Date(new Date(slot.start).getTime() + 60 * 60 * 1000).toISOString();
+                const isVoice = s.source === "voice-pattern";
                 await createProposal({
-                  kind: "fnh",
-                  clientId: s.clientId,
-                  eventTypeId: fnhEventType,
+                  kind: isVoice ? "voice" : "fnh",
+                  clientId: isVoice ? null : s.clientId,
+                  studentName: isVoice ? s.clientName : null,
+                  studentEmail: isVoice ? enrichedVoiceStudents.find((vs) => vs.id === s.clientId)?.email || null : null,
+                  eventTypeId: isVoice ? voiceEventType : fnhEventType,
                   slotStart: slot.start,
                   slotEnd: endIso,
                 });
@@ -1790,15 +1795,26 @@ function SuggestionsPanel({
       <div className="text-center py-16 text-muted-foreground">
         <Sparkles size={32} className="mx-auto mb-3 opacity-40" />
         <p className="text-sm font-semibold">No suggestions yet</p>
-        <p className="text-xs mt-1">Build up 2+ sessions with a client to detect a recurring pattern.</p>
+        <p className="text-xs mt-1 max-w-sm mx-auto leading-relaxed">
+          The system detects patterns once a client has 2+ past sessions with consistent gaps.
+          Clients with availability notes will also appear here when their preferred days have open slots.
+        </p>
       </div>
     );
   }
 
+  const sourceBadge = (source: Suggestion["source"]) => {
+    if (source === "pattern")
+      return <Badge className="bg-chart-primary/10 text-chart-primary border-none text-[8px]" variant="outline">FNH pattern</Badge>;
+    if (source === "voice-pattern")
+      return <Badge className="bg-emerald-500/10 text-emerald-600 border-none text-[8px]" variant="outline">Voice pattern</Badge>;
+    return <Badge className="bg-amber-500/10 text-amber-600 border-none text-[8px]" variant="outline">Availability</Badge>;
+  };
+
   return (
     <div className="space-y-3">
       <p className="text-xs font-semibold text-muted-foreground">
-        Based on your past sessions, these clients have a recurring pattern. Pick a suggested slot to propose.
+        {suggestions.length} suggestion{suggestions.length !== 1 ? "s" : ""} based on past sessions and availability notes.
       </p>
       {suggestions.map((s, i) => (
         <div
@@ -1806,19 +1822,21 @@ function SuggestionsPanel({
           className="flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-4"
         >
           <div className="min-w-0">
-            <p className="text-sm font-bold text-foreground truncate">{s.clientName}</p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-bold text-foreground truncate">{s.clientName}</p>
+              {sourceBadge(s.source)}
+            </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Every {s.gapDays}d · {Math.round(s.confidence * 100)}% consistent · next{" "}
-              {format(s.predictedDate, "EEE d MMM yyyy")}
+              {s.reason} · {format(s.predictedDate, "EEE d MMM yyyy")}
             </p>
             <div className="flex items-center gap-1.5 mt-1.5">
-              {s.availableSlots.slice(0, 3).map((sl, j) => (
+              {s.availableSlots.slice(0, 4).map((sl, j) => (
                 <span key={j} className="rounded bg-chart-primary/10 px-1.5 py-0.5 text-[9px] font-bold text-chart-primary">
                   {sl.time}
                 </span>
               ))}
-              {s.availableSlots.length > 3 && (
-                <span className="text-[9px] text-muted-foreground">+{s.availableSlots.length - 3} more</span>
+              {s.availableSlots.length > 4 && (
+                <span className="text-[9px] text-muted-foreground">+{s.availableSlots.length - 4} more</span>
               )}
             </div>
           </div>

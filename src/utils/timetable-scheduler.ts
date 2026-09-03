@@ -652,6 +652,10 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
   for (const [b, g] of groups) {
     const rep = g.rep;
     const pref = computePreferredTime(rep.pastSessions);
+    // A client who has stated their own availability windows is trusted on those
+    // days even if day-typing would otherwise reserve the day for the other kind
+    // (e.g. Bella can come Mon 4:30 after the Monday FNH clients).
+    const explicit = (rep.availability?.length ?? 0) > 0;
     const seen = new Map<string, { p: HomePattern; score: number }>();
     const seenAny = new Map<string, { p: HomePattern; score: number }>();
     for (const slot of freeSlots) {
@@ -665,7 +669,7 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
       if (preferSet && !preferSet.has(wd)) sc *= 0.35;
       const entry = { p: { weekday: wd, minutes: mins }, score: sc };
       if (!seenAny.has(key)) seenAny.set(key, entry);
-      if (dayAllowsKind(wd, rep.kind) && !seen.has(key)) seen.set(key, entry);
+      if ((explicit || dayAllowsKind(wd, rep.kind)) && !seen.has(key)) seen.set(key, entry);
     }
     // Prefer patterns on this client's own kind-days; only fall back to any day
     // (an exception, e.g. an online client pinned to a mixed day) if they have none.
@@ -775,6 +779,7 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
   for (const [b, g] of orderedGroups) {
     const h = home.get(b) ?? null;
     const rep = g.rep;
+    const explicit = (rep.availability?.length ?? 0) > 0;
     const instances = [...g.instances].sort(
       (a, b2) => (a.targetDate?.getTime() ?? 0) - (b2.targetDate?.getTime() ?? 0),
     );
@@ -784,9 +789,10 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
           if (Math.abs(slot.start.getTime() - inst.targetDate.getTime()) / DAY_MS > inst.targetWindowDays) return false;
         }
         if (!slotMatchesAvailability(slot, rep.availability)) return false;
-        // Stay on kind-days (or the client's own home day) so fill can't re-mix a day.
+        // Stay on kind-days (or the client's own home day, or a day they've said
+        // they can come) so fill can't re-mix a day.
         const wd = slot.start.getDay();
-        if (!dayAllowsKind(wd, inst.kind) && !(h && wd === h.weekday)) return false;
+        if (!dayAllowsKind(wd, inst.kind) && !explicit && !(h && wd === h.weekday)) return false;
         return rangeFree(inst, slot.start.getTime());
       });
       if (cands.length === 0) {

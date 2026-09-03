@@ -559,7 +559,12 @@ export default function AutoDraftPanel({
 
       // Anchor the series AFTER their latest known session (past or already-booked
       // future) so we don't re-draft weeks they're already covered for.
-      const bandDays = Math.max(3, Math.floor(interval / 2));
+      // "covered" band (skip weeks already booked) tracks the cadence, but the
+      // PLACEMENT band is kept tight so a fortnightly session can shuffle to its
+      // home weekday within the same week without ever slipping into the next/prev
+      // week onto the wrong day.
+      const coveredBand = Math.max(3, Math.floor(interval / 2));
+      const placeBand = Math.min(coveredBand, 3);
       const upcoming = (c.upcomingSessions ?? []).map((d) => d.getTime());
       const anchor = Math.max(c.lastSessionAt?.getTime() ?? 0, ...(upcoming.length ? upcoming : [0]));
       let t = anchor ? anchor + interval * DAY : nowMs;
@@ -567,9 +572,9 @@ export default function AutoDraftPanel({
       let i = 0;
       while (t <= windowEndMs && i < MAX_INSTANCES) {
         // Skip any week they already have a real booking in.
-        const covered = upcoming.some((u) => Math.abs(u - t) <= bandDays * DAY);
+        const covered = upcoming.some((u) => Math.abs(u - t) <= coveredBand * DAY);
         if (!covered) {
-          schedulerClients.push({ ...base, id: `${c.key}#${i}`, targetDate: new Date(t), targetWindowDays: bandDays });
+          schedulerClients.push({ ...base, id: `${c.key}#${i}`, targetDate: new Date(t), targetWindowDays: placeBand });
         }
         t += interval * DAY;
         i++;

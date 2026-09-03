@@ -17,6 +17,7 @@ import {
   PenLine,
   ChevronLeft,
   ChevronRight,
+  Mail,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -152,6 +153,7 @@ const TimetablePage = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
   const [working, setWorking] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
 
   const eventTypeId = kind === "fnh" ? fnhEventType : voiceEventType;
 
@@ -355,6 +357,26 @@ const TimetablePage = () => {
     }
   };
 
+  const handleSendEmail = async (days: number) => {
+    setSendingEmail(true);
+    try {
+      const { data, error } = await supabase.functions.invoke<{
+        success?: boolean;
+        eventCount?: number;
+        dayCount?: number;
+        sentTo?: string;
+        error?: string;
+      }>("gmail-schedule-email", { body: { days } });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "Could not send schedule email.");
+      showSuccess(`Schedule email sent (${data.eventCount ?? 0} events over ${data.dayCount ?? 0} days).`);
+    } catch (err) {
+      showError(err instanceof Error ? err.message : "Could not send schedule email.");
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   const openDay = (d: Date) => {
     if (stateFor(d) !== DayState.OPEN) return;
     setPickingDay(d);
@@ -394,6 +416,16 @@ const TimetablePage = () => {
           </Badge>
           <Button variant="ghost" size="sm" onClick={fetchData} disabled={loading} className="gap-1.5">
             <RefreshCw size={14} className={cn(loading && "animate-spin")} /> Refresh
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleSendEmail(14)}
+            disabled={sendingEmail}
+            className="gap-1.5"
+            title="Email the next 14 days' agenda to your inbox"
+          >
+            <Mail size={14} className={cn(sendingEmail && "animate-pulse")} /> Email schedule
           </Button>
         </div>
       </div>

@@ -72,3 +72,6 @@ verify_jwt = false
 
 [functions.icloud-calendar-read]
 verify_jwt = false
+
+[functions.gmail-schedule-email]
+verify_jwt = false

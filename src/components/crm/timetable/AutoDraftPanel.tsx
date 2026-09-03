@@ -374,6 +374,7 @@ export default function AutoDraftPanel({
   const [search, setSearch] = useState("");
   const [showNoHistory, setShowNoHistory] = useState(false);
   const [groupByKind, setGroupByKind] = useState(true);
+  const [horizonWeeks, setHorizonWeeks] = useState(4);
   const [result, setResult] = useState<{ assignments: Assignment[]; unplaced: Unplaced[] } | null>(null);
   const [accepting, setAccepting] = useState(false);
   const [acceptedKeys, setAcceptedKeys] = useState<Set<string>>(new Set());
@@ -456,7 +457,9 @@ export default function AutoDraftPanel({
     // Each instance carries the date it should land near.
     const DAY = 86_400_000;
     const nowMs = Date.now();
-    const windowEndMs = openSlots.reduce((m, s) => Math.max(m, s.start.getTime()), nowMs + 84 * DAY);
+    const slotsEnd = openSlots.reduce((m, s) => Math.max(m, s.start.getTime()), nowMs + 84 * DAY);
+    // Only draft as far ahead as the chosen horizon.
+    const windowEndMs = Math.min(slotsEnd, nowMs + horizonWeeks * 7 * DAY);
     const MAX_INSTANCES = 14;
 
     const schedulerClients: SchedulerClient[] = [];
@@ -482,11 +485,14 @@ export default function AutoDraftPanel({
       }
 
       // First target = their next due date (or now if overdue/new), then step.
+      // Each instance is confined to a band around its target so a weekly client
+      // gets one session per week (not several piled together).
+      const bandDays = Math.max(3, Math.floor(interval / 2));
       let t = c.lastSessionAt ? c.lastSessionAt.getTime() + interval * DAY : nowMs;
       if (t < nowMs) t = nowMs;
       let i = 0;
       while (t <= windowEndMs && i < MAX_INSTANCES) {
-        schedulerClients.push({ ...base, id: `${c.key}#${i}`, targetDate: new Date(t) });
+        schedulerClients.push({ ...base, id: `${c.key}#${i}`, targetDate: new Date(t), targetWindowDays: bandDays });
         t += interval * DAY;
         i++;
       }
@@ -813,10 +819,28 @@ export default function AutoDraftPanel({
         </div>
       )}
 
-      <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-        <Checkbox checked={groupByKind} onCheckedChange={(v) => setGroupByKind(!!v)} />
-        Batch same type together (voice with voice, FNH with FNH)
-      </label>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+          <Checkbox checked={groupByKind} onCheckedChange={(v) => setGroupByKind(!!v)} />
+          Batch same type together
+        </label>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-muted-foreground">Draft</span>
+          {[2, 4, 8, 12].map((w) => (
+            <button
+              key={w}
+              onClick={() => setHorizonWeeks(w)}
+              className={cn(
+                "text-[11px] font-bold rounded-md px-1.5 py-0.5 border",
+                horizonWeeks === w ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {w}w
+            </button>
+          ))}
+          <span className="text-xs text-muted-foreground">ahead</span>
+        </div>
+      </div>
 
       <Button
         onClick={generate}

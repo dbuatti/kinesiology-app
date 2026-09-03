@@ -163,6 +163,9 @@ export interface SchedulerClient {
    * should land near. Overrides the lastSession+interval due calc when set.
    */
   targetDate?: Date;
+  /** Hard band (± days) around targetDate this instance must land within, so a
+   *  weekly client's sessions stay one-per-week instead of piling up. */
+  targetWindowDays?: number;
 }
 
 export interface OpenSlot {
@@ -401,8 +404,14 @@ export function autoDraftSchedule(input: AutoDraftInput): DraftResult {
     const pref = computePreferredTime(c.pastSessions);
     prefs.set(c.id, pref);
 
+    const withinTargetBand = (slot: OpenSlot) => {
+      if (!c.targetDate || c.targetWindowDays == null) return true;
+      const diffDays = Math.abs(slot.start.getTime() - c.targetDate.getTime()) / DAY_MS;
+      return diffDays <= c.targetWindowDays;
+    };
+
     const ranked = freeSlots
-      .filter((slot) => slotMatchesAvailability(slot, c.availability))
+      .filter((slot) => slotMatchesAvailability(slot, c.availability) && withinTargetBand(slot))
       .map((slot) => ({ slot, score: scoreSlot(c, pref, slot) }))
       .filter((x) => x.score >= minScore)
       .sort((a, b) => b.score - a.score || a.slot.start.getTime() - b.slot.start.getTime());

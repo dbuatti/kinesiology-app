@@ -504,7 +504,7 @@ export default function AutoDraftPanel({
   const [search, setSearch] = useState("");
   const [showNoHistory, setShowNoHistory] = useState(false);
   const [groupByKind, setGroupByKind] = useState(true);
-  const [preferFortnightly, setPreferFortnightly] = useState(false);
+  const [preferFortnightly, setPreferFortnightly] = useState(true);
   const [horizonWeeks, setHorizonWeeks] = useState(4);
   const [preferDays, setPreferDays] = useState<number[]>([]);
   const togglePreferDay = (d: number) =>

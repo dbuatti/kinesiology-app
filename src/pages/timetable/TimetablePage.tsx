@@ -2245,7 +2245,7 @@ function DayCell({
         <StateDot state={state} />
       </div>
 
-      <div className="flex-1 space-y-1 overflow-hidden">
+      <div className="flex-1 space-y-1">
         {blocked && (
           <div className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
             <Ban size={9} /> Blocked
@@ -2287,15 +2287,7 @@ function DayCell({
               ),
             })),
           ].sort((a, b) => a.t - b.t);
-          const shown = items.slice(0, 4);
-          return (
-            <>
-              {shown.map((x) => x.node)}
-              {items.length > 4 && (
-                <div className="text-[9px] font-bold text-muted-foreground pl-0.5">+{items.length - 4} more</div>
-              )}
-            </>
-          );
+          return <>{items.map((x) => x.node)}</>;
         })()}
 
         {icloudEvents.slice(0, 2).map((ev) => (

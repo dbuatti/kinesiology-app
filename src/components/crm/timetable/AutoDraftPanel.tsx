@@ -333,6 +333,7 @@ export default function AutoDraftPanel({
 }: AutoDraftPanelProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [awayEditKey, setAwayEditKey] = useState<string | null>(null);
+  const [awayDraft, setAwayDraft] = useState<string>("");
   const [availEditKey, setAvailEditKey] = useState<string | null>(null);
   const [emailedKeys, setEmailedKeys] = useState<Set<string>>(new Set());
   const [emailingKey, setEmailingKey] = useState<string | null>(null);
@@ -820,7 +821,7 @@ export default function AutoDraftPanel({
                     </button>
                   ) : (
                     <button
-                      onClick={(e) => { e.stopPropagation(); setAwayEditKey(editingAway ? null : c.key); }}
+                      onClick={(e) => { e.stopPropagation(); setAwayDraft(""); setAwayEditKey(editingAway ? null : c.key); }}
                       title="Mark away / off the books"
                       className={cn("shrink-0 p-1 rounded-lg text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10", editingAway && "text-rose-500 bg-rose-500/10")}
                     >
@@ -862,20 +863,28 @@ export default function AutoDraftPanel({
                     <span className="text-[11px] text-muted-foreground">Away until</span>
                     <input
                       type="date"
+                      value={awayDraft}
                       className="text-xs rounded-lg border border-border bg-background px-2 py-1"
                       min={new Date().toISOString().split("T")[0]}
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          onSetAway?.(c.key, e.target.value);
-                          setAwayEditKey(null);
-                        }
-                      }}
+                      onChange={(e) => setAwayDraft(e.target.value)}
                     />
+                    <button
+                      disabled={!awayDraft || awayDraft < new Date().toISOString().split("T")[0]}
+                      onClick={() => {
+                        onSetAway?.(c.key, awayDraft);
+                        setAwayEditKey(null);
+                        setAwayDraft("");
+                      }}
+                      className="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 rounded-full border border-emerald-500/30 px-2 py-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Set
+                    </button>
                     <span className="text-[11px] text-muted-foreground">or</span>
                     <button
                       onClick={() => {
                         onSetAway?.(c.key, "2999-01-01");
                         setAwayEditKey(null);
+                        setAwayDraft("");
                       }}
                       className="text-[11px] font-semibold text-rose-500 hover:text-rose-600 rounded-full border border-rose-500/30 px-2 py-0.5"
                     >

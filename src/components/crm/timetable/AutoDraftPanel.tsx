@@ -424,7 +424,7 @@ export default function AutoDraftPanel({
       await onAccept({
         kind: a.kind,
         clientId: a.kind === "fnh" ? original?.id ?? null : null,
-        studentName: a.kind === "voice" ? a.name : null,
+        studentName: a.name,
         studentEmail: a.kind === "voice" ? a.email ?? original?.id ?? null : null,
         slotStart: a.slotStart.toISOString(),
         slotEnd: a.slotEnd.toISOString(),
@@ -598,7 +598,7 @@ export default function AutoDraftPanel({
           await onAccept({
             kind: a.kind,
             clientId: a.kind === "fnh" ? original?.id ?? null : null,
-            studentName: a.kind === "voice" ? a.name : null,
+            studentName: a.name,
             studentEmail: a.kind === "voice" ? a.email ?? original?.id ?? null : null,
             slotStart: a.slotStart.toISOString(),
             slotEnd: a.slotEnd.toISOString(),

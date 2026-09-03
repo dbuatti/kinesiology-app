@@ -634,7 +634,7 @@ const TimetablePage = () => {
       await createProposal({
         kind: a.kind,
         clientId: a.kind === "fnh" ? original?.id ?? null : null,
-        studentName: a.kind === "voice" ? a.name : null,
+        studentName: a.name,
         studentEmail: a.kind === "voice" ? a.email ?? original?.id ?? null : null,
         eventTypeId: a.kind === "fnh" ? fnhEventType : voiceEventType,
         slotStart: a.slotStart.toISOString(),

@@ -74,7 +74,9 @@ export function useBookingProposals(startISO: string, endISO: string) {
           user_id: userData?.user?.id,
           kind: input.kind,
           client_id: input.kind === "fnh" ? input.clientId : null,
-          student_name: input.kind === "voice" ? input.studentName : null,
+          // Store the display name for BOTH kinds so the calendar shows who it is
+          // (FNH proposals only carry a client_id otherwise → "FNH" with no name).
+          student_name: input.studentName ?? null,
           student_email: input.kind === "voice" ? input.studentEmail : null,
           event_type_id: input.eventTypeId,
           slot_start: input.slotStart,

@@ -483,6 +483,20 @@ export default function AutoDraftPanel({
     return computeCapacityInsights(asScheduler, openSlots).slice(0, 3);
   }, [clients, openSlots, awayByKey]);
 
+  // How many open slots Cal.com actually returned, bucketed by week from today.
+  // Makes it obvious whether an empty later week is a supply problem (0 slots
+  // came back) vs. the scheduler dropping a session it could have placed.
+  const supplyByWeek = useMemo(() => {
+    const DAY = 86_400_000;
+    const now = Date.now();
+    const buckets: number[] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    for (const s of openSlots) {
+      const wk = Math.floor((s.start.getTime() - now) / (7 * DAY));
+      if (wk >= 0 && wk < buckets.length) buckets[wk] += 1;
+    }
+    return buckets;
+  }, [openSlots]);
+
   const noHistoryCount = useMemo(
     () => sortedClients.filter((c) => c.pastSessions.length === 0).length,
     [sortedClients],
@@ -945,6 +959,31 @@ export default function AutoDraftPanel({
           </button>
         ))}
         {preferDays.length === 0 && <span className="text-[11px] text-muted-foreground">= all days</span>}
+      </div>
+
+      {/* Open-slot supply per week — a week showing 0 means Cal.com returned no
+          bookable slots then (extend availability), not a scheduler bug. */}
+      <div className="flex items-center gap-1 flex-wrap">
+        <span className="text-xs text-muted-foreground mr-0.5">Open slots</span>
+        {supplyByWeek.slice(0, horizonWeeks).map((n, i) => (
+          <span
+            key={i}
+            title={`Week ${i + 1} from today: ${n} open slot${n === 1 ? "" : "s"} returned by Cal.com`}
+            className={cn(
+              "text-[11px] font-bold rounded-md px-1.5 py-0.5 border",
+              n === 0
+                ? "border-rose-300 text-rose-500 bg-rose-500/10"
+                : "border-emerald-300 text-emerald-600 bg-emerald-500/10",
+            )}
+          >
+            W{i + 1}:{n}
+          </span>
+        ))}
+        {supplyByWeek.slice(0, horizonWeeks).some((n) => n === 0) && (
+          <span className="text-[11px] text-rose-500">
+            weeks at 0 = no Cal.com availability that week
+          </span>
+        )}
       </div>
 
       <Button

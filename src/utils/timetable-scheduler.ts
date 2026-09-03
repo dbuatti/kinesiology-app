@@ -358,6 +358,9 @@ export interface AutoDraftInput {
   minScore?: number;
   /** Batch same-type sessions together (voice with voice, FNH with FNH). Default true. */
   groupByKind?: boolean;
+  /** Weekdays to prefer (0=Sun…6=Sat). Slots on other days are penalised so the
+   *  tool packs these days first and only overflows to the rest when needed. */
+  preferredWeekdays?: number[];
 }
 
 function sameLocalDay(a: Date, b: Date): boolean {
@@ -615,6 +618,7 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
   // don't mix. A weekday goes to whichever kind more clients prefer it; days no
   // one prefers stay flexible (null = either kind).
   const groupByKind = input.groupByKind !== false;
+  const preferSet = input.preferredWeekdays && input.preferredWeekdays.length > 0 ? new Set(input.preferredWeekdays) : null;
   const dayDemand = new Map<number, { fnh: number; voice: number }>();
   const addDemand = (wd: number, kind: SessionKind) => {
     const dd = dayDemand.get(wd) ?? { fnh: 0, voice: 0 };
@@ -655,7 +659,11 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
       const wd = slot.start.getDay();
       const mins = slot.start.getHours() * 60 + slot.start.getMinutes();
       const key = `${wd}:${mins}`;
-      const entry = { p: { weekday: wd, minutes: mins }, score: scoreSlot(rep, pref, slot) };
+      let sc = scoreSlot(rep, pref, slot);
+      // Prefer the practitioner's chosen working days; other days score lower so
+      // they're only used as overflow.
+      if (preferSet && !preferSet.has(wd)) sc *= 0.35;
+      const entry = { p: { weekday: wd, minutes: mins }, score: sc };
       if (!seenAny.has(key)) seenAny.set(key, entry);
       if (dayAllowsKind(wd, rep.kind) && !seen.has(key)) seen.set(key, entry);
     }
@@ -794,6 +802,7 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
           s += Math.max(0, 1 - Math.abs(mins - h.minutes) / 240);
         }
         if (inst.targetDate) s += Math.max(0, 1 - Math.abs(slot.start.getTime() - inst.targetDate.getTime()) / DAY_MS / 7);
+        if (preferSet && !preferSet.has(slot.start.getDay())) s -= 2; // overflow days last
         return s;
       };
       cands.sort((x, y) => fillScore(y) - fillScore(x));

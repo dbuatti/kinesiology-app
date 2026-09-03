@@ -440,6 +440,9 @@ export default function AutoDraftPanel({
   const [showNoHistory, setShowNoHistory] = useState(false);
   const [groupByKind, setGroupByKind] = useState(true);
   const [horizonWeeks, setHorizonWeeks] = useState(4);
+  const [preferDays, setPreferDays] = useState<number[]>([]);
+  const togglePreferDay = (d: number) =>
+    setPreferDays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
   const [result, setResult] = useState<{ assignments: Assignment[]; unplaced: Unplaced[] } | null>(null);
   const [accepting, setAccepting] = useState(false);
   const [acceptedKeys, setAcceptedKeys] = useState<Set<string>>(new Set());
@@ -580,6 +583,7 @@ export default function AutoDraftPanel({
       busyBlocks,
       takenSlotStarts,
       groupByKind,
+      preferredWeekdays: preferDays,
     });
     setResult(res);
     setAcceptedKeys(new Set());
@@ -765,6 +769,9 @@ export default function AutoDraftPanel({
                           <span className="text-xs text-muted-foreground">
                             {timeText}
                             {c.pastSessions.length > 0 && ` · ${c.pastSessions.length}×`}
+                            {(c.upcomingSessions?.length ?? 0) > 0 && (
+                              <span className="text-chart-emerald"> · {c.upcomingSessions!.length} booked</span>
+                            )}
                           </span>
                         </>
                       )}
@@ -916,6 +923,23 @@ export default function AutoDraftPanel({
           ))}
           <span className="text-xs text-muted-foreground">ahead</span>
         </div>
+      </div>
+
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="text-xs text-muted-foreground mr-0.5">Prioritise days</span>
+        {DAY_TOGGLES.map(({ d, l }) => (
+          <button
+            key={d}
+            onClick={() => togglePreferDay(d)}
+            className={cn(
+              "text-[11px] font-bold rounded-md px-1.5 py-0.5 border",
+              preferDays.includes(d) ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {l}
+          </button>
+        ))}
+        {preferDays.length === 0 && <span className="text-[11px] text-muted-foreground">= all days</span>}
       </div>
 
       <Button

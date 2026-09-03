@@ -298,7 +298,7 @@ const TimetablePage = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("voice_bookings")
-        .select("student_email, student_name, lesson_date, status")
+        .select("student_email, student_name, lesson_date, lesson_time, status")
         .not("status", "eq", "cancelled")
         .order("lesson_date", { ascending: false });
       if (error) throw error;
@@ -306,6 +306,7 @@ const TimetablePage = () => {
         student_email: string | null;
         student_name: string | null;
         lesson_date: string;
+        lesson_time: string | null;
         status: string | null;
       }[];
     },

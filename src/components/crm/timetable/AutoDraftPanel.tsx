@@ -94,6 +94,7 @@ export default function AutoDraftPanel({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [awayEditKey, setAwayEditKey] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [showNoHistory, setShowNoHistory] = useState(false);
   const [result, setResult] = useState<{ assignments: Assignment[]; unplaced: Unplaced[] } | null>(null);
   const [accepting, setAccepting] = useState(false);
   const [acceptedKeys, setAcceptedKeys] = useState<Set<string>>(new Set());
@@ -134,10 +135,17 @@ export default function AutoDraftPanel({
     return computeCapacityInsights(asScheduler, openSlots).slice(0, 3);
   }, [clients, openSlots, awayByKey]);
 
+  const noHistoryCount = useMemo(
+    () => sortedClients.filter((c) => c.pastSessions.length === 0).length,
+    [sortedClients],
+  );
+
   const visibleClients = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return q ? sortedClients.filter((c) => c.name.toLowerCase().includes(q)) : sortedClients;
-  }, [sortedClients, search]);
+    if (q) return sortedClients.filter((c) => c.name.toLowerCase().includes(q));
+    // Default: only clients with history (the actionable ones); toggle to reveal the rest.
+    return showNoHistory ? sortedClients : sortedClients.filter((c) => c.pastSessions.length > 0);
+  }, [sortedClients, search, showNoHistory]);
 
   const awayCount = useMemo(
     () => sortedClients.filter((c) => awayByKey[c.key]).length,
@@ -377,10 +385,18 @@ export default function AutoDraftPanel({
           })}
           {visibleClients.length === 0 && (
             <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-              {search ? "No clients match your search." : "No clients loaded."}
+              {search ? "No clients match your search." : "No clients with history yet."}
             </div>
           )}
         </div>
+        {!search && noHistoryCount > 0 && (
+          <button
+            onClick={() => setShowNoHistory((v) => !v)}
+            className="w-full px-4 py-2 text-[11px] font-semibold text-muted-foreground hover:text-foreground bg-muted/30 border-t border-border/40"
+          >
+            {showNoHistory ? "Hide" : "Show"} {noHistoryCount} client{noHistoryCount === 1 ? "" : "s"} with no history yet
+          </button>
+        )}
       </div>
 
       <Button

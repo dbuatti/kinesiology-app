@@ -536,8 +536,17 @@ const TimetablePage = () => {
     const today = startOfDay(now);
     const out: AutoDraftClient[] = [];
 
+    // Never draft the practitioner's own records.
+    const PRACTITIONER_EMAILS = new Set(
+      ["info@danielebuatti.com", "daniele.buatti@gmail.com"].map((e) => e.toLowerCase()),
+    );
+    const isPractitioner = (email: string | null, name: string | null) =>
+      (email && PRACTITIONER_EMAILS.has(email.toLowerCase())) ||
+      (name || "").trim().toLowerCase() === "daniele buatti";
+
     // FNH — full datetimes from the appointments table.
     for (const c of enrichedClients) {
+      if (isPractitioner(c.email, c.name)) continue;
       const past = appointmentsData
         .filter((a) => a.client_id === c.id && a.status !== "Cancelled" && new Date(a.date) < today)
         .map((a) => new Date(a.date))
@@ -595,7 +604,7 @@ const TimetablePage = () => {
 
     for (const s of enrichedVoiceStudents) {
       const email = (s.email || "").toLowerCase();
-      if (!email) continue;
+      if (!email || isPractitioner(s.email, s.name)) continue;
       const timedArr = timed.get(email) ?? [];
       const timeKnown = timedArr.length > 0;
       const past = timeKnown ? timedArr : (dateOnly.get(email) ?? []);

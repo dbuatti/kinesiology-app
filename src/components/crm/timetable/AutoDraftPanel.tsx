@@ -283,7 +283,11 @@ export default function AutoDraftPanel({
                       </Badge>
                     </div>
                     <div className={cn("text-xs mt-0.5", away ? "text-rose-500 font-medium" : noHistory ? "text-amber-600" : "text-muted-foreground")}>
-                      {away ? `Away until ${format(new Date(away.until + "T00:00:00"), "d MMM")}` : pref}
+                      {away
+                        ? away.until >= "2900-01-01"
+                          ? "Off the books (indefinite)"
+                          : `Away until ${format(new Date(away.until + "T00:00:00"), "d MMM")}`
+                        : pref}
                       {!away && c.pastSessions.length > 0 && ` · ${c.pastSessions.length} past`}
                     </div>
                   </div>
@@ -309,7 +313,7 @@ export default function AutoDraftPanel({
                 </div>
 
                 {editingAway && !away && (
-                  <div className="flex items-center gap-2 mt-2 pl-9">
+                  <div className="flex items-center gap-2 mt-2 pl-9 flex-wrap">
                     <span className="text-[11px] text-muted-foreground">Away until</span>
                     <input
                       type="date"
@@ -322,6 +326,16 @@ export default function AutoDraftPanel({
                         }
                       }}
                     />
+                    <span className="text-[11px] text-muted-foreground">or</span>
+                    <button
+                      onClick={() => {
+                        onSetAway?.(c.key, "2999-01-01");
+                        setAwayEditKey(null);
+                      }}
+                      className="text-[11px] font-semibold text-rose-500 hover:text-rose-600 rounded-full border border-rose-500/30 px-2 py-0.5"
+                    >
+                      Off the books indefinitely
+                    </button>
                   </div>
                 )}
               </div>

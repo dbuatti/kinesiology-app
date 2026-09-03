@@ -1048,29 +1048,38 @@ const TimetablePage = () => {
               />
             </div>
 
-            {/* Live fortnight preview with real commitments + the blue draft overlaid */}
-            <FortnightMockup
-              dateRange={dateRange.slice(fortnightIndex * 14, fortnightIndex * 14 + 14)}
-              totalFortnights={Math.ceil(dateRange.length / 14)}
-              fortnightIndex={fortnightIndex}
-              onPrev={() => setFortnightIndex((i) => Math.max(0, i - 1))}
-              onNext={() =>
-                setFortnightIndex((i) => Math.min(Math.ceil(dateRange.length / 14) - 1, i + 1))
-              }
-              slots={slots}
-              bookings={bookingsByDate}
-              blockedDates={blockedDates}
-              icloudEvents={visibleIcloudEvents}
-              stateFor={stateFor}
-              proposals={[...proposalsInWindow, ...draftPreviewProposals]}
-              loading={loading}
-              error={error}
-              onOpenDay={openDay}
-              onOpenProposal={(p) => {
-                if (!String(p.id).startsWith("draft:")) openProposal(p);
-              }}
-              onOpenBooking={setAppointmentFor}
-            />
+            {/* Live preview: 4 fortnights of real commitments + the blue draft overlaid */}
+            <div className="space-y-8">
+              {[0, 1, 2, 3].map((fi) => {
+                const slice = dateRange.slice(fi * 14, fi * 14 + 14);
+                if (slice.length === 0) return null;
+                return (
+                  <FortnightMockup
+                    key={fi}
+                    dateRange={slice}
+                    totalFortnights={Math.ceil(dateRange.length / 14)}
+                    fortnightIndex={fi}
+                    onPrev={() => {}}
+                    onNext={() => {}}
+                    hideNav
+                    title={`Fortnight ${fi + 1} · ${format(slice[0], "d MMM")} – ${format(slice[slice.length - 1], "d MMM")}`}
+                    slots={slots}
+                    bookings={bookingsByDate}
+                    blockedDates={blockedDates}
+                    icloudEvents={visibleIcloudEvents}
+                    stateFor={stateFor}
+                    proposals={[...proposalsInWindow, ...draftPreviewProposals]}
+                    loading={loading}
+                    error={error}
+                    onOpenDay={openDay}
+                    onOpenProposal={(p) => {
+                      if (!String(p.id).startsWith("draft:")) openProposal(p);
+                    }}
+                    onOpenBooking={setAppointmentFor}
+                  />
+                );
+              })}
+            </div>
           </div>
         </TabsContent>
 
@@ -1691,12 +1700,16 @@ function FortnightMockup({
   onOpenDay,
   onOpenProposal,
   onOpenBooking,
+  hideNav = false,
+  title,
 }: {
   dateRange: Date[];
   totalFortnights: number;
   fortnightIndex: number;
   onPrev: () => void;
   onNext: () => void;
+  hideNav?: boolean;
+  title?: string;
   slots: Record<string, SlotInfo[]>;
   bookings: Record<string, EnrichedBooking[]>;
   blockedDates: string[];
@@ -1732,29 +1745,35 @@ function FortnightMockup({
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center justify-between gap-3">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onPrev}
-          disabled={fortnightIndex <= 0}
-          className="gap-1.5"
-        >
-          <ChevronLeft size={14} /> Previous
-        </Button>
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-          Fortnight {fortnightIndex + 1} of {totalFortnights}
-        </p>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onNext}
-          disabled={fortnightIndex >= totalFortnights - 1}
-          className="gap-1.5"
-        >
-          Next <ChevronRight size={14} />
-        </Button>
-      </div>
+      {hideNav ? (
+        title ? (
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{title}</p>
+        ) : null
+      ) : (
+        <div className="flex items-center justify-between gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onPrev}
+            disabled={fortnightIndex <= 0}
+            className="gap-1.5"
+          >
+            <ChevronLeft size={14} /> Previous
+          </Button>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+            Fortnight {fortnightIndex + 1} of {totalFortnights}
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onNext}
+            disabled={fortnightIndex >= totalFortnights - 1}
+            className="gap-1.5"
+          >
+            Next <ChevronRight size={14} />
+          </Button>
+        </div>
+      )}
       {weeks.map((week, wi) => (
         <div key={wi} className="space-y-2">
           <div className="flex items-center justify-between px-1">

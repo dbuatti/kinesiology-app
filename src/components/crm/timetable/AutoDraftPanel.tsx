@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Wand2, CalendarClock, AlertTriangle, Check, X, Plane, Search } from "lucide-react";
+import { Loader2, Wand2, CalendarClock, AlertTriangle, Check, X, Plane, Search, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ import {
   type BusyBlock,
   type Assignment,
   type Unplaced,
+  type AvailabilityWindow,
 } from "@/utils/timetable-scheduler";
 import { Lightbulb } from "lucide-react";
 
@@ -53,6 +54,10 @@ interface AutoDraftPanelProps {
   onSetAway?: (key: string, untilISO: string | null, reason?: string) => void;
   /** The fortnight calendar, rendered between the controls and the review list. */
   calendarPreview?: ReactNode;
+  /** Recorded availability windows per client key. */
+  availabilityByKey?: Record<string, { windows: AvailabilityWindow[]; note: string | null }>;
+  /** Save availability windows (+ optional note) for a client. */
+  onSetAvailability?: (key: string, windows: AvailabilityWindow[], note?: string) => void;
 }
 
 // Median gap (days) between consecutive sessions — a simple cadence estimate.
@@ -81,6 +86,100 @@ const WEEKDAY_CHIP = [
   "bg-slate-500/15 text-slate-600 dark:text-slate-300",
 ];
 
+function fmtHHMM(hhmm: string): string {
+  const [h, m] = hhmm.split(":").map(Number);
+  return format(new Date(2000, 0, 1, h, m), "h:mma").toLowerCase();
+}
+
+function windowLabel(w: AvailabilityWindow): string {
+  const dayPart = w.days.length === 0 ? "Any day" : w.days.map((d) => WEEKDAYS[d]).join("/");
+  let timePart = "";
+  if (w.from && w.to) timePart = `${fmtHHMM(w.from)}–${fmtHHMM(w.to)}`;
+  else if (w.from) timePart = `from ${fmtHHMM(w.from)}`;
+  else if (w.to) timePart = `until ${fmtHHMM(w.to)}`;
+  return timePart ? `${dayPart} ${timePart}` : dayPart;
+}
+
+const DAY_TOGGLES = [
+  { d: 1, l: "Mon" },
+  { d: 2, l: "Tue" },
+  { d: 3, l: "Wed" },
+  { d: 4, l: "Thu" },
+  { d: 5, l: "Fri" },
+  { d: 6, l: "Sat" },
+  { d: 0, l: "Sun" },
+];
+
+function AvailabilityEditor({
+  windows,
+  onChange,
+}: {
+  windows: AvailabilityWindow[];
+  onChange: (w: AvailabilityWindow[]) => void;
+}) {
+  const [days, setDays] = useState<number[]>([]);
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+
+  const toggleDay = (d: number) =>
+    setDays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
+
+  const add = () => {
+    onChange([...windows, { days: [...days].sort(), from: from || null, to: to || null }]);
+    setDays([]);
+    setFrom("");
+    setTo("");
+  };
+
+  return (
+    <div className="mt-2 rounded-xl border border-border/60 bg-muted/20 p-2.5 space-y-2" onClick={(e) => e.stopPropagation()}>
+      {windows.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {windows.map((w, i) => (
+            <span key={i} className="flex items-center gap-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-semibold pl-2 pr-1 py-0.5">
+              {windowLabel(w)}
+              <button onClick={() => onChange(windows.filter((_, j) => j !== i))} className="hover:text-rose-500">
+                <X size={10} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      <div className="flex flex-wrap gap-1">
+        {DAY_TOGGLES.map(({ d, l }) => (
+          <button
+            key={d}
+            onClick={() => toggleDay(d)}
+            className={cn(
+              "text-[10px] font-bold rounded-md px-1.5 py-0.5 border",
+              days.includes(d) ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {l}
+          </button>
+        ))}
+        <span className="text-[10px] text-muted-foreground self-center ml-0.5">{days.length === 0 ? "= any day" : ""}</span>
+      </div>
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="text-[10px] text-muted-foreground">from</span>
+        <input type="time" value={from} onChange={(e) => setFrom(e.target.value)} className="text-xs rounded-md border border-border bg-background px-1.5 py-0.5" />
+        <span className="text-[10px] text-muted-foreground">to</span>
+        <input type="time" value={to} onChange={(e) => setTo(e.target.value)} className="text-xs rounded-md border border-border bg-background px-1.5 py-0.5" />
+        <button
+          onClick={add}
+          disabled={!from && !to && days.length === 0}
+          className="text-[11px] font-semibold text-white bg-emerald-600/90 hover:bg-emerald-600 rounded-full px-2.5 py-0.5 disabled:opacity-40"
+        >
+          Add window
+        </button>
+      </div>
+      <p className="text-[10px] text-muted-foreground leading-snug">
+        e.g. Nikki → any day, from 5:30pm. Maria → add "Wed" (any time), "Tue until 2:00pm", "Fri" (any time).
+      </p>
+    </div>
+  );
+}
+
 function prefTimeText(pastSessions: Date[], timeKnown: boolean): string {
   const p = computePreferredTime(pastSessions);
   if (!p) return "";
@@ -102,9 +201,12 @@ export default function AutoDraftPanel({
   awayByKey = {},
   onSetAway,
   calendarPreview,
+  availabilityByKey = {},
+  onSetAvailability,
 }: AutoDraftPanelProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [awayEditKey, setAwayEditKey] = useState<string | null>(null);
+  const [availEditKey, setAvailEditKey] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [showNoHistory, setShowNoHistory] = useState(false);
   const [result, setResult] = useState<{ assignments: Assignment[]; unplaced: Unplaced[] } | null>(null);
@@ -194,6 +296,7 @@ export default function AutoDraftPanel({
       lastSessionAt: c.lastSessionAt,
       durationMin: c.kind === "fnh" ? fnhDurationMin : voiceDurationMin,
       timeKnown: c.timeKnown,
+      availability: availabilityByKey[c.key]?.windows,
     }));
 
     const res = autoDraftSchedule({
@@ -361,7 +464,19 @@ export default function AutoDraftPanel({
                     </div>
                   </div>
 
-                  {/* Away control */}
+                  {/* Availability + away controls */}
+                  {!away && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setAvailEditKey(availEditKey === c.key ? null : c.key); }}
+                      title="Set availability (when they can come)"
+                      className={cn(
+                        "shrink-0 p-1 rounded-lg hover:bg-emerald-500/10 hover:text-emerald-600",
+                        (availabilityByKey[c.key]?.windows?.length || availEditKey === c.key) ? "text-emerald-600 bg-emerald-500/10" : "text-muted-foreground",
+                      )}
+                    >
+                      <Clock size={14} />
+                    </button>
+                  )}
                   {away ? (
                     <button
                       onClick={(e) => { e.stopPropagation(); onSetAway?.(c.key, null); }}
@@ -380,6 +495,24 @@ export default function AutoDraftPanel({
                     </button>
                   )}
                 </div>
+
+                {/* Availability summary chips */}
+                {!away && (availabilityByKey[c.key]?.windows?.length ?? 0) > 0 && availEditKey !== c.key && (
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {availabilityByKey[c.key]!.windows.map((w, i) => (
+                      <span key={i} className="rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-semibold px-2 py-0.5">
+                        {windowLabel(w)}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {availEditKey === c.key && !away && (
+                  <AvailabilityEditor
+                    windows={availabilityByKey[c.key]?.windows ?? []}
+                    onChange={(w) => onSetAvailability?.(c.key, w, availabilityByKey[c.key]?.note ?? undefined)}
+                  />
+                )}
 
                 {editingAway && !away && (
                   <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 mt-2 flex-wrap">

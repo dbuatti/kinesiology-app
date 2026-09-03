@@ -15,6 +15,43 @@
 
 export type SessionKind = "fnh" | "voice";
 
+/**
+ * An availability window the practitioner has recorded for a client, e.g.
+ * "any day from 5:30pm" → { days: [], from: "17:30", to: null }, or
+ * "Tuesday until 2pm" → { days: [2], from: null, to: "14:00" }. `days` empty
+ * means every day. from/to are "HH:MM" (local), null meaning open-ended.
+ */
+export interface AvailabilityWindow {
+  days: number[];
+  from: string | null;
+  to: string | null;
+}
+
+function hhmmToMinutes(s: string | null): number | null {
+  if (!s) return null;
+  const m = s.match(/^(\d{1,2}):(\d{2})$/);
+  return m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : null;
+}
+
+/**
+ * True if the slot falls inside at least one of the client's availability
+ * windows. With no windows recorded, everything is allowed (fall back to
+ * learned history).
+ */
+export function slotMatchesAvailability(slot: OpenSlot, windows?: AvailabilityWindow[]): boolean {
+  if (!windows || windows.length === 0) return true;
+  const wd = slot.start.getDay();
+  const mins = slot.start.getHours() * 60 + slot.start.getMinutes();
+  return windows.some((w) => {
+    if (w.days.length > 0 && !w.days.includes(wd)) return false;
+    const from = hhmmToMinutes(w.from);
+    const to = hhmmToMinutes(w.to);
+    if (from != null && mins < from) return false;
+    if (to != null && mins > to) return false;
+    return true;
+  });
+}
+
 export interface SchedulerClient {
   /** Stable id: FNH client_id, or the lowercased email for a voice student. */
   id: string;
@@ -35,6 +72,8 @@ export interface SchedulerClient {
    * assert a specific time-of-day preference.
    */
   timeKnown?: boolean;
+  /** Explicit availability recorded by the practitioner — a hard constraint. */
+  availability?: AvailabilityWindow[];
 }
 
 export interface OpenSlot {
@@ -236,6 +275,7 @@ export function autoDraftSchedule(input: AutoDraftInput): DraftResult {
     prefs.set(c.id, pref);
 
     const ranked = freeSlots
+      .filter((slot) => slotMatchesAvailability(slot, c.availability))
       .map((slot) => ({ slot, score: scoreSlot(c, pref, slot) }))
       .filter((x) => x.score >= minScore)
       .sort((a, b) => b.score - a.score || a.slot.start.getTime() - b.slot.start.getTime());

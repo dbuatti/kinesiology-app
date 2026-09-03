@@ -51,7 +51,7 @@ import { useIcloudCalendar, IcloudCalendarEvent } from "@/hooks/useIcloudCalenda
 import { useTimetableAppointments, EnrichedBooking } from "@/hooks/useTimetableAppointments";
 import { useSuggestionEngine, Suggestion } from "@/hooks/useSuggestionEngine";
 import AutoDraftPanel, { AutoDraftClient } from "@/components/crm/timetable/AutoDraftPanel";
-import { OpenSlot, BusyBlock, Assignment } from "@/utils/timetable-scheduler";
+import { OpenSlot, BusyBlock, Assignment, AvailabilityWindow } from "@/utils/timetable-scheduler";
 import { CALCOM_CONFIG } from "@/config/integrations";
 import {
   format,
@@ -505,6 +505,47 @@ const TimetablePage = () => {
         await queryClient.invalidateQueries({ queryKey: ["timetable-away"] });
       } catch (e: any) {
         showError(e?.message || "Couldn't update away status.");
+      }
+    },
+    [queryClient],
+  );
+
+  // Per-client availability windows (hard scheduling constraints).
+  const { data: availabilityRows = [] } = useQuery({
+    queryKey: ["timetable-availability"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("timetable_client_availability")
+        .select("client_key, windows, note");
+      if (error) throw error;
+      return (data || []) as { client_key: string; windows: AvailabilityWindow[]; note: string | null }[];
+    },
+    staleTime: 60 * 1000,
+  });
+
+  const availabilityByKey = useMemo(() => {
+    const map: Record<string, { windows: AvailabilityWindow[]; note: string | null }> = {};
+    for (const r of availabilityRows) {
+      map[r.client_key] = { windows: Array.isArray(r.windows) ? r.windows : [], note: r.note };
+    }
+    return map;
+  }, [availabilityRows]);
+
+  const setAvailability = useCallback(
+    async (key: string, windows: AvailabilityWindow[], note?: string) => {
+      try {
+        if (!windows.length && !note) {
+          await supabase.from("timetable_client_availability").delete().eq("client_key", key);
+        } else {
+          const { data: userData } = await supabase.auth.getUser();
+          await supabase.from("timetable_client_availability").upsert(
+            { user_id: userData?.user?.id, client_key: key, windows, note: note ?? null, updated_at: new Date().toISOString() },
+            { onConflict: "user_id,client_key" },
+          );
+        }
+        await queryClient.invalidateQueries({ queryKey: ["timetable-availability"] });
+      } catch (e: any) {
+        showError(e?.message || "Couldn't update availability.");
       }
     },
     [queryClient],
@@ -1047,6 +1088,8 @@ const TimetablePage = () => {
             onDraftChange={setDraftAssignments}
             awayByKey={awayByKey}
             onSetAway={setAway}
+            availabilityByKey={availabilityByKey}
+            onSetAvailability={setAvailability}
             calendarPreview={
               <div className="space-y-8">
                 {[0, 1, 2, 3].map((fi) => {

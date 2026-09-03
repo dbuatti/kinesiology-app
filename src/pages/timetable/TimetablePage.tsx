@@ -1796,8 +1796,8 @@ function SuggestionsPanel({
         <Sparkles size={32} className="mx-auto mb-3 opacity-40" />
         <p className="text-sm font-semibold">No suggestions yet</p>
         <p className="text-xs mt-1 max-w-sm mx-auto leading-relaxed">
-          The system detects patterns once a client has 2+ past sessions with consistent gaps.
-          Clients with availability notes will also appear here when their preferred days have open slots.
+          Suggestions appear when: a client has 2+ past sessions with a detectable rhythm,
+          a client is overdue past their usual interval, or they have availability notes with matching open slots.
         </p>
       </div>
     );
@@ -1808,13 +1808,17 @@ function SuggestionsPanel({
       return <Badge className="bg-chart-primary/10 text-chart-primary border-none text-[8px]" variant="outline">FNH pattern</Badge>;
     if (source === "voice-pattern")
       return <Badge className="bg-emerald-500/10 text-emerald-600 border-none text-[8px]" variant="outline">Voice pattern</Badge>;
+    if (source === "overdue")
+      return <Badge className="bg-rose-500/10 text-rose-600 border-none text-[8px]" variant="outline">FNH overdue</Badge>;
+    if (source === "voice-overdue")
+      return <Badge className="bg-rose-500/10 text-rose-600 border-none text-[8px]" variant="outline">Voice overdue</Badge>;
     return <Badge className="bg-amber-500/10 text-amber-600 border-none text-[8px]" variant="outline">Availability</Badge>;
   };
 
   return (
     <div className="space-y-3">
       <p className="text-xs font-semibold text-muted-foreground">
-        {suggestions.length} suggestion{suggestions.length !== 1 ? "s" : ""} based on past sessions and availability notes.
+        {suggestions.length} suggestion{suggestions.length !== 1 ? "s" : ""} — patterns, overdue clients, and availability.
       </p>
       {suggestions.map((s, i) => (
         <div

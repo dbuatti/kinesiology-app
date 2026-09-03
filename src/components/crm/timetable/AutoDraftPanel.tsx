@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Wand2, CalendarClock, AlertTriangle, Check, X, Plane, Search, Clock, Mail } from "lucide-react";
+import { Loader2, Wand2, CalendarClock, AlertTriangle, Check, X, Plane, Search, Clock, Mail, BookmarkPlus } from "lucide-react";
 import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
@@ -285,6 +285,31 @@ export default function AutoDraftPanel({
   const [emailedKeys, setEmailedKeys] = useState<Set<string>>(new Set());
   const [emailingKey, setEmailingKey] = useState<string | null>(null);
 
+  // Saved sets — named groups of clients, kept locally on this device.
+  const [savedSets, setSavedSets] = useState<{ name: string; keys: string[] }[]>(() => {
+    try {
+      const raw = localStorage.getItem("timetable_autodraft_sets");
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+  const persistSets = (sets: { name: string; keys: string[] }[]) => {
+    setSavedSets(sets);
+    try {
+      localStorage.setItem("timetable_autodraft_sets", JSON.stringify(sets));
+    } catch {
+      /* ignore */
+    }
+  };
+  const saveCurrentSet = () => {
+    if (selected.size === 0) return;
+    const name = window.prompt("Name this set of clients:")?.trim();
+    if (!name) return;
+    const keys = [...selected];
+    persistSets([...savedSets.filter((s) => s.name !== name), { name, keys }]);
+  };
+
   const emailOne = async (a: Assignment) => {
     if (!onEmailTimes || !a.email) return;
     setEmailingKey(a.clientId);
@@ -481,6 +506,37 @@ export default function AutoDraftPanel({
               placeholder="Search clients…"
               className="w-full text-sm rounded-lg border border-border bg-background pl-8 pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-ring"
             />
+          </div>
+
+          {/* Saved sets */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <BookmarkPlus size={12} className="text-muted-foreground" />
+            {savedSets.length === 0 && (
+              <span className="text-[11px] text-muted-foreground">No saved sets yet</span>
+            )}
+            {savedSets.map((set) => (
+              <span key={set.name} className="group flex items-center rounded-full bg-muted/70 text-[11px] font-medium overflow-hidden">
+                <button
+                  onClick={() => setSelected(new Set(set.keys))}
+                  title={`Load ${set.keys.length} clients`}
+                  className="pl-2.5 pr-1.5 py-0.5 hover:bg-amber-500/10 hover:text-amber-700"
+                >
+                  {set.name} <span className="text-muted-foreground">({set.keys.length})</span>
+                </button>
+                <button
+                  onClick={() => persistSets(savedSets.filter((s) => s.name !== set.name))}
+                  title="Delete set"
+                  className="px-1.5 py-0.5 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10"
+                >
+                  <X size={10} />
+                </button>
+              </span>
+            ))}
+            {selected.size > 0 && (
+              <button onClick={saveCurrentSet} className="text-[11px] font-semibold text-amber-600 hover:text-amber-700 rounded-full border border-amber-500/30 px-2 py-0.5">
+                Save current
+              </button>
+            )}
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 p-3 max-h-[26rem] overflow-y-auto">

@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Wand2, CalendarClock, AlertTriangle, Check, X, Plane, Search, Clock } from "lucide-react";
+import { Loader2, Wand2, CalendarClock, AlertTriangle, Check, X, Plane, Search, Clock, Mail } from "lucide-react";
 import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
@@ -62,6 +62,8 @@ interface AutoDraftPanelProps {
     key: string,
     patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null },
   ) => void;
+  /** Email a client the time they've been penciled in for. Resolves on success. */
+  onEmailTimes?: (assignment: Assignment) => Promise<unknown>;
 }
 
 // Median gap (days) between consecutive sessions — a simple cadence estimate.
@@ -273,10 +275,24 @@ export default function AutoDraftPanel({
   calendarPreview,
   availabilityByKey = {},
   onSavePrefs,
+  onEmailTimes,
 }: AutoDraftPanelProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [awayEditKey, setAwayEditKey] = useState<string | null>(null);
   const [availEditKey, setAvailEditKey] = useState<string | null>(null);
+  const [emailedKeys, setEmailedKeys] = useState<Set<string>>(new Set());
+  const [emailingKey, setEmailingKey] = useState<string | null>(null);
+
+  const emailOne = async (a: Assignment) => {
+    if (!onEmailTimes || !a.email) return;
+    setEmailingKey(a.clientId);
+    try {
+      await onEmailTimes(a);
+      setEmailedKeys((prev) => new Set(prev).add(a.clientId));
+    } finally {
+      setEmailingKey(null);
+    }
+  };
   const [search, setSearch] = useState("");
   const [showNoHistory, setShowNoHistory] = useState(false);
   const [result, setResult] = useState<{ assignments: Assignment[]; unplaced: Unplaced[] } | null>(null);
@@ -721,7 +737,23 @@ export default function AutoDraftPanel({
                     {format(a.slotStart, "EEE d MMM · h:mm a")} — {a.reason}
                   </div>
                 </div>
-                {accepted && <Check size={16} className="text-chart-emerald shrink-0" />}
+                {onEmailTimes && a.email && (
+                  emailedKeys.has(a.clientId) ? (
+                    <span className="text-[10px] font-semibold text-chart-emerald shrink-0 flex items-center gap-1">
+                      <Check size={12} /> Emailed
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => emailOne(a)}
+                      disabled={emailingKey === a.clientId}
+                      title="Email this client their proposed time"
+                      className="shrink-0 flex items-center gap-1 text-[10px] font-semibold text-sky-600 hover:text-sky-700 rounded-full border border-sky-500/30 px-2 py-0.5 disabled:opacity-50"
+                    >
+                      {emailingKey === a.clientId ? <Loader2 size={11} className="animate-spin" /> : <Mail size={11} />}
+                      Email
+                    </button>
+                  )
+                )}
               </div>
             );
           })}

@@ -1116,6 +1116,16 @@ const TimetablePage = () => {
             onSetAway={setAway}
             availabilityByKey={availabilityByKey}
             onSavePrefs={saveClientPrefs}
+            onEmailTimes={async (a) => {
+              const { error } = await supabase.functions.invoke("send-proposed-times", {
+                body: { to: a.email, name: a.name, startISO: a.slotStart.toISOString(), kind: a.kind },
+              });
+              if (error) {
+                showError(error.message || "Couldn't send email.");
+                throw error;
+              }
+              showSuccess(`Emailed ${a.name} their proposed time.`);
+            }}
             calendarPreview={
               <div className="space-y-8">
                 {[0, 1, 2, 3].map((fi) => {

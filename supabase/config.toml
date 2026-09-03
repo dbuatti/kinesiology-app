@@ -75,3 +75,6 @@ verify_jwt = false
 
 [functions.gmail-schedule-email]
 verify_jwt = false
+
+[functions.send-proposed-times]
+verify_jwt = false

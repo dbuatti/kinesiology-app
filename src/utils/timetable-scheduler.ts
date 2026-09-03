@@ -166,6 +166,9 @@ export interface SchedulerClient {
   /** Hard band (± days) around targetDate this instance must land within, so a
    *  weekly client's sessions stay one-per-week instead of piling up. */
   targetWindowDays?: number;
+  /** Real bookings already in the future — used to anchor their home slot to the
+   *  day/time they're actually booked at, and never re-draft those weeks. */
+  upcomingSessions?: Date[];
 }
 
 export interface OpenSlot {
@@ -599,12 +602,21 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
   // one prefers stay flexible (null = either kind).
   const groupByKind = input.groupByKind !== false;
   const dayDemand = new Map<number, { fnh: number; voice: number }>();
+  const addDemand = (wd: number, kind: SessionKind) => {
+    const dd = dayDemand.get(wd) ?? { fnh: 0, voice: 0 };
+    dd[kind] += 1;
+    dayDemand.set(wd, dd);
+  };
   for (const [, g] of groups) {
-    const pref = computePreferredTime(g.rep.pastSessions);
-    if (!pref) continue;
-    const dd = dayDemand.get(pref.weekday) ?? { fnh: 0, voice: 0 };
-    dd[g.rep.kind] += 1;
-    dayDemand.set(pref.weekday, dd);
+    // An existing upcoming booking is the strongest signal for which day is theirs.
+    const upc = g.rep.upcomingSessions ?? [];
+    if (upc.length) {
+      const latest = new Date(Math.max(...upc.map((d) => d.getTime())));
+      addDemand(latest.getDay(), g.rep.kind);
+    } else {
+      const pref = computePreferredTime(g.rep.pastSessions);
+      if (pref) addDemand(pref.weekday, g.rep.kind);
+    }
   }
   const dayKind = new Map<number, SessionKind | null>();
   if (groupByKind) {
@@ -636,7 +648,18 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     // Prefer patterns on this client's own kind-days; only fall back to any day
     // (an exception, e.g. an online client pinned to a mixed day) if they have none.
     const onKind = [...seen.values()].sort((a, b2) => b2.score - a.score);
-    candByBase.set(b, onKind.length > 0 ? onKind : [...seenAny.values()].sort((a, b2) => b2.score - a.score));
+    let list = onKind.length > 0 ? onKind : [...seenAny.values()].sort((a, b2) => b2.score - a.score);
+
+    // If they already have an upcoming booking, anchor their home to THAT day/time
+    // so the series continues on their real slot (even if that exact slot is booked).
+    const upc = rep.upcomingSessions ?? [];
+    if (upc.length) {
+      const latest = new Date(Math.max(...upc.map((d) => d.getTime())));
+      const hint = { p: { weekday: latest.getDay(), minutes: latest.getHours() * 60 + latest.getMinutes() }, score: 100 };
+      const hintKey = `${hint.p.weekday}:${hint.p.minutes}`;
+      list = [hint, ...list.filter((x) => `${x.p.weekday}:${x.p.minutes}` !== hintKey)];
+    }
+    candByBase.set(b, list);
   }
 
   const home = new Map<string, HomePattern | null>();

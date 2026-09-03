@@ -545,6 +545,7 @@ export default function AutoDraftPanel({
         timeKnown: c.timeKnown,
         availability: availabilityByKey[c.key]?.windows,
         preBufferMin: availabilityByKey[c.key]?.bufferBeforeMin ?? undefined,
+        upcomingSessions: c.upcomingSessions,
       };
 
       if (!interval) {

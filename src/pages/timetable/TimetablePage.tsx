@@ -18,7 +18,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Mail,
+  Plane,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -95,6 +98,17 @@ interface VoiceStudent {
   email: string | null;
 }
 
+interface EnrichedVoiceStudent {
+  id: string;
+  name: string | null;
+  email: string | null;
+  session_count: number;
+  upcoming_count: number;
+  last_session_at: string | null;
+  next_session_at: string | null;
+  attention_score: number;
+}
+
 interface VoiceClientsResponse {
   students?: {
     id: string;
@@ -107,12 +121,14 @@ interface FnhClient {
   id: string;
   name: string | null;
   email: string | null;
+  availability_notes?: string | null;
 }
 
 interface EnrichedClient {
   id: string;
   name: string | null;
   email: string | null;
+  availability_notes?: string | null;
   session_count: number;
   upcoming_count: number;
   last_session_at: string | null;
@@ -178,6 +194,12 @@ const TimetablePage = () => {
   const [appointmentFor, setAppointmentFor] = useState<EnrichedBooking | null>(null);
   const [cancellingAppt, setCancellingAppt] = useState(false);
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
+  const [oooOpen, setOooOpen] = useState(false);
+  const [oooStart, setOooStart] = useState("");
+  const [oooEnd, setOooEnd] = useState("");
+  const [oooReason, setOooReason] = useState("");
+  const [settingOoo, setSettingOoo] = useState(false);
+  const [showAllDay, setShowAllDay] = useState(false);
 
   const eventTypeId = kind === "fnh" ? fnhEventType : voiceEventType;
 
@@ -187,7 +209,7 @@ const TimetablePage = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("clients")
-        .select("id, name, email")
+        .select("id, name, email, availability_notes")
         .not("is_practitioner", "eq", true)
         .order("name");
       if (error) throw error;
@@ -244,6 +266,7 @@ const TimetablePage = () => {
         id: c.id,
         name: c.name,
         email: c.email,
+        availability_notes: c.availability_notes || null,
         session_count: sessionCount,
         upcoming_count: upcomingCount,
         last_session_at: lastSession?.date || null,
@@ -266,6 +289,69 @@ const TimetablePage = () => {
     },
     staleTime: 5 * 60 * 1000,
   });
+
+  const { data: voiceBookingsData = [] } = useQuery({
+    queryKey: ["timetable-voice-bookings"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("voice_bookings")
+        .select("student_email, student_name, lesson_date, status")
+        .not("status", "eq", "cancelled")
+        .order("lesson_date", { ascending: false });
+      if (error) throw error;
+      return (data || []) as {
+        student_email: string | null;
+        student_name: string | null;
+        lesson_date: string;
+        status: string | null;
+      }[];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const enrichedVoiceStudents = useMemo<EnrichedVoiceStudent[]>(() => {
+    const today = startOfDay(now);
+    return voiceStudents.map((s) => {
+      const emailKey = s.email?.toLowerCase() || "";
+      const bookings = voiceBookingsData.filter(
+        (b) => b.student_email?.toLowerCase() === emailKey
+      );
+      const sessionCount = bookings.length;
+      const upcomingCount = bookings.filter(
+        (b) => new Date(b.lesson_date) >= today
+      ).length;
+      const lastSession = bookings
+        .filter((b) => new Date(b.lesson_date) < today)
+        .sort((a, b) => new Date(b.lesson_date).getTime() - new Date(a.lesson_date).getTime())[0];
+      const nextSession = bookings
+        .filter((b) => new Date(b.lesson_date) >= today)
+        .sort((a, b) => new Date(a.lesson_date).getTime() - new Date(b.lesson_date).getTime())[0];
+
+      let attentionScore = 0;
+      if (upcomingCount > 0 && !lastSession) attentionScore = 100;
+      else if (upcomingCount > 0 && lastSession) {
+        const daysSince = differenceInDays(today, new Date(lastSession.lesson_date));
+        attentionScore = daysSince > 60 ? 90 : daysSince > 21 ? 70 : 50;
+      } else if (lastSession) {
+        const daysSince = differenceInDays(today, new Date(lastSession.lesson_date));
+        if (daysSince <= 21) attentionScore = 80;
+        else if (daysSince <= 60) attentionScore = 60;
+        else if (daysSince <= 120) attentionScore = 30;
+      }
+      if (sessionCount === 0 && upcomingCount === 0) attentionScore = 10;
+
+      return {
+        id: s.id,
+        name: s.name,
+        email: s.email,
+        session_count: sessionCount,
+        upcoming_count: upcomingCount,
+        last_session_at: lastSession?.lesson_date || null,
+        next_session_at: nextSession?.lesson_date || null,
+        attention_score: attentionScore,
+      };
+    }).sort((a, b) => b.attention_score - a.attention_score);
+  }, [voiceStudents, voiceBookingsData, now]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -326,6 +412,11 @@ const TimetablePage = () => {
     loading: icloudLoading,
     error: icloudError,
   } = useIcloudCalendar(dateRange[0].toISOString(), dateRange[dateRange.length - 1].toISOString());
+
+  const visibleIcloudEvents = useMemo(
+    () => icloudEvents.filter((ev) => showAllDay || !ev.allDay),
+    [icloudEvents, showAllDay]
+  );
 
   const { bookings: enrichedBookings } = useTimetableAppointments(bookings, proposals);
 
@@ -501,6 +592,8 @@ const TimetablePage = () => {
       }
       showSuccess("Booking cancelled — slot freed in Cal.com.");
       setAppointmentFor(null);
+      setConfirmCancelOpen(false);
+      fetchData();
     } catch (err) {
       showError(err instanceof Error ? err.message : "Could not cancel booking.");
     } finally {
@@ -512,6 +605,41 @@ const TimetablePage = () => {
     if (stateFor(d) !== DayState.OPEN) return;
     setPickingDay(d);
     setCreateOpen(true);
+  };
+
+  const handleSetOutOfOffice = async () => {
+    if (!oooStart || !oooEnd) {
+      showError("Please pick a start and end.");
+      return;
+    }
+    const start = new Date(oooStart);
+    const end = new Date(oooEnd);
+    if (end <= start) {
+      showError("End must be after start.");
+      return;
+    }
+    setSettingOoo(true);
+    try {
+      const { error: invokeError } = await supabase.functions.invoke("calcom-ooo-block", {
+        body: {
+          action: "set",
+          start: start.toISOString(),
+          end: end.toISOString(),
+          reason: oooReason.trim() || "unspecified",
+        },
+      });
+      if (invokeError) throw invokeError;
+      showSuccess("Out-of-office block created — these times are now busy on Cal.com.");
+      setOooOpen(false);
+      setOooStart("");
+      setOooEnd("");
+      setOooReason("");
+      fetchData();
+    } catch (err) {
+      showError(err instanceof Error ? err.message : "Could not create out-of-office block.");
+    } finally {
+      setSettingOoo(false);
+    }
   };
 
   const openProposal = (p: BookingProposal) => {
@@ -558,6 +686,24 @@ const TimetablePage = () => {
           >
             <Mail size={14} className={cn(sendingEmail && "animate-pulse")} /> Email schedule
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setOooOpen(true)}
+            className="gap-1.5"
+            title="Block a block of time as out-of-office on Cal.com"
+          >
+            <Plane size={14} /> Out of office
+          </Button>
+          <Button
+            variant={showAllDay ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowAllDay((v) => !v)}
+            className="gap-1.5"
+            title="Show or hide all-day events (retreat, flights, personal) on the grid"
+          >
+            <CalendarDays size={14} /> All-day
+          </Button>
         </div>
       </div>
 
@@ -585,7 +731,7 @@ const TimetablePage = () => {
           setSelectedStudentEmail(email);
         }}
         fnhClients={enrichedClients}
-        voiceStudents={voiceStudents}
+        voiceStudents={enrichedVoiceStudents}
       />
 
       {/* Tabs */}
@@ -615,7 +761,7 @@ const TimetablePage = () => {
             slots={slots}
             bookings={bookingsByDate}
             blockedDates={blockedDates}
-            icloudEvents={icloudEvents}
+            icloudEvents={visibleIcloudEvents}
             stateFor={stateFor}
             proposals={proposalsInWindow}
             loading={loading}
@@ -867,6 +1013,64 @@ const TimetablePage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Out-of-office block */}
+      <Dialog open={oooOpen} onOpenChange={setOooOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plane size={18} className="text-chart-primary" /> Block out-of-office
+            </DialogTitle>
+            <DialogDescription>
+              Hold a block of time as busy on Cal.com so no one can book it. This is a hard
+              out-of-office block across all event types.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  Start
+                </Label>
+                <Input
+                  type="datetime-local"
+                  value={oooStart}
+                  onChange={(e) => setOooStart(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  End
+                </Label>
+                <Input
+                  type="datetime-local"
+                  value={oooEnd}
+                  onChange={(e) => setOooEnd(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                Reason (optional)
+              </Label>
+              <Input
+                placeholder="e.g. Holiday, conference, personal time"
+                value={oooReason}
+                onChange={(e) => setOooReason(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter className="flex sm:justify-between">
+            <Button variant="ghost" onClick={() => setOooOpen(false)} disabled={settingOoo}>
+              Close
+            </Button>
+            <Button className="gap-1.5" onClick={handleSetOutOfOffice} disabled={settingOoo}>
+              {settingOoo ? <Loader2 className="animate-spin" size={14} /> : <Plane size={14} />}
+              Set out-of-office
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
@@ -933,7 +1137,7 @@ function PlannerBar({
   selectedStudentEmail: string;
   onSelectStudent: (name: string, email: string) => void;
   fnhClients: EnrichedClient[];
-  voiceStudents: VoiceStudent[];
+  voiceStudents: EnrichedVoiceStudent[];
 }) {
   return (
     <div className="rounded-xl border border-border bg-card p-3 flex flex-col lg:flex-row gap-3 lg:items-end">
@@ -999,47 +1203,54 @@ function PlannerBar({
                     (c.upcoming_count === 0 && c.session_count === 0);
                   return (
                     <SelectItem key={c.id} value={c.id} className="py-2">
-                      <div className="flex items-center justify-between gap-4 w-full">
-                        <span className="flex items-center gap-2 truncate">
-                          <span className="shrink-0 h-2 w-2 rounded-full"
-                            style={{
-                              background: needsAttention
-                                ? "hsl(var(--chart-destructive))"
-                                : c.attention_score >= 60
-                                  ? "hsl(var(--chart-primary))"
-                                  : "hsl(var(--muted-foreground))",
-                            }}
-                          />
-                          <span className="truncate">{c.name || "Unnamed client"}</span>
-                        </span>
-                        <span className="flex items-center gap-1 shrink-0 ml-2">
-                          {c.last_session_at === null && (
-                            <span className="rounded bg-muted px-1 py-[1px] text-[8px] font-semibold uppercase tracking-wide text-muted-foreground leading-none">
-                              Never seen
-                            </span>
-                          )}
-                          {c.last_session_at && (
-                            <span className="rounded bg-muted px-1 py-[1px] text-[8px] font-semibold uppercase tracking-wide text-muted-foreground leading-none">
-                              Last {format(new Date(c.last_session_at), "d MMM")}
-                              <span className="opacity-70">·&nbsp;{fmtSpan(differenceInDays(new Date(), new Date(c.last_session_at)))} ago</span>
-                            </span>
-                          )}
-                          {c.next_session_at ? (
-                            <span className="rounded bg-chart-primary/10 px-1 py-[1px] text-[8px] font-bold uppercase tracking-wide text-chart-primary leading-none">
-                              Next {format(new Date(c.next_session_at), "d MMM")}
-                              {c.last_session_at && (
-                                <span className="opacity-70">
-                                  {" · "}
-                                  {fmtSpan(differenceInDays(new Date(c.next_session_at), new Date(c.last_session_at)))}
-                                </span>
-                              )}
-                            </span>
-                          ) : (
-                            <span className="rounded bg-amber-500/10 px-1 py-[1px] text-[8px] font-bold uppercase tracking-wide text-amber-600 leading-none">
-                              No next
-                            </span>
-                          )}
-                        </span>
+                      <div className="flex flex-col w-full gap-0.5">
+                        <div className="flex items-center justify-between gap-4 w-full">
+                          <span className="flex items-center gap-2 truncate">
+                            <span className="shrink-0 h-2 w-2 rounded-full"
+                              style={{
+                                background: needsAttention
+                                  ? "hsl(var(--chart-destructive))"
+                                  : c.attention_score >= 60
+                                    ? "hsl(var(--chart-primary))"
+                                    : "hsl(var(--muted-foreground))",
+                              }}
+                            />
+                            <span className="truncate">{c.name || "Unnamed client"}</span>
+                          </span>
+                          <span className="flex items-center gap-1 shrink-0 ml-2">
+                            {c.last_session_at === null && (
+                              <span className="rounded bg-muted px-1 py-[1px] text-[8px] font-semibold uppercase tracking-wide text-muted-foreground leading-none">
+                                Never seen
+                              </span>
+                            )}
+                            {c.last_session_at && (
+                              <span className="rounded bg-muted px-1 py-[1px] text-[8px] font-semibold uppercase tracking-wide text-muted-foreground leading-none">
+                                Last {format(new Date(c.last_session_at), "d MMM")}
+                                <span className="opacity-70">·&nbsp;{fmtSpan(differenceInDays(new Date(), new Date(c.last_session_at)))} ago</span>
+                              </span>
+                            )}
+                            {c.next_session_at ? (
+                              <span className="rounded bg-chart-primary/10 px-1 py-[1px] text-[8px] font-bold uppercase tracking-wide text-chart-primary leading-none">
+                                Next {format(new Date(c.next_session_at), "d MMM")}
+                                {c.last_session_at && (
+                                  <span className="opacity-70">
+                                    {" · "}
+                                    {fmtSpan(differenceInDays(new Date(c.next_session_at), new Date(c.last_session_at)))}
+                                  </span>
+                                )}
+                              </span>
+                            ) : (
+                              <span className="rounded bg-amber-500/10 px-1 py-[1px] text-[8px] font-bold uppercase tracking-wide text-amber-600 leading-none">
+                                No next
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        {c.availability_notes && (
+                          <span className="truncate pl-4 text-[9px] italic text-muted-foreground/70 leading-none">
+                            {c.availability_notes}
+                          </span>
+                        )}
                       </div>
                     </SelectItem>
                   );
@@ -1057,14 +1268,61 @@ function PlannerBar({
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Choose a student" />
             </SelectTrigger>
-            <SelectContent>
-              {voiceStudents.map((s) =>
-                s.email ? (
-                  <SelectItem key={s.email} value={s.email}>
-                    {s.name || s.email}
+            <SelectContent className="max-h-[320px]">
+              {voiceStudents.map((s) => {
+                if (!s.email) return null;
+                const needsAttention =
+                  (s.upcoming_count > 0 && !s.last_session_at) ||
+                  (s.upcoming_count === 0 && s.session_count === 0);
+                return (
+                  <SelectItem key={s.email} value={s.email} className="py-2">
+                    <div className="flex flex-col w-full gap-0.5">
+                      <div className="flex items-center justify-between gap-4 w-full">
+                        <span className="flex items-center gap-2 truncate">
+                          <span className="shrink-0 h-2 w-2 rounded-full"
+                            style={{
+                              background: needsAttention
+                                ? "hsl(var(--chart-destructive))"
+                                : s.attention_score >= 60
+                                  ? "hsl(var(--chart-primary))"
+                                  : "hsl(var(--muted-foreground))",
+                            }}
+                          />
+                          <span className="truncate">{s.name || s.email}</span>
+                        </span>
+                        <span className="flex items-center gap-1 shrink-0 ml-2">
+                          {s.last_session_at === null && (
+                            <span className="rounded bg-muted px-1 py-[1px] text-[8px] font-semibold uppercase tracking-wide text-muted-foreground leading-none">
+                              Never seen
+                            </span>
+                          )}
+                          {s.last_session_at && (
+                            <span className="rounded bg-muted px-1 py-[1px] text-[8px] font-semibold uppercase tracking-wide text-muted-foreground leading-none">
+                              Last {format(new Date(s.last_session_at), "d MMM")}
+                              <span className="opacity-70">·&nbsp;{fmtSpan(differenceInDays(new Date(), new Date(s.last_session_at)))} ago</span>
+                            </span>
+                          )}
+                          {s.next_session_at ? (
+                            <span className="rounded bg-chart-primary/10 px-1 py-[1px] text-[8px] font-bold uppercase tracking-wide text-chart-primary leading-none">
+                              Next {format(new Date(s.next_session_at), "d MMM")}
+                              {s.last_session_at && (
+                                <span className="opacity-70">
+                                  {" · "}
+                                  {fmtSpan(differenceInDays(new Date(s.next_session_at), new Date(s.last_session_at)))}
+                                </span>
+                              )}
+                            </span>
+                          ) : (
+                            <span className="rounded bg-amber-500/10 px-1 py-[1px] text-[8px] font-bold uppercase tracking-wide text-amber-600 leading-none">
+                              No next
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    </div>
                   </SelectItem>
-                ) : null
-              )}
+                );
+              })}
             </SelectContent>
           </Select>
         )}

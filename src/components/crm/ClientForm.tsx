@@ -35,6 +35,7 @@ const formSchema = z.object({
   children: z.string().optional(),
   chatgpt_url: z.string().url("Must be a valid URL").or(z.string().length(0)).optional(),
   journal: z.string().optional(),
+  availability_notes: z.string().optional(),
   emergency_contact_name: z.string().optional(),
   emergency_contact_phone: z.string().optional(),
   medications_supplements: z.string().optional(),
@@ -78,6 +79,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
       children: initialData?.children || "",
       chatgpt_url: initialData?.chatgpt_url || "",
       journal: journalData.notes || "",
+      availability_notes: initialData?.availability_notes || "",
       emergency_contact_name: initialData?.emergency_contact_name || "",
       emergency_contact_phone: initialData?.emergency_contact_phone || "",
       medications_supplements: initialData?.medications_supplements || "",
@@ -122,6 +124,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
         children: values.children || null,
         chatgpt_url: values.chatgpt_url || null,
         journal: updatedJournal,
+        availability_notes: values.availability_notes || null,
         emergency_contact_name: values.emergency_contact_name || null,
         emergency_contact_phone: values.emergency_contact_phone || null,
         medications_supplements: values.medications_supplements || null,
@@ -574,6 +577,24 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
                   <Textarea 
                     placeholder="Long-term history, key notes, and personal reflections..." 
                     className="min-h-[120px] rounded-xl border-border resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
+                    {...field} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="availability_notes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Availability Notes</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="e.g. Free all day Mon/Tue, Wed-Fri only before 2pm. Weekend OK. Record the client's own scheduling preferences here so the timetable can propose good windows."
+                    className="min-h-[100px] rounded-xl border-border resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
                     {...field} 
                   />
                 </FormControl>

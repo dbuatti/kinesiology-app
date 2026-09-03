@@ -144,6 +144,7 @@ export interface Client {
   rate_updated_at?: string | null;
   reengagement_tag?: 'warm' | 'cold' | 'lost' | null;
   contact_log?: { timestamp: string; note: string }[];
+  availability_notes?: string | null;
 }
 
 export interface AppointmentWithClient extends Appointment {

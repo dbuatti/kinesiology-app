@@ -1006,6 +1006,19 @@ const ClientDetailPage = () => {
                     <Card className="bg-muted/50 border-border shadow-none rounded-xl">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                          <CalendarClock size={14} /> Availability Notes
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed font-medium">
+                          {client.availability_notes || "No availability notes recorded."}
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-muted/50 border-border shadow-none rounded-xl">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                           <History size={14} /> Practitioner Journal
                         </CardTitle>
                       </CardHeader>

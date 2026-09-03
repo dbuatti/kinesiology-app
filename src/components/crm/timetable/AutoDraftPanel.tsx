@@ -62,11 +62,11 @@ interface AutoDraftPanelProps {
   /** The fortnight calendar, rendered between the controls and the review list. */
   calendarPreview?: ReactNode;
   /** Recorded scheduling prefs per client key: availability windows, note, cadence. */
-  availabilityByKey?: Record<string, { windows: AvailabilityWindow[]; note: string | null; cadenceDays: number | null; bufferBeforeMin: number | null }>;
+  availabilityByKey?: Record<string, { windows: AvailabilityWindow[]; note: string | null; cadenceDays: number | null; bufferBeforeMin: number | null; sessionLengthMin: number | null }>;
   /** Merge-save a client's scheduling prefs (only passed fields change). */
   onSavePrefs?: (
     key: string,
-    patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null; bufferBeforeMin?: number | null },
+    patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null; bufferBeforeMin?: number | null; sessionLengthMin?: number | null },
   ) => void;
   /** Email a client the time they've been penciled in for. Resolves on success. */
   onEmailTimes?: (assignment: Assignment, message?: string) => Promise<unknown>;
@@ -149,13 +149,15 @@ function AvailabilityEditor({
   note,
   cadenceDays,
   bufferBeforeMin,
+  sessionLengthMin,
   onSave,
 }: {
   windows: AvailabilityWindow[];
   note: string | null;
   cadenceDays: number | null;
   bufferBeforeMin: number | null;
-  onSave: (patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null; bufferBeforeMin?: number | null }) => void;
+  sessionLengthMin: number | null;
+  onSave: (patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null; bufferBeforeMin?: number | null; sessionLengthMin?: number | null }) => void;
 }) {
   const [days, setDays] = useState<number[]>([]);
   const [from, setFrom] = useState("");
@@ -195,6 +197,25 @@ function AvailabilityEditor({
             )}
           >
             {opt.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Session length */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 mr-0.5">Length</span>
+        {[{ l: "Auto", v: null }, { l: "30m", v: 30 }, { l: "45m", v: 45 }, { l: "60m", v: 60 }].map((o) => (
+          <button
+            key={o.l}
+            onClick={() => onSave({ sessionLengthMin: o.v })}
+            className={cn(
+              "text-[10px] font-bold rounded-md px-1.5 py-0.5 border",
+              (sessionLengthMin ?? null) === o.v
+                ? "bg-foreground text-background border-foreground"
+                : "border-border text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {o.l}
           </button>
         ))}
       </div>
@@ -516,7 +537,11 @@ export default function AutoDraftPanel({
         pastSessions: c.pastSessions,
         intervalDays: interval,
         lastSessionAt: c.lastSessionAt,
-        durationMin: c.typicalDurationMin ?? (c.kind === "fnh" ? fnhDurationMin : voiceDurationMin),
+        // Explicit per-client length wins, else inferred, else per-kind default.
+        durationMin:
+          availabilityByKey[c.key]?.sessionLengthMin ??
+          c.typicalDurationMin ??
+          (c.kind === "fnh" ? fnhDurationMin : voiceDurationMin),
         timeKnown: c.timeKnown,
         availability: availabilityByKey[c.key]?.windows,
         preBufferMin: availabilityByKey[c.key]?.bufferBeforeMin ?? undefined,
@@ -800,6 +825,7 @@ export default function AutoDraftPanel({
                     note={availabilityByKey[c.key]?.note ?? null}
                     cadenceDays={availabilityByKey[c.key]?.cadenceDays ?? null}
                     bufferBeforeMin={availabilityByKey[c.key]?.bufferBeforeMin ?? null}
+                    sessionLengthMin={availabilityByKey[c.key]?.sessionLengthMin ?? null}
                     onSave={(patch) => onSavePrefs?.(c.key, patch)}
                   />
                 )}

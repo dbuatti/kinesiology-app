@@ -9,12 +9,14 @@ import { cn } from "@/lib/utils";
 import {
   autoDraftSchedule,
   computePreferredTime,
+  computeCapacityInsights,
   type SchedulerClient,
   type OpenSlot,
   type BusyBlock,
   type Assignment,
   type Unplaced,
 } from "@/utils/timetable-scheduler";
+import { Lightbulb } from "lucide-react";
 
 // ── Inputs from the parent page (already-loaded data) ────────────────────────
 export interface AutoDraftClient {
@@ -100,6 +102,21 @@ export default function AutoDraftPanel({
       }),
     [clients],
   );
+
+  // Capacity insights — "open up more Thursdays" style nudges. Computed across
+  // ALL clients (not just selected) so it reflects your whole overdue picture.
+  const insights = useMemo(() => {
+    const asScheduler: SchedulerClient[] = clients.map((c) => ({
+      id: c.key,
+      kind: c.kind,
+      name: c.name,
+      pastSessions: c.pastSessions,
+      intervalDays: medianGapDays(c.pastSessions),
+      lastSessionAt: c.lastSessionAt,
+      timeKnown: c.timeKnown,
+    }));
+    return computeCapacityInsights(asScheduler, openSlots).slice(0, 3);
+  }, [clients, openSlots]);
 
   const toggle = (key: string) =>
     setSelected((prev) => {
@@ -192,6 +209,20 @@ export default function AutoDraftPanel({
 
   return (
     <div className="space-y-4">
+      {/* Capacity insights */}
+      {insights.length > 0 && (
+        <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-rose-500/5 p-4 space-y-2">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600">
+            <Lightbulb size={14} /> Where to open up
+          </div>
+          {insights.map((ins) => (
+            <p key={ins.weekday} className="text-sm text-foreground leading-relaxed">
+              {ins.message}
+            </p>
+          ))}
+        </div>
+      )}
+
       {/* Client picker */}
       <div className="rounded-2xl border border-border/60 overflow-hidden">
         <div className="flex items-center justify-between px-4 py-2.5 bg-muted/40 border-b border-border/50">

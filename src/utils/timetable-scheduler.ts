@@ -318,6 +318,70 @@ export function autoDraftSchedule(input: AutoDraftInput): DraftResult {
 }
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const WEEKDAYS_LONG = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+// ── Capacity insights ───────────────────────────────────────────────────────
+
+export interface CapacityInsight {
+  weekday: number;
+  weekdayLabel: string;
+  overdueClients: string[];
+  openCount: number;
+  message: string;
+}
+
+/**
+ * Surfaces where demand outstrips open supply by weekday: which day you should
+ * open up because clients who usually come then are overdue and there aren't
+ * enough open slots for them. Sorted by biggest shortfall first.
+ */
+export function computeCapacityInsights(
+  clients: SchedulerClient[],
+  openSlots: OpenSlot[],
+  nowMs: number = Date.now(),
+): CapacityInsight[] {
+  const openByWeekday = new Map<number, number>();
+  for (const s of openSlots) {
+    if (s.start.getTime() <= nowMs) continue;
+    openByWeekday.set(s.start.getDay(), (openByWeekday.get(s.start.getDay()) ?? 0) + 1);
+  }
+
+  const overdueByWeekday = new Map<number, string[]>();
+  for (const c of clients) {
+    const pref = computePreferredTime(c.pastSessions);
+    if (!pref || !c.intervalDays || !c.lastSessionAt) continue;
+    const due = c.lastSessionAt.getTime() + c.intervalDays * DAY_MS;
+    // Overdue once past due by a fifth of their usual interval.
+    if (nowMs > due + c.intervalDays * 0.2 * DAY_MS) {
+      const arr = overdueByWeekday.get(pref.weekday) ?? [];
+      arr.push(c.name);
+      overdueByWeekday.set(pref.weekday, arr);
+    }
+  }
+
+  const insights: CapacityInsight[] = [];
+  for (const [wd, names] of overdueByWeekday) {
+    const open = openByWeekday.get(wd) ?? 0;
+    if (names.length <= open) continue; // enough room already
+    const who = names.slice(0, 3).join(", ") + (names.length > 3 ? `, +${names.length - 3} more` : "");
+    const supply =
+      open === 0
+        ? `no open ${WEEKDAYS_LONG[wd]}s`
+        : `only ${open} open ${WEEKDAYS[wd]} slot${open > 1 ? "s" : ""}`;
+    insights.push({
+      weekday: wd,
+      weekdayLabel: WEEKDAYS_LONG[wd],
+      overdueClients: names,
+      openCount: open,
+      message: `Open up more ${WEEKDAYS_LONG[wd]}s — ${names.length} overdue ${names.length > 1 ? "clients" : "client"} usually come then (${who}), but there ${open === 1 ? "is" : "are"} ${supply}.`,
+    });
+  }
+
+  insights.sort(
+    (a, b) => b.overdueClients.length - b.openCount - (a.overdueClients.length - a.openCount),
+  );
+  return insights;
+}
 
 function describeFit(pref: PreferredTime | null, slot: Date, overdueDays: number, timeKnown: boolean): string {
   if (!pref) return "No history yet — best-guess fill.";

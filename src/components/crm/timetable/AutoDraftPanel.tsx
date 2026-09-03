@@ -21,6 +21,7 @@ import {
   type AvailabilityWindow,
 } from "@/utils/timetable-scheduler";
 import { Lightbulb } from "lucide-react";
+import { DRAFT_SERVICES, defaultServiceId, serviceLabel } from "@/config/integrations";
 
 // ── Inputs from the parent page (already-loaded data) ────────────────────────
 export interface AutoDraftClient {
@@ -52,6 +53,7 @@ interface AutoDraftPanelProps {
     studentEmail?: string | null;
     slotStart: string;
     slotEnd: string;
+    eventTypeId?: string | null;
   }) => Promise<unknown>;
   /** Emits the current draft so the parent can preview it on the fortnight calendar. */
   onDraftChange?: (assignments: Assignment[]) => void;
@@ -62,11 +64,11 @@ interface AutoDraftPanelProps {
   /** The fortnight calendar, rendered between the controls and the review list. */
   calendarPreview?: ReactNode;
   /** Recorded scheduling prefs per client key: availability windows, note, cadence. */
-  availabilityByKey?: Record<string, { windows: AvailabilityWindow[]; note: string | null; cadenceDays: number | null; bufferBeforeMin: number | null; sessionLengthMin: number | null }>;
+  availabilityByKey?: Record<string, { windows: AvailabilityWindow[]; note: string | null; cadenceDays: number | null; bufferBeforeMin: number | null; sessionLengthMin: number | null; eventTypeId: string | null }>;
   /** Merge-save a client's scheduling prefs (only passed fields change). */
   onSavePrefs?: (
     key: string,
-    patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null; bufferBeforeMin?: number | null; sessionLengthMin?: number | null },
+    patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null; bufferBeforeMin?: number | null; sessionLengthMin?: number | null; eventTypeId?: string | null },
   ) => void;
   /** Email a client the time they've been penciled in for. Resolves on success. */
   onEmailTimes?: (assignment: Assignment, message?: string) => Promise<unknown>;
@@ -150,6 +152,8 @@ function AvailabilityEditor({
   cadenceDays,
   bufferBeforeMin,
   sessionLengthMin,
+  eventTypeId,
+  kind,
   onSave,
 }: {
   windows: AvailabilityWindow[];
@@ -157,7 +161,9 @@ function AvailabilityEditor({
   cadenceDays: number | null;
   bufferBeforeMin: number | null;
   sessionLengthMin: number | null;
-  onSave: (patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null; bufferBeforeMin?: number | null; sessionLengthMin?: number | null }) => void;
+  eventTypeId: string | null;
+  kind: "fnh" | "voice";
+  onSave: (patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null; bufferBeforeMin?: number | null; sessionLengthMin?: number | null; eventTypeId?: string | null }) => void;
 }) {
   const [days, setDays] = useState<number[]>([]);
   const [from, setFrom] = useState("");
@@ -216,6 +222,32 @@ function AvailabilityEditor({
             )}
           >
             {o.l}
+          </button>
+        ))}
+      </div>
+
+      {/* Service / rate — the Cal.com event type booked at confirm time */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 mr-0.5">Books as</span>
+        <button
+          onClick={() => onSave({ eventTypeId: null })}
+          className={cn(
+            "text-[10px] font-bold rounded-md px-1.5 py-0.5 border",
+            !eventTypeId ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground hover:text-foreground",
+          )}
+        >
+          Auto
+        </button>
+        {DRAFT_SERVICES.filter((s) => s.kind === kind).map((s) => (
+          <button
+            key={s.id}
+            onClick={() => onSave({ eventTypeId: s.id })}
+            className={cn(
+              "text-[10px] font-bold rounded-md px-1.5 py-0.5 border",
+              eventTypeId === s.id ? "bg-foreground text-background border-foreground" : "border-border text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {s.label.replace(/^(FNH|Voice) · /, "")}
           </button>
         ))}
       </div>
@@ -415,6 +447,15 @@ export default function AutoDraftPanel({
     }
   };
 
+  // Which Cal.com event type (service/rate) to book for a client: their explicit
+  // choice, else a sensible default from kind + session length.
+  const resolveEventTypeId = (a: Assignment) => {
+    const baseKey = a.clientId.split("#")[0];
+    const explicit = availabilityByKey[baseKey]?.eventTypeId;
+    if (explicit) return explicit;
+    return defaultServiceId(a.kind, availabilityByKey[baseKey]?.sessionLengthMin ?? null);
+  };
+
   // Pencil in a single drafted session.
   const [pencilingKey, setPencilingKey] = useState<string | null>(null);
   const pencilOne = async (a: Assignment) => {
@@ -429,6 +470,7 @@ export default function AutoDraftPanel({
         studentEmail: a.kind === "voice" ? a.email ?? original?.id ?? null : null,
         slotStart: a.slotStart.toISOString(),
         slotEnd: a.slotEnd.toISOString(),
+        eventTypeId: resolveEventTypeId(a),
       });
       setAcceptedKeys((prev) => new Set(prev).add(a.clientId));
     } catch (e) {
@@ -649,6 +691,7 @@ export default function AutoDraftPanel({
             studentEmail: a.kind === "voice" ? a.email ?? original?.id ?? null : null,
             slotStart: a.slotStart.toISOString(),
             slotEnd: a.slotEnd.toISOString(),
+            eventTypeId: resolveEventTypeId(a),
           });
           done.add(a.clientId);
           ok++;
@@ -876,6 +919,8 @@ export default function AutoDraftPanel({
                     cadenceDays={availabilityByKey[c.key]?.cadenceDays ?? null}
                     bufferBeforeMin={availabilityByKey[c.key]?.bufferBeforeMin ?? null}
                     sessionLengthMin={availabilityByKey[c.key]?.sessionLengthMin ?? null}
+                    eventTypeId={availabilityByKey[c.key]?.eventTypeId ?? null}
+                    kind={c.kind}
                     onSave={(patch) => onSavePrefs?.(c.key, patch)}
                   />
                 )}

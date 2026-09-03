@@ -533,7 +533,7 @@ const TimetablePage = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("timetable_client_availability")
-        .select("client_key, windows, note, cadence_days, buffer_before_min, session_length_min");
+        .select("client_key, windows, note, cadence_days, buffer_before_min, session_length_min, event_type_id");
       if (error) throw error;
       return (data || []) as {
         client_key: string;
@@ -542,13 +542,14 @@ const TimetablePage = () => {
         cadence_days: number | null;
         buffer_before_min: number | null;
         session_length_min: number | null;
+        event_type_id: string | null;
       }[];
     },
     staleTime: 60 * 1000,
   });
 
   const availabilityByKey = useMemo(() => {
-    const map: Record<string, { windows: AvailabilityWindow[]; note: string | null; cadenceDays: number | null; bufferBeforeMin: number | null; sessionLengthMin: number | null }> = {};
+    const map: Record<string, { windows: AvailabilityWindow[]; note: string | null; cadenceDays: number | null; bufferBeforeMin: number | null; sessionLengthMin: number | null; eventTypeId: string | null }> = {};
     for (const r of availabilityRows) {
       map[r.client_key] = {
         windows: Array.isArray(r.windows) ? r.windows : [],
@@ -556,6 +557,7 @@ const TimetablePage = () => {
         cadenceDays: r.cadence_days ?? null,
         bufferBeforeMin: r.buffer_before_min ?? null,
         sessionLengthMin: r.session_length_min ?? null,
+        eventTypeId: r.event_type_id ?? null,
       };
     }
     return map;
@@ -566,17 +568,18 @@ const TimetablePage = () => {
   const saveClientPrefs = useCallback(
     async (
       key: string,
-      patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null; bufferBeforeMin?: number | null; sessionLengthMin?: number | null },
+      patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null; bufferBeforeMin?: number | null; sessionLengthMin?: number | null; eventTypeId?: string | null },
     ) => {
       try {
-        const current = availabilityByKey[key] ?? { windows: [], note: null, cadenceDays: null, bufferBeforeMin: null, sessionLengthMin: null };
+        const current = availabilityByKey[key] ?? { windows: [], note: null, cadenceDays: null, bufferBeforeMin: null, sessionLengthMin: null, eventTypeId: null };
         const windows = patch.windows ?? current.windows;
         const note = patch.note !== undefined ? patch.note : current.note;
         const cadenceDays = patch.cadenceDays !== undefined ? patch.cadenceDays : current.cadenceDays;
         const bufferBeforeMin = patch.bufferBeforeMin !== undefined ? patch.bufferBeforeMin : current.bufferBeforeMin;
         const sessionLengthMin = patch.sessionLengthMin !== undefined ? patch.sessionLengthMin : current.sessionLengthMin;
+        const eventTypeId = patch.eventTypeId !== undefined ? patch.eventTypeId : current.eventTypeId;
 
-        if (!windows.length && !note && cadenceDays == null && bufferBeforeMin == null && sessionLengthMin == null) {
+        if (!windows.length && !note && cadenceDays == null && bufferBeforeMin == null && sessionLengthMin == null && !eventTypeId) {
           await supabase.from("timetable_client_availability").delete().eq("client_key", key);
         } else {
           const { data: userData } = await supabase.auth.getUser();
@@ -589,6 +592,7 @@ const TimetablePage = () => {
               cadence_days: cadenceDays,
               buffer_before_min: bufferBeforeMin,
               session_length_min: sessionLengthMin,
+              event_type_id: eventTypeId,
               updated_at: new Date().toISOString(),
             },
             { onConflict: "user_id,client_key" },
@@ -1207,7 +1211,9 @@ const TimetablePage = () => {
             onAccept={(input) =>
               createProposal({
                 ...input,
-                eventTypeId: input.kind === "fnh" ? fnhEventType : voiceEventType,
+                // Per-client service/rate chosen in the panel; fall back to the
+                // page default event type for that kind.
+                eventTypeId: input.eventTypeId ?? (input.kind === "fnh" ? fnhEventType : voiceEventType),
               })
             }
             onDraftChange={setDraftAssignments}

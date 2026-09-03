@@ -51,6 +51,45 @@ export const CALCOM_CONFIG = {
   ]
 };
 
+/**
+ * The bookable services the auto-drafter can pencil in, grouped by kind. The
+ * `id` is the Cal.com event type booked at confirm time; `durationMin` drives
+ * the default choice for a client when they haven't been assigned one.
+ */
+export interface DraftService {
+  id: string;
+  kind: "fnh" | "voice";
+  label: string;
+  durationMin: number;
+}
+
+export const DRAFT_SERVICES: DraftService[] = [
+  { id: "5302336", kind: "fnh", label: "FNH · client rate", durationMin: 60 },
+  { id: "4279898", kind: "fnh", label: "FNH · new client $70", durationMin: 60 },
+  { id: "5927215", kind: "fnh", label: "FNH · community (free)", durationMin: 60 },
+  { id: "1945081", kind: "voice", label: "Voice · 60 min", durationMin: 60 },
+  { id: "5925021", kind: "voice", label: "Voice · 45 min", durationMin: 45 },
+  { id: "6488157", kind: "voice", label: "Voice · 30 min", durationMin: 30 },
+];
+
+/**
+ * Best default event type for a client with no explicit service chosen:
+ * voice → matched to their session length; fnh → the client rate.
+ */
+export function defaultServiceId(kind: "fnh" | "voice", sessionLengthMin?: number | null): string {
+  if (kind === "voice") {
+    if (sessionLengthMin === 30) return "6488157";
+    if (sessionLengthMin === 45) return "5925021";
+    return "1945081"; // default voice = 60
+  }
+  return "5302336"; // default fnh = existing client rate
+}
+
+export function serviceLabel(id: string | null | undefined): string | null {
+  if (!id) return null;
+  return DRAFT_SERVICES.find((s) => s.id === id)?.label ?? null;
+}
+
 export const TIMEZONE = "Australia/Melbourne";
 
 export const NOTION_CONFIG = {

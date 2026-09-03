@@ -2060,22 +2060,51 @@ function DayCell({
           </div>
         )}
 
-        {bookings.slice(0, 2).map((b, i) => (
-          <button
-            key={b.uid || b.id || i}
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpenBooking(b);
-            }}
-            title={b.title || b.attendeeName || "Appointment"}
-            className="w-full text-left text-[9px] font-semibold bg-rose-600 text-primary-foreground rounded-md px-1.5 py-0.5 truncate hover:bg-rose-700 transition-colors cursor-pointer"
-          >
-            {b.attendeeName || b.title || "Booked"}
-          </button>
-        ))}
-        {bookings.length > 2 && (
-          <div className="text-[9px] font-bold text-rose-600 pl-0.5">+{bookings.length - 2} more</div>
-        )}
+        {(() => {
+          const fmtT = (iso: string | undefined | null) =>
+            iso ? format(new Date(iso), "h:mma").toLowerCase() + " · " : "";
+          const items = [
+            ...bookings.map((b, i) => ({
+              t: b.start ? new Date(b.start).getTime() : 0,
+              node: (
+                <button
+                  key={`b-${b.uid || b.id || i}`}
+                  onClick={(e) => { e.stopPropagation(); onOpenBooking(b); }}
+                  title={b.title || b.attendeeName || "Appointment"}
+                  className="w-full text-left text-[9px] font-semibold bg-rose-600 text-primary-foreground rounded-md px-1.5 py-0.5 truncate hover:bg-rose-700 transition-colors cursor-pointer"
+                >
+                  {fmtT(b.start)}{b.attendeeName || b.title || "Booked"}
+                </button>
+              ),
+            })),
+            ...proposals.map((p) => ({
+              t: new Date(p.slot_start).getTime(),
+              node: (
+                <button
+                  key={`p-${p.id}`}
+                  onClick={(e) => { e.stopPropagation(); onOpenProposal(p); }}
+                  className={cn(
+                    "w-full text-left text-[9px] font-semibold rounded-md px-1.5 py-0.5 truncate border",
+                    p.status === "confirmed" && "bg-emerald-600 text-primary-foreground border-emerald-700",
+                    p.status === "suggested" && "bg-sky-600 text-primary-foreground border-sky-700",
+                    p.status === "proposed" && "bg-amber-500 text-primary-foreground border-amber-600",
+                  )}
+                >
+                  {fmtT(p.slot_start)}{p.student_name || (p.kind === "fnh" ? "FNH" : "student")}
+                </button>
+              ),
+            })),
+          ].sort((a, b) => a.t - b.t);
+          const shown = items.slice(0, 4);
+          return (
+            <>
+              {shown.map((x) => x.node)}
+              {items.length > 4 && (
+                <div className="text-[9px] font-bold text-muted-foreground pl-0.5">+{items.length - 4} more</div>
+              )}
+            </>
+          );
+        })()}
 
         {icloudEvents.slice(0, 2).map((ev) => (
           <div
@@ -2091,30 +2120,6 @@ function DayCell({
             +{icloudEvents.length - 2} more
           </div>
         )}
-
-        {proposals.map((p) => (
-          <button
-            key={p.id}
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpenProposal(p);
-            }}
-            className={cn(
-              "w-full text-left text-[9px] font-semibold rounded-md px-1.5 py-0.5 truncate border",
-              p.status === "confirmed" &&
-                "bg-emerald-600 text-primary-foreground border-emerald-700",
-              p.status === "suggested" && "bg-sky-600 text-primary-foreground border-sky-700",
-              p.status === "proposed" &&
-                "bg-amber-500 text-primary-foreground border-amber-600"
-            )}
-          >
-            {p.student_name
-              ? `${format(new Date(p.slot_start), "h:mma").toLowerCase()} · ${p.student_name}`
-              : p.kind === "fnh"
-                ? "Proposed FNH"
-                : "Proposed · student"}
-          </button>
-        ))}
 
         {!blocked && isOpen && (
           <div className="text-[9px] font-semibold text-chart-primary">

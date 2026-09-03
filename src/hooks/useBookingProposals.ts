@@ -40,6 +40,7 @@ export function useBookingProposals(startISO: string, endISO: string) {
       const { data, error: fetchError } = await supabase
         .from("booking_proposals")
         .select("*")
+        .neq("status", "dropped")
         .order("slot_start", { ascending: true });
 
       if (fetchError) throw fetchError;

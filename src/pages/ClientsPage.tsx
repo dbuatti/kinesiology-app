@@ -13,6 +13,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import ClientForm from "@/components/crm/ClientForm";
 import AppointmentForm from "@/components/crm/AppointmentForm";
 import { Client } from "@/types/crm";
@@ -28,6 +35,9 @@ interface ClientWithStats extends Client {
   session_count: number;
   last_session_at: string | null;
   latest_bolt: number | null;
+  upcoming_count: number;
+  activity_score: number;
+  attention_score: number;
 }
 
 export function ClientsTool() {
@@ -39,6 +49,7 @@ export function ClientsTool() {
   const [open, setOpen] = useState(false);
   const [bookOpen, setBookOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<'attention' | 'active' | 'name' | 'recent' | 'upcoming'>('attention');
   const { isPrivate } = usePrivacyMode();
   
   const fetchClients = async () => {
@@ -60,13 +71,62 @@ export function ClientsTool() {
           .filter((a: any) => a.bolt_score !== null)
           .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
 
+        const now = Date.now();
+        const pastApps = activeApps.filter((a: any) => {
+          const t = a.date ? new Date(a.date).getTime() : NaN;
+          return !isNaN(t) && t < now;
+        });
+        const upcomingApps = activeApps.filter((a: any) => {
+          const t = a.date ? new Date(a.date).getTime() : NaN;
+          return !isNaN(t) && t >= now;
+        });
+
+        const lastMs = sortedApps.length > 0 && sortedApps[0].date
+          ? new Date(sortedApps[0].date).getTime()
+          : null;
+
+        // Active-window frequency (last 180 days).
+        const recentCount = pastApps.filter((a: any) => {
+          const t = a.date ? new Date(a.date).getTime() : NaN;
+          return !isNaN(t) && t >= now - 180 * 24 * 60 * 60 * 1000;
+        }).length;
+
+        // Recency points: within 30d = 50, 60d = 40, 90d = 28, 180d = 16, else 0.
+        let recencyPts = 0;
+        if (lastMs != null) {
+          const days = (now - lastMs) / (24 * 60 * 60 * 1000);
+          if (days <= 30) recencyPts = 50;
+          else if (days <= 60) recencyPts = 40;
+          else if (days <= 90) recencyPts = 28;
+          else if (days <= 180) recencyPts = 16;
+        }
+        // Frequency points: cap at 12+ sessions in the window = 50.
+        const freqPts = Math.min(50, recentCount * 5);
+
+        // Attention score: higher = needs action now.
+        // An active client with no upcoming booking (lapsed) is the top priority.
+        const upcomingCount = upcomingApps.length;
+        let attentionScore = 0;
+        if (upcomingCount === 0) {
+          if (lastMs != null && recencyPts >= 50) attentionScore = 100; // seen recently, nothing booked
+          else if (lastMs != null && recencyPts >= 40) attentionScore = 85;
+          else if (lastMs != null && recencyPts >= 28) attentionScore = 60;
+          else if (lastMs != null && recencyPts >= 16) attentionScore = 35;
+          else if (lastMs == null && pastApps.length === 0) attentionScore = 50; // brand new, no history
+        } else {
+          attentionScore = 10 + Math.min(15, upcomingCount * 5); // already handled
+        }
+
         return {
           ...c,
           born: c.born ? new Date(c.born) : null,
           suburbs: c.suburbs || [],
-          session_count: activeApps.length,
+          session_count: pastApps.length,
           last_session_at: sortedApps.length > 0 ? sortedApps[0].date : null,
-          latest_bolt: latestBoltApp ? latestBoltApp.bolt_score : null
+          latest_bolt: latestBoltApp ? latestBoltApp.bolt_score : null,
+          upcoming_count: upcomingCount,
+          activity_score: recencyPts + freqPts,
+          attention_score: attentionScore,
         };
       }) as unknown as ClientWithStats[];
       
@@ -88,11 +148,19 @@ export function ClientsTool() {
     setBookOpen(true);
   };
 
-  const filteredClients = clients.filter(c => 
-    c.name.toLowerCase().includes(search.toLowerCase()) ||
-    c.email?.toLowerCase().includes(search.toLowerCase()) ||
-    c.suburbs.some(s => s.toLowerCase().includes(search.toLowerCase()))
-  );
+  const filteredClients = clients
+    .filter(c => 
+      c.name.toLowerCase().includes(search.toLowerCase()) ||
+      c.email?.toLowerCase().includes(search.toLowerCase()) ||
+      c.suburbs.some(s => s.toLowerCase().includes(search.toLowerCase()))
+    )
+    .sort((a, b) => {
+      if (sortBy === 'attention') return b.attention_score - a.attention_score;
+      if (sortBy === 'active') return b.activity_score - a.activity_score;
+      if (sortBy === 'recent') return (b.last_session_at ? new Date(b.last_session_at).getTime() : 0) - (a.last_session_at ? new Date(a.last_session_at).getTime() : 0);
+      if (sortBy === 'upcoming') return b.upcoming_count - a.upcoming_count;
+      return a.name.localeCompare(b.name);
+    });
 
   return (
     <>
@@ -135,6 +203,19 @@ export function ClientsTool() {
           </div>
           
           <div className="flex items-center gap-2 bg-muted p-1.5 rounded-xl">
+            <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+              <SelectTrigger className="h-9 rounded-lg bg-card border-none px-3 text-xs font-bold uppercase tracking-widest text-primary gap-1.5 w-auto">
+                <TrendingUp size={14} />
+                <SelectValue />
+              </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="attention">Needs Attention</SelectItem>
+    <SelectItem value="active">Most Active</SelectItem>
+    <SelectItem value="recent">Recently Seen</SelectItem>
+    <SelectItem value="upcoming">Most Upcoming</SelectItem>
+    <SelectItem value="name">Name</SelectItem>
+  </SelectContent>
+            </Select>
             <Button 
               variant={view === 'table' ? 'default' : 'ghost'} 
               size="sm" 

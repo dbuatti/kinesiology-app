@@ -42,6 +42,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { useBookingProposals, BookingProposal } from "@/hooks/useBookingProposals";
 import { useIcloudCalendar, IcloudCalendarEvent } from "@/hooks/useIcloudCalendar";
+import { useTimetableAppointments, EnrichedBooking } from "@/hooks/useTimetableAppointments";
 import { CALCOM_CONFIG } from "@/config/integrations";
 import {
   format,
@@ -53,6 +54,8 @@ import {
   endOfDay,
   differenceInMinutes,
   isSameDay,
+  subDays,
+  differenceInDays,
 } from "date-fns";
 import {
   ResponsiveContainer,
@@ -106,6 +109,24 @@ interface FnhClient {
   email: string | null;
 }
 
+interface EnrichedClient {
+  id: string;
+  name: string | null;
+  email: string | null;
+  session_count: number;
+  upcoming_count: number;
+  last_session_at: string | null;
+  next_session_at: string | null;
+  attention_score: number;
+}
+
+function fmtSpan(days: number): string {
+  if (days < 7) return `${days}d`;
+  const w = Math.floor(days / 7);
+  const r = days % 7;
+  return r === 0 ? `${w}w` : `${w}w${r}d`;
+}
+
 enum DayState {
   BLOCKED = "blocked",
   BOOKED = "booked",
@@ -154,6 +175,9 @@ const TimetablePage = () => {
   const [manageOpen, setManageOpen] = useState(false);
   const [working, setWorking] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [appointmentFor, setAppointmentFor] = useState<EnrichedBooking | null>(null);
+  const [cancellingAppt, setCancellingAppt] = useState(false);
+  const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
 
   const eventTypeId = kind === "fnh" ? fnhEventType : voiceEventType;
 
@@ -171,6 +195,63 @@ const TimetablePage = () => {
     },
     staleTime: 5 * 60 * 1000,
   });
+
+  const now = useMemo(() => new Date(), []);
+
+  const { data: appointmentsData = [] } = useQuery({
+    queryKey: ["timetable-client-appointments"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("appointments")
+        .select("client_id, date, status")
+        .gte("date", subDays(now, 180).toISOString())
+        .order("date", { ascending: false });
+      if (error) throw error;
+      return (data || []) as { client_id: string; date: string; status: string | null }[];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const enrichedClients = useMemo<EnrichedClient[]>(() => {
+    const today = startOfDay(now);
+    return fnhClients.map((c) => {
+      const appts = appointmentsData.filter((a) => a.client_id === c.id && a.status !== "Cancelled");
+      const sessionCount = appts.length;
+      const upcomingCount = appts.filter(
+        (a) => new Date(a.date) >= today
+      ).length;
+      const lastSession = appts
+        .filter((a) => new Date(a.date) < today)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+      const nextSession = appts
+        .filter((a) => new Date(a.date) >= today)
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+
+      let attentionScore = 0;
+      if (upcomingCount > 0 && !lastSession) attentionScore = 100;
+      else if (upcomingCount > 0 && lastSession) {
+        const daysSince = differenceInDays(today, new Date(lastSession.date));
+        attentionScore = daysSince > 60 ? 90 : daysSince > 21 ? 70 : 50;
+      } else if (lastSession) {
+        const daysSince = differenceInDays(today, new Date(lastSession.date));
+        if (daysSince <= 21) attentionScore = 80;
+        else if (daysSince <= 60) attentionScore = 60;
+        else if (daysSince <= 120) attentionScore = 30;
+      }
+      if (sessionCount === 0 && upcomingCount === 0) attentionScore = 10;
+
+      return {
+        id: c.id,
+        name: c.name,
+        email: c.email,
+        session_count: sessionCount,
+        upcoming_count: upcomingCount,
+        last_session_at: lastSession?.date || null,
+        next_session_at: nextSession?.date || null,
+        attention_score: attentionScore,
+      };
+    }).sort((a, b) => b.attention_score - a.attention_score);
+  }, [fnhClients, appointmentsData, now]);
 
   const { data: voiceStudents = [] } = useQuery<VoiceStudent[]>({
     queryKey: ["timetable-voice-students"],
@@ -234,7 +315,7 @@ const TimetablePage = () => {
     return eachDayOfInterval({ start, end: addDays(start, VIEW_RANGE_WEEKS * 7 - 1) });
   }, []);
 
-  const { proposalsInWindow, createProposal, confirmProposal, dropProposal } = useBookingProposals(
+  const { proposals, proposalsInWindow, createProposal, confirmProposal, dropProposal } = useBookingProposals(
     dateRange[0].toISOString(),
     dateRange[dateRange.length - 1].toISOString()
   );
@@ -245,6 +326,19 @@ const TimetablePage = () => {
     loading: icloudLoading,
     error: icloudError,
   } = useIcloudCalendar(dateRange[0].toISOString(), dateRange[dateRange.length - 1].toISOString());
+
+  const { bookings: enrichedBookings } = useTimetableAppointments(bookings, proposals);
+
+  const bookingsByDate = useMemo(() => {
+    const map: Record<string, EnrichedBooking[]> = {};
+    enrichedBookings.forEach((b) => {
+      if (!b.start) return;
+      const key = format(new Date(b.start), "yyyy-MM-dd");
+      if (!map[key]) map[key] = [];
+      map[key].push(b);
+    });
+    return map;
+  }, [enrichedBookings]);
 
   const stateFor = (d: Date): DayState => {
     const key = zonedDateKey(d);
@@ -377,6 +471,43 @@ const TimetablePage = () => {
     }
   };
 
+  const handleCancelAppointment = async () => {
+    const appt = appointmentFor;
+    if (!appt) return;
+    setCancellingAppt(true);
+    try {
+      if (appt.source === "voice") {
+        const { error: invokeError } = await supabase.functions.invoke("voice-cancel-lesson", {
+          body: { calcomBookingId: appt.calcomUid },
+        });
+        if (invokeError) throw invokeError;
+        if (appt.voiceBookingId) {
+          await supabase.from("voice_bookings").update({ status: "cancelled" }).eq("id", appt.voiceBookingId);
+        }
+      } else if (appt.calcomUid) {
+        const { error: invokeError } = await supabase.functions.invoke("delete-external-appointment", {
+          body: { calcomBookingId: appt.calcomUid },
+        });
+        if (invokeError) throw invokeError;
+        if (appt.appointmentId) {
+          await supabase.from("appointments").update({ status: "Cancelled" }).eq("id", appt.appointmentId);
+        }
+      }
+      if (appt.proposalId) {
+        await supabase
+          .from("booking_proposals")
+          .update({ status: "dropped", updated_at: new Date().toISOString() })
+          .eq("id", appt.proposalId);
+      }
+      showSuccess("Booking cancelled — slot freed in Cal.com.");
+      setAppointmentFor(null);
+    } catch (err) {
+      showError(err instanceof Error ? err.message : "Could not cancel booking.");
+    } finally {
+      setCancellingAppt(false);
+    }
+  };
+
   const openDay = (d: Date) => {
     if (stateFor(d) !== DayState.OPEN) return;
     setPickingDay(d);
@@ -453,7 +584,7 @@ const TimetablePage = () => {
           setSelectedStudentName(name);
           setSelectedStudentEmail(email);
         }}
-        fnhClients={fnhClients}
+        fnhClients={enrichedClients}
         voiceStudents={voiceStudents}
       />
 
@@ -482,7 +613,7 @@ const TimetablePage = () => {
               )
             }
             slots={slots}
-            bookings={bookings}
+            bookings={bookingsByDate}
             blockedDates={blockedDates}
             icloudEvents={icloudEvents}
             stateFor={stateFor}
@@ -491,6 +622,7 @@ const TimetablePage = () => {
             error={error}
             onOpenDay={openDay}
             onOpenProposal={openProposal}
+            onOpenBooking={setAppointmentFor}
           />
         </TabsContent>
 
@@ -608,6 +740,133 @@ const TimetablePage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Appointment detail modal (clickable cal.com booking) */}
+      <Dialog open={appointmentFor !== null} onOpenChange={(o) => { if (!o) setAppointmentFor(null); }}>
+        <DialogContent>
+          {appointmentFor && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-3">
+                  <div
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-base font-black text-white"
+                    style={{
+                      background: appointmentFor.source === "voice"
+                        ? "hsl(var(--chart-emerald))"
+                        : "hsl(var(--chart-primary))",
+                    }}
+                  >
+                    {(appointmentFor.attendeeName || appointmentFor.title || "?").charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <DialogTitle className="truncate">
+                      {appointmentFor.attendeeName || appointmentFor.title || "Appointment"}
+                    </DialogTitle>
+                    <DialogDescription className="mt-0.5 capitalize">
+                      {appointmentFor.source === "voice" ? "Voice Lesson" : "FNH Clinical Session"}
+                      {appointmentFor.proposalStatus && appointmentFor.proposalStatus !== "dropped" ? (
+                        <span className="ml-2 align-middle">
+                          <StatusBadge status={appointmentFor.proposalStatus as BookingProposal["status"]} />
+                        </span>
+                      ) : null}
+                    </DialogDescription>
+                  </div>
+                </div>
+              </DialogHeader>
+              <div className="space-y-2.5">
+                <div className="rounded-lg bg-muted/40 px-3 py-2.5">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                    {appointmentFor.source === "voice" ? "Student" : "Client"}
+                  </div>
+                  <div className="mt-0.5 text-[15px] font-bold text-foreground">
+                    {appointmentFor.attendeeName || appointmentFor.title || "—"}
+                  </div>
+                </div>
+                {appointmentFor.attendeeEmail && (
+                  <div className="rounded-lg bg-muted/40 px-3 py-2.5">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Email</div>
+                    <div className="mt-0.5 text-sm font-medium text-foreground">{appointmentFor.attendeeEmail}</div>
+                  </div>
+                )}
+                <div className="flex gap-2.5">
+                  <div className="flex-1 rounded-lg bg-muted/40 px-3 py-2.5">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Date</div>
+                    <div className="mt-0.5 text-sm font-semibold text-foreground">
+                      {appointmentFor.start
+                        ? format(new Date(appointmentFor.start), "EEE d MMM yyyy")
+                        : "—"}
+                    </div>
+                  </div>
+                  <div className="flex-1 rounded-lg bg-muted/40 px-3 py-2.5">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Time</div>
+                    <div className="mt-0.5 text-sm font-semibold text-foreground">
+                      {appointmentFor.start
+                        ? format(new Date(appointmentFor.start), "h:mm a")
+                        : "—"}
+                    </div>
+                  </div>
+                </div>
+                {appointmentFor.title && appointmentFor.title !== appointmentFor.attendeeName && (
+                  <div className="rounded-lg bg-muted/40 px-3 py-2.5">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Title</div>
+                    <div className="mt-0.5 text-sm font-medium text-foreground">{appointmentFor.title}</div>
+                  </div>
+                )}
+                {appointmentFor.source === "fnh" && appointmentFor.appointmentId && (
+                  <a
+                    href={`/appointments/${appointmentFor.appointmentId}`}
+                    className="block w-full text-center rounded-lg bg-primary px-3 py-2.5 text-sm font-bold text-primary-foreground hover:opacity-90"
+                  >
+                    Open session page
+                  </a>
+                )}
+              </div>
+            </>
+          )}
+          <DialogFooter className="flex sm:justify-between pt-1">
+            <Button
+              variant="destructive"
+              className="gap-1.5"
+              onClick={() => setConfirmCancelOpen(true)}
+              disabled={cancellingAppt}
+            >
+              {cancellingAppt ? <Loader2 className="animate-spin" size={14} /> : <Ban size={14} />}
+              Cancel booking
+            </Button>
+            <Button variant="ghost" onClick={() => setAppointmentFor(null)} disabled={cancellingAppt}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm cancellation */}
+      <Dialog open={confirmCancelOpen} onOpenChange={setConfirmCancelOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cancel this booking?</DialogTitle>
+            <DialogDescription>
+              This cancels the Cal.com booking for{" "}
+              <strong>{appointmentFor?.attendeeName || appointmentFor?.title || "this appointment"}</strong>{" "}
+              and frees the slot. This can't be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex sm:justify-between">
+            <Button variant="outline" onClick={() => setConfirmCancelOpen(false)} disabled={cancellingAppt}>
+              Keep booking
+            </Button>
+            <Button
+              variant="destructive"
+              className="gap-1.5"
+              onClick={handleCancelAppointment}
+              disabled={cancellingAppt}
+            >
+              {cancellingAppt ? <Loader2 className="animate-spin" size={14} /> : <Ban size={14} />}
+              Yes, cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
@@ -673,7 +932,7 @@ function PlannerBar({
   onSelectedClientId: (v: string) => void;
   selectedStudentEmail: string;
   onSelectStudent: (name: string, email: string) => void;
-  fnhClients: FnhClient[];
+  fnhClients: EnrichedClient[];
   voiceStudents: VoiceStudent[];
 }) {
   return (
@@ -733,14 +992,60 @@ function PlannerBar({
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Choose a client" />
             </SelectTrigger>
-            <SelectContent>
-              {fnhClients.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.name || "Unnamed client"}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+              <SelectContent className="max-h-[320px]">
+                {fnhClients.map((c) => {
+                  const needsAttention =
+                    (c.upcoming_count > 0 && !c.last_session_at) ||
+                    (c.upcoming_count === 0 && c.session_count === 0);
+                  return (
+                    <SelectItem key={c.id} value={c.id} className="py-2">
+                      <div className="flex items-center justify-between gap-4 w-full">
+                        <span className="flex items-center gap-2 truncate">
+                          <span className="shrink-0 h-2 w-2 rounded-full"
+                            style={{
+                              background: needsAttention
+                                ? "hsl(var(--chart-destructive))"
+                                : c.attention_score >= 60
+                                  ? "hsl(var(--chart-primary))"
+                                  : "hsl(var(--muted-foreground))",
+                            }}
+                          />
+                          <span className="truncate">{c.name || "Unnamed client"}</span>
+                        </span>
+                        <span className="flex items-center gap-1 shrink-0 ml-2">
+                          {c.last_session_at === null && (
+                            <span className="rounded bg-muted px-1 py-[1px] text-[8px] font-semibold uppercase tracking-wide text-muted-foreground leading-none">
+                              Never seen
+                            </span>
+                          )}
+                          {c.last_session_at && (
+                            <span className="rounded bg-muted px-1 py-[1px] text-[8px] font-semibold uppercase tracking-wide text-muted-foreground leading-none">
+                              Last {format(new Date(c.last_session_at), "d MMM")}
+                              <span className="opacity-70">·&nbsp;{fmtSpan(differenceInDays(new Date(), new Date(c.last_session_at)))} ago</span>
+                            </span>
+                          )}
+                          {c.next_session_at ? (
+                            <span className="rounded bg-chart-primary/10 px-1 py-[1px] text-[8px] font-bold uppercase tracking-wide text-chart-primary leading-none">
+                              Next {format(new Date(c.next_session_at), "d MMM")}
+                              {c.last_session_at && (
+                                <span className="opacity-70">
+                                  {" · "}
+                                  {fmtSpan(differenceInDays(new Date(c.next_session_at), new Date(c.last_session_at)))}
+                                </span>
+                              )}
+                            </span>
+                          ) : (
+                            <span className="rounded bg-amber-500/10 px-1 py-[1px] text-[8px] font-bold uppercase tracking-wide text-amber-600 leading-none">
+                              No next
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
         ) : (
           <Select
             value={selectedStudentEmail}
@@ -804,6 +1109,7 @@ function FortnightMockup({
   error,
   onOpenDay,
   onOpenProposal,
+  onOpenBooking,
 }: {
   dateRange: Date[];
   totalFortnights: number;
@@ -811,7 +1117,7 @@ function FortnightMockup({
   onPrev: () => void;
   onNext: () => void;
   slots: Record<string, SlotInfo[]>;
-  bookings: Record<string, BookingInfo[]>;
+  bookings: Record<string, EnrichedBooking[]>;
   blockedDates: string[];
   icloudEvents: IcloudCalendarEvent[];
   stateFor: (d: Date) => DayState;
@@ -820,6 +1126,7 @@ function FortnightMockup({
   error: string | null;
   onOpenDay: (d: Date) => void;
   onOpenProposal: (p: BookingProposal) => void;
+  onOpenBooking: (b: EnrichedBooking) => void;
 }) {
   if (loading) {
     return (
@@ -887,6 +1194,18 @@ function FortnightMockup({
                   if (!ev.start || ev.transparent) return false;
                   const s = new Date(ev.start);
                   const e = ev.end ? new Date(ev.end) : s;
+                  const dayBookings = bookings[zonedDateKey(d)] || [];
+                  const overlapsBooked = dayBookings.some((b) => {
+                    if (!b.start) return false;
+                    const bs = new Date(b.start).getTime();
+                    const sameTime = Math.abs(bs - s.getTime()) < 60 * 60 * 1000;
+                    const nameMatch =
+                      b.attendeeName &&
+                      ev.summary &&
+                      ev.summary.toLowerCase().includes(b.attendeeName.toLowerCase());
+                    return sameTime || nameMatch;
+                  });
+                  if (overlapsBooked) return false;
                   return (
                     isSameDay(s, d) ||
                     isSameDay(e, d) ||
@@ -897,6 +1216,7 @@ function FortnightMockup({
                 weekdayLabel={weekdayLabel}
                 onOpenDay={onOpenDay}
                 onOpenProposal={onOpenProposal}
+                onOpenBooking={onOpenBooking}
               />
             ))}
           </div>
@@ -917,17 +1237,19 @@ function DayCell({
   weekdayLabel,
   onOpenDay,
   onOpenProposal,
+  onOpenBooking,
 }: {
   date: Date;
   state: DayState;
   slots: SlotInfo[];
-  bookings: BookingInfo[];
+  bookings: EnrichedBooking[];
   proposals: BookingProposal[];
   icloudEvents: IcloudCalendarEvent[];
   blocked: boolean;
   weekdayLabel: (d: Date) => string;
   onOpenDay: (d: Date) => void;
   onOpenProposal: (p: BookingProposal) => void;
+  onOpenBooking: (b: EnrichedBooking) => void;
 }) {
   const isPast = differenceInMinutes(date, new Date()) < -1;
   const isOpen = state === DayState.OPEN;
@@ -962,12 +1284,17 @@ function DayCell({
         )}
 
         {bookings.slice(0, 2).map((b, i) => (
-          <div
+          <button
             key={b.uid || b.id || i}
-            className="text-[9px] font-semibold bg-rose-600 text-primary-foreground rounded-md px-1.5 py-0.5 truncate"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenBooking(b);
+            }}
+            title={b.title || b.attendeeName || "Appointment"}
+            className="w-full text-left text-[9px] font-semibold bg-rose-600 text-primary-foreground rounded-md px-1.5 py-0.5 truncate hover:bg-rose-700 transition-colors cursor-pointer"
           >
             {b.attendeeName || b.title || "Booked"}
-          </div>
+          </button>
         ))}
         {bookings.length > 2 && (
           <div className="text-[9px] font-bold text-rose-600 pl-0.5">+{bookings.length - 2} more</div>

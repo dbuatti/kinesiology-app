@@ -71,6 +71,16 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
                 <Badge className="bg-chart-emerald/10 text-chart-emerald border-none font-black text-[10px] uppercase tracking-widest mb-2">
                   {client.session_count} Sessions
                 </Badge>
+                {(client.upcoming_count ?? 0) > 0 && (
+                  <Badge className="bg-chart-primary/10 text-chart-primary border-none font-black text-[10px] uppercase tracking-widest mb-1">
+                    {client.upcoming_count} Upcoming
+                  </Badge>
+                )}
+                {client.upcoming_count === 0 && client.activity_score >= 68 && (
+                  <Badge className="bg-amber-500/15 text-amber-600 border-none font-black text-[10px] uppercase tracking-widest mb-2">
+                    Needs booking
+                  </Badge>
+                )}
                 <div className="flex items-center gap-1 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                   <Clock size={12} /> {client.last_session_at ? format(new Date(client.last_session_at), "MMM d") : "Never"}
                 </div>
@@ -93,6 +103,9 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
               </div>
               <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
                 {client.born && <span>{calculateAge(client.born)} yrs • {getStarSign(client.born)}</span>}
+              </div>
+              <div className="pt-2">
+                <ActivityIndicator score={client.activity_score} />
               </div>
             </div>
 
@@ -176,3 +189,27 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
 };
 
 export default ClientGridView;
+
+function ActivityIndicator({ score }: { score?: number }) {
+  if (score == null) return null;
+  const filled = Math.max(0, Math.min(5, Math.round(score / 20)));
+  return (
+    <div className="flex items-center gap-1" title={`Activity rating ${score}/100`}>
+      {[0, 1, 2, 3, 4].map((i) => (
+        <span
+          key={i}
+          className={cn(
+            "w-2 h-2 rounded-full",
+            i < filled
+              ? i >= 4
+                ? "bg-chart-emerald"
+                : i >= 3
+                  ? "bg-chart-primary"
+                  : "bg-amber-500"
+              : "bg-muted"
+          )}
+        />
+      ))}
+    </div>
+  );
+}

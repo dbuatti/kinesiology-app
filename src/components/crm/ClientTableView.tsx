@@ -59,6 +59,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
             <TableHead className="font-black text-[10px] uppercase tracking-widest text-muted-foreground h-14">Age / Sign</TableHead>
             <TableHead className="font-black text-[10px] uppercase tracking-widest text-muted-foreground h-14">Last Session</TableHead>
             <TableHead className="font-black text-[10px] uppercase tracking-widest text-muted-foreground h-14 text-center">Total</TableHead>
+            <TableHead className="font-black text-[10px] uppercase tracking-widest text-muted-foreground h-14 text-center">Upcoming</TableHead>
             <TableHead className="font-black text-[10px] uppercase tracking-widest text-muted-foreground h-14 text-right px-8">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -83,8 +84,14 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
                           <CreditCard size={8} className="mr-1" /> Synced
                         </Badge>
                       )}
+                      {client.upcoming_count === 0 && client.activity_score >= 68 && (
+                        <Badge className="h-4 px-1.5 text-[7px] font-black uppercase bg-amber-500/15 text-amber-600 border-amber-500/30">
+                          Needs booking
+                        </Badge>
+                      )}
                     </div>
                     <span className={cn("text-xs text-muted-foreground font-medium", isPrivate && "blur-[2px] select-none")}>{client.email || 'No email recorded'}</span>
+                    <ActivityIndicator score={client.activity_score} />
                   </div>
                 </Link>
               </TableCell>
@@ -108,6 +115,12 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
                 <div className="inline-flex flex-col items-center px-3 py-1 bg-muted rounded-xl border border-border">
                   <span className="font-black text-foreground">{client.session_count}</span>
                   <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Sessions</span>
+                </div>
+              </TableCell>
+              <TableCell className="text-center">
+                <div className="inline-flex flex-col items-center px-3 py-1 rounded-xl border border-chart-primary/20 bg-chart-primary/5">
+                  <span className="font-black text-chart-primary">{client.upcoming_count ?? 0}</span>
+                  <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Upcoming</span>
                 </div>
               </TableCell>
               <TableCell className="text-right px-8">
@@ -177,3 +190,27 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
 };
 
 export default ClientTableView;
+
+function ActivityIndicator({ score }: { score?: number }) {
+  if (score == null) return null;
+  const filled = Math.max(0, Math.min(5, Math.round(score / 20)));
+  return (
+    <div className="flex items-center gap-1 mt-1" title={`Activity rating ${score}/100`}>
+      {[0, 1, 2, 3, 4].map((i) => (
+        <span
+          key={i}
+          className={cn(
+            "w-2 h-2 rounded-full",
+            i < filled
+              ? i >= 4
+                ? "bg-chart-emerald"
+                : i >= 3
+                  ? "bg-chart-primary"
+                  : "bg-amber-500"
+              : "bg-muted"
+          )}
+        />
+      ))}
+    </div>
+  );
+}

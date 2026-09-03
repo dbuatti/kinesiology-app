@@ -386,10 +386,12 @@ function clusterBonus(slot: OpenSlot, kind: SessionKind, placed: Assignment[], s
       const gapMin = Math.abs(a.slotStart.getTime() - slot.start.getTime()) / 60_000;
       if (gapMin <= 90) bonus += 0.12; // back-to-back sweetener
     } else {
-      bonus -= 0.05; // mild discouragement of mixing kinds on one day
+      // Firm separation: prefer to keep FNH days and voice days apart, but not
+      // so hard that one voice booking blocks all FNH from an otherwise-good day.
+      bonus -= 0.25;
     }
   }
-  return Math.max(-0.2, Math.min(0.5, bonus));
+  return Math.max(-0.6, Math.min(0.5, bonus));
 }
 
 interface Candidate {

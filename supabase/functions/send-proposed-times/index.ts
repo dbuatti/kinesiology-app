@@ -44,8 +44,9 @@ serve(async (req) => {
   if (authErr) return authErr;
 
   try {
-    const { to, name, startISO, kind } = await req.json();
+    const { to, name, startISO, kind, message } = await req.json();
     if (!to || !startISO) throw new Error("Missing recipient or time.");
+    const esc = (s: string) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
     const CLIENT_ID = Deno.env.get("GMAIL_CLIENT_ID");
     const CLIENT_SECRET = Deno.env.get("GMAIL_CLIENT_SECRET");
@@ -74,18 +75,16 @@ serve(async (req) => {
                   <div style="color:#D46A9B;font-size:11px;font-weight:900;letter-spacing:0.36em;margin-top:14px;text-transform:uppercase;">Proposed Time</div>
                 </div>
                 <div style="text-align:left;margin-top:44px;line-height:1.8;font-size:17px;color:#334155;">
-                  <p style="margin:0 0 18px;">Hi ${firstName},</p>
-                  <p style="margin:0 0 8px;">I've pencilled you in for your next ${sessionType}:</p>
-                  <div style="background-color:#F8FAFC;border-radius:20px;padding:24px;margin:20px 0;border:1px solid #EEF2F7;text-align:center;">
-                    <div style="font-size:22px;font-weight:700;color:#1E293B;">${friendlyDate}</div>
-                    <div style="font-size:16px;color:#64748B;margin-top:6px;">${friendlyTime}</div>
-                  </div>
-                  <p style="margin:20px 0 0;">Does that work for you? Just reply to let me know — and if it's not quite right, tell me what suits and I'll move it.</p>
-                </div>
-                <div style="margin-top:40px;text-align:left;">
-                  <p style="margin:0;font-size:17px;color:#334155;">All the best,</p>
-                  <div style="font-weight:700;color:#1E3261;font-size:18px;margin-top:6px;">Daniele</div>
-                  <div style="color:#D46A9B;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;">Resonance Kinesiology</div>
+                  ${message
+                    ? esc(message).split(/\n+/).map((p) => `<p style="margin:0 0 14px;">${p}</p>`).join("")
+                    : `<p style="margin:0 0 18px;">Hi ${firstName},</p>
+                       <p style="margin:0 0 8px;">I've pencilled you in for your next ${sessionType}:</p>
+                       <div style="background-color:#F8FAFC;border-radius:20px;padding:24px;margin:20px 0;border:1px solid #EEF2F7;text-align:center;">
+                         <div style="font-size:22px;font-weight:700;color:#1E293B;">${friendlyDate}</div>
+                         <div style="font-size:16px;color:#64748B;margin-top:6px;">${friendlyTime}</div>
+                       </div>
+                       <p style="margin:20px 0 0;">Does that work for you? Just reply to let me know — and if it's not quite right, tell me what suits and I'll move it.</p>
+                       <div style="margin-top:40px;"><p style="margin:0;">All the best,</p><div style="font-weight:700;color:#1E3261;font-size:18px;margin-top:6px;">Daniele</div></div>`}
                 </div>
               </td>
             </tr>

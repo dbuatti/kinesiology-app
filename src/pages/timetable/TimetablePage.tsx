@@ -1170,9 +1170,9 @@ const TimetablePage = () => {
             onSetAway={setAway}
             availabilityByKey={availabilityByKey}
             onSavePrefs={saveClientPrefs}
-            onEmailTimes={async (a) => {
+            onEmailTimes={async (a, message) => {
               const { error } = await supabase.functions.invoke("send-proposed-times", {
-                body: { to: a.email, name: a.name, startISO: a.slotStart.toISOString(), kind: a.kind },
+                body: { to: a.email, name: a.name, startISO: a.slotStart.toISOString(), kind: a.kind, message },
               });
               if (error) {
                 showError(error.message || "Couldn't send email.");

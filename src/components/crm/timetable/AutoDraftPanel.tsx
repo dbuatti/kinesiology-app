@@ -2,7 +2,8 @@ import { useMemo, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Wand2, CalendarClock, AlertTriangle, Check, X, Plane, Search, Clock, Mail, BookmarkPlus, Copy } from "lucide-react";
+import { Loader2, Wand2, CalendarClock, AlertTriangle, Check, X, Plane, Search, Clock, Mail, BookmarkPlus, Copy, PenLine } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
@@ -67,7 +68,7 @@ interface AutoDraftPanelProps {
     patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null; bufferBeforeMin?: number | null },
   ) => void;
   /** Email a client the time they've been penciled in for. Resolves on success. */
-  onEmailTimes?: (assignment: Assignment) => Promise<unknown>;
+  onEmailTimes?: (assignment: Assignment, message?: string) => Promise<unknown>;
 }
 
 // Median gap (days) between consecutive sessions — a simple cadence estimate.
@@ -95,6 +96,12 @@ const WEEKDAY_CHIP = [
   "bg-rose-500/15 text-rose-600 dark:text-rose-400",
   "bg-slate-500/15 text-slate-600 dark:text-slate-300",
 ];
+
+function defaultProposalMessage(a: Assignment): string {
+  const first = (a.name || "there").split(" ")[0];
+  const when = format(a.slotStart, "EEEE d MMMM 'at' h:mm a");
+  return `Hi ${first},\n\nI've pencilled you in for ${when}. Does that work for you? Just reply and let me know — if it's not quite right, tell me what suits and I'll move it.\n\nAll the best,\nDaniele`;
+}
 
 function cadenceLabel(days: number): string {
   if (days === 7) return "Weekly";
@@ -363,14 +370,40 @@ export default function AutoDraftPanel({
     }
   };
 
-  const emailOne = async (a: Assignment) => {
+  const [emailModal, setEmailModal] = useState<{ a: Assignment; message: string } | null>(null);
+
+  const emailOne = async (a: Assignment, message?: string) => {
     if (!onEmailTimes || !a.email) return;
     setEmailingKey(a.clientId);
     try {
-      await onEmailTimes(a);
+      await onEmailTimes(a, message);
       setEmailedKeys((prev) => new Set(prev).add(a.clientId));
+      setEmailModal(null);
     } finally {
       setEmailingKey(null);
+    }
+  };
+
+  // Pencil in a single drafted session.
+  const [pencilingKey, setPencilingKey] = useState<string | null>(null);
+  const pencilOne = async (a: Assignment) => {
+    if (acceptedKeys.has(a.clientId)) return;
+    const original = clients.find((c) => c.key === a.clientId.split("#")[0]);
+    setPencilingKey(a.clientId);
+    try {
+      await onAccept({
+        kind: a.kind,
+        clientId: a.kind === "fnh" ? original?.id ?? null : null,
+        studentName: a.kind === "voice" ? a.name : null,
+        studentEmail: a.kind === "voice" ? a.email ?? original?.id ?? null : null,
+        slotStart: a.slotStart.toISOString(),
+        slotEnd: a.slotEnd.toISOString(),
+      });
+      setAcceptedKeys((prev) => new Set(prev).add(a.clientId));
+    } catch (e) {
+      /* toast handled upstream */
+    } finally {
+      setPencilingKey(null);
     }
   };
   const [search, setSearch] = useState("");
@@ -923,23 +956,38 @@ export default function AutoDraftPanel({
                     {format(a.slotStart, "EEE d MMM · h:mm a")} — {a.reason}
                   </div>
                 </div>
-                {onEmailTimes && a.email && (
-                  emailedKeys.has(a.clientId) ? (
-                    <span className="text-[10px] font-semibold text-chart-emerald shrink-0 flex items-center gap-1">
-                      <Check size={12} /> Emailed
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {accepted ? (
+                    <span className="text-[10px] font-semibold text-chart-emerald flex items-center gap-1">
+                      <Check size={12} /> Penciled
                     </span>
                   ) : (
                     <button
-                      onClick={() => emailOne(a)}
-                      disabled={emailingKey === a.clientId}
-                      title="Email this client their proposed time"
-                      className="shrink-0 flex items-center gap-1 text-[10px] font-semibold text-sky-600 hover:text-sky-700 rounded-full border border-sky-500/30 px-2 py-0.5 disabled:opacity-50"
+                      onClick={() => pencilOne(a)}
+                      disabled={pencilingKey === a.clientId}
+                      title="Pencil this session in"
+                      className="flex items-center gap-1 text-[10px] font-semibold text-chart-emerald hover:text-emerald-700 rounded-full border border-chart-emerald/30 px-2 py-0.5 disabled:opacity-50"
                     >
-                      {emailingKey === a.clientId ? <Loader2 size={11} className="animate-spin" /> : <Mail size={11} />}
-                      Email
+                      {pencilingKey === a.clientId ? <Loader2 size={11} className="animate-spin" /> : <PenLine size={11} />}
+                      Pencil in
                     </button>
-                  )
-                )}
+                  )}
+                  {onEmailTimes && a.email && (
+                    emailedKeys.has(a.clientId) ? (
+                      <span className="text-[10px] font-semibold text-sky-600 flex items-center gap-1">
+                        <Check size={12} /> Emailed
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => setEmailModal({ a, message: defaultProposalMessage(a) })}
+                        title="Email this client their proposed time"
+                        className="flex items-center gap-1 text-[10px] font-semibold text-sky-600 hover:text-sky-700 rounded-full border border-sky-500/30 px-2 py-0.5"
+                      >
+                        <Mail size={11} /> Email
+                      </button>
+                    )
+                  )}
+                </div>
               </div>
             );
           })}
@@ -970,6 +1018,39 @@ export default function AutoDraftPanel({
           )}
         </div>
       )}
+
+      {/* Email confirmation modal — review/edit before sending */}
+      <Dialog open={!!emailModal} onOpenChange={(o) => { if (!o) setEmailModal(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Email {emailModal?.a.name}</DialogTitle>
+          </DialogHeader>
+          {emailModal && (
+            <div className="space-y-2">
+              <div className="text-xs text-muted-foreground">
+                To {emailModal.a.email} · {format(emailModal.a.slotStart, "EEE d MMM · h:mm a")}
+              </div>
+              <textarea
+                value={emailModal.message}
+                onChange={(e) => setEmailModal((m) => (m ? { ...m, message: e.target.value } : m))}
+                rows={9}
+                className="w-full text-sm rounded-xl border border-border bg-background px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setEmailModal(null)}>Cancel</Button>
+            <Button
+              onClick={() => emailModal && emailOne(emailModal.a, emailModal.message)}
+              disabled={!!emailModal && emailingKey === emailModal.a.clientId}
+              className="bg-sky-600 hover:bg-sky-700 text-white"
+            >
+              {emailModal && emailingKey === emailModal.a.clientId ? <Loader2 size={14} className="animate-spin mr-1.5" /> : <Mail size={14} className="mr-1.5" />}
+              Send
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

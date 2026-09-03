@@ -462,20 +462,6 @@ const TimetablePage = () => {
   });
 
   // ── Auto-draft data plumbing ───────────────────────────────────
-  // Parse a voice lesson time string ("4:30 PM", possibly a range) into minutes.
-  const parseVoiceMinutes = (time: string | null): number | null => {
-    if (!time) return null;
-    const first = time.split(/[–—-]/)[0].replace(/(UTC|AEST|AEDT|GMT[+-]\d+)/gi, "").trim();
-    const m = first.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
-    if (!m) return null;
-    let h = parseInt(m[1], 10);
-    const min = parseInt(m[2], 10);
-    const ap = m[3]?.toUpperCase();
-    if (ap === "PM" && h !== 12) h += 12;
-    if (ap === "AM" && h === 12) h = 0;
-    return h * 60 + min;
-  };
-
   const autoDraftClients = useMemo<AutoDraftClient[]>(() => {
     const today = startOfDay(now);
     const out: AutoDraftClient[] = [];
@@ -487,29 +473,41 @@ const TimetablePage = () => {
         .map((a) => new Date(a.date))
         .filter((d) => !isNaN(d.getTime()));
       const last = past.length ? new Date(Math.max(...past.map((d) => d.getTime()))) : null;
-      out.push({ key: `fnh:${c.id}`, kind: "fnh", id: c.id, name: c.name || "Unknown", email: c.email, pastSessions: past, lastSessionAt: last });
+      out.push({ key: `fnh:${c.id}`, kind: "fnh", id: c.id, name: c.name || "Unknown", email: c.email, pastSessions: past, lastSessionAt: last, timeKnown: true });
     }
 
-    // Voice — past lessons from Notion (date-only + separate time string).
-    const byEmail = new Map<string, Date[]>();
+    // Voice — past lessons from Notion. The Notion Date property is our time
+    // source: when it includes a time we trust it; when it's date-only we keep
+    // the weekday but mark the time as unknown so we don't assert a wrong hour.
+    const byEmail = new Map<string, { dates: Date[]; timeKnown: boolean }>();
     for (const l of voiceLessons) {
       const email = (l.studentEmail || "").toLowerCase();
       if (!email || !l.date) continue;
-      const [y, mo, d] = l.date.split("T")[0].split("-").map(Number);
-      if (!y || !mo || !d) continue;
-      const mins = parseVoiceMinutes(l.time) ?? 0;
-      const dt = new Date(y, mo - 1, d, Math.floor(mins / 60), mins % 60);
-      if (dt >= today) continue; // past only
-      const arr = byEmail.get(email) || [];
-      arr.push(dt);
-      byEmail.set(email, arr);
+      const raw = String(l.date);
+      const hasTime = /T\d{2}:\d{2}/.test(raw) && !/T00:00(:00)?/.test(raw);
+      const dt = new Date(hasTime ? raw : `${raw.split("T")[0]}T12:00:00`);
+      if (isNaN(dt.getTime()) || dt >= today) continue; // past only
+      const entry = byEmail.get(email) || { dates: [], timeKnown: false };
+      entry.dates.push(dt);
+      if (hasTime) entry.timeKnown = true;
+      byEmail.set(email, entry);
     }
     for (const s of enrichedVoiceStudents) {
       const email = (s.email || "").toLowerCase();
       if (!email) continue;
-      const past = byEmail.get(email) || [];
+      const entry = byEmail.get(email) || { dates: [], timeKnown: false };
+      const past = entry.dates;
       const last = past.length ? new Date(Math.max(...past.map((d) => d.getTime()))) : null;
-      out.push({ key: `voice:${email}`, kind: "voice", id: email, name: s.name || "Unknown", email: s.email, pastSessions: past, lastSessionAt: last });
+      out.push({
+        key: `voice:${email}`,
+        kind: "voice",
+        id: email,
+        name: s.name || "Unknown",
+        email: s.email,
+        pastSessions: past,
+        lastSessionAt: last,
+        timeKnown: entry.timeKnown,
+      });
     }
     return out;
   }, [enrichedClients, appointmentsData, enrichedVoiceStudents, voiceLessons, now]);

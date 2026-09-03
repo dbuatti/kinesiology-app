@@ -25,6 +25,7 @@ export interface AutoDraftClient {
   email: string | null;
   pastSessions: Date[];
   lastSessionAt: Date | null;
+  timeKnown: boolean;
 }
 
 interface AutoDraftPanelProps {
@@ -60,13 +61,14 @@ function medianGapDays(dates: Date[]): number | null {
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-function prefLabel(pastSessions: Date[]): string {
+function prefLabel(pastSessions: Date[], timeKnown: boolean): string {
   const p = computePreferredTime(pastSessions);
   if (!p) return "No history yet";
+  if (!timeKnown) return `Usually ${WEEKDAYS[p.weekday]} · time flexible`;
   const h = Math.floor(p.minutesOfDay / 60);
   const m = p.minutesOfDay % 60;
   const t = format(new Date(2000, 0, 1, h, m), "h:mm a");
-  return `${WEEKDAYS[p.weekday]} ~${t}`;
+  return `Usually ${WEEKDAYS[p.weekday]} ~${t}`;
 }
 
 export default function AutoDraftPanel({
@@ -83,13 +85,19 @@ export default function AutoDraftPanel({
   const [accepting, setAccepting] = useState(false);
   const [acceptedKeys, setAcceptedKeys] = useState<Set<string>>(new Set());
 
-  // Only clients with at least some history are useful to auto-place; still show
-  // all, but sort those with a learnable pattern to the top.
+  // Order by most-seen, then most-recent — the clients you work with most and
+  // most recently float to the top of the picker.
   const sortedClients = useMemo(
     () =>
-      [...clients].sort(
-        (a, b) => b.pastSessions.length - a.pastSessions.length || a.name.localeCompare(b.name),
-      ),
+      [...clients].sort((a, b) => {
+        if (b.pastSessions.length !== a.pastSessions.length) {
+          return b.pastSessions.length - a.pastSessions.length;
+        }
+        const at = a.lastSessionAt?.getTime() ?? 0;
+        const bt = b.lastSessionAt?.getTime() ?? 0;
+        if (bt !== at) return bt - at;
+        return a.name.localeCompare(b.name);
+      }),
     [clients],
   );
 
@@ -115,6 +123,7 @@ export default function AutoDraftPanel({
       intervalDays: medianGapDays(c.pastSessions),
       lastSessionAt: c.lastSessionAt,
       durationMin: c.kind === "fnh" ? fnhDurationMin : voiceDurationMin,
+      timeKnown: c.timeKnown,
     }));
 
     const res = autoDraftSchedule({
@@ -162,6 +171,25 @@ export default function AutoDraftPanel({
 
   const pendingCount = result ? result.assignments.filter((a) => !acceptedKeys.has(a.clientId)).length : 0;
 
+  // Group the draft by day for the visual calendar strip.
+  const draftDays = useMemo(() => {
+    if (!result) return [];
+    const map = new Map<string, Assignment[]>();
+    for (const a of result.assignments) {
+      const key = format(a.slotStart, "yyyy-MM-dd");
+      const arr = map.get(key) ?? [];
+      arr.push(a);
+      map.set(key, arr);
+    }
+    return [...map.entries()]
+      .sort((x, y) => x[0].localeCompare(y[0]))
+      .map(([key, items]) => ({
+        key,
+        date: items[0].slotStart,
+        items: items.sort((p, q) => p.slotStart.getTime() - q.slotStart.getTime()),
+      }));
+  }, [result]);
+
   return (
     <div className="space-y-4">
       {/* Client picker */}
@@ -178,7 +206,7 @@ export default function AutoDraftPanel({
         </div>
         <div className="max-h-64 overflow-y-auto divide-y divide-border/30">
           {sortedClients.map((c) => {
-            const pref = prefLabel(c.pastSessions);
+            const pref = prefLabel(c.pastSessions, c.timeKnown);
             const noHistory = c.pastSessions.length === 0;
             return (
               <label
@@ -244,6 +272,40 @@ export default function AutoDraftPanel({
               </Button>
             )}
           </div>
+
+          {/* Visual mock-up: draft placed on a day strip */}
+          {draftDays.length > 0 && (
+            <div className="overflow-x-auto -mx-1 px-1 pb-1">
+              <div className="flex gap-2 min-w-min">
+                {draftDays.map((day) => (
+                  <div key={day.key} className="w-36 shrink-0 rounded-2xl border border-border/60 bg-muted/20 overflow-hidden">
+                    <div className="px-3 py-2 bg-muted/50 border-b border-border/40 text-center">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{format(day.date, "EEE")}</div>
+                      <div className="text-sm font-serif font-bold text-foreground">{format(day.date, "d MMM")}</div>
+                    </div>
+                    <div className="p-1.5 space-y-1.5">
+                      {day.items.map((a) => (
+                        <div
+                          key={a.clientId}
+                          className={cn(
+                            "rounded-xl px-2 py-1.5 border-l-2",
+                            a.kind === "voice"
+                              ? "bg-chart-destructive/5 border-l-chart-destructive"
+                              : "bg-chart-primary/5 border-l-chart-primary",
+                            acceptedKeys.has(a.clientId) && "ring-1 ring-chart-emerald/40",
+                          )}
+                          title={a.reason}
+                        >
+                          <div className="text-[11px] font-bold text-foreground leading-tight">{format(a.slotStart, "h:mm a")}</div>
+                          <div className="text-[11px] text-muted-foreground truncate">{a.name}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {result.assignments.map((a) => {
             const accepted = acceptedKeys.has(a.clientId);

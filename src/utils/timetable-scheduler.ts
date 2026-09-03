@@ -29,6 +29,12 @@ export interface SchedulerClient {
   lastSessionAt?: Date | null;
   /** Session length to book, minutes (defaults per kind if omitted). */
   durationMin?: number;
+  /**
+   * Whether the past-session TIMES are trustworthy. Voice history from Notion
+   * is sometimes date-only; when false, we match on weekday only and never
+   * assert a specific time-of-day preference.
+   */
+  timeKnown?: boolean;
 }
 
 export interface OpenSlot {
@@ -151,9 +157,11 @@ function scoreSlot(client: SchedulerClient, pref: PreferredTime | null, slot: Op
   // Weekday component (1 when exact, decaying with distance).
   const wdComponent = 1 - weekdayDistance(pref.weekday, slot.start.getDay()) / 3;
 
-  // Time-of-day component (1 when exact, 0 at ±4h).
+  // Time-of-day component (1 when exact, 0 at ±4h). Skipped when the client's
+  // history has no reliable times — we then match on weekday only.
+  const timeKnown = client.timeKnown !== false;
   const todDiff = Math.abs(minutesOfDay(slot.start) - pref.minutesOfDay);
-  const todComponent = Math.max(0, 1 - todDiff / 240);
+  const todComponent = timeKnown ? Math.max(0, 1 - todDiff / 240) : 1;
 
   // Due-ness component.
   let dueComponent = 0.6;
@@ -300,7 +308,7 @@ export function autoDraftSchedule(input: AutoDraftInput): DraftResult {
       slotStart: start,
       slotEnd: new Date(start.getTime() + dur * 60_000),
       score: Number(best.score.toFixed(3)),
-      reason: describeFit(pref, start, overdue.get(pick) ?? 0),
+      reason: describeFit(pref, start, overdue.get(pick) ?? 0, client.timeKnown !== false),
       lowConfidence: !pref || pref.confidence < 0.4,
     });
   }
@@ -311,13 +319,14 @@ export function autoDraftSchedule(input: AutoDraftInput): DraftResult {
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-function describeFit(pref: PreferredTime | null, slot: Date, overdueDays: number): string {
+function describeFit(pref: PreferredTime | null, slot: Date, overdueDays: number, timeKnown: boolean): string {
   if (!pref) return "No history yet — best-guess fill.";
   const wdMatch = pref.weekday === slot.getDay();
   const parts: string[] = [];
   parts.push(
     wdMatch ? `Usual ${WEEKDAYS[pref.weekday]}` : `Near their usual ${WEEKDAYS[pref.weekday]}`,
   );
+  if (!timeKnown) parts.push("time flexible");
   if (overdueDays > 3) parts.push(`${Math.round(overdueDays)}d overdue`);
   return parts.join(" · ");
 }

@@ -157,6 +157,12 @@ export interface SchedulerClient {
   preBufferMin?: number;
   /** Minutes of break needed AFTER the session. Defaults: FNH 30, voice 0. */
   postBufferMin?: number;
+  /**
+   * Ideal date for THIS session. When a client recurs (weekly/fortnightly), the
+   * caller expands them into several instances, each carrying the target date it
+   * should land near. Overrides the lastSession+interval due calc when set.
+   */
+  targetDate?: Date;
 }
 
 export interface OpenSlot {
@@ -287,7 +293,11 @@ function scoreSlot(client: SchedulerClient, pref: PreferredTime | null, slot: Op
 
   // Due-ness component.
   let dueComponent = 0.6;
-  if (client.intervalDays && client.lastSessionAt) {
+  if (client.targetDate) {
+    // Recurring instance: land as close to this session's target date as possible.
+    const diffDays = Math.abs(slot.start.getTime() - client.targetDate.getTime()) / DAY_MS;
+    dueComponent = Math.max(0, 1 - diffDays / 7);
+  } else if (client.intervalDays && client.lastSessionAt) {
     const target = client.lastSessionAt.getTime() + client.intervalDays * DAY_MS;
     const diffDays = (slot.start.getTime() - target) / DAY_MS;
     if (diffDays >= 0) {
@@ -339,9 +349,16 @@ function sameLocalDay(a: Date, b: Date): boolean {
  * for landing on a day that already has same-kind sessions (and extra for being
  * back-to-back), a mild penalty for mixing kinds on the same day.
  */
-function clusterBonus(slot: OpenSlot, kind: SessionKind, placed: Assignment[]): number {
+function baseKeyOf(id: string): string {
+  return id.split("#")[0];
+}
+
+function clusterBonus(slot: OpenSlot, kind: SessionKind, placed: Assignment[], selfBaseKey: string): number {
   let bonus = 0;
   for (const a of placed) {
+    // Never cluster a client's own recurring instances together — those must
+    // spread across the weeks, not pile onto one day.
+    if (baseKeyOf(a.clientId) === selfBaseKey) continue;
     if (!sameLocalDay(a.slotStart, slot.start)) continue;
     if (a.kind === kind) {
       bonus += 0.12;
@@ -458,7 +475,7 @@ export function autoDraftSchedule(input: AutoDraftInput): DraftResult {
     if (best && groupByKind && assignments.length > 0) {
       let bestAdj = -Infinity;
       for (const cand of cands) {
-        const adj = cand.score + clusterBonus(cand.slot, client.kind, assignments);
+        const adj = cand.score + clusterBonus(cand.slot, client.kind, assignments, baseKeyOf(client.id));
         if (adj > bestAdj) {
           bestAdj = adj;
           best = cand;

@@ -451,21 +451,47 @@ export default function AutoDraftPanel({
       showError("Select at least one available client to draft.");
       return;
     }
-    const schedulerClients: SchedulerClient[] = chosen.map((c) => ({
-      id: c.key,
-      kind: c.kind,
-      name: c.name,
-      email: c.email,
-      pastSessions: c.pastSessions,
-      // Explicit cadence (weekly/fortnightly/…) overrides the inferred median gap.
-      intervalDays: availabilityByKey[c.key]?.cadenceDays ?? medianGapDays(c.pastSessions),
-      lastSessionAt: c.lastSessionAt,
-      // Their usual length if we can tell, else the per-kind default.
-      durationMin: c.typicalDurationMin ?? (c.kind === "fnh" ? fnhDurationMin : voiceDurationMin),
-      timeKnown: c.timeKnown,
-      availability: availabilityByKey[c.key]?.windows,
-      preBufferMin: availabilityByKey[c.key]?.bufferBeforeMin ?? undefined,
-    }));
+    // Expand each client into a RECURRING series across the planning window:
+    // a weekly client gets a session ~every 7 days, fortnightly ~every 14, etc.
+    // Each instance carries the date it should land near.
+    const DAY = 86_400_000;
+    const nowMs = Date.now();
+    const windowEndMs = openSlots.reduce((m, s) => Math.max(m, s.start.getTime()), nowMs + 84 * DAY);
+    const MAX_INSTANCES = 14;
+
+    const schedulerClients: SchedulerClient[] = [];
+    for (const c of chosen) {
+      const interval = availabilityByKey[c.key]?.cadenceDays ?? medianGapDays(c.pastSessions);
+      const base = {
+        kind: c.kind,
+        name: c.name,
+        email: c.email,
+        pastSessions: c.pastSessions,
+        intervalDays: interval,
+        lastSessionAt: c.lastSessionAt,
+        durationMin: c.typicalDurationMin ?? (c.kind === "fnh" ? fnhDurationMin : voiceDurationMin),
+        timeKnown: c.timeKnown,
+        availability: availabilityByKey[c.key]?.windows,
+        preBufferMin: availabilityByKey[c.key]?.bufferBeforeMin ?? undefined,
+      };
+
+      if (!interval) {
+        // No cadence → a single next session.
+        schedulerClients.push({ ...base, id: c.key });
+        continue;
+      }
+
+      // First target = their next due date (or now if overdue/new), then step.
+      let t = c.lastSessionAt ? c.lastSessionAt.getTime() + interval * DAY : nowMs;
+      if (t < nowMs) t = nowMs;
+      let i = 0;
+      while (t <= windowEndMs && i < MAX_INSTANCES) {
+        schedulerClients.push({ ...base, id: `${c.key}#${i}`, targetDate: new Date(t) });
+        t += interval * DAY;
+        i++;
+      }
+      if (i === 0) schedulerClients.push({ ...base, id: c.key });
+    }
 
     const res = autoDraftSchedule({
       clients: schedulerClients,
@@ -487,7 +513,7 @@ export default function AutoDraftPanel({
     try {
       for (const a of result.assignments) {
         if (done.has(a.clientId)) continue;
-        const original = clients.find((c) => c.key === a.clientId);
+        const original = clients.find((c) => c.key === a.clientId.split("#")[0]);
         try {
           await onAccept({
             kind: a.kind,

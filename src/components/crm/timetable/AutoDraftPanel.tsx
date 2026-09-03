@@ -1202,8 +1202,37 @@ export default function AutoDraftPanel({
           </DialogHeader>
           {emailModal && (
             <div className="space-y-2">
-              <div className="text-xs text-muted-foreground">
-                To {emailModal.a.email} · {format(emailModal.a.slotStart, "EEE d MMM · h:mm a")}
+              <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                <span>To {emailModal.a.email}</span>
+                <span>·</span>
+                <input
+                  type="datetime-local"
+                  value={format(emailModal.a.slotStart, "yyyy-MM-dd'T'HH:mm")}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (!v) return;
+                    const ns = new Date(v);
+                    if (isNaN(ns.getTime())) return;
+                    const cid = emailModal.a.clientId;
+                    setEmailModal((m) => {
+                      if (!m) return m;
+                      const durMs = m.a.slotEnd.getTime() - m.a.slotStart.getTime();
+                      const na: Assignment = { ...m.a, slotStart: ns, slotEnd: new Date(ns.getTime() + durMs), reason: `set by you — ${format(ns, "EEE h:mm a")}`, lowConfidence: false };
+                      return { a: na, message: defaultProposalMessage(na) };
+                    });
+                    setResult((prev) => {
+                      if (!prev) return prev;
+                      const assignments = prev.assignments.map((x) => {
+                        if (x.clientId !== cid) return x;
+                        const durMs = x.slotEnd.getTime() - x.slotStart.getTime();
+                        return { ...x, slotStart: ns, slotEnd: new Date(ns.getTime() + durMs), reason: `set by you — ${format(ns, "EEE h:mm a")}`, lowConfidence: false };
+                      });
+                      onDraftChange?.(assignments.filter((x) => !acceptedKeys.has(x.clientId)));
+                      return { ...prev, assignments };
+                    });
+                  }}
+                  className="text-xs rounded-lg border border-border bg-background px-2 py-1"
+                />
               </div>
               <textarea
                 value={emailModal.message}

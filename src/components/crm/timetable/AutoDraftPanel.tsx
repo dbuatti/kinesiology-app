@@ -10,6 +10,7 @@ import {
   autoDraftSchedule,
   computePreferredTime,
   computeCapacityInsights,
+  parseAvailabilityText,
   type SchedulerClient,
   type OpenSlot,
   type BusyBlock,
@@ -112,39 +113,68 @@ const DAY_TOGGLES = [
 
 function AvailabilityEditor({
   windows,
-  onChange,
+  note,
+  onSave,
 }: {
   windows: AvailabilityWindow[];
-  onChange: (w: AvailabilityWindow[]) => void;
+  note: string | null;
+  onSave: (w: AvailabilityWindow[], note?: string) => void;
 }) {
   const [days, setDays] = useState<number[]>([]);
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [text, setText] = useState(note ?? "");
 
   const toggleDay = (d: number) =>
     setDays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
 
   const add = () => {
-    onChange([...windows, { days: [...days].sort(), from: from || null, to: to || null }]);
+    onSave([...windows, { days: [...days].sort(), from: from || null, to: to || null }], note ?? undefined);
     setDays([]);
     setFrom("");
     setTo("");
   };
 
+  const parseText = () => {
+    const parsed = parseAvailabilityText(text);
+    if (parsed.length === 0) return;
+    onSave(parsed, text); // replace windows with the parsed set + keep the raw note
+  };
+
   return (
-    <div className="mt-2 rounded-xl border border-border/60 bg-muted/20 p-2.5 space-y-2" onClick={(e) => e.stopPropagation()}>
+    <div className="mt-2 rounded-xl border border-border/60 bg-muted/20 p-2.5 space-y-2.5" onClick={(e) => e.stopPropagation()}>
       {windows.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {windows.map((w, i) => (
             <span key={i} className="flex items-center gap-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-semibold pl-2 pr-1 py-0.5">
               {windowLabel(w)}
-              <button onClick={() => onChange(windows.filter((_, j) => j !== i))} className="hover:text-rose-500">
+              <button onClick={() => onSave(windows.filter((_, j) => j !== i), note ?? undefined)} className="hover:text-rose-500">
                 <X size={10} />
               </button>
             </span>
           ))}
         </div>
       )}
+
+      {/* Paste-a-note shortcut */}
+      <div className="space-y-1.5">
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          rows={2}
+          placeholder={'Type it: "Wed anytime, Tue until 2pm, Fri anytime" or "any day from 5:30pm"'}
+          className="w-full text-xs rounded-lg border border-border bg-background px-2 py-1.5 resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        <button
+          onClick={parseText}
+          disabled={!text.trim()}
+          className="text-[11px] font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-full px-3 py-1 disabled:opacity-40"
+        >
+          Read from text
+        </button>
+      </div>
+
+      <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">or set manually</div>
       <div className="flex flex-wrap gap-1">
         {DAY_TOGGLES.map(({ d, l }) => (
           <button
@@ -510,7 +540,8 @@ export default function AutoDraftPanel({
                 {availEditKey === c.key && !away && (
                   <AvailabilityEditor
                     windows={availabilityByKey[c.key]?.windows ?? []}
-                    onChange={(w) => onSetAvailability?.(c.key, w, availabilityByKey[c.key]?.note ?? undefined)}
+                    note={availabilityByKey[c.key]?.note ?? null}
+                    onSave={(w, n) => onSetAvailability?.(c.key, w, n)}
                   />
                 )}
 

@@ -38,6 +38,85 @@ function hhmmToMinutes(s: string | null): number | null {
  * windows. With no windows recorded, everything is allowed (fall back to
  * learned history).
  */
+const DAY_WORDS: Record<string, number> = {
+  sun: 0, sunday: 0, mon: 1, monday: 1, tue: 2, tues: 2, tuesday: 2,
+  wed: 3, weds: 3, wednesday: 3, thu: 4, thur: 4, thurs: 4, thursday: 4,
+  fri: 5, friday: 5, sat: 6, saturday: 6,
+};
+const DAY_ORDER = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+
+function parseClock(tok: string): string | null {
+  const m = tok.trim().toLowerCase().match(/^(\d{1,2})(?:[:.](\d{2}))?\s*(a\.?m\.?|p\.?m\.?)?$/);
+  if (!m) return null;
+  let h = parseInt(m[1], 10);
+  const min = m[2] ? parseInt(m[2], 10) : 0;
+  const ap = m[3]?.replace(/\./g, "");
+  if (ap === "pm" && h !== 12) h += 12;
+  if (ap === "am" && h === 12) h = 0;
+  if (!ap && h <= 7) h += 12; // bare "5:30" for availability reads as evening
+  if (h > 23 || min > 59) return null;
+  return `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+}
+
+const TIME = "\\d{1,2}(?:[:.]\\d{2})?\\s*(?:a\\.?m\\.?|p\\.?m\\.?)?";
+
+/**
+ * Parse a free-text availability note into windows, e.g.
+ * "Wednesday anytime or Tuesday until 2pm or Friday anytime" or
+ * "any day from 5:30pm". Best-effort; the practitioner can tweak the chips after.
+ */
+export function parseAvailabilityText(text: string): AvailabilityWindow[] {
+  const windows: AvailabilityWindow[] = [];
+  const clauses = text
+    .toLowerCase()
+    .replace(/\bx+\s*$/i, "")
+    .split(/\bor\b|,|;|\band\b|\n|\//);
+
+  for (const raw of clauses) {
+    let s = ` ${raw.trim()} `;
+    if (!s.trim()) continue;
+    let from: string | null = null;
+    let to: string | null = null;
+
+    const range = s.match(new RegExp(`(${TIME})\\s*(?:-|–|to)\\s*(${TIME})`, "i"));
+    if (range && parseClock(range[1]) && parseClock(range[2])) {
+      from = parseClock(range[1]);
+      to = parseClock(range[2]);
+      s = s.replace(range[0], " ");
+    } else {
+      const FILLER = "(?:about|around|approx\\.?|roughly)?\\s*";
+      const fromM = s.match(new RegExp(`(?:from|after)\\s+${FILLER}(${TIME})`, "i")) ||
+        s.match(new RegExp(`(${TIME})\\s*(?:onwards?|\\+)`, "i"));
+      if (fromM) { from = parseClock(fromM[fromM.length - 1]); s = s.replace(fromM[0], " "); }
+      const toM = s.match(new RegExp(`(?:until|before|til|till|by)\\s+${FILLER}(${TIME})`, "i"));
+      if (toM) { to = parseClock(toM[toM.length - 1]); s = s.replace(toM[0], " "); }
+    }
+
+    let days: number[] = [];
+    if (/weekday/.test(s)) days = [1, 2, 3, 4, 5];
+    else if (/weekend/.test(s)) days = [0, 6];
+    else {
+      const dr = s.match(/(sun|mon|tue|tues|wed|weds|thu|thur|thurs|fri|sat)[a-z]*\s*(?:-|to|thru|through)\s*(sun|mon|tue|tues|wed|weds|thu|thur|thurs|fri|sat)[a-z]*/);
+      if (dr && DAY_WORDS[dr[1]] != null && DAY_WORDS[dr[2]] != null) {
+        let a = DAY_WORDS[dr[1]], b = DAY_WORDS[dr[2]];
+        for (let i = 0; i < 7; i++) { days.push(a); if (a === b) break; a = (a + 1) % 7; }
+      } else {
+        const found = new Set<number>();
+        for (const word of DAY_ORDER) {
+          if (new RegExp(`\\b${word.slice(0, 3)}[a-z]*\\b`).test(s)) found.add(DAY_WORDS[word]);
+        }
+        days = [...found].sort();
+      }
+    }
+
+    if (days.length === 0 && from == null && to == null && !/any\s*(?:day|time)|every\s*day|daily/.test(s)) {
+      continue; // nothing recognised in this clause
+    }
+    windows.push({ days, from, to });
+  }
+  return windows;
+}
+
 export function slotMatchesAvailability(slot: OpenSlot, windows?: AvailabilityWindow[]): boolean {
   if (!windows || windows.length === 0) return true;
   const wd = slot.start.getDay();

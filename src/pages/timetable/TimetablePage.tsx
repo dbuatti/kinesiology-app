@@ -48,6 +48,8 @@ import { useBookingProposals, BookingProposal } from "@/hooks/useBookingProposal
 import { useIcloudCalendar, IcloudCalendarEvent } from "@/hooks/useIcloudCalendar";
 import { useTimetableAppointments, EnrichedBooking } from "@/hooks/useTimetableAppointments";
 import { useSuggestionEngine, Suggestion } from "@/hooks/useSuggestionEngine";
+import AutoDraftPanel, { AutoDraftClient } from "@/components/crm/timetable/AutoDraftPanel";
+import { OpenSlot, BusyBlock } from "@/utils/timetable-scheduler";
 import { CALCOM_CONFIG } from "@/config/integrations";
 import {
   format,
@@ -169,7 +171,7 @@ function zonedDateKey(d: Date): string {
 const TimetablePage = () => {
   const [tab, setTab] = useState(() => {
     const t = new URLSearchParams(window.location.search).get("view");
-    if (t === "forecast" || t === "suggestions") return t;
+    if (t === "forecast" || t === "suggestions" || t === "autodraft") return t;
     return "fortnight";
   });
   const [fortnightIndex, setFortnightIndex] = useState(0);
@@ -313,6 +315,20 @@ const TimetablePage = () => {
     staleTime: 5 * 60 * 1000,
   });
 
+  // Past voice/piano lessons live in Notion (not voice_bookings), so load them
+  // to give the auto-scheduler real time-of-day history for voice students.
+  const { data: voiceLessons = [] } = useQuery({
+    queryKey: ["timetable-voice-lessons"],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke<{
+        lessons?: { studentEmail: string | null; date: string | null; time: string | null }[];
+      }>("voice-lessons");
+      if (error) throw error;
+      return (data?.lessons || []).filter((l) => l.date && l.studentEmail);
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
   const enrichedVoiceStudents = useMemo<EnrichedVoiceStudent[]>(() => {
     const today = startOfDay(now);
     return voiceStudents.map((s) => {
@@ -444,6 +460,102 @@ const TimetablePage = () => {
     proposals,
     calcomBookings: bookings,
   });
+
+  // ── Auto-draft data plumbing ───────────────────────────────────
+  // Parse a voice lesson time string ("4:30 PM", possibly a range) into minutes.
+  const parseVoiceMinutes = (time: string | null): number | null => {
+    if (!time) return null;
+    const first = time.split(/[–—-]/)[0].replace(/(UTC|AEST|AEDT|GMT[+-]\d+)/gi, "").trim();
+    const m = first.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+    if (!m) return null;
+    let h = parseInt(m[1], 10);
+    const min = parseInt(m[2], 10);
+    const ap = m[3]?.toUpperCase();
+    if (ap === "PM" && h !== 12) h += 12;
+    if (ap === "AM" && h === 12) h = 0;
+    return h * 60 + min;
+  };
+
+  const autoDraftClients = useMemo<AutoDraftClient[]>(() => {
+    const today = startOfDay(now);
+    const out: AutoDraftClient[] = [];
+
+    // FNH — full datetimes from the appointments table.
+    for (const c of enrichedClients) {
+      const past = appointmentsData
+        .filter((a) => a.client_id === c.id && a.status !== "Cancelled" && new Date(a.date) < today)
+        .map((a) => new Date(a.date))
+        .filter((d) => !isNaN(d.getTime()));
+      const last = past.length ? new Date(Math.max(...past.map((d) => d.getTime()))) : null;
+      out.push({ key: `fnh:${c.id}`, kind: "fnh", id: c.id, name: c.name || "Unknown", email: c.email, pastSessions: past, lastSessionAt: last });
+    }
+
+    // Voice — past lessons from Notion (date-only + separate time string).
+    const byEmail = new Map<string, Date[]>();
+    for (const l of voiceLessons) {
+      const email = (l.studentEmail || "").toLowerCase();
+      if (!email || !l.date) continue;
+      const [y, mo, d] = l.date.split("T")[0].split("-").map(Number);
+      if (!y || !mo || !d) continue;
+      const mins = parseVoiceMinutes(l.time) ?? 0;
+      const dt = new Date(y, mo - 1, d, Math.floor(mins / 60), mins % 60);
+      if (dt >= today) continue; // past only
+      const arr = byEmail.get(email) || [];
+      arr.push(dt);
+      byEmail.set(email, arr);
+    }
+    for (const s of enrichedVoiceStudents) {
+      const email = (s.email || "").toLowerCase();
+      if (!email) continue;
+      const past = byEmail.get(email) || [];
+      const last = past.length ? new Date(Math.max(...past.map((d) => d.getTime()))) : null;
+      out.push({ key: `voice:${email}`, kind: "voice", id: email, name: s.name || "Unknown", email: s.email, pastSessions: past, lastSessionAt: last });
+    }
+    return out;
+  }, [enrichedClients, appointmentsData, enrichedVoiceStudents, voiceLessons, now]);
+
+  // Open Cal.com slots across the window (future only).
+  const autoDraftOpenSlots = useMemo<OpenSlot[]>(() => {
+    const nowMs = Date.now();
+    const out: OpenSlot[] = [];
+    for (const list of Object.values(slots)) {
+      for (const s of list) {
+        const start = new Date(s.start);
+        if (isNaN(start.getTime()) || start.getTime() <= nowMs) continue;
+        out.push({ start, durationMin: 60 });
+      }
+    }
+    return out;
+  }, [slots]);
+
+  // Practitioner busy blocks: iCloud events + whole-day blocked dates.
+  const autoDraftBusy = useMemo<BusyBlock[]>(() => {
+    const out: BusyBlock[] = [];
+    for (const ev of icloudEvents) {
+      if (!ev.start) continue;
+      if (ev.allDay) {
+        const d = new Date(ev.start);
+        out.push({ start: startOfDay(d), end: endOfDay(d) });
+      } else if (ev.end) {
+        out.push({ start: new Date(ev.start), end: new Date(ev.end) });
+      }
+    }
+    for (const key of blockedDates) {
+      const [y, mo, d] = key.split("-").map(Number);
+      if (y && mo && d) out.push({ start: new Date(y, mo - 1, d, 0, 0), end: new Date(y, mo - 1, d, 23, 59) });
+    }
+    return out;
+  }, [icloudEvents, blockedDates]);
+
+  // Slots already taken by real bookings or existing proposals.
+  const autoDraftTaken = useMemo<string[]>(() => {
+    const out: string[] = [];
+    for (const list of Object.values(bookings)) {
+      for (const b of list) if (b.start) out.push(new Date(b.start).toISOString());
+    }
+    for (const p of proposals) if (p.slot_start) out.push(new Date(p.slot_start).toISOString());
+    return out;
+  }, [bookings, proposals]);
 
   const stateFor = (d: Date): DayState => {
     const key = zonedDateKey(d);
@@ -758,6 +870,9 @@ const TimetablePage = () => {
             <TabsTrigger value="forecast" className="gap-2">
               <TrendingUp size={14} /> Forward Forecast
             </TabsTrigger>
+            <TabsTrigger value="autodraft" className="gap-2">
+              <Sparkles size={14} /> Auto-draft
+            </TabsTrigger>
             {suggestions.length > 0 && (
               <TabsTrigger value="suggestions" className="gap-2">
                 <Sparkles size={14} /> Suggestions
@@ -801,6 +916,32 @@ const TimetablePage = () => {
             loading={loading}
             error={error}
           />
+        </TabsContent>
+
+        <TabsContent value="autodraft" className="m-0 mt-4">
+          <div className="max-w-xl">
+            <div className="mb-3">
+              <h3 className="text-sm font-bold text-foreground">Draft a timetable</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Pick clients and I'll place each at their best open time — learned from their
+                past sessions — routing around your calendar (rehearsals, blocks). Review, then pencil in.
+              </p>
+            </div>
+            <AutoDraftPanel
+              clients={autoDraftClients}
+              openSlots={autoDraftOpenSlots}
+              busyBlocks={autoDraftBusy}
+              takenSlotStarts={autoDraftTaken}
+              fnhDurationMin={60}
+              voiceDurationMin={45}
+              onAccept={(input) =>
+                createProposal({
+                  ...input,
+                  eventTypeId: input.kind === "fnh" ? fnhEventType : voiceEventType,
+                })
+              }
+            />
+          </div>
         </TabsContent>
 
         <TabsContent value="suggestions" className="m-0 mt-4">

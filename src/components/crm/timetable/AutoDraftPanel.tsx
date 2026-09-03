@@ -1072,14 +1072,18 @@ export default function AutoDraftPanel({
         )}
       </div>
 
-      <Button
-        onClick={generate}
-        disabled={selected.size === 0}
-        className="w-full rounded-full bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-500 hover:to-rose-600 text-white border-none shadow-sm active:scale-[0.99] transition-transform"
-      >
-        <Wand2 className="h-4 w-4 mr-2" />
-        {selected.size > 0 ? `Draft ${selected.size} client${selected.size === 1 ? "" : "s"}` : "Generate draft timetable"}
-      </Button>
+      {/* Sticky so it's always reachable without scrolling to the end of the
+          client list. */}
+      <div className="sticky bottom-2 z-20 py-1">
+        <Button
+          onClick={generate}
+          disabled={selected.size === 0}
+          className="w-full rounded-full bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-500 hover:to-rose-600 text-white border-none shadow-lg active:scale-[0.99] transition-transform"
+        >
+          <Wand2 className="h-4 w-4 mr-2" />
+          {selected.size > 0 ? `Draft ${selected.size} client${selected.size === 1 ? "" : "s"}` : "Generate draft timetable"}
+        </Button>
+      </div>
 
       {/* Calendar preview — your commitments + the blue draft, between controls and review */}
       {calendarPreview}

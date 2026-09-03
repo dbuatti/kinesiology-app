@@ -478,7 +478,22 @@ const TimetablePage = () => {
 
   // ── Auto-draft data plumbing ───────────────────────────────────
   const [draftAssignments, setDraftAssignments] = useState<Assignment[]>([]);
-  const [hiddenWeeks, setHiddenWeeks] = useState<Set<string>>(new Set());
+  // Remember which weeks the user collapsed on the fortnight mock-up, across refreshes.
+  const [hiddenWeeks, setHiddenWeeks] = useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem("timetable_hidden_weeks");
+      return raw ? new Set(JSON.parse(raw) as string[]) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem("timetable_hidden_weeks", JSON.stringify([...hiddenWeeks]));
+    } catch {
+      /* storage unavailable — ignore */
+    }
+  }, [hiddenWeeks]);
   const [workflowFor, setWorkflowFor] = useState<BookingProposal | null>(null);
   const [workflowMsg, setWorkflowMsg] = useState("");
   const [workflowBusy, setWorkflowBusy] = useState(false);
@@ -1123,7 +1138,10 @@ const TimetablePage = () => {
         error={icloudError}
       />
 
-      {/* Phase 2: planner bar */}
+      {/* Phase 2: planner bar — manual single-booking controls (session type,
+          event type, client). Irrelevant on Auto-draft, which drives everything
+          from the client list, so hide it there for a cleaner jump-in view. */}
+      {tab !== "autodraft" && (
       <PlannerBar
         kind={kind}
         onKindChange={setKind}
@@ -1141,6 +1159,7 @@ const TimetablePage = () => {
         fnhClients={enrichedClients}
         voiceStudents={enrichedVoiceStudents}
       />
+      )}
 
       {/* Tabs */}
       <Tabs value={tab} onValueChange={setTab} className="w-full">

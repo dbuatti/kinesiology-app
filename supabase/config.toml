@@ -78,3 +78,6 @@ verify_jwt = false
 
 [functions.send-proposed-times]
 verify_jwt = false
+
+[functions.send-cancellation-email]
+verify_jwt = false

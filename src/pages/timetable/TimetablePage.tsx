@@ -201,6 +201,19 @@ const TimetablePage = () => {
   const [appointmentFor, setAppointmentFor] = useState<EnrichedBooking | null>(null);
   const [cancellingAppt, setCancellingAppt] = useState(false);
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
+  const [emailOnCancel, setEmailOnCancel] = useState(true);
+  const [cancelMessage, setCancelMessage] = useState("");
+
+  const defaultCancelMessage = (name?: string | null) => {
+    const first = (name || "there").split(" ")[0];
+    return `Hi ${first},\n\nSorry, I've needed to cancel our session — I've had some music director projects come up. I'll be in touch shortly to reschedule.\n\nAll the best,\nDaniele`;
+  };
+
+  const openCancelConfirm = () => {
+    setCancelMessage(defaultCancelMessage(appointmentFor?.attendeeName || appointmentFor?.title));
+    setEmailOnCancel(!!appointmentFor?.attendeeEmail);
+    setConfirmCancelOpen(true);
+  };
   const [oooOpen, setOooOpen] = useState(false);
   const [oooStart, setOooStart] = useState("");
   const [oooEnd, setOooEnd] = useState("");
@@ -921,7 +934,16 @@ const TimetablePage = () => {
           .update({ status: "dropped", updated_at: new Date().toISOString() })
           .eq("id", appt.proposalId);
       }
-      showSuccess("Booking cancelled — slot freed in Cal.com.");
+      // Optionally email the client a cancellation note.
+      if (emailOnCancel && appt.attendeeEmail && cancelMessage.trim()) {
+        const { error: emailErr } = await supabase.functions.invoke("send-cancellation-email", {
+          body: { to: appt.attendeeEmail, message: cancelMessage, startISO: appt.start },
+        });
+        if (emailErr) showError(`Cancelled, but the email failed: ${emailErr.message}`);
+        else showSuccess("Booking cancelled and client notified.");
+      } else {
+        showSuccess("Booking cancelled — slot freed in Cal.com.");
+      }
       setAppointmentFor(null);
       setConfirmCancelOpen(false);
       fetchData();
@@ -1418,7 +1440,7 @@ const TimetablePage = () => {
             <Button
               variant="destructive"
               className="gap-1.5"
-              onClick={() => setConfirmCancelOpen(true)}
+              onClick={openCancelConfirm}
               disabled={cancellingAppt}
             >
               {cancellingAppt ? <Loader2 className="animate-spin" size={14} /> : <Ban size={14} />}
@@ -1442,6 +1464,24 @@ const TimetablePage = () => {
               and frees the slot. This can't be undone.
             </DialogDescription>
           </DialogHeader>
+
+          {appointmentFor?.attendeeEmail && (
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm font-medium cursor-pointer select-none">
+                <input type="checkbox" checked={emailOnCancel} onChange={(e) => setEmailOnCancel(e.target.checked)} />
+                Email {appointmentFor.attendeeName?.split(" ")[0] || "the client"} a cancellation note
+              </label>
+              {emailOnCancel && (
+                <textarea
+                  value={cancelMessage}
+                  onChange={(e) => setCancelMessage(e.target.value)}
+                  rows={6}
+                  className="w-full text-sm rounded-xl border border-border bg-background px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              )}
+            </div>
+          )}
+
           <DialogFooter className="flex sm:justify-between">
             <Button variant="outline" onClick={() => setConfirmCancelOpen(false)} disabled={cancellingAppt}>
               Keep booking

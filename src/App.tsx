@@ -25,6 +25,7 @@ const DashboardPage = lazy(() => import("./pages/app/DashboardPage"));
 const ClientsPage = lazy(() => import("./pages/ClientsPage"));
 const ClientDetailPage = lazy(() => import("./pages/ClientDetailPage"));
 const SchedulePage = lazy(() => import("./pages/SchedulePage"));
+const TimetablePage = lazy(() => import("./pages/timetable/TimetablePage"));
 const AppointmentDetailPage = lazy(() => import("./pages/AppointmentDetailPage"));
 const AppointmentV2Page = lazy(() => import("./pages/AppointmentV2Page"));
 const ClinicalProtocolsPage = lazy(() => import("./pages/ClinicalProtocolsPage"));
@@ -145,6 +146,7 @@ const AppRoutes = () => {
           <Route path="/clients" element={<ClientsPage />} />
           <Route path="/clients/:id" element={<ClientDetailPage />} />
           <Route path="/availability" element={<SchedulePage />} />
+          <Route path="/timetable" element={<TimetablePage />} />
           {/* Consolidated: sessions now live in the unified Calendar */}
           <Route path="/schedule" element={<Navigate to="/calendar" replace />} />
           <Route path="/appointments/:id" element={<AppointmentV2Page />} />

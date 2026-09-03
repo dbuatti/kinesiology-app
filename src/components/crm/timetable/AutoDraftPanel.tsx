@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Wand2, CalendarClock, AlertTriangle, Check, X } from "lucide-react";
+import { Loader2, Wand2, CalendarClock, AlertTriangle, Check, X, Plane } from "lucide-react";
 import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
@@ -47,6 +47,10 @@ interface AutoDraftPanelProps {
   }) => Promise<unknown>;
   /** Emits the current draft so the parent can preview it on the fortnight calendar. */
   onDraftChange?: (assignments: Assignment[]) => void;
+  /** Clients currently away, keyed by client key → until date + reason. */
+  awayByKey?: Record<string, { until: string; reason: string | null }>;
+  /** Set/clear a client's away status (untilISO null clears it). */
+  onSetAway?: (key: string, untilISO: string | null, reason?: string) => void;
 }
 
 // Median gap (days) between consecutive sessions — a simple cadence estimate.
@@ -84,32 +88,40 @@ export default function AutoDraftPanel({
   voiceDurationMin,
   onAccept,
   onDraftChange,
+  awayByKey = {},
+  onSetAway,
 }: AutoDraftPanelProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [awayEditKey, setAwayEditKey] = useState<string | null>(null);
   const [result, setResult] = useState<{ assignments: Assignment[]; unplaced: Unplaced[] } | null>(null);
   const [accepting, setAccepting] = useState(false);
   const [acceptedKeys, setAcceptedKeys] = useState<Set<string>>(new Set());
 
-  // Order by most-seen, then most-recent — the clients you work with most and
-  // most recently float to the top of the picker.
+  // Order by MOST-RECENT first (clients you've seen/scheduled lately float up),
+  // then by how often you see them, then name. Away clients sink to the bottom.
   const sortedClients = useMemo(
     () =>
       [...clients].sort((a, b) => {
-        if (b.pastSessions.length !== a.pastSessions.length) {
-          return b.pastSessions.length - a.pastSessions.length;
-        }
+        const aAway = !!awayByKey[a.key];
+        const bAway = !!awayByKey[b.key];
+        if (aAway !== bAway) return aAway ? 1 : -1;
         const at = a.lastSessionAt?.getTime() ?? 0;
         const bt = b.lastSessionAt?.getTime() ?? 0;
         if (bt !== at) return bt - at;
+        if (b.pastSessions.length !== a.pastSessions.length) {
+          return b.pastSessions.length - a.pastSessions.length;
+        }
         return a.name.localeCompare(b.name);
       }),
-    [clients],
+    [clients, awayByKey],
   );
 
   // Capacity insights — "open up more Thursdays" style nudges. Computed across
   // ALL clients (not just selected) so it reflects your whole overdue picture.
   const insights = useMemo(() => {
-    const asScheduler: SchedulerClient[] = clients.map((c) => ({
+    const asScheduler: SchedulerClient[] = clients
+      .filter((c) => !awayByKey[c.key]) // don't nag about clients who are away
+      .map((c) => ({
       id: c.key,
       kind: c.kind,
       name: c.name,
@@ -119,7 +131,7 @@ export default function AutoDraftPanel({
       timeKnown: c.timeKnown,
     }));
     return computeCapacityInsights(asScheduler, openSlots).slice(0, 3);
-  }, [clients, openSlots]);
+  }, [clients, openSlots, awayByKey]);
 
   const toggle = (key: string) =>
     setSelected((prev) => {
@@ -129,9 +141,9 @@ export default function AutoDraftPanel({
     });
 
   const generate = () => {
-    const chosen = clients.filter((c) => selected.has(c.key));
+    const chosen = clients.filter((c) => selected.has(c.key) && !awayByKey[c.key]);
     if (chosen.length === 0) {
-      showError("Select at least one client to draft.");
+      showError("Select at least one available client to draft.");
       return;
     }
     const schedulerClients: SchedulerClient[] = chosen.map((c) => ({
@@ -245,33 +257,74 @@ export default function AutoDraftPanel({
           {sortedClients.map((c) => {
             const pref = prefLabel(c.pastSessions, c.timeKnown);
             const noHistory = c.pastSessions.length === 0;
+            const away = awayByKey[c.key];
+            const editingAway = awayEditKey === c.key;
             return (
-              <label
-                key={c.key}
-                className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-muted/30 transition-colors"
-              >
-                <Checkbox checked={selected.has(c.key)} onCheckedChange={() => toggle(c.key)} />
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-rose-400 text-white flex items-center justify-center text-xs font-bold shrink-0">
-                  {(c.name || "?").charAt(0).toUpperCase()}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-foreground truncate">{c.name}</span>
-                    <Badge
-                      className={cn(
-                        "text-[9px] font-semibold uppercase tracking-wider border-none px-1.5 py-0 rounded-full",
-                        c.kind === "voice" ? "bg-chart-destructive/10 text-chart-destructive" : "bg-chart-primary/10 text-chart-primary",
-                      )}
+              <div key={c.key} className={cn("px-4 py-2.5 transition-colors", away ? "bg-muted/20 opacity-70" : "hover:bg-muted/30")}>
+                <div className="flex items-center gap-3">
+                  <Checkbox
+                    checked={selected.has(c.key)}
+                    disabled={!!away}
+                    onCheckedChange={() => toggle(c.key)}
+                  />
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-rose-400 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                    {(c.name || "?").charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-foreground truncate">{c.name}</span>
+                      <Badge
+                        className={cn(
+                          "text-[9px] font-semibold uppercase tracking-wider border-none px-1.5 py-0 rounded-full",
+                          c.kind === "voice" ? "bg-chart-destructive/10 text-chart-destructive" : "bg-chart-primary/10 text-chart-primary",
+                        )}
+                      >
+                        {c.kind === "voice" ? "Voice" : "FNH"}
+                      </Badge>
+                    </div>
+                    <div className={cn("text-xs mt-0.5", away ? "text-rose-500 font-medium" : noHistory ? "text-amber-600" : "text-muted-foreground")}>
+                      {away ? `Away until ${format(new Date(away.until + "T00:00:00"), "d MMM")}` : pref}
+                      {!away && c.pastSessions.length > 0 && ` · ${c.pastSessions.length} past`}
+                    </div>
+                  </div>
+
+                  {/* Away control */}
+                  {away ? (
+                    <button
+                      onClick={() => onSetAway?.(c.key, null)}
+                      title="Mark as back / available"
+                      className="text-[11px] font-semibold text-rose-500 hover:text-rose-600 shrink-0"
                     >
-                      {c.kind === "voice" ? "Voice" : "FNH"}
-                    </Badge>
-                  </div>
-                  <div className={cn("text-xs mt-0.5", noHistory ? "text-amber-600" : "text-muted-foreground")}>
-                    {pref}
-                    {c.pastSessions.length > 0 && ` · ${c.pastSessions.length} past`}
-                  </div>
+                      Back
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setAwayEditKey(editingAway ? null : c.key)}
+                      title="Mark away / off the books"
+                      className={cn("shrink-0 p-1 rounded-lg text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10", editingAway && "text-rose-500 bg-rose-500/10")}
+                    >
+                      <Plane size={14} />
+                    </button>
+                  )}
                 </div>
-              </label>
+
+                {editingAway && !away && (
+                  <div className="flex items-center gap-2 mt-2 pl-9">
+                    <span className="text-[11px] text-muted-foreground">Away until</span>
+                    <input
+                      type="date"
+                      className="text-xs rounded-lg border border-border bg-background px-2 py-1"
+                      min={new Date().toISOString().split("T")[0]}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          onSetAway?.(c.key, e.target.value);
+                          setAwayEditKey(null);
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             );
           })}
           {sortedClients.length === 0 && (

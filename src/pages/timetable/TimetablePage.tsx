@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CalendarRange,
   Loader2,
@@ -463,6 +463,49 @@ const TimetablePage = () => {
 
   // ── Auto-draft data plumbing ───────────────────────────────────
   const [draftAssignments, setDraftAssignments] = useState<Assignment[]>([]);
+  const queryClient = useQueryClient();
+
+  // Clients marked away / off-the-books until a date.
+  const { data: awayRows = [] } = useQuery({
+    queryKey: ["timetable-away"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("timetable_client_away")
+        .select("client_key, away_until, reason");
+      if (error) throw error;
+      return (data || []) as { client_key: string; away_until: string; reason: string | null }[];
+    },
+    staleTime: 60 * 1000,
+  });
+
+  const awayByKey = useMemo(() => {
+    const todayKey = format(startOfDay(now), "yyyy-MM-dd");
+    const map: Record<string, { until: string; reason: string | null }> = {};
+    for (const r of awayRows) {
+      if (r.away_until >= todayKey) map[r.client_key] = { until: r.away_until, reason: r.reason };
+    }
+    return map;
+  }, [awayRows, now]);
+
+  const setAway = useCallback(
+    async (key: string, untilISO: string | null, reason?: string) => {
+      try {
+        if (!untilISO) {
+          await supabase.from("timetable_client_away").delete().eq("client_key", key);
+        } else {
+          const { data: userData } = await supabase.auth.getUser();
+          await supabase.from("timetable_client_away").upsert(
+            { user_id: userData?.user?.id, client_key: key, away_until: untilISO, reason: reason ?? null },
+            { onConflict: "user_id,client_key" },
+          );
+        }
+        await queryClient.invalidateQueries({ queryKey: ["timetable-away"] });
+      } catch (e: any) {
+        showError(e?.message || "Couldn't update away status.");
+      }
+    },
+    [queryClient],
+  );
 
   // The live draft, shaped as (unsaved) proposals so it renders on the fortnight
   // mock-up alongside real bookings + iCloud commitments before you pencil it in.
@@ -1000,6 +1043,8 @@ const TimetablePage = () => {
                   })
                 }
                 onDraftChange={setDraftAssignments}
+                awayByKey={awayByKey}
+                onSetAway={setAway}
               />
             </div>
 
@@ -1867,9 +1912,11 @@ function DayCell({
                 "bg-amber-500 text-primary-foreground border-amber-600"
             )}
           >
-            {p.kind === "fnh"
-              ? "Proposed FNH"
-              : `Proposed · ${p.student_name || "student"}`}
+            {p.student_name
+              ? `${format(new Date(p.slot_start), "h:mma").toLowerCase()} · ${p.student_name}`
+              : p.kind === "fnh"
+                ? "Proposed FNH"
+                : "Proposed · student"}
           </button>
         ))}
 

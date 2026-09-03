@@ -229,32 +229,46 @@ const DAY_MS = 86_400_000;
  * of that exact day/time. Returns null only when there is no history at all.
  */
 export function computePreferredTime(pastSessions: Date[]): PreferredTime | null {
-  const valid = pastSessions.filter((d) => d instanceof Date && !isNaN(d.getTime()));
+  const valid = pastSessions
+    .filter((d) => d instanceof Date && !isNaN(d.getTime()))
+    .sort((a, b) => a.getTime() - b.getTime()); // oldest → newest
   if (valid.length === 0) return null;
 
-  // Weekday mode.
-  const weekdayCounts = new Map<number, number>();
-  for (const d of valid) {
-    const wd = d.getDay();
-    weekdayCounts.set(wd, (weekdayCounts.get(wd) ?? 0) + 1);
-  }
+  // Recency-weighted: a client's CURRENT rhythm should win over stale history.
+  // Weight rises linearly with recency, so 3 recent Mondays beat 3 old Fridays.
+  const weightOf = (i: number) => i + 1;
+  const totalWeight = valid.reduce((s, _d, i) => s + weightOf(i), 0);
+
+  const weekdayW = new Map<number, number>();
+  valid.forEach((d, i) => weekdayW.set(d.getDay(), (weekdayW.get(d.getDay()) ?? 0) + weightOf(i)));
   let weekday = valid[valid.length - 1].getDay();
-  let bestWdCount = 0;
-  weekdayCounts.forEach((count, wd) => {
-    if (count > bestWdCount) {
-      bestWdCount = count;
+  let bestW = 0;
+  weekdayW.forEach((w, wd) => {
+    if (w > bestW) {
+      bestW = w;
       weekday = wd;
     }
   });
 
-  // Average time-of-day among sessions that fall on the preferred weekday
-  // (fall back to all sessions if none — shouldn't happen but keeps it total).
-  const onPreferred = valid.filter((d) => d.getDay() === weekday);
-  const pool = onPreferred.length ? onPreferred : valid;
-  const avgMinutes =
-    pool.reduce((sum, d) => sum + d.getHours() * 60 + d.getMinutes(), 0) / pool.length;
+  // Weighted average time-of-day among sessions on the preferred weekday.
+  let tw = 0;
+  let ts = 0;
+  valid.forEach((d, i) => {
+    if (d.getDay() !== weekday) return;
+    const w = weightOf(i);
+    tw += w;
+    ts += w * (d.getHours() * 60 + d.getMinutes());
+  });
+  if (tw === 0) {
+    valid.forEach((d, i) => {
+      const w = weightOf(i);
+      tw += w;
+      ts += w * (d.getHours() * 60 + d.getMinutes());
+    });
+  }
+  const avgMinutes = ts / tw;
 
-  const confidence = valid.length === 1 ? 0.35 : Math.min(1, bestWdCount / valid.length);
+  const confidence = valid.length === 1 ? 0.35 : Math.min(1, bestW / totalWeight);
 
   return {
     weekday,

@@ -192,6 +192,7 @@ const AppRoutes = () => {
           <Route path="/resources/worksheets/business-model" element={<Navigate to="/library?tab=business-model" replace />} />
           <Route path="/resources/worksheets/where-your-value-begins" element={<Navigate to="/library?tab=where-your-value-begins" replace />} />
           <Route path="/resources/worksheets/money-security-freedom" element={<Navigate to="/library?tab=money-security-freedom" replace />} />
+          <Route path="/resources/worksheets/business-strategy-diagnostic" element={<Navigate to="/library?tab=business-strategy-diagnostic" replace />} />
 
           {/* Voice Studio */}
           <Route path="/voice" element={<VoiceDashboardPage />} />

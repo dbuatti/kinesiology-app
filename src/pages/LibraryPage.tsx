@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import {
   GraduationCap, Trophy, BookOpen, Shield, Wind, Workflow, Dumbbell, Baby, Zap,
   Brain, ImageIcon, Youtube, Clock, RefreshCw, Layers, Target, FileText, Lightbulb,
-  Activity, Heart, Calculator, Move, LayoutGrid, Printer, DollarSign,
+  Activity, Heart, Calculator, Move, LayoutGrid, Printer, DollarSign, Compass,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import UnifiedEditor, { type UnifiedEditorSection } from "@/components/crm/UnifiedEditor";
@@ -38,6 +38,7 @@ import AngerFlowWorksheet from "@/components/worksheets/AngerFlowWorksheet";
 import BusinessModelWorksheet from "@/components/worksheets/BusinessModelWorksheet";
 import WhereYourValueBeginsWorksheet from "@/components/worksheets/WhereYourValueBeginsWorksheet";
 import MoneySecurityFreedomWorksheet from "@/components/worksheets/MoneySecurityFreedomWorksheet";
+import BusinessStrategyDiagnosticWorksheet from "@/components/worksheets/BusinessStrategyDiagnosticWorksheet";
 
 const ValuePane = () => {
   const [id, setId] = useState<string | null>(null);
@@ -58,6 +59,10 @@ const AngerFlowPane = () => {
 
 const MoneySecurityFreedomPane = () => (
   <MoneySecurityFreedomWorksheet onBack={() => {}} />
+);
+
+const BusinessStrategyDiagnosticPane = () => (
+  <BusinessStrategyDiagnosticWorksheet onBack={() => {}} />
 );
 
 const REF_COMPONENTS: Record<string, () => ReactNode> = {
@@ -92,6 +97,7 @@ const REF_COMPONENTS: Record<string, () => ReactNode> = {
   "business-model": () => <BusinessModelWorksheet submissionId={null} onComplete={() => {}} />,
   "week-3": () => <Week3Worksheet submissionId={null} onComplete={() => {}} />,
   "money-security-freedom": () => <MoneySecurityFreedomPane />,
+  "business-strategy-diagnostic": () => <BusinessStrategyDiagnosticPane />,
 };
 
 interface RawItem { id: string; label: string; icon: React.ElementType; group: string }
@@ -122,6 +128,7 @@ const TREE: RawItem[] = [
   { id: "business-model", label: "Business Model Canvas", icon: LayoutGrid, group: "Worksheets" },
   { id: "week-3", label: "Week 3 Worksheet", icon: FileText, group: "Worksheets" },
   { id: "money-security-freedom", label: "Money, Security & Freedom", icon: DollarSign, group: "Worksheets" },
+  { id: "business-strategy-diagnostic", label: "Business Strategy Diagnostic", icon: Compass, group: "Worksheets" },
   { id: "emotional-theory", label: "Emotional Theory", icon: Heart, group: "Practice Tools" },
   { id: "rehab-calc", label: "Rehab Calc", icon: Calculator, group: "Practice Tools" },
   { id: "brainstem-breath", label: "Brainstem Breath", icon: Wind, group: "Practice Tools" },

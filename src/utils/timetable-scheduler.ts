@@ -594,24 +594,49 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     groups.get(b)!.instances.push(c);
   }
 
+  // Day-typing: assign each weekday to a single kind so FNH days and voice days
+  // don't mix. A weekday goes to whichever kind more clients prefer it; days no
+  // one prefers stay flexible (null = either kind).
+  const groupByKind = input.groupByKind !== false;
+  const dayDemand = new Map<number, { fnh: number; voice: number }>();
+  for (const [, g] of groups) {
+    const pref = computePreferredTime(g.rep.pastSessions);
+    if (!pref) continue;
+    const dd = dayDemand.get(pref.weekday) ?? { fnh: 0, voice: 0 };
+    dd[g.rep.kind] += 1;
+    dayDemand.set(pref.weekday, dd);
+  }
+  const dayKind = new Map<number, SessionKind | null>();
+  if (groupByKind) {
+    for (const [wd, dd] of dayDemand) {
+      dayKind.set(wd, dd.fnh === 0 && dd.voice === 0 ? null : dd.fnh >= dd.voice ? "fnh" : "voice");
+    }
+  }
+  const dayAllowsKind = (wd: number, kind: SessionKind) => {
+    const dk = dayKind.get(wd);
+    return dk == null || dk === kind;
+  };
+
   // ── Pass 1: anchor a home pattern per client ──────────────────────────────
   const candByBase = new Map<string, { p: HomePattern; score: number }[]>();
   for (const [b, g] of groups) {
     const rep = g.rep;
     const pref = computePreferredTime(rep.pastSessions);
     const seen = new Map<string, { p: HomePattern; score: number }>();
+    const seenAny = new Map<string, { p: HomePattern; score: number }>();
     for (const slot of freeSlots) {
       if (!slotMatchesAvailability(slot, rep.availability)) continue;
       const wd = slot.start.getDay();
       const mins = slot.start.getHours() * 60 + slot.start.getMinutes();
       const key = `${wd}:${mins}`;
-      if (seen.has(key)) continue;
-      seen.set(key, { p: { weekday: wd, minutes: mins }, score: scoreSlot(rep, pref, slot) });
+      const entry = { p: { weekday: wd, minutes: mins }, score: scoreSlot(rep, pref, slot) };
+      if (!seenAny.has(key)) seenAny.set(key, entry);
+      if (dayAllowsKind(wd, rep.kind) && !seen.has(key)) seen.set(key, entry);
     }
-    candByBase.set(
-      b,
-      [...seen.values()].filter((x) => x.score >= minScore).sort((a, b2) => b2.score - a.score),
-    );
+    // Prefer patterns on this client's own kind-days; only fall back to any day
+    // (an exception, e.g. an online client pinned to a mixed day) if they have none.
+    const onKind = [...seen.values()].sort((a, b2) => b2.score - a.score);
+    candByBase.set(b, onKind.length > 0 ? onKind : [...seenAny.values()].sort((a, b2) => b2.score - a.score));
   }
 
   const home = new Map<string, HomePattern | null>();
@@ -648,16 +673,9 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
       home.set(pick, null);
       continue;
     }
-    // Prefer a home slot on a weekday that isn't already the opposite kind, to keep
-    // FNH days and voice days apart where we can.
-    const sameKindDays = new Set(assignedPatterns.filter((a) => a.kind === rep.kind).map((a) => a.weekday));
-    const otherKindDays = new Set(assignedPatterns.filter((a) => a.kind !== rep.kind).map((a) => a.weekday));
-    const ranked = [...pickViable].sort((a, b2) => {
-      const aPen = otherKindDays.has(a.p.weekday) && !sameKindDays.has(a.p.weekday) ? 0.3 : 0;
-      const bPen = otherKindDays.has(b2.p.weekday) && !sameKindDays.has(b2.p.weekday) ? 0.3 : 0;
-      return b2.score - bPen - (a.score - aPen);
-    });
-    const best = ranked[0].p;
+    // candByBase is already limited to this client's kind-days and ranked by
+    // preference, so the top viable pattern is the pick.
+    const best = pickViable[0].p;
     home.set(pick, best);
     assignedPatterns.push({
       weekday: best.weekday,
@@ -689,6 +707,9 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
           if (Math.abs(slot.start.getTime() - inst.targetDate.getTime()) / DAY_MS > inst.targetWindowDays) return false;
         }
         if (!slotMatchesAvailability(slot, rep.availability)) return false;
+        // Stay on kind-days (or the client's own home day) so fill can't re-mix a day.
+        const wd = slot.start.getDay();
+        if (!dayAllowsKind(wd, inst.kind) && !(h && wd === h.weekday)) return false;
         return rangeFree(inst, slot.start.getTime());
       });
       if (cands.length === 0) {

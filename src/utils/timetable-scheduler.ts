@@ -342,6 +342,14 @@ function overlapsBusy(slot: OpenSlot, busy: BusyBlock[]): boolean {
   return busy.some((b) => s < b.end.getTime() && e > b.start.getTime());
 }
 
+/** Stable key for the Monday-based calendar week a date falls in (local time). */
+function weekKeyOf(d: Date): string {
+  const x = new Date(d);
+  const mondayOffset = (x.getDay() + 6) % 7; // Mon=0 … Sun=6
+  x.setDate(x.getDate() - mondayOffset);
+  return `${x.getFullYear()}-${x.getMonth()}-${x.getDate()}`;
+}
+
 function slotKey(slot: OpenSlot): string {
   return slot.start.toISOString();
 }
@@ -783,8 +791,12 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     const instances = [...g.instances].sort(
       (a, b2) => (a.targetDate?.getTime() ?? 0) - (b2.targetDate?.getTime() ?? 0),
     );
+    // Weeks this client already occupies, so two instances can't collide in one
+    // calendar week (a weekly client should appear once per week, not Mon + Fri).
+    const usedWeeks = new Set<string>();
     for (const inst of instances) {
       const cands = freeSlots.filter((slot) => {
+        if (usedWeeks.has(weekKeyOf(slot.start))) return false;
         if (inst.targetDate && inst.targetWindowDays != null) {
           if (Math.abs(slot.start.getTime() - inst.targetDate.getTime()) / DAY_MS > inst.targetWindowDays) return false;
         }
@@ -823,6 +835,7 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
       const start = best.start;
       const dur = durationOf(inst);
       occupied.push({ s: start.getTime(), e: start.getTime() + dur * 60_000, kind: inst.kind, pre: preBufOf(inst) * 60_000 });
+      usedWeeks.add(weekKeyOf(start));
       const pref = computePreferredTime(rep.pastSessions);
       const slotMin = start.getHours() * 60 + start.getMinutes();
       let reason = "best available";

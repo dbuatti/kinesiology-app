@@ -68,15 +68,24 @@ function medianGapDays(dates: Date[]): number | null {
 }
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+// Distinct, calm colours per weekday so the list is scannable by day.
+const WEEKDAY_CHIP = [
+  "bg-slate-500/15 text-slate-600 dark:text-slate-300",
+  "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+  "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+  "bg-amber-500/15 text-amber-600 dark:text-amber-400",
+  "bg-violet-500/15 text-violet-600 dark:text-violet-400",
+  "bg-rose-500/15 text-rose-600 dark:text-rose-400",
+  "bg-slate-500/15 text-slate-600 dark:text-slate-300",
+];
 
-function prefLabel(pastSessions: Date[], timeKnown: boolean): string {
+function prefTimeText(pastSessions: Date[], timeKnown: boolean): string {
   const p = computePreferredTime(pastSessions);
-  if (!p) return "No history yet";
-  if (!timeKnown) return `Usually ${WEEKDAYS[p.weekday]} · time flexible`;
+  if (!p) return "";
+  if (!timeKnown) return "time flexible";
   const h = Math.floor(p.minutesOfDay / 60);
   const m = p.minutesOfDay % 60;
-  const t = format(new Date(2000, 0, 1, h, m), "h:mm a");
-  return `Usually ${WEEKDAYS[p.weekday]} ~${t}`;
+  return format(new Date(2000, 0, 1, h, m), "h:mm a");
 }
 
 export default function AutoDraftPanel({
@@ -297,40 +306,68 @@ export default function AutoDraftPanel({
         </div>
         <div className="max-h-72 overflow-y-auto divide-y divide-border/30">
           {visibleClients.map((c) => {
-            const pref = prefLabel(c.pastSessions, c.timeKnown);
+            const p = computePreferredTime(c.pastSessions);
+            const timeText = prefTimeText(c.pastSessions, c.timeKnown);
             const noHistory = c.pastSessions.length === 0;
             const away = awayByKey[c.key];
             const editingAway = awayEditKey === c.key;
+            const isSel = selected.has(c.key);
             return (
-              <div key={c.key} className={cn("px-4 py-2.5 transition-colors", away ? "bg-muted/20 opacity-70" : "hover:bg-muted/30")}>
+              <div
+                key={c.key}
+                className={cn(
+                  "px-4 py-2.5 transition-colors",
+                  away ? "bg-muted/20 opacity-70" : isSel ? "bg-amber-500/5" : "hover:bg-muted/30",
+                )}
+              >
                 <div className="flex items-center gap-3">
                   <Checkbox
-                    checked={selected.has(c.key)}
+                    checked={isSel}
                     disabled={!!away}
                     onCheckedChange={() => toggle(c.key)}
                   />
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-rose-400 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                  <div
+                    className={cn(
+                      "w-8 h-8 rounded-xl text-white flex items-center justify-center text-xs font-bold shrink-0 bg-gradient-to-br",
+                      c.kind === "voice" ? "from-rose-400 to-pink-500" : "from-indigo-400 to-violet-500",
+                    )}
+                  >
                     {(c.name || "?").charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold text-foreground truncate">{c.name}</span>
-                      <Badge
+                      <span
                         className={cn(
-                          "text-[9px] font-semibold uppercase tracking-wider border-none px-1.5 py-0 rounded-full",
-                          c.kind === "voice" ? "bg-chart-destructive/10 text-chart-destructive" : "bg-chart-primary/10 text-chart-primary",
+                          "text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0 rounded-full shrink-0",
+                          c.kind === "voice" ? "bg-rose-500/10 text-rose-500" : "bg-indigo-500/10 text-indigo-500",
                         )}
                       >
                         {c.kind === "voice" ? "Voice" : "FNH"}
-                      </Badge>
+                      </span>
                     </div>
-                    <div className={cn("text-xs mt-0.5", away ? "text-rose-500 font-medium" : noHistory ? "text-amber-600" : "text-muted-foreground")}>
-                      {away
-                        ? away.until >= "2900-01-01"
-                          ? "Off the books (indefinite)"
-                          : `Away until ${format(new Date(away.until + "T00:00:00"), "d MMM")}`
-                        : pref}
-                      {!away && c.pastSessions.length > 0 && ` · ${c.pastSessions.length} past`}
+                    <div className="flex items-center gap-1.5 mt-1">
+                      {away ? (
+                        <span className="text-xs text-rose-500 font-medium">
+                          {away.until >= "2900-01-01"
+                            ? "Off the books (indefinite)"
+                            : `Away until ${format(new Date(away.until + "T00:00:00"), "d MMM")}`}
+                        </span>
+                      ) : noHistory ? (
+                        <span className="text-xs text-amber-600">No history yet</span>
+                      ) : (
+                        <>
+                          {p && (
+                            <span className={cn("text-[10px] font-bold rounded px-1.5 py-0.5", WEEKDAY_CHIP[p.weekday])}>
+                              {WEEKDAYS[p.weekday]}
+                            </span>
+                          )}
+                          <span className="text-xs text-muted-foreground">
+                            {timeText}
+                            {c.pastSessions.length > 0 && ` · ${c.pastSessions.length}×`}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
 
@@ -399,13 +436,32 @@ export default function AutoDraftPanel({
         )}
       </div>
 
+      {/* Selected clients as removable chips */}
+      {selected.size > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {clients
+            .filter((c) => selected.has(c.key))
+            .map((c) => (
+              <button
+                key={c.key}
+                onClick={() => toggle(c.key)}
+                className="group flex items-center gap-1 rounded-full bg-muted/60 hover:bg-rose-500/10 pl-2.5 pr-1.5 py-0.5 text-xs font-medium text-foreground transition-colors"
+                title="Remove from draft"
+              >
+                {c.name}
+                <X size={11} className="text-muted-foreground group-hover:text-rose-500" />
+              </button>
+            ))}
+        </div>
+      )}
+
       <Button
         onClick={generate}
         disabled={selected.size === 0}
         className="w-full rounded-full bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-500 hover:to-rose-600 text-white border-none shadow-sm active:scale-[0.99] transition-transform"
       >
         <Wand2 className="h-4 w-4 mr-2" />
-        Generate draft timetable
+        {selected.size > 0 ? `Draft ${selected.size} client${selected.size === 1 ? "" : "s"}` : "Generate draft timetable"}
       </Button>
 
       {/* Results */}

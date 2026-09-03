@@ -684,6 +684,18 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     const onKind = [...seen.values()].sort((a, b2) => b2.score - a.score);
     let list = onKind.length > 0 ? onKind : [...seenAny.values()].sort((a, b2) => b2.score - a.score);
 
+    // Day loyalty: an established client (several sessions on a clear day) keeps
+    // their real weekday/time as their home, even if their availability is broad
+    // enough that some other day would "score" a touch better. Prepend their
+    // historical pattern as a strong candidate so they don't drift off their day
+    // (a 13-session Monday-10am client stays Monday 10am, not "nicer" Tue 10:30).
+    if (pref && pref.sampleSize >= 3 && pref.confidence >= 0.5) {
+      const loyalMinutes = rep.timeKnown === false ? null : pref.minutesOfDay;
+      const hint = { p: { weekday: pref.weekday, minutes: loyalMinutes ?? pref.minutesOfDay }, score: 60 };
+      const hintKey = `${hint.p.weekday}:${hint.p.minutes}`;
+      list = [hint, ...list.filter((x) => `${x.p.weekday}:${x.p.minutes}` !== hintKey)];
+    }
+
     // If they already have an upcoming booking, anchor their home to THAT day/time
     // so the series continues on their real slot (even if that exact slot is booked).
     const upc = rep.upcomingSessions ?? [];

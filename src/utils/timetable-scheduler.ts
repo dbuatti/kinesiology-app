@@ -356,6 +356,24 @@ function baseKeyOf(id: string): string {
   return id.split("#")[0];
 }
 
+/**
+ * Keep a client's own recurring sessions on a consistent weekday + time: once
+ * one instance lands, the rest are pulled toward the same day/time.
+ */
+function consistencyBonus(slot: OpenSlot, selfBaseKey: string, placed: Assignment[]): number {
+  let bonus = 0;
+  const slotMin = slot.start.getHours() * 60 + slot.start.getMinutes();
+  for (const a of placed) {
+    if (baseKeyOf(a.clientId) !== selfBaseKey) continue;
+    if (a.slotStart.getDay() === slot.start.getDay()) {
+      bonus += 0.25;
+      const aMin = a.slotStart.getHours() * 60 + a.slotStart.getMinutes();
+      if (Math.abs(aMin - slotMin) <= 30) bonus += 0.2; // same time too
+    }
+  }
+  return Math.min(0.6, bonus);
+}
+
 function clusterBonus(slot: OpenSlot, kind: SessionKind, placed: Assignment[], selfBaseKey: string): number {
   let bonus = 0;
   for (const a of placed) {
@@ -484,7 +502,11 @@ export function autoDraftSchedule(input: AutoDraftInput): DraftResult {
     if (best && groupByKind && assignments.length > 0) {
       let bestAdj = -Infinity;
       for (const cand of cands) {
-        const adj = cand.score + clusterBonus(cand.slot, client.kind, assignments, baseKeyOf(client.id));
+        const selfBase = baseKeyOf(client.id);
+        const adj =
+          cand.score +
+          clusterBonus(cand.slot, client.kind, assignments, selfBase) +
+          consistencyBonus(cand.slot, selfBase, assignments);
         if (adj > bestAdj) {
           bestAdj = adj;
           best = cand;

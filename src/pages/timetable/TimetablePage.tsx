@@ -634,12 +634,11 @@ const TimetablePage = () => {
     // FNH — full datetimes from the appointments table.
     for (const c of enrichedClients) {
       if (isPractitioner(c.email, c.name)) continue;
-      const past = appointmentsData
-        .filter((a) => a.client_id === c.id && a.status !== "Cancelled" && new Date(a.date) < today)
-        .map((a) => new Date(a.date))
-        .filter((d) => !isNaN(d.getTime()));
+      const appts = appointmentsData.filter((a) => a.client_id === c.id && a.status !== "Cancelled");
+      const past = appts.map((a) => new Date(a.date)).filter((d) => !isNaN(d.getTime()) && d < today);
+      const upcoming = appts.map((a) => new Date(a.date)).filter((d) => !isNaN(d.getTime()) && d >= today);
       const last = past.length ? new Date(Math.max(...past.map((d) => d.getTime()))) : null;
-      out.push({ key: `fnh:${c.id}`, kind: "fnh", id: c.id, name: c.name || "Unknown", email: c.email, pastSessions: past, lastSessionAt: last, timeKnown: true });
+      out.push({ key: `fnh:${c.id}`, kind: "fnh", id: c.id, name: c.name || "Unknown", email: c.email, pastSessions: past, upcomingSessions: upcoming, lastSessionAt: last, timeKnown: true });
     }
 
     // Voice — merge two history sources per student:
@@ -662,6 +661,7 @@ const TimetablePage = () => {
     const timed = new Map<string, Date[]>();
     const dateOnly = new Map<string, Date[]>();
     const durations = new Map<string, number[]>();
+    const voiceUpcoming = new Map<string, Date[]>();
 
     // Duration from a "4:00 PM – 4:45 PM" range, snapped to 30/45/60.
     const parseRangeDuration = (time: string | null): number | null => {
@@ -693,6 +693,7 @@ const TimetablePage = () => {
       }
       const dt = new Date(y, mo - 1, d, Math.floor(mins / 60), mins % 60);
       if (dt < today) (timed.get(email) ?? timed.set(email, []).get(email)!).push(dt);
+      else (voiceUpcoming.get(email) ?? voiceUpcoming.set(email, []).get(email)!).push(dt);
     }
     // Notion lessons (timed if the Date property carries a time, else date-only).
     for (const l of voiceLessons) {
@@ -728,6 +729,7 @@ const TimetablePage = () => {
         name: s.name || "Unknown",
         email: s.email,
         pastSessions: past,
+        upcomingSessions: voiceUpcoming.get(email) ?? [],
         lastSessionAt: last,
         timeKnown,
         typicalDurationMin,

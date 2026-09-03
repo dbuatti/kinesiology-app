@@ -28,6 +28,8 @@ export interface AutoDraftClient {
   name: string;
   email: string | null;
   pastSessions: Date[];
+  /** Real bookings already in the future — don't re-draft these weeks. */
+  upcomingSessions?: Date[];
   lastSessionAt: Date | null;
   timeKnown: boolean;
   /** Their usual session length in minutes (30/45/60), inferred from history. */
@@ -484,15 +486,20 @@ export default function AutoDraftPanel({
         continue;
       }
 
-      // First target = their next due date (or now if overdue/new), then step.
-      // Each instance is confined to a band around its target so a weekly client
-      // gets one session per week (not several piled together).
+      // Anchor the series AFTER their latest known session (past or already-booked
+      // future) so we don't re-draft weeks they're already covered for.
       const bandDays = Math.max(3, Math.floor(interval / 2));
-      let t = c.lastSessionAt ? c.lastSessionAt.getTime() + interval * DAY : nowMs;
+      const upcoming = (c.upcomingSessions ?? []).map((d) => d.getTime());
+      const anchor = Math.max(c.lastSessionAt?.getTime() ?? 0, ...(upcoming.length ? upcoming : [0]));
+      let t = anchor ? anchor + interval * DAY : nowMs;
       if (t < nowMs) t = nowMs;
       let i = 0;
       while (t <= windowEndMs && i < MAX_INSTANCES) {
-        schedulerClients.push({ ...base, id: `${c.key}#${i}`, targetDate: new Date(t), targetWindowDays: bandDays });
+        // Skip any week they already have a real booking in.
+        const covered = upcoming.some((u) => Math.abs(u - t) <= bandDays * DAY);
+        if (!covered) {
+          schedulerClients.push({ ...base, id: `${c.key}#${i}`, targetDate: new Date(t), targetWindowDays: bandDays });
+        }
         t += interval * DAY;
         i++;
       }
@@ -943,11 +950,19 @@ export default function AutoDraftPanel({
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600">
                 <AlertTriangle size={13} /> Couldn't place
               </div>
-              {result.unplaced.map((u) => (
-                <div key={u.clientId} className="flex items-start gap-2 text-xs text-muted-foreground">
+              {Object.values(
+                result.unplaced.reduce<Record<string, { name: string; count: number; reason: string }>>((acc, u) => {
+                  const base = u.clientId.split("#")[0];
+                  if (!acc[base]) acc[base] = { name: u.name, count: 0, reason: u.reason };
+                  acc[base].count += 1;
+                  return acc;
+                }, {}),
+              ).map((g) => (
+                <div key={g.name} className="flex items-start gap-2 text-xs text-muted-foreground">
                   <X size={12} className="mt-0.5 shrink-0 text-amber-500" />
                   <span>
-                    <span className="font-semibold text-foreground">{u.name}</span> — {u.reason}
+                    <span className="font-semibold text-foreground">{g.name}</span>
+                    {g.count > 1 ? ` — ${g.count} sessions` : ""} — {g.reason}
                   </span>
                 </div>
               ))}

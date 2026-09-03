@@ -173,8 +173,8 @@ function zonedDateKey(d: Date): string {
 const TimetablePage = () => {
   const [tab, setTab] = useState(() => {
     const t = new URLSearchParams(window.location.search).get("view");
-    if (t === "forecast" || t === "suggestions" || t === "autodraft") return t;
-    return "fortnight";
+    if (t === "forecast" || t === "suggestions" || t === "autodraft" || t === "fortnight") return t;
+    return "autodraft";
   });
   const [fortnightIndex, setFortnightIndex] = useState(0);
 

@@ -750,13 +750,18 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     if (pick === null) break;
     remaining.delete(pick);
     const rep = groups.get(pick)!.rep;
-    if (pickViable.length === 0) {
+    // If every pattern collides with an already-assigned home, don't give up:
+    // keep this client's own top pattern (their loyal day/time) as home anyway.
+    // Two clients can legitimately share a slot when they're on alternating
+    // weeks (a fortnightly client leaves it free every other week) — Pass 2
+    // resolves real per-week conflicts and shifts the loser to a nearby time,
+    // rather than dropping them from the whole series.
+    const cands = candByBase.get(pick) ?? [];
+    if (pickViable.length === 0 && cands.length === 0) {
       home.set(pick, null);
       continue;
     }
-    // candByBase is already limited to this client's kind-days and ranked by
-    // preference, so the top viable pattern is the pick.
-    const best = pickViable[0].p;
+    const best = (pickViable[0] ?? cands[0]).p;
     home.set(pick, best);
     assignedPatterns.push({
       weekday: best.weekday,
@@ -852,10 +857,15 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
       const slotMin = start.getHours() * 60 + start.getMinutes();
       let reason = "best available";
       if (h) {
+        // When the client's history has no reliable time (date-only voice
+        // lessons), their "usual" minute-of-day is a noon placeholder — don't
+        // quote it. Report the day and the actual slot time only.
+        const timeKnown = rep.timeKnown !== false;
         const onDay = start.getDay() === h.weekday;
         const onTime = Math.abs(slotMin - h.minutes) <= 15;
-        if (onDay && onTime) reason = `${WEEKDAYS[h.weekday]} ${fmtMinutes(h.minutes)}`;
+        if (onDay && (onTime || !timeKnown)) reason = `${WEEKDAYS[h.weekday]} ${fmtMinutes(slotMin)}`;
         else if (onDay) reason = `${WEEKDAYS[h.weekday]}, moved to ${fmtMinutes(slotMin)} (usual ${fmtMinutes(h.minutes)})`;
+        else if (!timeKnown) reason = `off their usual ${WEEKDAYS[h.weekday]}`;
         else reason = `off their usual ${WEEKDAYS[h.weekday]} ${fmtMinutes(h.minutes)}`;
       }
       assignments.push({

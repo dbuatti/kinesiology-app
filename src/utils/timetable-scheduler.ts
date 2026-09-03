@@ -758,7 +758,13 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     });
   };
 
-  for (const [b, g] of groups) {
+  // Fill clients WITH a home slot first, so they claim their own slot before a
+  // homeless "best available" filler can take it (Susan keeps Mon 10am even when
+  // Lesley has no anchor and would otherwise grab it).
+  const orderedGroups = [...groups.entries()].sort(
+    (a, b) => (home.get(a[0]) ? 0 : 1) - (home.get(b[0]) ? 0 : 1),
+  );
+  for (const [b, g] of orderedGroups) {
     const h = home.get(b) ?? null;
     const rep = g.rep;
     const instances = [...g.instances].sort(

@@ -58,11 +58,11 @@ interface AutoDraftPanelProps {
   /** The fortnight calendar, rendered between the controls and the review list. */
   calendarPreview?: ReactNode;
   /** Recorded scheduling prefs per client key: availability windows, note, cadence. */
-  availabilityByKey?: Record<string, { windows: AvailabilityWindow[]; note: string | null; cadenceDays: number | null }>;
+  availabilityByKey?: Record<string, { windows: AvailabilityWindow[]; note: string | null; cadenceDays: number | null; bufferBeforeMin: number | null }>;
   /** Merge-save a client's scheduling prefs (only passed fields change). */
   onSavePrefs?: (
     key: string,
-    patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null },
+    patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null; bufferBeforeMin?: number | null },
   ) => void;
   /** Email a client the time they've been penciled in for. Resolves on success. */
   onEmailTimes?: (assignment: Assignment) => Promise<unknown>;
@@ -138,12 +138,14 @@ function AvailabilityEditor({
   windows,
   note,
   cadenceDays,
+  bufferBeforeMin,
   onSave,
 }: {
   windows: AvailabilityWindow[];
   note: string | null;
   cadenceDays: number | null;
-  onSave: (patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null }) => void;
+  bufferBeforeMin: number | null;
+  onSave: (patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null; bufferBeforeMin?: number | null }) => void;
 }) {
   const [days, setDays] = useState<number[]>([]);
   const [from, setFrom] = useState("");
@@ -183,6 +185,25 @@ function AvailabilityEditor({
             )}
           >
             {opt.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Buffer before (online prep etc.) */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 mr-0.5">Gap before</span>
+        {[0, 15, 30].map((m) => (
+          <button
+            key={m}
+            onClick={() => onSave({ bufferBeforeMin: m === 0 ? null : m })}
+            className={cn(
+              "text-[10px] font-bold rounded-md px-1.5 py-0.5 border",
+              (bufferBeforeMin ?? 0) === m
+                ? "bg-foreground text-background border-foreground"
+                : "border-border text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {m === 0 ? "None" : `${m}m`}
           </button>
         ))}
       </div>
@@ -443,6 +464,7 @@ export default function AutoDraftPanel({
       durationMin: c.typicalDurationMin ?? (c.kind === "fnh" ? fnhDurationMin : voiceDurationMin),
       timeKnown: c.timeKnown,
       availability: availabilityByKey[c.key]?.windows,
+      preBufferMin: availabilityByKey[c.key]?.bufferBeforeMin ?? undefined,
     }));
 
     const res = autoDraftSchedule({
@@ -696,6 +718,7 @@ export default function AutoDraftPanel({
                     windows={availabilityByKey[c.key]?.windows ?? []}
                     note={availabilityByKey[c.key]?.note ?? null}
                     cadenceDays={availabilityByKey[c.key]?.cadenceDays ?? null}
+                    bufferBeforeMin={availabilityByKey[c.key]?.bufferBeforeMin ?? null}
                     onSave={(patch) => onSavePrefs?.(c.key, patch)}
                   />
                 )}

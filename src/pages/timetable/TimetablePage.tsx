@@ -529,25 +529,27 @@ const TimetablePage = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("timetable_client_availability")
-        .select("client_key, windows, note, cadence_days");
+        .select("client_key, windows, note, cadence_days, buffer_before_min");
       if (error) throw error;
       return (data || []) as {
         client_key: string;
         windows: AvailabilityWindow[];
         note: string | null;
         cadence_days: number | null;
+        buffer_before_min: number | null;
       }[];
     },
     staleTime: 60 * 1000,
   });
 
   const availabilityByKey = useMemo(() => {
-    const map: Record<string, { windows: AvailabilityWindow[]; note: string | null; cadenceDays: number | null }> = {};
+    const map: Record<string, { windows: AvailabilityWindow[]; note: string | null; cadenceDays: number | null; bufferBeforeMin: number | null }> = {};
     for (const r of availabilityRows) {
       map[r.client_key] = {
         windows: Array.isArray(r.windows) ? r.windows : [],
         note: r.note,
         cadenceDays: r.cadence_days ?? null,
+        bufferBeforeMin: r.buffer_before_min ?? null,
       };
     }
     return map;
@@ -558,15 +560,16 @@ const TimetablePage = () => {
   const saveClientPrefs = useCallback(
     async (
       key: string,
-      patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null },
+      patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null; bufferBeforeMin?: number | null },
     ) => {
       try {
-        const current = availabilityByKey[key] ?? { windows: [], note: null, cadenceDays: null };
+        const current = availabilityByKey[key] ?? { windows: [], note: null, cadenceDays: null, bufferBeforeMin: null };
         const windows = patch.windows ?? current.windows;
         const note = patch.note !== undefined ? patch.note : current.note;
         const cadenceDays = patch.cadenceDays !== undefined ? patch.cadenceDays : current.cadenceDays;
+        const bufferBeforeMin = patch.bufferBeforeMin !== undefined ? patch.bufferBeforeMin : current.bufferBeforeMin;
 
-        if (!windows.length && !note && cadenceDays == null) {
+        if (!windows.length && !note && cadenceDays == null && bufferBeforeMin == null) {
           await supabase.from("timetable_client_availability").delete().eq("client_key", key);
         } else {
           const { data: userData } = await supabase.auth.getUser();
@@ -577,6 +580,7 @@ const TimetablePage = () => {
               windows,
               note: note ?? null,
               cadence_days: cadenceDays,
+              buffer_before_min: bufferBeforeMin,
               updated_at: new Date().toISOString(),
             },
             { onConflict: "user_id,client_key" },

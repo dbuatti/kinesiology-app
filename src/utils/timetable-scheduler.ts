@@ -549,6 +549,190 @@ export function autoDraftSchedule(input: AutoDraftInput): DraftResult {
   return { assignments, unplaced };
 }
 
+// ── Two-pass anchored scheduler ─────────────────────────────────────────────
+
+interface HomePattern {
+  weekday: number;
+  minutes: number; // minutes-of-day
+}
+
+function fmtMinutes(m: number): string {
+  const h = Math.floor(m / 60);
+  const mm = m % 60;
+  const ap = h >= 12 ? "pm" : "am";
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12}:${String(mm).padStart(2, "0")}${ap}`;
+}
+
+/**
+ * Anchored scheduling. Instead of placing each session greedily (which lets
+ * processing order bump people off their best day), this runs two passes:
+ *   1. ANCHOR — every client claims one consistent (weekday, time) "home slot",
+ *      resolved most-constrained-first so contested slots go to whoever has the
+ *      fewest options, and no two clients share a colliding home slot.
+ *   2. FILL — each client's recurring instances drop into their home slot every
+ *      period (nearest open slot on that weekday/time within the week), around
+ *      real bookings and buffers.
+ * Result: everyone lands at the same day+time each week, fairly.
+ */
+export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
+  const { clients, openSlots, busyBlocks } = input;
+  const minScore = input.minScore ?? 0.05;
+
+  const taken = new Set(input.takenSlotStarts ?? []);
+  const freeSlots = openSlots.filter((s) => !taken.has(slotKey(s)) && !overlapsBusy(s, busyBlocks));
+
+  const durationOf = (c: SchedulerClient) => c.durationMin ?? DEFAULT_DURATION[c.kind];
+  const preBufOf = (c: SchedulerClient) => c.preBufferMin ?? 0;
+  const postBufOf = (c: SchedulerClient) => c.postBufferMin ?? (c.kind === "fnh" ? 30 : 0);
+
+  // Group instances by base client.
+  const groups = new Map<string, { rep: SchedulerClient; instances: SchedulerClient[] }>();
+  for (const c of clients) {
+    const b = baseKeyOf(c.id);
+    if (!groups.has(b)) groups.set(b, { rep: c, instances: [] });
+    groups.get(b)!.instances.push(c);
+  }
+
+  // ── Pass 1: anchor a home pattern per client ──────────────────────────────
+  const candByBase = new Map<string, { p: HomePattern; score: number }[]>();
+  for (const [b, g] of groups) {
+    const rep = g.rep;
+    const pref = computePreferredTime(rep.pastSessions);
+    const seen = new Map<string, { p: HomePattern; score: number }>();
+    for (const slot of freeSlots) {
+      if (!slotMatchesAvailability(slot, rep.availability)) continue;
+      const wd = slot.start.getDay();
+      const mins = slot.start.getHours() * 60 + slot.start.getMinutes();
+      const key = `${wd}:${mins}`;
+      if (seen.has(key)) continue;
+      seen.set(key, { p: { weekday: wd, minutes: mins }, score: scoreSlot(rep, pref, slot) });
+    }
+    candByBase.set(
+      b,
+      [...seen.values()].filter((x) => x.score >= minScore).sort((a, b2) => b2.score - a.score),
+    );
+  }
+
+  const home = new Map<string, HomePattern | null>();
+  const assignedPatterns: { weekday: number; s: number; e: number; kind: SessionKind }[] = [];
+  const patternConflicts = (rep: SchedulerClient, p: HomePattern) => {
+    const s = p.minutes - preBufOf(rep);
+    const e = p.minutes + durationOf(rep) + postBufOf(rep);
+    return assignedPatterns.some((ap) => {
+      if (ap.weekday !== p.weekday) return false;
+      if (s < ap.e && e > ap.s) return true; // time overlap on same weekday
+      // Same-weekday, different kind → discourage mixing by treating as a soft block:
+      return false;
+    });
+  };
+
+  const remaining = new Set(groups.keys());
+  while (remaining.size > 0) {
+    let pick: string | null = null;
+    let pickCount = Infinity;
+    let pickViable: { p: HomePattern; score: number }[] = [];
+    for (const b of remaining) {
+      const rep = groups.get(b)!.rep;
+      const viable = (candByBase.get(b) ?? []).filter((x) => !patternConflicts(rep, x.p));
+      if (viable.length < pickCount) {
+        pick = b;
+        pickCount = viable.length;
+        pickViable = viable;
+      }
+    }
+    if (pick === null) break;
+    remaining.delete(pick);
+    const rep = groups.get(pick)!.rep;
+    if (pickViable.length === 0) {
+      home.set(pick, null);
+      continue;
+    }
+    // Prefer a home slot on a weekday that isn't already the opposite kind, to keep
+    // FNH days and voice days apart where we can.
+    const sameKindDays = new Set(assignedPatterns.filter((a) => a.kind === rep.kind).map((a) => a.weekday));
+    const otherKindDays = new Set(assignedPatterns.filter((a) => a.kind !== rep.kind).map((a) => a.weekday));
+    const ranked = [...pickViable].sort((a, b2) => {
+      const aPen = otherKindDays.has(a.p.weekday) && !sameKindDays.has(a.p.weekday) ? 0.3 : 0;
+      const bPen = otherKindDays.has(b2.p.weekday) && !sameKindDays.has(b2.p.weekday) ? 0.3 : 0;
+      return b2.score - bPen - (a.score - aPen);
+    });
+    const best = ranked[0].p;
+    home.set(pick, best);
+    assignedPatterns.push({
+      weekday: best.weekday,
+      s: best.minutes - preBufOf(rep),
+      e: best.minutes + durationOf(rep) + postBufOf(rep),
+      kind: rep.kind,
+    });
+  }
+
+  // ── Pass 2: fill each client's instances into their home slot each period ──
+  const assignments: Assignment[] = [];
+  const unplaced: Unplaced[] = [];
+  const occupied = busyBlocks.map((b) => ({ s: b.start.getTime(), e: b.end.getTime() }));
+  const rangeFree = (c: SchedulerClient, startMs: number) => {
+    const s = startMs - preBufOf(c) * 60_000;
+    const e = startMs + durationOf(c) * 60_000 + postBufOf(c) * 60_000;
+    return !occupied.some((o) => s < o.e && e > o.s);
+  };
+
+  for (const [b, g] of groups) {
+    const h = home.get(b) ?? null;
+    const rep = g.rep;
+    const instances = [...g.instances].sort(
+      (a, b2) => (a.targetDate?.getTime() ?? 0) - (b2.targetDate?.getTime() ?? 0),
+    );
+    for (const inst of instances) {
+      const cands = freeSlots.filter((slot) => {
+        if (inst.targetDate && inst.targetWindowDays != null) {
+          if (Math.abs(slot.start.getTime() - inst.targetDate.getTime()) / DAY_MS > inst.targetWindowDays) return false;
+        }
+        if (!slotMatchesAvailability(slot, rep.availability)) return false;
+        return rangeFree(inst, slot.start.getTime());
+      });
+      if (cands.length === 0) {
+        unplaced.push({ clientId: inst.id, name: rep.name, reason: h ? "No open slot this week at their time." : "No consistent slot could be found." });
+        continue;
+      }
+      // Rank by fit to home slot, then nearness to the target date.
+      const fillScore = (slot: OpenSlot) => {
+        let s = 0;
+        if (h) {
+          if (slot.start.getDay() === h.weekday) s += 3;
+          const mins = slot.start.getHours() * 60 + slot.start.getMinutes();
+          s += Math.max(0, 1 - Math.abs(mins - h.minutes) / 240);
+        }
+        if (inst.targetDate) s += Math.max(0, 1 - Math.abs(slot.start.getTime() - inst.targetDate.getTime()) / DAY_MS / 7);
+        return s;
+      };
+      cands.sort((x, y) => fillScore(y) - fillScore(x));
+      const best = cands[0];
+      const start = best.start;
+      const dur = durationOf(inst);
+      occupied.push({ s: start.getTime() - preBufOf(inst) * 60_000, e: start.getTime() + dur * 60_000 + postBufOf(inst) * 60_000 });
+      const pref = computePreferredTime(rep.pastSessions);
+      const onHome = h && start.getDay() === h.weekday;
+      assignments.push({
+        clientId: inst.id,
+        kind: inst.kind,
+        name: rep.name,
+        email: rep.email ?? null,
+        slotStart: start,
+        slotEnd: new Date(start.getTime() + dur * 60_000),
+        score: 0.9,
+        reason: h
+          ? `${onHome ? "" : "off day · "}${WEEKDAYS[h.weekday]} ${fmtMinutes(h.minutes)}`
+          : "best available",
+        lowConfidence: !pref || pref.confidence < 0.4,
+      });
+    }
+  }
+
+  assignments.sort((a, b) => a.slotStart.getTime() - b.slotStart.getTime());
+  return { assignments, unplaced };
+}
+
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const WEEKDAYS_LONG = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 

@@ -9,6 +9,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import {
   autoDraftSchedule,
+  autoDraftScheduleAnchored,
   computePreferredTime,
   computeCapacityInsights,
   parseAvailabilityText,
@@ -539,7 +540,7 @@ export default function AutoDraftPanel({
       if (i === 0) schedulerClients.push({ ...base, id: c.key });
     }
 
-    const res = autoDraftSchedule({
+    const res = autoDraftScheduleAnchored({
       clients: schedulerClients,
       openSlots,
       busyBlocks,

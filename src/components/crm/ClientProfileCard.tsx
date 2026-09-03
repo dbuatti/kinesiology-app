@@ -14,7 +14,7 @@ const ClientProfileCard = ({ client }: ClientProfileCardProps) => {
     <Card className="overflow-hidden border-none shadow-lg bg-card rounded-2xl">
       <div className="h-24 bg-gradient-to-r from-chart-primary to-chart-primary/70 relative">
           <div className="absolute bottom-0 left-6 translate-y-1/2 p-1 bg-card rounded-full shadow-md">
-              <div className="w-20 h-20 bg-chart-primary/10 rounded-full flex items-center justify-center text-3xl font-bold text-chart-primary border-2 border-chart-primary/20">
+              <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-rose-400 text-white rounded-full flex items-center justify-center text-3xl font-bold border-2 border-white dark:border-card shadow-lg shadow-rose-500/20">
                 {client.name.charAt(0)}
               </div>
           </div>

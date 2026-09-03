@@ -88,14 +88,14 @@ const SearchableClientSelect = ({
                   className="flex items-center justify-between py-3 px-4 cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-[10px] font-bold uppercase">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-rose-400 text-white flex items-center justify-center text-[10px] font-bold uppercase">
                       {client.name.charAt(0)}
                     </div>
                     <span className="font-medium">{client.name}</span>
                   </div>
                   <Check
                     className={cn(
-                      "h-4 w-4 text-indigo-600",
+                      "h-4 w-4 text-chart-primary",
                       value === client.id ? "opacity-100" : "opacity-0"
                     )}
                   />

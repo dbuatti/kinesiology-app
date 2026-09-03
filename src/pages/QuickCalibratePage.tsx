@@ -22,9 +22,9 @@ export function QuickCalibrateTool() {
           </p>
         </div>
 
-        <Alert className="bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-900/30 rounded-xl">
-          <Info className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-          <AlertDescription className="text-sm text-indigo-900 dark:text-indigo-100 font-medium">
+        <Alert className="bg-chart-primary/10 dark:bg-chart-primary/20 border-chart-primary/20 dark:border-chart-primary/30 rounded-xl">
+          <Info className="h-5 w-5 text-chart-primary" />
+          <AlertDescription className="text-sm text-foreground font-medium">
             <strong>Note:</strong> This is a sandbox mode. Data generated here is not saved to any specific client record. Use this for rapid testing or personal practice.
           </AlertDescription>
         </Alert>

@@ -31,7 +31,7 @@ const DashboardStats = ({ stats }: DashboardStatsProps) => {
           <div className="flex items-center gap-3 mb-4">
             <div className={cn(
               "w-8 h-8 rounded-xl flex items-center justify-center shadow-sm",
-              stat.alert ? "bg-rose-100 text-rose-600" : "bg-indigo-50 text-indigo-600"
+              stat.alert ? "bg-rose-100 text-rose-600" : "bg-chart-primary/10 text-chart-primary"
             )}>
               <stat.icon size={16} />
             </div>

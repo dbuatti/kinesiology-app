@@ -60,7 +60,7 @@ const UpcomingAppointments = () => {
   if (loading) {
     return (
       <div className="p-8 bg-card dark:bg-foreground rounded-[2rem] border border-border/50 dark:border-foreground flex items-center justify-center">
-        <Loader2 className="animate-spin text-indigo-600" size={24} />
+        <Loader2 className="animate-spin text-chart-primary" size={24} />
       </div>
     );
   }
@@ -94,7 +94,7 @@ const UpcomingAppointments = () => {
                 "flex items-center gap-5 p-5 rounded-2xl transition-all duration-500 group border",
                 isUrgent
                   ? "border-amber-200 bg-amber-50/50 dark:bg-amber-900/10 hover:border-amber-400 hover:shadow-lg"
-                  : "border-border/30 dark:border-foreground bg-muted/50/50 dark:bg-foreground/50 hover:border-indigo-200 hover:shadow-lg"
+                  : "border-border/30 dark:border-foreground bg-muted/50/50 dark:bg-foreground/50 hover:border-chart-primary/40 hover:shadow-lg"
               )}
             >
               <div className="flex-1 min-w-0">
@@ -104,7 +104,7 @@ const UpcomingAppointments = () => {
                       "text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full border-none shadow-sm",
                       isUrgent
                         ? "bg-amber-500 text-primary-foreground"
-                        : "bg-indigo-600 text-primary-foreground"
+                        : "bg-chart-primary text-primary-foreground"
                     )}
                   >
                     {dateLabel}
@@ -115,7 +115,7 @@ const UpcomingAppointments = () => {
                   </span>
                 </div>
                 <p className={cn(
-                  "font-black text-lg text-foreground dark:text-primary-foreground group-hover:text-indigo-600 transition-colors truncate",
+                  "font-black text-lg text-foreground dark:text-primary-foreground group-hover:text-chart-primary transition-colors truncate",
                   isPrivate && "blur-sm select-none"
                 )}>
                   {appointment.clients.name}
@@ -137,7 +137,7 @@ const UpcomingAppointments = () => {
                   )}
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-card dark:bg-foreground flex items-center justify-center text-muted-foreground/60 group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-all shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-card dark:bg-foreground flex items-center justify-center text-muted-foreground/60 group-hover:text-chart-primary group-hover:bg-chart-primary/10 transition-all shadow-sm">
                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
               </div>
             </Link>
@@ -159,7 +159,7 @@ const UpcomingAppointments = () => {
         <Link to="/appointments" className="mt-8 block">
           <Button
             variant="ghost"
-            className="w-full rounded-xl h-12 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-indigo-600 hover:bg-indigo-50 group transition-all"
+            className="w-full rounded-xl h-12 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-chart-primary hover:bg-chart-primary/10 group transition-all"
           >
             View All Appointments <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
           </Button>

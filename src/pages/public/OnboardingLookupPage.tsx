@@ -58,18 +58,18 @@ const OnboardingLookupPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted p-6">
       <Card className="max-w-md w-full border-none shadow-2xl rounded-[2.5rem] overflow-hidden">
-        <div className="bg-indigo-600 p-8 text-center text-primary-foreground">
-          <div className="w-16 h-16 bg-card/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl border border-primary-foreground/20">
+        <div className="bg-gradient-to-br from-amber-400 to-rose-400 p-8 text-center text-white">
+          <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl border border-white/20">
             <CheckCircle2 size={32} />
           </div>
           <CardTitle className="text-2xl font-black tracking-tight">Welcome to FNH</CardTitle>
-          <p className="text-indigo-100 text-sm font-medium mt-1">Let's find your clinical history form.</p>
+          <p className="text-white/90 text-sm font-medium mt-1">Let's find your clinical history form.</p>
         </div>
 
         <CardContent className="p-8">
           {loading ? (
             <div className="py-12 flex flex-col items-center gap-4">
-              <Loader2 className="animate-spin text-indigo-600" size={32} />
+              <Loader2 className="animate-spin text-chart-primary" size={32} />
               <p className="text-muted-foreground font-black text-[10px] uppercase tracking-[0.3em]">
                 Searching Database...
               </p>
@@ -85,7 +85,7 @@ const OnboardingLookupPage = () => {
                   <Input 
                     type="email"
                     placeholder="email@example.com"
-                    className="h-14 pl-12 rounded-2xl border-2 border-border focus:border-indigo-500 transition-all text-lg font-medium"
+                    className="h-14 pl-12 rounded-2xl border-2 border-border focus:border-chart-primary transition-all text-lg font-medium"
                     value={manualEmail}
                     onChange={(e) => setManualEmail(e.target.value)}
                     required
@@ -102,7 +102,7 @@ const OnboardingLookupPage = () => {
 
               <Button 
                 type="submit"
-                className="w-full h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-lg font-black shadow-xl shadow-indigo-100"
+                className="w-full h-14 rounded-2xl bg-chart-primary hover:bg-chart-primary/90 text-lg font-black shadow-xl shadow-chart-primary/20"
               >
                 Access My Form <ArrowRight size={20} className="ml-2" />
               </Button>

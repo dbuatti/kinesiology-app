@@ -43,15 +43,15 @@ const DailyBriefing = ({ todaySessions, activeSession }: DailyBriefingProps) => 
                 "p-5 rounded-2xl border transition-all duration-500 flex flex-col gap-6 group relative overflow-hidden",
                 activeSession?.id === session.id 
                   ? "bg-foreground text-primary-foreground border-border shadow-2xl" 
-                  : "bg-card dark:bg-foreground border-border/50 dark:border-foreground hover:border-indigo-300 shadow-sm hover:shadow-xl"
+                  : "bg-card dark:bg-foreground border-border/50 dark:border-foreground hover:border-chart-primary/40 shadow-sm hover:shadow-xl"
               )}>
                 <div className="flex items-center justify-between w-full relative z-10">
                   <div className="min-w-0">
                     <div className="flex items-center gap-3 mb-2">
-                      <Clock size={16} className={cn(activeSession?.id === session.id ? "text-indigo-400" : "text-muted-foreground")} />
+                      <Clock size={16} className={cn(activeSession?.id === session.id ? "text-amber-400" : "text-muted-foreground")} />
                       <p className={cn(
                         "text-[10px] font-black uppercase tracking-[0.3em]",
-                        activeSession?.id === session.id ? "text-indigo-400" : "text-muted-foreground"
+                        activeSession?.id === session.id ? "text-amber-400" : "text-muted-foreground"
                       )}>
                         {activeSession?.id === session.id ? "ONGOING" : format(session.date, "h:mm a")}
                       </p>
@@ -60,7 +60,7 @@ const DailyBriefing = ({ todaySessions, activeSession }: DailyBriefingProps) => 
                   </div>
                   <div className={cn(
                     "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-sm",
-                    activeSession?.id === session.id ? "bg-card/10 text-primary-foreground" : "bg-muted/50 dark:bg-foreground text-muted-foreground group-hover:bg-indigo-600 group-hover:text-primary-foreground"
+                    activeSession?.id === session.id ? "bg-card/10 text-primary-foreground" : "bg-muted/50 dark:bg-foreground text-muted-foreground group-hover:bg-chart-primary group-hover:text-primary-foreground"
                   )}>
                     <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform" />
                   </div>

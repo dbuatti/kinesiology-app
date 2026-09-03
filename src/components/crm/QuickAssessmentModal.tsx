@@ -73,7 +73,7 @@ const QuickAssessmentModal = ({
       <DialogContent className="sm:max-w-[500px] rounded-[2rem]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-black flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-primary-foreground ${type === 'bolt' ? 'bg-indigo-600' : 'bg-rose-600'}`}>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-primary-foreground ${type === 'bolt' ? 'bg-chart-primary' : 'bg-rose-600'}`}>
               {type === 'bolt' ? <FlaskConical size={24} /> : <Activity size={24} />}
             </div>
             Quick {type === 'bolt' ? 'BOLT' : 'Coherence'} Test

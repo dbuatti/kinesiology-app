@@ -131,7 +131,7 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
 
       // Mode Switching
       if ("clinical hub".includes(query.toLowerCase())) {
-        searchResults.push({ type: "mode", id: "clinical", title: "Switch to Clinical Hub", subtitle: "Practice management", path: "/", icon: Activity, color: "text-indigo-500" });
+        searchResults.push({ type: "mode", id: "clinical", title: "Switch to Clinical Hub", subtitle: "Practice management", path: "/", icon: Activity, color: "text-chart-primary" });
       }
       if ("voice studio".includes(query.toLowerCase())) {
         searchResults.push({ type: "mode", id: "voice", title: "Switch to Voice Studio", subtitle: "Voice & piano lessons", path: "/voice", icon: Mic, color: "text-rose-500" });
@@ -139,7 +139,7 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
 
       // Pages
       if ("peace framework".includes(query.toLowerCase())) {
-        searchResults.push({ type: "page", id: "peace-framework", title: "The PEACE Framework", subtitle: "Clinical Methodology Guide", path: "/peace-framework", icon: ShieldCheck, color: "text-indigo-500" });
+        searchResults.push({ type: "page", id: "peace-framework", title: "The PEACE Framework", subtitle: "Clinical Methodology Guide", path: "/peace-framework", icon: ShieldCheck, color: "text-chart-primary" });
       }
       if ("marketing engine".includes(query.toLowerCase())) {
         searchResults.push({ type: "page", id: "marketing-engine", title: "AI Marketing Engine", subtitle: "Voice to Notion Workflow", path: "/business/marketing-engine", icon: Mic, color: "text-emerald-500" });
@@ -157,12 +157,12 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
         c.code.toLowerCase().includes(query.toLowerCase())
       );
       matchingChannels.forEach(c => {
-        searchResults.push({ type: "channel", id: c.id, title: `${c.name} Meridian`, subtitle: `${c.element} Element • ${c.peakTime}`, path: `/resources?tab=channels`, icon: Layers, color: "text-indigo-500" });
+        searchResults.push({ type: "channel", id: c.id, title: `${c.name} Meridian`, subtitle: `${c.element} Element • ${c.peakTime}`, path: `/resources?tab=channels`, icon: Layers, color: "text-chart-primary" });
       });
 
       if (clientsData.data) {
         clientsData.data.forEach((client) => {
-          searchResults.push({ type: "client", id: client.id, title: client.name, subtitle: client.email || undefined, path: `/clients/${client.id}`, icon: User, color: "text-indigo-500" });
+          searchResults.push({ type: "client", id: client.id, title: client.name, subtitle: client.email || undefined, path: `/clients/${client.id}`, icon: User, color: "text-chart-primary" });
         });
       }
 
@@ -232,8 +232,8 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
 
     if (mode === 'clinical') {
       return [
-        { type: "action", id: "new-client", title: "Add New Client", subtitle: "Create profile", path: "/clients", icon: UserPlus, color: "text-indigo-500" },
-        { type: "action", id: "book-session", title: "Book New Session", subtitle: "Schedule appointment", path: "/appointments", icon: CalendarPlus, color: "text-indigo-500" },
+        { type: "action", id: "new-client", title: "Add New Client", subtitle: "Create profile", path: "/clients", icon: UserPlus, color: "text-chart-primary" },
+        { type: "action", id: "book-session", title: "Book New Session", subtitle: "Schedule appointment", path: "/appointments", icon: CalendarPlus, color: "text-chart-primary" },
         ...baseActions
       ];
     }
@@ -257,7 +257,7 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
           onClick={() => setOpen(true)}
           className="flex items-center justify-center lg:justify-start gap-3 px-3 lg:px-4 py-2.5 text-sm text-muted-foreground bg-muted/50 dark:bg-foreground/50 border border-border/50 dark:border-foreground/20 rounded-2xl hover:bg-card dark:hover:bg-foreground hover:shadow-md transition-all w-full group"
         >
-          <Search size={16} className="group-hover:text-indigo-600 transition-colors shrink-0" />
+          <Search size={16} className="group-hover:text-chart-primary transition-colors shrink-0" />
           <span className="font-medium hidden lg:inline">Command Center...</span>
           <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded-lg border bg-card dark:bg-foreground px-2 font-mono text-[10px] font-black text-muted-foreground shadow-sm hidden lg:inline-flex">
             <span className="text-xs">⌘</span>K
@@ -278,7 +278,7 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
           <CommandEmpty>
             {loading ? (
               <div className="flex flex-col items-center justify-center py-10 gap-3">
-                <Sparkles className="animate-pulse text-indigo-500" size={24} />
+                <Sparkles className="animate-pulse text-chart-primary" size={24} />
                 <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Searching the Oracle...</p>
               </div>
             ) : (
@@ -292,7 +292,7 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
           {results.length === 0 && (
             <CommandGroup heading={
               <div className="flex items-center gap-2">
-                <Sparkles size={12} className="text-indigo-500" />
+                <Sparkles size={12} className="text-chart-primary" />
                 <span>Contextual Actions ({isVoiceMode ? 'voice' : mode})</span>
               </div>
             }>

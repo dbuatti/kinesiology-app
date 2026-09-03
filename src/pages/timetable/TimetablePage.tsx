@@ -510,45 +510,71 @@ const TimetablePage = () => {
     [queryClient],
   );
 
-  // Per-client availability windows (hard scheduling constraints).
+  // Per-client scheduling prefs: availability windows + a cadence override.
   const { data: availabilityRows = [] } = useQuery({
     queryKey: ["timetable-availability"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("timetable_client_availability")
-        .select("client_key, windows, note");
+        .select("client_key, windows, note, cadence_days");
       if (error) throw error;
-      return (data || []) as { client_key: string; windows: AvailabilityWindow[]; note: string | null }[];
+      return (data || []) as {
+        client_key: string;
+        windows: AvailabilityWindow[];
+        note: string | null;
+        cadence_days: number | null;
+      }[];
     },
     staleTime: 60 * 1000,
   });
 
   const availabilityByKey = useMemo(() => {
-    const map: Record<string, { windows: AvailabilityWindow[]; note: string | null }> = {};
+    const map: Record<string, { windows: AvailabilityWindow[]; note: string | null; cadenceDays: number | null }> = {};
     for (const r of availabilityRows) {
-      map[r.client_key] = { windows: Array.isArray(r.windows) ? r.windows : [], note: r.note };
+      map[r.client_key] = {
+        windows: Array.isArray(r.windows) ? r.windows : [],
+        note: r.note,
+        cadenceDays: r.cadence_days ?? null,
+      };
     }
     return map;
   }, [availabilityRows]);
 
-  const setAvailability = useCallback(
-    async (key: string, windows: AvailabilityWindow[], note?: string) => {
+  // Merge-save: only the passed fields change; the rest carry over. Deletes the
+  // row when nothing meaningful is left.
+  const saveClientPrefs = useCallback(
+    async (
+      key: string,
+      patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null },
+    ) => {
       try {
-        if (!windows.length && !note) {
+        const current = availabilityByKey[key] ?? { windows: [], note: null, cadenceDays: null };
+        const windows = patch.windows ?? current.windows;
+        const note = patch.note !== undefined ? patch.note : current.note;
+        const cadenceDays = patch.cadenceDays !== undefined ? patch.cadenceDays : current.cadenceDays;
+
+        if (!windows.length && !note && cadenceDays == null) {
           await supabase.from("timetable_client_availability").delete().eq("client_key", key);
         } else {
           const { data: userData } = await supabase.auth.getUser();
           await supabase.from("timetable_client_availability").upsert(
-            { user_id: userData?.user?.id, client_key: key, windows, note: note ?? null, updated_at: new Date().toISOString() },
+            {
+              user_id: userData?.user?.id,
+              client_key: key,
+              windows,
+              note: note ?? null,
+              cadence_days: cadenceDays,
+              updated_at: new Date().toISOString(),
+            },
             { onConflict: "user_id,client_key" },
           );
         }
         await queryClient.invalidateQueries({ queryKey: ["timetable-availability"] });
       } catch (e: any) {
-        showError(e?.message || "Couldn't update availability.");
+        showError(e?.message || "Couldn't update scheduling prefs.");
       }
     },
-    [queryClient],
+    [queryClient, availabilityByKey],
   );
 
   // The live draft, shaped as (unsaved) proposals so it renders on the fortnight
@@ -1089,7 +1115,7 @@ const TimetablePage = () => {
             awayByKey={awayByKey}
             onSetAway={setAway}
             availabilityByKey={availabilityByKey}
-            onSetAvailability={setAvailability}
+            onSavePrefs={saveClientPrefs}
             calendarPreview={
               <div className="space-y-8">
                 {[0, 1, 2, 3].map((fi) => {

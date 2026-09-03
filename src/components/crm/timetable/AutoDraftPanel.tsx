@@ -55,10 +55,13 @@ interface AutoDraftPanelProps {
   onSetAway?: (key: string, untilISO: string | null, reason?: string) => void;
   /** The fortnight calendar, rendered between the controls and the review list. */
   calendarPreview?: ReactNode;
-  /** Recorded availability windows per client key. */
-  availabilityByKey?: Record<string, { windows: AvailabilityWindow[]; note: string | null }>;
-  /** Save availability windows (+ optional note) for a client. */
-  onSetAvailability?: (key: string, windows: AvailabilityWindow[], note?: string) => void;
+  /** Recorded scheduling prefs per client key: availability windows, note, cadence. */
+  availabilityByKey?: Record<string, { windows: AvailabilityWindow[]; note: string | null; cadenceDays: number | null }>;
+  /** Merge-save a client's scheduling prefs (only passed fields change). */
+  onSavePrefs?: (
+    key: string,
+    patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null },
+  ) => void;
 }
 
 // Median gap (days) between consecutive sessions — a simple cadence estimate.
@@ -87,6 +90,14 @@ const WEEKDAY_CHIP = [
   "bg-slate-500/15 text-slate-600 dark:text-slate-300",
 ];
 
+function cadenceLabel(days: number): string {
+  if (days === 7) return "Weekly";
+  if (days === 14) return "Fortnightly";
+  if (days === 21) return "3-weekly";
+  if (days === 28) return "Monthly";
+  return `Every ${days}d`;
+}
+
 function fmtHHMM(hhmm: string): string {
   const [h, m] = hhmm.split(":").map(Number);
   return format(new Date(2000, 0, 1, h, m), "h:mma").toLowerCase();
@@ -111,14 +122,24 @@ const DAY_TOGGLES = [
   { d: 0, l: "Sun" },
 ];
 
+const CADENCE_OPTIONS: { label: string; days: number | null }[] = [
+  { label: "Auto", days: null },
+  { label: "Weekly", days: 7 },
+  { label: "Fortnightly", days: 14 },
+  { label: "3-weekly", days: 21 },
+  { label: "Monthly", days: 28 },
+];
+
 function AvailabilityEditor({
   windows,
   note,
+  cadenceDays,
   onSave,
 }: {
   windows: AvailabilityWindow[];
   note: string | null;
-  onSave: (w: AvailabilityWindow[], note?: string) => void;
+  cadenceDays: number | null;
+  onSave: (patch: { windows?: AvailabilityWindow[]; note?: string | null; cadenceDays?: number | null }) => void;
 }) {
   const [days, setDays] = useState<number[]>([]);
   const [from, setFrom] = useState("");
@@ -129,7 +150,7 @@ function AvailabilityEditor({
     setDays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
 
   const add = () => {
-    onSave([...windows, { days: [...days].sort(), from: from || null, to: to || null }], note ?? undefined);
+    onSave({ windows: [...windows, { days: [...days].sort(), from: from || null, to: to || null }] });
     setDays([]);
     setFrom("");
     setTo("");
@@ -138,17 +159,36 @@ function AvailabilityEditor({
   const parseText = () => {
     const parsed = parseAvailabilityText(text);
     if (parsed.length === 0) return;
-    onSave(parsed, text); // replace windows with the parsed set + keep the raw note
+    onSave({ windows: parsed, note: text }); // replace windows with the parsed set + keep the raw note
   };
 
   return (
     <div className="mt-2 rounded-xl border border-border/60 bg-muted/20 p-2.5 space-y-2.5" onClick={(e) => e.stopPropagation()}>
+      {/* Cadence */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 mr-0.5">Sees me</span>
+        {CADENCE_OPTIONS.map((opt) => (
+          <button
+            key={opt.label}
+            onClick={() => onSave({ cadenceDays: opt.days })}
+            className={cn(
+              "text-[10px] font-bold rounded-md px-1.5 py-0.5 border",
+              (cadenceDays ?? null) === opt.days
+                ? "bg-foreground text-background border-foreground"
+                : "border-border text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
       {windows.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {windows.map((w, i) => (
             <span key={i} className="flex items-center gap-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-semibold pl-2 pr-1 py-0.5">
               {windowLabel(w)}
-              <button onClick={() => onSave(windows.filter((_, j) => j !== i), note ?? undefined)} className="hover:text-rose-500">
+              <button onClick={() => onSave({ windows: windows.filter((_, j) => j !== i) })} className="hover:text-rose-500">
                 <X size={10} />
               </button>
             </span>
@@ -232,7 +272,7 @@ export default function AutoDraftPanel({
   onSetAway,
   calendarPreview,
   availabilityByKey = {},
-  onSetAvailability,
+  onSavePrefs,
 }: AutoDraftPanelProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [awayEditKey, setAwayEditKey] = useState<string | null>(null);
@@ -322,7 +362,8 @@ export default function AutoDraftPanel({
       name: c.name,
       email: c.email,
       pastSessions: c.pastSessions,
-      intervalDays: medianGapDays(c.pastSessions),
+      // Explicit cadence (weekly/fortnightly/…) overrides the inferred median gap.
+      intervalDays: availabilityByKey[c.key]?.cadenceDays ?? medianGapDays(c.pastSessions),
       lastSessionAt: c.lastSessionAt,
       durationMin: c.kind === "fnh" ? fnhDurationMin : voiceDurationMin,
       timeKnown: c.timeKnown,
@@ -526,22 +567,29 @@ export default function AutoDraftPanel({
                   )}
                 </div>
 
-                {/* Availability summary chips */}
-                {!away && (availabilityByKey[c.key]?.windows?.length ?? 0) > 0 && availEditKey !== c.key && (
-                  <div className="flex flex-wrap gap-1 mt-1.5">
-                    {availabilityByKey[c.key]!.windows.map((w, i) => (
-                      <span key={i} className="rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-semibold px-2 py-0.5">
-                        {windowLabel(w)}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                {/* Availability + cadence summary chips */}
+                {!away && availEditKey !== c.key &&
+                  ((availabilityByKey[c.key]?.windows?.length ?? 0) > 0 || availabilityByKey[c.key]?.cadenceDays != null) && (
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {availabilityByKey[c.key]?.cadenceDays != null && (
+                        <span className="rounded-full bg-sky-500/10 text-sky-600 text-[10px] font-semibold px-2 py-0.5">
+                          {cadenceLabel(availabilityByKey[c.key]!.cadenceDays!)}
+                        </span>
+                      )}
+                      {(availabilityByKey[c.key]?.windows ?? []).map((w, i) => (
+                        <span key={i} className="rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-semibold px-2 py-0.5">
+                          {windowLabel(w)}
+                        </span>
+                      ))}
+                    </div>
+                  )}
 
                 {availEditKey === c.key && !away && (
                   <AvailabilityEditor
                     windows={availabilityByKey[c.key]?.windows ?? []}
                     note={availabilityByKey[c.key]?.note ?? null}
-                    onSave={(w, n) => onSetAvailability?.(c.key, w, n)}
+                    cadenceDays={availabilityByKey[c.key]?.cadenceDays ?? null}
+                    onSave={(patch) => onSavePrefs?.(c.key, patch)}
                   />
                 )}
 

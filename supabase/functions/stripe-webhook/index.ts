@@ -25,7 +25,7 @@ async function getGmailAccessToken(clientId: string, clientSecret: string, refre
 async function sendGmail(accessToken: string, from: string, to: string, subject: string, htmlBody: string) {
   const utf8Subject = `=?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`;
   const message = [
-    `From: ${from}`, `To: ${to}`, `Bcc: daniele.buatti@gmail.com`,
+    `From: ${from}`, `To: ${to}`, `Bcc: info@danielebuatti.com`,
     `Content-Type: text/html; charset=utf-8`, `MIME-Version: 1.0`, `Subject: ${utf8Subject}`, ``, htmlBody,
   ].join("\n");
   const encoded = btoa(unescape(encodeURIComponent(message))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");

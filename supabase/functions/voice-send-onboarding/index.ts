@@ -33,7 +33,7 @@ async function sendGmail(accessToken: string, from: string, to: string, subject:
   const messageParts = [
     `From: ${from}`,
     `To: ${to}`,
-    `Bcc: daniele.buatti@gmail.com`,
+    `Bcc: info@danielebuatti.com`,
     `Content-Type: text/html; charset=utf-8`,
     `MIME-Version: 1.0`,
     `Subject: ${utf8Subject}`,

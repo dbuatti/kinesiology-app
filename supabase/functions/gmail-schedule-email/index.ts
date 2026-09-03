@@ -113,7 +113,7 @@ serve(async (req) => {
     const GMAIL_CLIENT_SECRET = Deno.env.get('GMAIL_CLIENT_SECRET')
     const GMAIL_REFRESH_TOKEN = Deno.env.get('GMAIL_REFRESH_TOKEN')
     const SENDER_EMAIL = Deno.env.get('GMAIL_USER_EMAIL')
-    const RECIPIENT = body?.to || SENDER_EMAIL || 'daniele.buatti@gmail.com'
+    const RECIPIENT = body?.to || SENDER_EMAIL || 'info@danielebuatti.com'
 
     if (!GMAIL_CLIENT_ID || !GMAIL_CLIENT_SECRET || !GMAIL_REFRESH_TOKEN) {
       throw new Error("Missing Gmail OAuth secrets.")

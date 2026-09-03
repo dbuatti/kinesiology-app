@@ -23,7 +23,7 @@ async function getGmailAccessToken(clientId: string, clientSecret: string, refre
 async function sendGmail(accessToken: string, from: string, to: string, subject: string, html: string) {
   const utf8Subject = `=?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`;
   const raw = [
-    `From: ${from}`, `To: ${to}`, `Bcc: daniele.buatti@gmail.com`, "MIME-Version: 1.0",
+    `From: ${from}`, `To: ${to}`, `Bcc: info@danielebuatti.com`, "MIME-Version: 1.0",
     "Content-Type: text/html; charset=utf-8", `Subject: ${utf8Subject}`, "", html,
   ].join("\n");
   const encoded = btoa(unescape(encodeURIComponent(raw))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -82,10 +82,6 @@ serve(async (req) => {
               <div style="text-align:left;margin-top:40px;line-height:1.8;font-size:17px;color:#334155;">
                 ${bodyHtml}
                 ${dateLine}
-              </div>
-              <div style="margin-top:36px;text-align:left;">
-                <div style="font-weight:700;color:#1E3261;font-size:18px;">Daniele</div>
-                <div style="color:#D46A9B;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;">Resonance Kinesiology</div>
               </div>
             </td></tr>
           </table>

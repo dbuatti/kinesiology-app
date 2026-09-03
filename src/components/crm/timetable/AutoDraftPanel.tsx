@@ -295,6 +295,7 @@ export default function AutoDraftPanel({
   };
   const [search, setSearch] = useState("");
   const [showNoHistory, setShowNoHistory] = useState(false);
+  const [groupByKind, setGroupByKind] = useState(true);
   const [result, setResult] = useState<{ assignments: Assignment[]; unplaced: Unplaced[] } | null>(null);
   const [accepting, setAccepting] = useState(false);
   const [acceptedKeys, setAcceptedKeys] = useState<Set<string>>(new Set());
@@ -391,6 +392,7 @@ export default function AutoDraftPanel({
       openSlots,
       busyBlocks,
       takenSlotStarts,
+      groupByKind,
     });
     setResult(res);
     setAcceptedKeys(new Set());
@@ -672,6 +674,11 @@ export default function AutoDraftPanel({
             ))}
         </div>
       )}
+
+      <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+        <Checkbox checked={groupByKind} onCheckedChange={(v) => setGroupByKind(!!v)} />
+        Batch same type together (voice with voice, FNH with FNH)
+      </label>
 
       <Button
         onClick={generate}

@@ -322,6 +322,32 @@ export interface AutoDraftInput {
   takenSlotStarts?: string[];
   /** Minimum score for a slot to count as "viable" for a client. */
   minScore?: number;
+  /** Batch same-type sessions together (voice with voice, FNH with FNH). Default true. */
+  groupByKind?: boolean;
+}
+
+function sameLocalDay(a: Date, b: Date): boolean {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+/**
+ * Soft nudge to batch a client's session near others of the same kind: a bonus
+ * for landing on a day that already has same-kind sessions (and extra for being
+ * back-to-back), a mild penalty for mixing kinds on the same day.
+ */
+function clusterBonus(slot: OpenSlot, kind: SessionKind, placed: Assignment[]): number {
+  let bonus = 0;
+  for (const a of placed) {
+    if (!sameLocalDay(a.slotStart, slot.start)) continue;
+    if (a.kind === kind) {
+      bonus += 0.12;
+      const gapMin = Math.abs(a.slotStart.getTime() - slot.start.getTime()) / 60_000;
+      if (gapMin <= 90) bonus += 0.12; // back-to-back sweetener
+    } else {
+      bonus -= 0.05; // mild discouragement of mixing kinds on one day
+    }
+  }
+  return Math.max(-0.2, Math.min(0.5, bonus));
 }
 
 interface Candidate {
@@ -337,6 +363,7 @@ interface Candidate {
 export function autoDraftSchedule(input: AutoDraftInput): DraftResult {
   const { clients, openSlots, busyBlocks } = input;
   const minScore = input.minScore ?? 0.05;
+  const groupByKind = input.groupByKind !== false;
 
   // Slots free of busy blocks and existing bookings, up front.
   const taken = new Set(input.takenSlotStarts ?? []);
@@ -401,7 +428,20 @@ export function autoDraftSchedule(input: AutoDraftInput): DraftResult {
 
     remaining.delete(pick);
     const client = byId.get(pick)!;
-    const best = viable.get(pick)![0];
+
+    // Choose the client's best slot, nudged to batch with same-kind sessions.
+    const cands = viable.get(pick)!;
+    let best = cands[0];
+    if (best && groupByKind && assignments.length > 0) {
+      let bestAdj = -Infinity;
+      for (const cand of cands) {
+        const adj = cand.score + clusterBonus(cand.slot, client.kind, assignments);
+        if (adj > bestAdj) {
+          bestAdj = adj;
+          best = cand;
+        }
+      }
+    }
 
     if (!best) {
       unplaced.push({

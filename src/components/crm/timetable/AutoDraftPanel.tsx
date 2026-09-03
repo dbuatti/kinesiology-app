@@ -437,6 +437,28 @@ export default function AutoDraftPanel({
       setPencilingKey(null);
     }
   };
+  // Manually override a drafted session's date/time before pencilling it in.
+  const [editTimeKey, setEditTimeKey] = useState<string | null>(null);
+  const [timeDraft, setTimeDraft] = useState<string>("");
+  const applyTimeOverride = (a: Assignment) => {
+    if (!timeDraft) return;
+    const newStart = new Date(timeDraft);
+    if (isNaN(newStart.getTime())) return;
+    const durMs = a.slotEnd.getTime() - a.slotStart.getTime();
+    const newEnd = new Date(newStart.getTime() + durMs);
+    setResult((prev) => {
+      if (!prev) return prev;
+      const assignments = prev.assignments.map((x) =>
+        x.clientId === a.clientId
+          ? { ...x, slotStart: newStart, slotEnd: newEnd, reason: `set by you — ${format(newStart, "EEE h:mm a")}`, lowConfidence: false }
+          : x,
+      );
+      onDraftChange?.(assignments.filter((x) => !acceptedKeys.has(x.clientId)));
+      return { ...prev, assignments };
+    });
+    setEditTimeKey(null);
+    setTimeDraft("");
+  };
   const [search, setSearch] = useState("");
   const [showNoHistory, setShowNoHistory] = useState(false);
   const [groupByKind, setGroupByKind] = useState(true);
@@ -1068,8 +1090,48 @@ export default function AutoDraftPanel({
                   <div className="text-xs text-muted-foreground mt-0.5">
                     {format(a.slotStart, "EEE d MMM · h:mm a")} — {a.reason}
                   </div>
+                  {editTimeKey === a.clientId && !accepted && (
+                    <div className="flex items-center gap-1.5 mt-1.5 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="datetime-local"
+                        value={timeDraft}
+                        onChange={(e) => setTimeDraft(e.target.value)}
+                        className="text-xs rounded-lg border border-border bg-background px-2 py-1"
+                      />
+                      <button
+                        onClick={() => applyTimeOverride(a)}
+                        disabled={!timeDraft}
+                        className="text-[10px] font-semibold text-emerald-600 hover:text-emerald-700 rounded-full border border-emerald-500/30 px-2 py-0.5 disabled:opacity-40"
+                      >
+                        Save time
+                      </button>
+                      <button
+                        onClick={() => { setEditTimeKey(null); setTimeDraft(""); }}
+                        className="text-[10px] font-semibold text-muted-foreground hover:text-foreground rounded-full border border-border px-2 py-0.5"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
+                  {!accepted && (
+                    <button
+                      onClick={() => {
+                        setEditTimeKey(editTimeKey === a.clientId ? null : a.clientId);
+                        setTimeDraft(format(a.slotStart, "yyyy-MM-dd'T'HH:mm"));
+                      }}
+                      title="Change this time"
+                      className={cn(
+                        "flex items-center gap-1 text-[10px] font-semibold rounded-full border px-2 py-0.5",
+                        editTimeKey === a.clientId
+                          ? "text-foreground bg-muted border-border"
+                          : "text-muted-foreground hover:text-foreground border-border",
+                      )}
+                    >
+                      <Clock size={11} /> Time
+                    </button>
+                  )}
                   {accepted ? (
                     <span className="text-[10px] font-semibold text-chart-emerald flex items-center gap-1">
                       <Check size={12} /> Penciled

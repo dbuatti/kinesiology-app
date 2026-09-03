@@ -793,6 +793,18 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
         // they can come) so fill can't re-mix a day.
         const wd = slot.start.getDay();
         if (!dayAllowsKind(wd, inst.kind) && !explicit && !(h && wd === h.weekday)) return false;
+        // Honour "prioritise days" as a HARD rule: never slide a client onto a
+        // non-preferred day as overflow. Exempt only their genuine home weekday
+        // (a real Thu/Fri regular keeps their day) or a day they've explicitly
+        // said they can come. Everyone else would rather have a gap than be moved
+        // to a day the practitioner isn't really working.
+        if (
+          preferSet &&
+          !preferSet.has(wd) &&
+          !(h && wd === h.weekday) &&
+          !(explicit && slotMatchesAvailability(slot, rep.availability))
+        )
+          return false;
         return rangeFree(inst, slot.start.getTime());
       });
       if (cands.length === 0) {

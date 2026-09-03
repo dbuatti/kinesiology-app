@@ -476,27 +476,59 @@ const TimetablePage = () => {
       out.push({ key: `fnh:${c.id}`, kind: "fnh", id: c.id, name: c.name || "Unknown", email: c.email, pastSessions: past, lastSessionAt: last, timeKnown: true });
     }
 
-    // Voice — past lessons from Notion. The Notion Date property is our time
-    // source: when it includes a time we trust it; when it's date-only we keep
-    // the weekday but mark the time as unknown so we don't assert a wrong hour.
-    const byEmail = new Map<string, { dates: Date[]; timeKnown: boolean }>();
+    // Voice — merge two history sources per student:
+    //   • voice_bookings: has a reliable lesson_time (best time signal)
+    //   • Notion lessons: fuller history, but often date-only
+    // We prefer TIMED sessions for the time-of-day; only fall back to date-only
+    // (weekday, "time flexible") when a student has no timed session at all.
+    const parseMins = (time: string | null): number | null => {
+      if (!time) return null;
+      const first = String(time).split(/[–—-]/)[0].replace(/(UTC|AEST|AEDT|GMT[+-]\d+)/gi, "").trim();
+      const m = first.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+      if (!m) return null;
+      let h = parseInt(m[1], 10);
+      const mn = parseInt(m[2], 10);
+      const ap = m[3]?.toUpperCase();
+      if (ap === "PM" && h !== 12) h += 12;
+      if (ap === "AM" && h === 12) h = 0;
+      return h * 60 + mn;
+    };
+    const timed = new Map<string, Date[]>();
+    const dateOnly = new Map<string, Date[]>();
+
+    // voice_bookings (timed).
+    for (const b of voiceBookingsData) {
+      const email = (b.student_email || "").toLowerCase();
+      if (!email) continue;
+      const mins = parseMins(b.lesson_time);
+      const [y, mo, d] = String(b.lesson_date).split("T")[0].split("-").map(Number);
+      if (!y || !mo || !d) continue;
+      if (mins == null) {
+        const dt = new Date(y, mo - 1, d, 12, 0);
+        if (dt < today) (dateOnly.get(email) ?? dateOnly.set(email, []).get(email)!).push(dt);
+        continue;
+      }
+      const dt = new Date(y, mo - 1, d, Math.floor(mins / 60), mins % 60);
+      if (dt < today) (timed.get(email) ?? timed.set(email, []).get(email)!).push(dt);
+    }
+    // Notion lessons (timed if the Date property carries a time, else date-only).
     for (const l of voiceLessons) {
       const email = (l.studentEmail || "").toLowerCase();
       if (!email || !l.date) continue;
       const raw = String(l.date);
       const hasTime = /T\d{2}:\d{2}/.test(raw) && !/T00:00(:00)?/.test(raw);
       const dt = new Date(hasTime ? raw : `${raw.split("T")[0]}T12:00:00`);
-      if (isNaN(dt.getTime()) || dt >= today) continue; // past only
-      const entry = byEmail.get(email) || { dates: [], timeKnown: false };
-      entry.dates.push(dt);
-      if (hasTime) entry.timeKnown = true;
-      byEmail.set(email, entry);
+      if (isNaN(dt.getTime()) || dt >= today) continue;
+      if (hasTime) (timed.get(email) ?? timed.set(email, []).get(email)!).push(dt);
+      else (dateOnly.get(email) ?? dateOnly.set(email, []).get(email)!).push(dt);
     }
+
     for (const s of enrichedVoiceStudents) {
       const email = (s.email || "").toLowerCase();
       if (!email) continue;
-      const entry = byEmail.get(email) || { dates: [], timeKnown: false };
-      const past = entry.dates;
+      const timedArr = timed.get(email) ?? [];
+      const timeKnown = timedArr.length > 0;
+      const past = timeKnown ? timedArr : (dateOnly.get(email) ?? []);
       const last = past.length ? new Date(Math.max(...past.map((d) => d.getTime()))) : null;
       out.push({
         key: `voice:${email}`,
@@ -506,11 +538,11 @@ const TimetablePage = () => {
         email: s.email,
         pastSessions: past,
         lastSessionAt: last,
-        timeKnown: entry.timeKnown,
+        timeKnown,
       });
     }
     return out;
-  }, [enrichedClients, appointmentsData, enrichedVoiceStudents, voiceLessons, now]);
+  }, [enrichedClients, appointmentsData, enrichedVoiceStudents, voiceLessons, voiceBookingsData, now]);
 
   // Open Cal.com slots across the window (future only).
   const autoDraftOpenSlots = useMemo<OpenSlot[]>(() => {

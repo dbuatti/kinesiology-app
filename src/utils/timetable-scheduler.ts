@@ -153,6 +153,10 @@ export interface SchedulerClient {
   timeKnown?: boolean;
   /** Explicit availability recorded by the practitioner — a hard constraint. */
   availability?: AvailabilityWindow[];
+  /** Minutes of clear space needed BEFORE the session (e.g. online prep). */
+  preBufferMin?: number;
+  /** Minutes of break needed AFTER the session. Defaults: FNH 30, voice 0. */
+  postBufferMin?: number;
 }
 
 export interface OpenSlot {
@@ -405,20 +409,28 @@ export function autoDraftSchedule(input: AutoDraftInput): DraftResult {
   // session at 4:00 blocks 4:15. Seed with the practitioner's busy blocks.
   const occupied: { s: number; e: number }[] = busyBlocks.map((b) => ({ s: b.start.getTime(), e: b.end.getTime() }));
   const durationOf = (c: SchedulerClient) => c.durationMin ?? DEFAULT_DURATION[c.kind];
-  const rangeFree = (startMs: number, durMin: number) => {
-    const e = startMs + durMin * 60_000;
-    return !occupied.some((o) => startMs < o.e && e > o.s);
+  const preBufOf = (c: SchedulerClient) => c.preBufferMin ?? 0;
+  const postBufOf = (c: SchedulerClient) => c.postBufferMin ?? (c.kind === "fnh" ? 30 : 0);
+  // The time a session reserves = its length plus the buffers around it, so a
+  // 60-min FNH keeps a 30-min break after, while voice can sit back-to-back.
+  const reservedRange = (c: SchedulerClient, startMs: number) => ({
+    s: startMs - preBufOf(c) * 60_000,
+    e: startMs + durationOf(c) * 60_000 + postBufOf(c) * 60_000,
+  });
+  const rangeFree = (c: SchedulerClient, startMs: number) => {
+    const r = reservedRange(c, startMs);
+    return !occupied.some((o) => r.s < o.e && r.e > o.s);
   };
 
   while (remaining.size > 0) {
-    // Recompute each remaining client's still-viable candidates: not overlapping
-    // anything already placed, at that client's own session length.
+    // Recompute each remaining client's still-viable candidates: their reserved
+    // range (session + buffers) must not overlap anything already placed.
     const viable = new Map<string, Candidate[]>();
     for (const id of remaining) {
-      const dur = durationOf(byId.get(id)!);
+      const c = byId.get(id)!;
       viable.set(
         id,
-        (candidates.get(id) ?? []).filter((cand) => rangeFree(cand.slot.start.getTime(), dur)),
+        (candidates.get(id) ?? []).filter((cand) => rangeFree(c, cand.slot.start.getTime())),
       );
     }
 
@@ -469,7 +481,7 @@ export function autoDraftSchedule(input: AutoDraftInput): DraftResult {
     const pref = prefs.get(pick) ?? null;
     const start = best.slot.start;
     const dur = client.durationMin ?? DEFAULT_DURATION[client.kind];
-    occupied.push({ s: start.getTime(), e: start.getTime() + dur * 60_000 });
+    occupied.push(reservedRange(client, start.getTime()));
     assignments.push({
       clientId: client.id,
       kind: client.kind,

@@ -39,6 +39,34 @@ const AngerFlowWorksheet = ({ submissionId, onComplete, onBack }) => {
     }
   }, [submissionId, localId]);
 
+  // Self-initialise: auto-load or create this user's row so answers always persist
+  useEffect(() => {
+    if (!userId || submissionId) return;
+    const init = async () => {
+      const { data: existing } = await supabase
+        .from('anger_flow_submissions')
+        .select('id, form_data, is_released')
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (existing) {
+        setLocalId(existing.id);
+        if (existing.form_data) setFormData(prev => ({ ...prev, ...existing.form_data }));
+        setIsCompleted(existing.is_released || false);
+      } else {
+        const { data: created } = await supabase
+          .from('anger_flow_submissions')
+          .insert({ user_id: userId, form_data })
+          .select('id')
+          .single();
+        if (created) setLocalId(created.id);
+      }
+    };
+    init();
+  }, [userId, submissionId]);
+
+
   useEffect(() => {
     if (!userId || !localId) return;
 

@@ -24,6 +24,7 @@ import {
   Mic,
   Briefcase,
   Tablet,
+  FileText,
 } from "lucide-react";
 
 interface NavItem {
@@ -49,6 +50,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Morning Program", icon: Sun, path: "/morning-program" },
       { label: "Journal", icon: MessageSquare, path: "/journal" },
       { label: "Practice Hub", icon: Heart, path: "/practice" },
+      { label: "Worksheets", icon: FileText, path: "/worksheets" },
       { label: "Library", icon: BookOpen, path: "/library" },
       { label: "Identity Work", icon: Brain, path: "/identity" },
     ],

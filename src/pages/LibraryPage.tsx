@@ -2,8 +2,8 @@ import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import {
   GraduationCap, Trophy, BookOpen, Shield, Wind, Workflow, Dumbbell, Baby, Zap,
-  Brain, ImageIcon, Youtube, Clock, RefreshCw, Layers, Target, FileText, Lightbulb,
-  Activity, Heart, Calculator, Move, LayoutGrid, Printer, DollarSign, Compass,
+  Brain, ImageIcon, Youtube, Clock, RefreshCw, Layers, Target, Lightbulb,
+  Heart, Calculator, Move, Printer,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import UnifiedEditor, { type UnifiedEditorSection } from "@/components/crm/UnifiedEditor";
@@ -30,41 +30,6 @@ import CranialNerveHomeworkTool from "@/components/crm/CranialNerveHomeworkTool"
 import BrainstemBreathingReference from "@/components/crm/BrainstemBreathingReference";
 import SpinalSegmentReference from "@/components/crm/SpinalSegmentReference";
 
-import InteractiveIntentionWorksheet from "@/components/crm/InteractiveIntentionWorksheet";
-import Week3Worksheet from "@/components/worksheets/Week3Worksheet";
-import FearCreativityWorksheet from "@/components/worksheets/FearCreativityWorksheet";
-import InnerAwarenessWorksheet from "@/components/worksheets/InnerAwarenessWorksheet";
-import AngerFlowWorksheet from "@/components/worksheets/AngerFlowWorksheet";
-import BusinessModelWorksheet from "@/components/worksheets/BusinessModelWorksheet";
-import WhereYourValueBeginsWorksheet from "@/components/worksheets/WhereYourValueBeginsWorksheet";
-import MoneySecurityFreedomWorksheet from "@/components/worksheets/MoneySecurityFreedomWorksheet";
-import BusinessStrategyDiagnosticWorksheet from "@/components/worksheets/BusinessStrategyDiagnosticWorksheet";
-
-const ValuePane = () => {
-  const [id, setId] = useState<string | null>(null);
-  return <WhereYourValueBeginsWorksheet submissionId={id} onComplete={() => {}} onBack={() => setId(null)} />;
-};
-const FearPane = () => {
-  const [id, setId] = useState<string | null>(null);
-  return <FearCreativityWorksheet submissionId={id} onComplete={() => {}} onBack={() => setId(null)} />;
-};
-const InnerAwarenessPane = () => {
-  const [id, setId] = useState<string | null>(null);
-  return <InnerAwarenessWorksheet submissionId={id} onComplete={() => {}} onBack={() => setId(null)} />;
-};
-const AngerFlowPane = () => {
-  const [id, setId] = useState<string | null>(null);
-  return <AngerFlowWorksheet submissionId={id} onComplete={() => {}} onBack={() => setId(null)} />;
-};
-
-const MoneySecurityFreedomPane = () => (
-  <MoneySecurityFreedomWorksheet onBack={() => {}} />
-);
-
-const BusinessStrategyDiagnosticPane = () => (
-  <BusinessStrategyDiagnosticWorksheet onBack={() => {}} />
-);
-
 const REF_COMPONENTS: Record<string, () => ReactNode> = {
   "mechano-academy": () => <MechanoMasteryModule />,
   bible: () => <MechanoBible />,
@@ -89,15 +54,6 @@ const REF_COMPONENTS: Record<string, () => ReactNode> = {
   logic: () => <FnTheory />,
   spinal: () => <SpinalSegmentReference />,
   postural: () => <FnTheory />,
-  "where-your-value-begins": () => <ValuePane />,
-  "fear-creativity": () => <FearPane />,
-  "north-star": () => <InteractiveIntentionWorksheet />,
-  "inner-awareness": () => <InnerAwarenessPane />,
-  "anger-flow": () => <AngerFlowPane />,
-  "business-model": () => <BusinessModelWorksheet submissionId={null} onComplete={() => {}} />,
-  "week-3": () => <Week3Worksheet submissionId={null} onComplete={() => {}} />,
-  "money-security-freedom": () => <MoneySecurityFreedomPane />,
-  "business-strategy-diagnostic": () => <BusinessStrategyDiagnosticPane />,
 };
 
 interface RawItem { id: string; label: string; icon: React.ElementType; group: string }
@@ -120,15 +76,6 @@ const TREE: RawItem[] = [
   { id: "bagua", label: "Ba Gua", icon: Zap, group: "TCM & Meridians" },
   { id: "channels", label: "Channels", icon: Layers, group: "TCM & Meridians" },
   { id: "acupoints", label: "Acupoints", icon: Target, group: "TCM & Meridians" },
-  { id: "where-your-value-begins", label: "Where Your Value Begins", icon: Lightbulb, group: "Worksheets" },
-  { id: "fear-creativity", label: "Fear & Creativity", icon: Zap, group: "Worksheets" },
-  { id: "north-star", label: "Setting Your North Star", icon: Target, group: "Worksheets" },
-  { id: "inner-awareness", label: "Inner Awareness", icon: Brain, group: "Worksheets" },
-  { id: "anger-flow", label: "Anger & Flow", icon: Activity, group: "Worksheets" },
-  { id: "business-model", label: "Business Model Canvas", icon: LayoutGrid, group: "Worksheets" },
-  { id: "week-3", label: "Week 3 Worksheet", icon: FileText, group: "Worksheets" },
-  { id: "money-security-freedom", label: "Money, Security & Freedom", icon: DollarSign, group: "Worksheets" },
-  { id: "business-strategy-diagnostic", label: "Business Strategy Diagnostic", icon: Compass, group: "Worksheets" },
   { id: "emotional-theory", label: "Emotional Theory", icon: Heart, group: "Practice Tools" },
   { id: "rehab-calc", label: "Rehab Calc", icon: Calculator, group: "Practice Tools" },
   { id: "brainstem-breath", label: "Brainstem Breath", icon: Wind, group: "Practice Tools" },

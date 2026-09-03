@@ -40,6 +40,7 @@ const MorningProgramPage = lazy(() => import("./pages/MorningProgramPage"));
 
 // --- Reference Pages ---
 const LibraryPage = lazy(() => import("./pages/LibraryPage"));
+const WorksheetsPage = lazy(() => import("./pages/WorksheetsPage"));
 const PEACEFrameworkPage = lazy(() => import("./pages/PEACEFrameworkPage"));
 const CogsLearningPage = lazy(() => import("./pages/CogsLearningPage"));
 const CorrectionsManualPage = lazy(() => import("./pages/CorrectionsManualPage"));
@@ -184,15 +185,17 @@ const AppRoutes = () => {
           <Route path="/practice/corrections" element={<Navigate to="/practice?tool=corrections" replace />} />
 
           {/* Worksheets — consolidated into Library panes */}
-          <Route path="/resources/worksheets/north-star" element={<Navigate to="/library?tab=north-star" replace />} />
-          <Route path="/resources/worksheets/week-3" element={<Navigate to="/library?tab=week-3" replace />} />
-          <Route path="/resources/worksheets/fear-creativity" element={<Navigate to="/library?tab=fear-creativity" replace />} />
-          <Route path="/resources/worksheets/inner-awareness" element={<Navigate to="/library?tab=inner-awareness" replace />} />
-          <Route path="/resources/worksheets/anger-flow" element={<Navigate to="/library?tab=anger-flow" replace />} />
-          <Route path="/resources/worksheets/business-model" element={<Navigate to="/library?tab=business-model" replace />} />
-          <Route path="/resources/worksheets/where-your-value-begins" element={<Navigate to="/library?tab=where-your-value-begins" replace />} />
-          <Route path="/resources/worksheets/money-security-freedom" element={<Navigate to="/library?tab=money-security-freedom" replace />} />
-          <Route path="/resources/worksheets/business-strategy-diagnostic" element={<Navigate to="/library?tab=business-strategy-diagnostic" replace />} />
+          {/* Worksheets — dedicated hub */}
+          <Route path="/worksheets" element={<WorksheetsPage />} />
+          <Route path="/resources/worksheets/north-star" element={<Navigate to="/worksheets?w=north-star" replace />} />
+          <Route path="/resources/worksheets/week-3" element={<Navigate to="/worksheets?w=week-3" replace />} />
+          <Route path="/resources/worksheets/fear-creativity" element={<Navigate to="/worksheets?w=fear-creativity" replace />} />
+          <Route path="/resources/worksheets/inner-awareness" element={<Navigate to="/worksheets?w=inner-awareness" replace />} />
+          <Route path="/resources/worksheets/anger-flow" element={<Navigate to="/worksheets?w=anger-flow" replace />} />
+          <Route path="/resources/worksheets/business-model" element={<Navigate to="/worksheets?w=business-model" replace />} />
+          <Route path="/resources/worksheets/where-your-value-begins" element={<Navigate to="/worksheets?w=where-your-value-begins" replace />} />
+          <Route path="/resources/worksheets/money-security-freedom" element={<Navigate to="/worksheets?w=money-security-freedom" replace />} />
+          <Route path="/resources/worksheets/business-strategy-diagnostic" element={<Navigate to="/worksheets?w=business-strategy-diagnostic" replace />} />
 
           {/* Voice Studio */}
           <Route path="/voice" element={<VoiceDashboardPage />} />
@@ -222,7 +225,7 @@ const AppRoutes = () => {
 
           {/* Legacy Redirects */}
 
-          <Route path="/resources/worksheets" element={<Navigate to="/library?tab=worksheets" replace />} />
+          <Route path="/resources/worksheets" element={<Navigate to="/worksheets" replace />} />
           <Route path="/lab" element={<Navigate to="/identity" replace />} />
           <Route path="/lab/identity-shifting" element={<Navigate to="/identity?tool=shifting" replace />} />
           <Route path="/lab/identity-alignment" element={<Navigate to="/identity?tool=alignment" replace />} />

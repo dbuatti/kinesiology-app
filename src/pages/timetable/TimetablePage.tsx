@@ -463,6 +463,7 @@ const TimetablePage = () => {
 
   // ── Auto-draft data plumbing ───────────────────────────────────
   const [draftAssignments, setDraftAssignments] = useState<Assignment[]>([]);
+  const [hiddenWeeks, setHiddenWeeks] = useState<Set<string>>(new Set());
   const queryClient = useQueryClient();
 
   // Clients marked away / off-the-books until a date.
@@ -1028,68 +1029,64 @@ const TimetablePage = () => {
         </TabsContent>
 
         <TabsContent value="autodraft" className="m-0 mt-4">
-          <div className="space-y-6">
-            {/* Controls — capped width for readability, calendar goes full-width below */}
-            <div className="max-w-2xl">
-              <div className="mb-3">
-                <h3 className="text-sm font-bold text-foreground">Draft a week</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Pick clients and I'll place each at their best open time — learned from their past
-                  sessions — around your commitments. The draft shows in blue on the calendar; pencil it in when it looks right.
-                </p>
+          <AutoDraftPanel
+            clients={autoDraftClients}
+            openSlots={autoDraftOpenSlots}
+            busyBlocks={autoDraftBusy}
+            takenSlotStarts={autoDraftTaken}
+            fnhDurationMin={60}
+            voiceDurationMin={45}
+            onAccept={(input) =>
+              createProposal({
+                ...input,
+                eventTypeId: input.kind === "fnh" ? fnhEventType : voiceEventType,
+              })
+            }
+            onDraftChange={setDraftAssignments}
+            awayByKey={awayByKey}
+            onSetAway={setAway}
+            calendarPreview={
+              <div className="space-y-8">
+                {[0, 1, 2, 3].map((fi) => {
+                  const slice = dateRange.slice(fi * 14, fi * 14 + 14);
+                  if (slice.length === 0) return null;
+                  return (
+                    <FortnightMockup
+                      key={fi}
+                      dateRange={slice}
+                      totalFortnights={Math.ceil(dateRange.length / 14)}
+                      fortnightIndex={fi}
+                      onPrev={() => {}}
+                      onNext={() => {}}
+                      hideNav
+                      title={`Fortnight ${fi + 1} · ${format(slice[0], "d MMM")} – ${format(slice[slice.length - 1], "d MMM")}`}
+                      hiddenWeeks={hiddenWeeks}
+                      onToggleWeek={(key) =>
+                        setHiddenWeeks((prev) => {
+                          const next = new Set(prev);
+                          next.has(key) ? next.delete(key) : next.add(key);
+                          return next;
+                        })
+                      }
+                      slots={slots}
+                      bookings={bookingsByDate}
+                      blockedDates={blockedDates}
+                      icloudEvents={visibleIcloudEvents}
+                      stateFor={stateFor}
+                      proposals={[...proposalsInWindow, ...draftPreviewProposals]}
+                      loading={loading}
+                      error={error}
+                      onOpenDay={openDay}
+                      onOpenProposal={(p) => {
+                        if (!String(p.id).startsWith("draft:")) openProposal(p);
+                      }}
+                      onOpenBooking={setAppointmentFor}
+                    />
+                  );
+                })}
               </div>
-              <AutoDraftPanel
-                clients={autoDraftClients}
-                openSlots={autoDraftOpenSlots}
-                busyBlocks={autoDraftBusy}
-                takenSlotStarts={autoDraftTaken}
-                fnhDurationMin={60}
-                voiceDurationMin={45}
-                onAccept={(input) =>
-                  createProposal({
-                    ...input,
-                    eventTypeId: input.kind === "fnh" ? fnhEventType : voiceEventType,
-                  })
-                }
-                onDraftChange={setDraftAssignments}
-                awayByKey={awayByKey}
-                onSetAway={setAway}
-              />
-            </div>
-
-            {/* Live preview: 4 fortnights of real commitments + the blue draft overlaid */}
-            <div className="space-y-8">
-              {[0, 1, 2, 3].map((fi) => {
-                const slice = dateRange.slice(fi * 14, fi * 14 + 14);
-                if (slice.length === 0) return null;
-                return (
-                  <FortnightMockup
-                    key={fi}
-                    dateRange={slice}
-                    totalFortnights={Math.ceil(dateRange.length / 14)}
-                    fortnightIndex={fi}
-                    onPrev={() => {}}
-                    onNext={() => {}}
-                    hideNav
-                    title={`Fortnight ${fi + 1} · ${format(slice[0], "d MMM")} – ${format(slice[slice.length - 1], "d MMM")}`}
-                    slots={slots}
-                    bookings={bookingsByDate}
-                    blockedDates={blockedDates}
-                    icloudEvents={visibleIcloudEvents}
-                    stateFor={stateFor}
-                    proposals={[...proposalsInWindow, ...draftPreviewProposals]}
-                    loading={loading}
-                    error={error}
-                    onOpenDay={openDay}
-                    onOpenProposal={(p) => {
-                      if (!String(p.id).startsWith("draft:")) openProposal(p);
-                    }}
-                    onOpenBooking={setAppointmentFor}
-                  />
-                );
-              })}
-            </div>
-          </div>
+            }
+          />
         </TabsContent>
 
         <TabsContent value="suggestions" className="m-0 mt-4">
@@ -1711,6 +1708,8 @@ function FortnightMockup({
   onOpenBooking,
   hideNav = false,
   title,
+  hiddenWeeks,
+  onToggleWeek,
 }: {
   dateRange: Date[];
   totalFortnights: number;
@@ -1719,6 +1718,8 @@ function FortnightMockup({
   onNext: () => void;
   hideNav?: boolean;
   title?: string;
+  hiddenWeeks?: Set<string>;
+  onToggleWeek?: (weekKey: string) => void;
   slots: Record<string, SlotInfo[]>;
   bookings: Record<string, EnrichedBooking[]>;
   blockedDates: string[];
@@ -1783,13 +1784,25 @@ function FortnightMockup({
           </Button>
         </div>
       )}
-      {weeks.map((week, wi) => (
+      {weeks.map((week, wi) => {
+        const weekKey = format(week[0], "yyyy-MM-dd");
+        const isHidden = hiddenWeeks?.has(weekKey);
+        return (
         <div key={wi} className="space-y-2">
           <div className="flex items-center justify-between px-1">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">
               Week {wi + 1} — {format(week[0], "d MMM")} to {format(week[6], "d MMM yyyy")}
             </p>
+            {onToggleWeek && (
+              <button
+                onClick={() => onToggleWeek(weekKey)}
+                className="flex items-center gap-1 text-[10px] font-semibold text-muted-foreground/70 hover:text-foreground"
+              >
+                {isHidden ? <><Eye size={11} /> Show</> : <><EyeOff size={11} /> Hide</>}
+              </button>
+            )}
           </div>
+          {!isHidden && (
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
             {week.map((d) => (
               <DayCell
@@ -1829,8 +1842,10 @@ function FortnightMockup({
               />
             ))}
           </div>
+          )}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

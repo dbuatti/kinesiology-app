@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -51,6 +51,8 @@ interface AutoDraftPanelProps {
   awayByKey?: Record<string, { until: string; reason: string | null }>;
   /** Set/clear a client's away status (untilISO null clears it). */
   onSetAway?: (key: string, untilISO: string | null, reason?: string) => void;
+  /** The fortnight calendar, rendered between the controls and the review list. */
+  calendarPreview?: ReactNode;
 }
 
 // Median gap (days) between consecutive sessions — a simple cadence estimate.
@@ -99,6 +101,7 @@ export default function AutoDraftPanel({
   onDraftChange,
   awayByKey = {},
   onSetAway,
+  calendarPreview,
 }: AutoDraftPanelProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [awayEditKey, setAwayEditKey] = useState<string | null>(null);
@@ -241,25 +244,6 @@ export default function AutoDraftPanel({
 
   const pendingCount = result ? result.assignments.filter((a) => !acceptedKeys.has(a.clientId)).length : 0;
 
-  // Group the draft by day for the visual calendar strip.
-  const draftDays = useMemo(() => {
-    if (!result) return [];
-    const map = new Map<string, Assignment[]>();
-    for (const a of result.assignments) {
-      const key = format(a.slotStart, "yyyy-MM-dd");
-      const arr = map.get(key) ?? [];
-      arr.push(a);
-      map.set(key, arr);
-    }
-    return [...map.entries()]
-      .sort((x, y) => x[0].localeCompare(y[0]))
-      .map(([key, items]) => ({
-        key,
-        date: items[0].slotStart,
-        items: items.sort((p, q) => p.slotStart.getTime() - q.slotStart.getTime()),
-      }));
-  }, [result]);
-
   return (
     <div className="space-y-4">
       {/* Capacity insights */}
@@ -304,7 +288,7 @@ export default function AutoDraftPanel({
             />
           </div>
         </div>
-        <div className="max-h-72 overflow-y-auto divide-y divide-border/30">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 p-3 max-h-[26rem] overflow-y-auto">
           {visibleClients.map((c) => {
             const p = computePreferredTime(c.pastSessions);
             const timeText = prefTimeText(c.pastSessions, c.timeKnown);
@@ -315,15 +299,21 @@ export default function AutoDraftPanel({
             return (
               <div
                 key={c.key}
+                onClick={() => !away && toggle(c.key)}
                 className={cn(
-                  "px-4 py-2.5 transition-colors",
-                  away ? "bg-muted/20 opacity-70" : isSel ? "bg-amber-500/5" : "hover:bg-muted/30",
+                  "px-3 py-2.5 rounded-xl border transition-colors",
+                  away
+                    ? "bg-muted/20 opacity-70 border-border/40 cursor-default"
+                    : isSel
+                      ? "bg-amber-500/10 border-amber-500/40 cursor-pointer"
+                      : "border-border/50 hover:border-border hover:bg-muted/30 cursor-pointer",
                 )}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5">
                   <Checkbox
                     checked={isSel}
                     disabled={!!away}
+                    onClick={(e) => e.stopPropagation()}
                     onCheckedChange={() => toggle(c.key)}
                   />
                   <div
@@ -374,7 +364,7 @@ export default function AutoDraftPanel({
                   {/* Away control */}
                   {away ? (
                     <button
-                      onClick={() => onSetAway?.(c.key, null)}
+                      onClick={(e) => { e.stopPropagation(); onSetAway?.(c.key, null); }}
                       title="Mark as back / available"
                       className="text-[11px] font-semibold text-rose-500 hover:text-rose-600 shrink-0"
                     >
@@ -382,7 +372,7 @@ export default function AutoDraftPanel({
                     </button>
                   ) : (
                     <button
-                      onClick={() => setAwayEditKey(editingAway ? null : c.key)}
+                      onClick={(e) => { e.stopPropagation(); setAwayEditKey(editingAway ? null : c.key); }}
                       title="Mark away / off the books"
                       className={cn("shrink-0 p-1 rounded-lg text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10", editingAway && "text-rose-500 bg-rose-500/10")}
                     >
@@ -392,7 +382,7 @@ export default function AutoDraftPanel({
                 </div>
 
                 {editingAway && !away && (
-                  <div className="flex items-center gap-2 mt-2 pl-9 flex-wrap">
+                  <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-2 mt-2 flex-wrap">
                     <span className="text-[11px] text-muted-foreground">Away until</span>
                     <input
                       type="date"
@@ -464,61 +454,37 @@ export default function AutoDraftPanel({
         {selected.size > 0 ? `Draft ${selected.size} client${selected.size === 1 ? "" : "s"}` : "Generate draft timetable"}
       </Button>
 
-      {/* Results */}
+      {/* Calendar preview — your commitments + the blue draft, between controls and review */}
+      {calendarPreview}
+
+      {/* Results — the review list, under the calendar */}
       {result && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Draft · {result.assignments.length} placed
-              {result.unplaced.length > 0 && `, ${result.unplaced.length} need a slot`}
-            </span>
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div>
+              <p className="text-sm font-bold text-foreground">
+                {result.assignments.length > 0
+                  ? `Here's what I came up with — ${result.assignments.length} placed`
+                  : "I couldn't place anyone with the current openings"}
+              </p>
+              {result.unplaced.length > 0 && (
+                <p className="text-xs text-amber-600 mt-0.5">{result.unplaced.length} still need a slot (see below)</p>
+              )}
+            </div>
             {pendingCount > 0 && (
               <Button
                 size="sm"
                 onClick={acceptAll}
                 disabled={accepting}
-                className="rounded-full h-7 text-xs bg-chart-emerald/90 hover:bg-chart-emerald text-white border-none"
+                className="rounded-full h-8 text-xs bg-chart-emerald/90 hover:bg-chart-emerald text-white border-none"
               >
-                {accepting ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin" /> : <Check className="h-3 w-3 mr-1.5" />}
+                {accepting ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Check className="h-3.5 w-3.5 mr-1.5" />}
                 Pencil in all ({pendingCount})
               </Button>
             )}
           </div>
 
-          {/* Visual mock-up: draft placed on a day strip */}
-          {draftDays.length > 0 && (
-            <div className="overflow-x-auto -mx-1 px-1 pb-1">
-              <div className="flex gap-2 min-w-min">
-                {draftDays.map((day) => (
-                  <div key={day.key} className="w-36 shrink-0 rounded-2xl border border-border/60 bg-muted/20 overflow-hidden">
-                    <div className="px-3 py-2 bg-muted/50 border-b border-border/40 text-center">
-                      <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{format(day.date, "EEE")}</div>
-                      <div className="text-sm font-serif font-bold text-foreground">{format(day.date, "d MMM")}</div>
-                    </div>
-                    <div className="p-1.5 space-y-1.5">
-                      {day.items.map((a) => (
-                        <div
-                          key={a.clientId}
-                          className={cn(
-                            "rounded-xl px-2 py-1.5 border-l-2",
-                            a.kind === "voice"
-                              ? "bg-chart-destructive/5 border-l-chart-destructive"
-                              : "bg-chart-primary/5 border-l-chart-primary",
-                            acceptedKeys.has(a.clientId) && "ring-1 ring-chart-emerald/40",
-                          )}
-                          title={a.reason}
-                        >
-                          <div className="text-[11px] font-bold text-foreground leading-tight">{format(a.slotStart, "h:mm a")}</div>
-                          <div className="text-[11px] text-muted-foreground truncate">{a.name}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           {result.assignments.map((a) => {
             const accepted = acceptedKeys.has(a.clientId);
             return (
@@ -547,6 +513,7 @@ export default function AutoDraftPanel({
               </div>
             );
           })}
+          </div>
 
           {result.unplaced.length > 0 && (
             <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4 space-y-2">

@@ -504,6 +504,7 @@ export default function AutoDraftPanel({
   const [search, setSearch] = useState("");
   const [showNoHistory, setShowNoHistory] = useState(false);
   const [groupByKind, setGroupByKind] = useState(true);
+  const [preferFortnightly, setPreferFortnightly] = useState(false);
   const [horizonWeeks, setHorizonWeeks] = useState(4);
   const [preferDays, setPreferDays] = useState<number[]>([]);
   const togglePreferDay = (d: number) =>
@@ -611,7 +612,12 @@ export default function AutoDraftPanel({
 
     const schedulerClients: SchedulerClient[] = [];
     for (const c of chosen) {
-      const interval = availabilityByKey[c.key]?.cadenceDays ?? medianGapDays(c.pastSessions);
+      let interval = availabilityByKey[c.key]?.cadenceDays ?? medianGapDays(c.pastSessions);
+      // "Aim for fortnightly": stretch weekly (or tighter) clients to a fortnight
+      // so more distinct people fit — unless they've been explicitly set weekly.
+      if (preferFortnightly && interval && interval < 14 && availabilityByKey[c.key]?.cadenceDays == null) {
+        interval = 14;
+      }
       const base = {
         kind: c.kind,
         name: c.name,
@@ -1001,6 +1007,10 @@ export default function AutoDraftPanel({
         <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
           <Checkbox checked={groupByKind} onCheckedChange={(v) => setGroupByKind(!!v)} />
           Batch same type together
+        </label>
+        <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+          <Checkbox checked={preferFortnightly} onCheckedChange={(v) => setPreferFortnightly(!!v)} />
+          Aim for fortnightly
         </label>
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-muted-foreground">Draft</span>

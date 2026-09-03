@@ -750,18 +750,23 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     if (pick === null) break;
     remaining.delete(pick);
     const rep = groups.get(pick)!.rep;
-    // If every pattern collides with an already-assigned home, don't give up:
-    // keep this client's own top pattern (their loyal day/time) as home anyway.
-    // Two clients can legitimately share a slot when they're on alternating
-    // weeks (a fortnightly client leaves it free every other week) — Pass 2
-    // resolves real per-week conflicts and shifts the loser to a nearby time,
-    // rather than dropping them from the whole series.
+    // Choose the home pattern. A strong loyalty/upcoming anchor (score >= 60) is
+    // honoured even when it collides with someone else's home: two clients can
+    // legitimately share a slot on alternating weeks (a fortnightly client leaves
+    // it free every other week), and Pass 2 resolves real per-week conflicts —
+    // placing the winner and shifting the other to a nearby same-day time, rather
+    // than exiling them to a lower-scored day with no free slot (the "Candice
+    // never scheduled" bug). Flexible clients still spread via conflict-avoidance.
     const cands = candByBase.get(pick) ?? [];
-    if (pickViable.length === 0 && cands.length === 0) {
+    const loyal = cands[0];
+    let best: HomePattern;
+    if (loyal && loyal.score >= 60) best = loyal.p;
+    else if (pickViable.length > 0) best = pickViable[0].p;
+    else if (cands.length > 0) best = cands[0].p;
+    else {
       home.set(pick, null);
       continue;
     }
-    const best = (pickViable[0] ?? cands[0]).p;
     home.set(pick, best);
     assignedPatterns.push({
       weekday: best.weekday,

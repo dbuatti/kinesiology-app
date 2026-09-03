@@ -360,7 +360,15 @@ export default function AutoDraftPanel({
     }
     if (result.unplaced.length) {
       lines.push("Couldn't place:");
-      for (const u of result.unplaced) lines.push(`  - ${u.name}: ${u.reason}`);
+      const grouped = result.unplaced.reduce<Record<string, { name: string; count: number; reason: string }>>((acc, u) => {
+        const k = u.clientId.split("#")[0];
+        if (!acc[k]) acc[k] = { name: u.name, count: 0, reason: u.reason };
+        acc[k].count += 1;
+        return acc;
+      }, {});
+      for (const g of Object.values(grouped)) {
+        lines.push(`  - ${g.name}${g.count > 1 ? ` (${g.count} sessions)` : ""}: ${g.reason}`);
+      }
     }
     const text = lines.join("\n").trim();
     try {

@@ -712,7 +712,15 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
       const dur = durationOf(inst);
       occupied.push({ s: start.getTime() - preBufOf(inst) * 60_000, e: start.getTime() + dur * 60_000 + postBufOf(inst) * 60_000 });
       const pref = computePreferredTime(rep.pastSessions);
-      const onHome = h && start.getDay() === h.weekday;
+      const slotMin = start.getHours() * 60 + start.getMinutes();
+      let reason = "best available";
+      if (h) {
+        const onDay = start.getDay() === h.weekday;
+        const onTime = Math.abs(slotMin - h.minutes) <= 15;
+        if (onDay && onTime) reason = `${WEEKDAYS[h.weekday]} ${fmtMinutes(h.minutes)}`;
+        else if (onDay) reason = `${WEEKDAYS[h.weekday]}, moved to ${fmtMinutes(slotMin)} (usual ${fmtMinutes(h.minutes)})`;
+        else reason = `off their usual ${WEEKDAYS[h.weekday]} ${fmtMinutes(h.minutes)}`;
+      }
       assignments.push({
         clientId: inst.id,
         kind: inst.kind,
@@ -721,9 +729,7 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
         slotStart: start,
         slotEnd: new Date(start.getTime() + dur * 60_000),
         score: 0.9,
-        reason: h
-          ? `${onHome ? "" : "off day · "}${WEEKDAYS[h.weekday]} ${fmtMinutes(h.minutes)}`
-          : "best available",
+        reason,
         lowConfidence: !pref || pref.confidence < 0.4,
       });
     }

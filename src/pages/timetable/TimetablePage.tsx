@@ -1019,9 +1019,9 @@ const TimetablePage = () => {
         </TabsContent>
 
         <TabsContent value="autodraft" className="m-0 mt-4">
-          <div className="grid grid-cols-1 lg:grid-cols-[minmax(320px,380px)_1fr] gap-6 items-start">
-            {/* Controls */}
-            <div>
+          <div className="space-y-6">
+            {/* Controls — capped width for readability, calendar goes full-width below */}
+            <div className="max-w-2xl">
               <div className="mb-3">
                 <h3 className="text-sm font-bold text-foreground">Draft a week</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">

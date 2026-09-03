@@ -676,15 +676,23 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     candByBase.set(b, list);
   }
 
+  const FNH_BREAK = 30; // minutes clear required AFTER an FNH session
+  // Gap needed between an earlier session and a later one: the later session's
+  // pre-buffer, and a 30-min break if the earlier session was FNH.
+  const gapNeeded = (earlierKind: SessionKind, laterPre: number) =>
+    Math.max(laterPre, earlierKind === "fnh" ? FNH_BREAK : 0);
   const home = new Map<string, HomePattern | null>();
-  const assignedPatterns: { weekday: number; s: number; e: number; kind: SessionKind }[] = [];
+  // Raw session minutes-of-day + kind + this client's pre-buffer (no buffers baked in).
+  const assignedPatterns: { weekday: number; sMin: number; eMin: number; kind: SessionKind; preMin: number }[] = [];
   const patternConflicts = (rep: SchedulerClient, p: HomePattern) => {
-    const s = p.minutes - preBufOf(rep);
-    const e = p.minutes + durationOf(rep) + postBufOf(rep);
+    const aS = p.minutes;
+    const aE = p.minutes + durationOf(rep);
+    const aPre = preBufOf(rep);
     return assignedPatterns.some((ap) => {
       if (ap.weekday !== p.weekday) return false;
-      if (s < ap.e && e > ap.s) return true; // time overlap on same weekday
-      // Same-weekday, different kind → discourage mixing by treating as a soft block:
+      if (aS < ap.eMin && aE > ap.sMin) return true; // hard overlap
+      if (ap.eMin <= aS && aS - ap.eMin < gapNeeded(ap.kind, aPre)) return true; // A after ap
+      if (aE <= ap.sMin && ap.sMin - aE < gapNeeded(rep.kind, ap.preMin)) return true; // A before ap
       return false;
     });
   };
@@ -692,14 +700,18 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
   const remaining = new Set(groups.keys());
   while (remaining.size > 0) {
     let pick: string | null = null;
-    let pickCount = Infinity;
+    let pickPriority = Infinity;
     let pickViable: { p: HomePattern; score: number }[] = [];
     for (const b of remaining) {
       const rep = groups.get(b)!.rep;
       const viable = (candByBase.get(b) ?? []).filter((x) => !patternConflicts(rep, x.p));
-      if (viable.length < pickCount) {
+      // Clients with a real upcoming booking claim their fixed slot first; then
+      // most-constrained-first among the rest.
+      const hasUpcoming = (rep.upcomingSessions?.length ?? 0) > 0 ? 0 : 100_000;
+      const priority = hasUpcoming + viable.length;
+      if (priority < pickPriority) {
         pick = b;
-        pickCount = viable.length;
+        pickPriority = priority;
         pickViable = viable;
       }
     }
@@ -716,20 +728,34 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     home.set(pick, best);
     assignedPatterns.push({
       weekday: best.weekday,
-      s: best.minutes - preBufOf(rep),
-      e: best.minutes + durationOf(rep) + postBufOf(rep),
+      sMin: best.minutes,
+      eMin: best.minutes + durationOf(rep),
       kind: rep.kind,
+      preMin: preBufOf(rep),
     });
   }
 
   // ── Pass 2: fill each client's instances into their home slot each period ──
   const assignments: Assignment[] = [];
   const unplaced: Unplaced[] = [];
-  const occupied = busyBlocks.map((b) => ({ s: b.start.getTime(), e: b.end.getTime() }));
+  // Raw session ranges (ms) + kind + pre-buffer. Busy blocks are treated as
+  // sessions of no particular kind and no pre-buffer.
+  const occupied: { s: number; e: number; kind: SessionKind | "busy"; pre: number }[] = busyBlocks.map((b) => ({
+    s: b.start.getTime(),
+    e: b.end.getTime(),
+    kind: "busy",
+    pre: 0,
+  }));
   const rangeFree = (c: SchedulerClient, startMs: number) => {
-    const s = startMs - preBufOf(c) * 60_000;
-    const e = startMs + durationOf(c) * 60_000 + postBufOf(c) * 60_000;
-    return !occupied.some((o) => s < o.e && e > o.s);
+    const aS = startMs;
+    const aE = startMs + durationOf(c) * 60_000;
+    const aPre = preBufOf(c) * 60_000;
+    return !occupied.some((o) => {
+      if (aS < o.e && aE > o.s) return true; // hard overlap
+      if (o.e <= aS && aS - o.e < Math.max(aPre, o.kind === "fnh" ? FNH_BREAK * 60_000 : 0)) return true;
+      if (aE <= o.s && o.s - aE < Math.max(o.pre, c.kind === "fnh" ? FNH_BREAK * 60_000 : 0)) return true;
+      return false;
+    });
   };
 
   for (const [b, g] of groups) {
@@ -768,7 +794,7 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
       const best = cands[0];
       const start = best.start;
       const dur = durationOf(inst);
-      occupied.push({ s: start.getTime() - preBufOf(inst) * 60_000, e: start.getTime() + dur * 60_000 + postBufOf(inst) * 60_000 });
+      occupied.push({ s: start.getTime(), e: start.getTime() + dur * 60_000, kind: inst.kind, pre: preBufOf(inst) * 60_000 });
       const pref = computePreferredTime(rep.pastSessions);
       const slotMin = start.getHours() * 60 + start.getMinutes();
       let reason = "best available";

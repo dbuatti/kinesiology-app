@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Wand2, CalendarClock, AlertTriangle, Check, X, Plane } from "lucide-react";
+import { Loader2, Wand2, CalendarClock, AlertTriangle, Check, X, Plane, Search } from "lucide-react";
 import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
@@ -93,6 +93,7 @@ export default function AutoDraftPanel({
 }: AutoDraftPanelProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [awayEditKey, setAwayEditKey] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
   const [result, setResult] = useState<{ assignments: Assignment[]; unplaced: Unplaced[] } | null>(null);
   const [accepting, setAccepting] = useState(false);
   const [acceptedKeys, setAcceptedKeys] = useState<Set<string>>(new Set());
@@ -133,10 +134,27 @@ export default function AutoDraftPanel({
     return computeCapacityInsights(asScheduler, openSlots).slice(0, 3);
   }, [clients, openSlots, awayByKey]);
 
+  const visibleClients = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return q ? sortedClients.filter((c) => c.name.toLowerCase().includes(q)) : sortedClients;
+  }, [sortedClients, search]);
+
+  const awayCount = useMemo(
+    () => sortedClients.filter((c) => awayByKey[c.key]).length,
+    [sortedClients, awayByKey],
+  );
+
   const toggle = (key: string) =>
     setSelected((prev) => {
       const next = new Set(prev);
       next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+
+  const selectAllShown = () =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      for (const c of visibleClients) if (!awayByKey[c.key]) next.add(c.key);
       return next;
     });
 
@@ -243,18 +261,34 @@ export default function AutoDraftPanel({
 
       {/* Client picker */}
       <div className="rounded-2xl border border-border/60 overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-2.5 bg-muted/40 border-b border-border/50">
-          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Choose clients to place ({selected.size})
-          </span>
-          {selected.size > 0 && (
-            <button onClick={() => setSelected(new Set())} className="text-[11px] font-semibold text-muted-foreground hover:text-foreground">
-              Clear
-            </button>
-          )}
+        <div className="px-4 py-2.5 bg-muted/40 border-b border-border/50 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              {selected.size} selected{awayCount > 0 && ` · ${awayCount} away`}
+            </span>
+            <div className="flex items-center gap-3">
+              <button onClick={selectAllShown} className="text-[11px] font-semibold text-amber-600 hover:text-amber-700">
+                Select shown
+              </button>
+              {selected.size > 0 && (
+                <button onClick={() => setSelected(new Set())} className="text-[11px] font-semibold text-muted-foreground hover:text-foreground">
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="relative">
+            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search clients…"
+              className="w-full text-sm rounded-lg border border-border bg-background pl-8 pr-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
         </div>
-        <div className="max-h-64 overflow-y-auto divide-y divide-border/30">
-          {sortedClients.map((c) => {
+        <div className="max-h-72 overflow-y-auto divide-y divide-border/30">
+          {visibleClients.map((c) => {
             const pref = prefLabel(c.pastSessions, c.timeKnown);
             const noHistory = c.pastSessions.length === 0;
             const away = awayByKey[c.key];
@@ -341,8 +375,10 @@ export default function AutoDraftPanel({
               </div>
             );
           })}
-          {sortedClients.length === 0 && (
-            <div className="px-4 py-8 text-center text-sm text-muted-foreground">No clients loaded.</div>
+          {visibleClients.length === 0 && (
+            <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+              {search ? "No clients match your search." : "No clients loaded."}
+            </div>
           )}
         </div>
       </div>

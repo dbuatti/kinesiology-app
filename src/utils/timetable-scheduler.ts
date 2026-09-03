@@ -397,17 +397,28 @@ export function autoDraftSchedule(input: AutoDraftInput): DraftResult {
 
   const assignments: Assignment[] = [];
   const unplaced: Unplaced[] = [];
-  const usedSlots = new Set<string>();
   const remaining = new Set(clients.map((c) => c.id));
   const byId = new Map(clients.map((c) => [c.id, c] as const));
 
+  // Occupied time ranges (ms). Two drafted sessions must never overlap, even if
+  // Cal.com offers overlapping start times (e.g. 4:00 and 4:15) — a 45-min
+  // session at 4:00 blocks 4:15. Seed with the practitioner's busy blocks.
+  const occupied: { s: number; e: number }[] = busyBlocks.map((b) => ({ s: b.start.getTime(), e: b.end.getTime() }));
+  const durationOf = (c: SchedulerClient) => c.durationMin ?? DEFAULT_DURATION[c.kind];
+  const rangeFree = (startMs: number, durMin: number) => {
+    const e = startMs + durMin * 60_000;
+    return !occupied.some((o) => startMs < o.e && e > o.s);
+  };
+
   while (remaining.size > 0) {
-    // Recompute each remaining client's still-free candidate list.
+    // Recompute each remaining client's still-viable candidates: not overlapping
+    // anything already placed, at that client's own session length.
     const viable = new Map<string, Candidate[]>();
     for (const id of remaining) {
+      const dur = durationOf(byId.get(id)!);
       viable.set(
         id,
-        (candidates.get(id) ?? []).filter((cand) => !usedSlots.has(slotKey(cand.slot))),
+        (candidates.get(id) ?? []).filter((cand) => rangeFree(cand.slot.start.getTime(), dur)),
       );
     }
 
@@ -455,10 +466,10 @@ export function autoDraftSchedule(input: AutoDraftInput): DraftResult {
       continue;
     }
 
-    usedSlots.add(slotKey(best.slot));
     const pref = prefs.get(pick) ?? null;
     const start = best.slot.start;
-    const dur = client.durationMin ?? best.slot.durationMin ?? DEFAULT_DURATION[client.kind];
+    const dur = client.durationMin ?? DEFAULT_DURATION[client.kind];
+    occupied.push({ s: start.getTime(), e: start.getTime() + dur * 60_000 });
     assignments.push({
       clientId: client.id,
       kind: client.kind,

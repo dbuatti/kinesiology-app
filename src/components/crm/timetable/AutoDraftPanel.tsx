@@ -30,6 +30,8 @@ export interface AutoDraftClient {
   pastSessions: Date[];
   lastSessionAt: Date | null;
   timeKnown: boolean;
+  /** Their usual session length in minutes (30/45/60), inferred from history. */
+  typicalDurationMin?: number | null;
 }
 
 interface AutoDraftPanelProps {
@@ -382,7 +384,8 @@ export default function AutoDraftPanel({
       // Explicit cadence (weekly/fortnightly/…) overrides the inferred median gap.
       intervalDays: availabilityByKey[c.key]?.cadenceDays ?? medianGapDays(c.pastSessions),
       lastSessionAt: c.lastSessionAt,
-      durationMin: c.kind === "fnh" ? fnhDurationMin : voiceDurationMin,
+      // Their usual length if we can tell, else the per-kind default.
+      durationMin: c.typicalDurationMin ?? (c.kind === "fnh" ? fnhDurationMin : voiceDurationMin),
       timeKnown: c.timeKnown,
       availability: availabilityByKey[c.key]?.windows,
     }));

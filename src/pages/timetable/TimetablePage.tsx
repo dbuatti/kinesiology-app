@@ -644,11 +644,28 @@ const TimetablePage = () => {
     };
     const timed = new Map<string, Date[]>();
     const dateOnly = new Map<string, Date[]>();
+    const durations = new Map<string, number[]>();
+
+    // Duration from a "4:00 PM – 4:45 PM" range, snapped to 30/45/60.
+    const parseRangeDuration = (time: string | null): number | null => {
+      if (!time) return null;
+      const parts = String(time).split(/[–—-]/);
+      if (parts.length < 2) return null;
+      const a = parseMins(parts[0]);
+      const b = parseMins(parts[1]);
+      if (a == null || b == null) return null;
+      let diff = b - a;
+      if (diff < 0) diff += 1440;
+      if (diff <= 0 || diff > 120) return null;
+      return [30, 45, 60].reduce((best, d) => (Math.abs(d - diff) < Math.abs(best - diff) ? d : best), 45);
+    };
 
     // voice_bookings (timed).
     for (const b of voiceBookingsData) {
       const email = (b.student_email || "").toLowerCase();
       if (!email) continue;
+      const dur = parseRangeDuration(b.lesson_time);
+      if (dur) (durations.get(email) ?? durations.set(email, []).get(email)!).push(dur);
       const mins = parseMins(b.lesson_time);
       const [y, mo, d] = String(b.lesson_date).split("T")[0].split("-").map(Number);
       if (!y || !mo || !d) continue;
@@ -679,6 +696,14 @@ const TimetablePage = () => {
       const timeKnown = timedArr.length > 0;
       const past = timeKnown ? timedArr : (dateOnly.get(email) ?? []);
       const last = past.length ? new Date(Math.max(...past.map((d) => d.getTime()))) : null;
+      // Their usual lesson length = the most common duration seen.
+      const durs = durations.get(email) ?? [];
+      let typicalDurationMin: number | null = null;
+      if (durs.length) {
+        const counts = new Map<number, number>();
+        for (const d of durs) counts.set(d, (counts.get(d) ?? 0) + 1);
+        typicalDurationMin = [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+      }
       out.push({
         key: `voice:${email}`,
         kind: "voice",
@@ -688,6 +713,7 @@ const TimetablePage = () => {
         pastSessions: past,
         lastSessionAt: last,
         timeKnown,
+        typicalDurationMin,
       });
     }
     return out;
@@ -1128,7 +1154,7 @@ const TimetablePage = () => {
             }}
             calendarPreview={
               <div className="space-y-8">
-                {[0, 1, 2, 3].map((fi) => {
+                {[0, 1, 2, 3, 4, 5].map((fi) => {
                   const slice = dateRange.slice(fi * 14, fi * 14 + 14);
                   if (slice.length === 0) return null;
                   return (

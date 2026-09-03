@@ -49,7 +49,7 @@ import { useIcloudCalendar, IcloudCalendarEvent } from "@/hooks/useIcloudCalenda
 import { useTimetableAppointments, EnrichedBooking } from "@/hooks/useTimetableAppointments";
 import { useSuggestionEngine, Suggestion } from "@/hooks/useSuggestionEngine";
 import AutoDraftPanel, { AutoDraftClient } from "@/components/crm/timetable/AutoDraftPanel";
-import { OpenSlot, BusyBlock } from "@/utils/timetable-scheduler";
+import { OpenSlot, BusyBlock, Assignment } from "@/utils/timetable-scheduler";
 import { CALCOM_CONFIG } from "@/config/integrations";
 import {
   format,
@@ -462,6 +462,33 @@ const TimetablePage = () => {
   });
 
   // ── Auto-draft data plumbing ───────────────────────────────────
+  const [draftAssignments, setDraftAssignments] = useState<Assignment[]>([]);
+
+  // The live draft, shaped as (unsaved) proposals so it renders on the fortnight
+  // mock-up alongside real bookings + iCloud commitments before you pencil it in.
+  const draftPreviewProposals = useMemo<BookingProposal[]>(
+    () =>
+      draftAssignments.map((a) => ({
+        id: `draft:${a.clientId}`,
+        user_id: "",
+        client_id: null,
+        student_name: a.name,
+        student_email: a.email ?? null,
+        kind: a.kind,
+        event_type_id: null,
+        slot_start: a.slotStart.toISOString(),
+        slot_end: a.slotEnd.toISOString(),
+        status: "suggested",
+        calcom_booking_id: null,
+        appointment_id: null,
+        reason: a.reason,
+        created_at: "",
+        updated_at: "",
+        confirmed_at: null,
+      })),
+    [draftAssignments],
+  );
+
   const autoDraftClients = useMemo<AutoDraftClient[]>(() => {
     const today = startOfDay(now);
     const out: AutoDraftClient[] = [];
@@ -949,27 +976,55 @@ const TimetablePage = () => {
         </TabsContent>
 
         <TabsContent value="autodraft" className="m-0 mt-4">
-          <div className="max-w-xl">
-            <div className="mb-3">
-              <h3 className="text-sm font-bold text-foreground">Draft a timetable</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Pick clients and I'll place each at their best open time — learned from their
-                past sessions — routing around your calendar (rehearsals, blocks). Review, then pencil in.
-              </p>
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(320px,380px)_1fr] gap-6 items-start">
+            {/* Controls */}
+            <div>
+              <div className="mb-3">
+                <h3 className="text-sm font-bold text-foreground">Draft a week</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Pick clients and I'll place each at their best open time — learned from their past
+                  sessions — around your commitments. The draft shows in blue on the calendar; pencil it in when it looks right.
+                </p>
+              </div>
+              <AutoDraftPanel
+                clients={autoDraftClients}
+                openSlots={autoDraftOpenSlots}
+                busyBlocks={autoDraftBusy}
+                takenSlotStarts={autoDraftTaken}
+                fnhDurationMin={60}
+                voiceDurationMin={45}
+                onAccept={(input) =>
+                  createProposal({
+                    ...input,
+                    eventTypeId: input.kind === "fnh" ? fnhEventType : voiceEventType,
+                  })
+                }
+                onDraftChange={setDraftAssignments}
+              />
             </div>
-            <AutoDraftPanel
-              clients={autoDraftClients}
-              openSlots={autoDraftOpenSlots}
-              busyBlocks={autoDraftBusy}
-              takenSlotStarts={autoDraftTaken}
-              fnhDurationMin={60}
-              voiceDurationMin={45}
-              onAccept={(input) =>
-                createProposal({
-                  ...input,
-                  eventTypeId: input.kind === "fnh" ? fnhEventType : voiceEventType,
-                })
+
+            {/* Live fortnight preview with real commitments + the blue draft overlaid */}
+            <FortnightMockup
+              dateRange={dateRange.slice(fortnightIndex * 14, fortnightIndex * 14 + 14)}
+              totalFortnights={Math.ceil(dateRange.length / 14)}
+              fortnightIndex={fortnightIndex}
+              onPrev={() => setFortnightIndex((i) => Math.max(0, i - 1))}
+              onNext={() =>
+                setFortnightIndex((i) => Math.min(Math.ceil(dateRange.length / 14) - 1, i + 1))
               }
+              slots={slots}
+              bookings={bookingsByDate}
+              blockedDates={blockedDates}
+              icloudEvents={visibleIcloudEvents}
+              stateFor={stateFor}
+              proposals={[...proposalsInWindow, ...draftPreviewProposals]}
+              loading={loading}
+              error={error}
+              onOpenDay={openDay}
+              onOpenProposal={(p) => {
+                if (!String(p.id).startsWith("draft:")) openProposal(p);
+              }}
+              onOpenBooking={setAppointmentFor}
             />
           </div>
         </TabsContent>

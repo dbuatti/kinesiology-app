@@ -45,6 +45,8 @@ interface AutoDraftPanelProps {
     slotStart: string;
     slotEnd: string;
   }) => Promise<unknown>;
+  /** Emits the current draft so the parent can preview it on the fortnight calendar. */
+  onDraftChange?: (assignments: Assignment[]) => void;
 }
 
 // Median gap (days) between consecutive sessions — a simple cadence estimate.
@@ -81,6 +83,7 @@ export default function AutoDraftPanel({
   fnhDurationMin,
   voiceDurationMin,
   onAccept,
+  onDraftChange,
 }: AutoDraftPanelProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [result, setResult] = useState<{ assignments: Assignment[]; unplaced: Unplaced[] } | null>(null);
@@ -151,6 +154,7 @@ export default function AutoDraftPanel({
     });
     setResult(res);
     setAcceptedKeys(new Set());
+    onDraftChange?.(res.assignments);
   };
 
   const acceptAll = async () => {
@@ -178,6 +182,8 @@ export default function AutoDraftPanel({
         }
       }
       setAcceptedKeys(done);
+      // Drop penciled-in items from the preview — they now exist as real proposals.
+      onDraftChange?.(result.assignments.filter((a) => !done.has(a.clientId)));
       showSuccess(`Penciled in ${ok} session${ok === 1 ? "" : "s"} as drafts.`);
     } catch (e: any) {
       showError(e?.message || "Failed to save drafts.");

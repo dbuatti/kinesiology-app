@@ -695,12 +695,31 @@ const TimetablePage = () => {
       (email && PRACTITIONER_EMAILS.has(email.toLowerCase())) ||
       (name || "").trim().toLowerCase() === "daniele buatti";
 
+    // Pencilled/confirmed proposals count as upcoming sessions too, so a client
+    // already penciled in for a week isn't re-drafted (and doubled up) there.
+    const proposalUpFnh = new Map<string, Date[]>();
+    const proposalUpVoice = new Map<string, Date[]>();
+    for (const p of proposals) {
+      if (p.status === "dropped" || !p.slot_start) continue;
+      const d = new Date(p.slot_start);
+      if (isNaN(d.getTime()) || d < today) continue;
+      if (p.kind === "fnh" && p.client_id) {
+        (proposalUpFnh.get(p.client_id) ?? proposalUpFnh.set(p.client_id, []).get(p.client_id)!).push(d);
+      } else if (p.kind === "voice" && p.student_email) {
+        const em = p.student_email.toLowerCase();
+        (proposalUpVoice.get(em) ?? proposalUpVoice.set(em, []).get(em)!).push(d);
+      }
+    }
+
     // FNH — full datetimes from the appointments table.
     for (const c of enrichedClients) {
       if (isPractitioner(c.email, c.name)) continue;
       const appts = appointmentsData.filter((a) => a.client_id === c.id && a.status !== "Cancelled");
       const past = appts.map((a) => new Date(a.date)).filter((d) => !isNaN(d.getTime()) && d < today);
-      const upcoming = appts.map((a) => new Date(a.date)).filter((d) => !isNaN(d.getTime()) && d >= today);
+      const upcoming = [
+        ...appts.map((a) => new Date(a.date)).filter((d) => !isNaN(d.getTime()) && d >= today),
+        ...(proposalUpFnh.get(c.id) ?? []),
+      ];
       const last = past.length ? new Date(Math.max(...past.map((d) => d.getTime()))) : null;
       out.push({ key: `fnh:${c.id}`, kind: "fnh", id: c.id, name: c.name || "Unknown", email: c.email, pastSessions: past, upcomingSessions: upcoming, lastSessionAt: last, timeKnown: true });
     }
@@ -793,14 +812,14 @@ const TimetablePage = () => {
         name: s.name || "Unknown",
         email: s.email,
         pastSessions: past,
-        upcomingSessions: voiceUpcoming.get(email) ?? [],
+        upcomingSessions: [...(voiceUpcoming.get(email) ?? []), ...(proposalUpVoice.get(email) ?? [])],
         lastSessionAt: last,
         timeKnown,
         typicalDurationMin,
       });
     }
     return out;
-  }, [enrichedClients, appointmentsData, enrichedVoiceStudents, voiceLessons, voiceBookingsData, now]);
+  }, [enrichedClients, appointmentsData, enrichedVoiceStudents, voiceLessons, voiceBookingsData, proposals, now]);
 
   // Open Cal.com slots across the window (future only).
   const autoDraftOpenSlots = useMemo<OpenSlot[]>(() => {

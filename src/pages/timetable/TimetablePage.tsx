@@ -19,6 +19,7 @@ import {
   ChevronRight,
   Mail,
   Plane,
+  Sparkles,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,6 +47,7 @@ import { showSuccess, showError } from "@/utils/toast";
 import { useBookingProposals, BookingProposal } from "@/hooks/useBookingProposals";
 import { useIcloudCalendar, IcloudCalendarEvent } from "@/hooks/useIcloudCalendar";
 import { useTimetableAppointments, EnrichedBooking } from "@/hooks/useTimetableAppointments";
+import { useSuggestionEngine, Suggestion } from "@/hooks/useSuggestionEngine";
 import { CALCOM_CONFIG } from "@/config/integrations";
 import {
   format,
@@ -167,7 +169,8 @@ function zonedDateKey(d: Date): string {
 const TimetablePage = () => {
   const [tab, setTab] = useState(() => {
     const t = new URLSearchParams(window.location.search).get("view");
-    return t === "forecast" ? "forecast" : "fortnight";
+    if (t === "forecast" || t === "suggestions") return t;
+    return "fortnight";
   });
   const [fortnightIndex, setFortnightIndex] = useState(0);
 
@@ -430,6 +433,14 @@ const TimetablePage = () => {
     });
     return map;
   }, [enrichedBookings]);
+
+  const { suggestions } = useSuggestionEngine({
+    appointmentsData,
+    enrichedClients,
+    slots,
+    proposals,
+    calcomBookings: bookings,
+  });
 
   const stateFor = (d: Date): DayState => {
     const key = zonedDateKey(d);
@@ -744,6 +755,14 @@ const TimetablePage = () => {
             <TabsTrigger value="forecast" className="gap-2">
               <TrendingUp size={14} /> Forward Forecast
             </TabsTrigger>
+            {suggestions.length > 0 && (
+              <TabsTrigger value="suggestions" className="gap-2">
+                <Sparkles size={14} /> Suggestions
+                <span className="ml-1 h-5 w-5 rounded-full bg-chart-primary text-[10px] font-black text-primary-foreground flex items-center justify-center leading-none">
+                  {suggestions.length}
+                </span>
+              </TabsTrigger>
+            )}
           </TabsList>
         </div>
 
@@ -778,6 +797,33 @@ const TimetablePage = () => {
             proposals={proposalsInWindow}
             loading={loading}
             error={error}
+          />
+        </TabsContent>
+
+        <TabsContent value="suggestions" className="m-0 mt-4">
+          <SuggestionsPanel
+            suggestions={suggestions}
+            onAccept={async (s) => {
+              setWorking(true);
+              try {
+                const slot = s.availableSlots[0];
+                if (!slot) return;
+                const endIso = new Date(new Date(slot.start).getTime() + 60 * 60 * 1000).toISOString();
+                await createProposal({
+                  kind: "fnh",
+                  clientId: s.clientId,
+                  eventTypeId: fnhEventType,
+                  slotStart: slot.start,
+                  slotEnd: endIso,
+                });
+                showSuccess(`Proposal created for ${s.clientName} — confirm to book.`);
+              } catch (err) {
+                showError(err instanceof Error ? err.message : "Failed to create proposal.");
+              } finally {
+                setWorking(false);
+              }
+            }}
+            working={working}
           />
         </TabsContent>
       </Tabs>
@@ -1726,6 +1772,67 @@ function LegendRow() {
       <span className="flex items-center gap-1.5">
         <div className="w-2.5 h-2.5 rounded-sm bg-emerald-600" /> Confirmed
       </span>
+    </div>
+  );
+}
+
+function SuggestionsPanel({
+  suggestions,
+  onAccept,
+  working,
+}: {
+  suggestions: Suggestion[];
+  onAccept: (s: Suggestion) => void;
+  working: boolean;
+}) {
+  if (suggestions.length === 0) {
+    return (
+      <div className="text-center py-16 text-muted-foreground">
+        <Sparkles size={32} className="mx-auto mb-3 opacity-40" />
+        <p className="text-sm font-semibold">No suggestions yet</p>
+        <p className="text-xs mt-1">Build up 2+ sessions with a client to detect a recurring pattern.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <p className="text-xs font-semibold text-muted-foreground">
+        Based on your past sessions, these clients have a recurring pattern. Pick a suggested slot to propose.
+      </p>
+      {suggestions.map((s, i) => (
+        <div
+          key={`${s.clientId}-${i}`}
+          className="flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-4"
+        >
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-foreground truncate">{s.clientName}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Every {s.gapDays}d · {Math.round(s.confidence * 100)}% consistent · next{" "}
+              {format(s.predictedDate, "EEE d MMM yyyy")}
+            </p>
+            <div className="flex items-center gap-1.5 mt-1.5">
+              {s.availableSlots.slice(0, 3).map((sl, j) => (
+                <span key={j} className="rounded bg-chart-primary/10 px-1.5 py-0.5 text-[9px] font-bold text-chart-primary">
+                  {sl.time}
+                </span>
+              ))}
+              {s.availableSlots.length > 3 && (
+                <span className="text-[9px] text-muted-foreground">+{s.availableSlots.length - 3} more</span>
+              )}
+            </div>
+          </div>
+          <Button
+            size="sm"
+            className="shrink-0 gap-1.5 rounded-xl"
+            onClick={() => onAccept(s)}
+            disabled={working}
+          >
+            {working ? <Loader2 className="animate-spin" size={14} /> : <Check size={14} />}
+            Propose
+          </Button>
+        </div>
+      ))}
     </div>
   );
 }

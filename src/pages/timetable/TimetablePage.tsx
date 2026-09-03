@@ -20,6 +20,8 @@ import {
   Mail,
   Plane,
   Sparkles,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

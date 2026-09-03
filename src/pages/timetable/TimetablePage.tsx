@@ -479,6 +479,10 @@ const TimetablePage = () => {
   // ── Auto-draft data plumbing ───────────────────────────────────
   const [draftAssignments, setDraftAssignments] = useState<Assignment[]>([]);
   const [hiddenWeeks, setHiddenWeeks] = useState<Set<string>>(new Set());
+  const [workflowFor, setWorkflowFor] = useState<BookingProposal | null>(null);
+  const [workflowMsg, setWorkflowMsg] = useState("");
+  const [workflowBusy, setWorkflowBusy] = useState(false);
+  const [workflowEmailOpen, setWorkflowEmailOpen] = useState(false);
   const queryClient = useQueryClient();
 
   // Clients marked away / off-the-books until a date.
@@ -624,14 +628,14 @@ const TimetablePage = () => {
   );
 
   // Pencil in a single draft session by clicking its blue card on the calendar.
-  const pencilInDraft = async (p: BookingProposal) => {
+  const pencilInDraft = async (p: BookingProposal): Promise<BookingProposal | null> => {
     const clientKey = String(p.id).replace(/^draft:/, "");
     const a = draftAssignments.find((x) => x.clientId === clientKey);
-    if (!a) return;
+    if (!a) return null;
     const baseKey = clientKey.split("#")[0];
     const original = autoDraftClients.find((c) => c.key === baseKey);
     try {
-      await createProposal({
+      const created = await createProposal({
         kind: a.kind,
         clientId: a.kind === "fnh" ? original?.id ?? null : null,
         studentName: a.name,
@@ -642,9 +646,22 @@ const TimetablePage = () => {
       });
       setDraftAssignments((prev) => prev.filter((x) => x.clientId !== clientKey));
       showSuccess(`Penciled in ${a.name}.`);
+      return created ?? null;
     } catch (e: any) {
       showError(e?.message || "Couldn't pencil in.");
+      return null;
     }
+  };
+
+  // Resolve a proposal's client email (voice carries it; FNH needs a lookup).
+  const resolveProposalEmail = (p: BookingProposal): string | null => {
+    if (String(p.id).startsWith("draft:")) {
+      const key = String(p.id).replace(/^draft:/, "");
+      return draftAssignments.find((x) => x.clientId === key)?.email ?? null;
+    }
+    if (p.student_email) return p.student_email;
+    if (p.client_id) return fnhClients.find((c) => c.id === p.client_id)?.email ?? null;
+    return null;
   };
 
   const autoDraftClients = useMemo<AutoDraftClient[]>(() => {
@@ -1240,10 +1257,7 @@ const TimetablePage = () => {
                       loading={loading}
                       error={error}
                       onOpenDay={openDay}
-                      onOpenProposal={(p) => {
-                        if (String(p.id).startsWith("draft:")) pencilInDraft(p);
-                        else openProposal(p);
-                      }}
+                      onOpenProposal={(p) => { setWorkflowFor(p); setWorkflowEmailOpen(false); }}
                       onOpenBooking={setAppointmentFor}
                     />
                   );
@@ -1531,6 +1545,155 @@ const TimetablePage = () => {
               Yes, cancel
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Session workflow: Draft → Pencilled → Locked in */}
+      <Dialog open={workflowFor !== null} onOpenChange={(o) => { if (!o) { setWorkflowFor(null); setWorkflowEmailOpen(false); } }}>
+        <DialogContent>
+          {workflowFor && (() => {
+            const p = workflowFor;
+            const isDraft = String(p.id).startsWith("draft:");
+            const stage = p.status === "confirmed" ? 2 : p.status === "proposed" ? 1 : 0;
+            const email = resolveProposalEmail(p);
+            const steps = ["Draft", "Pencilled", "Locked in"];
+            return (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="font-serif">
+                    {p.student_name || (p.kind === "fnh" ? "FNH session" : "Voice lesson")}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {format(new Date(p.slot_start), "EEEE d MMMM yyyy · h:mm a")} · {p.kind === "fnh" ? "FNH" : "Voice"}
+                  </DialogDescription>
+                </DialogHeader>
+
+                {/* Stepper */}
+                <div className="flex items-center gap-1.5 my-1">
+                  {steps.map((label, i) => (
+                    <div key={label} className="flex items-center gap-1.5 flex-1">
+                      <div className={cn(
+                        "flex-1 rounded-full text-center text-[11px] font-bold py-1.5 border",
+                        i < stage && "bg-chart-emerald/15 text-chart-emerald border-chart-emerald/30",
+                        i === stage && "bg-foreground text-background border-foreground",
+                        i > stage && "text-muted-foreground border-border",
+                      )}>
+                        {label}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Email panel */}
+                {workflowEmailOpen && email && (
+                  <div className="space-y-2 rounded-xl border border-border/60 bg-muted/20 p-3">
+                    <div className="text-xs text-muted-foreground">To {email}</div>
+                    <textarea
+                      value={workflowMsg}
+                      onChange={(e) => setWorkflowMsg(e.target.value)}
+                      rows={7}
+                      className="w-full text-sm rounded-lg border border-border bg-background px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => setWorkflowEmailOpen(false)}>Cancel</Button>
+                      <Button
+                        size="sm"
+                        disabled={workflowBusy}
+                        className="bg-sky-600 hover:bg-sky-700 text-white"
+                        onClick={async () => {
+                          setWorkflowBusy(true);
+                          try {
+                            const { error } = await supabase.functions.invoke("send-proposed-times", {
+                              body: { to: email, name: p.student_name, startISO: p.slot_start, kind: p.kind, message: workflowMsg },
+                            });
+                            if (error) throw error;
+                            showSuccess(`Emailed ${p.student_name || "the client"}.`);
+                            setWorkflowEmailOpen(false);
+                          } catch (e: any) {
+                            showError(e?.message || "Couldn't send email.");
+                          } finally {
+                            setWorkflowBusy(false);
+                          }
+                        }}
+                      >
+                        {workflowBusy ? <Loader2 size={14} className="animate-spin mr-1.5" /> : <Mail size={14} className="mr-1.5" />} Send
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <DialogFooter className="flex-col sm:flex-row gap-2 sm:justify-between">
+                  <div className="flex gap-2">
+                    {email && !workflowEmailOpen && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={() => {
+                          const first = (p.student_name || "there").split(" ")[0];
+                          setWorkflowMsg(`Hi ${first},\n\nI've got a time in mind for you — ${format(new Date(p.slot_start), "EEEE d MMMM 'at' h:mm a")}. What do you think? If it works I'll lock it in; if not, tell me what suits.\n\nAll the best,\nDaniele`);
+                          setWorkflowEmailOpen(true);
+                        }}
+                      >
+                        <Mail size={14} /> Email client
+                      </Button>
+                    )}
+                    {stage >= 1 && !isDraft && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive"
+                        disabled={workflowBusy}
+                        onClick={async () => {
+                          setWorkflowBusy(true);
+                          try { await dropProposal(p.id); showSuccess("Dropped."); setWorkflowFor(null); }
+                          catch (e: any) { showError(e?.message || "Couldn't drop."); }
+                          finally { setWorkflowBusy(false); }
+                        }}
+                      >
+                        Drop
+                      </Button>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    {stage === 0 && (
+                      <Button
+                        size="sm"
+                        disabled={workflowBusy || !isDraft}
+                        className="gap-1.5 bg-amber-500 hover:bg-amber-600 text-white"
+                        onClick={async () => {
+                          setWorkflowBusy(true);
+                          const created = await pencilInDraft(p);
+                          setWorkflowBusy(false);
+                          if (created) setWorkflowFor(created);
+                        }}
+                      >
+                        {workflowBusy ? <Loader2 size={14} className="animate-spin" /> : <PenLine size={14} />} Pencil in
+                      </Button>
+                    )}
+                    {stage === 1 && (
+                      <Button
+                        size="sm"
+                        disabled={workflowBusy}
+                        className="gap-1.5 bg-chart-emerald hover:bg-emerald-700 text-white"
+                        onClick={async () => {
+                          setWorkflowBusy(true);
+                          try { await confirmProposal(p.id); showSuccess("Locked in to Cal.com."); setWorkflowFor({ ...p, status: "confirmed" }); }
+                          catch (e: any) { showError(e?.message || "Couldn't lock in."); }
+                          finally { setWorkflowBusy(false); }
+                        }}
+                      >
+                        {workflowBusy ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />} Lock in
+                      </Button>
+                    )}
+                    {stage === 2 && (
+                      <span className="text-sm font-semibold text-chart-emerald flex items-center gap-1.5"><Check size={16} /> Locked in</span>
+                    )}
+                  </div>
+                </DialogFooter>
+              </>
+            );
+          })()}
         </DialogContent>
       </Dialog>
 

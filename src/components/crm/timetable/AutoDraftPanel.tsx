@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Wand2, CalendarClock, AlertTriangle, Check, X, Plane, Search, Clock, Mail, BookmarkPlus } from "lucide-react";
+import { Loader2, Wand2, CalendarClock, AlertTriangle, Check, X, Plane, Search, Clock, Mail, BookmarkPlus, Copy } from "lucide-react";
 import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
@@ -308,6 +308,36 @@ export default function AutoDraftPanel({
     if (!name) return;
     const keys = [...selected];
     persistSets([...savedSets.filter((s) => s.name !== name), { name, keys }]);
+  };
+
+  const copyDraft = async () => {
+    if (!result) return;
+    const byDay = new Map<string, Assignment[]>();
+    for (const a of result.assignments) {
+      const key = format(a.slotStart, "EEE d MMM");
+      (byDay.get(key) ?? byDay.set(key, []).get(key)!).push(a);
+    }
+    const lines: string[] = [`Draft timetable — ${result.assignments.length} placed`, ""];
+    for (const [day, items] of [...byDay.entries()].sort(
+      (x, y) => x[1][0].slotStart.getTime() - y[1][0].slotStart.getTime(),
+    )) {
+      lines.push(day);
+      for (const a of items.sort((p, q) => p.slotStart.getTime() - q.slotStart.getTime())) {
+        lines.push(`  ${format(a.slotStart, "h:mm a")} · ${a.name} (${a.kind === "voice" ? "Voice" : "FNH"}) — ${a.reason}`);
+      }
+      lines.push("");
+    }
+    if (result.unplaced.length) {
+      lines.push("Couldn't place:");
+      for (const u of result.unplaced) lines.push(`  - ${u.name}: ${u.reason}`);
+    }
+    const text = lines.join("\n").trim();
+    try {
+      await navigator.clipboard.writeText(text);
+      showSuccess("Draft copied — paste it anywhere.");
+    } catch {
+      showError("Couldn't copy. Your browser may block clipboard access.");
+    }
   };
 
   const emailOne = async (a: Assignment) => {
@@ -765,17 +795,27 @@ export default function AutoDraftPanel({
                 <p className="text-xs text-amber-600 mt-0.5">{result.unplaced.length} still need a slot (see below)</p>
               )}
             </div>
-            {pendingCount > 0 && (
+            <div className="flex items-center gap-2">
               <Button
                 size="sm"
-                onClick={acceptAll}
-                disabled={accepting}
-                className="rounded-full h-8 text-xs bg-chart-emerald/90 hover:bg-chart-emerald text-white border-none"
+                variant="outline"
+                onClick={copyDraft}
+                className="rounded-full h-8 text-xs"
               >
-                {accepting ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Check className="h-3.5 w-3.5 mr-1.5" />}
-                Pencil in all ({pendingCount})
+                <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy
               </Button>
-            )}
+              {pendingCount > 0 && (
+                <Button
+                  size="sm"
+                  onClick={acceptAll}
+                  disabled={accepting}
+                  className="rounded-full h-8 text-xs bg-chart-emerald/90 hover:bg-chart-emerald text-white border-none"
+                >
+                  {accepting ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Check className="h-3.5 w-3.5 mr-1.5" />}
+                  Pencil in all ({pendingCount})
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">

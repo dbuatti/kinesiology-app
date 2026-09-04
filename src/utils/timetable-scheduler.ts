@@ -274,13 +274,15 @@ export function computePreferredTime(pastSessions: Date[]): PreferredTime | null
       ts += w * (d.getHours() * 60 + d.getMinutes());
     });
   }
-  const avgMinutes = ts / tw;
+  // Round to the nearest 5 min so a weighted average of scattered times reads as
+  // a real clock time (12:15) rather than a nonsense minute (12:13).
+  const avgMinutes = Math.round(ts / tw / 5) * 5;
 
   const confidence = valid.length === 1 ? 0.35 : Math.min(1, bestW / totalWeight);
 
   return {
     weekday,
-    minutesOfDay: Math.round(avgMinutes),
+    minutesOfDay: avgMinutes,
     confidence,
     sampleSize: valid.length,
   };
@@ -390,199 +392,6 @@ function sameLocalDay(a: Date, b: Date): boolean {
  */
 function baseKeyOf(id: string): string {
   return id.split("#")[0];
-}
-
-/**
- * Keep a client's own recurring sessions on a consistent weekday + time: once
- * one instance lands, the rest are pulled toward the same day/time.
- */
-function consistencyBonus(slot: OpenSlot, selfBaseKey: string, placed: Assignment[]): number {
-  let bonus = 0;
-  const slotMin = slot.start.getHours() * 60 + slot.start.getMinutes();
-  for (const a of placed) {
-    if (baseKeyOf(a.clientId) !== selfBaseKey) continue;
-    if (a.slotStart.getDay() === slot.start.getDay()) {
-      bonus += 0.25;
-      const aMin = a.slotStart.getHours() * 60 + a.slotStart.getMinutes();
-      if (Math.abs(aMin - slotMin) <= 30) bonus += 0.2; // same time too
-    }
-  }
-  return Math.min(0.6, bonus);
-}
-
-function clusterBonus(slot: OpenSlot, kind: SessionKind, placed: Assignment[], selfBaseKey: string): number {
-  let bonus = 0;
-  for (const a of placed) {
-    // Never cluster a client's own recurring instances together — those must
-    // spread across the weeks, not pile onto one day.
-    if (baseKeyOf(a.clientId) === selfBaseKey) continue;
-    if (!sameLocalDay(a.slotStart, slot.start)) continue;
-    if (a.kind === kind) {
-      bonus += 0.12;
-      const gapMin = Math.abs(a.slotStart.getTime() - slot.start.getTime()) / 60_000;
-      if (gapMin <= 90) bonus += 0.12; // back-to-back sweetener
-    } else {
-      // Firm separation: prefer to keep FNH days and voice days apart, but not
-      // so hard that one voice booking blocks all FNH from an otherwise-good day.
-      bonus -= 0.25;
-    }
-  }
-  return Math.max(-0.6, Math.min(0.5, bonus));
-}
-
-interface Candidate {
-  slot: OpenSlot;
-  score: number;
-}
-
-/**
- * Produce a draft timetable: assign each selected client to their best open,
- * non-clashing slot, resolving contention most-constrained-first (overdue as
- * tiebreak). Returns the assignments plus any clients that couldn't be placed.
- */
-export function autoDraftSchedule(input: AutoDraftInput): DraftResult {
-  const { clients, openSlots, busyBlocks } = input;
-  const minScore = input.minScore ?? 0.05;
-  const groupByKind = input.groupByKind !== false;
-
-  // Slots free of busy blocks and existing bookings, up front.
-  const taken = new Set(input.takenSlotStarts ?? []);
-  const freeSlots = openSlots.filter(
-    (s) => !taken.has(slotKey(s)) && !overlapsBusy(s, busyBlocks),
-  );
-
-  // Precompute each client's preference and their ranked candidate slots.
-  const prefs = new Map<string, PreferredTime | null>();
-  const candidates = new Map<string, Candidate[]>();
-  const overdue = new Map<string, number>();
-
-  for (const c of clients) {
-    const pref = computePreferredTime(c.pastSessions);
-    prefs.set(c.id, pref);
-
-    const withinTargetBand = (slot: OpenSlot) => {
-      if (!c.targetDate || c.targetWindowDays == null) return true;
-      const diffDays = Math.abs(slot.start.getTime() - c.targetDate.getTime()) / DAY_MS;
-      return diffDays <= c.targetWindowDays;
-    };
-
-    const ranked = freeSlots
-      .filter((slot) => slotMatchesAvailability(slot, c.availability) && withinTargetBand(slot))
-      .map((slot) => ({ slot, score: scoreSlot(c, pref, slot) }))
-      .filter((x) => x.score >= minScore)
-      .sort((a, b) => b.score - a.score || a.slot.start.getTime() - b.slot.start.getTime());
-    candidates.set(c.id, ranked);
-
-    // Overdue magnitude (days past due) for tie-breaking.
-    let od = 0;
-    if (c.intervalDays && c.lastSessionAt) {
-      od = (Date.now() - (c.lastSessionAt.getTime() + c.intervalDays * DAY_MS)) / DAY_MS;
-    }
-    overdue.set(c.id, od);
-  }
-
-  const assignments: Assignment[] = [];
-  const unplaced: Unplaced[] = [];
-  const remaining = new Set(clients.map((c) => c.id));
-  const byId = new Map(clients.map((c) => [c.id, c] as const));
-
-  // Occupied time ranges (ms). Two drafted sessions must never overlap, even if
-  // Cal.com offers overlapping start times (e.g. 4:00 and 4:15) — a 45-min
-  // session at 4:00 blocks 4:15. Seed with the practitioner's busy blocks.
-  const occupied: { s: number; e: number }[] = busyBlocks.map((b) => ({ s: b.start.getTime(), e: b.end.getTime() }));
-  const durationOf = (c: SchedulerClient) => c.durationMin ?? DEFAULT_DURATION[c.kind];
-  const preBufOf = (c: SchedulerClient) => c.preBufferMin ?? 0;
-  const postBufOf = (c: SchedulerClient) => c.postBufferMin ?? (c.kind === "fnh" ? 30 : 0);
-  // The time a session reserves = its length plus the buffers around it, so a
-  // 60-min FNH keeps a 30-min break after, while voice can sit back-to-back.
-  const reservedRange = (c: SchedulerClient, startMs: number) => ({
-    s: startMs - preBufOf(c) * 60_000,
-    e: startMs + durationOf(c) * 60_000 + postBufOf(c) * 60_000,
-  });
-  const rangeFree = (c: SchedulerClient, startMs: number) => {
-    const r = reservedRange(c, startMs);
-    return !occupied.some((o) => r.s < o.e && r.e > o.s);
-  };
-
-  while (remaining.size > 0) {
-    // Recompute each remaining client's still-viable candidates: their reserved
-    // range (session + buffers) must not overlap anything already placed.
-    const viable = new Map<string, Candidate[]>();
-    for (const id of remaining) {
-      const c = byId.get(id)!;
-      viable.set(
-        id,
-        (candidates.get(id) ?? []).filter((cand) => rangeFree(c, cand.slot.start.getTime())),
-      );
-    }
-
-    // Pick the most-constrained client (fewest viable slots); overdue breaks ties.
-    let pick: string | null = null;
-    let pickCount = Infinity;
-    for (const id of remaining) {
-      const count = viable.get(id)!.length;
-      if (
-        count < pickCount ||
-        (count === pickCount && pick !== null && (overdue.get(id) ?? 0) > (overdue.get(pick) ?? 0))
-      ) {
-        pick = id;
-        pickCount = count;
-      }
-    }
-    if (pick === null) break;
-
-    remaining.delete(pick);
-    const client = byId.get(pick)!;
-
-    // Choose the client's best slot, nudged to batch with same-kind sessions.
-    const cands = viable.get(pick)!;
-    let best = cands[0];
-    if (best && groupByKind && assignments.length > 0) {
-      let bestAdj = -Infinity;
-      for (const cand of cands) {
-        const selfBase = baseKeyOf(client.id);
-        const adj =
-          cand.score +
-          clusterBonus(cand.slot, client.kind, assignments, selfBase) +
-          consistencyBonus(cand.slot, selfBase, assignments);
-        if (adj > bestAdj) {
-          bestAdj = adj;
-          best = cand;
-        }
-      }
-    }
-
-    if (!best) {
-      unplaced.push({
-        clientId: pick,
-        name: client.name,
-        reason:
-          (candidates.get(pick)?.length ?? 0) === 0
-            ? "No open slot matches their pattern in this window."
-            : "Preferred slots were taken by more-constrained clients.",
-      });
-      continue;
-    }
-
-    const pref = prefs.get(pick) ?? null;
-    const start = best.slot.start;
-    const dur = client.durationMin ?? DEFAULT_DURATION[client.kind];
-    occupied.push(reservedRange(client, start.getTime()));
-    assignments.push({
-      clientId: client.id,
-      kind: client.kind,
-      name: client.name,
-      email: client.email ?? null,
-      slotStart: start,
-      slotEnd: new Date(start.getTime() + dur * 60_000),
-      score: Number(best.score.toFixed(3)),
-      reason: describeFit(pref, start, overdue.get(pick) ?? 0, client.timeKnown !== false),
-      lowConfidence: !pref || pref.confidence < 0.4,
-    });
-  }
-
-  assignments.sort((a, b) => a.slotStart.getTime() - b.slotStart.getTime());
-  return { assignments, unplaced };
 }
 
 // ── Two-pass anchored scheduler ─────────────────────────────────────────────
@@ -967,16 +776,4 @@ export function computeCapacityInsights(
     (a, b) => b.overdueClients.length - b.openCount - (a.overdueClients.length - a.openCount),
   );
   return insights;
-}
-
-function describeFit(pref: PreferredTime | null, slot: Date, overdueDays: number, timeKnown: boolean): string {
-  if (!pref) return "No history yet — best-guess fill.";
-  const wdMatch = pref.weekday === slot.getDay();
-  const parts: string[] = [];
-  parts.push(
-    wdMatch ? `Usual ${WEEKDAYS[pref.weekday]}` : `Near their usual ${WEEKDAYS[pref.weekday]}`,
-  );
-  if (!timeKnown) parts.push("time flexible");
-  if (overdueDays > 3) parts.push(`${Math.round(overdueDays)}d overdue`);
-  return parts.join(" · ");
 }

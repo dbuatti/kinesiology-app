@@ -8,7 +8,6 @@ import { format } from "date-fns";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import {
-  autoDraftSchedule,
   autoDraftScheduleAnchored,
   computePreferredTime,
   computeCapacityInsights,

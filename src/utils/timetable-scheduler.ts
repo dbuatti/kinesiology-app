@@ -672,7 +672,24 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
         return rangeFree(inst, slot.start.getTime());
       });
       if (cands.length === 0) {
-        unplaced.push({ clientId: inst.id, name: rep.name, reason: h ? "No open slot this week at their time." : "No consistent slot could be found." });
+        // Diagnose WHY, so the couldn't-place list is actionable rather than a
+        // vague "no slot at their time".
+        let why = h ? "No open slot this week at their time." : "No consistent slot could be found.";
+        if (inst.targetDate) {
+          const inWeek = freeSlots.filter((s) => weekKeyOf(s.start) === weekKeyOf(inst.targetDate!));
+          const inAvail = inWeek.filter((s) => slotMatchesAvailability(s, rep.availability));
+          const onDay = inAvail.filter((s) => {
+            const wd = s.start.getDay();
+            if (!dayAllowsKind(wd, inst.kind) && !explicit && !(h && wd === h.weekday)) return false;
+            if (preferSet && !preferSet.has(wd) && !(h && wd === h.weekday)) return false;
+            return true;
+          });
+          if (inWeek.length === 0) why = "No open Cal.com slots that week.";
+          else if (inAvail.length === 0) why = "No open slots inside their availability window that week.";
+          else if (onDay.length === 0) why = "Their available day is off the prioritised days.";
+          else why = "Their slot that week was already taken (overlap or buffer).";
+        }
+        unplaced.push({ clientId: inst.id, name: rep.name, reason: why });
         continue;
       }
       // Rank by fit to home slot, then nearness to the target date.

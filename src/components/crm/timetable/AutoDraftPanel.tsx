@@ -445,6 +445,20 @@ export default function AutoDraftPanel({
     };
     const pencilled = collect("pencilled");
     const confirmed = collect("confirmed");
+    // Already-booked (real Cal.com) sessions from each selected client's upcoming
+    // list, minus any that are actually proposals (deduped by time).
+    const bookedRows: { t: number; label: string }[] = [];
+    for (const c of clients) {
+      if (!selected.has(c.key)) continue;
+      const propTimes = new Set((existingByKey[c.key] ?? []).map((e) => new Date(e.start).getTime()));
+      for (const d of c.upcomingSessions ?? []) {
+        const t = d.getTime();
+        if (isNaN(t) || propTimes.has(t)) continue;
+        bookedRows.push({ t, label: `  ${format(new Date(t), "EEE d MMM · h:mm a")} · ${c.name} (${c.kind === "voice" ? "Voice" : "FNH"})` });
+      }
+    }
+    const booked = bookedRows.sort((a, b) => a.t - b.t).map((r) => r.label);
+    if (booked.length) { lines.push("", "Already booked:", ...booked); }
     if (confirmed.length) { lines.push("", "Confirmed:", ...confirmed); }
     if (pencilled.length) { lines.push("", "Pencilled in:", ...pencilled); }
     const text = lines.join("\n").trim();

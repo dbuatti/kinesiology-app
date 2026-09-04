@@ -428,10 +428,30 @@ export default function AutoDraftPanel({
         lines.push(`  - ${g.name}${g.count > 1 ? ` (${g.count} sessions)` : ""}: ${g.reason}`);
       }
     }
+    // Also list already pencilled-in and confirmed sessions (across selected
+    // clients) so the copied summary is the full picture, not just fresh drafts.
+    const nameByKey = new Map(clients.map((c) => [c.key, { name: c.name, kind: c.kind }]));
+    const collect = (status: "pencilled" | "confirmed") => {
+      const rows: { t: number; label: string }[] = [];
+      for (const [key, list] of Object.entries(existingByKey)) {
+        const meta = nameByKey.get(key);
+        for (const e of list) {
+          if (e.status !== status) continue;
+          const t = new Date(e.start).getTime();
+          if (isNaN(t)) continue;
+          rows.push({ t, label: `  ${format(new Date(t), "EEE d MMM · h:mm a")} · ${meta?.name ?? key} (${meta?.kind === "voice" ? "Voice" : "FNH"})` });
+        }
+      }
+      return rows.sort((a, b) => a.t - b.t).map((r) => r.label);
+    };
+    const pencilled = collect("pencilled");
+    const confirmed = collect("confirmed");
+    if (confirmed.length) { lines.push("", "Confirmed:", ...confirmed); }
+    if (pencilled.length) { lines.push("", "Pencilled in:", ...pencilled); }
     const text = lines.join("\n").trim();
     try {
       await navigator.clipboard.writeText(text);
-      showSuccess("Draft copied — paste it anywhere.");
+      showSuccess("Copied — draft, pencilled & confirmed. Paste anywhere.");
     } catch {
       showError("Couldn't copy. Your browser may block clipboard access.");
     }

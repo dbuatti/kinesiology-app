@@ -51,6 +51,7 @@ import { useIcloudCalendar, IcloudCalendarEvent } from "@/hooks/useIcloudCalenda
 import { useTimetableAppointments, EnrichedBooking } from "@/hooks/useTimetableAppointments";
 import { useSuggestionEngine, Suggestion } from "@/hooks/useSuggestionEngine";
 import AutoDraftPanel, { AutoDraftClient } from "@/components/crm/timetable/AutoDraftPanel";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { OpenSlot, BusyBlock, Assignment, AvailabilityWindow } from "@/utils/timetable-scheduler";
 import { CALCOM_CONFIG } from "@/config/integrations";
 import {
@@ -1147,62 +1148,55 @@ const TimetablePage = () => {
   return (
     <div className="p-4 md:p-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-chart-primary/10 flex items-center justify-center">
-            <CalendarRange size={20} className="text-chart-primary" />
-          </div>
-          <div>
-            <h1 className="text-xl font-serif font-bold text-foreground">Timetable Simulator</h1>
-            <p className="text-xs text-muted-foreground font-medium">
-              Mock-up your fortnight, pencil in proposals, then confirm to Cal.com.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Badge className="bg-chart-primary/10 text-chart-primary border-none" variant="outline">
-            {summary.openSlots} open
-          </Badge>
-          <Badge className="bg-rose-600/10 text-rose-600 border-none" variant="outline">
-            {summary.booked} booked
-          </Badge>
-          <Badge className="bg-muted text-muted-foreground border-none" variant="outline">
-            {summary.blocked} blocked
-          </Badge>
-          <Button variant="ghost" size="sm" onClick={fetchData} disabled={loading} className="gap-1.5">
-            <RefreshCw size={14} className={cn(loading && "animate-spin")} /> Refresh
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleSendEmail(14)}
-            disabled={sendingEmail}
-            className="gap-1.5"
-            title="Email the next 14 days' agenda to your inbox"
-          >
-            <Mail size={14} className={cn(sendingEmail && "animate-pulse")} /> Email schedule
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setOooOpen(true)}
-            className="gap-1.5"
-            title="Block a block of time as out-of-office on Cal.com"
-          >
-            <Plane size={14} /> Out of office
-          </Button>
-          <Button
-            variant={showAllDay ? "default" : "outline"}
-            size="sm"
-            onClick={() => setShowAllDay((v) => !v)}
-            className="gap-1.5"
-            title="Show or hide all-day events (retreat, flights, personal) on the grid"
-          >
-            <CalendarDays size={14} /> All-day
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        icon={CalendarRange}
+        title="Timetable Simulator"
+        subtitle="Mock up your fortnight, pencil in proposals, then confirm to Cal.com."
+        actions={
+          <>
+            <Badge className="bg-chart-primary/10 text-chart-primary border-none" variant="outline">
+              {summary.openSlots} open
+            </Badge>
+            <Badge className="bg-rose-600/10 text-rose-600 border-none" variant="outline">
+              {summary.booked} booked
+            </Badge>
+            <Badge className="bg-muted text-muted-foreground border-none" variant="outline">
+              {summary.blocked} blocked
+            </Badge>
+            <Button variant="ghost" size="sm" onClick={fetchData} disabled={loading} className="gap-1.5">
+              <RefreshCw size={14} className={cn(loading && "animate-spin")} /> Refresh
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSendEmail(14)}
+              disabled={sendingEmail}
+              className="gap-1.5"
+              title="Email the next 14 days' agenda to your inbox"
+            >
+              <Mail size={14} className={cn(sendingEmail && "animate-pulse")} /> Email schedule
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setOooOpen(true)}
+              className="gap-1.5"
+              title="Block a block of time as out-of-office on Cal.com"
+            >
+              <Plane size={14} /> Out of office
+            </Button>
+            <Button
+              variant={showAllDay ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowAllDay((v) => !v)}
+              className="gap-1.5"
+              title="Show or hide all-day events (retreat, flights, personal) on the grid"
+            >
+              <CalendarDays size={14} /> All-day
+            </Button>
+          </>
+        }
+      />
 
       {/* Phase 3: iCloud calendar status */}
       <GcalStatusRow

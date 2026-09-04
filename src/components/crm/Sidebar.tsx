@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 import { setIpadMode } from "@/hooks/use-ipad-mode";
@@ -81,6 +81,20 @@ const Sidebar = () => {
     "Identity Work": false,
   });
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Mobile drawer niceties: close on Escape, and lock body scroll while open so
+  // the page behind doesn't scroll under the menu.
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMobileOpen(false); };
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [mobileOpen]);
   const [collapsed, setCollapsed] = useState(() => {
     return localStorage.getItem('rk_sidebar_collapsed') === 'true';
   });
@@ -341,12 +355,12 @@ const Sidebar = () => {
 
       {/* Mobile Overlay */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Navigation menu">
           <div
             className="absolute inset-0 bg-foreground/40 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="absolute left-0 top-0 bottom-0 w-72 shadow-2xl animate-in slide-in-from-left duration-300">
+          <aside className="absolute left-0 top-0 bottom-0 w-72 max-w-[85vw] shadow-2xl animate-in slide-in-from-left duration-300">
             {sidebarContent}
           </aside>
         </div>
@@ -355,6 +369,7 @@ const Sidebar = () => {
       {/* Mobile Toggle Button */}
       <button
         onClick={() => setMobileOpen(true)}
+        aria-label="Open navigation menu"
         className="fixed bottom-6 left-6 z-40 lg:hidden w-12 h-12 rounded-2xl bg-primary text-primary-foreground shadow-xl flex items-center justify-center hover:bg-primary/90 transition-colors"
       >
         <LayoutDashboard size={20} />

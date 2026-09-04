@@ -104,7 +104,7 @@ const MorningProgramPage = () => {
 
   return (
     <AppLayout>
-      <div className="max-w-5xl mx-auto py-6 animate-in fade-in duration-700 space-y-6">
+      <div className="max-w-6xl mx-auto py-6 animate-in fade-in duration-700 space-y-6">
 
 
         <PageHeader

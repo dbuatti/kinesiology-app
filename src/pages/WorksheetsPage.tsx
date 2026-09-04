@@ -146,7 +146,7 @@ const WorksheetsPage = () => {
 
   return (
     <div className="h-full overflow-y-auto px-6 py-8">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <PageHeader
             icon={BookOpen}

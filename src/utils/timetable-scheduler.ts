@@ -492,6 +492,12 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
       // Prefer the practitioner's chosen working days; other days score lower so
       // they're only used as overflow.
       if (preferSet && !preferSet.has(wd)) sc *= 0.35;
+      // For a client with an explicit availability window, history no longer
+      // pins their time, so bias toward the EARLIEST time they can come ("from
+      // 2pm" ⇒ book them at 2pm). This both pushes a windowed client earlier
+      // (Ashna 2–6pm → 2pm) and stops them drifting late to a conflict-free slot
+      // (Candice → 2pm, not 5pm).
+      if (explicit) sc += (1440 - mins) / 1440;
       const entry = { p: { weekday: wd, minutes: mins }, score: sc };
       if (!seenAny.has(key)) seenAny.set(key, entry);
       if ((explicit || dayAllowsKind(wd, rep.kind)) && !seen.has(key)) seen.set(key, entry);

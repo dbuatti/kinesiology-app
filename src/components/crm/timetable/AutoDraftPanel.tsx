@@ -630,6 +630,12 @@ export default function AutoDraftPanel({
     // Each instance carries the date it should land near.
     const DAY = 86_400_000;
     const nowMs = Date.now();
+    // Weeks (from today) that actually have open Cal.com slots. Instances that
+    // would land in a zero-supply week aren't drafted at all — they'd only pad
+    // the "couldn't place" list with weeks that have no availability, which reads
+    // as a failure when it's just an empty calendar.
+    const weeksWithSupply = new Set<number>();
+    for (const s of openSlots) weeksWithSupply.add(Math.floor((s.start.getTime() - nowMs) / (7 * DAY)));
     const slotsEnd = openSlots.reduce((m, s) => Math.max(m, s.start.getTime()), nowMs + 84 * DAY);
     // Only draft as far ahead as the chosen horizon.
     const windowEndMs = Math.min(slotsEnd, nowMs + horizonWeeks * 7 * DAY);
@@ -685,7 +691,10 @@ export default function AutoDraftPanel({
       while (t <= windowEndMs && i < MAX_INSTANCES) {
         // Skip any week they already have a real booking in.
         const covered = upcoming.some((u) => Math.abs(u - t) <= coveredBand * DAY);
-        if (!covered) {
+        // Skip weeks with no Cal.com availability at all (don't manufacture an
+        // "unplaceable" instance for an empty week).
+        const hasSupply = weeksWithSupply.has(Math.floor((t - nowMs) / (7 * DAY)));
+        if (!covered && hasSupply) {
           schedulerClients.push({ ...base, id: `${c.key}#${i}`, targetDate: new Date(t), targetWindowDays: placeBand });
         }
         t += interval * DAY;

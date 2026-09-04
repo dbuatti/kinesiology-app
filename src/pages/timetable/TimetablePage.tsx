@@ -181,6 +181,10 @@ const TimetablePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [slots, setSlots] = useState<Record<string, SlotInfo[]>>({});
+  // Voice slots come from the 30-min voice event: a finer start-time grid than
+  // the 60-min FNH event, so voice clients (e.g. Bella's 30-min Mon 4:30) are
+  // matched against times the FNH pool doesn't expose.
+  const [voiceSlots, setVoiceSlots] = useState<Record<string, SlotInfo[]>>({});
   const [bookings, setBookings] = useState<Record<string, BookingInfo[]>>({});
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
 
@@ -419,6 +423,21 @@ const TimetablePage = () => {
       setSlots(data.data || {});
       setBookings(data.bookings || {});
       setBlockedDates(data.blockedDates || []);
+
+      // Second pass: voice (30-min) slot grid for voice clients.
+      try {
+        const { data: vData } = await supabase.functions.invoke<SlotsResponse>("get-calcom-slots", {
+          body: {
+            start: start.toISOString(),
+            end: end.toISOString(),
+            eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_30,
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          },
+        });
+        setVoiceSlots(vData && vData.status !== "error" ? vData.data || {} : {});
+      } catch {
+        setVoiceSlots({});
+      }
     } catch (err) {
       console.error("Failed to load timetable:", err);
       setError(err instanceof Error ? err.message : "An unexpected error occurred.");
@@ -821,7 +840,10 @@ const TimetablePage = () => {
     return out;
   }, [enrichedClients, appointmentsData, enrichedVoiceStudents, voiceLessons, voiceBookingsData, proposals, now]);
 
-  // Open Cal.com slots across the window (future only).
+  // Open Cal.com slots across the window (future only). FNH-event slots are
+  // tagged kind:"fnh"; voice-event (30-min) slots kind:"voice". The scheduler
+  // matches each client to their own kind's grid so voice clients see the finer
+  // 30-min start times the 60-min FNH grid doesn't expose.
   const autoDraftOpenSlots = useMemo<OpenSlot[]>(() => {
     const nowMs = Date.now();
     const out: OpenSlot[] = [];
@@ -829,11 +851,18 @@ const TimetablePage = () => {
       for (const s of list) {
         const start = new Date(s.start);
         if (isNaN(start.getTime()) || start.getTime() <= nowMs) continue;
-        out.push({ start, durationMin: 60 });
+        out.push({ start, durationMin: 60, kind: "fnh" });
+      }
+    }
+    for (const list of Object.values(voiceSlots)) {
+      for (const s of list) {
+        const start = new Date(s.start);
+        if (isNaN(start.getTime()) || start.getTime() <= nowMs) continue;
+        out.push({ start, durationMin: 30, kind: "voice" });
       }
     }
     return out;
-  }, [slots]);
+  }, [slots, voiceSlots]);
 
   // Practitioner busy blocks: iCloud events + whole-day blocked dates.
   const autoDraftBusy = useMemo<BusyBlock[]>(() => {

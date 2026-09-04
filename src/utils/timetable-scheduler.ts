@@ -184,6 +184,10 @@ export interface OpenSlot {
   start: Date;
   /** Slot length in minutes. */
   durationMin: number;
+  /** Which event-type grid this slot came from. A client only uses slots of
+   *  their own kind (or untagged slots). Lets voice clients match the finer
+   *  30-min voice grid rather than the 60-min FNH grid. */
+  kind?: SessionKind;
 }
 
 export interface BusyBlock {
@@ -484,6 +488,7 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     const seen = new Map<string, { p: HomePattern; score: number }>();
     const seenAny = new Map<string, { p: HomePattern; score: number }>();
     for (const slot of freeSlots) {
+      if (slot.kind && slot.kind !== rep.kind) continue; // use this client's own grid
       if (!slotMatchesAvailability(slot, rep.availability)) continue;
       const wd = slot.start.getDay();
       const mins = slot.start.getHours() * 60 + slot.start.getMinutes();
@@ -645,6 +650,7 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     const usedWeeks = new Set<string>();
     for (const inst of instances) {
       const cands = freeSlots.filter((slot) => {
+        if (slot.kind && slot.kind !== inst.kind) return false; // this client's own grid
         if (usedWeeks.has(weekKeyOf(slot.start))) return false;
         if (inst.targetDate && inst.targetWindowDays != null) {
           // Land in the target's WEEK, not within ±N days of an exact date. The

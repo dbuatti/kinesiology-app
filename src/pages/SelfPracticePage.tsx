@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/shared/PageHeader";
 
 import { useState, useEffect, type MouseEvent } from "react";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
@@ -206,33 +207,29 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  <div className="space-y-6">
 
 
- <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
- <div className="flex items-center gap-4">
- <div className="w-12 h-12 bg-destructive rounded-xl flex items-center justify-center text-primary-foreground shadow-sm">
- <Heart size={32} className="fill-current" />
- </div>
- <div>
- <h1 className="text-3xl font-semibold tracking-tight text-foreground">Self Practice</h1>
- <p className="text-muted-foreground font-medium">Your private space for personal health tracking and protocol practice.</p>
- </div>
- </div>
- <div className="flex items-center gap-3">
- <div className="hidden sm:flex flex-col items-end mr-4">
+ <PageHeader
+ icon={Heart}
+ title="Self Practice"
+ subtitle="Your private space for personal health tracking and protocol practice."
+ actions={
+ <>
+ <div className="hidden sm:flex flex-col items-end mr-2">
  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Practice Streak</p>
  <p className="text-xl font-semibold text-orange-500 flex items-center gap-1">
  <Zap size={18} className="fill-current" /> {streak} Days
  </p>
  </div>
- <Button 
- onClick={() => handleNewSelfSession()} 
+ <Button
+ onClick={() => handleNewSelfSession()}
  disabled={creating}
- className="bg-destructive hover:bg-destructive/90 shadow-sm h-12 px-8 rounded-xl font-medium"
+ className="bg-destructive hover:bg-destructive/90 shadow-sm h-11 px-6 rounded-xl font-medium"
  >
  {creating ? <Loader2 className="mr-2 animate-spin" /> : <Plus size={20} className="mr-2" />}
  Start Self-Session
  </Button>
- </div>
- </div>
+ </>
+ }
+ />
 
  <Tabs value={activeTab} onValueChange={(v) => (nested ? setInternalTab(v) : setSearchParams({ tab: v }))} className="w-full">
  <TabsList className="grid w-full grid-cols-2 h-14 bg-muted p-1.5 rounded-xl mb-8">

@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/shared/PageHeader";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -147,19 +148,11 @@ const WorksheetsPage = () => {
     <div className="h-full overflow-y-auto px-6 py-8">
       <div className="max-w-5xl mx-auto">
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-2xl bg-chart-primary/10 flex items-center justify-center">
-              <BookOpen size={24} className="text-chart-primary" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-primary tracking-wider uppercase">Functional Neuro Health</p>
-              <h1 className="text-2xl font-bold text-foreground">Worksheets</h1>
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
-            Personal-growth and business exercises. Open one, complete it honestly, and your answers
-            are saved automatically.
-          </p>
+          <PageHeader
+            icon={BookOpen}
+            title="Worksheets"
+            subtitle="Personal-growth and business exercises — open one, complete it honestly, answers save automatically."
+          />
         </div>
 
         {groups.map(({ group, items }) => (

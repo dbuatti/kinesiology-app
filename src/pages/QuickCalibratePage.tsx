@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/shared/PageHeader";
 
 import AppLayout from "@/components/crm/AppLayout";
 
@@ -10,17 +11,11 @@ export function QuickCalibrateTool() {
       <div className="space-y-8 w-full">
 
 
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-amber-500 rounded-xl flex items-center justify-center text-primary-foreground shadow-md">
-              <Zap size={28} className="fill-current" />
-            </div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Quick Calibrate</h1>
-          </div>
-          <p className="text-muted-foreground font-medium">
-            Standalone pathway logic for quick clinical checks and self-correction.
-          </p>
-        </div>
+        <PageHeader
+          icon={Zap}
+          title="Quick Calibrate"
+          subtitle="Standalone pathway logic for quick clinical checks and self-correction."
+        />
 
         <Alert className="bg-chart-primary/10 dark:bg-chart-primary/20 border-chart-primary/20 dark:border-chart-primary/30 rounded-xl">
           <Info className="h-5 w-5 text-chart-primary" />

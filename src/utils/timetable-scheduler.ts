@@ -188,6 +188,10 @@ export interface OpenSlot {
    *  their own kind (or untagged slots). Lets voice clients match the finer
    *  30-min voice grid rather than the 60-min FNH grid. */
   kind?: SessionKind;
+  /** The event duration (min) of the grid this slot came from. When set, a
+   *  client only uses slots whose grid matches their own booked length, so an
+   *  offered start is guaranteed bookable for that length. */
+  eventDurationMin?: number;
 }
 
 export interface BusyBlock {
@@ -432,6 +436,27 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
   const freeSlots = openSlots.filter((s) => !taken.has(slotKey(s)) && !overlapsBusy(s, busyBlocks));
 
   const durationOf = (c: SchedulerClient) => c.durationMin ?? DEFAULT_DURATION[c.kind];
+  // Which grids exist per kind (e.g. voice has 30/45/60 grids). Used to pick the
+  // closest grid to a client's booked length when their exact length has none.
+  const gridDursByKind = new Map<SessionKind, number[]>();
+  for (const s of openSlots) {
+    if (!s.kind || s.eventDurationMin == null) continue;
+    const arr = gridDursByKind.get(s.kind) ?? [];
+    if (!arr.includes(s.eventDurationMin)) { arr.push(s.eventDurationMin); gridDursByKind.set(s.kind, arr); }
+  }
+  // A client uses only slots from their own kind, and — when that kind's grids
+  // are duration-tagged — only the grid matching their booked length (snapped to
+  // the nearest available grid), so every offered start fits their real length.
+  const gridOk = (slot: OpenSlot, c: SchedulerClient) => {
+    if (!slot.kind) return true;
+    if (slot.kind !== c.kind) return false;
+    if (slot.eventDurationMin == null) return true;
+    const grids = gridDursByKind.get(c.kind) ?? [];
+    if (grids.length === 0) return true;
+    const want = durationOf(c);
+    const nearest = grids.reduce((b, d) => (Math.abs(d - want) < Math.abs(b - want) ? d : b), grids[0]);
+    return slot.eventDurationMin === nearest;
+  };
   const preBufOf = (c: SchedulerClient) => c.preBufferMin ?? 0;
   const postBufOf = (c: SchedulerClient) => c.postBufferMin ?? (c.kind === "fnh" ? 30 : 0);
 
@@ -488,7 +513,7 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     const seen = new Map<string, { p: HomePattern; score: number }>();
     const seenAny = new Map<string, { p: HomePattern; score: number }>();
     for (const slot of freeSlots) {
-      if (slot.kind && slot.kind !== rep.kind) continue; // use this client's own grid
+      if (!gridOk(slot, rep)) continue; // use this client's own kind + duration grid
       if (!slotMatchesAvailability(slot, rep.availability)) continue;
       const wd = slot.start.getDay();
       const mins = slot.start.getHours() * 60 + slot.start.getMinutes();
@@ -650,7 +675,7 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     const usedWeeks = new Set<string>();
     for (const inst of instances) {
       const cands = freeSlots.filter((slot) => {
-        if (slot.kind && slot.kind !== inst.kind) return false; // this client's own grid
+        if (!gridOk(slot, inst)) return false; // this client's own kind + duration grid
         if (usedWeeks.has(weekKeyOf(slot.start))) return false;
         if (inst.targetDate && inst.targetWindowDays != null) {
           // Land in the target's WEEK, not within ±N days of an exact date. The

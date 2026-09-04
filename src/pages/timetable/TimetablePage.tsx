@@ -181,10 +181,9 @@ const TimetablePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [slots, setSlots] = useState<Record<string, SlotInfo[]>>({});
-  // Voice slots come from the 30-min voice event: a finer start-time grid than
-  // the 60-min FNH event, so voice clients (e.g. Bella's 30-min Mon 4:30) are
-  // matched against times the FNH pool doesn't expose.
-  const [voiceSlots, setVoiceSlots] = useState<Record<string, SlotInfo[]>>({});
+  // Voice slots per duration grid (30/45/60), so each voice client is matched to
+  // the exact grid for their booked length and every offered start is bookable.
+  const [voiceSlotsByDur, setVoiceSlotsByDur] = useState<Record<number, Record<string, SlotInfo[]>>>({});
   const [bookings, setBookings] = useState<Record<string, BookingInfo[]>>({});
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
 
@@ -424,20 +423,32 @@ const TimetablePage = () => {
       setBookings(data.bookings || {});
       setBlockedDates(data.blockedDates || []);
 
-      // Second pass: voice (30-min) slot grid for voice clients.
-      try {
-        const { data: vData } = await supabase.functions.invoke<SlotsResponse>("get-calcom-slots", {
-          body: {
-            start: start.toISOString(),
-            end: end.toISOString(),
-            eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_30,
-            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          },
-        });
-        setVoiceSlots(vData && vData.status !== "error" ? vData.data || {} : {});
-      } catch {
-        setVoiceSlots({});
-      }
+      // Second pass: fetch each voice duration grid so voice clients match the
+      // exact grid for their booked length.
+      const voiceGrids: { dur: number; id: string }[] = [
+        { dur: 30, id: CALCOM_CONFIG.VOICE_EVENT_TYPE_30 },
+        { dur: 45, id: CALCOM_CONFIG.VOICE_EVENT_TYPE_45 },
+        { dur: 60, id: CALCOM_CONFIG.VOICE_EVENT_TYPE_60 },
+      ];
+      const byDur: Record<number, Record<string, SlotInfo[]>> = {};
+      await Promise.all(
+        voiceGrids.map(async ({ dur, id }) => {
+          try {
+            const { data: vData } = await supabase.functions.invoke<SlotsResponse>("get-calcom-slots", {
+              body: {
+                start: start.toISOString(),
+                end: end.toISOString(),
+                eventTypeId: id,
+                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              },
+            });
+            byDur[dur] = vData && vData.status !== "error" ? vData.data || {} : {};
+          } catch {
+            byDur[dur] = {};
+          }
+        }),
+      );
+      setVoiceSlotsByDur(byDur);
     } catch (err) {
       console.error("Failed to load timetable:", err);
       setError(err instanceof Error ? err.message : "An unexpected error occurred.");
@@ -854,15 +865,18 @@ const TimetablePage = () => {
         out.push({ start, durationMin: 60, kind: "fnh" });
       }
     }
-    for (const list of Object.values(voiceSlots)) {
-      for (const s of list) {
-        const start = new Date(s.start);
-        if (isNaN(start.getTime()) || start.getTime() <= nowMs) continue;
-        out.push({ start, durationMin: 30, kind: "voice" });
+    for (const [durStr, map] of Object.entries(voiceSlotsByDur)) {
+      const dur = Number(durStr);
+      for (const list of Object.values(map)) {
+        for (const s of list) {
+          const start = new Date(s.start);
+          if (isNaN(start.getTime()) || start.getTime() <= nowMs) continue;
+          out.push({ start, durationMin: dur, kind: "voice", eventDurationMin: dur });
+        }
       }
     }
     return out;
-  }, [slots, voiceSlots]);
+  }, [slots, voiceSlotsByDur]);
 
   // Practitioner busy blocks: iCloud events + whole-day blocked dates.
   const autoDraftBusy = useMemo<BusyBlock[]>(() => {

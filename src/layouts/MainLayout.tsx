@@ -18,6 +18,31 @@ const MainLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Per-route browser tab title, so tabs, history and bookmarks are
+  // distinguishable (they all read the same generic title otherwise).
+  useEffect(() => {
+    const seg = location.pathname.split("/").filter(Boolean)[0] ?? "";
+    const titles: Record<string, string> = {
+      "": "Home",
+      timetable: "Timetable",
+      calendar: "Calendar",
+      clients: "Clients",
+      sessions: "Sessions",
+      appointments: "Session",
+      business: "Business",
+      journal: "Journal",
+      practice: "Practice Hub",
+      worksheets: "Worksheets",
+      library: "Library",
+      identity: "Identity Work",
+      "morning-program": "Morning Program",
+      voice: "Voice Studio",
+      settings: "Settings",
+    };
+    const label = titles[seg] ?? seg.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+    document.title = label ? `${label} · Resonance` : "Resonance Kinesiology";
+  }, [location.pathname]);
+
   const [isFullScreen, setIsFullScreen] = useState(() => {
     return localStorage.getItem('rk_fullscreen') === 'true';
   });

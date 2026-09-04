@@ -635,12 +635,14 @@ export default function AutoDraftPanel({
     const windowEndMs = Math.min(slotsEnd, nowMs + horizonWeeks * 7 * DAY);
     const MAX_INSTANCES = 14;
 
+    // Build the recurring instances for everyone. `stretch` = push inferred-weekly
+    // clients to a fortnight (only ever inferred cadence — an explicit Weekly is
+    // never stretched).
+    const buildClients = (stretch: boolean): SchedulerClient[] => {
     const schedulerClients: SchedulerClient[] = [];
     for (const c of chosen) {
       let interval = availabilityByKey[c.key]?.cadenceDays ?? medianGapDays(c.pastSessions);
-      // "Aim for fortnightly": stretch weekly (or tighter) clients to a fortnight
-      // so more distinct people fit — unless they've been explicitly set weekly.
-      if (preferFortnightly && interval && interval < 14 && availabilityByKey[c.key]?.cadenceDays == null) {
+      if (stretch && interval && interval < 14 && availabilityByKey[c.key]?.cadenceDays == null) {
         interval = 14;
       }
       const base = {
@@ -691,15 +693,29 @@ export default function AutoDraftPanel({
       }
       if (i === 0) schedulerClients.push({ ...base, id: c.key });
     }
+    return schedulerClients;
+    };
 
-    const res = autoDraftScheduleAnchored({
-      clients: schedulerClients,
-      openSlots,
-      busyBlocks,
-      takenSlotStarts,
-      groupByKind,
-      preferredWeekdays: preferDays,
-    });
+    const runDraft = (stretch: boolean) =>
+      autoDraftScheduleAnchored({
+        clients: buildClients(stretch),
+        openSlots,
+        busyBlocks,
+        takenSlotStarts,
+        groupByKind,
+        preferredWeekdays: preferDays,
+      });
+
+    // Draft at natural cadence first (weekly stays weekly). Only when that leaves
+    // clients unplaced — i.e. a week was genuinely over-full — do we retry with
+    // inferred-weekly clients stretched to a fortnight, and keep it if it places
+    // more. This way "Aim for fortnightly" kicks in only when needed, so
+    // genuinely-weekly clients aren't spaced out by default.
+    let res = runDraft(false);
+    if (preferFortnightly && res.unplaced.length > 0) {
+      const stretched = runDraft(true);
+      if (stretched.assignments.length >= res.assignments.length) res = stretched;
+    }
     setResult(res);
     setAcceptedKeys(new Set());
     onDraftChange?.(res.assignments);
@@ -1035,7 +1051,9 @@ export default function AutoDraftPanel({
         </label>
         <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
           <Checkbox checked={preferFortnightly} onCheckedChange={(v) => setPreferFortnightly(!!v)} />
-          Aim for fortnightly
+          <span title="Only stretches inferred-weekly clients to fortnightly when a week is over-full; explicit Weekly is never stretched.">
+            Fortnightly if full
+          </span>
         </label>
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-muted-foreground">Draft</span>

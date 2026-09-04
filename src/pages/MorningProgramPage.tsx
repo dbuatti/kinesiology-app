@@ -1,4 +1,5 @@
 
+import { PageHeader } from "@/components/shared/PageHeader";
 import { useState, useEffect } from 'react';
 import AppLayout from '@/components/crm/AppLayout';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
@@ -106,22 +107,16 @@ const MorningProgramPage = () => {
       <div className="max-w-5xl mx-auto py-6 animate-in fade-in duration-700 space-y-6">
 
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-          <div className="flex items-center gap-5">
-            <div className="w-14 h-14 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
-              <Sun size={28} className="fill-current" />
-            </div>
-            <div>
-              <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-foreground">Morning Program</h1>
-              <p className="text-muted-foreground font-medium mt-1 text-lg">Establish your clinical state before the first session.</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
+        <PageHeader
+          icon={Sun}
+          title="Morning Program"
+          subtitle="Establish your clinical state before the first session."
+          actions={
             <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-chart-destructive">
               <RotateCcw size={14} className="mr-2" /> Reset Daily
             </Button>
-          </div>
-        </div>
+          }
+        />
 
         {/* Daily Intention Card */}
         <Card className="border-none shadow-sm rounded-xl bg-primary text-primary-foreground overflow-hidden relative group">

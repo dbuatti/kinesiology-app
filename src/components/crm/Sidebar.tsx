@@ -223,6 +223,7 @@ const Sidebar = () => {
                               key={child.path}
                               to={child.path}
                               onClick={() => setMobileOpen(false)}
+                              aria-current={isActive(child.path) ? "page" : undefined}
                               className={cn(
                                 "flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-colors",
                                 isActive(child.path)
@@ -245,6 +246,7 @@ const Sidebar = () => {
                     to={item.path!}
                     onClick={() => setMobileOpen(false)}
                     title={collapsed ? item.label : undefined}
+                    aria-current={isActive(item.path!) ? "page" : undefined}
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors",
                       collapsed ? "justify-center px-2" : "",

@@ -61,16 +61,22 @@ export interface DraftService {
   kind: "fnh" | "voice";
   label: string;
   durationMin: number;
+  price: number;
 }
 
 export const DRAFT_SERVICES: DraftService[] = [
-  { id: "5302336", kind: "fnh", label: "FNH · client rate", durationMin: 60 },
-  { id: "4279898", kind: "fnh", label: "FNH · new client $70", durationMin: 60 },
-  { id: "5927215", kind: "fnh", label: "FNH · community (free)", durationMin: 60 },
-  { id: "1945081", kind: "voice", label: "Voice · 60 min", durationMin: 60 },
-  { id: "5925021", kind: "voice", label: "Voice · 45 min", durationMin: 45 },
-  { id: "6488157", kind: "voice", label: "Voice · 30 min", durationMin: 30 },
+  { id: "5302336", kind: "fnh", label: "FNH · client rate", durationMin: 60, price: 100 },
+  { id: "4279898", kind: "fnh", label: "FNH · new client $70", durationMin: 60, price: 70 },
+  { id: "5927215", kind: "fnh", label: "FNH · community (free)", durationMin: 60, price: 0 },
+  { id: "1945081", kind: "voice", label: "Voice · 60 min", durationMin: 60, price: 95 },
+  { id: "5925021", kind: "voice", label: "Voice · 45 min", durationMin: 45, price: 75 },
+  { id: "6488157", kind: "voice", label: "Voice · 30 min", durationMin: 30, price: 50 },
 ];
+
+export function serviceFor(id: string | null | undefined): DraftService | null {
+  if (!id) return null;
+  return DRAFT_SERVICES.find((s) => s.id === id) ?? null;
+}
 
 /**
  * Best default event type for a client with no explicit service chosen:

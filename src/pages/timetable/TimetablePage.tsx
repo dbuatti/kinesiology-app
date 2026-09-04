@@ -864,6 +864,18 @@ const TimetablePage = () => {
     return out;
   }, [bookings, proposals]);
 
+  // Pencilled + confirmed proposals per client key, for the cadence visualiser.
+  const existingByKey = useMemo<Record<string, { start: string; status: "pencilled" | "confirmed" }[]>>(() => {
+    const map: Record<string, { start: string; status: "pencilled" | "confirmed" }[]> = {};
+    for (const p of proposals) {
+      if (!p.slot_start || p.status === "dropped") continue;
+      const key = p.kind === "fnh" ? (p.client_id ? `fnh:${p.client_id}` : null) : (p.student_email ? `voice:${p.student_email.toLowerCase()}` : null);
+      if (!key) continue;
+      (map[key] ??= []).push({ start: p.slot_start, status: p.status === "confirmed" ? "confirmed" : "pencilled" });
+    }
+    return map;
+  }, [proposals]);
+
   const stateFor = (d: Date): DayState => {
     const key = zonedDateKey(d);
     if (blockedDates.includes(key)) return DayState.BLOCKED;
@@ -1258,6 +1270,7 @@ const TimetablePage = () => {
             awayByKey={awayByKey}
             onSetAway={setAway}
             availabilityByKey={availabilityByKey}
+            existingByKey={existingByKey}
             onSavePrefs={saveClientPrefs}
             onEmailTimes={async (a, message) => {
               const { error } = await supabase.functions.invoke("send-proposed-times", {

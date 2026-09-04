@@ -21,7 +21,7 @@ import {
   type AvailabilityWindow,
 } from "@/utils/timetable-scheduler";
 import { Lightbulb } from "lucide-react";
-import { DRAFT_SERVICES, defaultServiceId, serviceLabel } from "@/config/integrations";
+import { DRAFT_SERVICES, defaultServiceId, serviceLabel, serviceFor } from "@/config/integrations";
 
 // ── Inputs from the parent page (already-loaded data) ────────────────────────
 export interface AutoDraftClient {
@@ -72,6 +72,9 @@ interface AutoDraftPanelProps {
   ) => void;
   /** Email a client the time they've been penciled in for. Resolves on success. */
   onEmailTimes?: (assignment: Assignment, message?: string) => Promise<unknown>;
+  /** Already-booked sessions per client key: pencilled (proposed) + confirmed,
+   *  so the timeline visualiser can show them alongside fresh drafts. */
+  existingByKey?: Record<string, { start: string; status: "pencilled" | "confirmed" }[]>;
 }
 
 // Median gap (days) between consecutive sessions — a simple cadence estimate.
@@ -362,6 +365,7 @@ export default function AutoDraftPanel({
   availabilityByKey = {},
   onSavePrefs,
   onEmailTimes,
+  existingByKey = {},
 }: AutoDraftPanelProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [awayEditKey, setAwayEditKey] = useState<string | null>(null);
@@ -510,6 +514,7 @@ export default function AutoDraftPanel({
   const togglePreferDay = (d: number) =>
     setPreferDays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
   const [result, setResult] = useState<{ assignments: Assignment[]; unplaced: Unplaced[] } | null>(null);
+  const [visualKey, setVisualKey] = useState<string | null>(null);
   const [accepting, setAccepting] = useState(false);
   const [acceptedKeys, setAcceptedKeys] = useState<Set<string>>(new Set());
 
@@ -1250,6 +1255,110 @@ export default function AutoDraftPanel({
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── Client cadence visualiser ─────────────────────────────────────
+          Pick a selected client and see their whole plotted-out series —
+          drafted / pencilled / confirmed, colour-coded, week-separated, with
+          the gap between each session, so you can eyeball who you're seeing and
+          how often, and catch anyone you're about to miss. */}
+      {selected.size > 0 && (
+        <div className="rounded-2xl border border-border/60 bg-card p-3 space-y-3">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <CalendarClock size={13} /> Client cadence check
+          </div>
+          <div className="flex gap-3">
+            {/* Left: selected clients */}
+            <div className="w-40 shrink-0 space-y-1 max-h-[420px] overflow-y-auto pr-1">
+              {clients.filter((c) => selected.has(c.key)).map((c) => (
+                <button
+                  key={c.key}
+                  onClick={() => setVisualKey(c.key)}
+                  className={cn(
+                    "w-full text-left text-xs font-medium rounded-lg px-2 py-1.5 border transition-colors truncate",
+                    visualKey === c.key ? "bg-foreground text-background border-foreground" : "border-border/60 hover:bg-muted",
+                  )}
+                >
+                  {c.name}
+                  <span className={cn("ml-1 text-[9px] uppercase", visualKey === c.key ? "text-background/70" : "text-muted-foreground")}>
+                    {c.kind === "voice" ? "Voice" : "FNH"}
+                  </span>
+                </button>
+              ))}
+            </div>
+            {/* Right: the picked client's timeline */}
+            <div className="flex-1 min-w-0">
+              {(() => {
+                if (!visualKey) return <div className="text-xs text-muted-foreground py-8 text-center">Pick a client to see their schedule.</div>;
+                const c = clients.find((x) => x.key === visualKey);
+                if (!c) return null;
+                const svc = serviceFor(availabilityByKey[c.key]?.eventTypeId) ?? serviceFor(defaultServiceId(c.kind, availabilityByKey[c.key]?.sessionLengthMin ?? null));
+                const cadDays = availabilityByKey[c.key]?.cadenceDays ?? null;
+
+                type Ev = { t: number; status: "confirmed" | "pencilled" | "draft" };
+                const evs: Ev[] = [];
+                for (const e of existingByKey[c.key] ?? []) {
+                  const t = new Date(e.start).getTime();
+                  if (!isNaN(t)) evs.push({ t, status: e.status });
+                }
+                for (const a of result?.assignments ?? []) {
+                  if (a.clientId.split("#")[0] !== c.key) continue;
+                  evs.push({ t: a.slotStart.getTime(), status: "draft" });
+                }
+                evs.sort((x, y) => x.t - y.t);
+                if (evs.length === 0) return <div className="text-xs text-muted-foreground py-8 text-center">No drafted, pencilled or confirmed sessions yet.</div>;
+
+                const DAY = 86_400_000;
+                const gaps = evs.slice(1).map((e, i) => Math.round((e.t - evs[i].t) / DAY));
+                const medGap = gaps.length ? [...gaps].sort((a, b) => a - b)[Math.floor(gaps.length / 2)] : null;
+                const cadenceLbl = cadDays === 7 ? "Weekly" : cadDays === 14 ? "Fortnightly" : cadDays === 21 ? "3-weekly" : cadDays === 28 ? "Monthly"
+                  : medGap == null ? "—" : medGap <= 8 ? "~Weekly" : medGap <= 17 ? "~Fortnightly" : medGap <= 24 ? "~3-weekly" : "~Monthly";
+                const weekKey = (t: number) => { const d = new Date(t); const off = (d.getDay() + 6) % 7; return Math.floor((t - off * DAY) / (7 * DAY)); };
+
+                const statusStyle: Record<Ev["status"], string> = {
+                  confirmed: "border-l-4 border-emerald-500 bg-emerald-500/5",
+                  pencilled: "border-l-4 border-amber-400 bg-amber-400/5",
+                  draft: "border-l-4 border-sky-400 bg-sky-400/5",
+                };
+
+                return (
+                  <div className="space-y-2">
+                    {/* Summary */}
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <span className="font-semibold text-foreground">{c.name}</span>
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold">{c.kind === "voice" ? "Voice" : "FNH"}</span>
+                      {svc && <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold">{svc.label.replace(/^(FNH|Voice) · /, "")} · ${svc.price}</span>}
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold">{cadenceLbl}</span>
+                      <span className="text-[10px] text-muted-foreground">{evs.length} session{evs.length === 1 ? "" : "s"}</span>
+                    </div>
+                    {/* Timeline, week-separated, empty weeks skipped */}
+                    <div className="space-y-0.5">
+                      {evs.map((e, i) => {
+                        const newWeek = i > 0 && weekKey(e.t) !== weekKey(evs[i - 1].t);
+                        const gap = i > 0 ? Math.round((e.t - evs[i - 1].t) / DAY) : null;
+                        return (
+                          <div key={i}>
+                            {newWeek && (
+                              <div className="flex items-center gap-2 my-1">
+                                <div className="h-px flex-1 bg-border" />
+                                <span className="text-[9px] uppercase tracking-wider text-muted-foreground">{gap}d gap</span>
+                                <div className="h-px flex-1 bg-border" />
+                              </div>
+                            )}
+                            <div className={cn("flex items-center justify-between rounded-md px-2 py-1", statusStyle[e.status])}>
+                              <span className="text-xs text-foreground">{format(new Date(e.t), "EEE d MMM · h:mm a")}</span>
+                              <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">{e.status}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
         </div>
       )}
 

@@ -92,6 +92,14 @@ export function parseAvailabilityText(text: string): AvailabilityWindow[] {
       if (toM) { to = parseClock(toM[toM.length - 1]); s = s.replace(toM[0], " "); }
     }
 
+    // A leftover bare time with no from/until keyword (e.g. "3:00pm Wednesday")
+    // is read as a start time — "from 3pm" — not discarded. Require a colon or
+    // am/pm so we don't grab a stray number.
+    if (from == null && to == null) {
+      const bare = s.match(/\b(\d{1,2}(?:[:.]\d{2})?\s*(?:a\.?m\.?|p\.?m\.?)|\d{1,2}[:.]\d{2})\b/i);
+      if (bare && parseClock(bare[1])) { from = parseClock(bare[1]); s = s.replace(bare[0], " "); }
+    }
+
     let days: number[] = [];
     if (/weekday/.test(s)) days = [1, 2, 3, 4, 5];
     else if (/weekend/.test(s)) days = [0, 6];
@@ -689,7 +697,11 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     // enough that some other day would "score" a touch better. Prepend their
     // historical pattern as a strong candidate so they don't drift off their day
     // (a 13-session Monday-10am client stays Monday 10am, not "nicer" Tue 10:30).
-    if (pref && pref.sampleSize >= 3 && pref.confidence >= 0.5) {
+    // An explicit availability window OVERRIDES history: when the practitioner
+    // has set when a client can come, don't lock them to their historical time —
+    // let the window govern (so e.g. Ashna's 2–6pm window can move her earlier).
+    const hasWindow = (rep.availability?.length ?? 0) > 0;
+    if (!hasWindow && pref && pref.sampleSize >= 3 && pref.confidence >= 0.5) {
       const loyalMinutes = rep.timeKnown === false ? null : pref.minutesOfDay;
       const hint = { p: { weekday: pref.weekday, minutes: loyalMinutes ?? pref.minutesOfDay }, score: 60 };
       const hintKey = `${hint.p.weekday}:${hint.p.minutes}`;

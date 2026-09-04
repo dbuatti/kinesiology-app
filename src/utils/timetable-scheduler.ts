@@ -647,7 +647,15 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
       const cands = freeSlots.filter((slot) => {
         if (usedWeeks.has(weekKeyOf(slot.start))) return false;
         if (inst.targetDate && inst.targetWindowDays != null) {
-          if (Math.abs(slot.start.getTime() - inst.targetDate.getTime()) / DAY_MS > inst.targetWindowDays) return false;
+          // Land in the target's WEEK, not within ±N days of an exact date. The
+          // target date is anchored to history (for date-only voice clients that
+          // can be a different weekday than they actually come), so a strict
+          // day-distance band can exclude the very day they're available (Bella:
+          // Mon 9 Nov fell just outside a mid-week target's ±3, so she dropped).
+          // Same-week OR within-band keeps the right week without that gap.
+          const sameWeek = weekKeyOf(slot.start) === weekKeyOf(inst.targetDate);
+          const withinBand = Math.abs(slot.start.getTime() - inst.targetDate.getTime()) / DAY_MS <= inst.targetWindowDays;
+          if (!sameWeek && !withinBand) return false;
         }
         if (!slotMatchesAvailability(slot, rep.availability)) return false;
         // Stay on kind-days (or the client's own home day, or a day they've said

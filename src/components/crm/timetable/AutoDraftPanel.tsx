@@ -449,7 +449,6 @@ export default function AutoDraftPanel({
     // list, minus any that are actually proposals (deduped by time).
     const bookedRows: { t: number; label: string }[] = [];
     for (const c of clients) {
-      if (!selected.has(c.key)) continue;
       const propTimes = new Set((existingByKey[c.key] ?? []).map((e) => new Date(e.start).getTime()));
       for (const d of c.upcomingSessions ?? []) {
         const t = d.getTime();

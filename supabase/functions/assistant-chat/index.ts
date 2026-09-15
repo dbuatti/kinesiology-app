@@ -21,11 +21,44 @@ const MAX_TOOL_ROUNDS = 6;
 const functionDeclarations = [
   {
     name: "get_client_context",
-    description: "Fetch a client's profile, recent appointments, journal notes, and (if trained) their AI communication-style summary.",
+    description: "Fetch a KINESIOLOGY/FNH client's profile (including current rate vs their target/ladder rate), recent appointments, journal notes, and (if trained) their AI communication-style summary. For voice/piano/singing lesson students, use search_voice_client instead — they live in a separate system.",
     parameters: {
       type: "OBJECT",
       properties: { client_id: { type: "STRING" } },
       required: ["client_id"],
+    },
+  },
+  {
+    name: "search_voice_client",
+    description: "Search for a Voice Studio (piano/voice lesson) student by name or email, and fetch their recent lesson booking history. Voice students are NOT in the kinesiology clients table — use this instead of get_client_context for anything voice/lesson related.",
+    parameters: {
+      type: "OBJECT",
+      properties: { query: { type: "STRING", description: "Student name or email to search for, e.g. 'Nikki' or 'nicolelrot@gmail.com'" } },
+      required: ["query"],
+    },
+  },
+  {
+    name: "get_active_clients",
+    description: "List kinesiology clients actively seen in the recent period (has a session in the window and/or a future booking), each with their session count, last session date, and current rate vs target rate. Use this to understand who's currently engaged in the practice.",
+    parameters: {
+      type: "OBJECT",
+      properties: { months: { type: "NUMBER", description: "How many months back counts as 'active'. Defaults to 3." } },
+    },
+  },
+  {
+    name: "get_revenue_opportunities",
+    description: "Find active kinesiology clients currently priced below their target/ladder rate, ranked by estimated near-term revenue gain if they were moved to their target rate. Use this to answer 'which clients would immediately mean more revenue'.",
+    parameters: {
+      type: "OBJECT",
+      properties: { months: { type: "NUMBER", description: "Activity window in months used to judge 'active' and to weight the estimate. Defaults to 3." } },
+    },
+  },
+  {
+    name: "get_practice_schedule_overview",
+    description: "Analyse recent appointments and voice lessons across the WHOLE practice (not one client) to show which days/times are busiest vs quietest — use this to recommend good times to schedule new or needs-attention clients.",
+    parameters: {
+      type: "OBJECT",
+      properties: { weeks: { type: "NUMBER", description: "How many recent weeks to analyse. Defaults to 8." } },
     },
   },
   {
@@ -109,10 +142,17 @@ async function callGemini(geminiKey: string, contents: any[], systemInstruction:
   return data;
 }
 
+function monthsSince(iso: string | null | undefined) {
+  if (!iso) return null;
+  const then = new Date(iso);
+  const now = new Date();
+  return (now.getFullYear() - then.getFullYear()) * 12 + (now.getMonth() - then.getMonth());
+}
+
 async function runGetClientContext(supabase: any, userId: string, clientId: string) {
   const { data: client, error: clientErr } = await supabase
     .from("clients")
-    .select("id, name, email, phone, standard_rate, journal, preferred_time, availability_notes")
+    .select("id, name, email, phone, standard_rate, target_rate, rate_updated_at, journal, preferred_time, availability_notes")
     .eq("id", clientId).eq("user_id", userId).maybeSingle();
   if (clientErr || !client) return { error: "Client not found." };
 
@@ -128,8 +168,23 @@ async function runGetClientContext(supabase: any, userId: string, clientId: stri
     .select("style_summary, channel")
     .eq("client_id", clientId).maybeSingle();
 
+  const standardRate = client.standard_rate ?? 0;
+  const targetRate = client.target_rate ?? standardRate;
+
   return {
-    client: { name: client.name, email: client.email, phone: client.phone, standard_rate: client.standard_rate, preferred_time: client.preferred_time, availability_notes: client.availability_notes },
+    client: {
+      name: client.name, email: client.email, phone: client.phone,
+      preferred_time: client.preferred_time, availability_notes: client.availability_notes,
+    },
+    rate: {
+      current_rate: standardRate,
+      target_ladder_rate: targetRate,
+      gap_to_target: Math.max(0, targetRate - standardRate),
+      months_since_rate_reviewed: monthsSince(client.rate_updated_at),
+      note: targetRate > standardRate
+        ? "This client is below their target/ladder rate — a rate increase conversation could be due."
+        : "This client is already at (or above) their target rate.",
+    },
     recent_appointments: (appointments || []).map((a: any) => ({ date: fmtMelbourne(a.date), status: a.status })),
     communication_style: profile?.style_summary || null,
     communication_channel: profile?.channel || null,
@@ -203,6 +258,171 @@ async function runGetPastBookingPatterns(supabase: any, userId: string, clientId
   };
 }
 
+async function runSearchVoiceClient(supabaseUrl: string, serviceKey: string, supabase: any, query: string) {
+  const res = await fetch(`${supabaseUrl}/functions/v1/voice-clients`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${serviceKey}`, "Content-Type": "application/json" },
+    body: "{}",
+  });
+  const data = await res.json();
+  if (!res.ok || !data.success) return { error: "Could not load voice students." };
+
+  const q = query.toLowerCase();
+  const matches = (data.students || []).filter((s: any) =>
+    (s.name || "").toLowerCase().includes(q) || (s.email || "").toLowerCase().includes(q),
+  );
+  if (matches.length === 0) return { note: `No voice student found matching "${query}".` };
+  if (matches.length > 1) {
+    return { multiple_matches: matches.slice(0, 8).map((s: any) => ({ name: s.name, email: s.email })), note: "Multiple students matched — ask which one, or search again with their full name or email." };
+  }
+
+  const student = matches[0];
+  const { data: bookings } = await supabase
+    .from("voice_bookings")
+    .select("lesson_date, lesson_time, cost, status, discipline")
+    .ilike("student_email", student.email || "")
+    .order("lesson_date", { ascending: false })
+    .limit(10);
+
+  return {
+    student: { name: student.name, email: student.email, phone: student.phone, discipline: student.discipline, tags: student.tags, notes: student.notes, last_communication: student.lastCommunication, latest_lesson_date: student.latestDate },
+    recent_lessons: (bookings || []).map((b: any) => ({ date: b.lesson_date, time: b.lesson_time, cost: b.cost, status: b.status })),
+    note: "Voice lesson pricing is a flat per-service rate (see event_pricing), not per-student — there is no individual rate ladder for voice students.",
+  };
+}
+
+async function computeActiveClientsWithRates(supabase: any, userId: string, months: number) {
+  const now = new Date();
+  const cutoff = new Date(now); cutoff.setMonth(cutoff.getMonth() - months);
+
+  const { data: appointments, error } = await supabase
+    .from("appointments")
+    .select("client_id, date, status, clients(id, name, standard_rate, target_rate, rate_updated_at)")
+    .eq("user_id", userId)
+    .neq("status", "Cancelled")
+    .order("date", { ascending: false });
+  if (error || !appointments) return [];
+
+  const now2 = now;
+  type Agg = { name: string; standardRate: number; targetRate: number; rateUpdatedAt: string | null; lastDate: string; sessionsInWindow: number; hasFuture: boolean };
+  const byClient = new Map<string, Agg>();
+
+  for (const a of appointments as any[]) {
+    if (!a.client_id || !a.clients) continue;
+    const d = new Date(a.date);
+    const existing = byClient.get(a.client_id);
+    const isFuture = d > now2 && a.status === "Scheduled";
+    const inWindow = d <= now2 && d >= cutoff;
+    if (!existing) {
+      byClient.set(a.client_id, {
+        name: a.clients.name, standardRate: a.clients.standard_rate ?? 0, targetRate: a.clients.target_rate ?? a.clients.standard_rate ?? 0,
+        rateUpdatedAt: a.clients.rate_updated_at, lastDate: a.date, sessionsInWindow: inWindow ? 1 : 0, hasFuture: isFuture,
+      });
+    } else {
+      if (d > new Date(existing.lastDate)) existing.lastDate = a.date;
+      if (inWindow) existing.sessionsInWindow += 1;
+      if (isFuture) existing.hasFuture = true;
+    }
+  }
+
+  const results = [];
+  for (const [clientId, agg] of byClient.entries()) {
+    const lastPast = new Date(agg.lastDate) <= now2 ? agg.lastDate : null;
+    const isActive = agg.hasFuture || agg.sessionsInWindow > 0;
+    if (!isActive) continue;
+    results.push({
+      client_id: clientId,
+      name: agg.name,
+      sessions_in_window: agg.sessionsInWindow,
+      last_session_date: lastPast ? fmtMelbourne(lastPast) : "upcoming only",
+      has_future_booking: agg.hasFuture,
+      current_rate: agg.standardRate,
+      target_ladder_rate: agg.targetRate,
+      rate_gap: Math.max(0, agg.targetRate - agg.standardRate),
+      months_since_rate_reviewed: monthsSince(agg.rateUpdatedAt),
+    });
+  }
+  return results;
+}
+
+async function runGetActiveClients(supabase: any, userId: string, months: number) {
+  const active = await computeActiveClientsWithRates(supabase, userId, months);
+  return {
+    window_months: months,
+    active_client_count: active.length,
+    clients: active.sort((a, b) => b.sessions_in_window - a.sessions_in_window).slice(0, 30),
+  };
+}
+
+async function runGetRevenueOpportunities(supabase: any, userId: string, months: number) {
+  const active = await computeActiveClientsWithRates(supabase, userId, months);
+  const opportunities = active
+    .filter((c: any) => c.rate_gap > 0)
+    .map((c: any) => ({
+      ...c,
+      // Proxy for "immediate" impact: what they'd have earned extra on their ACTUAL
+      // recent sessions if already at target rate — grounded in real recent activity,
+      // not a speculative full-year projection.
+      estimated_gain_over_window: c.rate_gap * Math.max(c.sessions_in_window, c.has_future_booking ? 1 : 0),
+    }))
+    .sort((a: any, b: any) => b.estimated_gain_over_window - a.estimated_gain_over_window);
+
+  return {
+    window_months: months,
+    opportunity_count: opportunities.length,
+    top_opportunities: opportunities.slice(0, 15),
+    note: "Ranked by rate_gap × recent session count — active clients already below their target rate, where a rate conversation has the most immediate revenue effect.",
+  };
+}
+
+async function runGetPracticeScheduleOverview(supabase: any, userId: string, weeks: number) {
+  const now = new Date();
+  const cutoff = new Date(now); cutoff.setDate(cutoff.getDate() - weeks * 7);
+  const cutoffISO = cutoff.toISOString();
+
+  const { data: appts } = await supabase
+    .from("appointments")
+    .select("date, status")
+    .eq("user_id", userId)
+    .neq("status", "Cancelled")
+    .gte("date", cutoffISO)
+    .lte("date", now.toISOString());
+
+  const { data: lessons } = await supabase
+    .from("voice_bookings")
+    .select("lesson_date, lesson_time, status")
+    .neq("status", "cancelled")
+    .gte("lesson_date", cutoffISO.slice(0, 10))
+    .lte("lesson_date", now.toISOString().slice(0, 10));
+
+  const dayCounts: Record<string, number> = {};
+  const timeCounts: Record<string, number> = {};
+  const bucketOf = (hour: number) => (hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening");
+
+  for (const a of appts || []) {
+    const d = new Date(a.date);
+    const day = d.toLocaleDateString("en-AU", { weekday: "long", timeZone: "Australia/Melbourne" });
+    const hour = Number(d.toLocaleTimeString("en-AU", { hour: "numeric", hour12: false, timeZone: "Australia/Melbourne" }));
+    dayCounts[day] = (dayCounts[day] || 0) + 1;
+    timeCounts[bucketOf(hour)] = (timeCounts[bucketOf(hour)] || 0) + 1;
+  }
+  for (const l of lessons || []) {
+    if (!l.lesson_date) continue;
+    const d = new Date(`${l.lesson_date}T${(l.lesson_time || "12:00").replace(/[^\d:]/g, "") || "12:00"}:00`);
+    const day = isNaN(d.getTime()) ? null : d.toLocaleDateString("en-AU", { weekday: "long", timeZone: "Australia/Melbourne" });
+    if (day) dayCounts[day] = (dayCounts[day] || 0) + 1;
+  }
+
+  return {
+    weeks_analysed: weeks,
+    kinesiology_sessions: (appts || []).length,
+    voice_lessons: (lessons || []).length,
+    by_day_of_week: dayCounts,
+    by_time_of_day_kinesiology: timeCounts,
+    note: "Days/times with lower counts here are relatively quiet — good candidates to offer needs-attention or new clients. Voice lesson times aren't reliably bucketed by hour (source data is text), only by day.",
+  };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -258,12 +478,13 @@ serve(async (req) => {
     const contents = (priorRows || []).map((r: any) => ({ role: r.role, parts: [{ text: r.content || "" }] }));
     contents.push({ role: "user", parts: [{ text: message }] });
 
-    const systemInstruction = `You are the scheduling assistant inside Daniele's kinesiology/voice-lesson practice CRM. Current time: ${melbourneNow()} (Australia/Melbourne).
+    const systemInstruction = `You are the scheduling assistant inside Daniele's practice CRM, which runs TWO arms: kinesiology/FNH clinical clients (in the clients table, use get_client_context / get_active_clients / get_revenue_opportunities) and Voice Studio piano/singing lesson students (Notion-backed, use search_voice_client — they are NOT in the clients table and have no individual rate, only flat per-service pricing). Current time: ${melbourneNow()} (Australia/Melbourne).
 Clients communicate messily — vague times ("until 2pm", "health permitting"), same-day cancellations, and ambiguous confirmations ("that's perfect" meaning "yes to the last time you proposed"). Interpret them charitably but flag genuine ambiguity rather than guessing.
-Use the available tools to ground your answers in real data — never invent appointment times, client details, or slot availability.
-${client_id ? `This conversation is focused on one specific client (client_id: ${client_id}). Call get_client_context first to load their history and communication style, and match their tone when drafting anything.` : "This is a general conversation, not focused on one client."}
+Use the available tools to ground your answers in real data — never invent appointment times, client details, rates, or slot availability.
+${client_id ? `This conversation is focused on one specific client (client_id: ${client_id}). Call get_client_context first to load their history, current rate vs target rate, and communication style, and match their tone when drafting anything.` : "This is a general conversation, not focused on one client."}
 You can draft an email for review via draft_email_reply, but you can never send one yourself — always say the draft is ready for review, never that it has been sent.
-You can search the inbox read-only via search_inbox (Gmail search syntax) to check for replies or past correspondence — you cannot send, modify, or delete anything through it.`;
+You can search the inbox read-only via search_inbox (Gmail search syntax) to check for replies or past correspondence — you cannot send, modify, or delete anything through it.
+For business questions ("who's active", "who should I raise rates for", "what times are free"), use get_active_clients, get_revenue_opportunities, and get_practice_schedule_overview rather than guessing — they compute real numbers from appointment history.`;
 
     const toolTrace: any[] = [];
     let pendingDraft = null;
@@ -292,6 +513,14 @@ You can search the inbox read-only via search_inbox (Gmail search syntax) to che
           result = await runGetAvailableSlots(args.start, args.end, args.event_type_id);
         } else if (name === "get_past_booking_patterns") {
           result = await runGetPastBookingPatterns(supabase, userId, args.client_id);
+        } else if (name === "search_voice_client") {
+          result = await runSearchVoiceClient(SUPABASE_URL, SERVICE_KEY, supabase, args.query);
+        } else if (name === "get_active_clients") {
+          result = await runGetActiveClients(supabase, userId, args.months || 3);
+        } else if (name === "get_revenue_opportunities") {
+          result = await runGetRevenueOpportunities(supabase, userId, args.months || 3);
+        } else if (name === "get_practice_schedule_overview") {
+          result = await runGetPracticeScheduleOverview(supabase, userId, args.weeks || 8);
         } else {
           result = { error: `Unknown tool: ${name}` };
         }

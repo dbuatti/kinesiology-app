@@ -29,6 +29,7 @@ const UpcomingAppointments = () => {
             )
           `)
           .or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' })
+          .neq("status", "Cancelled")
           .gte("date", new Date().toISOString())
           .order("date", { ascending: true })
           .limit(5);
@@ -125,7 +126,16 @@ const UpcomingAppointments = () => {
                     "text-[10px] text-muted-foreground font-bold uppercase tracking-widest truncate",
                     isPrivate && "blur-[2px] select-none"
                   )}>
-                    {appointment.name || appointment.tag || "Clinical Session"}
+                    {/* appointment.name deliberately not used here — it's a
+                        booking-time snapshot (almost always just "<client
+                        name> - Kinesiology (<date>)", i.e. pure duplication
+                        of the client name already shown above) that can go
+                        stale or mismatch the live client record. Confirmed
+                        live: a booking snapshot-named "Lesley Belgrave"
+                        contradicted the correct client name "Lesley
+                        Wiadrowski" shown right above it. appointment.tag is
+                        a real distinct categorisation field, kept. */}
+                    {appointment.tag || "Clinical Session"}
                   </p>
                   {appointment.is_paid && (
                     <span className={cn(

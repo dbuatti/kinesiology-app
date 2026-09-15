@@ -187,8 +187,9 @@ const Index = () => {
           onClick={() => setQuickSessionOpen(true)}
           className="w-full bg-primary hover:bg-primary/90 h-16 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/10 flex items-center justify-center gap-3"
         >
-          <Zap size={22} />
-          Quick Session — Start instantly, no booking needed
+          <Zap size={22} className="shrink-0" />
+          <span className="sm:hidden">Quick Session</span>
+          <span className="hidden sm:inline">Quick Session — Start instantly, no booking needed</span>
         </Button>
 
         <ClinicalDashboard

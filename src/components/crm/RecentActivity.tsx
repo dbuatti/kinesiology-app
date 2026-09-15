@@ -39,6 +39,8 @@ const RecentActivity = () => {
               id,
               name,
               date,
+              status,
+              created_at,
               display_id,
               clients!inner (
                 name,
@@ -46,7 +48,7 @@ const RecentActivity = () => {
               )
             `)
             .or('is_practitioner.eq.false,is_practitioner.is.null', { foreignTable: 'clients' })
-            .order("date", { ascending: false })
+            .order("created_at", { ascending: false })
             .limit(5),
         ]);
 
@@ -64,12 +66,26 @@ const RecentActivity = () => {
         });
 
         appointmentsData.data?.forEach((app: any) => {
+          // The client's live name is the trustworthy one for the bold title —
+          // app.name/notion_link are a snapshot of whatever name was typed at
+          // booking time (e.g. from an external Cal.com booking) and can go
+          // stale or mismatch the actual client record. Confirmed live: a
+          // booking snapshot-named "Lesley Belgrave" under client record
+          // "Lesley Wiadrowski" showed the wrong name as the prominent title.
           combined.push({
             id: app.id,
             type: "appointment",
-            title: app.name || app.display_id || "Session",
-            subtitle: `${app.clients?.name} • ${format(new Date(app.date), "MMM d")}`,
-            timestamp: new Date(app.date),
+            title: app.clients?.name || app.name || app.display_id || "Session",
+            subtitle: app.status === "Cancelled"
+              ? `Cancelled • ${format(new Date(app.date), "MMM d")}`
+              : `Session • ${format(new Date(app.date), "MMM d")}`,
+            // created_at (when the record was actually made), not date (the
+            // session's scheduled time) — this feed is "recent ACTIVITY", so
+            // a booking made 5 minutes ago for a session in 2 months belongs
+            // at the top; sorting by session date instead let far-future
+            // bookings crowd out genuinely recent activity and made
+            // "in about 2 months" read as if it just happened.
+            timestamp: new Date(app.created_at || app.date),
             link: `/appointments/${app.id}`,
           });
         });

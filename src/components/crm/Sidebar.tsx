@@ -26,6 +26,7 @@ import {
   Tablet,
   FileText,
   CalendarRange,
+  Bot,
 } from "lucide-react";
 
 interface NavItem {
@@ -45,6 +46,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Workspace",
     items: [
       { label: "Home", icon: LayoutDashboard, path: "/" },
+      { label: "Assistant", icon: Bot, path: "/assistant" },
       { label: "Calendar", icon: CalendarDays, path: "/calendar" },
       { label: "Timetable", icon: CalendarRange, path: "/timetable" },
       { label: "Clients", icon: Users, path: "/clients" },

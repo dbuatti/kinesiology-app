@@ -12,7 +12,7 @@ import {
   Activity, Edit3, Trash2, MoreHorizontal, FlaskConical, TrendingUp, Brain,
   LayoutDashboard, History, ArrowRight, Sparkles, Plus, Link as LinkIcon,
   Zap, Send, ShieldCheck, ExternalLink, RefreshCw, ShieldAlert, Info, User, CreditCard, LayoutGrid,
-  CalendarClock, Mic, Table2, Stethoscope
+  CalendarClock, Mic, Table2, Stethoscope, Bot
 } from "lucide-react";
 import { format } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -49,6 +49,7 @@ import { useClientGridData } from "@/hooks/useClientGridData";
 import ClientGridSummaryTab from "@/components/crm/ClientGridSummaryTab";
 import ClientHistoryMatrixTab from "@/components/crm/ClientHistoryMatrixTab";
 import ClientAppointmentCard from "@/components/crm/ClientAppointmentCard";
+import ClientAssistantTab from "@/components/crm/ClientAssistantTab";
 
 interface VoiceHistoryEntry {
   key: string;
@@ -538,21 +539,24 @@ const ClientDetailPage = () => {
         />
 
         <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 h-14 bg-muted p-1.5 rounded-xl mb-8 border border-border">
+          <TabsList className="grid w-full grid-cols-6 h-14 bg-muted p-1.5 rounded-xl mb-8 border border-border">
             <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
-              <LayoutDashboard size={14} /> Overview
+              <LayoutDashboard size={14} /> <span className="hidden sm:inline">Overview</span>
             </TabsTrigger>
             <TabsTrigger value="appointments" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
-              <History size={14} /> Appointments
+              <History size={14} /> <span className="hidden sm:inline">Appointments</span>
             </TabsTrigger>
             <TabsTrigger value="history" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
-              <Table2 size={14} /> History
+              <Table2 size={14} /> <span className="hidden sm:inline">History</span>
             </TabsTrigger>
             <TabsTrigger value="grid" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
-              <LayoutGrid size={14} /> Grid
+              <LayoutGrid size={14} /> <span className="hidden sm:inline">Grid</span>
             </TabsTrigger>
             <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
-              <TrendingUp size={14} /> Progress
+              <TrendingUp size={14} /> <span className="hidden sm:inline">Progress</span>
+            </TabsTrigger>
+            <TabsTrigger value="assistant" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
+              <Bot size={14} /> <span className="hidden sm:inline">Assistant</span>
             </TabsTrigger>
           </TabsList>
 
@@ -1170,11 +1174,15 @@ const ClientDetailPage = () => {
           </TabsContent>
 
           <TabsContent value="progress">
-            <ClientProgressTab 
-              client={client} 
-              appointments={appointments} 
+            <ClientProgressTab
+              client={client}
+              appointments={appointments}
               onRefresh={fetchClientData}
             />
+          </TabsContent>
+
+          <TabsContent value="assistant">
+            <ClientAssistantTab client={client} />
           </TabsContent>
         </Tabs>
       </div>

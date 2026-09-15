@@ -81,3 +81,6 @@ verify_jwt = false
 
 [functions.send-cancellation-email]
 verify_jwt = false
+
+[functions.gmail-search-inbox]
+verify_jwt = false

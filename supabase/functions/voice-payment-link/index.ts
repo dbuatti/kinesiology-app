@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.25.0";
+import { requirePractitioner } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,6 +15,9 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    const authErr = await requirePractitioner(req, corsHeaders);
+    if (authErr) return authErr;
+
     const STRIPE_KEY = Deno.env.get("STRIPE_SECRET_KEY_VOICE");
     if (!STRIPE_KEY) throw new Error("Missing STRIPE_SECRET_KEY_VOICE");
 

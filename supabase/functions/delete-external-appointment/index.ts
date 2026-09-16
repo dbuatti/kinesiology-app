@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { requireUser } from "../_shared/auth.ts"
+import { requirePractitioner } from "../_shared/auth.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,7 +10,7 @@ const corsHeaders = {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
-  const authErr = await requireUser(req, corsHeaders)
+  const authErr = await requirePractitioner(req, corsHeaders)
   if (authErr) return authErr
 
   try {

@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { requirePractitioner } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,6 +19,9 @@ serve(async (req: Request) => {
   }
 
   try {
+    const authErr = await requirePractitioner(req, corsHeaders);
+    if (authErr) return authErr;
+
     if (!KIT_API_SECRET) {
       console.error(`[${functionName}] Configuration Error: KIT_API_SECRET is missing.`);
       return new Response(

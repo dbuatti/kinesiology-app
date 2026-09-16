@@ -4,7 +4,7 @@
 // from the existing send-only GMAIL_REFRESH_TOKEN — this function can never send,
 // modify, or delete anything, only list/read.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { requireUser } from "../_shared/auth.ts";
+import { requirePractitioner } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,7 +29,7 @@ function headerValue(headers: { name: string; value: string }[], name: string) {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  const authErr = await requireUser(req, corsHeaders);
+  const authErr = await requirePractitioner(req, corsHeaders);
   if (authErr) return authErr;
 
   try {

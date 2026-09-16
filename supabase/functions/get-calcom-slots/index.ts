@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { requirePractitioner } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -27,6 +28,9 @@ serve(async (req) => {
   console.log("--- [get-calcom-slots] v7 SLOTS + BOOKINGS + EMAILS ---");
 
   try {
+    const authErr = await requirePractitioner(req, corsHeaders);
+    if (authErr) return authErr;
+
     let { start, end, eventTypeId, timeZone, bookingUidToReschedule } = await req.json()
     const CALCOM_KEY = Deno.env.get('CALCOM_API_KEY')
 

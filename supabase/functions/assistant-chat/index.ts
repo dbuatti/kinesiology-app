@@ -7,7 +7,7 @@
 // by an explicit button click in the frontend, after this function's turn is done.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { requireUser } from "../_shared/auth.ts";
+import { requirePractitioner } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -589,7 +589,7 @@ async function runGetPracticeScheduleOverview(supabase: any, userId: string, wee
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
-  const authErr = await requireUser(req, corsHeaders);
+  const authErr = await requirePractitioner(req, corsHeaders);
   if (authErr) return authErr;
 
   try {
@@ -603,7 +603,7 @@ serve(async (req) => {
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
 
-    // Identify the calling user from their own JWT (requireUser only tells us they're
+    // Identify the calling user from their own JWT (requirePractitioner only tells us they're
     // allowed through, not who they are).
     const authHeader = req.headers.get("Authorization") || "";
     const authedClient = createClient(SUPABASE_URL, ANON_KEY, { global: { headers: { Authorization: authHeader } } });

@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
+import { requirePractitioner } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,6 +14,9 @@ serve(async (req) => {
   }
 
   try {
+    const authErr = await requirePractitioner(req, corsHeaders);
+    if (authErr) return authErr;
+
     const geminiKey = Deno.env.get('GEMINI_API_KEY');
     if (!geminiKey) {
       throw new Error('GEMINI_API_KEY is not set');

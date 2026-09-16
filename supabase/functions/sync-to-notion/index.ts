@@ -4,6 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
 import { syncClientToNotion } from "./client-sync.ts";
 import { syncSingleAppointment } from "./appointment-sync.ts";
 import { fetchWithRetry, CLIENTS_DB_ID, fetchDatabaseSchema, findSchemaProperty, extractNotionPropertyValue, normalizeId } from "./notion-api.ts";
+import { requirePractitioner } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,6 +21,9 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
+    const authErr = await requirePractitioner(req, corsHeaders);
+    if (authErr) return authErr;
+
     const body = await req.json()
     console.log(`[${functionName}] Body:`, JSON.stringify(body));
 

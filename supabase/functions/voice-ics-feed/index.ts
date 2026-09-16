@@ -95,6 +95,21 @@ async function resolveClients(hdrs, dbId, label) {
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
+    // This feed is subscribed to directly by a calendar app (no interactive
+    // login possible), so a secret token in the URL IS the access control —
+    // same pattern as any other private ICS feed link. Previously this had
+    // NO check at all and dumped every client/student's name+email+lesson
+    // times to any anonymous request.
+    const url = new URL(req.url);
+    const token = url.searchParams.get("token");
+    const expectedToken = Deno.env.get("ICS_FEED_TOKEN");
+    if (!expectedToken || token !== expectedToken) {
+      return new Response("BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Voice Studio//Error//EN\r\nX-ERROR:Unauthorized\r\nEND:VCALENDAR", {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "text/calendar; charset=utf-8" },
+      });
+    }
+
     const key = Deno.env.get("NOTION_API_KEY");
     if (!key) throw new Error("Missing NOTION_API_KEY");
     const hdrs = { Authorization: `Bearer ${key}`, "Content-Type": "application/json", "Notion-Version": "2022-06-28" };

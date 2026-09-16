@@ -218,12 +218,11 @@ const PublicIntakeForm = ({ clientId, appointmentId, initialData, onSuccess }: P
         status: 'Active',
       };
 
-      const { error: clientError } = await supabase
-        .from("clients")
-        .update(clientPayload)
-        .eq('id', clientId);
+      const { data: updateData, error: clientError } = await supabase.functions.invoke('public-client-intake-update', {
+        body: { id: clientId, payload: clientPayload },
+      });
 
-      if (clientError) throw clientError;
+      if (clientError || updateData?.error) throw new Error(updateData?.error || clientError?.message);
 
       setSyncStatus('syncing');
       try {

@@ -2,6 +2,11 @@
 // Full two-way email history with one client, rendered as a chat thread in the
 // Assistant's per-client Email Thread view. Read-only (gmail.readonly scope) —
 // this function never sends anything, only reads and decodes message bodies.
+//
+// Returns a summary of every distinct Gmail thread with this client (so the
+// frontend can offer a thread picker), plus the full decoded messages for one
+// "active" thread — either the one explicitly requested via `thread_id`, or
+// the most recently active one by default.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { requireUser } from "../_shared/auth.ts";
 
@@ -76,13 +81,31 @@ function extractBody(payload: any): string {
   return "";
 }
 
+function messageFromApi(data: any, practiceEmail: string) {
+  const headers = data.payload?.headers || [];
+  const from = headerValue(headers, "From");
+  const direction = from.toLowerCase().includes(practiceEmail) ? "outbound" : "inbound";
+  return {
+    id: data.id,
+    threadId: data.threadId,
+    direction,
+    from,
+    to: headerValue(headers, "To"),
+    subject: headerValue(headers, "Subject"),
+    date: headerValue(headers, "Date"),
+    messageIdHeader: headerValue(headers, "Message-ID"),
+    referencesHeader: headerValue(headers, "References"),
+    body: extractBody(data.payload).slice(0, 5000),
+  };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   const authErr = await requireUser(req, corsHeaders);
   if (authErr) return authErr;
 
   try {
-    const { client_email, max_messages } = await req.json();
+    const { client_email, thread_id } = await req.json();
     if (!client_email) throw new Error("Missing client_email.");
 
     const CLIENT_ID = Deno.env.get("GMAIL_CLIENT_ID");
@@ -94,45 +117,68 @@ serve(async (req) => {
     const accessToken = await getAccessToken(CLIENT_ID, CLIENT_SECRET, REFRESH);
     const authHeaders = { Authorization: `Bearer ${accessToken}` };
 
-    const listUrl = new URL("https://gmail.googleapis.com/gmail/v1/users/me/messages");
+    // 1. Find every distinct thread with this client (cheap — thread list only,
+    // no bodies) so the frontend can offer a "reply to a different thread" picker.
+    const listUrl = new URL("https://gmail.googleapis.com/gmail/v1/users/me/threads");
     listUrl.searchParams.set("q", `(from:${client_email} OR to:${client_email})`);
-    listUrl.searchParams.set("maxResults", String(Math.min(max_messages || 30, 50)));
-
+    listUrl.searchParams.set("maxResults", "15");
     const listRes = await fetch(listUrl.toString(), { headers: authHeaders });
     const listData = await listRes.json();
     if (!listRes.ok) throw new Error(listData?.error?.message || "Gmail search failed.");
 
-    const ids: { id: string; threadId: string }[] = listData.messages || [];
-    const messages = await Promise.all(
-      ids.map(async (m) => {
-        const msgUrl = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=full`;
-        const res = await fetch(msgUrl, { headers: authHeaders });
+    const threadIds: string[] = (listData.threads || []).map((t: any) => t.id);
+    if (threadIds.length === 0) {
+      return new Response(JSON.stringify({
+        threads: [], messages: [], thread_id: null,
+        last_message_id_header: null, last_references_header: null, last_subject: null, suggested_status: null,
+      }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // 2. Pull lightweight metadata (headers only, no bodies) for each thread so
+    // we can show a subject + date + message count in the picker.
+    const threadSummaries = await Promise.all(
+      threadIds.map(async (id) => {
+        const url = new URL(`https://gmail.googleapis.com/gmail/v1/users/me/threads/${id}`);
+        url.searchParams.set("format", "metadata");
+        url.searchParams.append("metadataHeaders", "Subject");
+        url.searchParams.append("metadataHeaders", "Date");
+        url.searchParams.append("metadataHeaders", "From");
+        const res = await fetch(url.toString(), { headers: authHeaders });
         const data = await res.json();
-        if (!res.ok) return null;
-        const headers = data.payload?.headers || [];
-        const from = headerValue(headers, "From");
-        const direction = from.toLowerCase().includes(PRACTICE_EMAIL) ? "outbound" : "inbound";
+        if (!res.ok || !data.messages?.length) return null;
+        const msgs = data.messages.map((m: any) => messageFromApi(m, PRACTICE_EMAIL));
+        const last = msgs[msgs.length - 1];
         return {
-          id: data.id,
-          threadId: data.threadId,
-          direction,
-          from,
-          to: headerValue(headers, "To"),
-          subject: headerValue(headers, "Subject"),
-          date: headerValue(headers, "Date"),
-          messageIdHeader: headerValue(headers, "Message-ID"),
-          referencesHeader: headerValue(headers, "References"),
-          body: extractBody(data.payload).slice(0, 5000),
+          id,
+          subject: last.subject || "(no subject)",
+          lastDate: last.date,
+          lastDirection: last.direction,
+          messageCount: msgs.length,
         };
       }),
     );
+    const threads = threadSummaries.filter(Boolean).sort((a: any, b: any) => new Date(b.lastDate).getTime() - new Date(a.lastDate).getTime());
 
-    const clean = messages.filter(Boolean).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    const last = clean[clean.length - 1] || null;
+    // 3. Fetch the FULL (bodies included) messages for the active thread only —
+    // either the one explicitly requested, or the most recently active one.
+    const activeThreadId = thread_id || threads[0]?.id || null;
+    let messages: any[] = [];
+    if (activeThreadId) {
+      const url = `https://gmail.googleapis.com/gmail/v1/users/me/threads/${activeThreadId}?format=full`;
+      const res = await fetch(url, { headers: authHeaders });
+      const data = await res.json();
+      if (res.ok && data.messages) {
+        messages = data.messages
+          .map((m: any) => messageFromApi(m, PRACTICE_EMAIL))
+          .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      }
+    }
+    const last = messages[messages.length - 1] || null;
 
     return new Response(JSON.stringify({
-      messages: clean,
-      thread_id: last?.threadId || null,
+      threads,
+      messages,
+      thread_id: activeThreadId,
       last_message_id_header: last?.messageIdHeader || null,
       last_references_header: last ? `${last.referencesHeader || ""} ${last.messageIdHeader || ""}`.trim() : null,
       last_subject: last?.subject || null,

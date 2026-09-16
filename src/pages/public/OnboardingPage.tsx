@@ -27,14 +27,11 @@ const OnboardingPage = () => {
         return;
       }
       try {
-        const { data, error } = await supabase
-          .from('clients')
-          .select('id, name, email, phone, pronouns, born, suburbs, occupation, marital_status, children, medical_history, emergency_contact_name, emergency_contact_phone, referral_source, current_stress_level, sleep_quality, digestive_health, medications_supplements, stripe_customer_id, home_address, emergency_contact_relationship, change_one_thing, never_been_same_since, chief_complaint, health_problem_severity, seen_medical_doctor, symptoms_worse_stress, symptoms_worse_fatigue, pain_movement, therapies_used, therapies_other, therapies_success, specific_illnesses, covid_vaccinated, covid_shots, allergies_asthma, energy_worse_time, family_medical_history, alcohol_frequency, sleep_schedule, sleep_quality_details, concussion_history, concussion_details, birthing_experience, avoided_emotion, craved_emotion, stress_response, most_craved_human_need, startled_by_loud_noises, emotional_regulation_time, additional_notes')
-          .eq('id', id)
-          .single();
-
-        if (error) throw error;
-        setClient(data);
+        const { data, error } = await supabase.functions.invoke('public-client-onboarding-get', {
+          body: { id },
+        });
+        if (error || data?.error) throw new Error(data?.error || error?.message);
+        setClient(data.client);
       } catch (err) {
         console.error("Error fetching client for onboarding:", err);
         setError("Invalid onboarding link. Please check with your practitioner.");

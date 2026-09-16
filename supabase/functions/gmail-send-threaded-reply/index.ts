@@ -36,7 +36,7 @@ serve(async (req) => {
   let logRow: any = { function_name: "gmail-send-threaded-reply" };
 
   try {
-    const { to, subject, body, thread_id, in_reply_to, references, client_id } = await req.json();
+    const { to, subject, body, thread_id, in_reply_to, references, client_id, client_name } = await req.json();
     if (!to || !subject || !body) throw new Error("Missing recipient, subject, or body.");
     logRow = { ...logRow, recipient: to, subject, client_id: client_id || null };
 
@@ -48,6 +48,10 @@ serve(async (req) => {
 
     const esc = (s: string) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const utf8Subject = `=?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`;
+    const firstName = (client_name || "").trim().split(" ")[0];
+    // The practitioner types just the message body — greeting and sign-off are
+    // added automatically, matching the branded template used by every other
+    // client-facing email in this app (send-proposed-times etc.).
     const html = `
       <!DOCTYPE html>
       <html>
@@ -56,9 +60,25 @@ serve(async (req) => {
           <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px;margin:0 auto;background-color:#ffffff;border-radius:40px;overflow:hidden;border:1px solid #F1E9EF;">
             <tr><td style="height:6px;background-color:#D46A9B;"></td></tr>
             <tr>
-              <td style="padding:56px 44px;">
-                <div style="text-align:left;line-height:1.8;font-size:17px;color:#334155;">
+              <td style="padding:48px 44px 32px;">
+                <div style="text-align:center;">
+                  <div style="color:#1E3261;font-size:22px;font-weight:700;">✦ Resonance Kinesiology</div>
+                </div>
+                <div style="text-align:left;margin-top:36px;line-height:1.8;font-size:17px;color:#334155;">
+                  ${firstName ? `<p style="margin:0 0 18px;">Hi ${esc(firstName)},</p>` : ""}
                   ${esc(body).split(/\n+/).map((p) => `<p style="margin:0 0 14px;">${p}</p>`).join("")}
+                  <div style="margin-top:32px;">
+                    <p style="margin:0;">All the best,</p>
+                    <div style="font-weight:700;color:#1E3261;font-size:18px;margin-top:6px;">Daniele</div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:20px 44px;background-color:#FAF7F5;border-top:1px solid #F1E9EF;">
+                <div style="text-align:center;font-size:12px;color:#94A3B8;line-height:1.6;">
+                  Resonance Kinesiology — Daniele Buatti<br />
+                  <a href="mailto:info@danielebuatti.com" style="color:#D46A9B;text-decoration:none;">info@danielebuatti.com</a>
                 </div>
               </td>
             </tr>
@@ -69,7 +89,7 @@ serve(async (req) => {
 
     const buildRaw = (withThreading: boolean) => {
       const headerLines = [
-        `From: ${SENDER}`, `To: ${to}`, `Bcc: info@danielebuatti.com`, "MIME-Version: 1.0",
+        `From: ${SENDER}`, `To: ${to}`, `Cc: info@danielebuatti.com`, "MIME-Version: 1.0",
         "Content-Type: text/html; charset=utf-8", `Subject: ${utf8Subject}`,
       ];
       if (withThreading && in_reply_to) headerLines.push(`In-Reply-To: ${in_reply_to}`);

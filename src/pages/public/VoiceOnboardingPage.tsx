@@ -26,11 +26,9 @@ const VoiceOnboardingPage = () => {
     if (!decodedEmail) return;
     const checkExisting = async () => {
       try {
-        const { data } = await supabase
-          .from("voice_onboarding")
-          .select("name, onboarding_completed")
-          .eq("email", decodedEmail)
-          .single();
+        const { data } = await supabase.functions.invoke("public-voice-onboarding-get", {
+          body: { email: decodedEmail },
+        });
         if (data?.onboarding_completed) {
           setSubmitted(true);
         }

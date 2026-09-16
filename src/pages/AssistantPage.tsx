@@ -9,14 +9,16 @@ import ClientPicker from "@/components/assistant/ClientPicker";
 import MessageList from "@/components/assistant/MessageList";
 import AssistantInput from "@/components/assistant/AssistantInput";
 import NeedsAttentionWidget from "@/components/assistant/NeedsAttentionWidget";
+import ClientEmailThread from "@/components/assistant/ClientEmailThread";
 import { AssistantConversation, AssistantMessage, DraftEmail, PendingBooking } from "@/types/assistant";
-import { Bot, ChevronLeft } from "lucide-react";
+import { Bot, ChevronLeft, MessageCircle, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface ClientOption {
   id: string;
   name: string;
+  email: string | null;
 }
 
 export default function AssistantPage() {
@@ -38,6 +40,8 @@ export default function AssistantPage() {
   // Mobile shows one pane at a time — the conversation list, or the active chat.
   // A deep link with a client already chosen should land straight in the chat pane.
   const [mobileShowList, setMobileShowList] = useState(!initialClientId);
+  // Only meaningful in focused mode: the AI chat, or the client's real email thread.
+  const [viewMode, setViewMode] = useState<"chat" | "email">("chat");
 
   const loadConversations = useCallback(async () => {
     const { data, error } = await supabase
@@ -49,7 +53,7 @@ export default function AssistantPage() {
   }, []);
 
   const loadClients = useCallback(async () => {
-    const { data, error } = await supabase.from("clients").select("id, name").order("name");
+    const { data, error } = await supabase.from("clients").select("id, name, email").order("name");
     if (!error) setClients(data || []);
   }, []);
 
@@ -154,6 +158,7 @@ export default function AssistantPage() {
   };
 
   const clientNameFor = (clientId: string | null) => clients.find((c) => c.id === clientId)?.name || null;
+  const focusedClient = clients.find((c) => c.id === focusedClientId) || null;
 
   const activeClientName = clientNameFor(focusedClientId);
 
@@ -189,17 +194,39 @@ export default function AssistantPage() {
             </Button>
             <span className="text-sm font-semibold text-foreground truncate">{activeClientName || "General"}</span>
           </div>
-          <MessageList
-            messages={messages}
-            isSending={isSending}
-            pendingDraft={pendingDraft}
-            onDraftSent={handleDraftSent}
-            onDraftDiscard={handleDraftDiscard}
-            pendingBooking={pendingBooking}
-            onBookingConfirmed={handleBookingConfirmed}
-            onBookingDiscard={handleBookingDiscard}
-          />
-          <AssistantInput onSend={handleSend} disabled={isSending} initialValue={initialPrompt} />
+          {focusedClient && (
+            <div className="flex items-center gap-1 bg-muted p-1 rounded-lg mb-3 w-fit">
+              <button
+                onClick={() => setViewMode("chat")}
+                className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors", viewMode === "chat" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
+              >
+                <MessageCircle className="h-3.5 w-3.5" /> AI Chat
+              </button>
+              <button
+                onClick={() => setViewMode("email")}
+                className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors", viewMode === "email" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
+              >
+                <Mail className="h-3.5 w-3.5" /> Email Thread
+              </button>
+            </div>
+          )}
+          {viewMode === "email" && focusedClient ? (
+            <ClientEmailThread clientId={focusedClient.id} clientEmail={focusedClient.email} clientName={focusedClient.name} />
+          ) : (
+            <>
+              <MessageList
+                messages={messages}
+                isSending={isSending}
+                pendingDraft={pendingDraft}
+                onDraftSent={handleDraftSent}
+                onDraftDiscard={handleDraftDiscard}
+                pendingBooking={pendingBooking}
+                onBookingConfirmed={handleBookingConfirmed}
+                onBookingDiscard={handleBookingDiscard}
+              />
+              <AssistantInput onSend={handleSend} disabled={isSending} initialValue={initialPrompt} />
+            </>
+          )}
         </div>
       </div>
     </AppLayout>

@@ -84,3 +84,9 @@ verify_jwt = false
 
 [functions.gmail-search-inbox]
 verify_jwt = false
+
+[functions.gmail-get-client-thread]
+verify_jwt = false
+
+[functions.gmail-send-threaded-reply]
+verify_jwt = false

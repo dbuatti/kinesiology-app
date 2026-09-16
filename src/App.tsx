@@ -116,9 +116,11 @@ const AppRoutes = () => {
           <Route path="/onboarding/:id" element={<OnboardingPage />} />
         </Route>
 
-        {/* Public marketing landing page for logged-out visitors; the practitioner
-            still gets the real Dashboard at the same path once signed in. */}
-        <Route path="/" element={session ? <DashboardPage /> : <LandingPage />} />
+        {/* Public marketing landing page for logged-out visitors at "/" — only
+            present in the route tree while logged out, so it never competes
+            with the real (MainLayout-wrapped, sidebar-having) Dashboard route
+            further below. */}
+        {!session && <Route path="/" element={<LandingPage />} />}
 
         {/* Public Voice Onboarding (no auth required) */}
         <Route path="/voice-onboarding/:email" element={<VoiceOnboardingPage />} />
@@ -146,6 +148,7 @@ const AppRoutes = () => {
         <Route
           element={session ? <MainLayout /> : <Navigate to="/login" replace />}
         >
+          <Route path="/" element={<DashboardPage />} />
 
           {/* Clinic */}
           <Route path="/clients" element={<ClientsPage />} />

@@ -18,6 +18,7 @@ import AuthLayout from "./layouts/AuthLayout";
 const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
 const OnboardingPage = lazy(() => import("./pages/public/OnboardingPage"));
 const OnboardingLookupPage = lazy(() => import("./pages/public/OnboardingLookupPage"));
+const LandingPage = lazy(() => import("./pages/public/LandingPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // --- Clinic Pages ---
@@ -115,6 +116,10 @@ const AppRoutes = () => {
           <Route path="/onboarding/:id" element={<OnboardingPage />} />
         </Route>
 
+        {/* Public marketing landing page for logged-out visitors; the practitioner
+            still gets the real Dashboard at the same path once signed in. */}
+        <Route path="/" element={session ? <DashboardPage /> : <LandingPage />} />
+
         {/* Public Voice Onboarding (no auth required) */}
         <Route path="/voice-onboarding/:email" element={<VoiceOnboardingPage />} />
 
@@ -141,7 +146,6 @@ const AppRoutes = () => {
         <Route
           element={session ? <MainLayout /> : <Navigate to="/login" replace />}
         >
-          <Route path="/" element={<DashboardPage />} />
 
           {/* Clinic */}
           <Route path="/clients" element={<ClientsPage />} />

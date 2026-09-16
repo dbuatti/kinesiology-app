@@ -60,6 +60,7 @@ export default {
           primary: "hsl(var(--chart-primary))",
           destructive: "hsl(var(--chart-destructive))",
           emerald: "hsl(var(--chart-emerald))",
+          purple: "hsl(var(--chart-purple))",
         },
       },
       borderRadius: {

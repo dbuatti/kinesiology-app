@@ -1,9 +1,11 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 import { setIpadMode } from "@/hooks/use-ipad-mode";
+import { useAppMode } from "@/components/ModeProvider";
 import { cn } from "@/lib/utils";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import {
   LayoutDashboard,
   Users,
@@ -85,28 +87,20 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-const Sidebar = () => {
+interface SidebarProps {
+  mobileOpen: boolean;
+  onMobileOpenChange: (open: boolean) => void;
+}
+
+const Sidebar = ({ mobileOpen, onMobileOpenChange }: SidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { mode } = useAppMode();
   const { isPrivate, togglePrivacy } = usePrivacyMode();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     "Identity Work": false,
   });
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  // Mobile drawer niceties: close on Escape, and lock body scroll while open so
-  // the page behind doesn't scroll under the menu.
-  useEffect(() => {
-    if (!mobileOpen) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMobileOpen(false); };
-    window.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
-    };
-  }, [mobileOpen]);
+  const setMobileOpen = onMobileOpenChange;
   const [collapsed, setCollapsed] = useState(() => {
     return localStorage.getItem('rk_sidebar_collapsed') === 'true';
   });
@@ -117,8 +111,12 @@ const Sidebar = () => {
     localStorage.setItem('rk_sidebar_collapsed', String(next));
   };
 
-  const isVoiceRoute = location.pathname.startsWith('/voice');
-  const groups = isVoiceRoute
+  // Single source of truth for the Voice/Kinesiology split — mode is
+  // already kept in sync with the route by MainLayout, so this is exactly
+  // equivalent to the old `location.pathname.startsWith('/voice')` check
+  // without a second, disconnected copy of the same logic.
+  const isVoice = mode === 'voice';
+  const groups = isVoice
     ? NAV_GROUPS.filter((g) => g.label === "Voice Studio")
     : NAV_GROUPS;
 
@@ -134,11 +132,11 @@ const Sidebar = () => {
   };
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-card border-r border-border">
+    <div className="flex flex-col h-full bg-card">
       {/* Logo */}
       <div className="shrink-0 px-4 py-4 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Link to="/" className="flex items-center gap-2 no-underline">
+          <Link to="/" className="flex items-center gap-2 no-underline" onClick={() => setMobileOpen(false)}>
             <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
               K
             </span>
@@ -150,38 +148,29 @@ const Sidebar = () => {
             </span>
           </Link>
         </div>
-        <div className="flex items-center gap-1">
-          <button
-            className="hidden lg:flex p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-            onClick={toggleCollapsed}
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            <ChevronLeft size={18} className={cn(
-              "transition-transform duration-200",
-              collapsed && "rotate-180"
-            )} />
-          </button>
-          <button
-            className="lg:hidden p-1 rounded-lg hover:bg-muted"
-            onClick={() => setMobileOpen(false)}
-          >
-            <ChevronRight size={18} className="text-muted-foreground" />
-          </button>
-        </div>
+        <button
+          className="hidden lg:flex p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+          onClick={toggleCollapsed}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          <ChevronLeft size={18} className={cn(
+            "transition-transform duration-200",
+            collapsed && "rotate-180"
+          )} />
+        </button>
       </div>
 
       {/* Context Switcher */}
-      <div className="shrink-0 px-4 pt-2 pb-3 border-b border-border">
-        <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5">
+      <div className="shrink-0 px-4 pt-3 pb-3 border-b border-border">
+        <div className="flex items-center gap-1 bg-muted/60 rounded-xl p-1">
           <Link
             to="/"
             onClick={() => setMobileOpen(false)}
             title={collapsed ? "Kinesiology" : undefined}
             className={cn(
-              "flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all no-underline",
-              collapsed ? "flex-1" : "flex-1",
-              !location.pathname.startsWith('/voice')
-                ? "bg-card text-foreground shadow-sm border border-border"
+              "flex flex-1 items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all no-underline",
+              !isVoice
+                ? "bg-card text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -193,10 +182,9 @@ const Sidebar = () => {
             onClick={() => setMobileOpen(false)}
             title={collapsed ? "Voice" : undefined}
             className={cn(
-              "flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all no-underline",
-              collapsed ? "flex-1" : "flex-1",
-              location.pathname.startsWith('/voice')
-                ? "bg-card text-foreground shadow-sm border border-border"
+              "flex flex-1 items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all no-underline",
+              isVoice
+                ? "bg-card text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -207,11 +195,11 @@ const Sidebar = () => {
       </div>
 
       {/* Nav Groups */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-4">
+      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-5">
         {groups.map((group) => (
           <div key={group.label}>
             <p className={cn(
-              "px-3 mb-1 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 transition-opacity duration-200",
+              "px-3 mb-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/50 transition-opacity duration-200",
               collapsed && "sr-only"
             )}>
               {group.label}
@@ -227,7 +215,7 @@ const Sidebar = () => {
                         onClick={() => toggleExpand(item.label)}
                         title={collapsed ? item.label : undefined}
                         className={cn(
-                          "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors",
+                          "relative w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold tracking-wide transition-colors",
                           collapsed ? "justify-center px-2" : "",
                           childActive
                             ? "bg-primary/10 text-primary"
@@ -266,21 +254,25 @@ const Sidebar = () => {
                     </div>
                   );
                 }
+                const active = isActive(item.path!);
                 return (
                   <Link
                     key={item.path}
                     to={item.path!}
                     onClick={() => setMobileOpen(false)}
                     title={collapsed ? item.label : undefined}
-                    aria-current={isActive(item.path!) ? "page" : undefined}
+                    aria-current={active ? "page" : undefined}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors",
+                      "relative flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold tracking-wide transition-colors",
                       collapsed ? "justify-center px-2" : "",
-                      isActive(item.path!)
+                      active
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     )}
                   >
+                    {active && !collapsed && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-[3px] rounded-full bg-primary" />
+                    )}
                     <item.icon size={16} className="shrink-0" />
                     <span className={cn("transition-opacity duration-200", collapsed && "hidden")}>{item.label}</span>
                   </Link>
@@ -296,11 +288,12 @@ const Sidebar = () => {
         <button
           onClick={() => {
             setIpadMode(true);
+            setMobileOpen(false);
             navigate('/practice/clinical-hub');
           }}
           title={collapsed ? "iPad Mode" : undefined}
           className={cn(
-            "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-muted transition-colors",
+            "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold tracking-wide text-muted-foreground hover:text-foreground hover:bg-muted transition-colors",
             collapsed && "justify-center px-2"
           )}
         >
@@ -311,7 +304,7 @@ const Sidebar = () => {
           onClick={togglePrivacy}
           title={collapsed ? (isPrivate ? "Disable Privacy" : "Enable Privacy") : undefined}
           className={cn(
-            "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-muted transition-colors",
+            "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold tracking-wide text-muted-foreground hover:text-foreground hover:bg-muted transition-colors",
             collapsed && "justify-center px-2"
           )}
         >
@@ -327,7 +320,7 @@ const Sidebar = () => {
           onClick={() => setMobileOpen(false)}
           title={collapsed ? "Settings" : undefined}
           className={cn(
-            "flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-muted transition-colors",
+            "flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold tracking-wide text-muted-foreground hover:text-foreground hover:bg-muted transition-colors",
             collapsed && "justify-center px-2"
           )}
         >
@@ -344,7 +337,7 @@ const Sidebar = () => {
           }}
           title={collapsed ? "Sign Out" : undefined}
           className={cn(
-            "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider text-chart-destructive hover:bg-destructive/10 transition-colors",
+            "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold tracking-wide text-chart-destructive hover:bg-destructive/10 transition-colors",
             collapsed && "justify-center px-2"
           )}
         >
@@ -359,33 +352,22 @@ const Sidebar = () => {
     <>
       {/* Desktop Sidebar */}
       <aside className={cn(
-        "hidden lg:flex shrink-0 flex-col h-full transition-all duration-300 ease-in-out",
+        "hidden lg:flex shrink-0 flex-col h-full border-r border-border transition-all duration-300 ease-in-out",
         collapsed ? "w-16" : "w-64"
       )}>
         {sidebarContent}
       </aside>
 
-      {/* Mobile Overlay */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Navigation menu">
-          <div
-            className="absolute inset-0 bg-foreground/40 backdrop-blur-sm"
-            onClick={() => setMobileOpen(false)}
-          />
-          <aside className="absolute left-0 top-0 bottom-0 w-72 max-w-[85vw] shadow-2xl animate-in slide-in-from-left duration-300">
-            {sidebarContent}
-          </aside>
-        </div>
-      )}
-
-      {/* Mobile Toggle Button */}
-      <button
-        onClick={() => setMobileOpen(true)}
-        aria-label="Open navigation menu"
-        className="fixed bottom-6 left-6 z-40 lg:hidden w-12 h-12 rounded-2xl bg-primary text-primary-foreground shadow-xl flex items-center justify-center hover:bg-primary/90 transition-colors"
-      >
-        <LayoutDashboard size={20} />
-      </button>
+      {/* Mobile: content only — the trigger + header bar live in MainLayout
+          (which owns mobileOpen/onMobileOpenChange) so the header can sit
+          correctly in the content column's vertical stack rather than as a
+          sibling of <aside> in this component's own horizontal position. */}
+      <Sheet open={mobileOpen} onOpenChange={onMobileOpenChange}>
+        <SheetContent side="left" className="p-0 w-72 max-w-[85vw] border-r border-border">
+          <SheetTitle className="sr-only">Navigation menu</SheetTitle>
+          {sidebarContent}
+        </SheetContent>
+      </Sheet>
     </>
   );
 };

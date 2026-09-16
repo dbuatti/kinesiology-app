@@ -10,7 +10,7 @@ import { useAppMode } from '@/components/ModeProvider';
 import { useIpadMode } from '@/hooks/use-ipad-mode';
 import { cn } from '@/lib/utils';
 import { showSuccess } from '@/utils/toast';
-import { Tablet } from 'lucide-react';
+import { Tablet, Menu } from 'lucide-react';
 
 const MainLayout = () => {
   const { mode, setMode } = useAppMode();
@@ -18,30 +18,34 @@ const MainLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const ROUTE_TITLES: Record<string, string> = {
+    "": "Home",
+    assistant: "Assistant",
+    timetable: "Timetable",
+    calendar: "Calendar",
+    clients: "Clients",
+    sessions: "Sessions",
+    appointments: "Session",
+    business: "Business",
+    journal: "Journal",
+    practice: "Practice Hub",
+    worksheets: "Worksheets",
+    library: "Library",
+    identity: "Identity Work",
+    "morning-program": "Morning Program",
+    voice: "Voice Studio",
+    settings: "Settings",
+  };
+  const routeSegment = location.pathname.split("/").filter(Boolean)[0] ?? "";
+  const currentTitle = ROUTE_TITLES[routeSegment] ?? (routeSegment.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase()) || "Home");
+
   // Per-route browser tab title, so tabs, history and bookmarks are
   // distinguishable (they all read the same generic title otherwise).
   useEffect(() => {
-    const seg = location.pathname.split("/").filter(Boolean)[0] ?? "";
-    const titles: Record<string, string> = {
-      "": "Home",
-      timetable: "Timetable",
-      calendar: "Calendar",
-      clients: "Clients",
-      sessions: "Sessions",
-      appointments: "Session",
-      business: "Business",
-      journal: "Journal",
-      practice: "Practice Hub",
-      worksheets: "Worksheets",
-      library: "Library",
-      identity: "Identity Work",
-      "morning-program": "Morning Program",
-      voice: "Voice Studio",
-      settings: "Settings",
-    };
-    const label = titles[seg] ?? seg.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
-    document.title = label ? `${label} · Resonance` : "Resonance Kinesiology";
-  }, [location.pathname]);
+    document.title = currentTitle ? `${currentTitle} · Resonance` : "Resonance Kinesiology";
+  }, [currentTitle]);
+
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const [isFullScreen, setIsFullScreen] = useState(() => {
     return localStorage.getItem('rk_fullscreen') === 'true';
@@ -135,7 +139,7 @@ const MainLayout = () => {
 
       <div className="relative z-10 flex h-full w-full">
         {/* Sidebar */}
-        {!shouldHideSidebar && !ipadMode && <Sidebar />}
+        {!shouldHideSidebar && !ipadMode && <Sidebar mobileOpen={mobileNavOpen} onMobileOpenChange={setMobileNavOpen} />}
 
         {/* iPad Mode Exit Button */}
         {ipadMode && !shouldHideHeader && (
@@ -154,6 +158,21 @@ const MainLayout = () => {
 
         {/* Main Content Area */}
         <div className="flex flex-col flex-1 min-w-0 h-full">
+          {/* Mobile nav header — a real hamburger entry point (in the
+              content column's own vertical stack, above everything else)
+              rather than a floating FAB with no visible affordance. */}
+          {!shouldHideSidebar && !ipadMode && (
+            <header className="lg:hidden shrink-0 flex items-center gap-3 h-14 px-4 border-b border-border bg-card/95 backdrop-blur-sm">
+              <button
+                onClick={() => setMobileNavOpen(true)}
+                aria-label="Open navigation menu"
+                className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-muted text-foreground transition-colors -ml-1.5"
+              >
+                <Menu size={20} />
+              </button>
+              <span className="text-sm font-bold text-foreground truncate">{currentTitle}</span>
+            </header>
+          )}
           {!shouldHideHeader && !isInSession && <UpcomingMarquee />}
 
           {/* Content */}

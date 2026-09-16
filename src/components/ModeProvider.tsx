@@ -1,20 +1,16 @@
 
-import { createContext, useContext, useEffect, useState } from 'react'; import type { ReactNode } from 'react';
+import { createContext, useContext, useState } from 'react'; import type { ReactNode } from 'react';
 
 export type AppMode = 'clinical' | 'business' | 'voice';
-export type AppViewMode = 'default' | 'voice';
 
 interface ModeContextType {
   mode: AppMode;
   setMode: (mode: AppMode) => void;
-  appMode: AppViewMode;
-  setAppMode: (appMode: AppViewMode) => void;
 }
 
 const ModeContext = createContext<ModeContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'rk_app_mode';
-const APP_MODE_STORAGE_KEY = 'rk_app_view_mode';
 
 export const ModeProvider = ({ children }: { children: ReactNode }) => {
   const [mode, setModeState] = useState<AppMode>(() => {
@@ -22,23 +18,13 @@ export const ModeProvider = ({ children }: { children: ReactNode }) => {
     return (saved as AppMode) || 'clinical';
   });
 
-  const [appMode, setAppModeState] = useState<AppViewMode>(() => {
-    const saved = localStorage.getItem(APP_MODE_STORAGE_KEY);
-    return (saved as AppViewMode) || 'default';
-  });
-
   const setMode = (newMode: AppMode) => {
     setModeState(newMode);
     localStorage.setItem(STORAGE_KEY, newMode);
   };
 
-  const setAppMode = (newAppMode: AppViewMode) => {
-    setAppModeState(newAppMode);
-    localStorage.setItem(APP_MODE_STORAGE_KEY, newAppMode);
-  };
-
   return (
-    <ModeContext.Provider value={{ mode, setMode, appMode, setAppMode }}>
+    <ModeContext.Provider value={{ mode, setMode }}>
       {children}
     </ModeContext.Provider>
   );

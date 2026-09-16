@@ -18,6 +18,81 @@ const corsHeaders = {
 const GEMINI_MODEL = "gemini-2.5-flash";
 const MAX_TOOL_ROUNDS = 6;
 
+// --- Ported from src/utils/timetable-scheduler.ts (kept in sync manually — pure
+// logic, no browser deps) so availability the assistant is told in chat parses
+// into the exact same structured windows the Timetable Simulator's auto-drafter
+// reads from `timetable_client_availability`, not just a human-readable note. ---
+const DAY_WORDS: Record<string, number> = {
+  sun: 0, sunday: 0, mon: 1, monday: 1, tue: 2, tues: 2, tuesday: 2,
+  wed: 3, weds: 3, wednesday: 3, thu: 4, thur: 4, thurs: 4, thursday: 4,
+  fri: 5, friday: 5, sat: 6, saturday: 6,
+};
+const DAY_ORDER = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+const TIME_RE = "\\d{1,2}(?:[:.]\\d{2})?\\s*(?:a\\.?m\\.?|p\\.?m\\.?)?";
+
+function parseClock(tok: string): string | null {
+  const m = tok.trim().toLowerCase().match(/^(\d{1,2})(?:[:.](\d{2}))?\s*(a\.?m\.?|p\.?m\.?)?$/);
+  if (!m) return null;
+  let h = parseInt(m[1], 10);
+  const min = m[2] ? parseInt(m[2], 10) : 0;
+  const ap = m[3]?.replace(/\./g, "");
+  if (ap === "pm" && h !== 12) h += 12;
+  if (ap === "am" && h === 12) h = 0;
+  if (!ap && h <= 7) h += 12;
+  if (h > 23 || min > 59) return null;
+  return `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+}
+
+function parseAvailabilityText(text: string): { days: number[]; from: string | null; to: string | null }[] {
+  const windows: { days: number[]; from: string | null; to: string | null }[] = [];
+  const clauses = text.toLowerCase().replace(/\bx+\s*$/i, "").split(/\bor\b|,|;|\band\b|\n|\//);
+
+  for (const raw of clauses) {
+    let s = ` ${raw.trim()} `;
+    if (!s.trim()) continue;
+    let from: string | null = null;
+    let to: string | null = null;
+
+    const range = s.match(new RegExp(`(${TIME_RE})\\s*(?:-|–|to)\\s*(${TIME_RE})`, "i"));
+    if (range && parseClock(range[1]) && parseClock(range[2])) {
+      from = parseClock(range[1]); to = parseClock(range[2]); s = s.replace(range[0], " ");
+    } else {
+      const FILLER = "(?:about|around|approx\\.?|roughly)?\\s*";
+      const fromM = s.match(new RegExp(`(?:from|after)\\s+${FILLER}(${TIME_RE})`, "i")) ||
+        s.match(new RegExp(`(${TIME_RE})\\s*(?:onwards?|\\+)`, "i"));
+      if (fromM) { from = parseClock(fromM[fromM.length - 1]); s = s.replace(fromM[0], " "); }
+      const toM = s.match(new RegExp(`(?:until|before|til|till|by)\\s+${FILLER}(${TIME_RE})`, "i"));
+      if (toM) { to = parseClock(toM[toM.length - 1]); s = s.replace(toM[0], " "); }
+    }
+
+    if (from == null && to == null) {
+      const bare = s.match(/\b(\d{1,2}(?:[:.]\d{2})?\s*(?:a\.?m\.?|p\.?m\.?)|\d{1,2}[:.]\d{2})\b/i);
+      if (bare && parseClock(bare[1])) { from = parseClock(bare[1]); s = s.replace(bare[0], " "); }
+    }
+
+    let days: number[] = [];
+    if (/weekday/.test(s)) days = [1, 2, 3, 4, 5];
+    else if (/weekend/.test(s)) days = [0, 6];
+    else {
+      const dr = s.match(/(sun|mon|tue|tues|wed|weds|thu|thur|thurs|fri|sat)[a-z]*\s*(?:-|to|thru|through)\s*(sun|mon|tue|tues|wed|weds|thu|thur|thurs|fri|sat)[a-z]*/);
+      if (dr && DAY_WORDS[dr[1]] != null && DAY_WORDS[dr[2]] != null) {
+        let a = DAY_WORDS[dr[1]], b = DAY_WORDS[dr[2]];
+        for (let i = 0; i < 7; i++) { days.push(a); if (a === b) break; a = (a + 1) % 7; }
+      } else {
+        const found = new Set<number>();
+        for (const word of DAY_ORDER) {
+          if (new RegExp(`\\b${word.slice(0, 3)}[a-z]*\\b`).test(s)) found.add(DAY_WORDS[word]);
+        }
+        days = [...found].sort();
+      }
+    }
+
+    if (days.length === 0 && from == null && to == null && !/any\s*(?:day|time)|every\s*day|daily/.test(s)) continue;
+    windows.push({ days, from, to });
+  }
+  return windows;
+}
+
 const functionDeclarations = [
   {
     name: "get_client_context",
@@ -224,7 +299,59 @@ async function runUpdateClientAvailability(supabase: any, userId: string, client
     .update({ availability_notes: availabilityNotes })
     .eq("id", clientId).eq("user_id", userId);
   if (error) return { error: "Could not save that — client not found." };
-  return { status: "saved", note: `Availability note updated: "${availabilityNotes}"` };
+
+  // Also feed the Timetable Simulator's structured availability store, so what's
+  // taught here actually shapes its auto-drafter, not just a note only this
+  // assistant reads. Same client_key convention the simulator itself uses.
+  const windows = parseAvailabilityText(availabilityNotes);
+  const clientKey = `fnh:${clientId}`;
+  await supabase.from("timetable_client_availability").upsert(
+    { user_id: userId, client_key: clientKey, windows, note: availabilityNotes, updated_at: new Date().toISOString() },
+    { onConflict: "user_id,client_key" },
+  );
+
+  return {
+    status: "saved",
+    note: `Availability note updated: "${availabilityNotes}"`,
+    parsed_windows: windows.length ? windows : null,
+    windows_note: windows.length
+      ? "This was also parsed into structured availability windows for the Timetable Simulator's auto-drafter."
+      : "Couldn't confidently parse specific days/times from that — the Timetable Simulator will still treat this client as fully open. Ask the practitioner to phrase it like 'Tuesdays after 5pm' if precision matters.",
+  };
+}
+
+async function runProposeBooking(supabase: any, userId: string, args: any) {
+  // Writes into the SAME booking_proposals table the Timetable Simulator's
+  // fortnight view reads (useBookingProposals hook) — a slot proposed here
+  // shows up there too as pencilled-in, and vice versa, instead of the
+  // assistant running its own disconnected shadow booking system.
+  const startISO = args.start_iso;
+  const endISO = new Date(new Date(startISO).getTime() + 60 * 60000).toISOString();
+  const { data, error } = await supabase
+    .from("booking_proposals")
+    .insert({
+      user_id: userId,
+      kind: "fnh",
+      client_id: args.client_id,
+      student_name: args.client_name,
+      event_type_id: args.event_type_id ? String(args.event_type_id) : null,
+      slot_start: startISO,
+      slot_end: endISO,
+      status: "proposed",
+      reason: args.notes || null,
+    })
+    .select("id")
+    .single();
+
+  const pendingBooking = {
+    client_id: args.client_id, client_name: args.client_name, start_iso: startISO,
+    event_type_id: args.event_type_id || null, notes: args.notes || null,
+    proposal_id: error ? null : data.id,
+  };
+  const result = error
+    ? { status: "proposed", note: "Booking proposed for human review (not yet saved to the shared timetable — it will still work, just won't show in the Timetable Simulator until confirmed)." }
+    : { status: "proposed", note: "Booking proposed for human review. It has not been created yet, and now also appears pencilled-in on the Timetable Simulator." };
+  return { pendingBooking, result };
 }
 
 async function runGetAvailableSlots(start: string, end: string, eventTypeId: number | undefined) {
@@ -563,8 +690,9 @@ Be proactive, not just reactive: if the conversation naturally touches on schedu
           pendingDraft = { to: args.to, subject: args.subject, body: args.body, client_id: args.client_id || client_id || null, appointment_id: args.appointment_id || null };
           result = { status: "drafted", note: "Draft created for human review. It has not been sent." };
         } else if (name === "propose_booking") {
-          pendingBooking = { client_id: args.client_id, client_name: args.client_name, start_iso: args.start_iso, event_type_id: args.event_type_id || null, notes: args.notes || null };
-          result = { status: "proposed", note: "Booking proposed for human review. It has not been created yet." };
+          const proposed = await runProposeBooking(supabase, userId, args);
+          pendingBooking = proposed.pendingBooking;
+          result = proposed.result;
         } else if (name === "update_client_availability") {
           result = await runUpdateClientAvailability(supabase, userId, args.client_id, args.availability_notes);
         } else if (name === "search_inbox") {

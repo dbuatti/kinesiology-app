@@ -71,8 +71,6 @@ export function FollowUpTool() {
     (c) => c.daysSince < daysThreshold && c.daysSince > 0
   );
 
-  const mailToLink = (c: ClientSession) =>
-    `mailto:${c.email || ""}?subject=Checking in — how are you feeling%3F&body=Hi ${c.name}%2C%0A%0AI wanted to check in and see how you're feeling since our last session. Let me know if anything has come up or if you have any questions.%0A%0AHere if you need anything%2C%0ADaniele`;
 
   if (loading) {
     return (
@@ -158,9 +156,9 @@ export function FollowUpTool() {
                       </p>
                     </div>
                     <Button asChild size="sm" className="h-8 rounded-lg text-[10px] font-semibold uppercase tracking-wider bg-chart-destructive hover:bg-chart-destructive/90 shrink-0 gap-1.5">
-                      <a href={mailToLink(c)}>
+                      <Link to={`/assistant?client=${c.id}&view=email`}>
                         <Mail size={12} /> Email
-                      </a>
+                      </Link>
                     </Button>
                   </CardContent>
                 </Card>

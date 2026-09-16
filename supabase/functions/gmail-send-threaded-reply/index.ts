@@ -67,26 +67,42 @@ serve(async (req) => {
       </body>
       </html>`;
 
-    const headerLines = [
-      `From: ${SENDER}`, `To: ${to}`, `Bcc: info@danielebuatti.com`, "MIME-Version: 1.0",
-      "Content-Type: text/html; charset=utf-8", `Subject: ${utf8Subject}`,
-    ];
-    if (in_reply_to) headerLines.push(`In-Reply-To: ${in_reply_to}`);
-    if (references) headerLines.push(`References: ${references}`);
-    const raw = [...headerLines, "", html].join("\n");
-    const encoded = btoa(unescape(encodeURIComponent(raw))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    const buildRaw = (withThreading: boolean) => {
+      const headerLines = [
+        `From: ${SENDER}`, `To: ${to}`, `Bcc: info@danielebuatti.com`, "MIME-Version: 1.0",
+        "Content-Type: text/html; charset=utf-8", `Subject: ${utf8Subject}`,
+      ];
+      if (withThreading && in_reply_to) headerLines.push(`In-Reply-To: ${in_reply_to}`);
+      if (withThreading && references) headerLines.push(`References: ${references}`);
+      const raw = [...headerLines, "", html].join("\n");
+      return btoa(unescape(encodeURIComponent(raw))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    };
 
     const token = await getGmailAccessToken(CLIENT_ID, CLIENT_SECRET, REFRESH);
-    const sendBody: any = { raw: encoded };
-    if (thread_id) sendBody.threadId = thread_id;
+    const attemptSend = async (withThreading: boolean) => {
+      const sendBody: any = { raw: buildRaw(withThreading) };
+      if (withThreading && thread_id) sendBody.threadId = thread_id;
+      const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify(sendBody),
+      });
+      const data = await res.json();
+      return { ok: res.ok, status: res.status, data };
+    };
 
-    const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify(sendBody),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(`Gmail send failed (${res.status}): ${data?.error?.message || "unknown"}`);
+    let sendResult = await attemptSend(!!(thread_id || in_reply_to));
+    let threadedFallback = false;
+    // A stale/mismatched thread reference (e.g. the "last message" the thread
+    // fetch found turned out to be an unrelated old email, or the thread was
+    // since deleted) makes Gmail 404 on the threaded attempt. Rather than
+    // failing the whole send, fall back to a plain, unthreaded email — the
+    // message still needs to reach the client even if it won't thread nicely.
+    if (!sendResult.ok && sendResult.status === 404 && (thread_id || in_reply_to)) {
+      threadedFallback = true;
+      sendResult = await attemptSend(false);
+    }
+    if (!sendResult.ok) throw new Error(`Gmail send failed (${sendResult.status}): ${sendResult.data?.error?.message || "unknown"}`);
 
     await supabase.from("email_log").insert({ ...logRow, status: "sent" });
 
@@ -97,7 +113,11 @@ serve(async (req) => {
       await supabase.from("client_email_status").update({ status: "awaiting_client", updated_at: new Date().toISOString() }).eq("client_id", client_id);
     }
 
-    return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({
+      success: true,
+      threaded: !threadedFallback && !!(thread_id || in_reply_to),
+      note: threadedFallback ? "Sent as a new email — the previous conversation reference was stale, so it may not thread with earlier messages." : undefined,
+    }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     await supabase.from("email_log").insert({ ...logRow, status: "failed", error_message: error.message }).then(() => {}, () => {});
     return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });

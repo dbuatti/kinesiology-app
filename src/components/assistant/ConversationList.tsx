@@ -14,7 +14,7 @@ interface Props {
 
 export default function ConversationList({ conversations, activeId, onSelect, onNew, clientNameFor }: Props) {
   return (
-    <div className="flex h-full flex-col border-r border-border">
+    <div className="flex h-full min-w-0 flex-col overflow-hidden border-r border-border">
       <div className="p-3">
         <Button onClick={onNew} variant="outline" className="w-full justify-start gap-2">
           <Plus className="h-4 w-4" /> New chat

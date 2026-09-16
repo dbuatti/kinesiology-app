@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link as RouterLink } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { showError } from "@/utils/toast";
 import AppLayout from "@/components/crm/AppLayout";
@@ -11,7 +11,7 @@ import AssistantInput from "@/components/assistant/AssistantInput";
 import NeedsAttentionWidget from "@/components/assistant/NeedsAttentionWidget";
 import ClientEmailThread from "@/components/assistant/ClientEmailThread";
 import { AssistantConversation, AssistantMessage, DraftEmail, PendingBooking } from "@/types/assistant";
-import { Bot, ChevronLeft, MessageCircle, Mail } from "lucide-react";
+import { Bot, ChevronLeft, MessageCircle, Mail, CalendarRange } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +26,7 @@ export default function AssistantPage() {
   const [searchParams] = useSearchParams();
   const initialClientId = searchParams.get("client");
   const initialPrompt = searchParams.get("prompt") || "";
+  const initialView = searchParams.get("view") === "email" ? "email" : "chat";
 
   const [conversations, setConversations] = useState<AssistantConversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -41,7 +42,7 @@ export default function AssistantPage() {
   // A deep link with a client already chosen should land straight in the chat pane.
   const [mobileShowList, setMobileShowList] = useState(!initialClientId);
   // Only meaningful in focused mode: the AI chat, or the client's real email thread.
-  const [viewMode, setViewMode] = useState<"chat" | "email">("chat");
+  const [viewMode, setViewMode] = useState<"chat" | "email">(initialView);
 
   const loadConversations = useCallback(async () => {
     const { data, error } = await supabase
@@ -168,7 +169,14 @@ export default function AssistantPage() {
         icon={Bot}
         title="Assistant"
         subtitle="Ask about scheduling, past patterns, or switch into focused mode for a specific client."
-        actions={<ClientPicker clients={clients} value={focusedClientId} onChange={setFocusedClientId} />}
+        actions={
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="sm" className="h-9 text-xs gap-1.5">
+              <RouterLink to="/timetable"><CalendarRange className="h-3.5 w-3.5" /> Timetable Simulator</RouterLink>
+            </Button>
+            <ClientPicker clients={clients} value={focusedClientId} onChange={setFocusedClientId} />
+          </div>
+        }
       />
       <div className="mt-6">
         <NeedsAttentionWidget />
@@ -177,7 +185,7 @@ export default function AssistantPage() {
         className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-0 rounded-2xl border border-border overflow-hidden bg-card"
         style={{ height: "calc(100vh - 300px)", minHeight: 420 }}
       >
-        <div className={cn("min-h-0", mobileShowList ? "flex" : "hidden", "md:flex")}>
+        <div className={cn("min-h-0 min-w-0", mobileShowList ? "flex" : "hidden", "md:flex")}>
           <ConversationList
             conversations={conversations}
             activeId={activeId}

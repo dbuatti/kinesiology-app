@@ -38,6 +38,18 @@ export default function BookingProposalCard({ booking, onConfirmed, onDiscard }:
         },
       });
       if (error || data?.error) throw new Error(data?.error || error?.message || "Booking failed.");
+
+      // Mirror useBookingProposals' confirmProposal exactly, so this shows as
+      // confirmed on the Timetable Simulator too, not just in this chat.
+      if (booking.proposal_id) {
+        await supabase.from("booking_proposals").update({
+          status: "confirmed",
+          calcom_booking_id: data.uid,
+          confirmed_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }).eq("id", booking.proposal_id);
+      }
+
       showSuccess(`Booked ${booking.client_name} for ${fmtMelbourne(booking.start_iso)}.`);
       onConfirmed();
     } catch (err: any) {
@@ -45,6 +57,13 @@ export default function BookingProposalCard({ booking, onConfirmed, onDiscard }:
     } finally {
       setIsBooking(false);
     }
+  };
+
+  const handleDiscard = async () => {
+    if (booking.proposal_id) {
+      await supabase.from("booking_proposals").update({ status: "dropped", updated_at: new Date().toISOString() }).eq("id", booking.proposal_id);
+    }
+    onDiscard();
   };
 
   return (
@@ -60,8 +79,11 @@ export default function BookingProposalCard({ booking, onConfirmed, onDiscard }:
           <p className="text-muted-foreground">{fmtMelbourne(booking.start_iso)}</p>
           {booking.notes && <p className="text-xs text-muted-foreground mt-1">{booking.notes}</p>}
         </div>
+        {booking.proposal_id && (
+          <p className="text-[10px] text-muted-foreground">Pencilled into the Timetable Simulator too — visible there until confirmed or discarded.</p>
+        )}
         <div className="flex justify-end gap-2 pt-1">
-          <Button variant="ghost" size="sm" onClick={onDiscard} disabled={isBooking}>
+          <Button variant="ghost" size="sm" onClick={handleDiscard} disabled={isBooking}>
             <X className="h-4 w-4 mr-1" /> Discard
           </Button>
           <Button size="sm" onClick={handleConfirm} disabled={isBooking} className="bg-chart-emerald hover:bg-chart-emerald/90">

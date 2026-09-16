@@ -64,9 +64,6 @@ function urgencyClass(c: AttentionClient) {
   return "border-amber-500/30 bg-amber-500/5 text-amber-600";
 }
 
-const mailToLink = (c: AttentionClient) =>
-  `mailto:${c.email || ""}?subject=Booking your next session&body=Hi ${c.name.split(" ")[0]}%2C%0A%0AI wanted to check in about booking your next session. Let me know what works for you.%0A%0ADaniele`;
-
 const assistantPrompt = (c: AttentionClient) =>
   c.isActive
     ? `Find a good slot and book ${c.name.split(" ")[0]}'s next session — check their availability notes and usual pattern first.`
@@ -142,7 +139,7 @@ export default function NeedsAttentionWidget() {
                   </Button>
                   {c.email && (
                     <Button asChild size="sm" variant="outline" className="h-7 w-7 p-0 shrink-0">
-                      <a href={mailToLink(c)} title={`Email ${c.name}`}><Mail className="h-3 w-3" /></a>
+                      <Link to={`/assistant?client=${c.id}&view=email`} title={`Email ${c.name} (in-app, threaded)`}><Mail className="h-3 w-3" /></Link>
                     </Button>
                   )}
                 </div>

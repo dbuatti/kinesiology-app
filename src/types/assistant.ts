@@ -12,6 +12,10 @@ export interface PendingBooking {
   start_iso: string;
   event_type_id?: number | null;
   notes?: string | null;
+  // Row id in the shared `booking_proposals` table (same one the Timetable
+  // Simulator reads/writes) — null if that insert failed for some reason,
+  // in which case confirming still works but won't show on the Simulator.
+  proposal_id?: string | null;
 }
 
 export interface AssistantMessage {

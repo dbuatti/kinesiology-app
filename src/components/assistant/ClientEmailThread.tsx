@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Mail, Loader2, Send, RefreshCw } from "lucide-react";
+import { Mail, Loader2, Send, RefreshCw, CalendarClock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ThreadMessage {
@@ -47,6 +47,8 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
   const [subject, setSubject] = useState("");
   const [replyBody, setReplyBody] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [suggestedSlots, setSuggestedSlots] = useState<{ iso: string; label: string }[] | null>(null);
+  const [loadingSlots, setLoadingSlots] = useState(false);
 
   const load = useCallback(async () => {
     if (!clientEmail) { setLoading(false); return; }
@@ -108,7 +110,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
         },
       });
       if (error || data?.error) throw new Error(data?.error || error?.message || "Send failed.");
-      showSuccess(`Sent to ${clientName}.`);
+      showSuccess(data?.note ? `Sent to ${clientName}. ${data.note}` : `Sent to ${clientName}.`);
       setReplyBody("");
       await load();
     } catch (err: any) {
@@ -116,6 +118,51 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
     } finally {
       setIsSending(false);
     }
+  };
+
+  const handleSuggestTimes = async () => {
+    setLoadingSlots(true);
+    setSuggestedSlots(null);
+    try {
+      // The practitioner's diary can be fully booked for the next couple of
+      // weeks — widen the search progressively rather than coming back empty
+      // for what's usually the most common case (busy period).
+      const windowsToTry = [14, 45, 90];
+      let flat: { iso: string; label: string }[] = [];
+      for (const days of windowsToTry) {
+        const start = new Date();
+        const end = new Date(); end.setDate(end.getDate() + days);
+        const { data, error } = await supabase.functions.invoke("get-calcom-slots", {
+          body: { start: start.toISOString(), end: end.toISOString(), timeZone: "Australia/Melbourne" },
+        });
+        if (error || data?.status === "error") throw new Error(data?.message || error?.message || "Couldn't load slots.");
+        flat = [];
+        for (const entries of Object.values<any>(data.data || {})) {
+          for (const e of entries || []) {
+            const iso = e.start || e.time;
+            if (!iso) continue;
+            const d = new Date(iso);
+            const label = d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: "Australia/Melbourne" }) +
+              " " + d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Australia/Melbourne" });
+            flat.push({ iso, label });
+          }
+          if (flat.length >= 8) break;
+        }
+        if (flat.length > 0) break;
+      }
+      setSuggestedSlots(flat.length ? flat.slice(0, 8) : null);
+      if (flat.length === 0) showError("No open slots found in the next 90 days — check the calendar directly.");
+    } catch (err: any) {
+      showError(err.message || "Couldn't load suggested times.");
+    } finally {
+      setLoadingSlots(false);
+    }
+  };
+
+  const insertSlot = (slot: { iso: string; label: string }) => {
+    const sentence = `Would ${slot.label} work for you?`;
+    setReplyBody((prev) => (prev.trim() ? `${prev.trim()} ${sentence}` : sentence));
+    setSuggestedSlots(null);
   };
 
   if (!clientEmail) {
@@ -171,6 +218,25 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
 
       <div className="pt-3 border-t border-border mt-3 space-y-2">
         <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject" className="text-base md:text-sm h-9" disabled={isSending} />
+        <div className="flex items-center justify-between gap-2">
+          <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1.5" onClick={handleSuggestTimes} disabled={loadingSlots}>
+            {loadingSlots ? <Loader2 className="h-3 w-3 animate-spin" /> : <CalendarClock className="h-3 w-3" />}
+            Suggest times
+          </Button>
+        </div>
+        {suggestedSlots && (
+          <div className="flex gap-1.5 overflow-x-auto pb-1">
+            {suggestedSlots.map((s) => (
+              <button
+                key={s.iso}
+                onClick={() => insertSlot(s)}
+                className="shrink-0 text-[11px] font-medium px-2.5 py-1 rounded-full border border-chart-primary/30 bg-chart-primary/5 text-chart-primary hover:bg-chart-primary/10 transition-colors"
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="flex items-end gap-2">
           <Textarea
             value={replyBody}

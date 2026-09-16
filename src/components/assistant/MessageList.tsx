@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
-import { AssistantMessage, DraftEmail } from "@/types/assistant";
+import { AssistantMessage, DraftEmail, PendingBooking } from "@/types/assistant";
 import MessageBubble from "./MessageBubble";
 import DraftEmailCard from "./DraftEmailCard";
+import BookingProposalCard from "./BookingProposalCard";
 import { Bot } from "lucide-react";
 
 interface Props {
@@ -10,21 +11,26 @@ interface Props {
   pendingDraft: DraftEmail | null;
   onDraftSent: () => void;
   onDraftDiscard: () => void;
+  pendingBooking: PendingBooking | null;
+  onBookingConfirmed: () => void;
+  onBookingDiscard: () => void;
 }
 
-export default function MessageList({ messages, isSending, pendingDraft, onDraftSent, onDraftDiscard }: Props) {
+export default function MessageList({
+  messages, isSending, pendingDraft, onDraftSent, onDraftDiscard, pendingBooking, onBookingConfirmed, onBookingDiscard,
+}: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length, isSending, pendingDraft]);
+  }, [messages.length, isSending, pendingDraft, pendingBooking]);
 
   if (messages.length === 0 && !isSending) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center text-center text-muted-foreground gap-3 py-16">
         <Bot className="h-10 w-10 opacity-40" />
         <p className="text-sm max-w-xs">
-          Ask about a client's schedule, get slot suggestions, or switch into focused mode to draft a reply in their style.
+          Ask about a client's schedule, book them into a real slot, teach me their availability, or switch into focused mode to draft a reply in their style.
         </p>
       </div>
     );
@@ -36,6 +42,11 @@ export default function MessageList({ messages, isSending, pendingDraft, onDraft
       {pendingDraft && (
         <div className="max-w-[85%] mr-auto">
           <DraftEmailCard draft={pendingDraft} onSent={onDraftSent} onDiscard={onDraftDiscard} />
+        </div>
+      )}
+      {pendingBooking && (
+        <div className="max-w-[85%] mr-auto">
+          <BookingProposalCard booking={pendingBooking} onConfirmed={onBookingConfirmed} onDiscard={onBookingDiscard} />
         </div>
       )}
       {isSending && (

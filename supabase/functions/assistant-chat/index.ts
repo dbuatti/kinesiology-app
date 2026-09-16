@@ -84,6 +84,33 @@ const functionDeclarations = [
     },
   },
   {
+    name: "propose_booking",
+    description: "Propose booking a specific real, available slot (from get_available_slots) for a client. This does NOT create the booking — it only returns a proposal for human review and confirmation. Always call get_available_slots first to confirm the exact time is genuinely free before proposing it; never invent a time.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        client_id: { type: "STRING" },
+        client_name: { type: "STRING" },
+        start_iso: { type: "STRING", description: "Exact ISO datetime of the slot, taken verbatim from a prior get_available_slots result." },
+        event_type_id: { type: "NUMBER", description: "Cal.com event type id. Omit to use the default kinesiology session type." },
+        notes: { type: "STRING", description: "Optional short note about why this slot / session." },
+      },
+      required: ["client_id", "client_name", "start_iso"],
+    },
+  },
+  {
+    name: "update_client_availability",
+    description: "Save or update what you've learned about a kinesiology client's availability (e.g. \"only Tuesday evenings now\", \"not Wednesdays\") so future scheduling remembers it. Use this whenever the practitioner tells you something new about when a client can/can't do sessions — this is a low-stakes internal note, not client-facing, so save it directly rather than asking permission first.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        client_id: { type: "STRING" },
+        availability_notes: { type: "STRING", description: "The full, updated availability note — replace the old note with the complete new text, don't just append a fragment." },
+      },
+      required: ["client_id", "availability_notes"],
+    },
+  },
+  {
     name: "draft_email_reply",
     description: "Produce a DRAFT email for the practitioner to review before sending. This does NOT send anything — it only returns draft text for human approval. Always use this instead of claiming you've sent an email.",
     parameters: {
@@ -189,6 +216,15 @@ async function runGetClientContext(supabase: any, userId: string, clientId: stri
     communication_style: profile?.style_summary || null,
     communication_channel: profile?.channel || null,
   };
+}
+
+async function runUpdateClientAvailability(supabase: any, userId: string, clientId: string, availabilityNotes: string) {
+  const { error } = await supabase
+    .from("clients")
+    .update({ availability_notes: availabilityNotes })
+    .eq("id", clientId).eq("user_id", userId);
+  if (error) return { error: "Could not save that — client not found." };
+  return { status: "saved", note: `Availability note updated: "${availabilityNotes}"` };
 }
 
 async function runGetAvailableSlots(start: string, end: string, eventTypeId: number | undefined) {
@@ -475,7 +511,24 @@ serve(async (req) => {
       .order("created_at", { ascending: true })
       .limit(40);
 
-    const contents = (priorRows || []).map((r: any) => ({ role: r.role, parts: [{ text: r.content || "" }] }));
+    // Defensive: Gemini requires strict user/model alternation starting with
+    // "user". Repair any conversation whose stored rows don't already satisfy
+    // that (e.g. an older row-ordering bug) by merging consecutive same-role
+    // rows instead of dropping them, and skipping a leading "model" row.
+    const sanitized: { role: string; content: string }[] = [];
+    for (const r of (priorRows || []) as any[]) {
+      const last = sanitized[sanitized.length - 1];
+      if (!last) {
+        if (r.role !== "user") continue;
+        sanitized.push({ role: r.role, content: r.content || "" });
+      } else if (last.role === r.role) {
+        last.content = `${last.content}\n${r.content || ""}`.trim();
+      } else {
+        sanitized.push({ role: r.role, content: r.content || "" });
+      }
+    }
+
+    const contents = sanitized.map((r) => ({ role: r.role, parts: [{ text: r.content }] }));
     contents.push({ role: "user", parts: [{ text: message }] });
 
     const systemInstruction = `You are the scheduling assistant inside Daniele's practice CRM, which runs TWO arms: kinesiology/FNH clinical clients (in the clients table, use get_client_context / get_active_clients / get_revenue_opportunities) and Voice Studio piano/singing lesson students (Notion-backed, use search_voice_client — they are NOT in the clients table and have no individual rate, only flat per-service pricing). Current time: ${melbourneNow()} (Australia/Melbourne).
@@ -483,11 +536,15 @@ Clients communicate messily — vague times ("until 2pm", "health permitting"), 
 Use the available tools to ground your answers in real data — never invent appointment times, client details, rates, or slot availability.
 ${client_id ? `This conversation is focused on one specific client (client_id: ${client_id}). Call get_client_context first to load their history, current rate vs target rate, and communication style, and match their tone when drafting anything.` : "This is a general conversation, not focused on one client."}
 You can draft an email for review via draft_email_reply, but you can never send one yourself — always say the draft is ready for review, never that it has been sent.
+You can propose an actual booking via propose_booking, but you can never create one yourself — it only becomes real when the practitioner clicks Confirm on the proposal card. Always call get_available_slots first and propose a real slot from that result, never a guessed time. If the client's availability_notes or communication style narrows things down (e.g. "only Tuesday evenings"), use that to pick which slot to propose rather than just the earliest one.
+Whenever the practitioner tells you something new about a client's availability (a day/time that works or doesn't), call update_client_availability right away to remember it for next time — don't just acknowledge it in the chat and let it evaporate.
 You can search the inbox read-only via search_inbox (Gmail search syntax) to check for replies or past correspondence — you cannot send, modify, or delete anything through it.
-For business questions ("who's active", "who should I raise rates for", "what times are free"), use get_active_clients, get_revenue_opportunities, and get_practice_schedule_overview rather than guessing — they compute real numbers from appointment history.`;
+For business questions ("who's active", "who should I raise rates for", "what times are free"), use get_active_clients, get_revenue_opportunities, and get_practice_schedule_overview rather than guessing — they compute real numbers from appointment history.
+Be proactive, not just reactive: if the conversation naturally touches on scheduling and get_active_clients shows active clients with no future booking, mention them and offer to help book their next session, rather than waiting to be asked. When a client's next-session cadence is clear from get_past_booking_patterns, feel free to suggest it ("she's usually every 2 weeks, so [date] would fit her pattern").`;
 
     const toolTrace: any[] = [];
     let pendingDraft = null;
+    let pendingBooking = null;
     let finalText = "";
 
     for (let i = 0; i < MAX_TOOL_ROUNDS; i++) {
@@ -505,6 +562,11 @@ For business questions ("who's active", "who should I raise rates for", "what ti
         if (name === "draft_email_reply") {
           pendingDraft = { to: args.to, subject: args.subject, body: args.body, client_id: args.client_id || client_id || null, appointment_id: args.appointment_id || null };
           result = { status: "drafted", note: "Draft created for human review. It has not been sent." };
+        } else if (name === "propose_booking") {
+          pendingBooking = { client_id: args.client_id, client_name: args.client_name, start_iso: args.start_iso, event_type_id: args.event_type_id || null, notes: args.notes || null };
+          result = { status: "proposed", note: "Booking proposed for human review. It has not been created yet." };
+        } else if (name === "update_client_availability") {
+          result = await runUpdateClientAvailability(supabase, userId, args.client_id, args.availability_notes);
         } else if (name === "search_inbox") {
           result = await runSearchInbox(SUPABASE_URL, SERVICE_KEY, args.query);
         } else if (name === "get_client_context") {
@@ -536,12 +598,19 @@ For business questions ("who's active", "who should I raise rates for", "what ti
 
     if (!finalText) finalText = "I ran out of steps trying to answer that — could you narrow the question down?";
 
+    // Explicit, strictly-increasing timestamps — a batched insert can otherwise
+    // give both rows the same created_at, and ORDER BY created_at doesn't then
+    // guarantee user-before-model. Gemini requires strict user/model alternation
+    // in `contents`, so a flipped pair permanently breaks every future turn in
+    // this conversation (two consecutive "model" entries get rejected as a 400).
+    const userAt = new Date();
+    const modelAt = new Date(userAt.getTime() + 1);
     await supabase.from("assistant_messages").insert([
-      { conversation_id: conversationId, role: "user", content: message },
-      { conversation_id: conversationId, role: "model", content: finalText, tool_calls: toolTrace.length ? toolTrace : null, draft_email: pendingDraft },
+      { conversation_id: conversationId, role: "user", content: message, created_at: userAt.toISOString() },
+      { conversation_id: conversationId, role: "model", content: finalText, tool_calls: toolTrace.length ? toolTrace : null, draft_email: pendingDraft, pending_booking: pendingBooking, created_at: modelAt.toISOString() },
     ]);
 
-    return new Response(JSON.stringify({ conversation_id: conversationId, reply: finalText, draft_email: pendingDraft }), {
+    return new Response(JSON.stringify({ conversation_id: conversationId, reply: finalText, draft_email: pendingDraft, pending_booking: pendingBooking }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

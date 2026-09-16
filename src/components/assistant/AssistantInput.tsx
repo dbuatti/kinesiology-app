@@ -35,7 +35,9 @@ export default function AssistantInput({ onSend, disabled, initialValue }: Props
         placeholder="Ask about scheduling, a client, or draft a reply..."
         rows={2}
         disabled={disabled}
-        className="resize-none"
+        // 16px (text-base) is deliberate, not stylistic — anything smaller makes
+        // iOS Safari auto-zoom the page on focus, per WebKit's documented behaviour.
+        className="resize-none text-base md:text-sm"
       />
       <Button onClick={submit} disabled={disabled || !value.trim()} size="icon" className="shrink-0">
         {disabled ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}

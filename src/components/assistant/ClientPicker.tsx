@@ -1,4 +1,5 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useRecentClients } from "@/hooks/use-recent-clients";
 import { Users } from "lucide-react";
 
 interface ClientOption {
@@ -15,6 +16,12 @@ interface Props {
 const GENERAL_VALUE = "__general__";
 
 export default function ClientPicker({ clients, value, onChange }: Props) {
+  const { recentClients } = useRecentClients();
+  const recentIds = new Set(recentClients.map((c) => c.id));
+  const others = clients.filter((c) => !recentIds.has(c.id));
+  // Recent list can outlive the client (renamed/deleted) — only show ones that still resolve.
+  const validRecent = recentClients.filter((rc) => clients.some((c) => c.id === rc.id));
+
   return (
     <Select value={value || GENERAL_VALUE} onValueChange={(v) => onChange(v === GENERAL_VALUE ? null : v)}>
       <SelectTrigger className="w-[220px]">
@@ -25,9 +32,24 @@ export default function ClientPicker({ clients, value, onChange }: Props) {
       </SelectTrigger>
       <SelectContent>
         <SelectItem value={GENERAL_VALUE}>General (no client focus)</SelectItem>
-        {clients.map((c) => (
-          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-        ))}
+        {validRecent.length > 0 && (
+          <>
+            <SelectSeparator />
+            <SelectGroup>
+              <SelectLabel>Recent</SelectLabel>
+              {validRecent.map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
+            </SelectGroup>
+          </>
+        )}
+        <SelectSeparator />
+        <SelectGroup>
+          <SelectLabel>All Clients</SelectLabel>
+          {others.map((c) => (
+            <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+          ))}
+        </SelectGroup>
       </SelectContent>
     </Select>
   );

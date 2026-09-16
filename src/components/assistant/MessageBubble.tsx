@@ -1,9 +1,55 @@
+import type { ReactNode } from "react";
 import { Bot, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AssistantMessage } from "@/types/assistant";
 
 interface Props {
   message: AssistantMessage;
+}
+
+// Gemini replies use light markdown (**bold**, "* item" bullets) that was
+// rendering as literal asterisks. This is a minimal, dependency-free parser for
+// just those two things — not a general markdown renderer.
+function renderInline(text: string): ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  // Plain strings don't need (and can't carry) a `key` — only the <strong>
+  // elements do. Wrapping non-bold parts in <Fragment key=...> broke this
+  // repo's dev tooling, which injects a data-dyad-id prop Fragments reject.
+  return parts.map((part, i) =>
+    part.startsWith("**") && part.endsWith("**")
+      ? <strong key={i}>{part.slice(2, -2)}</strong>
+      : part,
+  );
+}
+
+function renderFormatted(text: string): ReactNode {
+  const lines = text.split("\n");
+  const blocks: ReactNode[] = [];
+  let listBuffer: string[] = [];
+
+  const flushList = () => {
+    if (!listBuffer.length) return;
+    blocks.push(
+      <ul key={`ul-${blocks.length}`} className="list-disc pl-5 space-y-1 my-1.5">
+        {listBuffer.map((item, i) => <li key={i}>{renderInline(item)}</li>)}
+      </ul>,
+    );
+    listBuffer = [];
+  };
+
+  lines.forEach((line, i) => {
+    const bulletMatch = line.match(/^\s*[*-]\s+(.*)/);
+    if (bulletMatch) {
+      listBuffer.push(bulletMatch[1]);
+      return;
+    }
+    flushList();
+    if (line.trim() === "") return;
+    blocks.push(<p key={`p-${i}`} className="my-1 first:mt-0 last:mb-0">{renderInline(line)}</p>);
+  });
+  flushList();
+
+  return blocks;
 }
 
 export default function MessageBubble({ message }: Props) {
@@ -17,10 +63,10 @@ export default function MessageBubble({ message }: Props) {
         {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
       </div>
       <div className={cn(
-        "rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap leading-relaxed",
-        isUser ? "bg-primary text-primary-foreground rounded-tr-sm" : "bg-muted text-foreground rounded-tl-sm",
+        "rounded-2xl px-4 py-3 text-sm leading-relaxed",
+        isUser ? "bg-primary text-primary-foreground rounded-tr-sm whitespace-pre-wrap" : "bg-muted text-foreground rounded-tl-sm",
       )}>
-        {message.content}
+        {isUser ? message.content : renderFormatted(message.content || "")}
         {!!message.tool_calls?.length && (
           <div className="mt-2 flex flex-wrap gap-1.5 pt-2 border-t border-border/50">
             {message.tool_calls.map((t, i) => (

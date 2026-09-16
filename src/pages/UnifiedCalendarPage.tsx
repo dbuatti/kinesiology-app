@@ -761,6 +761,7 @@ const UnifiedCalendarPage = () => {
  const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
  const isLoading = voiceLoading || kinesiologyLoading;
  const hasError = voiceError || kinesiologyError;
+ const hasVisibleItems = calendarDays.some((day) => getItemsForDay(day).length > 0);
 
  if (hasError) {
  return (
@@ -972,6 +973,13 @@ const UnifiedCalendarPage = () => {
    </div>
    ))}
    </div>
+
+   {!isLoading && !hasVisibleItems && (
+   <div className="flex flex-col items-center justify-center gap-2 py-10 my-2 mx-2 rounded-3xl border border-dashed border-border text-center">
+     <CalendarIcon className="text-muted-foreground/50" size={28} />
+     <p className="text-sm font-semibold text-muted-foreground">Nothing on the calendar for this period.</p>
+   </div>
+   )}
 
    {/* Calendar Grid */}
    <div className="grid grid-cols-7">
@@ -1232,7 +1240,7 @@ const UnifiedCalendarPage = () => {
    </div>
 
     {viewMode !== "overview" && viewMode !== "list" && (
-    <div className="w-24 shrink-0 flex flex-col items-center gap-6 pt-2">
+    <div className="hidden lg:flex w-24 shrink-0 flex-col items-center gap-6 pt-2">
       <EarningsPanel
         summary={monthlySummary}
         voiceRate={95}

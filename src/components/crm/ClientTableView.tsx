@@ -52,6 +52,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
 
   return (
     <div className="bg-card rounded-[2.5rem] border border-border shadow-xl overflow-hidden">
+      <div className="overflow-x-auto">
       <Table>
         <TableHeader className="bg-muted/50">
           <TableRow className="hover:bg-transparent border-border">
@@ -185,6 +186,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
           ))}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 };

@@ -6,11 +6,14 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AlertCircle, ChevronDown, ChevronUp, Mail, MessageCircle, Loader2 } from "lucide-react";
 
+const ACTIVE_WINDOW_DAYS = 90;
+
 interface AttentionClient {
   id: string;
   name: string;
   email: string | null;
   daysSince: number;
+  isActive: boolean;
 }
 
 // Clients with at least one past appointment but nothing booked ahead — the gap
@@ -42,20 +45,32 @@ async function fetchNeedsAttention(): Promise<AttentionClient[]> {
   const results: AttentionClient[] = [];
   for (const [clientId, { date, client }] of lastPast.entries()) {
     if (hasFuture.has(clientId)) continue;
-    results.push({ id: clientId, name: client.name || "Unknown", email: client.email || null, daysSince: differenceInDays(now, new Date(date)) });
+    const daysSince = differenceInDays(now, new Date(date));
+    results.push({ id: clientId, name: client.name || "Unknown", email: client.email || null, daysSince, isActive: daysSince <= ACTIVE_WINDOW_DAYS });
   }
 
-  return results.sort((a, b) => b.daysSince - a.daysSince);
+  // Active (recently-seen, warm) clients surface first regardless of exact day
+  // count — they're the ones worth proactively rebooking while the relationship
+  // is live. Overdue clients follow, worst-first, as before.
+  return results.sort((a, b) => {
+    if (a.isActive !== b.isActive) return a.isActive ? -1 : 1;
+    return a.isActive ? a.daysSince - b.daysSince : b.daysSince - a.daysSince;
+  });
 }
 
-function urgencyClass(days: number) {
-  if (days >= 30) return "border-chart-destructive/30 bg-chart-destructive/5 text-chart-destructive";
-  if (days >= 14) return "border-amber-500/30 bg-amber-500/5 text-amber-600";
-  return "border-border bg-muted/30 text-muted-foreground";
+function urgencyClass(c: AttentionClient) {
+  if (c.isActive) return "border-chart-emerald/30 bg-chart-emerald/5 text-chart-emerald";
+  if (c.daysSince >= 180) return "border-chart-destructive/30 bg-chart-destructive/5 text-chart-destructive";
+  return "border-amber-500/30 bg-amber-500/5 text-amber-600";
 }
 
 const mailToLink = (c: AttentionClient) =>
   `mailto:${c.email || ""}?subject=Booking your next session&body=Hi ${c.name.split(" ")[0]}%2C%0A%0AI wanted to check in about booking your next session. Let me know what works for you.%0A%0ADaniele`;
+
+const assistantPrompt = (c: AttentionClient) =>
+  c.isActive
+    ? `Find a good slot and book ${c.name.split(" ")[0]}'s next session — check their availability notes and usual pattern first.`
+    : `Help me draft a message to ${c.name.split(" ")[0]} to book their next session.`;
 
 export default function NeedsAttentionWidget() {
   const [clients, setClients] = useState<AttentionClient[]>([]);
@@ -99,25 +114,30 @@ export default function NeedsAttentionWidget() {
       </button>
       {expanded && (
         <div className="px-4 pb-4 -mt-1">
-          <p className="text-[11px] text-muted-foreground mb-3">Clients with nothing booked ahead of them.</p>
+          <p className="text-[11px] text-muted-foreground mb-3">Active clients (seen in the last {ACTIVE_WINDOW_DAYS} days) shown first — worth booking their next session while things are warm. Others are overdue.</p>
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
             {shown.map((c) => (
               <div
                 key={c.id}
-                className={cn("flex flex-col gap-2 rounded-xl border p-3 shrink-0 w-[200px]", urgencyClass(c.daysSince))}
+                className={cn("flex flex-col gap-2 rounded-xl border p-3 shrink-0 w-[200px]", urgencyClass(c))}
               >
                 <div className="min-w-0">
-                  <Link to={`/clients/${c.id}`} className="text-sm font-semibold text-foreground hover:text-primary truncate block no-underline">
-                    {c.name}
-                  </Link>
+                  <div className="flex items-center gap-1.5">
+                    <Link to={`/clients/${c.id}`} className="text-sm font-semibold text-foreground hover:text-primary truncate no-underline">
+                      {c.name}
+                    </Link>
+                    {c.isActive && (
+                      <span className="text-[8px] font-black uppercase tracking-wider bg-chart-emerald/15 text-chart-emerald px-1.5 py-0.5 rounded-full shrink-0">Active</span>
+                    )}
+                  </div>
                   <p className="text-[10px] opacity-80 mt-0.5">
                     {c.daysSince <= 0 ? "Last session today" : `${c.daysSince}d since last session`}
                   </p>
                 </div>
                 <div className="flex gap-1.5">
                   <Button asChild size="sm" variant="secondary" className="h-7 flex-1 text-[10px] gap-1 px-2">
-                    <Link to={`/assistant?client=${c.id}&prompt=${encodeURIComponent(`Help me draft a message to ${c.name.split(" ")[0]} to book their next session.`)}`}>
-                      <MessageCircle className="h-3 w-3" /> Assistant
+                    <Link to={`/assistant?client=${c.id}&prompt=${encodeURIComponent(assistantPrompt(c))}`}>
+                      <MessageCircle className="h-3 w-3" /> {c.isActive ? "Book" : "Assistant"}
                     </Link>
                   </Button>
                   {c.email && (

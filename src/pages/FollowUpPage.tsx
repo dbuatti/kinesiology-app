@@ -86,7 +86,7 @@ export function FollowUpTool() {
       <div className="space-y-6">
         <PageHeader
           title="Client Follow-Up"
-          subtitle="Check in on clients at the right time after their sessions."
+          subtitle="Check in on clients at the right time after their sessions — how long it's been, regardless of what's booked."
           icon={MessageSquare}
           actions={
             <div className="flex items-center gap-2">
@@ -99,6 +99,11 @@ export function FollowUpTool() {
             </div>
           }
         />
+
+        <p className="text-xs text-muted-foreground px-2 -mt-2">
+          Looking for clients with nothing booked ahead at all (regardless of when they were last seen)? Try{" "}
+          <Link to="/assistant" className="text-primary hover:underline font-medium">the Assistant's Needs Attention list</Link>.
+        </p>
 
         {/* Threshold Selector */}
         <div className="flex items-center gap-3 px-2">

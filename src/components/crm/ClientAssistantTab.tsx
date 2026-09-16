@@ -120,7 +120,7 @@ export default function ClientAssistantTab({ client }: Props) {
             onChange={(e) => setPastedLogs(e.target.value)}
             placeholder="Paste the conversation history here..."
             rows={12}
-            className="font-mono text-xs"
+            className="font-mono text-base md:text-xs"
           />
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">

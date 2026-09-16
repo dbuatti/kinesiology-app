@@ -9,7 +9,7 @@ import ClientPicker from "@/components/assistant/ClientPicker";
 import MessageList from "@/components/assistant/MessageList";
 import AssistantInput from "@/components/assistant/AssistantInput";
 import NeedsAttentionWidget from "@/components/assistant/NeedsAttentionWidget";
-import { AssistantConversation, AssistantMessage, DraftEmail } from "@/types/assistant";
+import { AssistantConversation, AssistantMessage, DraftEmail, PendingBooking } from "@/types/assistant";
 import { Bot, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -33,6 +33,8 @@ export default function AssistantPage() {
   const [isSending, setIsSending] = useState(false);
   const [pendingDraft, setPendingDraft] = useState<DraftEmail | null>(null);
   const [pendingDraftMessageId, setPendingDraftMessageId] = useState<string | null>(null);
+  const [pendingBooking, setPendingBooking] = useState<PendingBooking | null>(null);
+  const [pendingBookingMessageId, setPendingBookingMessageId] = useState<string | null>(null);
   // Mobile shows one pane at a time — the conversation list, or the active chat.
   // A deep link with a client already chosen should land straight in the chat pane.
   const [mobileShowList, setMobileShowList] = useState(!initialClientId);
@@ -64,11 +66,13 @@ export default function AssistantPage() {
       .order("created_at", { ascending: true });
     if (error) { showError("Failed to load conversation history."); return; }
     setMessages(data || []);
-    // Only the most recent message can carry a live draft — an older turn's
-    // draft_email is history (already resolved), never something to resurrect.
+    // Only the most recent message can carry a live draft/booking — an older
+    // turn's is history (already resolved), never something to resurrect.
     const last = data?.[data.length - 1];
     setPendingDraft(last?.draft_email || null);
     setPendingDraftMessageId(last?.draft_email ? last.id : null);
+    setPendingBooking(last?.pending_booking || null);
+    setPendingBookingMessageId(last?.pending_booking ? last.id : null);
   }, []);
 
   const selectConversation = (id: string) => {
@@ -84,6 +88,8 @@ export default function AssistantPage() {
     setMessages([]);
     setPendingDraft(null);
     setPendingDraftMessageId(null);
+    setPendingBooking(null);
+    setPendingBookingMessageId(null);
     setMobileShowList(false);
   };
 
@@ -101,6 +107,7 @@ export default function AssistantPage() {
 
       setActiveId(data.conversation_id);
       setPendingDraft(data.draft_email || null);
+      setPendingBooking(data.pending_booking || null);
       await Promise.all([loadMessages(data.conversation_id), loadConversations()]);
     } catch (err: any) {
       showError(err.message || "The assistant couldn't respond just then.");
@@ -110,10 +117,10 @@ export default function AssistantPage() {
     }
   };
 
-  // Resolving a draft (sent or discarded) clears it in the DB, not just local
-  // state — otherwise reloading the conversation, or loadMessages running again
-  // after the next turn, would resurrect an already-sent or discarded draft and
-  // risk it being sent again.
+  // Resolving a draft/booking (sent, confirmed, or discarded) clears it in the
+  // DB, not just local state — otherwise reloading the conversation, or
+  // loadMessages running again after the next turn, would resurrect an
+  // already-resolved one and risk it being sent/booked again.
   const clearPersistedDraft = async () => {
     if (pendingDraftMessageId) {
       await supabase.from("assistant_messages").update({ draft_email: null }).eq("id", pendingDraftMessageId);
@@ -122,12 +129,28 @@ export default function AssistantPage() {
     setPendingDraftMessageId(null);
   };
 
+  const clearPersistedBooking = async () => {
+    if (pendingBookingMessageId) {
+      await supabase.from("assistant_messages").update({ pending_booking: null }).eq("id", pendingBookingMessageId);
+    }
+    setPendingBooking(null);
+    setPendingBookingMessageId(null);
+  };
+
   const handleDraftSent = () => {
     clearPersistedDraft();
   };
 
   const handleDraftDiscard = () => {
     clearPersistedDraft();
+  };
+
+  const handleBookingConfirmed = () => {
+    clearPersistedBooking();
+  };
+
+  const handleBookingDiscard = () => {
+    clearPersistedBooking();
   };
 
   const clientNameFor = (clientId: string | null) => clients.find((c) => c.id === clientId)?.name || null;
@@ -172,6 +195,9 @@ export default function AssistantPage() {
             pendingDraft={pendingDraft}
             onDraftSent={handleDraftSent}
             onDraftDiscard={handleDraftDiscard}
+            pendingBooking={pendingBooking}
+            onBookingConfirmed={handleBookingConfirmed}
+            onBookingDiscard={handleBookingDiscard}
           />
           <AssistantInput onSend={handleSend} disabled={isSending} initialValue={initialPrompt} />
         </div>

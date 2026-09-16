@@ -43,7 +43,7 @@ interface NavGroup {
 
 const NAV_GROUPS: NavGroup[] = [
   {
-    label: "Workspace",
+    label: "Clinical",
     items: [
       { label: "Home", icon: LayoutDashboard, path: "/" },
       { label: "Assistant", icon: Bot, path: "/assistant" },
@@ -51,12 +51,22 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "Timetable", icon: CalendarRange, path: "/timetable" },
       { label: "Clients", icon: Users, path: "/clients" },
       { label: "Sessions", icon: Activity, path: "/sessions" },
+    ],
+  },
+  {
+    label: "Practitioner Growth",
+    items: [
       { label: "Morning Program", icon: Sun, path: "/morning-program" },
       { label: "Journal", icon: MessageSquare, path: "/journal" },
       { label: "Practice Hub", icon: Heart, path: "/practice" },
+      { label: "Identity Work", icon: Brain, path: "/identity" },
+    ],
+  },
+  {
+    label: "Reference",
+    items: [
       { label: "Worksheets", icon: FileText, path: "/worksheets" },
       { label: "Library", icon: BookOpen, path: "/library" },
-      { label: "Identity Work", icon: Brain, path: "/identity" },
     ],
   },
   {

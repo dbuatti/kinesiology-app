@@ -73,19 +73,19 @@ const NeurologicalAssessments = ({
             <Tabs defaultValue="fakuda" className="w-full">
               <TabsList className="grid w-full grid-cols-4 h-16 bg-muted p-1.5 rounded-2xl">
                 <TabsTrigger value="fakuda" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm rounded-xl h-13 font-black uppercase tracking-wider text-[10px] relative">
-                  <Footprints size={16} /> Fakuda
+                  <Footprints size={16} /> <span className="hidden sm:inline">Fakuda</span>
                   {hasFakudaNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full" />}
                 </TabsTrigger>
                 <TabsTrigger value="rhombergs" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-purple-600 data-[state=active]:shadow-sm rounded-xl h-13 font-black uppercase tracking-wider text-[10px] relative">
-                  <Scale size={16} /> Rhombergs
+                  <Scale size={16} /> <span className="hidden sm:inline">Rhombergs</span>
                   {hasRhombergsNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-purple-500 rounded-full" />}
                 </TabsTrigger>
                 <TabsTrigger value="frontal-lobe" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-13 font-black uppercase tracking-wider text-[10px] relative">
-                  <Hand size={16} /> Frontal
+                  <Hand size={16} /> <span className="hidden sm:inline">Frontal</span>
                   {hasFrontalLobeNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-indigo-500 rounded-full" />}
                 </TabsTrigger>
                 <TabsTrigger value="righting" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-xl h-13 font-black uppercase tracking-wider text-[10px] relative">
-                  <RefreshCw size={16} /> Righting
+                  <RefreshCw size={16} /> <span className="hidden sm:inline">Righting</span>
                   {hasRightingNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full" />}
                 </TabsTrigger>
               </TabsList>

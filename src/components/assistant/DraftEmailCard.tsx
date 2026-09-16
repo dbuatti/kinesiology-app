@@ -52,7 +52,7 @@ export default function DraftEmailCard({ draft, onSent, onDiscard }: Props) {
       <CardContent className="space-y-3">
         <Input value={to} onChange={(e) => setTo(e.target.value)} placeholder="Recipient email" disabled={isSending} />
         <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject" disabled={isSending} />
-        <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={8} placeholder="Body" disabled={isSending} />
+        <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={8} placeholder="Body" disabled={isSending} className="text-base md:text-sm" />
         <div className="flex justify-end gap-2 pt-1">
           <Button variant="ghost" size="sm" onClick={onDiscard} disabled={isSending}>
             <X className="h-4 w-4 mr-1" /> Discard

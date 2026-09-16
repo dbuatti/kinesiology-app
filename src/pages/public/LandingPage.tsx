@@ -67,7 +67,7 @@ export default function LandingPage() {
           <span className="text-primary">✦</span> Resonance Kinesiology
         </div>
         <Button asChild variant="ghost" size="sm" className="text-xs">
-          <Link to="/login">Already a client? Log in</Link>
+          <Link to="/portal/login">Already a client? Log in</Link>
         </Button>
       </header>
 

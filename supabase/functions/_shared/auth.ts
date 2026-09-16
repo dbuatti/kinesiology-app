@@ -106,3 +106,51 @@ export async function requireServiceRole(req: Request, corsHeaders: Record<strin
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
+
+/**
+ * Guard + identity resolver for client-portal edge functions. Verifies the
+ * caller is a signed-in Supabase user AND resolves their OWN client_id via
+ * client_portal_accounts (never trusts a client_id passed in the request
+ * body — that was create-calcom-booking's original flaw). Returns
+ * { clientId } on success, or a Response to return directly on failure.
+ */
+export async function requireClient(req: Request, corsHeaders: Record<string, string>): Promise<{ clientId: string } | Response> {
+  const authHeader = req.headers.get("Authorization") || "";
+
+  try {
+    const sb = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const admin = createClient(Deno.env.get("SUPABASE_URL") ?? "", serviceKey);
+    const { data: link } = await admin
+      .from("client_portal_accounts")
+      .select("client_id")
+      .eq("auth_user_id", user.id)
+      .maybeSingle();
+
+    if (!link) {
+      return new Response(JSON.stringify({ error: "No linked client account. Contact your practitioner." }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    return { clientId: link.client_id };
+  } catch (_e) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+}

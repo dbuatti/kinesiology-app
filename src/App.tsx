@@ -19,6 +19,8 @@ const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
 const OnboardingPage = lazy(() => import("./pages/public/OnboardingPage"));
 const OnboardingLookupPage = lazy(() => import("./pages/public/OnboardingLookupPage"));
 const LandingPage = lazy(() => import("./pages/public/LandingPage"));
+const PortalLoginPage = lazy(() => import("./pages/public/PortalLoginPage"));
+const ClientPortalPage = lazy(() => import("./pages/public/ClientPortalPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // --- Clinic Pages ---
@@ -121,6 +123,13 @@ const AppRoutes = () => {
             with the real (MainLayout-wrapped, sidebar-having) Dashboard route
             further below. */}
         {!session && <Route path="/" element={<LandingPage />} />}
+
+        {/* Client portal — a client's own Supabase Auth session (email OTP),
+            entirely separate from the practitioner's /login. Not wrapped in
+            MainLayout (no sidebar) and not gated by the practitioner
+            session guard below — each page checks its own session state. */}
+        <Route path="/portal/login" element={<PortalLoginPage />} />
+        <Route path="/portal" element={<ClientPortalPage />} />
 
         {/* Public Voice Onboarding (no auth required) */}
         <Route path="/voice-onboarding/:email" element={<VoiceOnboardingPage />} />

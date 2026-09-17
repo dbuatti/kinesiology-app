@@ -30,15 +30,15 @@ const CONTENT: Record<Service, {
     orbClass: "bg-chart-purple/20",
     heading: "Get to the root of it, not just the symptom.",
     subheading:
-      "FNH (Functional Neuro-Health) sessions look at how your brain and nervous system are actually running — stress patterns, old reflexes, the stuff that keeps showing up no matter what else you've tried.",
+      "FNH (Functional Neuro-Health) sessions support nervous system regulation, working with stress patterns and old reflexes, the stuff that keeps showing up no matter what else you've tried.",
     points: [
-      "A real assessment first — not a generic protocol",
+      "A real assessment first, not a generic protocol",
       "Sessions build on each other, tracked over time",
-      "Practical, not woo — you'll understand what we're doing and why",
+      "Practical, not woo. You'll understand what we're doing and why",
     ],
     steps: [
       "Book your first assessment",
-      "We map what's actually going on — nervous system, old patterns, what's stuck",
+      "We map what's actually going on: nervous system, old patterns, what's stuck",
       "Sessions build from there, tracked so you can see real progress",
     ],
     cta: "Book an FNH assessment",
@@ -53,14 +53,14 @@ const CONTENT: Record<Service, {
     orbClass: "bg-chart-destructive/20",
     heading: "Sing and play like you mean it.",
     subheading:
-      "Whether you're prepping for an audition, working on technique, or just want to actually enjoy singing again — lessons are built around what you're trying to do, not a fixed curriculum.",
+      "Whether you're prepping for an audition, working on technique, or just want to actually enjoy singing again, lessons are built around what you're trying to do, connecting body, breath, and voice, not a fixed curriculum.",
     points: [
       "Technique that holds up under pressure, not just in the room",
       "Repertoire chosen for you, not off a generic list",
-      "Same teacher every week — I get to know how you actually work",
+      "Same teacher every week. I get to know how you actually work",
     ],
     steps: [
-      "Book a lesson — no audition, no commitment",
+      "Book a lesson, no audition, no commitment",
       "We figure out what you actually need to work on",
       "Weekly sessions, same teacher, repertoire that fits you",
     ],
@@ -137,7 +137,7 @@ export default function LandingPage() {
                 <Icon className="h-5 w-5" /> {content.cta} <ArrowRight className="h-4 w-4" />
               </a>
             </Button>
-            <p className="text-xs text-muted-foreground">Opens Cal.com in a new tab — pick a time that works, no account needed.</p>
+            <p className="text-xs text-muted-foreground">Opens Cal.com in a new tab. Pick a time that works, no account needed.</p>
           </div>
 
           <div className="max-w-3xl mx-auto mb-20">
@@ -158,13 +158,13 @@ export default function LandingPage() {
         <div className="max-w-2xl mx-auto border-t border-border pt-14 text-center">
           <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-4">About</h2>
           <p className="text-base text-muted-foreground leading-relaxed">
-            Daniele Buatti works across two practices in Melbourne — FNH kinesiology and voice/piano coaching — bringing the same approach to both: a real assessment before anything else, sessions that build on what actually happened last time, and no generic scripts. If something isn't working, you'll hear about it, and it'll change.
+            Daniele Buatti is a Melbourne-based pianist, vocal coach, music director, and embodiment practitioner. With over 12 years working as a music director, pianist, vocal coach, and educator, he combines music theatre expertise with kinesiology and somatic practice. Both sides of the work share the same approach: a real assessment before anything else, sessions that build on what actually happened last time, and no generic scripts.
           </p>
         </div>
       </main>
 
       <footer className="relative z-10 border-t border-border py-10 text-center text-xs text-muted-foreground">
-        Resonance Kinesiology — Daniele Buatti · <a href="mailto:info@danielebuatti.com" className="underline">info@danielebuatti.com</a>
+        Resonance Kinesiology · Daniele Buatti · <a href="mailto:info@danielebuatti.com" className="underline">info@danielebuatti.com</a>
       </footer>
     </div>
   );

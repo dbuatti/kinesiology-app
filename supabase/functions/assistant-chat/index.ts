@@ -138,13 +138,14 @@ const functionDeclarations = [
   },
   {
     name: "get_available_slots",
-    description: "Get open Cal.com booking slots in a date range for the practitioner's event type.",
+    description: "Get open Cal.com booking slots in a date range for the practitioner's event type. Pass client_id whenever you're finding a slot FOR a specific client (not just checking general availability) — the result then ranks/annotates a `suggested` shortlist by that client's own known availability notes and historical day/time pattern, so you're not guessing which of the (often dozens of) open slots they'd actually want.",
     parameters: {
       type: "OBJECT",
       properties: {
         start: { type: "STRING", description: "ISO date, e.g. 2026-09-15" },
         end: { type: "STRING", description: "ISO date, e.g. 2026-09-22" },
         event_type_id: { type: "NUMBER", description: "Cal.com event type id. Omit to use the default." },
+        client_id: { type: "STRING", description: "Kinesiology client id — when provided, ranks slots by this client's availability_notes + booking history instead of returning an unranked list." },
       },
       required: ["start", "end"],
     },
@@ -354,7 +355,18 @@ async function runProposeBooking(supabase: any, userId: string, args: any) {
   return { pendingBooking, result };
 }
 
-async function runGetAvailableSlots(start: string, end: string, eventTypeId: number | undefined) {
+function melbourneDayIndex(d: Date): number {
+  const name = d.toLocaleDateString("en-AU", { weekday: "long", timeZone: "Australia/Melbourne" }).toLowerCase();
+  return DAY_WORDS[name] ?? -1;
+}
+function melbourneHour(d: Date): number {
+  return Number(d.toLocaleTimeString("en-AU", { hour: "numeric", hour12: false, timeZone: "Australia/Melbourne" }));
+}
+function melbourneHHMM(d: Date): string {
+  return d.toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Australia/Melbourne" });
+}
+
+async function runGetAvailableSlots(supabase: any, userId: string, start: string, end: string, eventTypeId: number | undefined, clientId?: string) {
   const CALCOM_KEY = Deno.env.get("CALCOM_API_KEY");
   if (!CALCOM_KEY) return { error: "Cal.com is not configured." };
   const headers = { Authorization: `Bearer ${CALCOM_KEY}`, "cal-api-version": "2024-09-04", "Content-Type": "application/json" };
@@ -370,13 +382,82 @@ async function runGetAvailableSlots(start: string, end: string, eventTypeId: num
 
   const raw = data?.data?.slots || data?.data || {};
   const slots: Record<string, string[]> = {};
+  const flatIsos: string[] = [];
   for (const [date, entries] of Object.entries<any>(raw)) {
-    slots[date] = (entries || []).map((e: any) => {
-      const iso = typeof e === "string" ? e : (e?.start || e?.time);
-      return fmtMelbourne(iso);
-    });
+    const isos = (entries || []).map((e: any) => (typeof e === "string" ? e : (e?.start || e?.time))).filter(Boolean);
+    slots[date] = isos.map(fmtMelbourne);
+    flatIsos.push(...isos);
   }
-  return { slots };
+
+  if (!clientId || flatIsos.length === 0) return { slots };
+
+  // Rank candidates by this client's own known preferences instead of leaving
+  // "which of these dozens of slots would they actually want" to the model's
+  // own guesswork across two separate tool outputs.
+  const [{ data: clientRow }, { data: pastAppointments }] = await Promise.all([
+    supabase.from("clients").select("availability_notes").eq("id", clientId).eq("user_id", userId).maybeSingle(),
+    supabase.from("appointments").select("date").eq("client_id", clientId).eq("user_id", userId).eq("status", "Completed").order("date", { ascending: false }).limit(30),
+  ]);
+
+  const windows = clientRow?.availability_notes ? parseAvailabilityText(clientRow.availability_notes) : [];
+
+  const dayFreq: Record<number, number> = {};
+  const bucketFreq: Record<string, number> = {};
+  for (const a of pastAppointments || []) {
+    const d = new Date(a.date);
+    const day = melbourneDayIndex(d);
+    const hour = melbourneHour(d);
+    const bucket = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+    if (day >= 0) dayFreq[day] = (dayFreq[day] || 0) + 1;
+    bucketFreq[bucket] = (bucketFreq[bucket] || 0) + 1;
+  }
+  const topDayEntry = Object.entries(dayFreq).sort((a, b) => b[1] - a[1])[0];
+  const topDay = topDayEntry ? Number(topDayEntry[0]) : null;
+  const topBucket = Object.entries(bucketFreq).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+
+  const inWindow = (d: Date): boolean | null => {
+    if (windows.length === 0) return null;
+    const day = melbourneDayIndex(d);
+    const hhmm = melbourneHHMM(d);
+    return windows.some((w: any) => {
+      if (!w.days.includes(day)) return false;
+      if (w.from && hhmm < w.from) return false;
+      if (w.to && hhmm > w.to) return false;
+      return true;
+    });
+  };
+
+  const scored = flatIsos.map((iso) => {
+    const d = new Date(iso);
+    const day = melbourneDayIndex(d);
+    const hour = melbourneHour(d);
+    const bucket = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+    const windowMatch = inWindow(d);
+    let score = 0;
+    const reasons: string[] = [];
+    if (windowMatch === true) { score += 10; reasons.push("matches their stated availability"); }
+    if (windowMatch === false) { score -= 5; }
+    if (topDay !== null && day === topDay) { score += 3; reasons.push(`usually books ${DAY_ORDER[topDay]}s`); }
+    if (topBucket && bucket === topBucket) { score += 2; reasons.push(`usually books in the ${topBucket}`); }
+    return { iso, d, score, reasons, windowMatch };
+  });
+
+  // An explicit "only Tuesdays after 5pm" note should exclude non-matches from
+  // the shortlist entirely, not just rank them lower — but only once we've
+  // confirmed at least one real slot actually satisfies it.
+  const hasHardMatches = windows.length > 0 && scored.some((s) => s.windowMatch === true);
+  const pool = hasHardMatches ? scored.filter((s) => s.windowMatch === true) : scored;
+
+  const suggested = pool
+    .sort((a, b) => b.score - a.score || a.d.getTime() - b.d.getTime())
+    .slice(0, 5)
+    .map((s) => ({
+      iso: s.iso,
+      label: fmtMelbourne(s.iso),
+      reason: s.reasons.length ? s.reasons.join(", ") : "next available",
+    }));
+
+  return { slots, suggested };
 }
 
 async function runSearchInbox(supabaseUrl: string, serviceKey: string, query: string) {
@@ -664,7 +745,7 @@ Use the available tools to ground your answers in real data — never invent app
 ${client_id ? `This conversation is focused on one specific client (client_id: ${client_id}). Call get_client_context first to load their history, current rate vs target rate, and communication style, and match their tone when drafting anything.` : "This is a general conversation, not focused on one client."}
 You can draft an email for review via draft_email_reply, but you can never send one yourself — always say the draft is ready for review, never that it has been sent.
 Clients also have a self-serve portal at /portal/login (email OTP, no password) where they can view their own upcoming/past sessions, cancel a booking, book a new one, and message Daniele directly. If a client seems unaware of it, or asks how to manage/cancel their own booking, or Daniele wants to point someone there, feel free to mention it and include the link in a drafted email.
-You can propose an actual booking via propose_booking, but you can never create one yourself — it only becomes real when the practitioner clicks Confirm on the proposal card. Always call get_available_slots first and propose a real slot from that result, never a guessed time. If the client's availability_notes or communication style narrows things down (e.g. "only Tuesday evenings"), use that to pick which slot to propose rather than just the earliest one.
+You can propose an actual booking via propose_booking, but you can never create one yourself — it only becomes real when the practitioner clicks Confirm on the proposal card. Always call get_available_slots first and propose a real slot from that result, never a guessed time. When finding a slot for a specific client, always pass client_id to get_available_slots — it returns a ranked "suggested" shortlist (weighted by that client's availability_notes and their actual booking history, not just chronological order), each with a "reason". Lead with the top suggested slot and its reason ("Tuesday 4pm usually works well for her, and it fits the note about after-work sessions") rather than defaulting to whichever slot happens to be soonest — the earliest slot is very often NOT the one a client actually wants.
 Whenever the practitioner tells you something new about a client's availability (a day/time that works or doesn't), call update_client_availability right away to remember it for next time — don't just acknowledge it in the chat and let it evaporate.
 You can search the inbox read-only via search_inbox (Gmail search syntax) to check for replies or past correspondence — you cannot send, modify, or delete anything through it.
 For business questions ("who's active", "who should I raise rates for", "what times are free"), use get_active_clients, get_revenue_opportunities, and get_practice_schedule_overview rather than guessing — they compute real numbers from appointment history.
@@ -701,7 +782,7 @@ Be proactive, not just reactive: if the conversation naturally touches on schedu
         } else if (name === "get_client_context") {
           result = await runGetClientContext(supabase, userId, args.client_id);
         } else if (name === "get_available_slots") {
-          result = await runGetAvailableSlots(args.start, args.end, args.event_type_id);
+          result = await runGetAvailableSlots(supabase, userId, args.start, args.end, args.event_type_id, args.client_id);
         } else if (name === "get_past_booking_patterns") {
           result = await runGetPastBookingPatterns(supabase, userId, args.client_id);
         } else if (name === "search_voice_client") {

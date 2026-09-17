@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import EmailTemplatePicker from "@/components/assistant/EmailTemplatePicker";
-import { Mail, Loader2, Send, RefreshCw, CalendarClock, Sparkles, PenSquare } from "lucide-react";
+import { Mail, Loader2, Send, RefreshCw, CalendarClock, Sparkles, PenSquare, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ThreadMessage {
@@ -307,6 +307,15 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
             currentBody={replyBody}
             onApply={(subj, body) => { if (subj) setSubject(subj); setReplyBody(body); }}
           />
+          <Button
+            variant="outline" size="sm" className="h-7 text-[11px] gap-1.5"
+            onClick={() => {
+              const sentence = `You can also view your upcoming sessions and book directly at ${window.location.origin}/portal/login — just enter your email and I'll send you a login link, no password needed.`;
+              setReplyBody((prev) => (prev.trim() ? `${prev.trim()} ${sentence}` : sentence));
+            }}
+          >
+            <LayoutDashboard className="h-3 w-3" /> Insert portal link
+          </Button>
         </div>
         {suggestedSlots && (
           <div className="flex gap-1.5 overflow-x-auto pb-1">

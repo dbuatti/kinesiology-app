@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireServiceRole } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -62,6 +63,9 @@ async function fetchLiveBookings(calKey: string): Promise<any[]> {
 serve(async (req) => {
   const fn = "reconcile-calcom";
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  const authErr = await requireServiceRole(req, corsHeaders);
+  if (authErr) return authErr;
 
   try {
     const CAL_KEY = Deno.env.get("CALCOM_API_KEY");

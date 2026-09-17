@@ -9,6 +9,15 @@ const corsHeaders = {
 };
 
 const VOICE_CLIENTS_DB_ID = "af3e38f400d84dc8975eff4b6269157b";
+const VOICE_EVENT_TYPE_IDS = [1945081, 5925021, 6488157];
+
+async function verifyCalSignature(rawBody: string, signatureHeader: string | null, secret: string): Promise<boolean> {
+  if (!signatureHeader) return false;
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sigBuf = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(rawBody));
+  const computed = Array.from(new Uint8Array(sigBuf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return computed === signatureHeader;
+}
 
 serve(async (req) => {
   const functionName = "calcom-voice-webhook";
@@ -23,7 +32,19 @@ serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     if (!SUPABASE_URL) throw new Error("Missing SUPABASE_URL.");
 
-    const body = await req.json();
+    const WEBHOOK_SECRET = Deno.env.get("CALCOM_VOICE_WEBHOOK_SECRET") || Deno.env.get("CALCOM_WEBHOOK_SECRET");
+    const rawBody = await req.text();
+    if (WEBHOOK_SECRET) {
+      const valid = await verifyCalSignature(rawBody, req.headers.get("x-cal-signature-256"), WEBHOOK_SECRET);
+      if (!valid) {
+        console.error(`[${functionName}] Invalid or missing Cal.com signature — rejecting.`);
+        return new Response(JSON.stringify({ error: "Invalid signature" }), { status: 401, headers: corsHeaders });
+      }
+    } else {
+      console.warn(`[${functionName}] No webhook secret configured — signature verification skipped.`);
+    }
+
+    const body = JSON.parse(rawBody);
     const triggerEvent = body.triggerEvent || body.type;
     console.log(`[${functionName}] Event: ${triggerEvent}`);
 
@@ -212,6 +233,20 @@ serve(async (req) => {
     }
 
     const payload = body.payload || body.data || body;
+
+    // Guard against processing a non-voice (e.g. FNH) booking as a voice
+    // lesson — without this, registering this function as a live Cal.com
+    // webhook (it receives ALL bookings, not just voice ones) would create
+    // an incorrect Notion voice-lesson record for every clinical booking too.
+    const eventTypeIdEarly = payload.eventTypeId || payload.eventType?.id || payload.type?.id || null;
+    if (eventTypeIdEarly && !VOICE_EVENT_TYPE_IDS.includes(Number(eventTypeIdEarly))) {
+      console.log(`[${functionName}] Skipping non-voice event type: ${eventTypeIdEarly}`);
+      return new Response(JSON.stringify({ success: true, message: "Not a voice event type" }), {
+        status: 200,
+        headers: corsHeaders,
+      });
+    }
+
     const attendee =
       payload.attendees?.[0] || payload.responses;
 

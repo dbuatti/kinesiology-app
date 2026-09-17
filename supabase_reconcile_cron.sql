@@ -2,8 +2,14 @@
 -- deleted on Cal.com (or a missed webhook) is cleaned from the app + Notion.
 -- Run once in the Supabase SQL editor.
 --
--- REPLACE <ANON_KEY> below with your project's anon / publishable API key
--- (Settings → API Keys). The anon key is safe to store here.
+-- IMPORTANT (2026-09-17): reconcile-calcom now requires the SERVICE ROLE key
+-- (it was previously unguarded, callable by anyone with the public anon key —
+-- fixed as part of a broader security audit). REPLACE <SERVICE_ROLE_KEY>
+-- below with your project's service_role key (Settings -> API Keys). Because
+-- the service_role key is secret and cron.job stores the command in
+-- plaintext, restrict who can read the cron schema, or move the key into
+-- Supabase Vault. This MUST be re-run for the reconciliation sweep to keep
+-- working — the old anon-key version of this job will now get 401s.
 
 create extension if not exists pg_cron;
 create extension if not exists pg_net;
@@ -23,7 +29,7 @@ select cron.schedule(
     url     := 'https://xebtjnvfkroiplyzftas.supabase.co/functions/v1/reconcile-calcom',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'Authorization', 'Bearer <ANON_KEY>'
+      'Authorization', 'Bearer <SERVICE_ROLE_KEY>'
     ),
     body    := '{}'::jsonb
   );

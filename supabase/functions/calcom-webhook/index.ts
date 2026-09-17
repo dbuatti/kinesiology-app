@@ -11,6 +11,18 @@ const corsHeaders = {
 // Only process these specific clinical event types
 const ALLOWED_EVENT_IDS = [4279898, 5302336, 5927215];
 
+// Cal.com signs every webhook delivery with HMAC-SHA256 over the raw request
+// body, sent as the X-Cal-Signature-256 header (hex-encoded) — verifying it
+// is the only way to know a request genuinely came from Cal.com rather than
+// anyone who found this URL and POSTed a forged BOOKING_CANCELLED/etc event.
+async function verifyCalSignature(rawBody: string, signatureHeader: string | null, secret: string): Promise<boolean> {
+  if (!signatureHeader) return false;
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sigBuf = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(rawBody));
+  const computed = Array.from(new Uint8Array(sigBuf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return computed === signatureHeader;
+}
+
 serve(async (req) => {
   const functionName = "calcom-webhook";
   console.log(`[${functionName}] Webhook received`);
@@ -20,15 +32,27 @@ serve(async (req) => {
   try {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
+
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Missing Supabase environment variables.");
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-    
+
+    const WEBHOOK_SECRET = Deno.env.get('CALCOM_WEBHOOK_SECRET');
+    const rawBody = await req.text();
+    if (WEBHOOK_SECRET) {
+      const valid = await verifyCalSignature(rawBody, req.headers.get('x-cal-signature-256'), WEBHOOK_SECRET);
+      if (!valid) {
+        console.error(`[${functionName}] Invalid or missing Cal.com signature — rejecting.`);
+        return new Response(JSON.stringify({ error: 'Invalid signature' }), { status: 401, headers: corsHeaders });
+      }
+    } else {
+      console.warn(`[${functionName}] CALCOM_WEBHOOK_SECRET not set — signature verification skipped.`);
+    }
+
     const { data: profileData } = await supabase.from('profiles').select('id').limit(1).maybeSingle();
     const PRACTITIONER_ID = profileData?.id;
 
-    const body = await req.json();
+    const body = JSON.parse(rawBody);
     const triggerEvent = body.triggerEvent || body.type;
     
     console.log(`[${functionName}] Event Type: ${triggerEvent}`);

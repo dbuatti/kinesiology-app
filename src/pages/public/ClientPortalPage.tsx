@@ -6,7 +6,11 @@ import { CALCOM_CONFIG } from "@/config/integrations";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { showError, showSuccess } from "@/utils/toast";
-import { Loader2, CalendarPlus, LogOut, Send, X, Mail } from "lucide-react";
+import { Loader2, CalendarPlus, LogOut, Send, X, Mail, ExternalLink } from "lucide-react";
+
+type Service = "fnh" | "voice";
+const SERVICE_EVENT_TYPE_ID: Record<Service, number> = { fnh: 4279898, voice: 1945081 };
+const SERVICE_LABEL: Record<Service, string> = { fnh: "FNH session", voice: "voice/piano lesson" };
 
 interface MyAppointment {
   id: string;
@@ -32,6 +36,10 @@ export default function ClientPortalPage() {
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [bookingService, setBookingService] = useState<Service | null>(null);
+  const [slots, setSlots] = useState<{ iso: string; label: string }[] | null>(null);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [bookingSlot, setBookingSlot] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -71,6 +79,60 @@ export default function ClientPortalPage() {
       showError(err.message || "Couldn't cancel that session.");
     } finally {
       setCancellingId(null);
+    }
+  };
+
+  const openPicker = async (service: Service) => {
+    setBookingService(service);
+    setSlots(null);
+    setLoadingSlots(true);
+    try {
+      const windowsToTry = [14, 45, 90];
+      let flat: { iso: string; label: string }[] = [];
+      for (const days of windowsToTry) {
+        const start = new Date();
+        const end = new Date(); end.setDate(end.getDate() + days);
+        const { data, error } = await supabase.functions.invoke("client-get-slots", {
+          body: { start: start.toISOString(), end: end.toISOString(), eventTypeId: SERVICE_EVENT_TYPE_ID[service], timeZone: "Australia/Melbourne" },
+        });
+        if (error || data?.error) throw new Error(data?.error || error?.message);
+        flat = [];
+        for (const isoList of Object.values<string[]>(data.slots || {})) {
+          for (const iso of isoList) {
+            const d = new Date(iso);
+            const label = d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: "Australia/Melbourne" }) +
+              " " + d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Australia/Melbourne" });
+            flat.push({ iso, label });
+          }
+          if (flat.length >= 12) break;
+        }
+        if (flat.length > 0) break;
+      }
+      setSlots(flat.slice(0, 12));
+      if (flat.length === 0) showError("No open slots found in the next 90 days.");
+    } catch (err: any) {
+      showError(err.message || "Couldn't load available times.");
+    } finally {
+      setLoadingSlots(false);
+    }
+  };
+
+  const handleBookSlot = async (iso: string) => {
+    if (!bookingService) return;
+    setBookingSlot(iso);
+    try {
+      const { data, error } = await supabase.functions.invoke("client-create-booking", {
+        body: { startTime: iso, eventTypeId: SERVICE_EVENT_TYPE_ID[bookingService] },
+      });
+      if (error || data?.error) throw new Error(data?.error || error?.message);
+      showSuccess(`Your ${SERVICE_LABEL[bookingService]} is booked!`);
+      setBookingService(null);
+      setSlots(null);
+      await load();
+    } catch (err: any) {
+      showError(err.message || "Couldn't book that time.");
+    } finally {
+      setBookingSlot(null);
     }
   };
 
@@ -126,17 +188,49 @@ export default function ClientPortalPage() {
         ) : (
           <>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button asChild size="lg" className="h-12 rounded-xl font-bold gap-2 flex-1">
-                <a href={CALCOM_CONFIG.BOOKING_URL} target="_blank" rel="noopener noreferrer">
-                  <CalendarPlus className="h-4 w-4" /> Book an FNH session
-                </a>
+              <Button size="lg" className="h-12 rounded-xl font-bold gap-2 flex-1" onClick={() => openPicker("fnh")} disabled={loadingSlots && bookingService === "fnh"}>
+                {loadingSlots && bookingService === "fnh" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CalendarPlus className="h-4 w-4" />} Book an FNH session
               </Button>
-              <Button asChild size="lg" variant="outline" className="h-12 rounded-xl font-bold gap-2 flex-1">
-                <a href={CALCOM_CONFIG.VOICE_COACHING_URL} target="_blank" rel="noopener noreferrer">
-                  <CalendarPlus className="h-4 w-4" /> Book a lesson
-                </a>
+              <Button size="lg" variant="outline" className="h-12 rounded-xl font-bold gap-2 flex-1" onClick={() => openPicker("voice")} disabled={loadingSlots && bookingService === "voice"}>
+                {loadingSlots && bookingService === "voice" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CalendarPlus className="h-4 w-4" />} Book a lesson
               </Button>
             </div>
+
+            {bookingService && (
+              <section className="bg-background rounded-2xl border border-border p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">Pick a time — {SERVICE_LABEL[bookingService]}</h2>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setBookingService(null); setSlots(null); }}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                {loadingSlots ? (
+                  <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+                ) : slots && slots.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {slots.map((s) => (
+                      <button
+                        key={s.iso}
+                        onClick={() => handleBookSlot(s.iso)}
+                        disabled={bookingSlot !== null}
+                        className="rounded-xl border border-border bg-muted/50 hover:bg-muted px-3 py-2.5 text-xs font-semibold text-foreground transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                      >
+                        {bookingSlot === s.iso && <Loader2 className="h-3 w-3 animate-spin" />} {s.label}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No open times found.</p>
+                )}
+                <a
+                  href={bookingService === "fnh" ? CALCOM_CONFIG.BOOKING_URL : CALCOM_CONFIG.VOICE_COACHING_URL}
+                  target="_blank" rel="noopener noreferrer"
+                  className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground underline underline-offset-2 w-fit"
+                >
+                  <ExternalLink className="h-3 w-3" /> Or book directly on Cal.com
+                </a>
+              </section>
+            )}
 
             <section className="bg-background rounded-2xl border border-border p-6">
               <h2 className="text-sm font-bold text-foreground uppercase tracking-wide mb-4">Upcoming sessions</h2>

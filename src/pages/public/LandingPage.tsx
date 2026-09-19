@@ -157,7 +157,7 @@ export default function LandingPage() {
         <div className="max-w-2xl mx-auto border-t border-border pt-14 mb-16 text-center">
           <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-4">About</h2>
           <p className="text-base text-muted-foreground leading-relaxed mb-4">
-            I'm Daniele. I trained in kinesiology (<TBD>credential wording — diploma / year / mentorship framing</TBD>) and work within the Functional Neuro Health framework.
+            I'm Daniele. I hold a Diploma of Kinesiology from the College of Complementary Medicine, and work within the Functional Neuro Health framework.
           </p>
           <p className="text-base text-muted-foreground leading-relaxed">
             I also spend most of my week as a music director and vocal coach, which is less of a detour than it sounds. Both jobs are about what a body does under pressure, and how much of that is old habit rather than fact.

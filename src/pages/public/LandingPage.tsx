@@ -1,87 +1,34 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { CALCOM_CONFIG } from "@/config/integrations";
-import { cn } from "@/lib/utils";
-import { ArrowRight, Brain, Mic, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 
-type Service = "fnh" | "voice";
+// Copy still needs Daniele's own numbers/wording before this goes live — flagged
+// visibly on the page (amber chip) rather than silently guessed at.
+const TBD = ({ children }: { children: string }) => (
+  <span className="inline-block rounded border border-dashed border-amber-500/50 bg-amber-500/10 px-1.5 py-0.5 text-amber-600 dark:text-amber-400 font-medium" title="Needs Daniele's input before launch">
+    {children}
+  </span>
+);
 
-const CONTENT: Record<Service, {
-  label: string;
-  icon: typeof Brain;
-  colorClass: string;
-  bgClass: string;
-  borderClass: string;
-  orbClass: string;
-  heading: string;
-  subheading: string;
-  points: string[];
-  steps: string[];
-  cta: string;
-  bookingUrl: string;
-}> = {
-  fnh: {
-    label: "FNH Kinesiology",
-    icon: Brain,
-    colorClass: "text-chart-purple",
-    bgClass: "bg-chart-purple/10",
-    borderClass: "border-chart-purple/30",
-    orbClass: "bg-chart-purple/20",
-    heading: "Get to the root of it, not just the symptom.",
-    subheading:
-      "FNH (Functional Neuro-Health) sessions support nervous system regulation, working with stress patterns and old reflexes, the stuff that keeps showing up no matter what else you've tried.",
-    points: [
-      "A real assessment first, not a generic protocol",
-      "Sessions build on each other, tracked over time",
-      "Practical, not woo. You'll understand what we're doing and why",
-    ],
-    steps: [
-      "Book your first assessment",
-      "We map what's actually going on: nervous system, old patterns, what's stuck",
-      "Sessions build from there, tracked so you can see real progress",
-    ],
-    cta: "Book an FNH assessment",
-    bookingUrl: CALCOM_CONFIG.BOOKING_URL,
-  },
-  voice: {
-    label: "Voice & Piano",
-    icon: Mic,
-    colorClass: "text-chart-destructive",
-    bgClass: "bg-chart-destructive/10",
-    borderClass: "border-chart-destructive/30",
-    orbClass: "bg-chart-destructive/20",
-    heading: "Sing and play like you mean it.",
-    subheading:
-      "Whether you're prepping for an audition, working on technique, or just want to actually enjoy singing again, lessons are built around what you're trying to do, connecting body, breath, and voice, not a fixed curriculum.",
-    points: [
-      "Technique that holds up under pressure, not just in the room",
-      "Repertoire chosen for you, not off a generic list",
-      "Same teacher every week. I get to know how you actually work",
-    ],
-    steps: [
-      "Book a lesson, no audition, no commitment",
-      "We figure out what you actually need to work on",
-      "Weekly sessions, same teacher, repertoire that fits you",
-    ],
-    cta: "Book a lesson",
-    bookingUrl: CALCOM_CONFIG.VOICE_COACHING_URL,
-  },
-};
+const BookButton = ({ className = "" }: { className?: string }) => (
+  <Button asChild size="lg" className={`h-14 px-8 text-base font-bold rounded-2xl gap-2 bg-chart-purple/10 text-chart-purple hover:opacity-90 ${className}`}>
+    <a href={CALCOM_CONFIG.BOOKING_URL} target="_blank" rel="noopener noreferrer">
+      <Sparkles className="h-5 w-5" /> Book a first session <ArrowRight className="h-4 w-4" />
+    </a>
+  </Button>
+);
 
 export default function LandingPage() {
-  const [service, setService] = useState<Service>("fnh");
-  const content = CONTENT[service];
-  const Icon = content.icon;
-
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className={cn("absolute top-[-10%] left-[-10%] w-[55%] h-[55%] blur-[160px] rounded-full transition-colors duration-700 opacity-60 dark:opacity-40", content.orbClass)} />
-        <div className={cn("absolute bottom-[-15%] right-[-10%] w-[45%] h-[45%] blur-[140px] rounded-full transition-colors duration-700 opacity-40 dark:opacity-25", content.orbClass)} />
+        <div className="absolute top-[-10%] left-[-10%] w-[55%] h-[55%] blur-[160px] rounded-full opacity-60 dark:opacity-40 bg-chart-purple/20" />
+        <div className="absolute bottom-[-15%] right-[-10%] w-[45%] h-[45%] blur-[140px] rounded-full opacity-40 dark:opacity-25 bg-chart-purple/20" />
       </div>
 
-      <header className="relative z-10 flex items-center justify-between px-6 pb-6 pt-[max(1.5rem,env(safe-area-inset-top))] md:px-12 max-w-5xl mx-auto">
+      <header className="relative z-10 flex items-center justify-between px-6 pb-6 pt-[max(1.5rem,env(safe-area-inset-top))] md:px-12 max-w-3xl mx-auto">
         <div className="flex items-center gap-2 font-serif text-lg font-bold text-foreground">
           <span className="text-primary">✦</span> Resonance Kinesiology
         </div>
@@ -90,76 +37,154 @@ export default function LandingPage() {
         </Button>
       </header>
 
-      <main className="relative z-10 max-w-5xl mx-auto px-6 md:px-12 pb-24">
-        <div className="flex items-center gap-1.5 bg-muted p-1.5 rounded-xl w-fit mx-auto mb-12">
-          {(Object.keys(CONTENT) as Service[]).map((key) => {
-            const c = CONTENT[key];
-            const ItemIcon = c.icon;
-            return (
-              <button
-                key={key}
-                onClick={() => setService(key)}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors",
-                  service === key ? cn("bg-card shadow-sm", c.colorClass) : "text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <ItemIcon className="h-4 w-4" /> {c.label}
-              </button>
-            );
-          })}
-        </div>
+      <main className="relative z-10 max-w-3xl mx-auto px-6 md:px-12 pb-24">
+        {/* Hero */}
+        <div className="text-center max-w-2xl mx-auto pt-6 pb-16">
+          <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-tight text-foreground mb-6">
+            Some things don't respond to trying harder.
+          </h1>
+          <p className="text-lg text-muted-foreground leading-relaxed mb-8">
+            FNH kinesiology is hands-on nervous system work: assessment, movement, breath, and the patterns sitting underneath them. <TBD>XX</TBD> minutes, on a table, in a Toorak studio. You keep your clothes on.
+          </p>
 
-        <div key={service} className="animate-in fade-in duration-500">
-          <div className="text-center max-w-2xl mx-auto">
-            <div className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-widest mb-6", content.bgClass, content.borderClass, content.colorClass)}>
-              <Sparkles className="h-3 w-3" /> {content.label}
-            </div>
-            <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-tight text-foreground mb-6">
-              {content.heading}
-            </h1>
-            <p className="text-lg text-muted-foreground leading-relaxed mb-10">
-              {content.subheading}
+          <ul className="text-left max-w-md mx-auto space-y-3 mb-10">
+            {[
+              "Every session starts with an assessment, not a template",
+              "You leave with written notes and one or two things to practise",
+              "We track the same markers session to session, so progress isn't just a feeling",
+            ].map((line) => (
+              <li key={line} className="flex items-start gap-2.5 text-sm text-foreground">
+                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-chart-purple shrink-0" />
+                {line}
+              </li>
+            ))}
+          </ul>
+
+          <div className="flex flex-col items-center gap-3">
+            <BookButton />
+            <p className="text-xs text-muted-foreground">
+              Opens Cal.com. Pick a time, no account needed. <TBD>$XXX / XX minutes</TBD>
             </p>
           </div>
-
-          <div className="grid sm:grid-cols-3 gap-4 max-w-3xl mx-auto mb-12">
-            {content.points.map((p) => (
-              <div key={p} className={cn("rounded-2xl border p-5 text-sm text-foreground leading-relaxed", content.borderClass, content.bgClass)}>
-                {p}
-              </div>
-            ))}
-          </div>
-
-          <div className="flex flex-col items-center gap-4 mb-20">
-            <Button asChild size="lg" className={cn("h-14 px-8 text-base font-bold rounded-2xl gap-2", content.bgClass, content.colorClass, "hover:opacity-90")}>
-              <a href={content.bookingUrl} target="_blank" rel="noopener noreferrer">
-                <Icon className="h-5 w-5" /> {content.cta} <ArrowRight className="h-4 w-4" />
-              </a>
-            </Button>
-            <p className="text-xs text-muted-foreground">Opens Cal.com in a new tab. Pick a time that works, no account needed.</p>
-          </div>
-
-          <div className="max-w-3xl mx-auto mb-20">
-            <h2 className="text-center text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-8">How it works</h2>
-            <div className="grid sm:grid-cols-3 gap-6">
-              {content.steps.map((step, i) => (
-                <div key={step} className="text-center">
-                  <div className={cn("w-8 h-8 rounded-full border flex items-center justify-center mx-auto mb-3 text-xs font-bold", content.borderClass, content.colorClass)}>
-                    {i + 1}
-                  </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{step}</p>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
-        <div className="max-w-2xl mx-auto border-t border-border pt-14 text-center">
-          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-4">About</h2>
-          <p className="text-base text-muted-foreground leading-relaxed">
-            Daniele Buatti is a Melbourne-based pianist, vocal coach, music director, and embodiment practitioner. With over 12 years working as a music director, pianist, vocal coach, and educator, he combines music theatre expertise with kinesiology and somatic practice. Both sides of the work share the same approach: a real assessment before anything else, sessions that build on what actually happened last time, and no generic scripts.
+        {/* Who this is for */}
+        <section className="mb-16">
+          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-6 text-center">Who this is for</h2>
+          <p className="text-base text-foreground leading-relaxed mb-4">People usually arrive with something specific and physical:</p>
+          <ul className="space-y-2.5 mb-6">
+            {[
+              "a jaw that won't unclench, or teeth you grind in your sleep",
+              "a breath that never quite arrives all the way in",
+              "neck and shoulders that massage helps for about two days",
+              "a diagnosis that landed recently and hasn't been absorbed yet",
+              "thoughts on a loop that no amount of understanding has interrupted",
+            ].map((line) => (
+              <li key={line} className="flex items-start gap-2.5 text-sm text-muted-foreground leading-relaxed">
+                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-chart-purple/60 shrink-0" />
+                {line}
+              </li>
+            ))}
+          </ul>
+          <p className="text-base text-foreground leading-relaxed">
+            And usually something less specific underneath it: a long habit of handling things alone, and a quiet suspicion that it's a bit embarrassing to be asking for help this late. It isn't. Almost everyone gets here later than they'd have liked.
           </p>
+        </section>
+
+        {/* What actually happens */}
+        <section className="mb-16">
+          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-6 text-center">What actually happens</h2>
+          <div className="grid sm:grid-cols-2 gap-8 mb-10">
+            <div className="rounded-2xl border border-chart-purple/30 bg-chart-purple/10 p-6">
+              <h3 className="font-serif font-bold text-lg text-foreground mb-4">Your first session</h3>
+              <ul className="space-y-2.5">
+                {[
+                  "We talk first, and for longer than you might expect. History, what you've already tried, what your body is doing.",
+                  "Then the table. Fully clothed. Hands-on work around the diaphragm, ribs, collarbone and jaw.",
+                  "Some standing movement and balance testing.",
+                  "A breath-hold measure, so there's a number to come back to.",
+                  "Written notes by email afterwards, plus one or two small practices. Not a program. Two things.",
+                ].map((line) => (
+                  <li key={line} className="text-sm text-foreground leading-relaxed">{line}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-2xl border border-border bg-muted/30 p-6">
+              <h3 className="font-serif font-bold text-lg text-foreground mb-4">Every session after that</h3>
+              <ul className="space-y-2.5">
+                {[
+                  "We start with what's happened since.",
+                  "We return to what was left unfinished.",
+                  "Some sessions follow the plan. Some follow whatever you walked in carrying. Both count as the work.",
+                ].map((line) => (
+                  <li key={line} className="text-sm text-foreground leading-relaxed">{line}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <div className="flex justify-center">
+            <BookButton />
+          </div>
+        </section>
+
+        {/* How long this takes */}
+        <section className="mb-16 max-w-xl mx-auto text-center">
+          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-6">How long this takes</h2>
+          <p className="text-base text-muted-foreground leading-relaxed mb-4">
+            Not one session. The first is mostly orientation. Things tend to start moving around the third or fourth, and the sessions after that are where anything durable happens.
+          </p>
+          <p className="text-base text-muted-foreground leading-relaxed">
+            If you're someone who tends to stop things around week five, say so at the start and we'll build something in for that. It's a common pattern, not a character flaw.
+          </p>
+        </section>
+
+        {/* What this isn't */}
+        <section className="mb-16 max-w-xl mx-auto">
+          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-6 text-center">What this isn't</h2>
+          <ul className="space-y-2 text-center">
+            {[
+              "Not a replacement for medical or psychological care. It works alongside it, and I'd rather you have both.",
+              "Not a massage.",
+              "Not a diagnosis.",
+              "Not a single-session fix.",
+            ].map((line) => (
+              <li key={line} className="text-sm text-muted-foreground leading-relaxed">{line}</li>
+            ))}
+          </ul>
+        </section>
+
+        {/* About */}
+        <div className="max-w-2xl mx-auto border-t border-border pt-14 mb-16 text-center">
+          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-4">About</h2>
+          <p className="text-base text-muted-foreground leading-relaxed mb-4">
+            I'm Daniele. I trained in kinesiology (<TBD>credential wording — diploma / year / mentorship framing</TBD>) and work within the Functional Neuro Health framework.
+          </p>
+          <p className="text-base text-muted-foreground leading-relaxed">
+            I also spend most of my week as a music director and vocal coach, which is less of a detour than it sounds. Both jobs are about what a body does under pressure, and how much of that is old habit rather than fact.
+          </p>
+        </div>
+
+        {/* FAQ */}
+        <section className="max-w-xl mx-auto mb-16">
+          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-6 text-center">Questions</h2>
+          <Accordion type="single" collapsible>
+            {[
+              { q: "Do I need to know what's wrong?", a: "No. Most people can't name it, and naming it is part of the work." },
+              { q: "Will I have to talk about my family?", a: "Sometimes it comes up. You set the pace, and you can stop anything." },
+              { q: "Can I do this while I'm seeing a therapist or GP?", a: "Yes, and please do." },
+              { q: "What do I wear?", a: "Something you can move in. Everything stays on." },
+              { q: "What if I cry, or shake, or nothing happens?", a: "All three are normal." },
+            ].map(({ q, a }) => (
+              <AccordionItem key={q} value={q}>
+                <AccordionTrigger className="text-sm font-semibold text-foreground">{q}</AccordionTrigger>
+                <AccordionContent className="text-sm text-muted-foreground leading-relaxed">{a}</AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </section>
+
+        <div className="flex justify-center">
+          <BookButton />
         </div>
       </main>
 

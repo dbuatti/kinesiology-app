@@ -81,9 +81,21 @@ export default {
         'premium': '0 12px 24px -8px rgba(79, 70, 229, 0.06)',
         'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.02)',
       },
+      keyframes: {
+        'accordion-down': {
+          from: { height: '0' },
+          to: { height: 'var(--radix-accordion-content-height)' },
+        },
+        'accordion-up': {
+          from: { height: 'var(--radix-accordion-content-height)' },
+          to: { height: '0' },
+        },
+      },
       animation: {
         'spin-slow': 'spin 8s linear infinite',
         'pulse-soft': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'accordion-down': 'accordion-down 0.2s ease-out',
+        'accordion-up': 'accordion-up 0.2s ease-out',
       },
     },
   },

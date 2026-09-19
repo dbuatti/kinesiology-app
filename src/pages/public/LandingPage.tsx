@@ -81,7 +81,7 @@ export default function LandingPage() {
         <div className={cn("absolute bottom-[-15%] right-[-10%] w-[45%] h-[45%] blur-[140px] rounded-full transition-colors duration-700 opacity-40 dark:opacity-25", content.orbClass)} />
       </div>
 
-      <header className="relative z-10 flex items-center justify-between px-6 py-6 md:px-12 max-w-5xl mx-auto">
+      <header className="relative z-10 flex items-center justify-between px-6 pb-6 pt-[max(1.5rem,env(safe-area-inset-top))] md:px-12 max-w-5xl mx-auto">
         <div className="flex items-center gap-2 font-serif text-lg font-bold text-foreground">
           <span className="text-primary">✦</span> Resonance Kinesiology
         </div>

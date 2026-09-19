@@ -4,14 +4,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { CALCOM_CONFIG } from "@/config/integrations";
 import { ArrowRight, Sparkles } from "lucide-react";
 
-// Copy still needs Daniele's own numbers/wording before this goes live — flagged
-// visibly on the page (amber chip) rather than silently guessed at.
-const TBD = ({ children }: { children: string }) => (
-  <span className="inline-block rounded border border-dashed border-amber-500/50 bg-amber-500/10 px-1.5 py-0.5 text-amber-600 dark:text-amber-400 font-medium" title="Needs Daniele's input before launch">
-    {children}
-  </span>
-);
-
 const BookButton = ({ className = "" }: { className?: string }) => (
   <Button asChild size="lg" className={`h-14 px-8 text-base font-bold rounded-2xl gap-2 bg-chart-purple/10 text-chart-purple hover:opacity-90 ${className}`}>
     <a href={CALCOM_CONFIG.BOOKING_URL} target="_blank" rel="noopener noreferrer">
@@ -44,7 +36,7 @@ export default function LandingPage() {
             Some things don't respond to trying harder.
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-            FNH kinesiology is hands-on nervous system work: assessment, movement, breath, and the patterns sitting underneath them. <TBD>XX</TBD> minutes, on a table, in a Toorak studio. You keep your clothes on.
+            FNH kinesiology is hands-on nervous system work: assessment, movement, breath, and the patterns sitting underneath them. 60 minutes, on a table, in a Toorak studio. You keep your clothes on.
           </p>
 
           <ul className="text-left max-w-md mx-auto space-y-3 mb-10">
@@ -63,7 +55,7 @@ export default function LandingPage() {
           <div className="flex flex-col items-center gap-3">
             <BookButton />
             <p className="text-xs text-muted-foreground">
-              Opens Cal.com. Pick a time, no account needed. <TBD>$XXX / XX minutes</TBD>
+              Opens Cal.com. Pick a time, no account needed. $70 / 60 minutes.
             </p>
           </div>
         </div>

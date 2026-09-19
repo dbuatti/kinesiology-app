@@ -6,11 +6,12 @@ import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import ConversationList from "@/components/assistant/ConversationList";
 import ClientPicker from "@/components/assistant/ClientPicker";
+import { voiceStudentIdFor, emailFromVoiceStudentId, isVoiceStudentId } from "@/lib/voice-student-id";
 import MessageList from "@/components/assistant/MessageList";
 import AssistantInput from "@/components/assistant/AssistantInput";
 import NeedsAttentionWidget from "@/components/assistant/NeedsAttentionWidget";
 import ClientEmailThread from "@/components/assistant/ClientEmailThread";
-import { AssistantConversation, AssistantMessage, DraftEmail, PendingBooking } from "@/types/assistant";
+import { AssistantConversation, AssistantMessage, DraftEmail, PendingBooking, VoiceStudentOption } from "@/types/assistant";
 import { Bot, ChevronLeft, MessageCircle, Mail, CalendarRange } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -32,6 +33,7 @@ export default function AssistantPage() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [messages, setMessages] = useState<AssistantMessage[]>([]);
   const [clients, setClients] = useState<ClientOption[]>([]);
+  const [voiceStudents, setVoiceStudents] = useState<VoiceStudentOption[]>([]);
   const [focusedClientId, setFocusedClientId] = useState<string | null>(initialClientId);
   const [isSending, setIsSending] = useState(false);
   const [pendingDraft, setPendingDraft] = useState<DraftEmail | null>(null);
@@ -43,6 +45,12 @@ export default function AssistantPage() {
   const [mobileShowList, setMobileShowList] = useState(!initialClientId);
   // Only meaningful in focused mode: the AI chat, or the client's real email thread.
   const [viewMode, setViewMode] = useState<"chat" | "email">(initialView);
+
+  // Voice students use a "voice:<email>" pseudo-id (see ClientPicker) since they
+  // aren't rows in `clients` — resolve it back to the real student wherever focus matters.
+  const focusedVoiceStudent = focusedClientId && isVoiceStudentId(focusedClientId)
+    ? voiceStudents.find((s) => s.email === emailFromVoiceStudentId(focusedClientId)) || null
+    : null;
 
   const loadConversations = useCallback(async () => {
     const { data, error } = await supabase
@@ -58,10 +66,22 @@ export default function AssistantPage() {
     if (!error) setClients(data || []);
   }, []);
 
+  const loadVoiceStudents = useCallback(async () => {
+    const { data, error } = await supabase.functions.invoke("voice-clients");
+    if (error || !data?.success) return;
+    const rawStudents = (data.students || []) as { archived: boolean; name: string | null; email: string | null }[];
+    const students = rawStudents
+      .filter((s) => !s.archived && s.name && s.email)
+      .map((s) => ({ name: s.name as string, email: s.email as string }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    setVoiceStudents(students);
+  }, []);
+
   useEffect(() => {
     loadConversations();
     loadClients();
-  }, [loadConversations, loadClients]);
+    loadVoiceStudents();
+  }, [loadConversations, loadClients, loadVoiceStudents]);
 
   const loadMessages = useCallback(async (conversationId: string) => {
     const { data, error } = await supabase
@@ -83,7 +103,7 @@ export default function AssistantPage() {
   const selectConversation = (id: string) => {
     setActiveId(id);
     const convo = conversations.find((c) => c.id === id);
-    setFocusedClientId(convo?.client_id || null);
+    setFocusedClientId(convo?.client_id || (convo?.voice_student_email ? voiceStudentIdFor(convo.voice_student_email) : null));
     loadMessages(id);
     setMobileShowList(false);
   };
@@ -106,7 +126,13 @@ export default function AssistantPage() {
 
     try {
       const { data, error } = await supabase.functions.invoke("assistant-chat", {
-        body: { conversation_id: activeId, client_id: focusedClientId, message: text },
+        body: {
+          conversation_id: activeId,
+          client_id: focusedVoiceStudent ? null : focusedClientId,
+          voice_student_email: focusedVoiceStudent?.email || null,
+          voice_student_name: focusedVoiceStudent?.name || null,
+          message: text,
+        },
       });
       if (error) throw error;
 
@@ -159,9 +185,11 @@ export default function AssistantPage() {
   };
 
   const clientNameFor = (clientId: string | null) => clients.find((c) => c.id === clientId)?.name || null;
-  const focusedClient = clients.find((c) => c.id === focusedClientId) || null;
+  const focusedClient = focusedVoiceStudent
+    ? { id: focusedClientId as string, name: focusedVoiceStudent.name, email: focusedVoiceStudent.email }
+    : clients.find((c) => c.id === focusedClientId) || null;
 
-  const activeClientName = clientNameFor(focusedClientId);
+  const activeClientName = focusedVoiceStudent?.name || clientNameFor(focusedClientId);
 
   return (
     <AppLayout variant="wide">
@@ -174,7 +202,7 @@ export default function AssistantPage() {
             <Button asChild variant="outline" size="sm" className="h-9 text-xs gap-1.5">
               <RouterLink to="/timetable"><CalendarRange className="h-3.5 w-3.5" /> Timetable Simulator</RouterLink>
             </Button>
-            <ClientPicker clients={clients} value={focusedClientId} onChange={setFocusedClientId} />
+            <ClientPicker clients={clients} voiceStudents={voiceStudents} value={focusedClientId} onChange={setFocusedClientId} />
           </div>
         }
       />

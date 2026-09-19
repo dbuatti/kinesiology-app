@@ -52,6 +52,11 @@ function fmtDate(dateStr: string) {
 
 export default function ClientEmailThread({ clientId, clientEmail, clientName }: Props) {
   const firstName = clientName.split(" ")[0];
+  // Voice students use a "voice:<email>" pseudo-id (see ClientPicker) — they have no
+  // row in `clients`, so client_email_status (FK'd to clients) can't be read/written
+  // for them. Thread reading/sending below is keyed by clientEmail instead, which
+  // works for both arms — only the persisted status badge degrades gracefully.
+  const hasClientRecord = !clientId.startsWith("voice:");
   const [messages, setMessages] = useState<ThreadMessage[]>([]);
   const [threads, setThreads] = useState<ThreadSummary[]>([]);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
@@ -69,10 +74,13 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
     if (!clientEmail) { setLoading(false); return; }
     setLoading(true);
     try {
-      const [{ data: threadData, error: threadErr }, { data: statusRow }] = await Promise.all([
+      const [{ data: threadData, error: threadErr }, statusResult] = await Promise.all([
         supabase.functions.invoke("gmail-get-client-thread", { body: { client_email: clientEmail, thread_id: explicitThreadId || undefined } }),
-        supabase.from("client_email_status").select("status").eq("client_id", clientId).maybeSingle(),
+        hasClientRecord
+          ? supabase.from("client_email_status").select("status").eq("client_id", clientId).maybeSingle()
+          : Promise.resolve({ data: null }),
       ]);
+      const statusRow = statusResult.data;
       if (threadErr) throw threadErr;
       if (threadData?.error) throw new Error(threadData.error);
 
@@ -93,7 +101,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
     } finally {
       setLoading(false);
     }
-  }, [clientEmail, clientId, firstName]);
+  }, [clientEmail, clientId, hasClientRecord, firstName]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -112,6 +120,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
 
   const handleStatusChange = async (next: Status) => {
     setStatus(next);
+    if (!hasClientRecord) return; // Voice students have no clients row for client_email_status to key off.
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     await supabase.from("client_email_status").upsert(
@@ -137,7 +146,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
           thread_id: threadMeta.threadId || undefined,
           in_reply_to: threadMeta.lastMessageId || undefined,
           references: threadMeta.references || undefined,
-          client_id: clientId,
+          client_id: hasClientRecord ? clientId : null,
         },
       });
       if (error || data?.error) throw new Error(data?.error || error?.message || "Send failed.");
@@ -195,7 +204,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
     try {
       const { data, error } = await supabase.functions.invoke("suggest-email-reply", {
         body: {
-          client_id: clientId,
+          client_id: hasClientRecord ? clientId : null,
           client_name: clientName,
           thread_messages: messages.map((m) => ({ direction: m.direction, body: m.body })),
         },

@@ -1,6 +1,8 @@
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRecentClients } from "@/hooks/use-recent-clients";
-import { Users } from "lucide-react";
+import { VoiceStudentOption } from "@/types/assistant";
+import { voiceStudentIdFor } from "@/lib/voice-student-id";
+import { Users, Mic } from "lucide-react";
 
 interface ClientOption {
   id: string;
@@ -9,13 +11,14 @@ interface ClientOption {
 
 interface Props {
   clients: ClientOption[];
+  voiceStudents: VoiceStudentOption[];
   value: string | null;
   onChange: (clientId: string | null) => void;
 }
 
 const GENERAL_VALUE = "__general__";
 
-export default function ClientPicker({ clients, value, onChange }: Props) {
+export default function ClientPicker({ clients, voiceStudents, value, onChange }: Props) {
   const { recentClients } = useRecentClients();
   const recentIds = new Set(recentClients.map((c) => c.id));
   const others = clients.filter((c) => !recentIds.has(c.id));
@@ -45,11 +48,22 @@ export default function ClientPicker({ clients, value, onChange }: Props) {
         )}
         <SelectSeparator />
         <SelectGroup>
-          <SelectLabel>All Clients</SelectLabel>
+          <SelectLabel>Kinesiology Clients</SelectLabel>
           {others.map((c) => (
             <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
           ))}
         </SelectGroup>
+        {voiceStudents.length > 0 && (
+          <>
+            <SelectSeparator />
+            <SelectGroup>
+              <SelectLabel className="flex items-center gap-1.5"><Mic className="h-3 w-3" /> Voice Students</SelectLabel>
+              {voiceStudents.map((s) => (
+                <SelectItem key={voiceStudentIdFor(s.email)} value={voiceStudentIdFor(s.email)}>{s.name}</SelectItem>
+              ))}
+            </SelectGroup>
+          </>
+        )}
       </SelectContent>
     </Select>
   );

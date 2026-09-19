@@ -674,7 +674,7 @@ serve(async (req) => {
   if (authErr) return authErr;
 
   try {
-    const { conversation_id, client_id, message } = await req.json();
+    const { conversation_id, client_id, voice_student_email, voice_student_name, message } = await req.json();
     if (!message) throw new Error("Missing message.");
 
     const geminiKey = Deno.env.get("GEMINI_API_KEY");
@@ -694,16 +694,27 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
-    // Load or create the conversation.
+    // Load or create the conversation. client_id and voice_student_email are
+    // mutually exclusive foci — setting one clears the other.
     let conversationId = conversation_id;
     if (conversationId) {
       await supabase.from("assistant_conversations")
-        .update({ updated_at: new Date().toISOString(), ...(client_id !== undefined ? { client_id: client_id || null } : {}) })
+        .update({
+          updated_at: new Date().toISOString(),
+          ...(client_id !== undefined ? { client_id: client_id || null } : {}),
+          ...(voice_student_email !== undefined ? { voice_student_email: voice_student_email || null, voice_student_name: voice_student_email ? voice_student_name || null : null } : {}),
+        })
         .eq("id", conversationId).eq("user_id", userId);
     } else {
       const { data: convo, error: convoErr } = await supabase
         .from("assistant_conversations")
-        .insert({ user_id: userId, client_id: client_id || null, title: message.slice(0, 60) })
+        .insert({
+          user_id: userId,
+          client_id: client_id || null,
+          voice_student_email: voice_student_email || null,
+          voice_student_name: voice_student_email ? voice_student_name || null : null,
+          title: message.slice(0, 60),
+        })
         .select("id").single();
       if (convoErr) throw new Error(convoErr.message);
       conversationId = convo.id;
@@ -742,7 +753,11 @@ serve(async (req) => {
     const systemInstruction = `You are the scheduling assistant inside Daniele's practice CRM, which runs TWO arms: kinesiology/FNH clinical clients (in the clients table, use get_client_context / get_active_clients / get_revenue_opportunities) and Voice Studio piano/singing lesson students (Notion-backed, use search_voice_client — they are NOT in the clients table and have no individual rate, only flat per-service pricing). Current time: ${melbourneNow()} (Australia/Melbourne).
 Clients communicate messily — vague times ("until 2pm", "health permitting"), same-day cancellations, and ambiguous confirmations ("that's perfect" meaning "yes to the last time you proposed"). Interpret them charitably but flag genuine ambiguity rather than guessing.
 Use the available tools to ground your answers in real data — never invent appointment times, client details, rates, or slot availability.
-${client_id ? `This conversation is focused on one specific client (client_id: ${client_id}). Call get_client_context first to load their history, current rate vs target rate, and communication style, and match their tone when drafting anything.` : "This is a general conversation, not focused on one client."}
+${client_id
+  ? `This conversation is focused on one specific kinesiology client (client_id: ${client_id}). Call get_client_context first to load their history, current rate vs target rate, and communication style, and match their tone when drafting anything.`
+  : voice_student_email
+  ? `This conversation is focused on one specific voice student (email: ${voice_student_email}${voice_student_name ? `, name: ${voice_student_name}` : ""}). Call search_voice_client with their email first to load their lesson history and notes before answering or drafting anything — they are NOT in the clients table, so get_client_context/get_available_slots/propose_booking (which are client_id-keyed) don't apply to them.`
+  : "This is a general conversation, not focused on one client."}
 You can draft an email for review via draft_email_reply, but you can never send one yourself — always say the draft is ready for review, never that it has been sent.
 Clients also have a self-serve portal at /portal/login (email OTP, no password) where they can view their own upcoming/past sessions, cancel a booking, book a new one, and message Daniele directly. If a client seems unaware of it, or asks how to manage/cancel their own booking, or Daniele wants to point someone there, feel free to mention it and include the link in a drafted email.
 You can propose an actual booking via propose_booking, but you can never create one yourself — it only becomes real when the practitioner clicks Confirm on the proposal card. Always call get_available_slots first and propose a real slot from that result, never a guessed time. When finding a slot for a specific client, always pass client_id to get_available_slots — it returns a ranked "suggested" shortlist (weighted by that client's availability_notes and their actual booking history, not just chronological order), each with a "reason". Lead with the top suggested slot and its reason ("Tuesday 4pm usually works well for her, and it fits the note about after-work sessions") rather than defaulting to whichever slot happens to be soonest — the earliest slot is very often NOT the one a client actually wants.

@@ -13,6 +13,9 @@ interface Props {
 }
 
 export default function ConversationList({ conversations, activeId, onSelect, onNew, clientNameFor }: Props) {
+  // A voice student's name is stored directly on the conversation (they aren't in
+  // the `clients` table clientNameFor looks up), so prefer that when present.
+  const nameFor = (c: AssistantConversation) => c.voice_student_name || clientNameFor(c.client_id);
   return (
     <div className="flex h-full min-w-0 flex-col overflow-hidden border-r border-border">
       <div className="p-3">
@@ -23,7 +26,7 @@ export default function ConversationList({ conversations, activeId, onSelect, on
       <ScrollArea className="flex-1 px-2 pb-3">
         <div className="space-y-1">
           {conversations.map((c) => {
-            const clientName = clientNameFor(c.client_id);
+            const clientName = nameFor(c);
             return (
               <button
                 key={c.id}

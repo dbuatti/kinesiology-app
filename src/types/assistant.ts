@@ -33,7 +33,14 @@ export interface AssistantConversation {
   id: string;
   user_id: string;
   client_id: string | null;
+  voice_student_email: string | null;
+  voice_student_name: string | null;
   title: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface VoiceStudentOption {
+  email: string;
+  name: string;
 }

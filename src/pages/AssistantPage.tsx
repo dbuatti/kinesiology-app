@@ -49,7 +49,7 @@ export default function AssistantPage() {
   // Voice students use a "voice:<email>" pseudo-id (see ClientPicker) since they
   // aren't rows in `clients` — resolve it back to the real student wherever focus matters.
   const focusedVoiceStudent = focusedClientId && isVoiceStudentId(focusedClientId)
-    ? voiceStudents.find((s) => s.email === emailFromVoiceStudentId(focusedClientId)) || null
+    ? voiceStudents.find((s) => s.email.toLowerCase() === emailFromVoiceStudentId(focusedClientId).toLowerCase()) || null
     : null;
 
   const loadConversations = useCallback(async () => {

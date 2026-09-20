@@ -157,8 +157,11 @@ export default function LandingPage() {
           <p className="text-base text-muted-foreground leading-relaxed mb-4">
             Hi, I'm Daniele. I hold a Diploma of Kinesiology from the College of Complementary Medicine, and work within the Functional Neuro Health framework.
           </p>
-          <p className="text-base text-muted-foreground leading-relaxed">
+          <p className="text-base text-muted-foreground leading-relaxed mb-4">
             I also spend most of my week as a music director and vocal coach, which is less of a detour than it sounds. Both jobs are about what a body does under pressure, and how much of that is old habit rather than fact.
+          </p>
+          <p className="text-base text-muted-foreground leading-relaxed">
+            What I find genuinely interesting is watching that shift happen in a session: someone stands differently, breathes differently, and the thing they walked in carrying is just lighter. I don't get tired of seeing that.
           </p>
         </div>
 

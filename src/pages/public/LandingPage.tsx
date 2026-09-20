@@ -192,6 +192,10 @@ export default function LandingPage() {
 
       <footer className="relative z-10 border-t border-border py-10 text-center text-xs text-muted-foreground">
         Resonance Kinesiology · Daniele Buatti · <a href="mailto:info@danielebuatti.com" className="underline">info@danielebuatti.com</a>
+        <br className="sm:hidden" />
+        <span className="sm:before:content-['·'] sm:before:mx-2">
+          Also teaches voice and piano — <a href="https://danielebuatti.com/voice-piano-services" target="_blank" rel="noopener noreferrer" className="underline">lessons</a>
+        </span>
       </footer>
     </div>
   );

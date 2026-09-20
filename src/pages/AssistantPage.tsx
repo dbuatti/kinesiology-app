@@ -12,7 +12,7 @@ import AssistantInput from "@/components/assistant/AssistantInput";
 import NeedsAttentionWidget from "@/components/assistant/NeedsAttentionWidget";
 import ClientEmailThread from "@/components/assistant/ClientEmailThread";
 import { AssistantConversation, AssistantMessage, DraftEmail, PendingBooking, VoiceStudentOption } from "@/types/assistant";
-import { Bot, ChevronLeft, MessageCircle, Mail, CalendarRange } from "lucide-react";
+import { Bot, ChevronLeft, MessageCircle, Mail, CalendarRange, Anchor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -36,6 +36,9 @@ export default function AssistantPage() {
   const [voiceStudents, setVoiceStudents] = useState<VoiceStudentOption[]>([]);
   const [focusedClientId, setFocusedClientId] = useState<string | null>(initialClientId);
   const [isSending, setIsSending] = useState(false);
+  // Anchor Mode: the assistant prioritises long, consistent clients (get_anchor_candidates)
+  // over ad-hoc scheduling — for deliberately filling the week around reliable bookings first.
+  const [anchorMode, setAnchorMode] = useState(false);
   const [pendingDraft, setPendingDraft] = useState<DraftEmail | null>(null);
   const [pendingDraftMessageId, setPendingDraftMessageId] = useState<string | null>(null);
   const [pendingBooking, setPendingBooking] = useState<PendingBooking | null>(null);
@@ -132,6 +135,7 @@ export default function AssistantPage() {
           voice_student_email: focusedVoiceStudent?.email || null,
           voice_student_name: focusedVoiceStudent?.name || null,
           message: text,
+          anchor_mode: anchorMode,
         },
       });
       if (error) throw error;
@@ -199,6 +203,15 @@ export default function AssistantPage() {
         subtitle="Ask about scheduling, past patterns, or switch into focused mode for a specific client."
         actions={
           <div className="flex items-center gap-2">
+            <Button
+              variant={anchorMode ? "default" : "outline"}
+              size="sm"
+              className={cn("h-9 text-xs gap-1.5", anchorMode && "bg-chart-emerald hover:bg-chart-emerald/90 text-white")}
+              onClick={() => setAnchorMode((v) => !v)}
+              title="Prioritise long, consistent clients first when filling the week"
+            >
+              <Anchor className="h-3.5 w-3.5" /> Anchor Mode
+            </Button>
             <Button asChild variant="outline" size="sm" className="h-9 text-xs gap-1.5">
               <RouterLink to="/timetable"><CalendarRange className="h-3.5 w-3.5" /> Timetable Simulator</RouterLink>
             </Button>

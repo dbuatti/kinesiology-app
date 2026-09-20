@@ -137,6 +137,11 @@ const functionDeclarations = [
     },
   },
   {
+    name: "get_anchor_candidates",
+    description: "Find 'anchor' clients/students — a long, consistent booking history (4+ sessions, low cancellation rate, same day-and-time most of the time) — across BOTH kinesiology and voice, split into: open_anchors (this pattern, but nothing booked yet — secure these first), already_secured_anchors (this pattern, already has a future booking, no action needed), and needs_conversion_support (shorter or less consistent history, still worth booking but lower priority than an anchor). Use this for 'help me fill my week' / 'who should I prioritise' / anchor-mode conversations.",
+    parameters: { type: "OBJECT", properties: {} },
+  },
+  {
     name: "get_available_slots",
     description: "Get open Cal.com booking slots in a date range for the practitioner's event type. Pass client_id whenever you're finding a slot FOR a specific client (not just checking general availability) — the result then ranks/annotates a `suggested` shortlist by that client's own known availability notes and historical day/time pattern, so you're not guessing which of the (often dozens of) open slots they'd actually want.",
     parameters: {
@@ -667,6 +672,168 @@ async function runGetPracticeScheduleOverview(supabase: any, userId: string, wee
   };
 }
 
+// Kinesiology `appointments.date` is a real timestamptz — convert properly via
+// the Melbourne timezone rather than parsing it as a bare wall-clock string.
+function meetingSlotFromTimestamp(iso: string): { day: string; hourLabel: string; key: string } {
+  const d = new Date(iso);
+  const day = d.toLocaleDateString("en-AU", { weekday: "long", timeZone: "Australia/Melbourne" });
+  const hour = Number(d.toLocaleTimeString("en-AU", { hour: "numeric", hour12: false, timeZone: "Australia/Melbourne" }));
+  const minute = Number(d.toLocaleTimeString("en-AU", { minute: "numeric", timeZone: "Australia/Melbourne" }));
+  const bucketMinute = minute >= 15 && minute < 45 ? 30 : 0;
+  const bucketHour = minute >= 45 ? (hour + 1) % 24 : hour;
+  const hourLabel = `${String(bucketHour).padStart(2, "0")}:${String(bucketMinute).padStart(2, "0")}`;
+  return { day, hourLabel, key: `${day}-${hourLabel}` };
+}
+
+// Voice `lesson_date`/`lesson_time` are unstructured text, not a real timestamp
+// (see CLAUDE.md's Voice Calendar Fallback note) — day-of-week from the date
+// part alone is timezone-safe; the time is a best-effort regex, not exact.
+function meetingSlotFromVoiceText(dateOnly: string, timeText: string | null): { day: string; hourLabel: string; key: string } | null {
+  const d = new Date(`${dateOnly}T00:00:00Z`);
+  if (isNaN(d.getTime())) return null;
+  const day = d.toLocaleDateString("en-AU", { weekday: "long", timeZone: "UTC" });
+  const match = (timeText || "").match(/(\d{1,2}):(\d{2})/);
+  if (!match) return { day, hourLabel: "unknown", key: `${day}-unknown` };
+  let hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (/pm/i.test(timeText || "") && hour < 12) hour += 12;
+  if (/am/i.test(timeText || "") && hour === 12) hour = 0;
+  const bucketMinute = minute >= 15 && minute < 45 ? 30 : 0;
+  const bucketHour = minute >= 45 ? (hour + 1) % 24 : hour;
+  const hourLabel = `${String(bucketHour).padStart(2, "0")}:${String(bucketMinute).padStart(2, "0")}`;
+  return { day, hourLabel, key: `${day}-${hourLabel}` };
+}
+
+interface AnchorAgg {
+  kind: "kinesiology" | "voice";
+  id: string; // client_id, or a "voice:<email>" pseudo-id
+  name: string;
+  email: string | null;
+  availabilityNotes: string | null;
+  completed: number;
+  cancelled: number;
+  hasFuture: boolean;
+  lastDate: string;
+  firstDate: string;
+  slotCounts: Map<string, { count: number; day: string; hourLabel: string }>;
+}
+
+function finalizeAnchor(a: AnchorAgg) {
+  const total = a.completed + a.cancelled;
+  const cancellationRate = total > 0 ? a.cancelled / total : 0;
+  let bestSlot: { count: number; day: string; hourLabel: string } | null = null;
+  for (const s of a.slotCounts.values()) if (!bestSlot || s.count > bestSlot.count) bestSlot = s;
+  const slotShare = bestSlot && a.completed > 0 ? bestSlot.count / a.completed : 0;
+  const tenureDays = Math.round((new Date(a.lastDate).getTime() - new Date(a.firstDate).getTime()) / (1000 * 60 * 60 * 24));
+  const isAnchorPattern = a.completed >= 4 && cancellationRate <= 0.25 && slotShare >= 0.5 && !!bestSlot;
+  return {
+    id: a.id,
+    kind: a.kind,
+    client_id: a.kind === "kinesiology" ? a.id : null,
+    voice_student_email: a.kind === "voice" ? a.email : null,
+    name: a.name,
+    email: a.email,
+    sessions_completed: a.completed,
+    cancellation_rate: `${Math.round(cancellationRate * 100)}%`,
+    tenure_days: tenureDays,
+    usual_slot: bestSlot && bestSlot.hourLabel !== "unknown" ? `${bestSlot.day} ${bestSlot.hourLabel}` : bestSlot ? bestSlot.day : null,
+    slot_consistency: bestSlot ? `${Math.round(slotShare * 100)}%` : null,
+    is_anchor_pattern: isAnchorPattern,
+    has_future_booking: a.hasFuture,
+    last_session_date: fmtMelbourne(a.lastDate),
+    availability_notes: a.availabilityNotes,
+  };
+}
+
+async function runGetAnchorCandidates(supabase: any, userId: string) {
+  const now = new Date();
+
+  const [{ data: appts }, { data: voiceRows }] = await Promise.all([
+    supabase.from("appointments")
+      .select("client_id, date, status, clients(id, name, email, availability_notes)")
+      .eq("user_id", userId)
+      .order("date", { ascending: true }),
+    supabase.from("voice_bookings")
+      .select("student_name, student_email, lesson_date, lesson_time, status")
+      .not("student_email", "is", null)
+      .order("lesson_date", { ascending: true }),
+  ]);
+
+  const byId = new Map<string, AnchorAgg>();
+
+  for (const a of (appts || []) as any[]) {
+    if (!a.client_id || !a.clients) continue;
+    const d = new Date(a.date);
+    const isCancelled = a.status === "Cancelled";
+    const isFuture = d > now && a.status === "Scheduled";
+    const existing = byId.get(a.client_id) || {
+      kind: "kinesiology" as const, id: a.client_id, name: a.clients.name || "Unknown", email: a.clients.email || null,
+      availabilityNotes: a.clients.availability_notes || null, completed: 0, cancelled: 0, hasFuture: false,
+      lastDate: a.date, firstDate: a.date, slotCounts: new Map(),
+    };
+    if (isFuture) existing.hasFuture = true;
+    else if (d <= now) {
+      if (isCancelled) existing.cancelled += 1;
+      else {
+        existing.completed += 1;
+        const slot = meetingSlotFromTimestamp(a.date);
+        const s = existing.slotCounts.get(slot.key) || { count: 0, day: slot.day, hourLabel: slot.hourLabel };
+        s.count += 1;
+        existing.slotCounts.set(slot.key, s);
+      }
+      if (new Date(a.date) < new Date(existing.firstDate)) existing.firstDate = a.date;
+      if (new Date(a.date) > new Date(existing.lastDate)) existing.lastDate = a.date;
+    }
+    byId.set(a.client_id, existing);
+  }
+
+  for (const b of (voiceRows || []) as any[]) {
+    const email = String(b.student_email || "").toLowerCase().trim();
+    if (!email) continue;
+    const id = `voice:${email}`;
+    const d = new Date(b.lesson_date);
+    if (isNaN(d.getTime())) continue;
+    const isCancelled = b.status === "cancelled";
+    const isFuture = !isCancelled && d > now;
+    const existing = byId.get(id) || {
+      kind: "voice" as const, id, name: b.student_name || "Unknown", email,
+      availabilityNotes: null, completed: 0, cancelled: 0, hasFuture: false,
+      lastDate: b.lesson_date, firstDate: b.lesson_date, slotCounts: new Map(),
+    };
+    if (isFuture) existing.hasFuture = true;
+    else if (d <= now) {
+      if (isCancelled) existing.cancelled += 1;
+      else {
+        existing.completed += 1;
+        const slot = meetingSlotFromVoiceText(b.lesson_date, b.lesson_time);
+        if (slot) {
+          const s = existing.slotCounts.get(slot.key) || { count: 0, day: slot.day, hourLabel: slot.hourLabel };
+          s.count += 1;
+          existing.slotCounts.set(slot.key, s);
+        }
+      }
+      if (new Date(b.lesson_date) < new Date(existing.firstDate)) existing.firstDate = b.lesson_date;
+      if (new Date(b.lesson_date) > new Date(existing.lastDate)) existing.lastDate = b.lesson_date;
+    }
+    byId.set(id, existing);
+  }
+
+  const finalized = Array.from(byId.values()).filter((a) => a.completed > 0).map(finalizeAnchor);
+
+  const openAnchors = finalized.filter((a) => a.is_anchor_pattern && !a.has_future_booking)
+    .sort((a, b) => b.sessions_completed - a.sessions_completed);
+  const securedAnchors = finalized.filter((a) => a.is_anchor_pattern && a.has_future_booking);
+  const needsConversion = finalized.filter((a) => !a.is_anchor_pattern && !a.has_future_booking)
+    .sort((a, b) => new Date(b.last_session_date).getTime() - new Date(a.last_session_date).getTime());
+
+  return {
+    open_anchors: openAnchors,
+    already_secured_anchors: securedAnchors,
+    needs_conversion_support: needsConversion.slice(0, 20),
+    note: "open_anchors = long, consistent track record (4+ sessions, ≤25% cancellation rate, same day/time ≥50% of the time) with nothing booked yet — secure these first. already_secured_anchors already have a future booking, no action needed. needs_conversion_support is everyone else without a future booking — lower session count, less consistent, or more cancellations — real but lower priority than an open anchor.",
+  };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -674,7 +841,7 @@ serve(async (req) => {
   if (authErr) return authErr;
 
   try {
-    const { conversation_id, client_id, voice_student_email, voice_student_name, message } = await req.json();
+    const { conversation_id, client_id, voice_student_email, voice_student_name, message, anchor_mode } = await req.json();
     if (!message) throw new Error("Missing message.");
 
     const geminiKey = Deno.env.get("GEMINI_API_KEY");
@@ -764,7 +931,10 @@ You can propose an actual booking via propose_booking, but you can never create 
 Whenever the practitioner tells you something new about a client's availability (a day/time that works or doesn't), call update_client_availability right away to remember it for next time — don't just acknowledge it in the chat and let it evaporate.
 You can search the inbox read-only via search_inbox (Gmail search syntax) to check for replies or past correspondence — you cannot send, modify, or delete anything through it.
 For business questions ("who's active", "who should I raise rates for", "what times are free"), use get_active_clients, get_revenue_opportunities, and get_practice_schedule_overview rather than guessing — they compute real numbers from appointment history.
-Be proactive, not just reactive: if the conversation naturally touches on scheduling and get_active_clients shows active clients with no future booking, mention them and offer to help book their next session, rather than waiting to be asked. When a client's next-session cadence is clear from get_past_booking_patterns, feel free to suggest it ("she's usually every 2 weeks, so [date] would fit her pattern").`;
+Be proactive, not just reactive: if the conversation naturally touches on scheduling and get_active_clients shows active clients with no future booking, mention them and offer to help book their next session, rather than waiting to be asked. When a client's next-session cadence is clear from get_past_booking_patterns, feel free to suggest it ("she's usually every 2 weeks, so [date] would fit her pattern").
+${anchor_mode ? `ANCHOR MODE IS ACTIVE. The goal right now is filling Daniele's week without overwhelming him with everyone at once, by working outward from his most reliable relationships. Call get_anchor_candidates first, every time, before anything else in this mode.
+Work through the result in this exact order: (1) open_anchors first — these have a long, consistent track record (4+ sessions, low cancellation rate, a clear usual day/time) and nothing booked yet. For each one, check get_available_slots (or, for a voice student, ask Daniele to confirm via search_voice_client) specifically around their usual_slot, and if it's free, offer to draft an outreach email proposing exactly that slot — don't make them re-decide a day/time they've already established. Present 2-3 open anchors at a time, not the whole list, so it stays manageable. (2) Only once open anchors are addressed (booked, drafted, or Daniele says skip), move to needs_conversion_support — mention these ARE lower priority (shorter or less consistent history), and frame outreach as an open, no-pressure check-in rather than assuming a fixed slot. (3) Mention already_secured_anchors only briefly if at all — they need no action, just confirm the week already has some anchors locked in.
+Keep momentum: after handling one client, proactively suggest the next one rather than waiting to be asked "who's next" every time.` : ""}`;
 
     const toolTrace: any[] = [];
     let pendingDraft = null;
@@ -808,6 +978,8 @@ Be proactive, not just reactive: if the conversation naturally touches on schedu
           result = await runGetRevenueOpportunities(supabase, userId, args.months || 3);
         } else if (name === "get_practice_schedule_overview") {
           result = await runGetPracticeScheduleOverview(supabase, userId, args.weeks || 8);
+        } else if (name === "get_anchor_candidates") {
+          result = await runGetAnchorCandidates(supabase, userId);
         } else {
           result = { error: `Unknown tool: ${name}` };
         }

@@ -146,10 +146,16 @@ export default function LandingPage() {
         </section>
 
         {/* About */}
-        <div className="max-w-2xl mx-auto border-t border-border pt-14 mb-16 text-center">
+        <div className="max-w-2xl mx-auto border-t border-border pt-14 mb-16 flex flex-col items-center text-center">
+          <img
+            src="/headshot.jpeg"
+            alt="Daniele Buatti"
+            className="w-28 h-28 rounded-full object-cover mb-6 shadow-lg"
+            loading="lazy"
+          />
           <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-4">About</h2>
           <p className="text-base text-muted-foreground leading-relaxed mb-4">
-            I'm Daniele. I hold a Diploma of Kinesiology from the College of Complementary Medicine, and work within the Functional Neuro Health framework.
+            Hi, I'm Daniele. I hold a Diploma of Kinesiology from the College of Complementary Medicine, and work within the Functional Neuro Health framework.
           </p>
           <p className="text-base text-muted-foreground leading-relaxed">
             I also spend most of my week as a music director and vocal coach, which is less of a detour than it sounds. Both jobs are about what a body does under pressure, and how much of that is old habit rather than fact.
@@ -166,6 +172,7 @@ export default function LandingPage() {
               { q: "Can I do this while I'm seeing a therapist or GP?", a: "Yes, and please do." },
               { q: "What do I wear?", a: "Something you can move in. Everything stays on." },
               { q: "What if I cry, or shake, or nothing happens?", a: "All three are normal." },
+              { q: "What's your cancellation policy?", a: "24 hours' notice, please. Inside that window the session is still charged, since that time was held for you. Life happens though, so if something genuine comes up, just message me." },
             ].map(({ q, a }) => (
               <AccordionItem key={q} value={q}>
                 <AccordionTrigger className="text-sm font-semibold text-foreground">{q}</AccordionTrigger>

@@ -5,7 +5,7 @@ import { CALCOM_CONFIG } from "@/config/integrations";
 import { ArrowRight, Sparkles } from "lucide-react";
 
 const BookButton = ({ className = "" }: { className?: string }) => (
-  <Button asChild size="lg" className={`h-14 px-8 text-base font-bold rounded-2xl gap-2 bg-chart-purple/10 text-chart-purple hover:opacity-90 ${className}`}>
+  <Button asChild size="lg" className={`h-14 px-8 text-base font-bold rounded-2xl gap-2 bg-chart-purple text-white shadow-lg shadow-chart-purple/20 hover:bg-chart-purple/90 hover:shadow-xl hover:shadow-chart-purple/30 transition-all ${className}`}>
     <a href={CALCOM_CONFIG.BOOKING_URL} target="_blank" rel="noopener noreferrer">
       <Sparkles className="h-5 w-5" /> Book a first session <ArrowRight className="h-4 w-4" />
     </a>

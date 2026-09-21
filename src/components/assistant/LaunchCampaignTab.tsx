@@ -246,7 +246,59 @@ export default function LaunchCampaignTab() {
         return (
           <div key={seg} className="space-y-2">
             <h4 className="text-sm font-bold text-foreground">{SEGMENT_LABELS[seg]} <span className="text-muted-foreground font-normal">({rows.length})</span></h4>
-            <div className="rounded-xl border border-border overflow-hidden">
+
+            {/* Mobile: stacked cards, one field per row, full-width — the
+                fixed-width table below (proposed slot / date / status /
+                notes / draft columns each with their own min-width) adds up
+                to well over a phone's viewport, forcing a sideways scroll
+                just to reach the Draft button and card ("I can scroll to
+                right for the draft" — real complaint, not intended). */}
+            <div className="md:hidden space-y-3">
+              {rows.map((e) => (
+                <div key={e.id} className="rounded-xl border border-border p-3 space-y-2">
+                  <div className="flex items-center gap-1.5">
+                    <Checkbox checked={!e.excluded} onCheckedChange={(v) => updateEntry(e.id, { excluded: !v })} />
+                    {e.voice_student_email ? <Mic className="h-3 w-3 text-chart-destructive shrink-0" /> : <Brain className="h-3 w-3 text-chart-purple shrink-0" />}
+                    <span className="font-semibold text-foreground text-sm">{e.client_name}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[10px] uppercase tracking-wide text-muted-foreground">Proposed slot</label>
+                      <Input value={e.proposed_slot || ""} onChange={(ev) => updateEntry(e.id, { proposed_slot: ev.target.value })} className="h-8 text-xs mt-1" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] uppercase tracking-wide text-muted-foreground">First regular date</label>
+                      <Input type="date" value={e.first_regular_date || ""} onChange={(ev) => updateEntry(e.id, { first_regular_date: ev.target.value })} className="h-8 text-xs mt-1" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wide text-muted-foreground">Status</label>
+                    <Select value={e.status} onValueChange={(v) => updateEntry(e.id, { status: v as EntryStatus })}>
+                      <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {STATUS_OPTIONS.map((s) => <SelectItem key={s} value={s} className="text-xs">{s.replace(/_/g, " ")}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wide text-muted-foreground">Notes</label>
+                    <Textarea value={e.notes || ""} onChange={(ev) => updateEntry(e.id, { notes: ev.target.value })} rows={1} className="text-xs mt-1" />
+                  </div>
+                  <Button size="sm" variant="outline" className="h-8 text-xs gap-1 w-full" onClick={() => draftMessage(e)} disabled={draftingFor === e.id}>
+                    {draftingFor === e.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />} Draft
+                  </Button>
+                  {pendingDrafts[e.id] && (
+                    <DraftEmailCard
+                      draft={pendingDrafts[e.id]}
+                      onSent={() => { setPendingDrafts((prev) => { const n = { ...prev }; delete n[e.id]; return n; }); updateEntry(e.id, { status: "sent" }); }}
+                      onDiscard={() => setPendingDrafts((prev) => { const n = { ...prev }; delete n[e.id]; return n; })}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="hidden md:block rounded-xl border border-border overflow-hidden">
               <table className="w-full text-xs">
                 <thead className="bg-muted/50">
                   <tr className="text-left text-[10px] uppercase tracking-wide text-muted-foreground">

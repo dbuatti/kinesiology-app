@@ -296,6 +296,7 @@ export default function AssistantPage() {
                 pendingBooking={pendingBooking}
                 onBookingConfirmed={handleBookingConfirmed}
                 onBookingDiscard={handleBookingDiscard}
+                onSuggestion={handleSend}
               />
               <AssistantInput onSend={handleSend} disabled={isSending} initialValue={initialPrompt} />
             </>

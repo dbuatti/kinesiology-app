@@ -3,7 +3,7 @@ import { AssistantMessage, DraftEmail, PendingBooking } from "@/types/assistant"
 import MessageBubble from "./MessageBubble";
 import DraftEmailCard from "./DraftEmailCard";
 import BookingProposalCard from "./BookingProposalCard";
-import { Bot } from "lucide-react";
+import { Bot, Sparkles } from "lucide-react";
 
 interface Props {
   messages: AssistantMessage[];
@@ -14,10 +14,13 @@ interface Props {
   pendingBooking: PendingBooking | null;
   onBookingConfirmed: () => void;
   onBookingDiscard: () => void;
+  onSuggestion: (text: string) => void;
 }
 
+const STARTER_PROMPT = "What should I work on today?";
+
 export default function MessageList({
-  messages, isSending, pendingDraft, onDraftSent, onDraftDiscard, pendingBooking, onBookingConfirmed, onBookingDiscard,
+  messages, isSending, pendingDraft, onDraftSent, onDraftDiscard, pendingBooking, onBookingConfirmed, onBookingDiscard, onSuggestion,
 }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -32,6 +35,12 @@ export default function MessageList({
         <p className="text-sm max-w-xs">
           Ask about a client's schedule, book them into a real slot, teach me their availability, or switch into focused mode to draft a reply in their style.
         </p>
+        <button
+          onClick={() => onSuggestion(STARTER_PROMPT)}
+          className="flex items-center gap-1.5 rounded-full border border-chart-primary/30 bg-chart-primary/5 px-3.5 py-2 text-xs font-semibold text-chart-primary hover:bg-chart-primary/10 transition-colors"
+        >
+          <Sparkles className="h-3.5 w-3.5" /> {STARTER_PROMPT}
+        </button>
       </div>
     );
   }

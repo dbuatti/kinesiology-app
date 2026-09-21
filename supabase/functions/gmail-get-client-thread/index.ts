@@ -81,10 +81,18 @@ function extractBody(payload: any): string {
   return "";
 }
 
-function messageFromApi(data: any, practiceEmail: string) {
+function messageFromApi(data: any, clientEmail: string) {
   const headers = data.payload?.headers || [];
   const from = headerValue(headers, "From");
-  const direction = from.toLowerCase().includes(practiceEmail) ? "outbound" : "inbound";
+  // Compare against the CLIENT's email (always known for certain — it's the
+  // function's own input) rather than a single hardcoded practice address.
+  // Real bug found live: a message genuinely sent from info@danielebuatti.com
+  // was mislabeled "inbound" (as if the client sent it) because it was
+  // compared only against GMAIL_USER_EMAIL, which didn't match — the
+  // practitioner can reply from more than one address (e.g. his iPad's Mail
+  // app), and any of them is unambiguously "outbound" as long as it isn't
+  // from the client themselves.
+  const direction = from.toLowerCase().includes(clientEmail.toLowerCase()) ? "inbound" : "outbound";
   return {
     id: data.id,
     threadId: data.threadId,
@@ -111,7 +119,6 @@ serve(async (req) => {
     const CLIENT_ID = Deno.env.get("GMAIL_CLIENT_ID");
     const CLIENT_SECRET = Deno.env.get("GMAIL_CLIENT_SECRET");
     const REFRESH = Deno.env.get("GMAIL_READONLY_INBOX_REFRESH_TOKEN");
-    const PRACTICE_EMAIL = (Deno.env.get("GMAIL_USER_EMAIL") || "").toLowerCase();
     if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH) throw new Error("Gmail inbox read is not configured.");
 
     const accessToken = await getAccessToken(CLIENT_ID, CLIENT_SECRET, REFRESH);
@@ -146,7 +153,7 @@ serve(async (req) => {
         const res = await fetch(url.toString(), { headers: authHeaders });
         const data = await res.json();
         if (!res.ok || !data.messages?.length) return null;
-        const msgs = data.messages.map((m: any) => messageFromApi(m, PRACTICE_EMAIL));
+        const msgs = data.messages.map((m: any) => messageFromApi(m, client_email));
         const last = msgs[msgs.length - 1];
         return {
           id,
@@ -169,7 +176,7 @@ serve(async (req) => {
       const data = await res.json();
       if (res.ok && data.messages) {
         messages = data.messages
-          .map((m: any) => messageFromApi(m, PRACTICE_EMAIL))
+          .map((m: any) => messageFromApi(m, client_email))
           .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
       }
     }

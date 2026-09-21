@@ -3,6 +3,7 @@ import { useParams, useSearchParams, Link as RouterLink } from "react-router-dom
 import { supabase } from "@/integrations/supabase/client";
 import { showError } from "@/utils/toast";
 import { useAssistantConversation } from "@/hooks/useAssistantConversation";
+import { isVoiceStudentId, emailFromVoiceStudentId } from "@/lib/voice-student-id";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import ConversationList from "@/components/assistant/ConversationList";
@@ -12,21 +13,31 @@ import ClientEmailThread from "@/components/assistant/ClientEmailThread";
 import ClientSnapshotPanel from "@/components/assistant/ClientSnapshotPanel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { User, MessageCircle, Mail, ArrowLeft, ExternalLink } from "lucide-react";
+import { User, MessageCircle, Mail, ArrowLeft, ExternalLink, Mic, Brain } from "lucide-react";
+
+interface HubClient {
+  id: string; // clients.id, or the raw "voice:<email>" pseudo-id
+  name: string;
+  email: string | null;
+  phone: string | null;
+  isVoice: boolean;
+}
 
 // The dedicated "everything about this one client" business view — separate
 // from ClientDetailPage (clinical: assessments, session notes) and from the
-// general Assistant (EA-style, all clients). Click a client's name anywhere
-// in the Follow-up list / client list and you land here: AI chat, real email
-// thread, and status/rate/history for just them, its own page rather than an
-// inline strip inside the general Assistant.
+// general Assistant (EA-style, all clients). Covers BOTH arms equally, same
+// as every other part of this assistant — voice students are never a
+// second-class case here. Click a client's name anywhere in the Follow-up
+// list / Launch Campaign tracker and you land here.
 export default function ClientHubPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id: rawId } = useParams<{ id: string }>();
+  const id = rawId ? decodeURIComponent(rawId) : undefined;
+  const isVoice = isVoiceStudentId(id || null);
   // Deep-link entry point from Follow-up/Needs-attention quick actions, e.g.
   // /clients/<id>/hub?prompt=<text> — same convention AssistantPage already uses.
   const [searchParams] = useSearchParams();
   const initialPrompt = searchParams.get("prompt") || "";
-  const [client, setClient] = useState<{ id: string; name: string; email: string | null; phone: string | null } | null>(null);
+  const [client, setClient] = useState<HubClient | null>(null);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"chat" | "email">(searchParams.get("view") === "email" ? "email" : "chat");
   const [mobileShowList, setMobileShowList] = useState(true);
@@ -34,20 +45,41 @@ export default function ClientHubPage() {
   useEffect(() => {
     if (!id) return;
     let cancelled = false;
-    supabase.from("clients").select("id, name, email, phone").eq("id", id).maybeSingle().then(({ data, error }) => {
-      if (cancelled) return;
-      if (error || !data) { showError("Couldn't load this client."); setLoading(false); return; }
-      setClient(data);
-      setLoading(false);
-    });
+    (async () => {
+      if (isVoice) {
+        const email = emailFromVoiceStudentId(id);
+        const { data } = await supabase
+          .from("voice_bookings")
+          .select("student_name")
+          .ilike("student_email", email)
+          .not("student_name", "is", null)
+          .order("lesson_date", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (cancelled) return;
+        setClient({ id, name: data?.student_name || email, email, phone: null, isVoice: true });
+        setLoading(false);
+      } else {
+        const { data, error } = await supabase.from("clients").select("id, name, email, phone").eq("id", id).maybeSingle();
+        if (cancelled) return;
+        if (error || !data) { showError("Couldn't load this client."); setLoading(false); return; }
+        setClient({ ...data, isVoice: false });
+        setLoading(false);
+      }
+    })();
     return () => { cancelled = true; };
-  }, [id]);
+  }, [id, isVoice]);
 
   const {
     conversations, activeId, messages, isSending, pendingDraft, pendingBooking,
     selectConversation, startNewChat, handleSend,
     handleDraftSent, handleDraftDiscard, handleBookingConfirmed, handleBookingDiscard, deleteConversation,
-  } = useAssistantConversation({ clientId: id || null, voiceStudentEmail: null, filterToClient: true });
+  } = useAssistantConversation({
+    clientId: isVoice ? null : (id || null),
+    voiceStudentEmail: isVoice && id ? emailFromVoiceStudentId(id) : null,
+    voiceStudentName: client?.name || null,
+    filterToClient: true,
+  });
 
   // Same viewport-fill approach as AssistantPage — measure everything above
   // the working area and size it to exactly fill what's left, so the outer
@@ -82,15 +114,22 @@ export default function ClientHubPage() {
         <PageHeader
           icon={User}
           title={client.name}
-          subtitle={[client.email, client.phone].filter(Boolean).join(" · ") || "No contact details on file"}
+          subtitle={
+            <span className="flex items-center gap-1.5">
+              {client.isVoice ? <Mic className="h-3.5 w-3.5 text-chart-destructive" /> : <Brain className="h-3.5 w-3.5 text-chart-purple" />}
+              {[client.email, client.phone].filter(Boolean).join(" · ") || "No contact details on file"}
+            </span>
+          }
           actions={
             <div className="flex items-center gap-2">
               <Button asChild variant="outline" size="sm" className="h-9 text-xs gap-1.5">
                 <RouterLink to="/assistant"><ArrowLeft className="h-3.5 w-3.5" /> Assistant</RouterLink>
               </Button>
-              <Button asChild variant="outline" size="sm" className="h-9 text-xs gap-1.5">
-                <RouterLink to={`/clients/${client.id}`}><ExternalLink className="h-3.5 w-3.5" /> Clinical Profile</RouterLink>
-              </Button>
+              {!client.isVoice && (
+                <Button asChild variant="outline" size="sm" className="h-9 text-xs gap-1.5">
+                  <RouterLink to={`/clients/${client.id}`}><ExternalLink className="h-3.5 w-3.5" /> Clinical Profile</RouterLink>
+                </Button>
+              )}
             </div>
           }
         />
@@ -98,7 +137,7 @@ export default function ClientHubPage() {
           <ClientSnapshotPanel
             clientId={client.id}
             clientName={client.name}
-            isVoice={false}
+            isVoice={client.isVoice}
             onDraftRateEmail={(prompt) => handleSend(prompt)}
           />
         </div>

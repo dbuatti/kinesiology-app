@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { computeClientLifecycleStatus, LifecycleStatus } from "@/lib/clientStatus";
+import { fetchNormalizedVoiceBookings } from "@/lib/voiceBookings";
 import { cn } from "@/lib/utils";
 import { TrendingUp, TrendingDown, DollarSign, Users, CalendarDays, AlertCircle, Loader2 } from "lucide-react";
 
@@ -70,10 +71,10 @@ async function computePipeline(): Promise<Record<LifecycleStatus, number>> {
   const counts: Record<LifecycleStatus, number> = { lead: 0, active: 0, at_risk: 0, lapsed: 0 };
   const now = new Date();
 
-  const [{ data: clients }, { data: appts }, { data: voiceRows }] = await Promise.all([
+  const [{ data: clients }, { data: appts }, voiceRows] = await Promise.all([
     supabase.from("clients").select("id").or("is_practitioner.eq.false,is_practitioner.is.null"),
     supabase.from("appointments").select("client_id, date, status"),
-    supabase.from("voice_bookings").select("student_email, lesson_date, status").not("student_email", "is", null),
+    fetchNormalizedVoiceBookings(),
   ]);
 
   const apptsByClient = new Map<string, { date: string; status: string }[]>();
@@ -92,15 +93,14 @@ async function computePipeline(): Promise<Record<LifecycleStatus, number>> {
 
   const voiceByEmail = new Map<string, { date: string; status: string }[]>();
   const voiceFuture = new Set<string>();
-  for (const b of (voiceRows || []) as any[]) {
-    const email = String(b.student_email || "").toLowerCase().trim();
-    if (!email) continue;
-    const d = new Date(b.lesson_date);
+  for (const b of voiceRows) {
+    const email = b.studentEmail;
+    const d = new Date(b.lessonDate);
     if (isNaN(d.getTime())) continue;
     const isCancelled = b.status === "cancelled";
     if (!isCancelled && d > now) { voiceFuture.add(email); continue; }
     if (d > now) continue;
-    (voiceByEmail.get(email) || voiceByEmail.set(email, []).get(email)!).push({ date: b.lesson_date, status: isCancelled ? "Cancelled" : "Completed" });
+    (voiceByEmail.get(email) || voiceByEmail.set(email, []).get(email)!).push({ date: b.lessonDate, status: isCancelled ? "Cancelled" : "Completed" });
   }
   for (const [email, appointments] of voiceByEmail.entries()) {
     const { status } = computeClientLifecycleStatus({ appointments, hasFutureBooking: voiceFuture.has(email) });

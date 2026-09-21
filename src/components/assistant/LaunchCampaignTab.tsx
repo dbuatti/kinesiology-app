@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DraftEmailCard from "@/components/assistant/DraftEmailCard";
-import { Loader2, RefreshCw, Plus, X, Sparkles } from "lucide-react";
+import { Loader2, RefreshCw, Plus, X, Sparkles, Mic, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -23,7 +23,9 @@ type EntryStatus = typeof STATUS_OPTIONS[number];
 interface Entry {
   id: string;
   campaign_id: string;
-  client_id: string;
+  client_id: string | null;
+  voice_student_email: string | null;
+  voice_student_name: string | null;
   client_name: string;
   segment: CampaignSegment;
   excluded: boolean;
@@ -125,15 +127,17 @@ export default function LaunchCampaignTab() {
     setLoadingAudience(true);
     try {
       const audience = await computeCampaignAudience();
-      const existingIds = new Set(entries.map((e) => e.client_id));
+      const existingKeys = new Set(entries.map((e) => e.client_id || `voice:${e.voice_student_email}`));
       const toInsert = audience
-        .filter((m) => !existingIds.has(m.clientId))
+        .filter((m) => !existingKeys.has(m.clientId || `voice:${m.voiceStudentEmail}`))
         .map((m) => {
           const slot = proposeRecurringSlot(m.pattern, config.regularDays);
           const firstDate = computeFirstRegularDate(config.regularStart, config.regularDays, config.blackoutRanges);
           return {
             campaign_id: campaignId,
             client_id: m.clientId,
+            voice_student_email: m.voiceStudentEmail,
+            voice_student_name: m.voiceStudentEmail ? m.clientName : null,
             client_name: m.clientName,
             segment: m.segment,
             proposed_slot: slot.label,
@@ -147,7 +151,7 @@ export default function LaunchCampaignTab() {
         if (error) throw error;
       }
       await loadEntries(campaignId);
-      showSuccess(`Audience loaded — ${toInsert.length} new, ${existingIds.size} already tracked.`);
+      showSuccess(`Audience loaded — ${toInsert.length} new, ${existingKeys.size} already tracked.`);
     } catch (err: any) {
       showError(err.message || "Couldn't load the audience.");
     } finally {
@@ -169,7 +173,13 @@ export default function LaunchCampaignTab() {
         .replace("{proposedSlot}", entry.proposed_slot || "a slot to be confirmed")
         .replace("{firstRegularDate}", entry.first_regular_date || "to be confirmed");
       const { data, error } = await supabase.functions.invoke("assistant-chat", {
-        body: { conversation_id: null, client_id: entry.client_id, message: `Draft ${template}.` },
+        body: {
+          conversation_id: null,
+          client_id: entry.voice_student_email ? null : entry.client_id,
+          voice_student_email: entry.voice_student_email,
+          voice_student_name: entry.voice_student_name,
+          message: `Draft ${template}.`,
+        },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -260,6 +270,7 @@ export default function LaunchCampaignTab() {
                       <td className="p-2 font-semibold text-foreground align-top">
                         <div className="flex items-center gap-1.5">
                           <Checkbox checked={!e.excluded} onCheckedChange={(v) => updateEntry(e.id, { excluded: !v })} />
+                          {e.voice_student_email ? <Mic className="h-3 w-3 text-chart-destructive shrink-0" /> : <Brain className="h-3 w-3 text-chart-purple shrink-0" />}
                           {e.client_name}
                         </div>
                       </td>

@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { voiceStudentIdFor } from "@/lib/voice-student-id";
 import { computeClientLifecycleStatus, LifecycleStatus } from "@/lib/clientStatus";
+import { fetchNormalizedVoiceBookings } from "@/lib/voiceBookings";
 
 // Single shared data source for "who needs follow-up" — used by the compact
 // shorthand summary above the Assistant's tabs, the full Follow-up tab, and
@@ -14,9 +15,13 @@ export interface AttentionClient {
   status: LifecycleStatus;
   reason: string;
   daysSinceLast: number | null;
+  isQuickWin: boolean;
 }
 
-const STATUS_RANK: Record<LifecycleStatus, number> = { active: 0, at_risk: 1, lapsed: 2, lead: 3 };
+// Quick wins (a recent cancellation from an otherwise real client) sort
+// ahead of everything else, including "active" — this is precisely the
+// "secure this person, don't agonize" case the whole tool is built around.
+const STATUS_RANK: Record<LifecycleStatus, number> = { active: 1, at_risk: 2, lapsed: 3, lead: 4 };
 
 async function fetchKinesiologyAttention(): Promise<AttentionClient[]> {
   const { data, error } = await supabase
@@ -46,30 +51,23 @@ async function fetchKinesiologyAttention(): Promise<AttentionClient[]> {
   const results: AttentionClient[] = [];
   for (const [clientId, { client, appointments }] of agg.entries()) {
     if (hasFuture.has(clientId)) continue;
-    const { status, reason, daysSinceLast } = computeClientLifecycleStatus({ appointments, hasFutureBooking: false });
+    const { status, reason, daysSinceLast, isQuickWin } = computeClientLifecycleStatus({ appointments, hasFutureBooking: false });
     if (status === "lead") continue;
-    results.push({ id: clientId, kind: "kinesiology", name: client.name || "Unknown", email: client.email || null, status, reason, daysSinceLast });
+    results.push({ id: clientId, kind: "kinesiology", name: client.name || "Unknown", email: client.email || null, status, reason, daysSinceLast, isQuickWin });
   }
   return results;
 }
 
 async function fetchVoiceAttention(): Promise<AttentionClient[]> {
-  const { data, error } = await supabase
-    .from("voice_bookings")
-    .select("student_name, student_email, lesson_date, status")
-    .not("student_email", "is", null)
-    .order("lesson_date", { ascending: false });
-  if (error || !data) return [];
+  const bookings = await fetchNormalizedVoiceBookings();
 
   const now = new Date();
   const hasFuture = new Set<string>();
   const agg = new Map<string, { name: string; email: string; appointments: { date: string; status: string }[] }>();
 
-  type VoiceBookingRow = { student_name: string | null; student_email: string | null; lesson_date: string; status: string | null };
-  for (const b of data as VoiceBookingRow[]) {
-    const email = String(b.student_email || "").toLowerCase().trim();
-    if (!email) continue;
-    const d = new Date(b.lesson_date);
+  for (const b of bookings) {
+    const email = b.studentEmail;
+    const d = new Date(b.lessonDate);
     if (isNaN(d.getTime())) continue;
     const isCancelled = b.status === "cancelled";
     if (!isCancelled && d > now) {
@@ -77,17 +75,17 @@ async function fetchVoiceAttention(): Promise<AttentionClient[]> {
       continue;
     }
     if (d > now) continue;
-    const existing = agg.get(email) || { name: b.student_name || "Unknown", email, appointments: [] };
-    existing.appointments.push({ date: b.lesson_date, status: isCancelled ? "Cancelled" : "Completed" });
+    const existing = agg.get(email) || { name: b.studentName, email, appointments: [] };
+    existing.appointments.push({ date: b.lessonDate, status: isCancelled ? "Cancelled" : "Completed" });
     agg.set(email, existing);
   }
 
   const results: AttentionClient[] = [];
   for (const [email, { name, appointments }] of agg.entries()) {
     if (hasFuture.has(email)) continue;
-    const { status, reason, daysSinceLast } = computeClientLifecycleStatus({ appointments, hasFutureBooking: false });
+    const { status, reason, daysSinceLast, isQuickWin } = computeClientLifecycleStatus({ appointments, hasFutureBooking: false });
     if (status === "lead") continue;
-    results.push({ id: voiceStudentIdFor(email), kind: "voice", name, email, status, reason, daysSinceLast });
+    results.push({ id: voiceStudentIdFor(email), kind: "voice", name, email, status, reason, daysSinceLast, isQuickWin });
   }
   return results;
 }
@@ -95,6 +93,7 @@ async function fetchVoiceAttention(): Promise<AttentionClient[]> {
 export async function fetchNeedsAttention(): Promise<AttentionClient[]> {
   const [kinesiology, voice] = await Promise.all([fetchKinesiologyAttention(), fetchVoiceAttention()]);
   return [...kinesiology, ...voice].sort((a, b) => {
+    if (a.isQuickWin !== b.isQuickWin) return a.isQuickWin ? -1 : 1;
     const rankDiff = STATUS_RANK[a.status] - STATUS_RANK[b.status];
     if (rankDiff !== 0) return rankDiff;
     return (a.daysSinceLast ?? 0) - (b.daysSinceLast ?? 0);
@@ -103,6 +102,9 @@ export async function fetchNeedsAttention(): Promise<AttentionClient[]> {
 
 export function assistantPromptFor(c: AttentionClient) {
   const firstName = c.name.split(" ")[0];
+  if (c.isQuickWin) {
+    return `${firstName} cancelled recently but is normally really consistent — this should be a quick win. Check get_available_slots for a time that fits their usual pattern and help me draft a short, easy message to get them rebooked.`;
+  }
   switch (c.status) {
     case "active":
       return `Find a good slot and book ${firstName}'s next session — check their availability notes and usual pattern first.`;

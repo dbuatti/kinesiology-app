@@ -100,34 +100,41 @@ function parseAvailabilityText(text: string): { days: number[]; from: string | n
 // definition of "who needs follow-up". ---
 const AT_RISK_AFTER_DAYS = 90;
 const LAPSED_AFTER_DAYS = 240;
+const QUICK_WIN_CANCELLATION_WINDOW_DAYS = 30;
 
 function computeClientLifecycleStatus(appointments: { date: string; status: string }[], hasFutureBooking: boolean) {
   if (!appointments || appointments.length === 0) {
-    return { status: "lead", reason: "Never booked a session", daysSinceLast: null };
+    return { status: "lead", reason: "Never booked a session", daysSinceLast: null, isQuickWin: false };
   }
   if (hasFutureBooking) {
-    return { status: "active", reason: "Has a session booked ahead", daysSinceLast: null };
+    return { status: "active", reason: "Has a session booked ahead", daysSinceLast: null, isQuickWin: false };
   }
   const now = new Date();
   const sorted = [...appointments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   const mostRecent = sorted[0];
   const daysSinceMostRecent = Math.round((now.getTime() - new Date(mostRecent.date).getTime()) / (1000 * 60 * 60 * 24));
 
+  const realSessions = sorted.filter((a) => a.status !== "Cancelled" && a.status !== "cancelled");
+
   if (mostRecent.status === "Cancelled" || mostRecent.status === "cancelled") {
     return {
       status: "at_risk",
       reason: `Cancelled their last session (${daysSinceMostRecent}d ago) and hasn't rebooked`,
       daysSinceLast: daysSinceMostRecent,
+      // A recent cancellation from an otherwise-real client (2+ prior real
+      // sessions) is a much easier re-engagement than someone genuinely gone
+      // quiet — surfaced separately so the model can prioritize/frame these
+      // as low-effort wins instead of treating every at_risk case the same.
+      isQuickWin: realSessions.length > 0 && daysSinceMostRecent <= QUICK_WIN_CANCELLATION_WINDOW_DAYS,
     };
   }
 
-  const realSessions = sorted.filter((a) => a.status !== "Cancelled" && a.status !== "cancelled");
-  if (realSessions.length === 0) return { status: "lead", reason: "Never completed a session", daysSinceLast: null };
+  if (realSessions.length === 0) return { status: "lead", reason: "Never completed a session", daysSinceLast: null, isQuickWin: false };
   const daysSinceLast = Math.round((now.getTime() - new Date(realSessions[0].date).getTime()) / (1000 * 60 * 60 * 24));
 
-  if (daysSinceLast <= AT_RISK_AFTER_DAYS) return { status: "active", reason: "Seen recently, nothing booked ahead yet", daysSinceLast };
-  if (daysSinceLast <= LAPSED_AFTER_DAYS) return { status: "at_risk", reason: `Gone quiet — ${daysSinceLast}d since last session, nothing booked`, daysSinceLast };
-  return { status: "lapsed", reason: "Was active, hasn't returned in over 8 months", daysSinceLast };
+  if (daysSinceLast <= AT_RISK_AFTER_DAYS) return { status: "active", reason: "Seen recently, nothing booked ahead yet", daysSinceLast, isQuickWin: false };
+  if (daysSinceLast <= LAPSED_AFTER_DAYS) return { status: "at_risk", reason: `Gone quiet — ${daysSinceLast}d since last session, nothing booked`, daysSinceLast, isQuickWin: false };
+  return { status: "lapsed", reason: "Was active, hasn't returned in over 8 months", daysSinceLast, isQuickWin: false };
 }
 
 const functionDeclarations = [
@@ -257,7 +264,7 @@ const functionDeclarations = [
   },
   {
     name: "get_clients_needing_attention",
-    description: "List kinesiology clients and voice students who need follow-up right now — status 'at_risk' (cancelled their last session and hasn't rebooked, or gone quiet 90-240 days) or 'lapsed' (quiet 240+ days), each with a plain-English reason and whether they were already emailed recently (recently_contacted). This is the SAME data the Needs Follow-Up widget on the Assistant page shows. Use this for 'who's slipping through the cracks' / 'who needs a check-in' — and always check recently_contacted before suggesting a fresh outreach to someone.",
+    description: "List kinesiology clients and voice students who need follow-up right now — status 'at_risk' (cancelled their last session and hasn't rebooked, or gone quiet 90-240 days) or 'lapsed' (quiet 240+ days), each with a plain-English reason, is_quick_win (true when it's a recent cancellation — within 30 days — from an otherwise real/consistent client, sorted first: these are the lowest-effort rebooks, not someone drifting away), and whether they were already emailed recently (recently_contacted). This is the SAME data the Needs Follow-Up widget on the Assistant page shows. Use this for 'who's slipping through the cracks' / 'who needs a check-in' / 'who's an easy win' — and always check recently_contacted before suggesting a fresh outreach to someone.",
     parameters: { type: "OBJECT", properties: {} },
   },
 ];
@@ -770,6 +777,42 @@ async function runGetPastBookingPatterns(supabase: any, userId: string, clientId
   };
 }
 
+// Ported from src/lib/voiceBookings.ts (kept in sync manually, same convention
+// as parseAvailabilityText/computeClientLifecycleStatus above) — every
+// voice_bookings query in this file should go through this instead of
+// filtering `.not("student_email", "is", null)` directly. Real bug found
+// live: Nicole Rotenstein (a genuinely consistent student) has 2 real PAID
+// completed lessons with student_email NULL in this table (an older data
+// gap) and only her 1 CANCELLED lesson has the email populated — the naive
+// filter silently dropped her real history, making her look "at risk" with
+// zero real sessions. This backfills a missing email from another row with
+// the same student_name before grouping, so all of a student's rows merge
+// into one real history regardless of which rows have the email populated.
+async function fetchNormalizedVoiceBookings(supabase: any, extraSelect = "") {
+  const { data } = await supabase
+    .from("voice_bookings")
+    .select(`student_name, student_email, lesson_date, status${extraSelect}`)
+    .order("lesson_date", { ascending: false });
+  const rows = (data || []) as any[];
+
+  const nameToEmail = new Map<string, string>();
+  for (const row of rows) {
+    const name = (row.student_name || "").trim().toLowerCase();
+    const email = (row.student_email || "").trim().toLowerCase();
+    if (name && email && !nameToEmail.has(name)) nameToEmail.set(name, email);
+  }
+
+  const normalized: any[] = [];
+  for (const row of rows) {
+    const name = (row.student_name || "").trim();
+    const nameKey = name.toLowerCase();
+    const email = (row.student_email || "").trim().toLowerCase() || nameToEmail.get(nameKey) || "";
+    if (!email) continue;
+    normalized.push({ ...row, student_name: name || email, student_email: email });
+  }
+  return normalized;
+}
+
 async function runSearchVoiceClient(supabaseUrl: string, serviceKey: string, supabase: any, userId: string, query: string) {
   const res = await fetch(`${supabaseUrl}/functions/v1/voice-clients`, {
     method: "POST",
@@ -789,17 +832,19 @@ async function runSearchVoiceClient(supabaseUrl: string, serviceKey: string, sup
   }
 
   const student = matches[0];
-  const [{ data: bookings }, { data: simulatorEntry }] = await Promise.all([
-    supabase.from("voice_bookings")
-      .select("lesson_date, lesson_time, cost, status, discipline")
-      .ilike("student_email", student.email || "")
-      .order("lesson_date", { ascending: false })
-      .limit(20),
+  const studentEmail = (student.email || "").toLowerCase().trim();
+  const [allVoiceRows, { data: simulatorEntry }] = await Promise.all([
+    fetchNormalizedVoiceBookings(supabase, ", lesson_time, cost, discipline"),
     supabase.from("timetable_client_availability")
       .select("note, windows, updated_at")
-      .eq("user_id", userId).eq("client_key", `voice:${(student.email || "").toLowerCase()}`)
+      .eq("user_id", userId).eq("client_key", `voice:${studentEmail}`)
       .maybeSingle(),
   ]);
+  // Matches by the normalized (backfilled) email — same fix as the anchor/
+  // needs-attention aggregations above: some of a student's real lesson rows
+  // can have student_email NULL in this table, which a direct .ilike() query
+  // by email would silently miss entirely.
+  const bookings = allVoiceRows.filter((b: any) => b.student_email === studentEmail).slice(0, 20);
 
   // Same day/time pattern detection used for anchors — a voice student's "usual
   // slot" shouldn't require a separate anchor-mode call to see; it's the same
@@ -1108,15 +1153,12 @@ async function fetchRecentlyContactedMap(supabase: any, emails: string[]): Promi
 async function runGetClientsNeedingAttention(supabase: any, userId: string) {
   const now = new Date();
 
-  const [{ data: appts }, { data: voiceRows }] = await Promise.all([
+  const [{ data: appts }, voiceRows] = await Promise.all([
     supabase.from("appointments")
       .select("client_id, date, status, clients(id, name, email)")
       .eq("user_id", userId)
       .order("date", { ascending: false }),
-    supabase.from("voice_bookings")
-      .select("student_name, student_email, lesson_date, status")
-      .not("student_email", "is", null)
-      .order("lesson_date", { ascending: false }),
+    fetchNormalizedVoiceBookings(supabase),
   ]);
 
   const hasFuture = new Set<string>();
@@ -1132,16 +1174,15 @@ async function runGetClientsNeedingAttention(supabase: any, userId: string) {
     agg.set(a.client_id, existing);
   }
 
-  for (const b of (voiceRows || []) as any[]) {
-    const email = String(b.student_email || "").toLowerCase().trim();
-    if (!email) continue;
+  for (const b of voiceRows) {
+    const email = b.student_email;
     const id = `voice:${email}`;
     const d = new Date(b.lesson_date);
     if (isNaN(d.getTime())) continue;
     const isCancelled = b.status === "cancelled";
     if (!isCancelled && d > now) { hasFuture.add(id); continue; }
     if (d > now) continue;
-    const existing = agg.get(id) || { kind: "voice", name: b.student_name || "Unknown", email, appointments: [] };
+    const existing = agg.get(id) || { kind: "voice", name: b.student_name, email, appointments: [] };
     existing.appointments.push({ date: b.lesson_date, status: isCancelled ? "Cancelled" : "Completed" });
     agg.set(id, existing);
   }
@@ -1149,13 +1190,13 @@ async function runGetClientsNeedingAttention(supabase: any, userId: string) {
   const rows: any[] = [];
   for (const [id, { kind, name, email, appointments }] of agg.entries()) {
     if (hasFuture.has(id)) continue;
-    const { status, reason, daysSinceLast } = computeClientLifecycleStatus(appointments, false);
+    const { status, reason, daysSinceLast, isQuickWin } = computeClientLifecycleStatus(appointments, false);
     if (status === "lead" || status === "active") continue; // only genuinely at-risk/lapsed here
     rows.push({
       kind, name, email,
       client_id: kind === "kinesiology" ? id : null,
       voice_student_email: kind === "voice" ? email : null,
-      status, reason, days_since_last: daysSinceLast,
+      status, reason, days_since_last: daysSinceLast, is_quick_win: isQuickWin,
     });
   }
 
@@ -1166,22 +1207,25 @@ async function runGetClientsNeedingAttention(supabase: any, userId: string) {
     r.last_contacted_at = lastContacted ? fmtMelbourne(lastContacted) : null;
   }
 
-  rows.sort((a, b) => (a.status === b.status ? (a.days_since_last ?? 0) - (b.days_since_last ?? 0) : a.status === "at_risk" ? -1 : 1));
+  // Quick wins first (a recent cancellation from an otherwise-real client —
+  // secure these before spreading effort thin on harder re-engagements),
+  // then the existing at_risk-before-lapsed, most-recent-first ordering.
+  rows.sort((a, b) => {
+    if (a.is_quick_win !== b.is_quick_win) return a.is_quick_win ? -1 : 1;
+    return a.status === b.status ? (a.days_since_last ?? 0) - (b.days_since_last ?? 0) : a.status === "at_risk" ? -1 : 1;
+  });
   return { clients_needing_attention: rows };
 }
 
 async function runGetAnchorCandidates(supabase: any, userId: string) {
   const now = new Date();
 
-  const [{ data: appts }, { data: voiceRows }] = await Promise.all([
+  const [{ data: appts }, voiceRows] = await Promise.all([
     supabase.from("appointments")
       .select("client_id, date, status, clients(id, name, email, availability_notes)")
       .eq("user_id", userId)
       .order("date", { ascending: true }),
-    supabase.from("voice_bookings")
-      .select("student_name, student_email, lesson_date, lesson_time, status")
-      .not("student_email", "is", null)
-      .order("lesson_date", { ascending: true }),
+    fetchNormalizedVoiceBookings(supabase, ", lesson_time"),
   ]);
 
   const byId = new Map<string, AnchorAgg>();
@@ -1386,7 +1430,7 @@ ${client_id
   ? `This conversation is focused on one specific kinesiology client (client_id: ${client_id}). Call get_client_context first to load their history, current rate vs target rate, and communication style, and match their tone when drafting anything. If Daniele mentions he just changed or increased their rate, draft a warm email via draft_email_reply that references the specific old and new numbers already visible from get_client_context — and never claim it's been sent, only that it's ready for review.`
   : voice_student_email
   ? `This conversation is focused on one specific voice student (email: ${voice_student_email}${voice_student_name ? `, name: ${voice_student_name}` : ""}). Call search_voice_client with their email first to load their lesson history, notes, and likely_usual_slot before answering or drafting anything — they are NOT in the clients table, so get_client_context (kinesiology-only) doesn't apply, but get_available_slots and propose_booking BOTH work for them: pass voice_student_email instead of client_id and they behave exactly like they do for a kinesiology client, including creating a real Cal.com booking once the practitioner clicks Confirm.`
-  : `This is a general conversation, not focused on one client. Default to an anchor mindset — this is how EVERY general conversation should run, not an opt-in mode: prioritise securing and deepening relationships with clients who are close to converting or renewing over chasing volume for its own sake. Don't get distracted trying to bring in everyone at once — securing one real relationship beats a scattershot list. When scheduling, prioritisation, or "who should I focus on" comes up, call get_anchor_candidates ONCE (it reflects the full current picture — don't re-call it on later turns unless something genuinely changed, like a booking confirmed or a cancellation mentioned) and work through it in this order: (1) open_anchors first — long, consistent track record, seen recently, nothing booked yet. Check get_available_slots around their usual_slot and offer to draft outreach proposing exactly that slot — don't make them re-decide a day/time they've already established. Present 2-3 at a time, not the whole list. (2) lapsed_anchors next — same strong pattern, gone quiet. Do NOT assume their old slot still holds; frame it as a warm, no-pressure re-engagement check-in and only get into scheduling specifics once they've responded with interest. (3) needs_conversion_support only once both anchor buckets are addressed — mention these ARE lower priority. (4) already_secured_anchors need no action. Keep momentum: after handling one, proactively suggest the next rather than waiting to be asked "who's next". Also check get_clients_needing_attention for anyone genuinely at risk of falling through the cracks (a cancelled-and-gone-quiet client, for example) — mention them even if the conversation didn't ask about follow-up specifically.`}
+  : `This is a general conversation, not focused on one client. Default to an anchor mindset — this is how EVERY general conversation should run, not an opt-in mode: prioritise securing and deepening relationships with clients who are close to converting or renewing over chasing volume for its own sake. Don't get distracted trying to bring in everyone at once — securing one real relationship beats a scattershot list. When scheduling, prioritisation, or "who should I focus on" comes up, call get_anchor_candidates ONCE (it reflects the full current picture — don't re-call it on later turns unless something genuinely changed, like a booking confirmed or a cancellation mentioned) and work through it in this order: (1) open_anchors first — long, consistent track record, seen recently, nothing booked yet. Check get_available_slots around their usual_slot and offer to draft outreach proposing exactly that slot — don't make them re-decide a day/time they've already established. Present 2-3 at a time, not the whole list. (2) lapsed_anchors next — same strong pattern, gone quiet. Do NOT assume their old slot still holds; frame it as a warm, no-pressure re-engagement check-in and only get into scheduling specifics once they've responded with interest. (3) needs_conversion_support only once both anchor buckets are addressed — mention these ARE lower priority. (4) already_secured_anchors need no action. Keep momentum: after handling one, proactively suggest the next rather than waiting to be asked "who's next". Also check get_clients_needing_attention for anyone genuinely at risk of falling through the cracks (a cancelled-and-gone-quiet client, for example) — mention them even if the conversation didn't ask about follow-up specifically. Daniele finds scheduling decisions genuinely effortful (this tool exists specifically to lower that friction), so ALWAYS lead with any is_quick_win entries from get_clients_needing_attention before anything else — a recent cancellation from an otherwise-consistent client is the single easiest thing to resolve (check get_available_slots around their usual pattern and offer one concrete slot to propose), and surfacing it first means he secures a real win in one click instead of sifting through a long list to find it himself.`}
 You can draft an email for review via draft_email_reply, but you can never send one yourself — always say the draft is ready for review, never that it has been sent. Never invent a recipient address (no "@example.com" placeholders) — always pull the real email from get_client_context, get_anchor_candidates, or search_voice_client first. Critical: after calling draft_email_reply, do NOT repeat the drafted subject/body in your text reply — it already renders as its own editable card with a Send button right above your message, and re-typing the same content is confusing (the practitioner can't tell if your text version or the card is "the real one," and on a small screen the card can get lost under a wall of repeated text). Just briefly confirm it's ready, e.g. "Draft's ready above — edit anything you like, then hit Send when you're happy with it."
 Whenever draft_email_reply is used for anything scheduling-flavoured ("let's find a time", proposing a session, re-engagement outreach that might lead to booking), call get_available_slots FIRST and embed 2-3 concrete suggested times with a one-line reason each in the draft body — never draft a vague "let me know what works for you" when real availability is one tool call away. get_available_slots also auto-widens its search window itself if the immediate range is fully booked, so it will still return real options even when the calendar looks packed short-term.
 Clients also have a self-serve portal at /portal/login (email OTP, no password) where they can view their own upcoming/past sessions, cancel a booking, book a new one, and message Daniele directly. If a client seems unaware of it, or asks how to manage/cancel their own booking, or Daniele wants to point someone there, feel free to mention it and include the link in a drafted email.

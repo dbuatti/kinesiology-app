@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { fetchNormalizedVoiceBookings } from "@/lib/voiceBookings";
 
 // Purpose-built segmentation for a one-off Launch Campaign — deliberately
 // SEPARATE from the standing lifecycle-status taxonomy (lead/active/at_risk/
@@ -32,7 +33,10 @@ export const DEFAULT_CAMPAIGN_CONFIG: CampaignConfig = {
 };
 
 export interface CampaignAudienceMember {
-  clientId: string;
+  // Kinesiology: clientId set, voiceStudentEmail null. Voice: the reverse —
+  // mutually exclusive, same convention as assistant_conversations.
+  clientId: string | null;
+  voiceStudentEmail: string | null;
   clientName: string;
   clientEmail: string | null;
   segment: CampaignSegment;
@@ -51,10 +55,21 @@ function melbourneDayHour(iso: string): { day: number; hour: number } {
   return { day: DAY_NAMES.indexOf(dayName), hour };
 }
 
-// Pulls the same underlying appointment history NeedsAttentionWidget/FollowUpTab
-// use, but classifies into this campaign's own three segments instead of the
-// standing lifecycle taxonomy.
-export async function computeCampaignAudience(): Promise<CampaignAudienceMember[]> {
+// Shared classification (kinesiology and voice both reduce to the same
+// { date, status } shape) — identical rule either way, since the campaign's
+// three segments describe a booking pattern, not which arm someone's in.
+function classify(sorted: { date: string; status: string }[]): { segment: CampaignSegment; reason: string } | null {
+  const completed = sorted.filter((a) => a.status !== "Cancelled");
+  const mostRecent = sorted[0];
+  if (mostRecent.status === "Cancelled" && completed.length > 0) {
+    return { segment: "cancelled_no_rebook", reason: "Cancelled their last session and hasn't rebooked" };
+  }
+  if (completed.length === 1) return { segment: "one_lesson_only", reason: "Only ever had one session" };
+  if (completed.length > 1) return { segment: "active", reason: `${completed.length} completed sessions, regular client` };
+  return null; // no real history at all (e.g. only ever cancelled) — not campaign-relevant
+}
+
+async function computeKinesiologyAudience(): Promise<CampaignAudienceMember[]> {
   const { data, error } = await supabase
     .from("appointments")
     .select("client_id, date, status, clients(id, name, email, is_practitioner)")
@@ -83,28 +98,52 @@ export async function computeCampaignAudience(): Promise<CampaignAudienceMember[
   for (const [clientId, { name, email, appointments }] of agg.entries()) {
     if (hasFuture.has(clientId)) continue; // already booked ahead — not part of this push
     const sorted = [...appointments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    const completed = sorted.filter((a) => a.status !== "Cancelled");
-    const mostRecent = sorted[0];
-    const pattern = completed.map((a) => melbourneDayHour(a.date));
-
-    let segment: CampaignSegment;
-    let reason: string;
-    if (mostRecent.status === "Cancelled" && completed.length > 0) {
-      segment = "cancelled_no_rebook";
-      reason = "Cancelled their last session and hasn't rebooked";
-    } else if (completed.length === 1) {
-      segment = "one_lesson_only";
-      reason = "Only ever had one session";
-    } else if (completed.length > 1) {
-      segment = "active";
-      reason = `${completed.length} completed sessions, regular client`;
-    } else {
-      continue; // no real history at all (e.g. only ever cancelled) — not campaign-relevant
-    }
-
-    members.push({ clientId, clientName: name, clientEmail: email, segment, reason, pattern });
+    const result = classify(sorted);
+    if (!result) continue;
+    const pattern = sorted.filter((a) => a.status !== "Cancelled").map((a) => melbourneDayHour(a.date));
+    members.push({ clientId, voiceStudentEmail: null, clientName: name, clientEmail: email, pattern, ...result });
   }
   return members;
+}
+
+async function computeVoiceAudience(): Promise<CampaignAudienceMember[]> {
+  const bookings = await fetchNormalizedVoiceBookings();
+
+  const now = new Date();
+  const hasFuture = new Set<string>();
+  const agg = new Map<string, { name: string; appointments: { date: string; status: string }[] }>();
+
+  for (const b of bookings) {
+    const email = b.studentEmail;
+    const d = new Date(b.lessonDate);
+    if (isNaN(d.getTime())) continue;
+    const isCancelled = b.status === "cancelled";
+    if (!isCancelled && d > now) { hasFuture.add(email); continue; }
+    if (d > now) continue;
+    const existing = agg.get(email) || { name: b.studentName, appointments: [] };
+    existing.appointments.push({ date: b.lessonDate, status: isCancelled ? "Cancelled" : "Completed" });
+    agg.set(email, existing);
+  }
+
+  const members: CampaignAudienceMember[] = [];
+  for (const [email, { name, appointments }] of agg.entries()) {
+    if (hasFuture.has(email)) continue;
+    const sorted = [...appointments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const result = classify(sorted);
+    if (!result) continue;
+    const pattern = sorted.filter((a) => a.status !== "Cancelled").map((a) => melbourneDayHour(a.date));
+    members.push({ clientId: null, voiceStudentEmail: email, clientName: name, clientEmail: email, pattern, ...result });
+  }
+  return members;
+}
+
+// Pulls the same underlying appointment/lesson history NeedsAttentionWidget/
+// FollowUpTab use across BOTH arms (kinesiology + voice — this tool is never
+// kinesiology-only), classified into this campaign's own three segments
+// instead of the standing lifecycle taxonomy.
+export async function computeCampaignAudience(): Promise<CampaignAudienceMember[]> {
+  const [kinesiology, voice] = await Promise.all([computeKinesiologyAudience(), computeVoiceAudience()]);
+  return [...kinesiology, ...voice];
 }
 
 // Finds the best day within `regularDays` for this client based on their real

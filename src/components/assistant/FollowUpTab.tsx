@@ -6,7 +6,7 @@ import { LifecycleStatus } from "@/lib/clientStatus";
 import ClientLifecycleBadge from "@/components/crm/ClientLifecycleBadge";
 import { fetchNeedsAttention, assistantPromptFor, AttentionClient } from "@/lib/needsAttention";
 import { Button } from "@/components/ui/button";
-import { Mail, MessageCircle, Loader2, Mic, Brain } from "lucide-react";
+import { Mail, MessageCircle, Loader2, Mic, Brain, Zap } from "lucide-react";
 
 // The full, filterable follow-up list — reached via its own tab so it's never
 // "somewhere else" from the Assistant, unlike the old separate /business
@@ -15,7 +15,7 @@ import { Mail, MessageCircle, Loader2, Mic, Brain } from "lucide-react";
 export default function FollowUpTab() {
   const [clients, setClients] = useState<AttentionClient[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<LifecycleStatus | "all">("all");
+  const [filter, setFilter] = useState<LifecycleStatus | "all" | "quick_win">("all");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -26,7 +26,8 @@ export default function FollowUpTab() {
   useEffect(() => { load(); }, [load]);
 
   const counts = clients.reduce((acc, c) => { acc[c.status] = (acc[c.status] || 0) + 1; return acc; }, {} as Record<LifecycleStatus, number>);
-  const shown = filter === "all" ? clients : clients.filter((c) => c.status === filter);
+  const quickWinCount = clients.filter((c) => c.isQuickWin).length;
+  const shown = filter === "all" ? clients : filter === "quick_win" ? clients.filter((c) => c.isQuickWin) : clients.filter((c) => c.status === filter);
 
   if (loading) {
     return (
@@ -39,6 +40,17 @@ export default function FollowUpTab() {
   return (
     <div className="flex-1 min-h-0 overflow-y-auto p-4">
       <div className="flex flex-wrap items-center gap-2 mb-4">
+        {quickWinCount > 0 && (
+          <button
+            onClick={() => setFilter("quick_win")}
+            className={cn(
+              "flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border transition-colors",
+              filter === "quick_win" ? "bg-chart-emerald text-white border-chart-emerald" : "bg-chart-emerald/10 text-chart-emerald border-chart-emerald/30 hover:border-chart-emerald/60"
+            )}
+          >
+            <Zap className="h-3 w-3" /> Quick Wins <span className="opacity-70">({quickWinCount})</span>
+          </button>
+        )}
         {(["all", "at_risk", "lapsed", "active"] as const).map((s) => {
           const count = s === "all" ? clients.length : counts[s] || 0;
           const label = s === "all" ? "All" : s === "at_risk" ? "At Risk" : s === "lapsed" ? "Lapsed" : "Worth Rebooking";
@@ -62,7 +74,7 @@ export default function FollowUpTab() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {shown.map((c) => (
-            <div key={c.id} className="flex flex-col gap-2 rounded-xl border border-border bg-card p-3">
+            <div key={c.id} className={cn("flex flex-col gap-2 rounded-xl border p-3", c.isQuickWin ? "border-chart-emerald/40 bg-chart-emerald/5" : "border-border bg-card")}>
               <div className="flex items-center gap-1.5">
                 {c.kind === "voice"
                   ? <Mic className="h-3 w-3 text-chart-destructive shrink-0" />
@@ -74,6 +86,7 @@ export default function FollowUpTab() {
                     {c.name}
                   </Link>
                 )}
+                {c.isQuickWin && <Zap className="h-3 w-3 text-chart-emerald shrink-0 ml-auto" />}
               </div>
               <div><ClientLifecycleBadge status={c.status} /></div>
               <p className="text-[11px] text-muted-foreground leading-snug">{c.reason}</p>

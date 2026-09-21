@@ -52,31 +52,31 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
   };
 
   return (
-    <div className="bg-card rounded-[2.5rem] border border-border shadow-xl overflow-hidden">
+    <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
       <Table>
         <TableHeader className="bg-muted/50">
           <TableRow className="hover:bg-transparent border-border">
-            <TableHead className="font-black text-[10px] uppercase tracking-widest text-muted-foreground h-14 px-8">Client Name</TableHead>
-            <TableHead className="font-black text-[10px] uppercase tracking-widest text-muted-foreground h-14">Age / Sign</TableHead>
-            <TableHead className="font-black text-[10px] uppercase tracking-widest text-muted-foreground h-14">Last Session</TableHead>
-            <TableHead className="font-black text-[10px] uppercase tracking-widest text-muted-foreground h-14 text-center">Total</TableHead>
-            <TableHead className="font-black text-[10px] uppercase tracking-widest text-muted-foreground h-14 text-center">Upcoming</TableHead>
-            <TableHead className="font-black text-[10px] uppercase tracking-widest text-muted-foreground h-14 text-right px-8">Actions</TableHead>
+            <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12 px-6">Client Name</TableHead>
+            <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12">Age / Sign</TableHead>
+            <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12">Last Session</TableHead>
+            <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12 text-center">Total</TableHead>
+            <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12 text-center">Upcoming</TableHead>
+            <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12 text-right px-6">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {clients.map((client) => (
             <TableRow key={client.id} className="hover:bg-primary/5 transition-colors group border-border">
-              <TableCell className="px-8 py-5">
-                <Link to={`/clients/${client.id}`} className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-rose-400 text-white flex items-center justify-center text-lg font-black uppercase shadow-sm group-hover:scale-105 transition-transform">
+              <TableCell className="px-6 py-4">
+                <Link to={`/clients/${client.id}`} className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold uppercase shrink-0">
                     {client.name.charAt(0)}
                   </div>
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
                       <span className={cn(
-                        "font-black text-foreground text-lg group-hover:text-primary transition-colors",
+                        "font-semibold text-foreground text-sm group-hover:text-primary transition-colors",
                         isPrivate && "blur-sm select-none"
                       )}>{client.name}</span>
                       <IntakeStatusBadge client={client} />
@@ -102,52 +102,52 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
               </TableCell>
               <TableCell>
                 <div className="flex flex-col">
-                  <span className="text-sm font-bold text-foreground">{client.born ? `${calculateAge(client.born)} yrs` : "-"}</span>
+                  <span className="text-sm font-medium text-foreground">{client.born ? `${calculateAge(client.born)} yrs` : "-"}</span>
                   {client.born && (
-                    <span className="text-[10px] font-black text-amber-600 uppercase tracking-wider flex items-center gap-1">
+                    <span className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
                       <Clock size={10} /> {getStarSign(client.born)}
                     </span>
                   )}
                 </div>
               </TableCell>
               <TableCell>
-                <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                   <CalendarPlus size={14} className="text-muted-foreground" />
                   {client.last_session_at ? format(new Date(client.last_session_at), "MMM d, yyyy") : "Never"}
                 </div>
               </TableCell>
               <TableCell className="text-center">
-                <div className="inline-flex flex-col items-center px-3 py-1 bg-muted rounded-xl border border-border">
-                  <span className="font-black text-foreground">{client.session_count}</span>
-                  <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Sessions</span>
+                <div className="inline-flex flex-col items-center px-3 py-1 bg-muted rounded-lg">
+                  <span className="font-semibold text-foreground text-sm">{client.session_count}</span>
+                  <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Sessions</span>
                 </div>
               </TableCell>
               <TableCell className="text-center">
-                <div className="inline-flex flex-col items-center px-3 py-1 rounded-xl border border-chart-primary/20 bg-chart-primary/5">
-                  <span className="font-black text-chart-primary">{client.upcoming_count ?? 0}</span>
-                  <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Upcoming</span>
+                <div className="inline-flex flex-col items-center px-3 py-1 rounded-lg bg-chart-primary/5">
+                  <span className="font-semibold text-chart-primary text-sm">{client.upcoming_count ?? 0}</span>
+                  <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Upcoming</span>
                 </div>
               </TableCell>
-              <TableCell className="text-right px-8">
-                <div className="flex items-center justify-end gap-2">
+              <TableCell className="text-right px-6">
+                <div className="flex items-center justify-end gap-1">
                   {client.email && (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:text-primary hover:bg-accent" asChild>
-                          <a href={`mailto:${client.email}`}><Mail size={18} /></a>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-accent" asChild>
+                          <a href={`mailto:${client.email}`}><Mail size={16} /></a>
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent className="rounded-xl font-bold text-xs">Email Client</TooltipContent>
+                      <TooltipContent className="text-xs">Email Client</TooltipContent>
                     </Tooltip>
                   )}
                   {client.phone && (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:text-primary hover:bg-accent" asChild>
-                          <a href={`tel:${client.phone}`}><Phone size={18} /></a>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-accent" asChild>
+                          <a href={`tel:${client.phone}`}><Phone size={16} /></a>
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent className="rounded-xl font-bold text-xs">Call Client</TooltipContent>
+                      <TooltipContent className="text-xs">Call Client</TooltipContent>
                     </Tooltip>
                   )}
                   {client.email && (
@@ -156,33 +156,33 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-9 w-9 rounded-xl text-muted-foreground hover:text-amber-600 hover:bg-amber-500/10"
+                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-amber-600 hover:bg-amber-500/10"
                           disabled={sendingId === client.id}
                           onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSendOnboarding(client); }}
                         >
-                          {sendingId === client.id ? <Loader2 size={16} className="animate-spin" /> : <Mail size={16} />}
+                          {sendingId === client.id ? <Loader2 size={15} className="animate-spin" /> : <Mail size={15} />}
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent className="rounded-xl font-bold text-xs">
+                      <TooltipContent className="text-xs">
                         {sendingId === client.id ? "Sending..." : "Send Onboarding Email"}
                       </TooltipContent>
                     </Tooltip>
                   )}
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-9 w-9 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickBook(client.id); }}
                       >
-                        <CalendarPlus size={18} />
+                        <CalendarPlus size={16} />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent className="rounded-xl font-bold text-xs">Quick Book Session</TooltipContent>
+                    <TooltipContent className="text-xs">Quick Book Session</TooltipContent>
                   </Tooltip>
                   <Link to={`/clients/${client.id}`}>
-                    <Button variant="outline" size="sm" className="rounded-xl font-black text-[10px] uppercase tracking-widest border-border hover:bg-card hover:shadow-md ml-2">View Profile</Button>
+                    <Button variant="outline" size="sm" className="h-8 rounded-lg font-medium text-xs border-border hover:bg-muted ml-1">View Profile</Button>
                   </Link>
                 </div>
               </TableCell>

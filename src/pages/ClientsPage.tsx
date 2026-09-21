@@ -179,14 +179,14 @@ export function ClientsTool() {
             <div className="flex items-center gap-2">
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-primary hover:bg-primary/90 shadow-xl shadow-primary/10 rounded-2xl h-12 px-8 font-black text-xs uppercase tracking-widest">
-                  <Plus size={20} className="mr-2" /> New Client
+                <Button className="bg-primary hover:bg-primary/90 shadow-sm rounded-xl h-10 px-5 font-semibold text-sm">
+                  <Plus size={18} className="mr-2" /> New Client
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[550px] rounded-[2rem] p-0 overflow-hidden">
+              <DialogContent className="sm:max-w-[550px] rounded-2xl p-0 overflow-hidden">
                 <div className="p-8">
                   <DialogHeader className="mb-6">
-                    <DialogTitle className="text-2xl font-black">Add New Client</DialogTitle>
+                    <DialogTitle className="text-xl font-semibold">Add New Client</DialogTitle>
                     <DialogDescription className="font-medium">Create a new client profile in your clinical database.</DialogDescription>
                   </DialogHeader>
                   <ClientForm onSuccess={() => { setOpen(false); fetchClients(); }} />
@@ -216,12 +216,12 @@ export function ClientsTool() {
           })}
         </div>
 
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-card p-4 rounded-[2rem] border border-border shadow-sm">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-card p-4 rounded-2xl border border-border shadow-sm">
           <div className="relative flex-1 w-full max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
             <Input
               placeholder="Search by name, email, or suburb..."
-              className="pl-12 bg-muted/50 border-none focus:ring-2 focus:ring-primary h-12 rounded-xl font-medium"
+              className="pl-12 bg-muted/50 border-none focus:ring-2 focus:ring-primary h-10 rounded-xl font-medium"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -229,7 +229,7 @@ export function ClientsTool() {
 
           <div className="flex items-center gap-2 bg-muted p-1.5 rounded-xl">
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-              <SelectTrigger className="h-9 rounded-lg bg-card border-none px-3 text-xs font-bold uppercase tracking-widest text-primary gap-1.5 w-auto">
+              <SelectTrigger className="h-9 rounded-lg bg-card border-none px-3 text-xs font-semibold text-primary gap-1.5 w-auto">
                 <TrendingUp size={14} />
                 <SelectValue />
               </SelectTrigger>

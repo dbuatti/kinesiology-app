@@ -174,44 +174,51 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange }: SidebarProps) => {
           <Link
             to="/"
             onClick={() => setMobileOpen(false)}
-            title={collapsed ? "Kinesiology" : undefined}
+            title={collapsed ? "Clinical" : undefined}
             className={cn(
-              "flex flex-1 items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all no-underline",
-              !isVoice
+              "flex flex-1 min-w-0 items-center justify-center gap-0.5 px-1 py-1.5 rounded-lg text-[11px] font-semibold transition-all no-underline overflow-hidden",
+              !isVoice && !isBusiness
                 ? "bg-card text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Activity size={12} className="text-chart-primary shrink-0" />
-            <span className={cn("transition-opacity duration-200", collapsed && "hidden")}>Kinesiology</span>
+            {/* "Clinical" (not "Kinesiology") — shorter label, and matches the
+                nav group's own name below. 3 pills in a 256px-wide sidebar has
+                little room; a longer word here forced this row past the
+                sidebar's own bounds ("the business button trails out of
+                bounds" — the real cause was flex items refusing to shrink
+                below their content size without min-w-0, not the 3rd pill
+                itself). */}
+            <span className={cn("truncate transition-opacity duration-200", collapsed && "hidden")}>Clinical</span>
           </Link>
           <Link
             to="/voice"
             onClick={() => setMobileOpen(false)}
             title={collapsed ? "Voice" : undefined}
             className={cn(
-              "flex flex-1 items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all no-underline",
+              "flex flex-1 min-w-0 items-center justify-center gap-0.5 px-1 py-1.5 rounded-lg text-[11px] font-semibold transition-all no-underline overflow-hidden",
               isVoice
                 ? "bg-card text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Mic size={12} className="text-chart-destructive shrink-0" />
-            <span className={cn("transition-opacity duration-200", collapsed && "hidden")}>Voice</span>
+            <span className={cn("truncate transition-opacity duration-200", collapsed && "hidden")}>Voice</span>
           </Link>
           <Link
             to="/business"
             onClick={() => setMobileOpen(false)}
             title={collapsed ? "Business" : undefined}
             className={cn(
-              "flex flex-1 items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all no-underline",
+              "flex flex-1 min-w-0 items-center justify-center gap-0.5 px-1 py-1.5 rounded-lg text-[11px] font-semibold transition-all no-underline overflow-hidden",
               isBusiness
                 ? "bg-card text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Briefcase size={12} className="text-chart-emerald shrink-0" />
-            <span className={cn("transition-opacity duration-200", collapsed && "hidden")}>Business</span>
+            <span className={cn("truncate transition-opacity duration-200", collapsed && "hidden")}>Business</span>
           </Link>
         </div>
       </div>

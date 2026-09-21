@@ -6,42 +6,50 @@
 
 @layer base {
   :root {
-    /* Warm-neutral palette — hues shifted to amber/stone, lightness preserved. */
-    --background: 40 38% 98%;
-    --foreground: 28 14% 18%;
+    /* Clean cool-neutral palette — replaced the previous warm amber/stone
+       tint (explicitly "browns of the app are bad" feedback) with a true
+       slate-gray base, matching the neutral-gray-plus-one-accent convention
+       used by most professional SaaS tools (Linear, Stripe, Vercel) rather
+       than a warm/consumer-app tint. */
+    --background: 220 20% 99%;
+    --foreground: 222 20% 14%;
 
-    --card: 40 44% 99%;
-    --card-foreground: 28 14% 18%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 20% 14%;
 
-    --popover: 40 44% 99%;
-    --popover-foreground: 28 14% 18%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 20% 14%;
 
-    --primary: 26 24% 20%;
-    --primary-foreground: 40 38% 98%;
+    --primary: 231 48% 45%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 40 30% 95%;
-    --secondary-foreground: 28 14% 28%;
+    --secondary: 220 20% 95%;
+    --secondary-foreground: 222 20% 22%;
 
-    --accent: 26 24% 20%;
-    --accent-foreground: 40 38% 98%;
+    --accent: 231 48% 45%;
+    --accent-foreground: 0 0% 100%;
 
-    --muted: 40 28% 96%;
-    --muted-foreground: 30 10% 42%;
+    --muted: 220 20% 95%;
+    --muted-foreground: 220 10% 45%;
 
     --destructive: 0 72% 51%;
-    --destructive-foreground: 40 38% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 36 24% 88%;
-    --input: 36 24% 88%;
-    --ring: 28 45% 45%;
+    --border: 220 18% 89%;
+    --input: 220 18% 89%;
+    --ring: 231 48% 45%;
 
     --radius: 0.75rem;
 
-    /* Chart accent colours (fixed, not theme-aware) */
-    --chart-primary: 15 58% 49%;    /* warm terracotta (FNH) — was cool indigo */
+    /* Chart accent colours (fixed, not theme-aware) — chart-primary matches
+       the new indigo primary (was warm terracotta); the other three stay as
+       deliberate categorical differentiators (voice/revenue/FNH), not part
+       of the "browns" complaint. */
+    --chart-primary: 231 48% 55%;    /* indigo */
     --chart-destructive: 345 56% 44%; /* rose (voice) */
     --chart-emerald: 161 54% 36%;   /* emerald (earnings) */
     --chart-purple: 266 45% 50%;    /* purple (FNH on the public landing page) */
+    --chart-amber: 36 80% 55%;      /* amber (at-risk / warning status) */
 
     /* Docs editor surface (Google Docs-style UI) */
     --docs-surface: 210 17% 98%;
@@ -49,31 +57,32 @@
   }
 
   .dark {
-    /* Warm dark — hues shifted to warm espresso, lightness preserved. */
-    --background: 28 16% 7%;
-    --foreground: 40 14% 92%;
+    /* Clean cool-neutral dark palette — a real near-black slate instead of
+       the previous warm "espresso" brown-black. */
+    --background: 222 24% 8%;
+    --foreground: 220 20% 94%;
 
-    --card: 28 15% 10%;
-    --card-foreground: 40 14% 92%;
+    --card: 222 22% 11%;
+    --card-foreground: 220 20% 94%;
 
-    --popover: 28 15% 10%;
-    --popover-foreground: 40 14% 92%;
+    --popover: 222 22% 11%;
+    --popover-foreground: 220 20% 94%;
 
-    --primary: 40 14% 92%;
-    --primary-foreground: 28 15% 10%;
+    --primary: 231 62% 64%;
+    --primary-foreground: 222 24% 8%;
 
-    --secondary: 28 12% 15%;
-    --secondary-foreground: 40 14% 92%;
+    --secondary: 222 18% 16%;
+    --secondary-foreground: 220 20% 94%;
 
-    --accent: 40 14% 92%;
-    --accent-foreground: 28 15% 10%;
+    --accent: 231 62% 64%;
+    --accent-foreground: 222 24% 8%;
 
-    --muted: 28 12% 15%;
-    --muted-foreground: 36 9% 62%;
+    --muted: 222 18% 15%;
+    --muted-foreground: 220 10% 64%;
 
-    --border: 28 12% 19%;
-    --input: 28 12% 19%;
-    --ring: 35 40% 60%;
+    --border: 222 16% 20%;
+    --input: 222 16% 20%;
+    --ring: 231 62% 64%;
   }
 }
 

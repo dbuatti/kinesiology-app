@@ -74,7 +74,9 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Business",
     items: [
-      { label: "Business", icon: Briefcase, path: "/business" },
+      { label: "Assistant", icon: Bot, path: "/assistant" },
+      { label: "Clients", icon: Users, path: "/clients" },
+      { label: "Business Hub", icon: Briefcase, path: "/business" },
     ],
   },
   {
@@ -111,14 +113,20 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange }: SidebarProps) => {
     localStorage.setItem('rk_sidebar_collapsed', String(next));
   };
 
-  // Single source of truth for the Voice/Kinesiology split — mode is
+  // Single source of truth for the Voice/Kinesiology/Business split — mode is
   // already kept in sync with the route by MainLayout, so this is exactly
   // equivalent to the old `location.pathname.startsWith('/voice')` check
-  // without a second, disconnected copy of the same logic.
+  // without a second, disconnected copy of the same logic. Business mode
+  // shows ONLY business-relevant nav (Assistant, Clients, Business Hub) —
+  // deliberately not blended with Clinical/Voice Studio's own nav, per
+  // "don't want those to cross pollinate."
   const isVoice = mode === 'voice';
+  const isBusiness = mode === 'business';
   const groups = isVoice
     ? NAV_GROUPS.filter((g) => g.label === "Voice Studio")
-    : NAV_GROUPS;
+    : isBusiness
+    ? NAV_GROUPS.filter((g) => g.label === "Business")
+    : NAV_GROUPS.filter((g) => g.label !== "Business" && g.label !== "Voice Studio");
 
   const isActive = (path: string) =>
     location.pathname === path ||
@@ -190,6 +198,20 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange }: SidebarProps) => {
           >
             <Mic size={12} className="text-chart-destructive shrink-0" />
             <span className={cn("transition-opacity duration-200", collapsed && "hidden")}>Voice</span>
+          </Link>
+          <Link
+            to="/business"
+            onClick={() => setMobileOpen(false)}
+            title={collapsed ? "Business" : undefined}
+            className={cn(
+              "flex flex-1 items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all no-underline",
+              isBusiness
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Briefcase size={12} className="text-chart-emerald shrink-0" />
+            <span className={cn("transition-opacity duration-200", collapsed && "hidden")}>Business</span>
           </Link>
         </div>
       </div>

@@ -62,12 +62,19 @@ const MainLayout = () => {
     };
   }, []);
 
-  // Auto-set mode based on current page context
+  // Auto-set mode based on current page context. /assistant and /clients are
+  // deliberately excluded — they're genuinely dual-purpose (used from both
+  // Clinical and Business contexts), so forcing a mode switch just by
+  // visiting them would flip the whole sidebar out from under the
+  // practitioner mid-task. Whichever mode they were already in carries
+  // through unchanged; only the unambiguous route prefixes below switch it.
   useEffect(() => {
     if (location.pathname.startsWith('/voice')) {
       setMode('voice');
     } else if (location.pathname.startsWith('/business')) {
       setMode('business');
+    } else if (location.pathname.startsWith('/assistant') || location.pathname.startsWith('/clients')) {
+      // no-op — stays in whichever mode was already active
     } else {
       setMode('clinical');
     }

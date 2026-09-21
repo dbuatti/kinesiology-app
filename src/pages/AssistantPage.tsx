@@ -19,7 +19,7 @@ import ClientEmailThread from "@/components/assistant/ClientEmailThread";
 import CommsInbox from "@/components/assistant/CommsInbox";
 import ClientSnapshotPanel from "@/components/assistant/ClientSnapshotPanel";
 import { VoiceStudentOption } from "@/types/assistant";
-import { Bot, ChevronLeft, MessageCircle, Mail, AlertCircle, CalendarRange, ArrowUpRight, Copy, Rocket } from "lucide-react";
+import { Bot, ChevronLeft, ChevronUp, ChevronDown, MessageCircle, Mail, AlertCircle, CalendarRange, ArrowUpRight, Copy, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +46,15 @@ export default function AssistantPage() {
   // Mobile shows one pane at a time — the conversation list, or the active chat.
   // A deep link with a client already chosen should land straight in the chat pane.
   const [mobileShowList, setMobileShowList] = useState(!initialClientId);
+  // Remembered per-browser (not per-account — a per-viewer convenience, same
+  // as any localStorage UI preference) so collapsing it once sticks across
+  // visits instead of resetting every reload.
+  const [metricsCollapsed, setMetricsCollapsed] = useState(() => {
+    try { return localStorage.getItem("assistant_metrics_collapsed") === "1"; } catch { return false; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem("assistant_metrics_collapsed", metricsCollapsed ? "1" : "0"); } catch { /* ignore */ }
+  }, [metricsCollapsed]);
   // Only meaningful in focused mode, within the Chat tab: the AI chat, or the
   // client's real email thread. Inbox is now a sibling top-level tab (activeTab),
   // not a third value here.
@@ -153,12 +162,27 @@ export default function AssistantPage() {
           icon={Bot}
           title="Assistant"
           subtitle="Your practice EA — chat, follow-up, inbox, and scheduling in one place."
-          actions={<ClientPicker clients={clients} voiceStudents={voiceStudents} value={focusedClientId} onChange={setFocusedClientId} />}
+          actions={
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="h-9 text-xs gap-1.5" onClick={() => setMetricsCollapsed((v) => !v)}>
+                {metricsCollapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
+                {metricsCollapsed ? "Show metrics" : "Hide metrics"}
+              </Button>
+              <ClientPicker clients={clients} voiceStudents={voiceStudents} value={focusedClientId} onChange={setFocusedClientId} />
+            </div>
+          }
         />
-        <div className="mt-6">
-          <KeyMetricsBar onOpenFollowUp={() => setActiveTab("followup")} />
-          <NeedsAttentionWidget onOpenFollowUp={() => setActiveTab("followup")} />
-        </div>
+        {/* Collapsible — the metrics bar + follow-up shorthand compete for the
+            same fixed viewport height as the chat tabs below, and taller chat
+            was explicitly requested; collapsing this reclaims that space
+            immediately since gridHeight recomputes off this container's
+            actual rendered height (see the ResizeObserver above). */}
+        {!metricsCollapsed && (
+          <div className="mt-6">
+            <KeyMetricsBar onOpenFollowUp={() => setActiveTab("followup")} />
+            <NeedsAttentionWidget onOpenFollowUp={() => setActiveTab("followup")} />
+          </div>
+        )}
       </div>
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as AssistantTab)} className="flex flex-col" style={{ height: gridHeight ? `${gridHeight}px` : "calc(100vh - 300px)", minHeight: 420 }}>
         <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">

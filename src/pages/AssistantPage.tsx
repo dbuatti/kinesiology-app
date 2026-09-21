@@ -11,6 +11,7 @@ import MessageList from "@/components/assistant/MessageList";
 import AssistantInput from "@/components/assistant/AssistantInput";
 import NeedsAttentionWidget from "@/components/assistant/NeedsAttentionWidget";
 import ClientEmailThread from "@/components/assistant/ClientEmailThread";
+import CommsInbox from "@/components/assistant/CommsInbox";
 import { AssistantConversation, AssistantMessage, DraftEmail, PendingBooking, VoiceStudentOption } from "@/types/assistant";
 import { Bot, ChevronLeft, MessageCircle, Mail, CalendarRange, Anchor, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -47,7 +48,7 @@ export default function AssistantPage() {
   // A deep link with a client already chosen should land straight in the chat pane.
   const [mobileShowList, setMobileShowList] = useState(!initialClientId);
   // Only meaningful in focused mode: the AI chat, or the client's real email thread.
-  const [viewMode, setViewMode] = useState<"chat" | "email">(initialView);
+  const [viewMode, setViewMode] = useState<"chat" | "email" | "inbox">(initialView);
 
   // Voice students use a "voice:<email>" pseudo-id (see ClientPicker) since they
   // aren't rows in `clients` — resolve it back to the real student wherever focus matters.
@@ -216,6 +217,15 @@ export default function AssistantPage() {
         actions={
           <div className="flex items-center gap-2">
             <Button
+              variant={viewMode === "inbox" ? "default" : "outline"}
+              size="sm"
+              className={cn("h-9 text-xs gap-1.5", viewMode === "inbox" && "bg-chart-primary hover:bg-chart-primary/90 text-white")}
+              onClick={() => { setViewMode((v) => (v === "inbox" ? "chat" : "inbox")); setMobileShowList(false); }}
+              title="Every recent client email, across everyone, newest first"
+            >
+              <Mail className="h-3.5 w-3.5" /> Inbox
+            </Button>
+            <Button
               variant={anchorMode ? "default" : "outline"}
               size="sm"
               className={cn("h-9 text-xs gap-1.5", anchorMode && "bg-chart-emerald hover:bg-chart-emerald/90 text-white")}
@@ -267,7 +277,7 @@ export default function AssistantPage() {
               </Button>
             </div>
           )}
-          {focusedClient && (
+          {focusedClient && viewMode !== "inbox" && (
             <div className="flex items-center gap-1 bg-muted p-1 rounded-lg mb-3 w-fit">
               <button
                 onClick={() => setViewMode("chat")}
@@ -283,7 +293,14 @@ export default function AssistantPage() {
               </button>
             </div>
           )}
-          {viewMode === "email" && focusedClient ? (
+          {viewMode === "inbox" ? (
+            <CommsInbox
+              onOpenClient={(id) => {
+                setFocusedClientId(id);
+                setViewMode("email");
+              }}
+            />
+          ) : viewMode === "email" && focusedClient ? (
             <ClientEmailThread clientId={focusedClient.id} clientEmail={focusedClient.email} clientName={focusedClient.name} />
           ) : (
             <>

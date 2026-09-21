@@ -143,7 +143,7 @@ const functionDeclarations = [
   },
   {
     name: "get_available_slots",
-    description: "Get open Cal.com booking slots in a date range for the practitioner's event type. Pass client_id whenever you're finding a slot FOR a specific client (not just checking general availability) — the result then ranks/annotates a `suggested` shortlist by that client's own known availability notes and historical day/time pattern, so you're not guessing which of the (often dozens of) open slots they'd actually want.",
+    description: "Get open Cal.com booking slots in a date range for the practitioner's event type. Pass client_id (kinesiology) OR voice_student_email (voice) whenever you're finding a slot FOR a specific person (not just checking general availability) — the result then ranks/annotates a `suggested` shortlist by that person's own historical day/time pattern (plus availability_notes for kinesiology), so you're not guessing which of the (often dozens of) open slots they'd actually want. This works identically for both — voice students are NOT second-class here.",
     parameters: {
       type: "OBJECT",
       properties: {
@@ -151,6 +151,7 @@ const functionDeclarations = [
         end: { type: "STRING", description: "ISO date, e.g. 2026-09-22" },
         event_type_id: { type: "NUMBER", description: "Cal.com event type id. Omit to use the default." },
         client_id: { type: "STRING", description: "Kinesiology client id — when provided, ranks slots by this client's availability_notes + booking history instead of returning an unranked list." },
+        voice_student_email: { type: "STRING", description: "Voice student email — when provided (instead of client_id), ranks slots by this student's booking history the same way client_id does for kinesiology." },
       },
       required: ["start", "end"],
     },
@@ -181,14 +182,15 @@ const functionDeclarations = [
   },
   {
     name: "update_client_availability",
-    description: "Save or update what you've learned about a kinesiology client's availability (e.g. \"only Tuesday evenings now\", \"not Wednesdays\") so future scheduling remembers it. Use this whenever the practitioner tells you something new about when a client can/can't do sessions — this is a low-stakes internal note, not client-facing, so save it directly rather than asking permission first.",
+    description: "Save or update what you've learned about a client or voice student's availability (e.g. \"only Tuesday evenings now\", \"not Wednesdays\") so future scheduling remembers it — works for both arms equally. Pass client_id for kinesiology, or voice_student_email for voice. Use this whenever the practitioner tells you something new about when someone can/can't do sessions — this is a low-stakes internal note, not client-facing, so save it directly rather than asking permission first.",
     parameters: {
       type: "OBJECT",
       properties: {
-        client_id: { type: "STRING" },
+        client_id: { type: "STRING", description: "Kinesiology client id. Provide this OR voice_student_email, not both." },
+        voice_student_email: { type: "STRING", description: "Voice student email. Provide this OR client_id, not both." },
         availability_notes: { type: "STRING", description: "The full, updated availability note — replace the old note with the complete new text, don't just append a fragment." },
       },
-      required: ["client_id", "availability_notes"],
+      required: ["availability_notes"],
     },
   },
   {
@@ -299,18 +301,26 @@ async function runGetClientContext(supabase: any, userId: string, clientId: stri
   };
 }
 
-async function runUpdateClientAvailability(supabase: any, userId: string, clientId: string, availabilityNotes: string) {
-  const { error } = await supabase
-    .from("clients")
-    .update({ availability_notes: availabilityNotes })
-    .eq("id", clientId).eq("user_id", userId);
-  if (error) return { error: "Could not save that — client not found." };
+async function runUpdateClientAvailability(supabase: any, userId: string, clientId: string | undefined, voiceStudentEmail: string | undefined, availabilityNotes: string) {
+  if (!clientId && !voiceStudentEmail) return { error: "Need either client_id or voice_student_email." };
+
+  // Kinesiology clients have a `clients` row to update directly; voice students
+  // don't (they live in Notion), so their note only lives in the Simulator's
+  // own availability store — still readable back via search_voice_client.
+  if (clientId) {
+    const { error } = await supabase
+      .from("clients")
+      .update({ availability_notes: availabilityNotes })
+      .eq("id", clientId).eq("user_id", userId);
+    if (error) return { error: "Could not save that — client not found." };
+  }
 
   // Also feed the Timetable Simulator's structured availability store, so what's
   // taught here actually shapes its auto-drafter, not just a note only this
-  // assistant reads. Same client_key convention the simulator itself uses.
+  // assistant reads. Same client_key convention the simulator itself uses for
+  // kinesiology ("fnh:<id>"); voice uses its own "voice:<email>" key.
   const windows = parseAvailabilityText(availabilityNotes);
-  const clientKey = `fnh:${clientId}`;
+  const clientKey = clientId ? `fnh:${clientId}` : `voice:${voiceStudentEmail}`;
   await supabase.from("timetable_client_availability").upsert(
     { user_id: userId, client_key: clientKey, windows, note: availabilityNotes, updated_at: new Date().toISOString() },
     { onConflict: "user_id,client_key" },
@@ -322,7 +332,7 @@ async function runUpdateClientAvailability(supabase: any, userId: string, client
     parsed_windows: windows.length ? windows : null,
     windows_note: windows.length
       ? "This was also parsed into structured availability windows for the Timetable Simulator's auto-drafter."
-      : "Couldn't confidently parse specific days/times from that — the Timetable Simulator will still treat this client as fully open. Ask the practitioner to phrase it like 'Tuesdays after 5pm' if precision matters.",
+      : `Couldn't confidently parse specific days/times from that — the Timetable Simulator will still treat this ${clientId ? "client" : "student"} as fully open. Ask the practitioner to phrase it like 'Tuesdays after 5pm' if precision matters.`,
   };
 }
 
@@ -371,7 +381,7 @@ function melbourneHHMM(d: Date): string {
   return d.toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Australia/Melbourne" });
 }
 
-async function runGetAvailableSlots(supabase: any, userId: string, start: string, end: string, eventTypeId: number | undefined, clientId?: string) {
+async function runGetAvailableSlots(supabase: any, userId: string, start: string, end: string, eventTypeId: number | undefined, clientId?: string, voiceStudentEmail?: string) {
   const CALCOM_KEY = Deno.env.get("CALCOM_API_KEY");
   if (!CALCOM_KEY) return { error: "Cal.com is not configured." };
   const headers = { Authorization: `Bearer ${CALCOM_KEY}`, "cal-api-version": "2024-09-04", "Content-Type": "application/json" };
@@ -394,27 +404,53 @@ async function runGetAvailableSlots(supabase: any, userId: string, start: string
     flatIsos.push(...isos);
   }
 
-  if (!clientId || flatIsos.length === 0) return { slots };
+  if ((!clientId && !voiceStudentEmail) || flatIsos.length === 0) return { slots };
 
   // Rank candidates by this client's own known preferences instead of leaving
   // "which of these dozens of slots would they actually want" to the model's
-  // own guesswork across two separate tool outputs.
-  const [{ data: clientRow }, { data: pastAppointments }] = await Promise.all([
-    supabase.from("clients").select("availability_notes").eq("id", clientId).eq("user_id", userId).maybeSingle(),
-    supabase.from("appointments").select("date").eq("client_id", clientId).eq("user_id", userId).eq("status", "Completed").order("date", { ascending: false }).limit(30),
-  ]);
-
-  const windows = clientRow?.availability_notes ? parseAvailabilityText(clientRow.availability_notes) : [];
-
+  // own guesswork across two separate tool outputs. Kinesiology and voice pull
+  // from different tables, but both reduce to the same day/bucket frequency
+  // shape so the scoring below is shared regardless of which one this is.
+  let windows: any[] = [];
   const dayFreq: Record<number, number> = {};
   const bucketFreq: Record<string, number> = {};
-  for (const a of pastAppointments || []) {
-    const d = new Date(a.date);
-    const day = melbourneDayIndex(d);
-    const hour = melbourneHour(d);
-    const bucket = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
-    if (day >= 0) dayFreq[day] = (dayFreq[day] || 0) + 1;
-    bucketFreq[bucket] = (bucketFreq[bucket] || 0) + 1;
+
+  if (clientId) {
+    const [{ data: clientRow }, { data: pastAppointments }] = await Promise.all([
+      supabase.from("clients").select("availability_notes").eq("id", clientId).eq("user_id", userId).maybeSingle(),
+      supabase.from("appointments").select("date").eq("client_id", clientId).eq("user_id", userId).eq("status", "Completed").order("date", { ascending: false }).limit(30),
+    ]);
+    windows = clientRow?.availability_notes ? parseAvailabilityText(clientRow.availability_notes) : [];
+    for (const a of pastAppointments || []) {
+      const d = new Date(a.date);
+      const day = melbourneDayIndex(d);
+      const hour = melbourneHour(d);
+      const bucket = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+      if (day >= 0) dayFreq[day] = (dayFreq[day] || 0) + 1;
+      bucketFreq[bucket] = (bucketFreq[bucket] || 0) + 1;
+    }
+  } else if (voiceStudentEmail) {
+    const now = new Date();
+    const { data: pastLessons } = await supabase
+      .from("voice_bookings")
+      .select("lesson_date, lesson_time")
+      .ilike("student_email", voiceStudentEmail)
+      .neq("status", "cancelled")
+      .order("lesson_date", { ascending: false })
+      .limit(30);
+    for (const b of pastLessons || []) {
+      const d = new Date(b.lesson_date);
+      if (isNaN(d.getTime()) || d > now) continue;
+      const slot = meetingSlotFromVoiceText(b.lesson_date, b.lesson_time);
+      if (!slot) continue;
+      const day = DAY_ORDER.indexOf(slot.day.toLowerCase());
+      if (day >= 0) dayFreq[day] = (dayFreq[day] || 0) + 1;
+      if (slot.hourLabel !== "unknown") {
+        const hour = Number(slot.hourLabel.split(":")[0]);
+        const bucket = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+        bucketFreq[bucket] = (bucketFreq[bucket] || 0) + 1;
+      }
+    }
   }
   const topDayEntry = Object.entries(dayFreq).sort((a, b) => b[1] - a[1])[0];
   const topDay = topDayEntry ? Number(topDayEntry[0]) : null;
@@ -507,7 +543,7 @@ async function runGetPastBookingPatterns(supabase: any, userId: string, clientId
   };
 }
 
-async function runSearchVoiceClient(supabaseUrl: string, serviceKey: string, supabase: any, query: string) {
+async function runSearchVoiceClient(supabaseUrl: string, serviceKey: string, supabase: any, userId: string, query: string) {
   const res = await fetch(`${supabaseUrl}/functions/v1/voice-clients`, {
     method: "POST",
     headers: { Authorization: `Bearer ${serviceKey}`, "Content-Type": "application/json" },
@@ -526,17 +562,46 @@ async function runSearchVoiceClient(supabaseUrl: string, serviceKey: string, sup
   }
 
   const student = matches[0];
-  const { data: bookings } = await supabase
-    .from("voice_bookings")
-    .select("lesson_date, lesson_time, cost, status, discipline")
-    .ilike("student_email", student.email || "")
-    .order("lesson_date", { ascending: false })
-    .limit(10);
+  const [{ data: bookings }, { data: simulatorEntry }] = await Promise.all([
+    supabase.from("voice_bookings")
+      .select("lesson_date, lesson_time, cost, status, discipline")
+      .ilike("student_email", student.email || "")
+      .order("lesson_date", { ascending: false })
+      .limit(20),
+    supabase.from("timetable_client_availability")
+      .select("note, windows, updated_at")
+      .eq("user_id", userId).eq("client_key", `voice:${(student.email || "").toLowerCase()}`)
+      .maybeSingle(),
+  ]);
+
+  // Same day/time pattern detection used for anchors — a voice student's "usual
+  // slot" shouldn't require a separate anchor-mode call to see; it's the same
+  // question every time someone looks them up, kinesiology or voice alike.
+  const now = new Date();
+  const slotCounts = new Map<string, { count: number; day: string; hourLabel: string }>();
+  let completedCount = 0;
+  for (const b of bookings || []) {
+    if (b.status === "cancelled") continue;
+    const d = new Date(b.lesson_date);
+    if (isNaN(d.getTime()) || d > now) continue;
+    completedCount += 1;
+    const slot = meetingSlotFromVoiceText(b.lesson_date, b.lesson_time);
+    if (!slot) continue;
+    const s = slotCounts.get(slot.key) || { count: 0, day: slot.day, hourLabel: slot.hourLabel };
+    s.count += 1;
+    slotCounts.set(slot.key, s);
+  }
+  let bestSlot: { count: number; day: string; hourLabel: string } | null = null;
+  for (const s of slotCounts.values()) if (!bestSlot || s.count > bestSlot.count) bestSlot = s;
+  const slotShare = bestSlot && completedCount > 0 ? bestSlot.count / completedCount : 0;
 
   return {
     student: { name: student.name, email: student.email, phone: student.phone, discipline: student.discipline, tags: student.tags, notes: student.notes, last_communication: student.lastCommunication, latest_lesson_date: student.latestDate },
     recent_lessons: (bookings || []).map((b: any) => ({ date: b.lesson_date, time: b.lesson_time, cost: b.cost, status: b.status })),
-    note: "Voice lesson pricing is a flat per-service rate (see event_pricing), not per-student — there is no individual rate ladder for voice students.",
+    likely_usual_slot: bestSlot && slotShare >= 0.4 && bestSlot.hourLabel !== "unknown" ? `${bestSlot.day} ${bestSlot.hourLabel}` : null,
+    usual_slot_confidence: bestSlot ? `${Math.round(slotShare * 100)}% of their last ${completedCount} completed lessons` : null,
+    timetable_simulator_note: simulatorEntry?.note || null,
+    note: "Voice lesson pricing is a flat per-service rate (see event_pricing), not per-student — there is no individual rate ladder for voice students. likely_usual_slot is computed the same way as a kinesiology client's pattern — use get_available_slots with voice_student_email to check whether that exact slot is actually free before proposing it. timetable_simulator_note is whatever Daniele has previously told update_client_availability about this student, if anything.",
   };
 }
 
@@ -931,18 +996,18 @@ serve(async (req) => {
     const contents = sanitized.map((r) => ({ role: r.role, parts: [{ text: r.content }] }));
     contents.push({ role: "user", parts: [{ text: message }] });
 
-    const systemInstruction = `You are the scheduling assistant inside Daniele's practice CRM, which runs TWO arms: kinesiology/FNH clinical clients (in the clients table, use get_client_context / get_active_clients / get_revenue_opportunities) and Voice Studio piano/singing lesson students (Notion-backed, use search_voice_client — they are NOT in the clients table and have no individual rate, only flat per-service pricing). Current time: ${melbourneNow()} (Australia/Melbourne).
+    const systemInstruction = `You are the scheduling assistant inside Daniele's practice CRM, which runs TWO arms he treats as equally important: kinesiology/FNH clinical clients (in the clients table, use get_client_context / get_active_clients / get_revenue_opportunities) and Voice Studio piano/singing lesson students (Notion-backed + voice_bookings, use search_voice_client — they are NOT in the clients table and have no individual rate, only flat per-service pricing). get_anchor_candidates and get_available_slots both work identically across both arms already — a voice student is never a second-class case you should give up on or treat as less capable than a kinesiology client. If a tool call for a specific person fails, that means try the OTHER identifier (client_id vs voice_student_email) you may have gotten wrong, or say the lookup failed plainly — never conclude "the system doesn't support voice students" as an excuse, since for context/history/slots it does. Current time: ${melbourneNow()} (Australia/Melbourne).
 Clients communicate messily — vague times ("until 2pm", "health permitting"), same-day cancellations, and ambiguous confirmations ("that's perfect" meaning "yes to the last time you proposed"). Interpret them charitably but flag genuine ambiguity rather than guessing.
 Use the available tools to ground your answers in real data — never invent appointment times, client details, rates, or slot availability.
 ${client_id
   ? `This conversation is focused on one specific kinesiology client (client_id: ${client_id}). Call get_client_context first to load their history, current rate vs target rate, and communication style, and match their tone when drafting anything.`
   : voice_student_email
-  ? `This conversation is focused on one specific voice student (email: ${voice_student_email}${voice_student_name ? `, name: ${voice_student_name}` : ""}). Call search_voice_client with their email first to load their lesson history and notes before answering or drafting anything — they are NOT in the clients table, so get_client_context/get_available_slots/propose_booking (which are client_id-keyed) don't apply to them.`
+  ? `This conversation is focused on one specific voice student (email: ${voice_student_email}${voice_student_name ? `, name: ${voice_student_name}` : ""}). Call search_voice_client with their email first to load their lesson history, notes, and likely_usual_slot before answering or drafting anything — they are NOT in the clients table, so get_client_context (kinesiology-only) doesn't apply, but get_available_slots DOES work for them: pass voice_student_email instead of client_id and it ranks slots by their booking history exactly like it does for a kinesiology client. propose_booking still doesn't create a real voice booking (that goes through Cal.com directly, not this system) — for a voice student, confirm a time in conversation and let Daniele book it himself, rather than implying you've created anything.`
   : "This is a general conversation, not focused on one client."}
 You can draft an email for review via draft_email_reply, but you can never send one yourself — always say the draft is ready for review, never that it has been sent. Never invent a recipient address (no "@example.com" placeholders) — always pull the real email from get_client_context, get_anchor_candidates, or search_voice_client first. Critical: after calling draft_email_reply, do NOT repeat the drafted subject/body in your text reply — it already renders as its own editable card with a Send button right above your message, and re-typing the same content is confusing (the practitioner can't tell if your text version or the card is "the real one," and on a small screen the card can get lost under a wall of repeated text). Just briefly confirm it's ready, e.g. "Draft's ready above — edit anything you like, then hit Send when you're happy with it."
 Clients also have a self-serve portal at /portal/login (email OTP, no password) where they can view their own upcoming/past sessions, cancel a booking, book a new one, and message Daniele directly. If a client seems unaware of it, or asks how to manage/cancel their own booking, or Daniele wants to point someone there, feel free to mention it and include the link in a drafted email.
 You can propose an actual booking via propose_booking, but you can never create one yourself — it only becomes real when the practitioner clicks Confirm on the proposal card. Always call get_available_slots first and propose a real slot from that result, never a guessed time. When finding a slot for a specific client, always pass client_id to get_available_slots — it returns a ranked "suggested" shortlist (weighted by that client's availability_notes and their actual booking history, not just chronological order), each with a "reason". Lead with the top suggested slot and its reason ("Tuesday 4pm usually works well for her, and it fits the note about after-work sessions") rather than defaulting to whichever slot happens to be soonest — the earliest slot is very often NOT the one a client actually wants.
-Whenever the practitioner tells you something new about a client's availability (a day/time that works or doesn't), call update_client_availability right away to remember it for next time — don't just acknowledge it in the chat and let it evaporate.
+Whenever the practitioner tells you something new about a client's OR voice student's availability (a day/time that works or doesn't), call update_client_availability right away to remember it for next time (client_id for kinesiology, voice_student_email for voice) — don't just acknowledge it in the chat and let it evaporate.
 You can search the inbox read-only via search_inbox (Gmail search syntax) to check for replies or past correspondence — you cannot send, modify, or delete anything through it.
 For business questions ("who's active", "who should I raise rates for", "what times are free"), use get_active_clients, get_revenue_opportunities, and get_practice_schedule_overview rather than guessing — they compute real numbers from appointment history.
 Be proactive, not just reactive: if the conversation naturally touches on scheduling and get_active_clients shows active clients with no future booking, mention them and offer to help book their next session, rather than waiting to be asked. When a client's next-session cadence is clear from get_past_booking_patterns, feel free to suggest it ("she's usually every 2 weeks, so [date] would fit her pattern").
@@ -978,17 +1043,17 @@ Keep momentum: after handling one client, proactively suggest the next one rathe
           pendingBooking = proposed.pendingBooking;
           result = proposed.result;
         } else if (name === "update_client_availability") {
-          result = await runUpdateClientAvailability(supabase, userId, args.client_id, args.availability_notes);
+          result = await runUpdateClientAvailability(supabase, userId, args.client_id, args.voice_student_email, args.availability_notes);
         } else if (name === "search_inbox") {
           result = await runSearchInbox(SUPABASE_URL, SERVICE_KEY, args.query);
         } else if (name === "get_client_context") {
           result = await runGetClientContext(supabase, userId, args.client_id);
         } else if (name === "get_available_slots") {
-          result = await runGetAvailableSlots(supabase, userId, args.start, args.end, args.event_type_id, args.client_id);
+          result = await runGetAvailableSlots(supabase, userId, args.start, args.end, args.event_type_id, args.client_id, args.voice_student_email);
         } else if (name === "get_past_booking_patterns") {
           result = await runGetPastBookingPatterns(supabase, userId, args.client_id);
         } else if (name === "search_voice_client") {
-          result = await runSearchVoiceClient(SUPABASE_URL, SERVICE_KEY, supabase, args.query);
+          result = await runSearchVoiceClient(SUPABASE_URL, SERVICE_KEY, supabase, userId, args.query);
         } else if (name === "get_active_clients") {
           result = await runGetActiveClients(supabase, userId, args.months || 3);
         } else if (name === "get_revenue_opportunities") {

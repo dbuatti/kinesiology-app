@@ -294,12 +294,7 @@ export default function AssistantPage() {
             </div>
           )}
           {viewMode === "inbox" ? (
-            <CommsInbox
-              onOpenClient={(id) => {
-                setFocusedClientId(id);
-                setViewMode("email");
-              }}
-            />
+            <CommsInbox />
           ) : viewMode === "email" && focusedClient ? (
             <ClientEmailThread clientId={focusedClient.id} clientEmail={focusedClient.email} clientName={focusedClient.name} />
           ) : (

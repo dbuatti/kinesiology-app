@@ -4,8 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { showError } from "@/utils/toast";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import ClientEmailThread from "./ClientEmailThread";
 import { voiceStudentIdFor } from "@/lib/voice-student-id";
-import { Loader2, RefreshCw, ArrowUpDown, Mic, Brain, Mail } from "lucide-react";
+import { Loader2, RefreshCw, ArrowUpDown, Mic, Brain, Mail, ChevronDown } from "lucide-react";
 
 interface InboxMessage {
   id: string;
@@ -22,15 +23,12 @@ interface InboxMessage {
   needs_reply: boolean;
 }
 
-interface Props {
-  onOpenClient: (clientId: string) => void;
-}
-
-export default function CommsInbox({ onOpenClient }: Props) {
+export default function CommsInbox() {
   const [messages, setMessages] = useState<InboxMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [newestFirst, setNewestFirst] = useState(true);
   const [needsReplyOnly, setNeedsReplyOnly] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -56,7 +54,12 @@ export default function CommsInbox({ onOpenClient }: Props) {
       return newestFirst ? diff : -diff;
     });
 
-  const openFor = (m: InboxMessage) => onOpenClient(m.client_id || voiceStudentIdFor(m.voice_student_email || ""));
+  // Collapsing after a reply re-syncs needs_reply/badges without the person
+  // having to remember to hit refresh themselves.
+  const toggle = (id: string) => {
+    if (expandedId === id) { setExpandedId(null); load(); }
+    else setExpandedId(id);
+  };
 
   return (
     <div className="flex-1 min-h-0 flex flex-col">
@@ -96,38 +99,57 @@ export default function CommsInbox({ onOpenClient }: Props) {
             {needsReplyOnly ? "Nothing needs a reply right now." : "No client emails in the last 90 days."}
           </p>
         ) : (
-          sorted.map((m) => (
-            <button
-              key={m.id}
-              onClick={() => openFor(m)}
-              className={cn(
-                "w-full text-left rounded-xl border p-3 transition-colors",
-                m.needs_reply
-                  ? "border-chart-destructive/30 bg-chart-destructive/5 hover:bg-chart-destructive/10"
-                  : "border-chart-emerald/20 bg-chart-emerald/5 hover:bg-chart-emerald/10",
-              )}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  {m.kind === "voice"
-                    ? <Mic className="h-3.5 w-3.5 text-chart-destructive shrink-0" />
-                    : <Brain className="h-3.5 w-3.5 text-chart-purple shrink-0" />}
-                  <span className="text-sm font-semibold text-foreground truncate">{m.name}</span>
-                  <span className={cn(
-                    "text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0",
-                    m.needs_reply ? "bg-chart-destructive/15 text-chart-destructive" : "bg-chart-emerald/15 text-chart-emerald",
-                  )}>
-                    {m.needs_reply ? "Needs reply" : "Replied"}
-                  </span>
-                </div>
-                <span className="text-[10px] text-muted-foreground shrink-0">
-                  {formatDistanceToNow(new Date(m.date_iso), { addSuffix: true })}
-                </span>
+          sorted.map((m) => {
+            const isOpen = expandedId === m.id;
+            return (
+              <div
+                key={m.id}
+                className={cn(
+                  "rounded-xl border overflow-hidden transition-colors",
+                  m.needs_reply ? "border-chart-destructive/30 bg-chart-destructive/5" : "border-chart-emerald/20 bg-chart-emerald/5",
+                )}
+              >
+                <button onClick={() => toggle(m.id)} className={cn("w-full text-left p-3", !isOpen && (m.needs_reply ? "hover:bg-chart-destructive/10" : "hover:bg-chart-emerald/10"))}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      {m.kind === "voice"
+                        ? <Mic className="h-3.5 w-3.5 text-chart-destructive shrink-0" />
+                        : <Brain className="h-3.5 w-3.5 text-chart-purple shrink-0" />}
+                      <span className="text-sm font-semibold text-foreground truncate">{m.name}</span>
+                      <span className={cn(
+                        "text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0",
+                        m.needs_reply ? "bg-chart-destructive/15 text-chart-destructive" : "bg-chart-emerald/15 text-chart-emerald",
+                      )}>
+                        {m.needs_reply ? "Needs reply" : "Replied"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="text-[10px] text-muted-foreground">
+                        {formatDistanceToNow(new Date(m.date_iso), { addSuffix: true })}
+                      </span>
+                      <ChevronDown className={cn("h-3.5 w-3.5 text-muted-foreground transition-transform", isOpen && "rotate-180")} />
+                    </div>
+                  </div>
+                  <p className="text-xs font-medium text-foreground truncate mt-1">{m.subject}</p>
+                  <p className="text-xs text-muted-foreground truncate mt-0.5">{m.snippet}</p>
+                </button>
+                {isOpen && (
+                  <div className="border-t border-border bg-background p-3">
+                    <p className="text-[11px] text-muted-foreground mb-2">
+                      Replying to <span className="font-semibold text-foreground">{m.name}</span> — {m.subject}
+                    </p>
+                    <div className="h-[500px] flex flex-col">
+                      <ClientEmailThread
+                        clientId={m.client_id || voiceStudentIdFor(m.voice_student_email || "")}
+                        clientEmail={m.email}
+                        clientName={m.name}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
-              <p className="text-xs font-medium text-foreground truncate mt-1">{m.subject}</p>
-              <p className="text-xs text-muted-foreground truncate mt-0.5">{m.snippet}</p>
-            </button>
-          ))
+            );
+          })
         )}
       </div>
     </div>

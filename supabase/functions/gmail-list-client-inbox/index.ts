@@ -66,14 +66,19 @@ serve(async (req) => {
       supabase.from("voice_bookings").select("student_name, student_email").not("student_email", "is", null),
     ]);
 
+    // Daniele has his own self-test row in `clients` (same email he practices
+    // from) — without excluding it, his own sent mail (which lands back in his
+    // inbox) gets swept up and shown as if a client named "Daniele Buatti"
+    // emailed him, and opening it searches his own address against his whole
+    // inbox instead of one real client's thread.
     const byEmail = new Map<string, { id: string; name: string; kind: "kinesiology" | "voice" }>();
     for (const c of (clients || []) as any[]) {
       const email = String(c.email || "").toLowerCase().trim();
-      if (email) byEmail.set(email, { id: c.id, name: c.name || "Unknown", kind: "kinesiology" });
+      if (email && email !== PRACTICE_EMAIL) byEmail.set(email, { id: c.id, name: c.name || "Unknown", kind: "kinesiology" });
     }
     for (const v of (voiceRows || []) as any[]) {
       const email = String(v.student_email || "").toLowerCase().trim();
-      if (email && !byEmail.has(email)) byEmail.set(email, { id: `voice:${email}`, name: v.student_name || "Unknown", kind: "voice" });
+      if (email && email !== PRACTICE_EMAIL && !byEmail.has(email)) byEmail.set(email, { id: `voice:${email}`, name: v.student_name || "Unknown", kind: "voice" });
     }
 
     const addresses = Array.from(byEmail.keys()).slice(0, MAX_ADDRESSES);

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, Link as RouterLink } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { showError } from "@/utils/toast";
+import { showError, showSuccess } from "@/utils/toast";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import ConversationList from "@/components/assistant/ConversationList";
@@ -12,7 +12,7 @@ import AssistantInput from "@/components/assistant/AssistantInput";
 import NeedsAttentionWidget from "@/components/assistant/NeedsAttentionWidget";
 import ClientEmailThread from "@/components/assistant/ClientEmailThread";
 import { AssistantConversation, AssistantMessage, DraftEmail, PendingBooking, VoiceStudentOption } from "@/types/assistant";
-import { Bot, ChevronLeft, MessageCircle, Mail, CalendarRange, Anchor } from "lucide-react";
+import { Bot, ChevronLeft, MessageCircle, Mail, CalendarRange, Anchor, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -188,6 +188,18 @@ export default function AssistantPage() {
     clearPersistedBooking();
   };
 
+  const copyChatToClipboard = async () => {
+    const text = messages
+      .map((m) => `${m.role === "user" ? "You" : "Assistant"}: ${m.content || ""}`)
+      .join("\n\n");
+    try {
+      await navigator.clipboard.writeText(text);
+      showSuccess("Chat copied to clipboard.");
+    } catch {
+      showError("Couldn't copy — your browser may be blocking clipboard access.");
+    }
+  };
+
   const clientNameFor = (clientId: string | null) => clients.find((c) => c.id === clientId)?.name || null;
   const focusedClient = focusedVoiceStudent
     ? { id: focusedClientId as string, name: focusedVoiceStudent.name, email: focusedVoiceStudent.email }
@@ -241,8 +253,20 @@ export default function AssistantPage() {
             <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setMobileShowList(true)}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-sm font-semibold text-foreground truncate">{activeClientName || "General"}</span>
+            <span className="text-sm font-semibold text-foreground truncate flex-1">{activeClientName || "General"}</span>
+            {messages.length > 0 && viewMode === "chat" && (
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={copyChatToClipboard} title="Copy chat to clipboard">
+                <Copy className="h-3.5 w-3.5" />
+              </Button>
+            )}
           </div>
+          {messages.length > 0 && viewMode === "chat" && (
+            <div className="hidden md:flex justify-end mb-2">
+              <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1.5" onClick={copyChatToClipboard}>
+                <Copy className="h-3 w-3" /> Copy chat
+              </Button>
+            </div>
+          )}
           {focusedClient && (
             <div className="flex items-center gap-1 bg-muted p-1 rounded-lg mb-3 w-fit">
               <button

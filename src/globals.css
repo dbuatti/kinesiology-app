@@ -86,6 +86,9 @@
     font-family: 'Inter', sans-serif;
     font-weight: 400;
     letter-spacing: -0.01em;
+    /* Disables the double-tap-to-zoom gesture (quick taps on chat bubbles/buttons
+       were triggering it) without touching pinch-zoom, which stays available. */
+    touch-action: manipulation;
   }
 
   .font-serif {

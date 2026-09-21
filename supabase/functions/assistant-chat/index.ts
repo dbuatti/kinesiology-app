@@ -138,7 +138,7 @@ const functionDeclarations = [
   },
   {
     name: "get_anchor_candidates",
-    description: "Find 'anchor' clients/students — a long, consistent booking history (4+ sessions, low cancellation rate, same day-and-time most of the time) — across BOTH kinesiology and voice, split into: open_anchors (this pattern, but nothing booked yet — secure these first), already_secured_anchors (this pattern, already has a future booking, no action needed), and needs_conversion_support (shorter or less consistent history, still worth booking but lower priority than an anchor). Use this for 'help me fill my week' / 'who should I prioritise' / anchor-mode conversations.",
+    description: "Find 'anchor' clients/students — a long, consistent booking history (4+ sessions, low cancellation rate, same day-and-time most of the time) AND recently active — across BOTH kinesiology and voice, split into: open_anchors (strong pattern, seen recently, nothing booked yet — secure these first, same slot), lapsed_anchors (the SAME strong pattern but haven't been seen in a while — real anchors gone quiet, needs a warm re-engagement check-in, NOT a same-slot assumption), already_secured_anchors (strong pattern, already has a future booking, no action needed), and needs_conversion_support (shorter or less consistent history, still worth booking but lower priority than either anchor bucket). Use this for 'help me fill my week' / 'who should I prioritise' / anchor-mode conversations.",
     parameters: { type: "OBJECT", properties: {} },
   },
   {
@@ -718,6 +718,12 @@ interface AnchorAgg {
   slotCounts: Map<string, { count: number; day: string; hourLabel: string }>;
 }
 
+// A strong day/time pattern from months ago doesn't mean the client is still
+// engaged — someone last seen 4 months ago shouldn't outrank someone seen last
+// week just because their old pattern was slightly more consistent. Anything
+// seen within this window counts as "still warm" for anchor purposes.
+const ANCHOR_RECENCY_WINDOW_DAYS = 60;
+
 function finalizeAnchor(a: AnchorAgg) {
   const total = a.completed + a.cancelled;
   const cancellationRate = total > 0 ? a.cancelled / total : 0;
@@ -725,6 +731,7 @@ function finalizeAnchor(a: AnchorAgg) {
   for (const s of a.slotCounts.values()) if (!bestSlot || s.count > bestSlot.count) bestSlot = s;
   const slotShare = bestSlot && a.completed > 0 ? bestSlot.count / a.completed : 0;
   const tenureDays = Math.round((new Date(a.lastDate).getTime() - new Date(a.firstDate).getTime()) / (1000 * 60 * 60 * 24));
+  const daysSinceLast = Math.round((Date.now() - new Date(a.lastDate).getTime()) / (1000 * 60 * 60 * 24));
   const isAnchorPattern = a.completed >= 4 && cancellationRate <= 0.25 && slotShare >= 0.5 && !!bestSlot;
   return {
     id: a.id,
@@ -736,9 +743,11 @@ function finalizeAnchor(a: AnchorAgg) {
     sessions_completed: a.completed,
     cancellation_rate: `${Math.round(cancellationRate * 100)}%`,
     tenure_days: tenureDays,
+    days_since_last_session: daysSinceLast,
     usual_slot: bestSlot && bestSlot.hourLabel !== "unknown" ? `${bestSlot.day} ${bestSlot.hourLabel}` : bestSlot ? bestSlot.day : null,
     slot_consistency: bestSlot ? `${Math.round(slotShare * 100)}%` : null,
     is_anchor_pattern: isAnchorPattern,
+    is_recent: daysSinceLast <= ANCHOR_RECENCY_WINDOW_DAYS,
     has_future_booking: a.hasFuture,
     last_session_date: fmtMelbourne(a.lastDate),
     availability_notes: a.availabilityNotes,
@@ -820,17 +829,22 @@ async function runGetAnchorCandidates(supabase: any, userId: string) {
 
   const finalized = Array.from(byId.values()).filter((a) => a.completed > 0).map(finalizeAnchor);
 
-  const openAnchors = finalized.filter((a) => a.is_anchor_pattern && !a.has_future_booking)
-    .sort((a, b) => b.sessions_completed - a.sessions_completed);
+  // A consistent pattern AND still-recent beats a consistent pattern that's gone
+  // quiet — recency is the tiebreaker, not just session count.
+  const openAnchors = finalized.filter((a) => a.is_anchor_pattern && !a.has_future_booking && a.is_recent)
+    .sort((a, b) => a.days_since_last_session - b.days_since_last_session || b.sessions_completed - a.sessions_completed);
+  const lapsedAnchors = finalized.filter((a) => a.is_anchor_pattern && !a.has_future_booking && !a.is_recent)
+    .sort((a, b) => a.days_since_last_session - b.days_since_last_session);
   const securedAnchors = finalized.filter((a) => a.is_anchor_pattern && a.has_future_booking);
   const needsConversion = finalized.filter((a) => !a.is_anchor_pattern && !a.has_future_booking)
     .sort((a, b) => new Date(b.last_session_date).getTime() - new Date(a.last_session_date).getTime());
 
   return {
     open_anchors: openAnchors,
+    lapsed_anchors: lapsedAnchors,
     already_secured_anchors: securedAnchors,
     needs_conversion_support: needsConversion.slice(0, 20),
-    note: "open_anchors = long, consistent track record (4+ sessions, ≤25% cancellation rate, same day/time ≥50% of the time) with nothing booked yet — secure these first. already_secured_anchors already have a future booking, no action needed. needs_conversion_support is everyone else without a future booking — lower session count, less consistent, or more cancellations — real but lower priority than an open anchor.",
+    note: `open_anchors = long, consistent track record (4+ sessions, ≤25% cancellation rate, same day/time ≥50% of the time) AND seen within the last ${ANCHOR_RECENCY_WINDOW_DAYS} days — secure these first, same slot, no need to re-check interest. lapsed_anchors have the exact same strong pattern but haven't been seen in over ${ANCHOR_RECENCY_WINDOW_DAYS} days — real anchors, but gone quiet, so treat as a warm re-engagement check-in ("would you be interested in resuming?"), never as a same-slot assumption. already_secured_anchors already have a future booking, no action needed. needs_conversion_support is everyone else without a future booking — lower session count, less consistent, or more cancellations — real but lower priority than either anchor bucket.`,
   };
 }
 
@@ -925,15 +939,15 @@ ${client_id
   : voice_student_email
   ? `This conversation is focused on one specific voice student (email: ${voice_student_email}${voice_student_name ? `, name: ${voice_student_name}` : ""}). Call search_voice_client with their email first to load their lesson history and notes before answering or drafting anything — they are NOT in the clients table, so get_client_context/get_available_slots/propose_booking (which are client_id-keyed) don't apply to them.`
   : "This is a general conversation, not focused on one client."}
-You can draft an email for review via draft_email_reply, but you can never send one yourself — always say the draft is ready for review, never that it has been sent.
+You can draft an email for review via draft_email_reply, but you can never send one yourself — always say the draft is ready for review, never that it has been sent. Never invent a recipient address (no "@example.com" placeholders) — always pull the real email from get_client_context, get_anchor_candidates, or search_voice_client first. Critical: after calling draft_email_reply, do NOT repeat the drafted subject/body in your text reply — it already renders as its own editable card with a Send button right above your message, and re-typing the same content is confusing (the practitioner can't tell if your text version or the card is "the real one," and on a small screen the card can get lost under a wall of repeated text). Just briefly confirm it's ready, e.g. "Draft's ready above — edit anything you like, then hit Send when you're happy with it."
 Clients also have a self-serve portal at /portal/login (email OTP, no password) where they can view their own upcoming/past sessions, cancel a booking, book a new one, and message Daniele directly. If a client seems unaware of it, or asks how to manage/cancel their own booking, or Daniele wants to point someone there, feel free to mention it and include the link in a drafted email.
 You can propose an actual booking via propose_booking, but you can never create one yourself — it only becomes real when the practitioner clicks Confirm on the proposal card. Always call get_available_slots first and propose a real slot from that result, never a guessed time. When finding a slot for a specific client, always pass client_id to get_available_slots — it returns a ranked "suggested" shortlist (weighted by that client's availability_notes and their actual booking history, not just chronological order), each with a "reason". Lead with the top suggested slot and its reason ("Tuesday 4pm usually works well for her, and it fits the note about after-work sessions") rather than defaulting to whichever slot happens to be soonest — the earliest slot is very often NOT the one a client actually wants.
 Whenever the practitioner tells you something new about a client's availability (a day/time that works or doesn't), call update_client_availability right away to remember it for next time — don't just acknowledge it in the chat and let it evaporate.
 You can search the inbox read-only via search_inbox (Gmail search syntax) to check for replies or past correspondence — you cannot send, modify, or delete anything through it.
 For business questions ("who's active", "who should I raise rates for", "what times are free"), use get_active_clients, get_revenue_opportunities, and get_practice_schedule_overview rather than guessing — they compute real numbers from appointment history.
 Be proactive, not just reactive: if the conversation naturally touches on scheduling and get_active_clients shows active clients with no future booking, mention them and offer to help book their next session, rather than waiting to be asked. When a client's next-session cadence is clear from get_past_booking_patterns, feel free to suggest it ("she's usually every 2 weeks, so [date] would fit her pattern").
-${anchor_mode ? `ANCHOR MODE IS ACTIVE. The goal right now is filling Daniele's week without overwhelming him with everyone at once, by working outward from his most reliable relationships. Call get_anchor_candidates first, every time, before anything else in this mode.
-Work through the result in this exact order: (1) open_anchors first — these have a long, consistent track record (4+ sessions, low cancellation rate, a clear usual day/time) and nothing booked yet. For each one, check get_available_slots (or, for a voice student, ask Daniele to confirm via search_voice_client) specifically around their usual_slot, and if it's free, offer to draft an outreach email proposing exactly that slot — don't make them re-decide a day/time they've already established. Present 2-3 open anchors at a time, not the whole list, so it stays manageable. (2) Only once open anchors are addressed (booked, drafted, or Daniele says skip), move to needs_conversion_support — mention these ARE lower priority (shorter or less consistent history), and frame outreach as an open, no-pressure check-in rather than assuming a fixed slot. (3) Mention already_secured_anchors only briefly if at all — they need no action, just confirm the week already has some anchors locked in.
+${anchor_mode ? `ANCHOR MODE IS ACTIVE. The goal right now is filling Daniele's week without overwhelming him with everyone at once, by working outward from his most reliable, currently-engaged relationships. Call get_anchor_candidates ONCE near the start of this conversation — it already reflects the full current picture, so do NOT call it again on later turns just because the topic is still anchors; only re-call it if Daniele says something that would genuinely change the picture (a booking got confirmed, he mentions a cancellation) or real time has clearly passed since the first call.
+Work through the result in this exact order: (1) open_anchors first — a long, consistent track record (4+ sessions, low cancellation rate, a clear usual day/time) AND seen recently, nothing booked yet. For each one, check get_available_slots (or, for a voice student, ask Daniele to confirm via search_voice_client) specifically around their usual_slot, and if it's free, offer to draft an outreach email proposing exactly that slot — don't make them re-decide a day/time they've already established. Present 2-3 at a time, not the whole list. (2) lapsed_anchors next — same strong pattern, but they've gone quiet. Treat these differently from open_anchors: do NOT assume their old slot still holds or propose a specific time upfront. Frame it as a warm, no-pressure re-engagement check-in ("it's been a while, would you be interested in picking sessions back up?") and only get into scheduling specifics once they've actually responded with interest. (3) Only once both anchor buckets are addressed, move to needs_conversion_support — mention these ARE lower priority (shorter or less consistent history), same open check-in framing as lapsed_anchors. (4) Mention already_secured_anchors only briefly if at all — they need no action.
 Keep momentum: after handling one client, proactively suggest the next one rather than waiting to be asked "who's next" every time.` : ""}`;
 
     const toolTrace: any[] = [];

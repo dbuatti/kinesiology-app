@@ -6,8 +6,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import EmailTemplatePicker from "@/components/assistant/EmailTemplatePicker";
-import { Mail, Loader2, Send, RefreshCw, CalendarClock, Sparkles, PenSquare, LayoutDashboard } from "lucide-react";
+import BookingProposalCard from "@/components/assistant/BookingProposalCard";
+import { PendingBooking } from "@/types/assistant";
+import { Mail, Loader2, Send, RefreshCw, CalendarClock, Sparkles, PenSquare, LayoutDashboard, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+// A simple, deliberately conservative confirmation hint — never auto-books,
+// just draws the eye to a reply that LOOKS like a yes so the practitioner can
+// confirm in one click instead of having to notice the connection themselves.
+const CONFIRMATION_HINTS = /\b(yes|yep|yeah|sounds (great|good|perfect)|works? for me|that works|perfect|great,? (see|thanks)|book(ed)? it|confirmed?|sure|great)\b/i;
 
 interface ThreadMessage {
   id: string;
@@ -69,6 +76,30 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
   const [suggestedSlots, setSuggestedSlots] = useState<{ iso: string; label: string }[] | null>(null);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [loadingSuggestion, setLoadingSuggestion] = useState(false);
+  const [pendingProposal, setPendingProposal] = useState<PendingBooking | null>(null);
+
+  // Surfaces an existing pencilled-in slot (from propose_booking, in chat)
+  // right here next to their real reply, so confirming a client's "yes that
+  // works" is one click instead of hunting back through the AI Chat tab to
+  // find the proposal card again.
+  const loadPendingProposal = useCallback(async () => {
+    const isVoice = clientId.startsWith("voice:");
+    let query = supabase.from("booking_proposals").select("*").eq("status", "proposed").order("created_at", { ascending: false }).limit(1);
+    query = isVoice ? query.eq("student_email", clientEmail || "") : query.eq("client_id", clientId);
+    const { data } = await query.maybeSingle();
+    if (!data) { setPendingProposal(null); return; }
+    setPendingProposal({
+      client_id: data.client_id,
+      voice_student_email: data.student_email,
+      client_name: data.student_name || clientName,
+      start_iso: data.slot_start,
+      event_type_id: data.event_type_id ? Number(data.event_type_id) : null,
+      notes: data.reason,
+      proposal_id: data.id,
+    });
+  }, [clientId, clientEmail, clientName]);
+
+  useEffect(() => { loadPendingProposal(); }, [loadPendingProposal]);
 
   const load = useCallback(async (explicitThreadId?: string) => {
     if (!clientEmail) { setLoading(false); return; }
@@ -251,7 +282,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
               ))}
             </SelectContent>
           </Select>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => load(selectedThreadId || undefined)} disabled={loading}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { load(selectedThreadId || undefined); loadPendingProposal(); }} disabled={loading}>
             <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
           </Button>
         </div>
@@ -298,6 +329,25 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
           ))
         )}
       </div>
+
+      {pendingProposal && (() => {
+        const lastMsg = messages[messages.length - 1];
+        const looksConfirmed = !!lastMsg && lastMsg.direction === "inbound" && CONFIRMATION_HINTS.test(lastMsg.body || "");
+        return (
+          <div className="pt-3">
+            {looksConfirmed && (
+              <p className="flex items-center gap-1.5 text-[11px] font-semibold text-chart-emerald mb-2">
+                <Zap className="h-3 w-3" /> Their last reply looks like a yes — confirm below if so.
+              </p>
+            )}
+            <BookingProposalCard
+              booking={pendingProposal}
+              onConfirmed={() => setPendingProposal(null)}
+              onDiscard={() => setPendingProposal(null)}
+            />
+          </div>
+        );
+      })()}
 
       <div className="pt-3 border-t border-border mt-3 space-y-2">
         <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject" className="text-base md:text-sm h-9" disabled={isSending} />

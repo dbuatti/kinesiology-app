@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { showError, showSuccess } from "@/utils/toast";
 import { computeClientLifecycleStatus, LifecycleStatus } from "@/lib/clientStatus";
 import { emailFromVoiceStudentId } from "@/lib/voice-student-id";
+import { fetchNormalizedVoiceBookings } from "@/lib/voiceBookings";
 import ClientLifecycleBadge from "@/components/crm/ClientLifecycleBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,26 +70,29 @@ export default function ClientSnapshotPanel({ clientId, clientName, isVoice, onD
     }
 
     async function loadVoice() {
-      const { data: bookings } = await supabase
-        .from("voice_bookings")
-        .select("lesson_date, status")
-        .ilike("student_email", emailFromVoiceStudentId(clientId))
-        .order("lesson_date", { ascending: false });
+      // Uses the normalized fetch (backfills a missing student_email from
+      // another row with the same name) — the same real bug found live with
+      // Nicole Rotenstein (2 real completed lessons had student_email NULL)
+      // was also silently affecting this panel's "completed" count via a raw
+      // .ilike() query that would miss those rows entirely.
+      const email = emailFromVoiceStudentId(clientId);
+      const allBookings = await fetchNormalizedVoiceBookings();
+      const bookings = allBookings.filter((b) => b.studentEmail === email);
       if (cancelled) return;
       const now = new Date();
-      const past = (bookings || []).filter((b: any) => new Date(b.lesson_date) <= now);
-      const future = (bookings || []).find((b: any) => b.status !== "cancelled" && new Date(b.lesson_date) > now);
+      const past = bookings.filter((b) => new Date(b.lessonDate) <= now);
+      const future = bookings.find((b) => b.status !== "cancelled" && new Date(b.lessonDate) > now);
       const { status, reason } = computeClientLifecycleStatus({
-        appointments: past.map((b: any) => ({ date: b.lesson_date, status: b.status === "cancelled" ? "Cancelled" : "Completed" })),
+        appointments: past.map((b) => ({ date: b.lessonDate, status: b.status === "cancelled" ? "Cancelled" : "Completed" })),
         hasFutureBooking: !!future,
       });
-      const completed = past.filter((b: any) => b.status !== "cancelled");
+      const completed = past.filter((b) => b.status !== "cancelled");
       setSnapshot({
         status, reason,
         standardRate: null, targetRate: null,
         completedCount: completed.length,
-        lastSessionDate: completed[0]?.lesson_date || null,
-        nextSessionDate: future?.lesson_date || null,
+        lastSessionDate: completed[0]?.lessonDate || null,
+        nextSessionDate: future?.lessonDate || null,
       });
       setLoading(false);
     }

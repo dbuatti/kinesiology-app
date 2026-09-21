@@ -667,12 +667,14 @@ async function runGetAvailableSlots(supabase: any, userId: string, start: string
     }
   } else if (voiceStudentEmail) {
     const now = new Date();
-    const [{ data: pastLessons }, timetablePrefs] = await Promise.all([
-      supabase.from("voice_bookings").select("lesson_date, lesson_time").ilike("student_email", voiceStudentEmail).neq("status", "cancelled").order("lesson_date", { ascending: false }).limit(30),
+    const [allVoiceRows, timetablePrefs] = await Promise.all([
+      fetchNormalizedVoiceBookings(supabase, ", lesson_time"),
       fetchTimetableAvailability(supabase, `voice:${voiceStudentEmail}`),
     ]);
     windows = timetablePrefs.windows;
-    for (const b of pastLessons || []) {
+    const emailLower = voiceStudentEmail.toLowerCase().trim();
+    const pastLessons = allVoiceRows.filter((b: any) => b.student_email === emailLower && b.status !== "cancelled").slice(0, 30);
+    for (const b of pastLessons) {
       const d = new Date(b.lesson_date);
       if (isNaN(d.getTime()) || d > now) continue;
       const slot = meetingSlotFromVoiceText(b.lesson_date, b.lesson_time);

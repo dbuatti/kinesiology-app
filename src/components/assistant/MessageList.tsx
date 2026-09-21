@@ -24,15 +24,24 @@ const STARTER_PROMPT = "What should I work on today?";
 export default function MessageList({
   messages, isSending, pendingDraft, onDraftSent, onDraftDiscard, pendingBooking, onBookingConfirmed, onBookingDiscard, onSuggestion, onRetry,
 }: Props) {
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Deliberately depends only on messages.length (a genuinely new turn) — NOT on
   // pendingDraft/pendingBooking object identity. Those null out on every Discard/
   // Send click (see AssistantPage's clearPersistedDraft/Booking), which used to
-  // re-trigger this smooth scroll on every button click with no new message —
-  // the exact "scrolls me down when I click a button" bug reported on iPad.
+  // re-trigger this scroll on every button click with no new message — the exact
+  // "scrolls me down when I click a button" bug reported on iPad.
+  //
+  // Sets scrollTop directly on this pane's own container instead of calling
+  // bottomRef.scrollIntoView() — scrollIntoView walks up and scrolls EVERY
+  // scrollable ancestor needed to bring the target into view, including the
+  // outer page (dragging it toward the footer below), which is almost
+  // certainly what was actually behind "I'm pushed down" — not just this
+  // pane's own list, the whole page moved. Setting scrollTop confines the
+  // scroll to this one pane and never touches the page's own scroll position.
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = scrollContainerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [messages.length, isSending]);
 
   if (messages.length === 0 && !isSending) {
@@ -53,7 +62,7 @@ export default function MessageList({
   }
 
   return (
-    <div className="flex-1 min-h-0 space-y-4 overflow-y-auto px-1 py-4">
+    <div ref={scrollContainerRef} className="flex-1 min-h-0 space-y-4 overflow-y-auto px-1 py-4">
       {messages.map((m) => (
         <div key={m.id}>
           <MessageBubble message={m} />
@@ -87,7 +96,6 @@ export default function MessageList({
           <span className="h-2 w-2 rounded-full bg-chart-primary animate-bounce" />
         </div>
       )}
-      <div ref={bottomRef} />
     </div>
   );
 }

@@ -28,6 +28,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const DashboardPage = lazy(() => import("./pages/app/DashboardPage"));
 const ClientsPage = lazy(() => import("./pages/ClientsPage"));
 const ClientDetailPage = lazy(() => import("./pages/ClientDetailPage"));
+const ClientHubPage = lazy(() => import("./pages/ClientHubPage"));
 const AssistantPage = lazy(() => import("./pages/AssistantPage"));
 const SchedulePage = lazy(() => import("./pages/SchedulePage"));
 const TimetablePage = lazy(() => import("./pages/timetable/TimetablePage"));
@@ -164,6 +165,7 @@ const AppRoutes = () => {
           <Route path="/clients" element={<ClientsPage />} />
           <Route path="/assistant" element={<AssistantPage />} />
           <Route path="/clients/:id" element={<ClientDetailPage />} />
+          <Route path="/clients/:id/hub" element={<ClientHubPage />} />
           <Route path="/availability" element={<SchedulePage />} />
           <Route path="/timetable" element={<TimetablePage />} />
           {/* Consolidated: sessions now live in the unified Calendar */}

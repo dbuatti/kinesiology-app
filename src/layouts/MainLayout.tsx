@@ -108,6 +108,12 @@ const MainLayout = () => {
   const isDocView = location.search.includes('view=document');
   const shouldHideHeader = (isFullScreen && isInSession) || isDocView;
   const shouldHideSidebar = shouldHideHeader || isDocView;
+  // The site-wide marketing footer (Navigate/Study/Practice/Resources links)
+  // doesn't belong under a working tool page — it was the actual cause of a
+  // "chat window sizing is weird" report: the panes above sized correctly to
+  // fill the viewport, but the page still scrolled well past them to reveal
+  // this footer, which read as broken sizing rather than expected page content.
+  const isWorkingToolPage = location.pathname.startsWith('/assistant') || /^\/clients\/[^/]+\/hub/.test(location.pathname);
 
   // iPad Mode: non-session, non-practice routes funnel to the Clinical Hub so
   // the practitioner can just work with clients, free of the sidebar.
@@ -181,7 +187,7 @@ const MainLayout = () => {
               <div key={location.pathname + location.search} className="flex-1 p-0 animate-in fade-in duration-500">
                 <Outlet />
               </div>
-              {!shouldHideHeader && <FooterLinks />}
+              {!shouldHideHeader && !isWorkingToolPage && <FooterLinks />}
             </main>
           </div>
         </div>

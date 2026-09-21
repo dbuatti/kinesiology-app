@@ -146,7 +146,11 @@ export default function ClientSnapshotPanel({ clientId, clientName, isVoice, onD
       {!isVoice && (
         <div className="flex items-center gap-1.5">
           <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="font-semibold text-foreground">${snapshot.standardRate ?? "—"}</span>
+          {snapshot.standardRate === 0 ? (
+            <span className="font-semibold text-chart-emerald">$0 · Free</span>
+          ) : (
+            <span className="font-semibold text-foreground">{snapshot.standardRate != null ? `$${snapshot.standardRate}` : "No rate set"}</span>
+          )}
           {snapshot.targetRate != null && snapshot.targetRate !== snapshot.standardRate && (
             <span className="text-muted-foreground">→ target ${snapshot.targetRate}</span>
           )}
@@ -161,7 +165,7 @@ export default function ClientSnapshotPanel({ clientId, clientName, isVoice, onD
                 <DialogTitle>Update {clientName}'s rate</DialogTitle>
               </DialogHeader>
               <div className="space-y-2 py-2">
-                <p className="text-xs text-muted-foreground">Current: ${snapshot.standardRate ?? "—"}</p>
+                <p className="text-xs text-muted-foreground">Current: {snapshot.standardRate != null ? `$${snapshot.standardRate}${snapshot.standardRate === 0 ? " (Free)" : ""}` : "No rate set"}</p>
                 <Input type="number" value={newRate} onChange={(e) => setNewRate(e.target.value)} placeholder="New rate" disabled={saving} />
                 <p className="text-[11px] text-muted-foreground">
                   Saves the new rate, then drafts a warm email for you to review — it won't send automatically.

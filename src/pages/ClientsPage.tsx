@@ -54,7 +54,13 @@ export function ClientsTool() {
   const [bookOpen, setBookOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'attention' | 'active' | 'name' | 'recent' | 'upcoming'>('attention');
-  const [statusFilter, setStatusFilter] = useState<LifecycleStatus | 'all'>('all');
+  // One-time read (not a live useSearchParams subscription) so a deep link from
+  // the Assistant's Key Metrics pipeline tile (e.g. /clients?status=at_risk) can
+  // pre-select a filter without this page's own state fighting a live param.
+  const [statusFilter, setStatusFilter] = useState<LifecycleStatus | 'all'>(() => {
+    const s = new URLSearchParams(window.location.search).get('status');
+    return (s === 'lead' || s === 'active' || s === 'at_risk' || s === 'lapsed') ? s : 'all';
+  });
   const { isPrivate } = usePrivacyMode();
   
   const fetchClients = async () => {

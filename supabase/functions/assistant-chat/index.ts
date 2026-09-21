@@ -313,9 +313,15 @@ function isRetryableModelError(message: string): boolean {
 // same { candidates: [{ content: { parts: [...] } }] } shape callGemini
 // returns, so the main tool loop below doesn't need to know which provider
 // actually served a given round. Model choice is a live-verification item,
-// not a fixed guarantee — not every "free" OpenRouter model reliably supports
-// tool calling, which is the whole point of this assistant.
-const OPENROUTER_FALLBACK_MODEL = "meta-llama/llama-3.3-70b-instruct:free";
+// not a fixed guarantee — free models on OpenRouter get deprecated/repriced
+// without much notice (the original choice here, meta-llama/llama-3.3-70b-
+// instruct:free, was pulled from the free tier entirely — confirmed live via
+// real production logs on 2026-09-21: "This model is unavailable for free.").
+// Re-checked against OpenRouter's own /api/v1/models on 2026-09-21, filtering
+// price=0 AND "tools" in supported_parameters — if this starts failing again,
+// re-run that query rather than guessing:
+//   curl -s https://openrouter.ai/api/v1/models | python3 -c "import json,sys; d=json.load(sys.stdin); [print(m['id']) for m in d['data'] if float(m['pricing']['prompt'] or 1)==0 and 'tools' in (m.get('supported_parameters') or [])]"
+const OPENROUTER_FALLBACK_MODEL = "qwen/qwen3.8-27b:free";
 
 function geminiTypeToJsonSchema(p: any): any {
   const TYPE_MAP: Record<string, string> = { OBJECT: "object", STRING: "string", NUMBER: "number", BOOLEAN: "boolean", ARRAY: "array" };
@@ -420,6 +426,20 @@ function monthsSince(iso: string | null | undefined) {
   return (now.getFullYear() - then.getFullYear()) * 12 + (now.getMonth() - then.getMonth());
 }
 
+// The Timetable Simulator's own availability editor (`saveClientPrefs` in
+// TimetablePage.tsx) writes ONLY to `timetable_client_availability`, never
+// back to `clients.availability_notes` — so availability entered directly in
+// the Simulator used to be invisible here. This reads it back so either place
+// teaching a client's availability reaches the other.
+async function fetchTimetableAvailability(supabase: any, clientKey: string) {
+  const { data } = await supabase
+    .from("timetable_client_availability")
+    .select("windows, note")
+    .eq("client_key", clientKey)
+    .maybeSingle();
+  return { windows: (data?.windows || []) as any[], note: data?.note || null };
+}
+
 async function runGetClientContext(supabase: any, userId: string, clientId: string) {
   const { data: client, error: clientErr } = await supabase
     .from("clients")
@@ -439,13 +459,20 @@ async function runGetClientContext(supabase: any, userId: string, clientId: stri
     .select("style_summary, channel")
     .eq("client_id", clientId).maybeSingle();
 
+  const timetablePrefs = await fetchTimetableAvailability(supabase, `fnh:${clientId}`);
+
   const standardRate = client.standard_rate ?? 0;
   const targetRate = client.target_rate ?? standardRate;
 
   return {
     client: {
       name: client.name, email: client.email, phone: client.phone,
-      preferred_time: client.preferred_time, availability_notes: client.availability_notes,
+      preferred_time: client.preferred_time,
+      availability_notes: client.availability_notes,
+      // Set directly in the Timetable Simulator's own availability editor —
+      // may exist even when availability_notes (taught via chat) is empty.
+      timetable_simulator_availability_note: timetablePrefs.note,
+      timetable_simulator_availability_windows: timetablePrefs.windows.length ? timetablePrefs.windows : null,
     },
     rate: {
       current_rate: standardRate,
@@ -610,11 +637,19 @@ async function runGetAvailableSlots(supabase: any, userId: string, start: string
   const bucketFreq: Record<string, number> = {};
 
   if (clientId) {
-    const [{ data: clientRow }, { data: pastAppointments }] = await Promise.all([
+    const [{ data: clientRow }, { data: pastAppointments }, timetablePrefs] = await Promise.all([
       supabase.from("clients").select("availability_notes").eq("id", clientId).eq("user_id", userId).maybeSingle(),
       supabase.from("appointments").select("date").eq("client_id", clientId).eq("user_id", userId).eq("status", "Completed").order("date", { ascending: false }).limit(30),
+      fetchTimetableAvailability(supabase, `fnh:${clientId}`),
     ]);
-    windows = clientRow?.availability_notes ? parseAvailabilityText(clientRow.availability_notes) : [];
+    // Merge both sources — availability taught via chat (free text, parsed
+    // here) and availability set directly in the Timetable Simulator (already
+    // structured windows) — so a client's real availability is respected
+    // regardless of which surface it was entered through.
+    windows = [
+      ...(clientRow?.availability_notes ? parseAvailabilityText(clientRow.availability_notes) : []),
+      ...timetablePrefs.windows,
+    ];
     for (const a of pastAppointments || []) {
       const d = new Date(a.date);
       const day = melbourneDayIndex(d);
@@ -625,13 +660,11 @@ async function runGetAvailableSlots(supabase: any, userId: string, start: string
     }
   } else if (voiceStudentEmail) {
     const now = new Date();
-    const { data: pastLessons } = await supabase
-      .from("voice_bookings")
-      .select("lesson_date, lesson_time")
-      .ilike("student_email", voiceStudentEmail)
-      .neq("status", "cancelled")
-      .order("lesson_date", { ascending: false })
-      .limit(30);
+    const [{ data: pastLessons }, timetablePrefs] = await Promise.all([
+      supabase.from("voice_bookings").select("lesson_date, lesson_time").ilike("student_email", voiceStudentEmail).neq("status", "cancelled").order("lesson_date", { ascending: false }).limit(30),
+      fetchTimetableAvailability(supabase, `voice:${voiceStudentEmail}`),
+    ]);
+    windows = timetablePrefs.windows;
     for (const b of pastLessons || []) {
       const d = new Date(b.lesson_date);
       if (isNaN(d.getTime()) || d > now) continue;
@@ -944,6 +977,17 @@ function meetingSlotFromTimestamp(iso: string): { day: string; hourLabel: string
   return { day, hourLabel, key: `${day}-${hourLabel}` };
 }
 
+// Same morning/afternoon/evening convention already used by get_available_slots'
+// ranking logic — kept consistent so "usual pattern" means the same thing
+// everywhere in this file.
+function dayTimeBucketFromTimestamp(iso: string): { day: string; bucket: string; key: string } {
+  const d = new Date(iso);
+  const day = d.toLocaleDateString("en-AU", { weekday: "long", timeZone: "Australia/Melbourne" });
+  const hour = Number(d.toLocaleTimeString("en-AU", { hour: "numeric", hour12: false, timeZone: "Australia/Melbourne" }));
+  const bucket = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+  return { day, bucket, key: `${day}-${bucket}` };
+}
+
 // Voice `lesson_date`/`lesson_time` are unstructured text, not a real timestamp
 // (see CLAUDE.md's Voice Calendar Fallback note) — day-of-week from the date
 // part alone is timezone-safe; the time is a best-effort regex, not exact.
@@ -975,6 +1019,13 @@ interface AnchorAgg {
   lastDate: string;
   firstDate: string;
   slotCounts: Map<string, { count: number; day: string; hourLabel: string }>;
+  // Coarser day + morning/afternoon/evening bucket, tracked alongside the exact
+  // half-hour slot — a client who consistently books "Wednesday afternoon" at
+  // varying exact times would otherwise get misreported by whichever single
+  // exact time happened to repeat most (even a rare one-off), since splitting
+  // their real pattern across several different exact buckets dilutes each
+  // one's count individually. See finalizeAnchor for how these are compared.
+  bucketCounts: Map<string, { count: number; day: string; bucket: string }>;
 }
 
 // A strong day/time pattern from months ago doesn't mean the client is still
@@ -989,9 +1040,23 @@ function finalizeAnchor(a: AnchorAgg) {
   let bestSlot: { count: number; day: string; hourLabel: string } | null = null;
   for (const s of a.slotCounts.values()) if (!bestSlot || s.count > bestSlot.count) bestSlot = s;
   const slotShare = bestSlot && a.completed > 0 ? bestSlot.count / a.completed : 0;
+
+  let bestBucket: { count: number; day: string; bucket: string } | null = null;
+  for (const b of a.bucketCounts.values()) if (!bestBucket || b.count > bestBucket.count) bestBucket = b;
+  const bucketShare = bestBucket && a.completed > 0 ? bestBucket.count / a.completed : 0;
+
+  // Real bug found live: a client who consistently books "Wednesday afternoon"
+  // at varying exact times was reported as "Wednesday 10:00am" because a single
+  // rare exact-time booking happened to repeat more than any other single exact
+  // time, even though it represented a small minority of their real sessions.
+  // Prefer the coarser day+time-of-day description whenever it's meaningfully
+  // more representative of their actual pattern than the single best exact slot.
+  const useBucket = bestBucket && bucketShare >= slotShare + 0.15;
+  const bestConsistency = useBucket ? bucketShare : slotShare;
+
   const tenureDays = Math.round((new Date(a.lastDate).getTime() - new Date(a.firstDate).getTime()) / (1000 * 60 * 60 * 24));
   const daysSinceLast = Math.round((Date.now() - new Date(a.lastDate).getTime()) / (1000 * 60 * 60 * 24));
-  const isAnchorPattern = a.completed >= 4 && cancellationRate <= 0.25 && slotShare >= 0.5 && !!bestSlot;
+  const isAnchorPattern = a.completed >= 4 && cancellationRate <= 0.25 && bestConsistency >= 0.5 && (!!bestSlot || !!bestBucket);
   return {
     id: a.id,
     kind: a.kind,
@@ -1003,8 +1068,10 @@ function finalizeAnchor(a: AnchorAgg) {
     cancellation_rate: `${Math.round(cancellationRate * 100)}%`,
     tenure_days: tenureDays,
     days_since_last_session: daysSinceLast,
-    usual_slot: bestSlot && bestSlot.hourLabel !== "unknown" ? `${bestSlot.day} ${bestSlot.hourLabel}` : bestSlot ? bestSlot.day : null,
-    slot_consistency: bestSlot ? `${Math.round(slotShare * 100)}%` : null,
+    usual_slot: useBucket
+      ? `${bestBucket!.day} ${bestBucket!.bucket}`
+      : bestSlot && bestSlot.hourLabel !== "unknown" ? `${bestSlot.day} ${bestSlot.hourLabel}` : bestSlot ? bestSlot.day : null,
+    slot_consistency: (bestSlot || bestBucket) ? `${Math.round(bestConsistency * 100)}%` : null,
     is_anchor_pattern: isAnchorPattern,
     is_recent: daysSinceLast <= ANCHOR_RECENCY_WINDOW_DAYS,
     has_future_booking: a.hasFuture,
@@ -1127,7 +1194,7 @@ async function runGetAnchorCandidates(supabase: any, userId: string) {
     const existing = byId.get(a.client_id) || {
       kind: "kinesiology" as const, id: a.client_id, name: a.clients.name || "Unknown", email: a.clients.email || null,
       availabilityNotes: a.clients.availability_notes || null, completed: 0, cancelled: 0, hasFuture: false,
-      lastDate: a.date, firstDate: a.date, slotCounts: new Map(),
+      lastDate: a.date, firstDate: a.date, slotCounts: new Map(), bucketCounts: new Map(),
     };
     if (isFuture) existing.hasFuture = true;
     else if (d <= now) {
@@ -1138,6 +1205,10 @@ async function runGetAnchorCandidates(supabase: any, userId: string) {
         const s = existing.slotCounts.get(slot.key) || { count: 0, day: slot.day, hourLabel: slot.hourLabel };
         s.count += 1;
         existing.slotCounts.set(slot.key, s);
+        const bkt = dayTimeBucketFromTimestamp(a.date);
+        const bc = existing.bucketCounts.get(bkt.key) || { count: 0, day: bkt.day, bucket: bkt.bucket };
+        bc.count += 1;
+        existing.bucketCounts.set(bkt.key, bc);
       }
       if (new Date(a.date) < new Date(existing.firstDate)) existing.firstDate = a.date;
       if (new Date(a.date) > new Date(existing.lastDate)) existing.lastDate = a.date;
@@ -1156,7 +1227,7 @@ async function runGetAnchorCandidates(supabase: any, userId: string) {
     const existing = byId.get(id) || {
       kind: "voice" as const, id, name: b.student_name || "Unknown", email,
       availabilityNotes: null, completed: 0, cancelled: 0, hasFuture: false,
-      lastDate: b.lesson_date, firstDate: b.lesson_date, slotCounts: new Map(),
+      lastDate: b.lesson_date, firstDate: b.lesson_date, slotCounts: new Map(), bucketCounts: new Map(),
     };
     if (isFuture) existing.hasFuture = true;
     else if (d <= now) {
@@ -1168,6 +1239,14 @@ async function runGetAnchorCandidates(supabase: any, userId: string) {
           const s = existing.slotCounts.get(slot.key) || { count: 0, day: slot.day, hourLabel: slot.hourLabel };
           s.count += 1;
           existing.slotCounts.set(slot.key, s);
+          if (slot.hourLabel !== "unknown") {
+            const hour = Number(slot.hourLabel.split(":")[0]);
+            const bucket = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+            const bktKey = `${slot.day}-${bucket}`;
+            const bc = existing.bucketCounts.get(bktKey) || { count: 0, day: slot.day, bucket };
+            bc.count += 1;
+            existing.bucketCounts.set(bktKey, bc);
+          }
         }
       }
       if (new Date(b.lesson_date) < new Date(existing.firstDate)) existing.firstDate = b.lesson_date;

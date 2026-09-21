@@ -21,10 +21,58 @@ interface MyAppointment {
   calcom_booking_id: string | null;
 }
 
-function fmtDate(dateStr: string) {
-  const d = new Date(dateStr);
+interface MyVoiceLesson {
+  id: string;
+  lesson_date: string;
+  lesson_time: string | null;
+  status: string;
+  cost: number | null;
+  calcom_booking_id: string | null;
+}
+
+// Kinesiology and voice sessions come from two different tables with
+// different shapes — both map down to this so the rest of the page (upcoming
+// vs past, cancel button, display) doesn't need to branch on which arm it is.
+interface SessionRow {
+  id: string;
+  label: string;
+  date: Date;
+  isUpcoming: boolean;
+  calcomBookingId: string | null;
+  nextSessionNote: string | null;
+}
+
+function fmtDate(d: Date) {
   return d.toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", timeZone: "Australia/Melbourne" }) +
     " · " + d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Australia/Melbourne" });
+}
+
+function appointmentToRow(a: MyAppointment): SessionRow {
+  return {
+    id: a.id,
+    label: a.tag || "Session",
+    date: new Date(a.date),
+    isUpcoming: a.status === "Scheduled",
+    calcomBookingId: a.calcom_booking_id,
+    nextSessionNote: a.next_session_note,
+  };
+}
+
+function voiceLessonToRow(v: MyVoiceLesson): SessionRow | null {
+  if (v.status === "cancelled") return null;
+  // lesson_time is unstructured text (see CLAUDE.md's Voice Calendar Fallback
+  // note) — best-effort parse, same technique used elsewhere in this app.
+  const timeText = (v.lesson_time || "12:00").replace(/[^\d:]/g, "") || "12:00";
+  const date = new Date(`${v.lesson_date}T${timeText}:00`);
+  if (isNaN(date.getTime())) return null;
+  return {
+    id: v.id,
+    label: "Voice/Piano Lesson",
+    date,
+    isUpcoming: date > new Date(),
+    calcomBookingId: v.calcom_booking_id,
+    nextSessionNote: null,
+  };
 }
 
 export default function ClientPortalPage() {
@@ -32,7 +80,7 @@ export default function ClientPortalPage() {
   const [loading, setLoading] = useState(true);
   const [linkError, setLinkError] = useState<string | null>(null);
   const [profile, setProfile] = useState<{ name: string; email: string } | null>(null);
-  const [appointments, setAppointments] = useState<MyAppointment[]>([]);
+  const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
@@ -48,15 +96,19 @@ export default function ClientPortalPage() {
       const { data: linkData, error: linkErr } = await supabase.functions.invoke("client-portal-link-account", { body: {} });
       if (linkErr || linkData?.error) throw new Error(linkData?.error || linkErr?.message);
 
-      const [{ data: profileData, error: profileErr }, { data: apptData, error: apptErr }] = await Promise.all([
-        supabase.rpc("get_my_client_profile"),
-        supabase.rpc("get_my_appointments"),
+      const isVoice = !!linkData.voice_student_email;
+      const [{ data: profileData, error: profileErr }, { data: rowData, error: rowErr }] = await Promise.all([
+        supabase.rpc(isVoice ? "get_my_voice_profile" : "get_my_client_profile"),
+        supabase.rpc(isVoice ? "get_my_voice_lessons" : "get_my_appointments"),
       ]);
       if (profileErr) throw profileErr;
-      if (apptErr) throw apptErr;
+      if (rowErr) throw rowErr;
 
       setProfile(profileData?.[0] || null);
-      setAppointments(apptData || []);
+      const rows = isVoice
+        ? ((rowData || []) as MyVoiceLesson[]).map(voiceLessonToRow).filter((r): r is SessionRow => r !== null)
+        : ((rowData || []) as MyAppointment[]).map(appointmentToRow);
+      setSessions(rows);
     } catch (err: any) {
       setLinkError(err.message || "Couldn't load your portal.");
     } finally {
@@ -66,12 +118,12 @@ export default function ClientPortalPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  const handleCancel = async (appt: MyAppointment) => {
-    if (!appt.calcom_booking_id) { showError("This session can't be cancelled online — please message Daniele."); return; }
-    if (!confirm(`Cancel your session on ${fmtDate(appt.date)}?`)) return;
-    setCancellingId(appt.id);
+  const handleCancel = async (row: SessionRow) => {
+    if (!row.calcomBookingId) { showError("This session can't be cancelled online — please message Daniele."); return; }
+    if (!confirm(`Cancel your session on ${fmtDate(row.date)}?`)) return;
+    setCancellingId(row.id);
     try {
-      const { data, error } = await supabase.functions.invoke("client-cancel-booking", { body: { bookingUid: appt.calcom_booking_id } });
+      const { data, error } = await supabase.functions.invoke("client-cancel-booking", { body: { bookingUid: row.calcomBookingId } });
       if (error || data?.error) throw new Error(data?.error || error?.message);
       showSuccess("Session cancelled.");
       await load();
@@ -161,8 +213,8 @@ export default function ClientPortalPage() {
   }
   if (session === null) return <Navigate to="/portal/login" replace />;
 
-  const upcoming = appointments.filter((a) => a.status === "Scheduled");
-  const past = appointments.filter((a) => a.status === "Completed");
+  const upcoming = sessions.filter((s) => s.isUpcoming).sort((a, b) => a.date.getTime() - b.date.getTime());
+  const past = sessions.filter((s) => !s.isUpcoming).sort((a, b) => b.date.getTime() - a.date.getTime());
   const firstName = profile?.name?.split(" ")[0] || "";
 
   return (
@@ -238,14 +290,14 @@ export default function ClientPortalPage() {
                 <p className="text-sm text-muted-foreground">Nothing booked right now.</p>
               ) : (
                 <div className="space-y-2">
-                  {upcoming.map((a) => (
-                    <div key={a.id} className="flex items-center justify-between gap-3 rounded-xl bg-muted/50 px-4 py-3">
+                  {upcoming.map((s) => (
+                    <div key={s.id} className="flex items-center justify-between gap-3 rounded-xl bg-muted/50 px-4 py-3">
                       <div>
-                        <div className="text-sm font-semibold text-foreground">{a.tag}</div>
-                        <div className="text-xs text-muted-foreground">{fmtDate(a.date)}</div>
+                        <div className="text-sm font-semibold text-foreground">{s.label}</div>
+                        <div className="text-xs text-muted-foreground">{fmtDate(s.date)}</div>
                       </div>
-                      <Button variant="ghost" size="sm" className="text-xs text-destructive hover:text-destructive gap-1" onClick={() => handleCancel(a)} disabled={cancellingId === a.id}>
-                        {cancellingId === a.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <X className="h-3 w-3" />} Cancel
+                      <Button variant="ghost" size="sm" className="text-xs text-destructive hover:text-destructive gap-1" onClick={() => handleCancel(s)} disabled={cancellingId === s.id}>
+                        {cancellingId === s.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <X className="h-3 w-3" />} Cancel
                       </Button>
                     </div>
                   ))}
@@ -259,14 +311,14 @@ export default function ClientPortalPage() {
                 <p className="text-sm text-muted-foreground">No past sessions yet.</p>
               ) : (
                 <div className="space-y-2">
-                  {past.map((a) => (
-                    <div key={a.id} className="rounded-xl bg-muted/50 px-4 py-3">
+                  {past.map((s) => (
+                    <div key={s.id} className="rounded-xl bg-muted/50 px-4 py-3">
                       <div className="flex items-center justify-between">
-                        <div className="text-sm font-semibold text-foreground">{a.tag}</div>
-                        <div className="text-xs text-muted-foreground">{fmtDate(a.date)}</div>
+                        <div className="text-sm font-semibold text-foreground">{s.label}</div>
+                        <div className="text-xs text-muted-foreground">{fmtDate(s.date)}</div>
                       </div>
-                      {a.next_session_note && (
-                        <p className="text-xs text-muted-foreground mt-1.5 italic">"{a.next_session_note}"</p>
+                      {s.nextSessionNote && (
+                        <p className="text-xs text-muted-foreground mt-1.5 italic">"{s.nextSessionNote}"</p>
                       )}
                     </div>
                   ))}

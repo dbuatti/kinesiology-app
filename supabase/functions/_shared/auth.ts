@@ -109,12 +109,13 @@ export async function requireServiceRole(req: Request, corsHeaders: Record<strin
 
 /**
  * Guard + identity resolver for client-portal edge functions. Verifies the
- * caller is a signed-in Supabase user AND resolves their OWN client_id via
- * client_portal_accounts (never trusts a client_id passed in the request
- * body — that was create-calcom-booking's original flaw). Returns
- * { clientId } on success, or a Response to return directly on failure.
+ * caller is a signed-in Supabase user AND resolves their OWN identity via
+ * client_portal_accounts (never trusts an id passed in the request body —
+ * that was create-calcom-booking's original flaw). Returns exactly one of
+ * clientId (kinesiology) or voiceStudentEmail (voice) set, the other null,
+ * on success — or a Response to return directly on failure.
  */
-export async function requireClient(req: Request, corsHeaders: Record<string, string>): Promise<{ clientId: string } | Response> {
+export async function requireClient(req: Request, corsHeaders: Record<string, string>): Promise<{ clientId: string | null; voiceStudentEmail: string | null } | Response> {
   const authHeader = req.headers.get("Authorization") || "";
 
   try {
@@ -135,7 +136,7 @@ export async function requireClient(req: Request, corsHeaders: Record<string, st
     const admin = createClient(Deno.env.get("SUPABASE_URL") ?? "", serviceKey);
     const { data: link } = await admin
       .from("client_portal_accounts")
-      .select("client_id")
+      .select("client_id, voice_student_email")
       .eq("auth_user_id", user.id)
       .maybeSingle();
 
@@ -146,11 +147,41 @@ export async function requireClient(req: Request, corsHeaders: Record<string, st
       });
     }
 
-    return { clientId: link.client_id };
+    return { clientId: link.client_id, voiceStudentEmail: link.voice_student_email };
   } catch (_e) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
+}
+
+/**
+ * Resolves a requireClient() identity to a display name + email, regardless
+ * of which arm it's in — the one place client-create-booking,
+ * client-cancel-booking, and client-send-message all need "who is this and
+ * what's their email" without each re-implementing the kinesiology-vs-voice
+ * branch themselves. Voice students have no profile row of their own in
+ * Supabase (that's Notion) — name is best-effort from their most recent
+ * voice_bookings row.
+ */
+export async function resolveClientContact(
+  admin: ReturnType<typeof createClient>,
+  identity: { clientId: string | null; voiceStudentEmail: string | null },
+): Promise<{ name: string; email: string } | null> {
+  if (identity.clientId) {
+    const { data } = await admin.from("clients").select("name, email").eq("id", identity.clientId).maybeSingle();
+    return data?.email ? { name: data.name || "Client", email: data.email } : null;
+  }
+  if (identity.voiceStudentEmail) {
+    const { data } = await admin
+      .from("voice_bookings")
+      .select("student_name")
+      .ilike("student_email", identity.voiceStudentEmail)
+      .order("lesson_date", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return { name: data?.student_name || "Voice Student", email: identity.voiceStudentEmail };
+  }
+  return null;
 }

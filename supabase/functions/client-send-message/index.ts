@@ -6,7 +6,7 @@
 // the request body.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { requireClient } from "../_shared/auth.ts";
+import { requireClient, resolveClientContact } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -31,7 +31,6 @@ serve(async (req) => {
   try {
     const identity = await requireClient(req, corsHeaders);
     if (identity instanceof Response) return identity;
-    const { clientId } = identity;
 
     const { message } = await req.json();
     if (!message || !message.trim()) throw new Error("Message is empty.");
@@ -43,8 +42,8 @@ serve(async (req) => {
     if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH || !SENDER) throw new Error("Gmail is not configured.");
 
     const supabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
-    const { data: client, error: clientErr } = await supabase.from("clients").select("name, email").eq("id", clientId).single();
-    if (clientErr) throw clientErr;
+    const client = await resolveClientContact(supabase, identity);
+    if (!client) throw new Error("We couldn't find your contact details on file — contact your practitioner.");
 
     const esc = (s: string) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const subject = `Message from ${client.name} (Client Portal)`;
@@ -71,7 +70,7 @@ serve(async (req) => {
     const sendData = await sendRes.json();
     if (!sendRes.ok) throw new Error(`Gmail send failed: ${sendData?.error?.message || "unknown"}`);
 
-    await supabase.from("email_log").insert({ function_name: "client-send-message", recipient: SENDER, subject, status: "sent", client_id: clientId });
+    await supabase.from("email_log").insert({ function_name: "client-send-message", recipient: SENDER, subject, status: "sent", client_id: identity.clientId });
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,

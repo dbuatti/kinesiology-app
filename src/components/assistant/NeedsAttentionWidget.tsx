@@ -1,34 +1,25 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { differenceInDays } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { voiceStudentIdFor, isVoiceStudentId } from "@/lib/voice-student-id";
+import { computeClientLifecycleStatus, LifecycleStatus } from "@/lib/clientStatus";
+import ClientLifecycleBadge from "@/components/crm/ClientLifecycleBadge";
 import { AlertCircle, ChevronDown, ChevronUp, Mail, MessageCircle, Loader2, Mic, Brain } from "lucide-react";
 
-const ACTIVE_WINDOW_DAYS = 90;
-
-type Category = "active" | "cancelled-no-rebook" | "one-and-done" | "overdue";
-// Priority order for sorting — warm/actionable first, cold/lapsed last.
-const CATEGORY_RANK: Record<Category, number> = { active: 0, "cancelled-no-rebook": 1, "one-and-done": 2, overdue: 3 };
+// The ONE follow-up surface in the app (see src/lib/clientStatus.ts) — this used
+// to disagree with FollowUpPage.tsx (a separate route, since deleted) and
+// ClientsPage.tsx's own attention_score. All three now share one definition.
+const STATUS_RANK: Record<LifecycleStatus, number> = { active: 0, at_risk: 1, lapsed: 2, lead: 3 };
 
 interface AttentionClient {
   id: string; // client uuid, or voiceStudentIdFor(email) pseudo-id
   kind: "kinesiology" | "voice";
   name: string;
   email: string | null;
-  daysSince: number;
-  completedCount: number;
-  cancelledCount: number;
-  category: Category;
-}
-
-function categoryFor(completedCount: number, cancelledCount: number, daysSince: number): Category {
-  if (completedCount === 0 && cancelledCount > 0) return "cancelled-no-rebook";
-  if (completedCount === 1 && cancelledCount === 0) return "one-and-done";
-  if (daysSince <= ACTIVE_WINDOW_DAYS) return "active";
-  return "overdue";
+  status: LifecycleStatus;
+  reason: string;
+  daysSinceLast: number | null;
 }
 
 async function fetchKinesiologyAttention(): Promise<AttentionClient[]> {
@@ -40,7 +31,7 @@ async function fetchKinesiologyAttention(): Promise<AttentionClient[]> {
 
   const now = new Date();
   const hasFuture = new Set<string>();
-  const agg = new Map<string, { client: { name: string | null; email: string | null }; lastDate: string; completedCount: number; cancelledCount: number }>();
+  const agg = new Map<string, { client: { name: string | null; email: string | null }; appointments: { date: string; status: string }[] }>();
 
   type AppointmentRow = { client_id: string | null; date: string; status: string; clients: { name: string | null; email: string | null } | null };
   for (const a of data as unknown as AppointmentRow[]) {
@@ -50,28 +41,18 @@ async function fetchKinesiologyAttention(): Promise<AttentionClient[]> {
       hasFuture.add(a.client_id);
       continue;
     }
-    if (d > now) continue; // future-but-not-"Scheduled" (rare) — not a past session either way
-    const existing = agg.get(a.client_id) || { client: a.clients, lastDate: a.date, completedCount: 0, cancelledCount: 0 };
-    if (!agg.has(a.client_id) || new Date(a.date) > new Date(existing.lastDate)) existing.lastDate = a.date;
-    if (a.status === "Cancelled") existing.cancelledCount += 1;
-    else existing.completedCount += 1;
+    if (d > now) continue;
+    const existing = agg.get(a.client_id) || { client: a.clients, appointments: [] };
+    existing.appointments.push({ date: a.date, status: a.status });
     agg.set(a.client_id, existing);
   }
 
   const results: AttentionClient[] = [];
-  for (const [clientId, { client, lastDate, completedCount, cancelledCount }] of agg.entries()) {
+  for (const [clientId, { client, appointments }] of agg.entries()) {
     if (hasFuture.has(clientId)) continue;
-    const daysSince = differenceInDays(now, new Date(lastDate));
-    results.push({
-      id: clientId,
-      kind: "kinesiology",
-      name: client.name || "Unknown",
-      email: client.email || null,
-      daysSince,
-      completedCount,
-      cancelledCount,
-      category: categoryFor(completedCount, cancelledCount, daysSince),
-    });
+    const { status, reason, daysSinceLast } = computeClientLifecycleStatus({ appointments, hasFutureBooking: false });
+    if (status === "lead") continue;
+    results.push({ id: clientId, kind: "kinesiology", name: client.name || "Unknown", email: client.email || null, status, reason, daysSinceLast });
   }
   return results;
 }
@@ -86,7 +67,7 @@ async function fetchVoiceAttention(): Promise<AttentionClient[]> {
 
   const now = new Date();
   const hasFuture = new Set<string>();
-  const agg = new Map<string, { name: string; email: string; lastDate: string; completedCount: number; cancelledCount: number }>();
+  const agg = new Map<string, { name: string; email: string; appointments: { date: string; status: string }[] }>();
 
   type VoiceBookingRow = { student_name: string | null; student_email: string | null; lesson_date: string; status: string | null };
   for (const b of data as VoiceBookingRow[]) {
@@ -100,27 +81,17 @@ async function fetchVoiceAttention(): Promise<AttentionClient[]> {
       continue;
     }
     if (d > now) continue;
-    const existing = agg.get(email) || { name: b.student_name || "Unknown", email, lastDate: b.lesson_date, completedCount: 0, cancelledCount: 0 };
-    if (new Date(b.lesson_date) > new Date(existing.lastDate)) existing.lastDate = b.lesson_date;
-    if (isCancelled) existing.cancelledCount += 1;
-    else existing.completedCount += 1;
+    const existing = agg.get(email) || { name: b.student_name || "Unknown", email, appointments: [] };
+    existing.appointments.push({ date: b.lesson_date, status: isCancelled ? "Cancelled" : "Completed" });
     agg.set(email, existing);
   }
 
   const results: AttentionClient[] = [];
-  for (const [email, { name, lastDate, completedCount, cancelledCount }] of agg.entries()) {
+  for (const [email, { name, appointments }] of agg.entries()) {
     if (hasFuture.has(email)) continue;
-    const daysSince = differenceInDays(now, new Date(lastDate));
-    results.push({
-      id: voiceStudentIdFor(email),
-      kind: "voice",
-      name,
-      email,
-      daysSince,
-      completedCount,
-      cancelledCount,
-      category: categoryFor(completedCount, cancelledCount, daysSince),
-    });
+    const { status, reason, daysSinceLast } = computeClientLifecycleStatus({ appointments, hasFutureBooking: false });
+    if (status === "lead") continue;
+    results.push({ id: voiceStudentIdFor(email), kind: "voice", name, email, status, reason, daysSinceLast });
   }
   return results;
 }
@@ -128,31 +99,21 @@ async function fetchVoiceAttention(): Promise<AttentionClient[]> {
 async function fetchNeedsAttention(): Promise<AttentionClient[]> {
   const [kinesiology, voice] = await Promise.all([fetchKinesiologyAttention(), fetchVoiceAttention()]);
   return [...kinesiology, ...voice].sort((a, b) => {
-    const rankDiff = CATEGORY_RANK[a.category] - CATEGORY_RANK[b.category];
+    const rankDiff = STATUS_RANK[a.status] - STATUS_RANK[b.status];
     if (rankDiff !== 0) return rankDiff;
-    // Within "active", most-recently-seen first (warmest). Everywhere else, longest-overdue first.
-    return a.category === "active" ? a.daysSince - b.daysSince : b.daysSince - a.daysSince;
+    return (a.daysSinceLast ?? 0) - (b.daysSinceLast ?? 0);
   });
 }
 
-const CATEGORY_META: Record<Category, { label: string; className: string }> = {
-  active: { label: "Active", className: "border-chart-emerald/30 bg-chart-emerald/5 text-chart-emerald" },
-  "cancelled-no-rebook": { label: "Cancelled, no rebook", className: "border-chart-destructive/30 bg-chart-destructive/5 text-chart-destructive" },
-  "one-and-done": { label: "1 lesson only", className: "border-amber-500/30 bg-amber-500/5 text-amber-600" },
-  overdue: { label: "Overdue", className: "border-muted-foreground/20 bg-muted/40 text-muted-foreground" },
-};
-
 function assistantPrompt(c: AttentionClient) {
   const firstName = c.name.split(" ")[0];
-  switch (c.category) {
+  switch (c.status) {
     case "active":
       return `Find a good slot and book ${firstName}'s next session — check their availability notes and usual pattern first.`;
-    case "cancelled-no-rebook":
-      return `${firstName} cancelled their last booking and hasn't rebooked. Help me draft a friendly follow-up checking if they'd like to find a new time.`;
-    case "one-and-done":
-      return `${firstName} only ever had one session and hasn't been back. Help me draft a warm check-in — see how they're doing and if they'd like to continue.`;
+    case "at_risk":
+      return `${firstName}: ${c.reason}. Help me draft a friendly, no-pressure follow-up.`;
     default:
-      return `Help me draft a message to ${firstName} to book their next session — it's been ${c.daysSince} days.`;
+      return `${firstName} has been quiet for a while (${c.reason.toLowerCase()}). Help me draft a warm check-in to see if they'd like to come back.`;
   }
 }
 
@@ -160,6 +121,7 @@ export default function NeedsAttentionWidget() {
   const [clients, setClients] = useState<AttentionClient[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(true);
+  const [showAll, setShowAll] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -179,8 +141,8 @@ export default function NeedsAttentionWidget() {
 
   if (clients.length === 0) return null;
 
-  const shown = clients.slice(0, 12);
-  const counts = clients.reduce((acc, c) => { acc[c.category] = (acc[c.category] || 0) + 1; return acc; }, {} as Record<Category, number>);
+  const shown = showAll ? clients : clients.slice(0, 12);
+  const counts = clients.reduce((acc, c) => { acc[c.status] = (acc[c.status] || 0) + 1; return acc; }, {} as Record<LifecycleStatus, number>);
 
   return (
     <div className="rounded-2xl border border-border bg-card mb-4 overflow-hidden">
@@ -190,7 +152,7 @@ export default function NeedsAttentionWidget() {
       >
         <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
           <AlertCircle className="h-4 w-4 text-chart-destructive" />
-          Needs attention
+          Needs follow-up
           <span className="text-[10px] font-black uppercase tracking-wider text-chart-destructive bg-chart-destructive/10 px-1.5 py-0.5 rounded-full">
             {clients.length}
           </span>
@@ -200,17 +162,17 @@ export default function NeedsAttentionWidget() {
       {expanded && (
         <div className="px-4 pb-4 -mt-1">
           <p className="text-[11px] text-muted-foreground mb-3">
-            {(["active", "cancelled-no-rebook", "one-and-done", "overdue"] as Category[])
-              .filter((cat) => counts[cat])
-              .map((cat) => `${counts[cat]} ${CATEGORY_META[cat].label.toLowerCase()}`)
+            {(["active", "at_risk", "lapsed"] as LifecycleStatus[])
+              .filter((s) => counts[s])
+              .map((s) => `${counts[s]} ${s === "active" ? "worth rebooking" : s === "at_risk" ? "at risk" : "lapsed"}`)
               .join(" · ")}
-            — kinesiology and voice, sorted by who's most worth reaching out to first.
+            {" "}— kinesiology and voice, most worth reaching out to first.
           </p>
           <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
             {shown.map((c) => (
               <div
                 key={c.id}
-                className={cn("flex flex-col gap-2 rounded-xl border p-3 shrink-0 w-[200px]", CATEGORY_META[c.category].className)}
+                className="flex flex-col gap-2 rounded-xl border border-border p-3 shrink-0 w-[210px] bg-card"
               >
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
@@ -226,19 +188,14 @@ export default function NeedsAttentionWidget() {
                     )}
                   </div>
                   <div className="flex items-center gap-1 mt-1">
-                    <span className="text-[8px] font-black uppercase tracking-wider bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded-full shrink-0">
-                      {CATEGORY_META[c.category].label}
-                    </span>
+                    <ClientLifecycleBadge status={c.status} />
                   </div>
-                  <p className="text-[10px] opacity-80 mt-1">
-                    {c.daysSince <= 0 ? "Last session today" : `${c.daysSince}d since last session`}
-                    {c.cancelledCount > 0 && c.completedCount === 0 ? "" : c.cancelledCount > 0 ? ` · ${c.cancelledCount} cancelled` : ""}
-                  </p>
+                  <p className="text-[10px] text-muted-foreground opacity-80 mt-1 leading-snug">{c.reason}</p>
                 </div>
                 <div className="flex gap-1.5">
                   <Button asChild size="sm" variant="secondary" className="h-7 flex-1 text-[10px] gap-1 px-2">
                     <Link to={`/assistant?client=${encodeURIComponent(c.id)}&prompt=${encodeURIComponent(assistantPrompt(c))}`}>
-                      <MessageCircle className="h-3 w-3" /> {c.category === "active" ? "Book" : "Assistant"}
+                      <MessageCircle className="h-3 w-3" /> {c.status === "active" ? "Book" : "Assistant"}
                     </Link>
                   </Button>
                   {c.email && (
@@ -251,9 +208,9 @@ export default function NeedsAttentionWidget() {
             ))}
           </div>
           {clients.length > shown.length && (
-            <Link to="/business?tool=follow-up" className="text-[11px] text-primary hover:underline mt-2 inline-block">
-              View all {clients.length} in Client Follow-Up →
-            </Link>
+            <button onClick={() => setShowAll(true)} className="text-[11px] text-primary hover:underline mt-2 inline-block">
+              Show all {clients.length} →
+            </button>
           )}
         </div>
       )}

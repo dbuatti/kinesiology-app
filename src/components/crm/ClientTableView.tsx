@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import NewInfoBadge from "@/components/crm/NewInfoBadge";
 import { IntakeStatusBadge } from "@/components/crm/IntakeStatusBadge";
+import ClientLifecycleBadge from "@/components/crm/ClientLifecycleBadge";
 
 interface ClientTableViewProps {
   clients: any[];
@@ -85,10 +86,13 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
                           <CreditCard size={8} className="mr-1" /> Synced
                         </Badge>
                       )}
-                      {client.upcoming_count === 0 && client.activity_score >= 68 && (
-                        <Badge className="h-4 px-1.5 text-[7px] font-black uppercase bg-amber-500/15 text-amber-600 border-amber-500/30">
-                          Needs booking
-                        </Badge>
+                      {client.lifecycle_status && client.lifecycle_status !== "active" && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span><ClientLifecycleBadge status={client.lifecycle_status} /></span>
+                          </TooltipTrigger>
+                          <TooltipContent>{client.lifecycle_status_reason}</TooltipContent>
+                        </Tooltip>
                       )}
                     </div>
                     <span className={cn("text-xs text-muted-foreground font-medium", isPrivate && "blur-[2px] select-none")}>{client.email || 'No email recorded'}</span>

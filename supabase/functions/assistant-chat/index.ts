@@ -93,6 +93,43 @@ function parseAvailabilityText(text: string): { days: number[]; from: string | n
   return windows;
 }
 
+// --- Ported from src/lib/clientStatus.ts (kept in sync manually — same
+// convention as parseAvailabilityText above) so get_clients_needing_attention
+// uses the exact same lead/active/at_risk/lapsed logic as the frontend's
+// NeedsAttentionWidget/ClientTableView, instead of a second, divergent
+// definition of "who needs follow-up". ---
+const AT_RISK_AFTER_DAYS = 90;
+const LAPSED_AFTER_DAYS = 240;
+
+function computeClientLifecycleStatus(appointments: { date: string; status: string }[], hasFutureBooking: boolean) {
+  if (!appointments || appointments.length === 0) {
+    return { status: "lead", reason: "Never booked a session", daysSinceLast: null };
+  }
+  if (hasFutureBooking) {
+    return { status: "active", reason: "Has a session booked ahead", daysSinceLast: null };
+  }
+  const now = new Date();
+  const sorted = [...appointments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const mostRecent = sorted[0];
+  const daysSinceMostRecent = Math.round((now.getTime() - new Date(mostRecent.date).getTime()) / (1000 * 60 * 60 * 24));
+
+  if (mostRecent.status === "Cancelled" || mostRecent.status === "cancelled") {
+    return {
+      status: "at_risk",
+      reason: `Cancelled their last session (${daysSinceMostRecent}d ago) and hasn't rebooked`,
+      daysSinceLast: daysSinceMostRecent,
+    };
+  }
+
+  const realSessions = sorted.filter((a) => a.status !== "Cancelled" && a.status !== "cancelled");
+  if (realSessions.length === 0) return { status: "lead", reason: "Never completed a session", daysSinceLast: null };
+  const daysSinceLast = Math.round((now.getTime() - new Date(realSessions[0].date).getTime()) / (1000 * 60 * 60 * 24));
+
+  if (daysSinceLast <= AT_RISK_AFTER_DAYS) return { status: "active", reason: "Seen recently, nothing booked ahead yet", daysSinceLast };
+  if (daysSinceLast <= LAPSED_AFTER_DAYS) return { status: "at_risk", reason: `Gone quiet — ${daysSinceLast}d since last session, nothing booked`, daysSinceLast };
+  return { status: "lapsed", reason: "Was active, hasn't returned in over 8 months", daysSinceLast };
+}
+
 const functionDeclarations = [
   {
     name: "get_client_context",
@@ -218,6 +255,11 @@ const functionDeclarations = [
       required: ["query"],
     },
   },
+  {
+    name: "get_clients_needing_attention",
+    description: "List kinesiology clients and voice students who need follow-up right now — status 'at_risk' (cancelled their last session and hasn't rebooked, or gone quiet 90-240 days) or 'lapsed' (quiet 240+ days), each with a plain-English reason and whether they were already emailed recently (recently_contacted). This is the SAME data the Needs Follow-Up widget on the Assistant page shows. Use this for 'who's slipping through the cracks' / 'who needs a check-in' — and always check recently_contacted before suggesting a fresh outreach to someone.",
+    parameters: { type: "OBJECT", properties: {} },
+  },
 ];
 
 function melbourneNow() {
@@ -249,8 +291,126 @@ async function callGemini(geminiKey: string, contents: any[], systemInstruction:
     },
   );
   const data = await res.json();
-  if (!res.ok) throw new Error(data?.error?.message || "Gemini API error");
+  if (!res.ok) {
+    const message = data?.error?.message || `Gemini API error (status ${res.status})`;
+    // Tag 429/503 explicitly even when the body text doesn't literally say
+    // "quota" — isRetryableModelError()/the frontend's quota check both key
+    // off this, and a mis-tagged error would silently skip the key-rotation
+    // and OpenRouter fallback below.
+    throw new Error(res.status === 429 || res.status === 503 ? `RESOURCE_EXHAUSTED: ${message}` : message);
+  }
   return data;
+}
+
+function isRetryableModelError(message: string): boolean {
+  return /RESOURCE_EXHAUSTED|quota|rate limit|overloaded|UNAVAILABLE|503|429/i.test(message || "");
+}
+
+// --- OpenRouter fallback: only reached once every Gemini key above is
+// exhausted on a retryable (quota/5xx) error. Translates the Gemini-shaped
+// `contents`/functionDeclarations this file already builds into OpenAI's
+// chat-completions + tools format, and translates the response back into the
+// same { candidates: [{ content: { parts: [...] } }] } shape callGemini
+// returns, so the main tool loop below doesn't need to know which provider
+// actually served a given round. Model choice is a live-verification item,
+// not a fixed guarantee — not every "free" OpenRouter model reliably supports
+// tool calling, which is the whole point of this assistant.
+const OPENROUTER_FALLBACK_MODEL = "meta-llama/llama-3.3-70b-instruct:free";
+
+function geminiTypeToJsonSchema(p: any): any {
+  const TYPE_MAP: Record<string, string> = { OBJECT: "object", STRING: "string", NUMBER: "number", BOOLEAN: "boolean", ARRAY: "array" };
+  const out: any = { type: TYPE_MAP[p?.type] || "string" };
+  if (p?.description) out.description = p.description;
+  if (out.type === "object") {
+    out.properties = {};
+    for (const [k, v] of Object.entries<any>(p?.properties || {})) out.properties[k] = geminiTypeToJsonSchema(v);
+    if (p?.required) out.required = p.required;
+  }
+  if (out.type === "array" && p?.items) out.items = geminiTypeToJsonSchema(p.items);
+  return out;
+}
+
+// contents is always built here as sequential (model:functionCall) then
+// (function:functionResponse) pairs with nothing interleaved, so a single
+// incrementing counter — bumped on each functionCall and reused verbatim for
+// the very next functionResponse — is enough to keep OpenAI's required
+// assistant.tool_calls[].id / tool.tool_call_id pairing consistent, with no
+// need to persist ids anywhere Gemini's own shape has no room for.
+function contentsToOpenAIMessages(contents: any[], systemInstruction: string) {
+  const messages: any[] = [{ role: "system", content: systemInstruction }];
+  let pendingCallId: string | null = null;
+  let callCounter = 0;
+  for (const c of contents) {
+    const part = c.parts?.[0];
+    if (!part) continue;
+    if (part.functionCall) {
+      callCounter += 1;
+      pendingCallId = `call_${callCounter}`;
+      messages.push({
+        role: "assistant", content: null,
+        tool_calls: [{ id: pendingCallId, type: "function", function: { name: part.functionCall.name, arguments: JSON.stringify(part.functionCall.args || {}) } }],
+      });
+    } else if (part.functionResponse) {
+      messages.push({ role: "tool", tool_call_id: pendingCallId || `call_${callCounter}`, content: JSON.stringify(part.functionResponse.response || {}) });
+    } else {
+      messages.push({ role: c.role === "model" ? "assistant" : "user", content: part.text || "" });
+    }
+  }
+  return messages;
+}
+
+function openRouterToGeminiShape(data: any) {
+  const msg = data?.choices?.[0]?.message;
+  if (!msg) return { candidates: [] };
+  const toolCall = msg.tool_calls?.[0];
+  if (toolCall) {
+    let args: any = {};
+    try { args = JSON.parse(toolCall.function?.arguments || "{}"); } catch { /* leave empty on malformed args */ }
+    return { candidates: [{ content: { parts: [{ functionCall: { name: toolCall.function?.name, args } }] } }] };
+  }
+  return { candidates: [{ content: { parts: [{ text: msg.content || "" }] } }] };
+}
+
+async function callOpenRouter(openRouterKey: string, contents: any[], systemInstruction: string) {
+  const messages = contentsToOpenAIMessages(contents, systemInstruction);
+  const tools = functionDeclarations.map((fd) => ({ type: "function", function: { name: fd.name, description: fd.description, parameters: geminiTypeToJsonSchema(fd.parameters) } }));
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${openRouterKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ model: OPENROUTER_FALLBACK_MODEL, messages, tools, tool_choice: "auto", temperature: 0.4 }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error?.message || `OpenRouter API error (status ${res.status})`);
+  return openRouterToGeminiShape(data);
+}
+
+// Tries each configured Gemini key in turn (only continuing past a key on a
+// classified retryable/quota error — a genuine bad-request error fails fast
+// rather than burning through every key for nothing), then falls back to
+// OpenRouter only once every Gemini key is exhausted.
+async function callModel(geminiKeys: string[], openRouterKey: string | undefined, contents: any[], systemInstruction: string): Promise<{ data: any; servedBy: string }> {
+  let lastErr: Error | null = null;
+  for (const key of geminiKeys) {
+    try {
+      const data = await callGemini(key, contents, systemInstruction);
+      return { data, servedBy: "gemini" };
+    } catch (err: any) {
+      lastErr = err;
+      if (!isRetryableModelError(err.message)) throw err;
+      console.error("[assistant-chat] GEMINI_KEY_FAILED (retryable, trying next key if any):", err.message);
+    }
+  }
+  if (openRouterKey) {
+    console.error("[assistant-chat] GEMINI_ALL_KEYS_EXHAUSTED — falling back to OpenRouter:", lastErr?.message);
+    try {
+      const data = await callOpenRouter(openRouterKey, contents, systemInstruction);
+      return { data, servedBy: "openrouter-fallback" };
+    } catch (err: any) {
+      console.error("[assistant-chat] OPENROUTER_FALLBACK_FAILED:", err.message);
+      throw lastErr || err;
+    }
+  }
+  throw lastErr || new Error("No model available.");
 }
 
 function monthsSince(iso: string | null | undefined) {
@@ -388,13 +548,19 @@ function melbourneHHMM(d: Date): string {
   return d.toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Australia/Melbourne" });
 }
 
-async function runGetAvailableSlots(supabase: any, userId: string, start: string, end: string, eventTypeId: number | undefined, clientId?: string, voiceStudentEmail?: string) {
-  const CALCOM_KEY = Deno.env.get("CALCOM_API_KEY");
-  if (!CALCOM_KEY) return { error: "Cal.com is not configured." };
-  const headers = { Authorization: `Bearer ${CALCOM_KEY}`, "cal-api-version": "2024-09-04", "Content-Type": "application/json" };
+// Progressively widens the search window when the requested range comes back
+// empty (e.g. the calendar is fully booked for the next 2 weeks) instead of
+// returning an empty result — ported from the same 14/45/90-day widening
+// ClientEmailThread.tsx's "Suggest times" chips already use, so get_available_slots
+// (used by both AI Chat drafts and booking flows) gets the same real, non-empty
+// results the Email Thread pane does, rather than looking comparatively broken.
+const WIDENING_STEPS_DAYS = [45, 90];
+
+async function fetchCalcomSlots(calcomKey: string, start: string, endISO: string, eventTypeId: number | undefined) {
+  const headers = { Authorization: `Bearer ${calcomKey}`, "cal-api-version": "2024-09-04", "Content-Type": "application/json" };
   const url = new URL("https://api.cal.com/v2/slots");
   url.searchParams.set("start", start);
-  url.searchParams.set("end", end);
+  url.searchParams.set("end", endISO);
   url.searchParams.set("eventTypeId", String(eventTypeId || "4279898"));
   url.searchParams.set("timeZone", "Australia/Melbourne");
 
@@ -410,8 +576,29 @@ async function runGetAvailableSlots(supabase: any, userId: string, start: string
     slots[date] = isos.map(fmtMelbourne);
     flatIsos.push(...isos);
   }
+  return { slots, flatIsos };
+}
 
-  if ((!clientId && !voiceStudentEmail) || flatIsos.length === 0) return { slots };
+async function runGetAvailableSlots(supabase: any, userId: string, start: string, end: string, eventTypeId: number | undefined, clientId?: string, voiceStudentEmail?: string) {
+  const CALCOM_KEY = Deno.env.get("CALCOM_API_KEY");
+  if (!CALCOM_KEY) return { error: "Cal.com is not configured." };
+
+  let widenedNote: string | null = null;
+  let { slots, flatIsos, error } = await fetchCalcomSlots(CALCOM_KEY, start, end, eventTypeId);
+  if (error) return { error };
+
+  const startDate = new Date(start);
+  for (const widenDays of WIDENING_STEPS_DAYS) {
+    if ((flatIsos as string[]).length > 0) break;
+    const widerEnd = new Date(startDate.getTime() + widenDays * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const wider = await fetchCalcomSlots(CALCOM_KEY, start, widerEnd, eventTypeId);
+    if (!wider.error && wider.flatIsos.length > 0) {
+      slots = wider.slots; flatIsos = wider.flatIsos;
+      widenedNote = `The originally requested range had nothing open, so this was automatically widened to ${widenDays} days out to find real availability.`;
+    }
+  }
+
+  if ((!clientId && !voiceStudentEmail) || flatIsos.length === 0) return { slots, note: widenedNote };
 
   // Rank candidates by this client's own known preferences instead of leaving
   // "which of these dozens of slots would they actually want" to the model's
@@ -505,7 +692,7 @@ async function runGetAvailableSlots(supabase: any, userId: string, start: string
       reason: s.reasons.length ? s.reasons.join(", ") : "next available",
     }));
 
-  return { slots, suggested };
+  return { slots, suggested, note: widenedNote };
 }
 
 async function runSearchInbox(supabaseUrl: string, serviceKey: string, query: string) {
@@ -826,6 +1013,96 @@ function finalizeAnchor(a: AnchorAgg) {
   };
 }
 
+// Both real outbound-email paths (send-assistant-email for AI-drafted sends,
+// gmail-send-threaded-reply for the Email Thread pane) write to email_log, so
+// this is a genuine "did I already reach out" signal, not a guess — fixes the
+// "forgot I already messaged Reuben" bug where nothing ever read this back.
+const RECENTLY_CONTACTED_WINDOW_DAYS = 14;
+
+async function fetchRecentlyContactedMap(supabase: any, emails: string[]): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  const clean = [...new Set(emails.filter(Boolean).map((e) => e.toLowerCase()))];
+  if (clean.length === 0) return map;
+  const since = new Date(Date.now() - RECENTLY_CONTACTED_WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  const { data } = await supabase
+    .from("email_log")
+    .select("recipient, created_at")
+    .eq("status", "sent")
+    .gte("created_at", since)
+    .in("recipient", clean);
+  for (const row of (data || []) as { recipient: string; created_at: string }[]) {
+    const key = (row.recipient || "").toLowerCase();
+    const existing = map.get(key);
+    if (!existing || new Date(row.created_at) > new Date(existing)) map.set(key, row.created_at);
+  }
+  return map;
+}
+
+async function runGetClientsNeedingAttention(supabase: any, userId: string) {
+  const now = new Date();
+
+  const [{ data: appts }, { data: voiceRows }] = await Promise.all([
+    supabase.from("appointments")
+      .select("client_id, date, status, clients(id, name, email)")
+      .eq("user_id", userId)
+      .order("date", { ascending: false }),
+    supabase.from("voice_bookings")
+      .select("student_name, student_email, lesson_date, status")
+      .not("student_email", "is", null)
+      .order("lesson_date", { ascending: false }),
+  ]);
+
+  const hasFuture = new Set<string>();
+  const agg = new Map<string, { kind: string; name: string; email: string | null; appointments: { date: string; status: string }[] }>();
+
+  for (const a of (appts || []) as any[]) {
+    if (!a.client_id || !a.clients) continue;
+    const d = new Date(a.date);
+    if (a.status === "Scheduled" && d > now) { hasFuture.add(a.client_id); continue; }
+    if (d > now) continue;
+    const existing = agg.get(a.client_id) || { kind: "kinesiology", name: a.clients.name || "Unknown", email: a.clients.email || null, appointments: [] };
+    existing.appointments.push({ date: a.date, status: a.status });
+    agg.set(a.client_id, existing);
+  }
+
+  for (const b of (voiceRows || []) as any[]) {
+    const email = String(b.student_email || "").toLowerCase().trim();
+    if (!email) continue;
+    const id = `voice:${email}`;
+    const d = new Date(b.lesson_date);
+    if (isNaN(d.getTime())) continue;
+    const isCancelled = b.status === "cancelled";
+    if (!isCancelled && d > now) { hasFuture.add(id); continue; }
+    if (d > now) continue;
+    const existing = agg.get(id) || { kind: "voice", name: b.student_name || "Unknown", email, appointments: [] };
+    existing.appointments.push({ date: b.lesson_date, status: isCancelled ? "Cancelled" : "Completed" });
+    agg.set(id, existing);
+  }
+
+  const rows: any[] = [];
+  for (const [id, { kind, name, email, appointments }] of agg.entries()) {
+    if (hasFuture.has(id)) continue;
+    const { status, reason, daysSinceLast } = computeClientLifecycleStatus(appointments, false);
+    if (status === "lead" || status === "active") continue; // only genuinely at-risk/lapsed here
+    rows.push({
+      kind, name, email,
+      client_id: kind === "kinesiology" ? id : null,
+      voice_student_email: kind === "voice" ? email : null,
+      status, reason, days_since_last: daysSinceLast,
+    });
+  }
+
+  const contactedMap = await fetchRecentlyContactedMap(supabase, rows.map((r) => r.email));
+  for (const r of rows) {
+    const lastContacted = r.email ? contactedMap.get(r.email.toLowerCase()) : null;
+    r.recently_contacted = !!lastContacted;
+    r.last_contacted_at = lastContacted ? fmtMelbourne(lastContacted) : null;
+  }
+
+  rows.sort((a, b) => (a.status === b.status ? (a.days_since_last ?? 0) - (b.days_since_last ?? 0) : a.status === "at_risk" ? -1 : 1));
+  return { clients_needing_attention: rows };
+}
+
 async function runGetAnchorCandidates(supabase: any, userId: string) {
   const now = new Date();
 
@@ -901,6 +1178,16 @@ async function runGetAnchorCandidates(supabase: any, userId: string) {
 
   const finalized = Array.from(byId.values()).filter((a) => a.completed > 0).map(finalizeAnchor);
 
+  // Annotate with "did I already email this person recently" so the model
+  // doesn't keep re-suggesting fresh outreach to someone already contacted
+  // (real bug: it kept re-suggesting Reuben right after he'd been emailed).
+  const contactedMap = await fetchRecentlyContactedMap(supabase, finalized.map((a) => a.email).filter(Boolean));
+  for (const a of finalized) {
+    const lastContacted = a.email ? contactedMap.get(a.email.toLowerCase()) : null;
+    (a as any).recently_contacted = !!lastContacted;
+    (a as any).last_contacted_at = lastContacted ? fmtMelbourne(lastContacted) : null;
+  }
+
   // A consistent pattern AND still-recent beats a consistent pattern that's gone
   // quiet — recency is the tiebreaker, not just session count.
   const openAnchors = finalized.filter((a) => a.is_anchor_pattern && !a.has_future_booking && a.is_recent)
@@ -916,7 +1203,7 @@ async function runGetAnchorCandidates(supabase: any, userId: string) {
     lapsed_anchors: lapsedAnchors,
     already_secured_anchors: securedAnchors,
     needs_conversion_support: needsConversion.slice(0, 20),
-    note: `open_anchors = long, consistent track record (4+ sessions, ≤25% cancellation rate, same day/time ≥50% of the time) AND seen within the last ${ANCHOR_RECENCY_WINDOW_DAYS} days — secure these first, same slot, no need to re-check interest. lapsed_anchors have the exact same strong pattern but haven't been seen in over ${ANCHOR_RECENCY_WINDOW_DAYS} days — real anchors, but gone quiet, so treat as a warm re-engagement check-in ("would you be interested in resuming?"), never as a same-slot assumption. already_secured_anchors already have a future booking, no action needed. needs_conversion_support is everyone else without a future booking — lower session count, less consistent, or more cancellations — real but lower priority than either anchor bucket.`,
+    note: `open_anchors = long, consistent track record (4+ sessions, ≤25% cancellation rate, same day/time ≥50% of the time) AND seen within the last ${ANCHOR_RECENCY_WINDOW_DAYS} days — secure these first, same slot, no need to re-check interest. lapsed_anchors have the exact same strong pattern but haven't been seen in over ${ANCHOR_RECENCY_WINDOW_DAYS} days — real anchors, but gone quiet, so treat as a warm re-engagement check-in ("would you be interested in resuming?"), never as a same-slot assumption. already_secured_anchors already have a future booking, no action needed. needs_conversion_support is everyone else without a future booking — lower session count, less consistent, or more cancellations — real but lower priority than either anchor bucket. Every entry has recently_contacted (and last_contacted_at) — if true, a real email already went out to them in the last ${RECENTLY_CONTACTED_WINDOW_DAYS} days, so do NOT suggest a fresh outreach as if nothing's been said yet; acknowledge it was already sent and ask if Daniele wants to follow up differently or wait.`,
   };
 }
 
@@ -927,11 +1214,21 @@ serve(async (req) => {
   if (authErr) return authErr;
 
   try {
-    const { conversation_id, client_id, voice_student_email, voice_student_name, message, anchor_mode } = await req.json();
+    const { conversation_id, client_id, voice_student_email, voice_student_name, message } = await req.json();
     if (!message) throw new Error("Missing message.");
 
-    const geminiKey = Deno.env.get("GEMINI_API_KEY");
-    if (!geminiKey) throw new Error("GEMINI_API_KEY is missing.");
+    // Multiple Gemini keys give real redundancy against one key's quota running
+    // out (a genuine daily-use risk, not just a testing artifact — see prior
+    // quota-exhaustion incidents), tried in order before ever reaching the
+    // cross-provider OpenRouter fallback.
+    const geminiKeys = [
+      Deno.env.get("GEMINI_API_KEY"),
+      Deno.env.get("GEMINI_API_KEY_2"),
+      Deno.env.get("GEMINI_API_KEY_3"),
+      Deno.env.get("GEMINI_API_KEY_4"),
+    ].filter((k): k is string => !!k);
+    if (geminiKeys.length === 0) throw new Error("GEMINI_API_KEY is missing.");
+    const openRouterKey = Deno.env.get("OPENROUTER_API_KEY");
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
     const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -1007,23 +1304,21 @@ serve(async (req) => {
 Clients communicate messily — vague times ("until 2pm", "health permitting"), same-day cancellations, and ambiguous confirmations ("that's perfect" meaning "yes to the last time you proposed"). Interpret them charitably but flag genuine ambiguity rather than guessing.
 Use the available tools to ground your answers in real data — never invent appointment times, client details, rates, or slot availability.
 ${client_id
-  ? `This conversation is focused on one specific kinesiology client (client_id: ${client_id}). Call get_client_context first to load their history, current rate vs target rate, and communication style, and match their tone when drafting anything.`
+  ? `This conversation is focused on one specific kinesiology client (client_id: ${client_id}). Call get_client_context first to load their history, current rate vs target rate, and communication style, and match their tone when drafting anything. If Daniele mentions he just changed or increased their rate, draft a warm email via draft_email_reply that references the specific old and new numbers already visible from get_client_context — and never claim it's been sent, only that it's ready for review.`
   : voice_student_email
   ? `This conversation is focused on one specific voice student (email: ${voice_student_email}${voice_student_name ? `, name: ${voice_student_name}` : ""}). Call search_voice_client with their email first to load their lesson history, notes, and likely_usual_slot before answering or drafting anything — they are NOT in the clients table, so get_client_context (kinesiology-only) doesn't apply, but get_available_slots and propose_booking BOTH work for them: pass voice_student_email instead of client_id and they behave exactly like they do for a kinesiology client, including creating a real Cal.com booking once the practitioner clicks Confirm.`
-  : "This is a general conversation, not focused on one client."}
+  : `This is a general conversation, not focused on one client. Default to an anchor mindset — this is how EVERY general conversation should run, not an opt-in mode: prioritise securing and deepening relationships with clients who are close to converting or renewing over chasing volume for its own sake. Don't get distracted trying to bring in everyone at once — securing one real relationship beats a scattershot list. When scheduling, prioritisation, or "who should I focus on" comes up, call get_anchor_candidates ONCE (it reflects the full current picture — don't re-call it on later turns unless something genuinely changed, like a booking confirmed or a cancellation mentioned) and work through it in this order: (1) open_anchors first — long, consistent track record, seen recently, nothing booked yet. Check get_available_slots around their usual_slot and offer to draft outreach proposing exactly that slot — don't make them re-decide a day/time they've already established. Present 2-3 at a time, not the whole list. (2) lapsed_anchors next — same strong pattern, gone quiet. Do NOT assume their old slot still holds; frame it as a warm, no-pressure re-engagement check-in and only get into scheduling specifics once they've responded with interest. (3) needs_conversion_support only once both anchor buckets are addressed — mention these ARE lower priority. (4) already_secured_anchors need no action. Keep momentum: after handling one, proactively suggest the next rather than waiting to be asked "who's next". Also check get_clients_needing_attention for anyone genuinely at risk of falling through the cracks (a cancelled-and-gone-quiet client, for example) — mention them even if the conversation didn't ask about follow-up specifically.`}
 You can draft an email for review via draft_email_reply, but you can never send one yourself — always say the draft is ready for review, never that it has been sent. Never invent a recipient address (no "@example.com" placeholders) — always pull the real email from get_client_context, get_anchor_candidates, or search_voice_client first. Critical: after calling draft_email_reply, do NOT repeat the drafted subject/body in your text reply — it already renders as its own editable card with a Send button right above your message, and re-typing the same content is confusing (the practitioner can't tell if your text version or the card is "the real one," and on a small screen the card can get lost under a wall of repeated text). Just briefly confirm it's ready, e.g. "Draft's ready above — edit anything you like, then hit Send when you're happy with it."
+Whenever draft_email_reply is used for anything scheduling-flavoured ("let's find a time", proposing a session, re-engagement outreach that might lead to booking), call get_available_slots FIRST and embed 2-3 concrete suggested times with a one-line reason each in the draft body — never draft a vague "let me know what works for you" when real availability is one tool call away. get_available_slots also auto-widens its search window itself if the immediate range is fully booked, so it will still return real options even when the calendar looks packed short-term.
 Clients also have a self-serve portal at /portal/login (email OTP, no password) where they can view their own upcoming/past sessions, cancel a booking, book a new one, and message Daniele directly. If a client seems unaware of it, or asks how to manage/cancel their own booking, or Daniele wants to point someone there, feel free to mention it and include the link in a drafted email.
 You can propose an actual booking via propose_booking (kinesiology or voice — same tool, pass client_id or voice_student_email), but you can never create one yourself — it only becomes real when the practitioner clicks Confirm on the proposal card, which creates a real Cal.com booking either way. Always call get_available_slots first and propose a real slot from that result, never a guessed time. When finding a slot for a specific person, always pass client_id (kinesiology) or voice_student_email (voice) to get_available_slots — it returns a ranked "suggested" shortlist (weighted by their availability_notes/booking history, not just chronological order), each with a "reason". Lead with the top suggested slot and its reason ("Tuesday 4pm usually works well for her, and it fits the note about after-work sessions") rather than defaulting to whichever slot happens to be soonest — the earliest slot is very often NOT the one they actually want.
 Whenever the practitioner tells you something new about a client's OR voice student's availability (a day/time that works or doesn't), call update_client_availability right away to remember it for next time (client_id for kinesiology, voice_student_email for voice) — don't just acknowledge it in the chat and let it evaporate.
 You can search the inbox read-only via search_inbox (Gmail search syntax) to check for replies or past correspondence — you cannot send, modify, or delete anything through it.
 For business questions ("who's active", "who should I raise rates for", "what times are free"), use get_active_clients, get_revenue_opportunities, and get_practice_schedule_overview rather than guessing — they compute real numbers from appointment history.
 Be proactive, not just reactive: if the conversation naturally touches on scheduling and get_active_clients shows active clients with no future booking, mention them and offer to help book their next session, rather than waiting to be asked. When a client's next-session cadence is clear from get_past_booking_patterns, feel free to suggest it ("she's usually every 2 weeks, so [date] would fit her pattern").
-When Daniele opens with something open-ended and undirected — "what should I work on today", "where do I start", "help me plan my day/week", or similar, with no specific client or question in mind — treat it as a request for a genuine daily briefing, not an invitation to list your own capabilities. Call get_anchor_candidates and get_active_clients (skip get_revenue_opportunities unless the other two come back thin) and synthesize a short, concrete action list from what's actually there: lead with any open_anchors worth securing right now (their usual slot, ready to check availability), then anyone worth a quick outreach (lapsed anchors, or active clients with nothing booked ahead), and only mention a revenue opportunity if one is genuinely clear-cut. Two or three concrete next actions beats an exhaustive dump — end by asking which one to start with, or offering to switch into Anchor Mode if the anchors look like the main opportunity today.
-If Daniele says to skip, move on, or otherwise declines the client currently being discussed — in ANY conversation, not just anchor mode — drop that client immediately and go to the next relevant candidate (or ask what he'd like to do instead). Never re-explain who they are, re-verify their details, or bring them back up again later in the same conversation unless Daniele himself reintroduces them. Repeating a client he's already asked you to move past is a hard failure, not a minor annoyance.
-${anchor_mode ? `ANCHOR MODE IS ACTIVE. The goal right now is filling Daniele's week without overwhelming him with everyone at once, by working outward from his most reliable, currently-engaged relationships. Call get_anchor_candidates ONCE near the start of this conversation — it already reflects the full current picture, so do NOT call it again on later turns just because the topic is still anchors; only re-call it if Daniele says something that would genuinely change the picture (a booking got confirmed, he mentions a cancellation) or real time has clearly passed since the first call.
-Each entry in that result already tells you definitively which system the client is in — never guess, and never search by name. If client_id is set (non-null), they are a kinesiology client: use that exact id with get_client_context / get_available_slots / propose_booking. If voice_student_email is set instead, they are a voice student: use that exact email with search_voice_client. These two fields are mutually exclusive by construction, so there is never a real "not found, let me check the other system" situation — if a lookup with the id/email given to you comes back empty, say so plainly and ask Daniele rather than guessing you had the wrong system.
-Work through the result in this exact order: (1) open_anchors first — a long, consistent track record (4+ sessions, low cancellation rate, a clear usual day/time) AND seen recently, nothing booked yet. For each one, check get_available_slots (or, for a voice student, ask Daniele to confirm via search_voice_client) specifically around their usual_slot, and if it's free, offer to draft an outreach email proposing exactly that slot — don't make them re-decide a day/time they've already established. Present 2-3 at a time, not the whole list. (2) lapsed_anchors next — same strong pattern, but they've gone quiet. Treat these differently from open_anchors: do NOT assume their old slot still holds or propose a specific time upfront. Frame it as a warm, no-pressure re-engagement check-in ("it's been a while, would you be interested in picking sessions back up?") and only get into scheduling specifics once they've actually responded with interest. (3) Only once both anchor buckets are addressed, move to needs_conversion_support — mention these ARE lower priority (shorter or less consistent history), same open check-in framing as lapsed_anchors. (4) Mention already_secured_anchors only briefly if at all — they need no action.
-Keep momentum: after handling one client, proactively suggest the next one rather than waiting to be asked "who's next" every time.` : ""}`;
+CRITICAL — never re-suggest contacting someone who was already just contacted: get_anchor_candidates and get_clients_needing_attention both return recently_contacted (and last_contacted_at) per person, computed from real sent-email logs. If recently_contacted is true, do NOT propose a fresh outreach as if nothing's been said yet — acknowledge a message already went out (and when) and ask whether Daniele wants to follow up differently or just wait for a reply. This is a real, previously-reported failure (re-suggesting an email to someone already emailed) — treat it as a hard rule, not a nice-to-have.
+When Daniele opens with something open-ended and undirected — "what should I work on today", "where do I start", "help me plan my day/week", or similar, with no specific client or question in mind — treat it as a request for a genuine daily briefing, not an invitation to list your own capabilities. Call get_anchor_candidates and get_active_clients (skip get_revenue_opportunities unless the other two come back thin) and synthesize a short, concrete action list from what's actually there: lead with any open_anchors worth securing right now (their usual slot, ready to check availability), then anyone worth a quick outreach (lapsed anchors, or active clients with nothing booked ahead), and only mention a revenue opportunity if one is genuinely clear-cut. Two or three concrete next actions beats an exhaustive dump — end by asking which one to start with.
+If Daniele says to skip, move on, or otherwise declines the client currently being discussed — in ANY conversation — drop that client immediately and go to the next relevant candidate (or ask what he'd like to do instead). Never re-explain who they are, re-verify their details, or bring them back up again later in the same conversation unless Daniele himself reintroduces them. Repeating a client he's already asked you to move past is a hard failure, not a minor annoyance.`;
 
     const toolTrace: any[] = [];
     let pendingDraft = null;
@@ -1031,7 +1326,8 @@ Keep momentum: after handling one client, proactively suggest the next one rathe
     let finalText = "";
 
     for (let i = 0; i < MAX_TOOL_ROUNDS; i++) {
-      const resp = await callGemini(geminiKey, contents, systemInstruction);
+      const { data: resp, servedBy } = await callModel(geminiKeys, openRouterKey, contents, systemInstruction);
+      if (servedBy !== "gemini") console.log(`[assistant-chat] served_by: ${servedBy}`);
       const candidate = resp?.candidates?.[0];
       const part = candidate?.content?.parts?.[0];
       if (!part) {
@@ -1069,6 +1365,8 @@ Keep momentum: after handling one client, proactively suggest the next one rathe
           result = await runGetPracticeScheduleOverview(supabase, userId, args.weeks || 8);
         } else if (name === "get_anchor_candidates") {
           result = await runGetAnchorCandidates(supabase, userId);
+        } else if (name === "get_clients_needing_attention") {
+          result = await runGetClientsNeedingAttention(supabase, userId);
         } else {
           result = { error: `Unknown tool: ${name}` };
         }
@@ -1101,8 +1399,15 @@ Keep momentum: after handling one client, proactively suggest the next one rathe
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("[assistant-chat] Error:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), {
+    const msg = error.message || "Unknown error";
+    const isQuota = isRetryableModelError(msg);
+    // Distinct, greppable log line for quota exhaustion (all keys + OpenRouter
+    // fallback exhausted) vs any other failure — previously a single flat
+    // console.error made it impossible to tell "Gemini is out of capacity"
+    // from an unrelated bug in Supabase function logs.
+    if (isQuota) console.error("[assistant-chat] GEMINI_QUOTA_EXCEEDED (all keys + fallback exhausted):", msg);
+    else console.error("[assistant-chat] Error:", msg);
+    return new Response(JSON.stringify({ error: msg, quota_exceeded: isQuota }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

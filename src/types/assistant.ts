@@ -28,6 +28,9 @@ export interface AssistantMessage {
   draft_email?: DraftEmail | null;
   pending_booking?: PendingBooking | null;
   created_at: string;
+  // Local-only UI flag for a send that failed before the round-trip completed —
+  // never persisted (a failed turn never reaches assistant_messages at all).
+  failed?: boolean;
 }
 
 export interface AssistantConversation {

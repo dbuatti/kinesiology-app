@@ -3,7 +3,8 @@ import { AssistantMessage, DraftEmail, PendingBooking } from "@/types/assistant"
 import MessageBubble from "./MessageBubble";
 import DraftEmailCard from "./DraftEmailCard";
 import BookingProposalCard from "./BookingProposalCard";
-import { Bot, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Bot, Sparkles, RotateCcw } from "lucide-react";
 
 interface Props {
   messages: AssistantMessage[];
@@ -15,18 +16,24 @@ interface Props {
   onBookingConfirmed: () => void;
   onBookingDiscard: () => void;
   onSuggestion: (text: string) => void;
+  onRetry?: (id: string, text: string) => void;
 }
 
 const STARTER_PROMPT = "What should I work on today?";
 
 export default function MessageList({
-  messages, isSending, pendingDraft, onDraftSent, onDraftDiscard, pendingBooking, onBookingConfirmed, onBookingDiscard, onSuggestion,
+  messages, isSending, pendingDraft, onDraftSent, onDraftDiscard, pendingBooking, onBookingConfirmed, onBookingDiscard, onSuggestion, onRetry,
 }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  // Deliberately depends only on messages.length (a genuinely new turn) — NOT on
+  // pendingDraft/pendingBooking object identity. Those null out on every Discard/
+  // Send click (see AssistantPage's clearPersistedDraft/Booking), which used to
+  // re-trigger this smooth scroll on every button click with no new message —
+  // the exact "scrolls me down when I click a button" bug reported on iPad.
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length, isSending, pendingDraft, pendingBooking]);
+  }, [messages.length, isSending]);
 
   if (messages.length === 0 && !isSending) {
     return (
@@ -47,7 +54,22 @@ export default function MessageList({
 
   return (
     <div className="flex-1 min-h-0 space-y-4 overflow-y-auto px-1 py-4">
-      {messages.map((m) => <MessageBubble key={m.id} message={m} />)}
+      {messages.map((m) => (
+        <div key={m.id}>
+          <MessageBubble message={m} />
+          {m.failed && (
+            <div className="flex items-center gap-2 ml-11 mt-1">
+              <span className="text-[11px] text-chart-destructive">Couldn't send.</span>
+              <Button
+                size="sm" variant="outline" className="h-6 text-[10px] px-2 gap-1"
+                onClick={() => onRetry?.(m.id, m.content || "")}
+              >
+                <RotateCcw className="h-3 w-3" /> Retry
+              </Button>
+            </div>
+          )}
+        </div>
+      ))}
       {pendingDraft && (
         <div className="max-w-[85%] mr-auto">
           <DraftEmailCard draft={pendingDraft} onSent={onDraftSent} onDiscard={onDraftDiscard} />

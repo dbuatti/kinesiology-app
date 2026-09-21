@@ -174,7 +174,7 @@ const AppRoutes = () => {
           <Route path="/appointments/:id/protocols" element={<ClinicalProtocolsPage />} />
           {/* Clinical Oversight — consolidated into Clients hub */}
           <Route path="/oversight" element={<Navigate to="/clients?tool=oversight" replace />} />
-          <Route path="/oversight/follow-up" element={<Navigate to="/business?tool=follow-up" replace />} />
+          <Route path="/oversight/follow-up" element={<Navigate to="/assistant" replace />} />
           <Route path="/calendar" element={<UnifiedCalendarPage />} />
           {/* Sessions — consolidated Clinical Hub */}
           <Route path="/sessions" element={<ClinicalHubPage />} />
@@ -232,7 +232,7 @@ const AppRoutes = () => {
           <Route path="/business/overview" element={<Navigate to="/business?tool=overview" replace />} />
           <Route path="/business/marketing-engine" element={<Navigate to="/business?tool=marketing" replace />} />
           <Route path="/business/client-audit" element={<Navigate to="/business?tool=client-audit" replace />} />
-          <Route path="/business/follow-up" element={<Navigate to="/business?tool=follow-up" replace />} />
+          <Route path="/business/follow-up" element={<Navigate to="/assistant" replace />} />
 
           {/* System */}
           <Route path="/settings" element={<SettingsPage />} />

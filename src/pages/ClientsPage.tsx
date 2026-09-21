@@ -30,6 +30,7 @@ import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 import ClientTableView from "@/components/crm/ClientTableView";
 import ClientGridView from "@/components/crm/ClientGridView";
 import { ClinicalOversightTool } from "@/pages/ClinicalOversightPage";
+import { computeClientLifecycleStatus, LifecycleStatus } from "@/lib/clientStatus";
 
 interface ClientWithStats extends Client {
   session_count: number;
@@ -37,8 +38,11 @@ interface ClientWithStats extends Client {
   latest_bolt: number | null;
   upcoming_count: number;
   activity_score: number;
-  attention_score: number;
+  lifecycle_status: LifecycleStatus;
+  lifecycle_status_reason: string;
 }
+
+const STATUS_RANK: Record<LifecycleStatus, number> = { at_risk: 0, active: 1, lapsed: 2, lead: 3 };
 
 export function ClientsTool() {
   const [search, setSearch] = useState("");
@@ -50,6 +54,7 @@ export function ClientsTool() {
   const [bookOpen, setBookOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'attention' | 'active' | 'name' | 'recent' | 'upcoming'>('attention');
+  const [statusFilter, setStatusFilter] = useState<LifecycleStatus | 'all'>('all');
   const { isPrivate } = usePrivacyMode();
   
   const fetchClients = async () => {
@@ -102,20 +107,13 @@ export function ClientsTool() {
         }
         // Frequency points: cap at 12+ sessions in the window = 50.
         const freqPts = Math.min(50, recentCount * 5);
-
-        // Attention score: higher = needs action now.
-        // An active client with no upcoming booking (lapsed) is the top priority.
         const upcomingCount = upcomingApps.length;
-        let attentionScore = 0;
-        if (upcomingCount === 0) {
-          if (lastMs != null && recencyPts >= 50) attentionScore = 100; // seen recently, nothing booked
-          else if (lastMs != null && recencyPts >= 40) attentionScore = 85;
-          else if (lastMs != null && recencyPts >= 28) attentionScore = 60;
-          else if (lastMs != null && recencyPts >= 16) attentionScore = 35;
-          else if (lastMs == null && pastApps.length === 0) attentionScore = 50; // brand new, no history
-        } else {
-          attentionScore = 10 + Math.min(15, upcomingCount * 5); // already handled
-        }
+
+        const { status: lifecycle_status, reason: lifecycle_status_reason } = computeClientLifecycleStatus({
+          appointments: (c.appointments || []).map((a: any) => ({ date: a.date, status: a.status })),
+          hasFutureBooking: upcomingCount > 0,
+          manualOverride: (c as any).lifecycle_status_manual ? (c as any).lifecycle_status : null,
+        });
 
         return {
           ...c,
@@ -126,7 +124,8 @@ export function ClientsTool() {
           latest_bolt: latestBoltApp ? latestBoltApp.bolt_score : null,
           upcoming_count: upcomingCount,
           activity_score: recencyPts + freqPts,
-          attention_score: attentionScore,
+          lifecycle_status,
+          lifecycle_status_reason,
         };
       }) as unknown as ClientWithStats[];
       
@@ -149,13 +148,14 @@ export function ClientsTool() {
   };
 
   const filteredClients = clients
-    .filter(c => 
+    .filter(c =>
       c.name.toLowerCase().includes(search.toLowerCase()) ||
       c.email?.toLowerCase().includes(search.toLowerCase()) ||
       c.suburbs.some(s => s.toLowerCase().includes(search.toLowerCase()))
     )
+    .filter(c => statusFilter === 'all' || c.lifecycle_status === statusFilter)
     .sort((a, b) => {
-      if (sortBy === 'attention') return b.attention_score - a.attention_score;
+      if (sortBy === 'attention') return STATUS_RANK[a.lifecycle_status] - STATUS_RANK[b.lifecycle_status];
       if (sortBy === 'active') return b.activity_score - a.activity_score;
       if (sortBy === 'recent') return (b.last_session_at ? new Date(b.last_session_at).getTime() : 0) - (a.last_session_at ? new Date(a.last_session_at).getTime() : 0);
       if (sortBy === 'upcoming') return b.upcoming_count - a.upcoming_count;
@@ -191,17 +191,36 @@ export function ClientsTool() {
           }
         />
 
+        <div className="flex flex-wrap items-center gap-2">
+          {(['all', 'lead', 'active', 'at_risk', 'lapsed'] as const).map((s) => {
+            const count = s === 'all' ? clients.length : clients.filter(c => c.lifecycle_status === s).length;
+            const label = s === 'all' ? 'All' : s === 'at_risk' ? 'At Risk' : s.charAt(0).toUpperCase() + s.slice(1);
+            return (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={cn(
+                  "px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border transition-colors",
+                  statusFilter === s ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/40"
+                )}
+              >
+                {label} <span className="opacity-70">({count})</span>
+              </button>
+            );
+          })}
+        </div>
+
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-card p-4 rounded-[2rem] border border-border shadow-sm">
           <div className="relative flex-1 w-full max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-            <Input 
-              placeholder="Search by name, email, or suburb..." 
+            <Input
+              placeholder="Search by name, email, or suburb..."
               className="pl-12 bg-muted/50 border-none focus:ring-2 focus:ring-primary h-12 rounded-xl font-medium"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          
+
           <div className="flex items-center gap-2 bg-muted p-1.5 rounded-xl">
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
               <SelectTrigger className="h-9 rounded-lg bg-card border-none px-3 text-xs font-bold uppercase tracking-widest text-primary gap-1.5 w-auto">

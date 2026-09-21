@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import NewInfoBadge from "@/components/crm/NewInfoBadge";
 import { IntakeStatusBadge } from "@/components/crm/IntakeStatusBadge";
+import ClientLifecycleBadge from "@/components/crm/ClientLifecycleBadge";
 
 interface ClientGridViewProps {
   clients: any[];
@@ -76,10 +77,13 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
                     {client.upcoming_count} Upcoming
                   </Badge>
                 )}
-                {client.upcoming_count === 0 && client.activity_score >= 68 && (
-                  <Badge className="bg-amber-500/15 text-amber-600 border-none font-black text-[10px] uppercase tracking-widest mb-2">
-                    Needs booking
-                  </Badge>
+                {client.lifecycle_status && client.lifecycle_status !== "active" && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="mb-2"><ClientLifecycleBadge status={client.lifecycle_status} /></span>
+                    </TooltipTrigger>
+                    <TooltipContent>{client.lifecycle_status_reason}</TooltipContent>
+                  </Tooltip>
                 )}
                 <div className="flex items-center gap-1 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                   <Clock size={12} /> {client.last_session_at ? format(new Date(client.last_session_at), "MMM d") : "Never"}

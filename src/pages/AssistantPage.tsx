@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
 import { useSearchParams, Link as RouterLink } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { showError, showSuccess } from "@/utils/toast";
@@ -12,8 +12,9 @@ import AssistantInput from "@/components/assistant/AssistantInput";
 import NeedsAttentionWidget from "@/components/assistant/NeedsAttentionWidget";
 import ClientEmailThread from "@/components/assistant/ClientEmailThread";
 import CommsInbox from "@/components/assistant/CommsInbox";
+import ClientSnapshotPanel from "@/components/assistant/ClientSnapshotPanel";
 import { AssistantConversation, AssistantMessage, DraftEmail, PendingBooking, VoiceStudentOption } from "@/types/assistant";
-import { Bot, ChevronLeft, MessageCircle, Mail, CalendarRange, Anchor, Copy } from "lucide-react";
+import { Bot, ChevronLeft, MessageCircle, Mail, CalendarRange, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -37,9 +38,6 @@ export default function AssistantPage() {
   const [voiceStudents, setVoiceStudents] = useState<VoiceStudentOption[]>([]);
   const [focusedClientId, setFocusedClientId] = useState<string | null>(initialClientId);
   const [isSending, setIsSending] = useState(false);
-  // Anchor Mode: the assistant prioritises long, consistent clients (get_anchor_candidates)
-  // over ad-hoc scheduling — for deliberately filling the week around reliable bookings first.
-  const [anchorMode, setAnchorMode] = useState(false);
   const [pendingDraft, setPendingDraft] = useState<DraftEmail | null>(null);
   const [pendingDraftMessageId, setPendingDraftMessageId] = useState<string | null>(null);
   const [pendingBooking, setPendingBooking] = useState<PendingBooking | null>(null);
@@ -49,6 +47,26 @@ export default function AssistantPage() {
   const [mobileShowList, setMobileShowList] = useState(!initialClientId);
   // Only meaningful in focused mode: the AI chat, or the client's real email thread.
   const [viewMode, setViewMode] = useState<"chat" | "email" | "inbox">(initialView);
+
+  // Size the two-pane grid to exactly fill the remaining viewport instead of a
+  // fixed "calc(100vh - 300px)" guess — that guess broke (outer page grew a
+  // second scrollbar alongside the conversation-list/message-list ones) whenever
+  // NeedsAttentionWidget rendered a non-trivial number of cards above it.
+  const aboveGridRef = useRef<HTMLDivElement>(null);
+  const [gridHeight, setGridHeight] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    const el = aboveGridRef.current;
+    if (!el) return;
+    const recompute = () => {
+      const top = el.getBoundingClientRect().bottom;
+      setGridHeight(Math.max(420, window.innerHeight - top - 32));
+    };
+    recompute();
+    window.addEventListener("resize", recompute);
+    const ro = new ResizeObserver(recompute);
+    ro.observe(el);
+    return () => { window.removeEventListener("resize", recompute); ro.disconnect(); };
+  }, []);
 
   // Voice students use a "voice:<email>" pseudo-id (see ClientPicker) since they
   // aren't rows in `clients` — resolve it back to the real student wherever focus matters.
@@ -122,11 +140,15 @@ export default function AssistantPage() {
     setMobileShowList(false);
   };
 
-  const handleSend = async (text: string) => {
+  const handleSend = async (text: string, retryId?: string) => {
     setIsSending(true);
     // Optimistic local message so the UI feels responsive while the model runs.
-    const optimisticId = `local-${Date.now()}`;
-    setMessages((prev) => [...prev, { id: optimisticId, conversation_id: activeId || "", role: "user", content: text, created_at: new Date().toISOString() }]);
+    // Reuse the failed message's id on retry instead of appending a new one.
+    const optimisticId = retryId || `local-${Date.now()}`;
+    setMessages((prev) => {
+      const withoutFailed = prev.filter((m) => m.id !== optimisticId);
+      return [...withoutFailed, { id: optimisticId, conversation_id: activeId || "", role: "user", content: text, created_at: new Date().toISOString(), failed: false }];
+    });
 
     try {
       const { data, error } = await supabase.functions.invoke("assistant-chat", {
@@ -136,18 +158,22 @@ export default function AssistantPage() {
           voice_student_email: focusedVoiceStudent?.email || null,
           voice_student_name: focusedVoiceStudent?.name || null,
           message: text,
-          anchor_mode: anchorMode,
         },
       });
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
       setActiveId(data.conversation_id);
       setPendingDraft(data.draft_email || null);
       setPendingBooking(data.pending_booking || null);
       await Promise.all([loadMessages(data.conversation_id), loadConversations()]);
     } catch (err: any) {
-      showError(err.message || "The assistant couldn't respond just then.");
-      setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      const msg = err.message || "";
+      const isQuota = /quota|resource_exhausted|rate limit|429/i.test(msg);
+      showError(isQuota ? "The assistant is temporarily out of capacity — try again in a moment, or hit Retry below." : (msg || "The assistant couldn't respond just then."));
+      // Keep the message (tagged failed) instead of dropping it — a Retry button
+      // in MessageList re-sends the same text rather than forcing a retype.
+      setMessages((prev) => prev.map((m) => (m.id === optimisticId ? { ...m, failed: true } : m)));
     } finally {
       setIsSending(false);
     }
@@ -210,43 +236,36 @@ export default function AssistantPage() {
 
   return (
     <AppLayout variant="wide">
-      <PageHeader
-        icon={Bot}
-        title="Assistant"
-        subtitle="Ask about scheduling, past patterns, or switch into focused mode for a specific client."
-        actions={
-          <div className="flex items-center gap-2">
-            <Button
-              variant={viewMode === "inbox" ? "default" : "outline"}
-              size="sm"
-              className={cn("h-9 text-xs gap-1.5", viewMode === "inbox" && "bg-chart-primary hover:bg-chart-primary/90 text-white")}
-              onClick={() => { setViewMode((v) => (v === "inbox" ? "chat" : "inbox")); setMobileShowList(false); }}
-              title="Every recent client email, across everyone, newest first"
-            >
-              <Mail className="h-3.5 w-3.5" /> Inbox
-            </Button>
-            <Button
-              variant={anchorMode ? "default" : "outline"}
-              size="sm"
-              className={cn("h-9 text-xs gap-1.5", anchorMode && "bg-chart-emerald hover:bg-chart-emerald/90 text-white")}
-              onClick={() => setAnchorMode((v) => !v)}
-              title="Prioritise long, consistent clients first when filling the week"
-            >
-              <Anchor className="h-3.5 w-3.5" /> Anchor Mode
-            </Button>
-            <Button asChild variant="outline" size="sm" className="h-9 text-xs gap-1.5">
-              <RouterLink to="/timetable"><CalendarRange className="h-3.5 w-3.5" /> Timetable Simulator</RouterLink>
-            </Button>
-            <ClientPicker clients={clients} voiceStudents={voiceStudents} value={focusedClientId} onChange={setFocusedClientId} />
-          </div>
-        }
-      />
-      <div className="mt-6">
-        <NeedsAttentionWidget />
+      <div ref={aboveGridRef}>
+        <PageHeader
+          icon={Bot}
+          title="Assistant"
+          subtitle="Ask about scheduling, past patterns, or switch into focused mode for a specific client."
+          actions={
+            <div className="flex items-center gap-2">
+              <Button
+                variant={viewMode === "inbox" ? "default" : "outline"}
+                size="sm"
+                className={cn("h-9 text-xs gap-1.5", viewMode === "inbox" && "bg-chart-primary hover:bg-chart-primary/90 text-white")}
+                onClick={() => { setViewMode((v) => (v === "inbox" ? "chat" : "inbox")); setMobileShowList(false); }}
+                title="Every recent client email, across everyone, newest first"
+              >
+                <Mail className="h-3.5 w-3.5" /> Inbox
+              </Button>
+              <Button asChild variant="outline" size="sm" className="h-9 text-xs gap-1.5">
+                <RouterLink to="/timetable"><CalendarRange className="h-3.5 w-3.5" /> Timetable Simulator</RouterLink>
+              </Button>
+              <ClientPicker clients={clients} voiceStudents={voiceStudents} value={focusedClientId} onChange={setFocusedClientId} />
+            </div>
+          }
+        />
+        <div className="mt-6">
+          <NeedsAttentionWidget />
+        </div>
       </div>
       <div
         className={cn("grid grid-cols-1 gap-0 rounded-2xl border border-border overflow-hidden bg-card", viewMode === "inbox" ? "md:grid-cols-1" : "md:grid-cols-[260px_1fr]")}
-        style={{ height: "calc(100vh - 300px)", minHeight: 420 }}
+        style={{ height: gridHeight ? `${gridHeight}px` : "calc(100vh - 300px)", minHeight: 420 }}
       >
         <div className={cn("min-h-0 min-w-0", mobileShowList && viewMode !== "inbox" ? "flex" : "hidden", viewMode === "inbox" ? "md:hidden" : "md:flex")}>
           <ConversationList
@@ -276,6 +295,14 @@ export default function AssistantPage() {
                 <Copy className="h-3 w-3" /> Copy chat
               </Button>
             </div>
+          )}
+          {focusedClient && viewMode !== "inbox" && (
+            <ClientSnapshotPanel
+              clientId={focusedClient.id}
+              clientName={focusedClient.name}
+              isVoice={!!focusedVoiceStudent}
+              onDraftRateEmail={(prompt) => handleSend(prompt)}
+            />
           )}
           {focusedClient && viewMode !== "inbox" && (
             <div className="flex items-center gap-1 bg-muted p-1 rounded-lg mb-3 w-fit">
@@ -309,6 +336,7 @@ export default function AssistantPage() {
                 onBookingConfirmed={handleBookingConfirmed}
                 onBookingDiscard={handleBookingDiscard}
                 onSuggestion={handleSend}
+                onRetry={(id, text) => handleSend(text, id)}
               />
               <AssistantInput onSend={handleSend} disabled={isSending} initialValue={initialPrompt} />
             </>

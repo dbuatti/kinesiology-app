@@ -261,15 +261,20 @@ export default function LaunchCampaignTab() {
                     {e.voice_student_email ? <Mic className="h-3 w-3 text-chart-destructive shrink-0" /> : <Brain className="h-3 w-3 text-chart-purple shrink-0" />}
                     <span className="font-semibold text-foreground text-sm">{e.client_name}</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="text-[10px] uppercase tracking-wide text-muted-foreground">Proposed slot</label>
-                      <Input value={e.proposed_slot || ""} onChange={(ev) => updateEntry(e.id, { proposed_slot: ev.target.value })} className="h-8 text-xs mt-1" />
-                    </div>
-                    <div>
-                      <label className="text-[10px] uppercase tracking-wide text-muted-foreground">First regular date</label>
-                      <Input type="date" value={e.first_regular_date || ""} onChange={(ev) => updateEntry(e.id, { first_regular_date: ev.target.value })} className="h-8 text-xs mt-1" />
-                    </div>
+                  {/* Full-width, one per row — not a 2-column grid. On a
+                      375px phone, the outer page padding (16px) + this
+                      card's own padding (12px) + halving via grid-cols-2
+                      left each input only ~130px wide ("so much wasted
+                      space... it's in a card with padding and then more
+                      padding" — real complaint: two paddings deep AND
+                      split in half on top of that). */}
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wide text-muted-foreground">Proposed slot</label>
+                    <Input value={e.proposed_slot || ""} onChange={(ev) => updateEntry(e.id, { proposed_slot: ev.target.value })} className="h-8 text-xs mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] uppercase tracking-wide text-muted-foreground">First regular date</label>
+                    <Input type="date" value={e.first_regular_date || ""} onChange={(ev) => updateEntry(e.id, { first_regular_date: ev.target.value })} className="h-8 text-xs mt-1" />
                   </div>
                   <div>
                     <label className="text-[10px] uppercase tracking-wide text-muted-foreground">Status</label>

@@ -25,20 +25,42 @@ export interface NormalizedVoiceBooking {
 // student_name that does have one, before grouping — so all of a student's
 // rows merge into one real history regardless of which rows have the email
 // populated.
+// Notion is the PRIMARY source of lesson history (per CLAUDE.md's "Voice
+// Calendar Fallback") — voice_bookings only reliably covers lessons booked
+// through Cal.com. A student whose lessons were all logged directly in
+// Notion, with no Cal.com booking ever made for them, was previously
+// invisible to every feature built on this function (Follow-up, Launch
+// Campaign, Key Metrics, get_available_slots ranking, ClientSnapshotPanel...)
+// — real bug found live: Bella (3 real piano lessons, all Notion-only, zero
+// voice_bookings rows) never appeared anywhere despite being a real,
+// consistent student. Fixed by merging both sources here, once, so every
+// caller benefits without having to know two sources even exist.
 export async function fetchNormalizedVoiceBookings(): Promise<NormalizedVoiceBooking[]> {
-  const { data, error } = await supabase
-    .from("voice_bookings")
-    .select("student_name, student_email, lesson_date, lesson_time, status, cost")
-    .order("lesson_date", { ascending: false });
-  if (error || !data) return [];
+  const [bookingsResult, notionResult] = await Promise.all([
+    supabase
+      .from("voice_bookings")
+      .select("student_name, student_email, lesson_date, lesson_time, status, cost, notion_lesson_id_1, notion_lesson_id_2")
+      .order("lesson_date", { ascending: false }),
+    supabase.functions.invoke("voice-lessons"),
+  ]);
 
-  type Row = { student_name: string | null; student_email: string | null; lesson_date: string; lesson_time: string | null; status: string | null; cost: number | null };
-  const rows = data as Row[];
+  type Row = {
+    student_name: string | null; student_email: string | null; lesson_date: string; lesson_time: string | null;
+    status: string | null; cost: number | null; notion_lesson_id_1: string | null; notion_lesson_id_2: string | null;
+  };
+  const rows = (bookingsResult.data || []) as Row[];
+  type NotionLesson = { id: string; date: string | null; studentName: string | null; studentEmail: string | null; cost: number | null };
+  const notionLessons = ((notionResult.data?.lessons || []) as NotionLesson[]).filter((l) => l.date);
 
   const nameToEmail = new Map<string, string>();
   for (const row of rows) {
     const name = (row.student_name || "").trim().toLowerCase();
     const email = (row.student_email || "").trim().toLowerCase();
+    if (name && email && !nameToEmail.has(name)) nameToEmail.set(name, email);
+  }
+  for (const l of notionLessons) {
+    const name = (l.studentName || "").trim().toLowerCase();
+    const email = (l.studentEmail || "").trim().toLowerCase();
     if (name && email && !nameToEmail.has(name)) nameToEmail.set(name, email);
   }
 
@@ -50,5 +72,24 @@ export async function fetchNormalizedVoiceBookings(): Promise<NormalizedVoiceBoo
     if (!email) continue; // no way to identify this student at all — genuinely unresolvable
     normalized.push({ studentName: name || email, studentEmail: email, lessonDate: row.lesson_date, lessonTime: row.lesson_time, status: row.status, cost: row.cost });
   }
-  return normalized;
+
+  // A voice_booking row already linked to a Notion lesson (notion_lesson_id_1/2)
+  // represents the SAME lesson — counting the Notion entry too would double it.
+  const linkedNotionIds = new Set<string>();
+  for (const row of rows) {
+    if (row.notion_lesson_id_1) linkedNotionIds.add(row.notion_lesson_id_1);
+    if (row.notion_lesson_id_2) linkedNotionIds.add(row.notion_lesson_id_2);
+  }
+  for (const l of notionLessons) {
+    if (linkedNotionIds.has(l.id)) continue;
+    const name = (l.studentName || "").trim();
+    const nameKey = name.toLowerCase();
+    const email = (l.studentEmail || "").trim().toLowerCase() || nameToEmail.get(nameKey) || "";
+    if (!email) continue;
+    // Notion's Lessons DB only ever logs a lesson that actually happened —
+    // there's no cancelled/scheduled state to read, so "completed" is correct.
+    normalized.push({ studentName: name || email, studentEmail: email, lessonDate: l.date!, lessonTime: null, status: "completed", cost: l.cost });
+  }
+
+  return normalized.sort((a, b) => new Date(b.lessonDate).getTime() - new Date(a.lessonDate).getTime());
 }

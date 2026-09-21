@@ -240,7 +240,7 @@ const functionDeclarations = [
   },
   {
     name: "draft_email_reply",
-    description: "Produce a DRAFT email for the practitioner to review before sending. This does NOT send anything — it only returns draft text for human approval. Always use this instead of claiming you've sent an email.",
+    description: "Produce a DRAFT email for the practitioner to review before sending. This does NOT send anything — it only returns draft text for human approval. Always use this instead of claiming you've sent an email. The body must be PLAIN TEXT exactly as a person would type it into an email — no markdown at all (no **bold**, no bullet *asterisks*, no # headings); use a plain '-' or nothing for a list. Daniele is a single practitioner writing personally to someone he knows, not a business — write in first person singular ('I', never 'we'/'our team') and keep it sounding like him, not like marketing copy.",
     parameters: {
       type: "OBJECT",
       properties: {
@@ -268,6 +268,20 @@ const functionDeclarations = [
     parameters: { type: "OBJECT", properties: {} },
   },
 ];
+
+// Belt-and-suspenders for the system prompt's "no markdown" instruction —
+// Gemini still occasionally slips into **bold**/bullet-asterisk/heading
+// syntax out of habit (real complaint: literal "**" showing up in a launch
+// campaign draft). Strips it deterministically so a drafted email always
+// reads as plain text, regardless of whether the model followed the prompt.
+function stripMarkdown(text: string): string {
+  if (!text) return text;
+  return text
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/(?<!\w)\*(\S(?:.*?\S)?)\*(?!\w)/g, "$1")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/^\s*[*]\s+/gm, "- ");
+}
 
 function melbourneNow() {
   return new Date().toLocaleString("en-AU", {
@@ -613,7 +627,7 @@ async function fetchCalcomSlots(calcomKey: string, start: string, endISO: string
   return { slots, flatIsos };
 }
 
-async function runGetAvailableSlots(supabase: any, userId: string, start: string, end: string, eventTypeId: number | undefined, clientId?: string, voiceStudentEmail?: string) {
+async function runGetAvailableSlots(supabase: any, supabaseUrl: string, serviceKey: string, userId: string, start: string, end: string, eventTypeId: number | undefined, clientId?: string, voiceStudentEmail?: string) {
   const CALCOM_KEY = Deno.env.get("CALCOM_API_KEY");
   if (!CALCOM_KEY) return { error: "Cal.com is not configured." };
 
@@ -668,7 +682,7 @@ async function runGetAvailableSlots(supabase: any, userId: string, start: string
   } else if (voiceStudentEmail) {
     const now = new Date();
     const [allVoiceRows, timetablePrefs] = await Promise.all([
-      fetchNormalizedVoiceBookings(supabase, ", lesson_time"),
+      fetchNormalizedVoiceBookings(supabase, supabaseUrl, serviceKey, ", lesson_time"),
       fetchTimetableAvailability(supabase, `voice:${voiceStudentEmail}`),
     ]);
     windows = timetablePrefs.windows;
@@ -790,17 +804,38 @@ async function runGetPastBookingPatterns(supabase: any, userId: string, clientId
 // zero real sessions. This backfills a missing email from another row with
 // the same student_name before grouping, so all of a student's rows merge
 // into one real history regardless of which rows have the email populated.
-async function fetchNormalizedVoiceBookings(supabase: any, extraSelect = "") {
-  const { data } = await supabase
-    .from("voice_bookings")
-    .select(`student_name, student_email, lesson_date, status${extraSelect}`)
-    .order("lesson_date", { ascending: false });
-  const rows = (data || []) as any[];
+//
+// Also merges in Notion-only lessons (via the voice-lessons function) — a
+// second real bug found live: Bella (3 real piano lessons) has ZERO
+// voice_bookings rows at all, since her lessons were only ever logged in
+// Notion, never booked through Cal.com. voice_bookings alone made her
+// invisible to every tool built on this function. notion_lesson_id_1/2 on a
+// voice_bookings row means that Cal.com booking already represents a Notion
+// lesson — skip that Notion id so it isn't double-counted.
+async function fetchNormalizedVoiceBookings(supabase: any, supabaseUrl: string, serviceKey: string, extraSelect = "") {
+  const [bookingsRes, notionRes] = await Promise.all([
+    supabase
+      .from("voice_bookings")
+      .select(`student_name, student_email, lesson_date, status, notion_lesson_id_1, notion_lesson_id_2${extraSelect}`)
+      .order("lesson_date", { ascending: false }),
+    fetch(`${supabaseUrl}/functions/v1/voice-lessons`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${serviceKey}`, "Content-Type": "application/json" },
+      body: "{}",
+    }).then((r) => r.json()).catch(() => ({ lessons: [] })),
+  ]);
+  const rows = (bookingsRes.data || []) as any[];
+  const notionLessons = ((notionRes?.lessons || []) as any[]).filter((l) => l.date);
 
   const nameToEmail = new Map<string, string>();
   for (const row of rows) {
     const name = (row.student_name || "").trim().toLowerCase();
     const email = (row.student_email || "").trim().toLowerCase();
+    if (name && email && !nameToEmail.has(name)) nameToEmail.set(name, email);
+  }
+  for (const l of notionLessons) {
+    const name = (l.studentName || "").trim().toLowerCase();
+    const email = (l.studentEmail || "").trim().toLowerCase();
     if (name && email && !nameToEmail.has(name)) nameToEmail.set(name, email);
   }
 
@@ -812,7 +847,24 @@ async function fetchNormalizedVoiceBookings(supabase: any, extraSelect = "") {
     if (!email) continue;
     normalized.push({ ...row, student_name: name || email, student_email: email });
   }
-  return normalized;
+
+  const linkedNotionIds = new Set<string>();
+  for (const row of rows) {
+    if (row.notion_lesson_id_1) linkedNotionIds.add(row.notion_lesson_id_1);
+    if (row.notion_lesson_id_2) linkedNotionIds.add(row.notion_lesson_id_2);
+  }
+  for (const l of notionLessons) {
+    if (linkedNotionIds.has(l.id)) continue;
+    const name = (l.studentName || "").trim();
+    const nameKey = name.toLowerCase();
+    const email = (l.studentEmail || "").trim().toLowerCase() || nameToEmail.get(nameKey) || "";
+    if (!email) continue;
+    // Notion's Lessons DB only ever logs a lesson that actually happened —
+    // there's no cancelled/scheduled state to read, so "completed" is correct.
+    normalized.push({ student_name: name || email, student_email: email, lesson_date: l.date, status: "completed", lesson_time: null, cost: l.cost ?? null, discipline: l.discipline ?? null });
+  }
+
+  return normalized.sort((a, b) => new Date(b.lesson_date).getTime() - new Date(a.lesson_date).getTime());
 }
 
 async function runSearchVoiceClient(supabaseUrl: string, serviceKey: string, supabase: any, userId: string, query: string) {
@@ -836,7 +888,7 @@ async function runSearchVoiceClient(supabaseUrl: string, serviceKey: string, sup
   const student = matches[0];
   const studentEmail = (student.email || "").toLowerCase().trim();
   const [allVoiceRows, { data: simulatorEntry }] = await Promise.all([
-    fetchNormalizedVoiceBookings(supabase, ", lesson_time, cost, discipline"),
+    fetchNormalizedVoiceBookings(supabase, supabaseUrl, serviceKey, ", lesson_time, cost, discipline"),
     supabase.from("timetable_client_availability")
       .select("note, windows, updated_at")
       .eq("user_id", userId).eq("client_key", `voice:${studentEmail}`)
@@ -1152,7 +1204,7 @@ async function fetchRecentlyContactedMap(supabase: any, emails: string[]): Promi
   return map;
 }
 
-async function runGetClientsNeedingAttention(supabase: any, userId: string) {
+async function runGetClientsNeedingAttention(supabase: any, supabaseUrl: string, serviceKey: string, userId: string) {
   const now = new Date();
 
   const [{ data: appts }, voiceRows] = await Promise.all([
@@ -1160,7 +1212,7 @@ async function runGetClientsNeedingAttention(supabase: any, userId: string) {
       .select("client_id, date, status, clients(id, name, email)")
       .eq("user_id", userId)
       .order("date", { ascending: false }),
-    fetchNormalizedVoiceBookings(supabase),
+    fetchNormalizedVoiceBookings(supabase, supabaseUrl, serviceKey),
   ]);
 
   const hasFuture = new Set<string>();
@@ -1219,7 +1271,7 @@ async function runGetClientsNeedingAttention(supabase: any, userId: string) {
   return { clients_needing_attention: rows };
 }
 
-async function runGetAnchorCandidates(supabase: any, userId: string) {
+async function runGetAnchorCandidates(supabase: any, supabaseUrl: string, serviceKey: string, userId: string) {
   const now = new Date();
 
   const [{ data: appts }, voiceRows] = await Promise.all([
@@ -1227,7 +1279,7 @@ async function runGetAnchorCandidates(supabase: any, userId: string) {
       .select("client_id, date, status, clients(id, name, email, availability_notes)")
       .eq("user_id", userId)
       .order("date", { ascending: true }),
-    fetchNormalizedVoiceBookings(supabase, ", lesson_time"),
+    fetchNormalizedVoiceBookings(supabase, supabaseUrl, serviceKey, ", lesson_time"),
   ]);
 
   const byId = new Map<string, AnchorAgg>();
@@ -1433,7 +1485,7 @@ ${client_id
   : voice_student_email
   ? `This conversation is focused on one specific voice student (email: ${voice_student_email}${voice_student_name ? `, name: ${voice_student_name}` : ""}). Call search_voice_client with their email first to load their lesson history, notes, and likely_usual_slot before answering or drafting anything — they are NOT in the clients table, so get_client_context (kinesiology-only) doesn't apply, but get_available_slots and propose_booking BOTH work for them: pass voice_student_email instead of client_id and they behave exactly like they do for a kinesiology client, including creating a real Cal.com booking once the practitioner clicks Confirm.`
   : `This is a general conversation, not focused on one client. Default to an anchor mindset — this is how EVERY general conversation should run, not an opt-in mode: prioritise securing and deepening relationships with clients who are close to converting or renewing over chasing volume for its own sake. Don't get distracted trying to bring in everyone at once — securing one real relationship beats a scattershot list. When scheduling, prioritisation, or "who should I focus on" comes up, call get_anchor_candidates ONCE (it reflects the full current picture — don't re-call it on later turns unless something genuinely changed, like a booking confirmed or a cancellation mentioned) and work through it in this order: (1) open_anchors first — long, consistent track record, seen recently, nothing booked yet. Check get_available_slots around their usual_slot and offer to draft outreach proposing exactly that slot — don't make them re-decide a day/time they've already established. Present 2-3 at a time, not the whole list. (2) lapsed_anchors next — same strong pattern, gone quiet. Do NOT assume their old slot still holds; frame it as a warm, no-pressure re-engagement check-in and only get into scheduling specifics once they've responded with interest. (3) needs_conversion_support only once both anchor buckets are addressed — mention these ARE lower priority. (4) already_secured_anchors need no action. Keep momentum: after handling one, proactively suggest the next rather than waiting to be asked "who's next". Also check get_clients_needing_attention for anyone genuinely at risk of falling through the cracks (a cancelled-and-gone-quiet client, for example) — mention them even if the conversation didn't ask about follow-up specifically. Daniele finds scheduling decisions genuinely effortful (this tool exists specifically to lower that friction), so ALWAYS lead with any is_quick_win entries from get_clients_needing_attention before anything else — a recent cancellation from an otherwise-consistent client is the single easiest thing to resolve (check get_available_slots around their usual pattern and offer one concrete slot to propose), and surfacing it first means he secures a real win in one click instead of sifting through a long list to find it himself.`}
-You can draft an email for review via draft_email_reply, but you can never send one yourself — always say the draft is ready for review, never that it has been sent. Never invent a recipient address (no "@example.com" placeholders) — always pull the real email from get_client_context, get_anchor_candidates, or search_voice_client first. Critical: after calling draft_email_reply, do NOT repeat the drafted subject/body in your text reply — it already renders as its own editable card with a Send button right above your message, and re-typing the same content is confusing (the practitioner can't tell if your text version or the card is "the real one," and on a small screen the card can get lost under a wall of repeated text). Just briefly confirm it's ready, e.g. "Draft's ready above — edit anything you like, then hit Send when you're happy with it."
+You can draft an email for review via draft_email_reply, but you can never send one yourself — always say the draft is ready for review, never that it has been sent. Never invent a recipient address (no "@example.com" placeholders) — always pull the real email from get_client_context, get_anchor_candidates, or search_voice_client first. Every drafted email body must read like Daniele personally typed it: first person singular ("I", never "we" or "our team" — he's one practitioner, not a business writing to a customer), plain conversational language, and absolutely no markdown syntax (no **bold**, no asterisk bullets, no # headings) — Gmail renders the literal asterisks, so markdown emphasis shows up as ugly stray characters in a real inbox. If something needs emphasis, just say it plainly instead. Avoid anything that reads like marketing copy (no "exciting news!", exclamation-heavy hooks, or salesy framing) — these are warm, low-key messages to people he already knows. Critical: after calling draft_email_reply, do NOT repeat the drafted subject/body in your text reply — it already renders as its own editable card with a Send button right above your message, and re-typing the same content is confusing (the practitioner can't tell if your text version or the card is "the real one," and on a small screen the card can get lost under a wall of repeated text). Just briefly confirm it's ready, e.g. "Draft's ready above — edit anything you like, then hit Send when you're happy with it."
 Whenever draft_email_reply is used for anything scheduling-flavoured ("let's find a time", proposing a session, re-engagement outreach that might lead to booking), call get_available_slots FIRST and embed 2-3 concrete suggested times with a one-line reason each in the draft body — never draft a vague "let me know what works for you" when real availability is one tool call away. get_available_slots also auto-widens its search window itself if the immediate range is fully booked, so it will still return real options even when the calendar looks packed short-term.
 Clients also have a self-serve portal at /portal/login (email OTP, no password) where they can view their own upcoming/past sessions, cancel a booking, book a new one, and message Daniele directly. If a client seems unaware of it, or asks how to manage/cancel their own booking, or Daniele wants to point someone there, feel free to mention it and include the link in a drafted email.
 You can propose an actual booking via propose_booking (kinesiology or voice — same tool, pass client_id or voice_student_email), but you can never create one yourself — it only becomes real when the practitioner clicks Confirm on the proposal card, which creates a real Cal.com booking either way. Always call get_available_slots first and propose a real slot from that result, never a guessed time. When finding a slot for a specific person, always pass client_id (kinesiology) or voice_student_email (voice) to get_available_slots — it returns a ranked "suggested" shortlist (weighted by their availability_notes/booking history, not just chronological order), each with a "reason". Lead with the top suggested slot and its reason ("Tuesday 4pm usually works well for her, and it fits the note about after-work sessions") rather than defaulting to whichever slot happens to be soonest — the earliest slot is very often NOT the one they actually want.
@@ -1464,7 +1516,7 @@ If Daniele says to skip, move on, or otherwise declines the client currently bei
         const { name, args } = part.functionCall;
         let result: any;
         if (name === "draft_email_reply") {
-          pendingDraft = { to: args.to, subject: args.subject, body: args.body, client_id: args.client_id || client_id || null, appointment_id: args.appointment_id || null };
+          pendingDraft = { to: args.to, subject: stripMarkdown(args.subject), body: stripMarkdown(args.body), client_id: args.client_id || client_id || null, appointment_id: args.appointment_id || null };
           result = { status: "drafted", note: "Draft created for human review. It has not been sent." };
         } else if (name === "propose_booking") {
           const proposed = await runProposeBooking(supabase, userId, args);
@@ -1477,7 +1529,7 @@ If Daniele says to skip, move on, or otherwise declines the client currently bei
         } else if (name === "get_client_context") {
           result = await runGetClientContext(supabase, userId, args.client_id);
         } else if (name === "get_available_slots") {
-          result = await runGetAvailableSlots(supabase, userId, args.start, args.end, args.event_type_id, args.client_id, args.voice_student_email);
+          result = await runGetAvailableSlots(supabase, SUPABASE_URL, SERVICE_KEY, userId, args.start, args.end, args.event_type_id, args.client_id, args.voice_student_email);
         } else if (name === "get_past_booking_patterns") {
           result = await runGetPastBookingPatterns(supabase, userId, args.client_id);
         } else if (name === "search_voice_client") {
@@ -1489,9 +1541,9 @@ If Daniele says to skip, move on, or otherwise declines the client currently bei
         } else if (name === "get_practice_schedule_overview") {
           result = await runGetPracticeScheduleOverview(supabase, userId, args.weeks || 8);
         } else if (name === "get_anchor_candidates") {
-          result = await runGetAnchorCandidates(supabase, userId);
+          result = await runGetAnchorCandidates(supabase, SUPABASE_URL, SERVICE_KEY, userId);
         } else if (name === "get_clients_needing_attention") {
-          result = await runGetClientsNeedingAttention(supabase, userId);
+          result = await runGetClientsNeedingAttention(supabase, SUPABASE_URL, SERVICE_KEY, userId);
         } else {
           result = { error: `Unknown tool: ${name}` };
         }

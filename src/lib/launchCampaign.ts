@@ -1,0 +1,153 @@
+import { supabase } from "@/integrations/supabase/client";
+
+// Purpose-built segmentation for a one-off Launch Campaign — deliberately
+// SEPARATE from the standing lifecycle-status taxonomy (lead/active/at_risk/
+// lapsed) in src/lib/clientStatus.ts. A campaign needs its own three segments
+// (active / cancelled_no_rebook / one_lesson_only) tied to campaign messaging
+// rules, not the general "who needs follow-up" definition — conflating the
+// two would make neither one correct for its actual purpose.
+export type CampaignSegment = "active" | "cancelled_no_rebook" | "one_lesson_only";
+
+export interface CampaignBlackoutRange {
+  start: string; // YYYY-MM-DD
+  end: string; // YYYY-MM-DD
+}
+
+export interface CampaignConfig {
+  bridgeDays: number[]; // 0=Sun..6=Sat
+  bridgeStart: string;
+  bridgeEnd: string;
+  regularDays: number[];
+  regularStart: string;
+  blackoutRanges: CampaignBlackoutRange[];
+}
+
+export const DEFAULT_CAMPAIGN_CONFIG: CampaignConfig = {
+  bridgeDays: [4, 5], // Thu, Fri
+  bridgeStart: "",
+  bridgeEnd: "",
+  regularDays: [1, 2, 3], // Mon, Tue, Wed
+  regularStart: "",
+  blackoutRanges: [],
+};
+
+export interface CampaignAudienceMember {
+  clientId: string;
+  clientName: string;
+  clientEmail: string | null;
+  segment: CampaignSegment;
+  reason: string;
+  // Every completed appointment's day-of-week (0-6) + hour (24h, Melbourne) —
+  // used to propose a recurring slot within the configured regular days.
+  pattern: { day: number; hour: number }[];
+}
+
+const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+function melbourneDayHour(iso: string): { day: number; hour: number } {
+  const d = new Date(iso);
+  const dayName = d.toLocaleDateString("en-AU", { weekday: "long", timeZone: "Australia/Melbourne" });
+  const hour = Number(d.toLocaleTimeString("en-AU", { hour: "numeric", hour12: false, timeZone: "Australia/Melbourne" }));
+  return { day: DAY_NAMES.indexOf(dayName), hour };
+}
+
+// Pulls the same underlying appointment history NeedsAttentionWidget/FollowUpTab
+// use, but classifies into this campaign's own three segments instead of the
+// standing lifecycle taxonomy.
+export async function computeCampaignAudience(): Promise<CampaignAudienceMember[]> {
+  const { data, error } = await supabase
+    .from("appointments")
+    .select("client_id, date, status, clients(id, name, email)")
+    .order("date", { ascending: false });
+  if (error || !data) return [];
+
+  const now = new Date();
+  const hasFuture = new Set<string>();
+  const agg = new Map<string, { name: string; email: string | null; appointments: { date: string; status: string }[] }>();
+
+  type Row = { client_id: string | null; date: string; status: string; clients: { name: string | null; email: string | null } | null };
+  for (const a of data as unknown as Row[]) {
+    if (!a.client_id || !a.clients) continue;
+    const d = new Date(a.date);
+    if (a.status === "Scheduled" && d > now) { hasFuture.add(a.client_id); continue; }
+    if (d > now) continue;
+    const existing = agg.get(a.client_id) || { name: a.clients.name || "Unknown", email: a.clients.email || null, appointments: [] };
+    existing.appointments.push({ date: a.date, status: a.status });
+    agg.set(a.client_id, existing);
+  }
+
+  const members: CampaignAudienceMember[] = [];
+  for (const [clientId, { name, email, appointments }] of agg.entries()) {
+    if (hasFuture.has(clientId)) continue; // already booked ahead — not part of this push
+    const sorted = [...appointments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const completed = sorted.filter((a) => a.status !== "Cancelled");
+    const mostRecent = sorted[0];
+    const pattern = completed.map((a) => melbourneDayHour(a.date));
+
+    let segment: CampaignSegment;
+    let reason: string;
+    if (mostRecent.status === "Cancelled" && completed.length > 0) {
+      segment = "cancelled_no_rebook";
+      reason = "Cancelled their last session and hasn't rebooked";
+    } else if (completed.length === 1) {
+      segment = "one_lesson_only";
+      reason = "Only ever had one session";
+    } else if (completed.length > 1) {
+      segment = "active";
+      reason = `${completed.length} completed sessions, regular client`;
+    } else {
+      continue; // no real history at all (e.g. only ever cancelled) — not campaign-relevant
+    }
+
+    members.push({ clientId, clientName: name, clientEmail: email, segment, reason, pattern });
+  }
+  return members;
+}
+
+// Finds the best day within `regularDays` for this client based on their real
+// history, falling back gracefully when their pattern doesn't overlap the new
+// regular days at all.
+export function proposeRecurringSlot(pattern: { day: number; hour: number }[], regularDays: number[]): { label: string; confident: boolean } {
+  if (pattern.length === 0) return { label: "No history — pick manually", confident: false };
+
+  const inRegularDays = pattern.filter((p) => regularDays.includes(p.day));
+  const pool = inRegularDays.length > 0 ? inRegularDays : pattern;
+  const dayFreq: Record<number, number> = {};
+  const hourFreq: Record<number, number> = {};
+  for (const p of pool) {
+    dayFreq[p.day] = (dayFreq[p.day] || 0) + 1;
+    hourFreq[p.hour] = (hourFreq[p.hour] || 0) + 1;
+  }
+  const topDay = Number(Object.entries(dayFreq).sort((a, b) => b[1] - a[1])[0][0]);
+  const topHour = Number(Object.entries(hourFreq).sort((a, b) => b[1] - a[1])[0][0]);
+  const label = `${DAY_NAMES[topDay]} ${String(topHour).padStart(2, "0")}:00`;
+  return { label, confident: inRegularDays.length > 0 };
+}
+
+// First date on/after regularStart whose day-of-week is in regularDays and
+// doesn't fall inside any blackout range.
+export function computeFirstRegularDate(regularStart: string, regularDays: number[], blackoutRanges: CampaignBlackoutRange[]): string | null {
+  if (!regularStart || regularDays.length === 0) return null;
+  const start = new Date(`${regularStart}T00:00:00`);
+  const inBlackout = (d: Date) => blackoutRanges.some((r) => r.start && r.end && d >= new Date(`${r.start}T00:00:00`) && d <= new Date(`${r.end}T23:59:59`));
+  for (let i = 0; i < 60; i++) {
+    const candidate = new Date(start);
+    candidate.setDate(start.getDate() + i);
+    if (regularDays.includes(candidate.getDay()) && !inBlackout(candidate)) {
+      return candidate.toISOString().slice(0, 10);
+    }
+  }
+  return null;
+}
+
+export const SEGMENT_LABELS: Record<CampaignSegment, string> = {
+  active: "Active — regular slot + bridge offer",
+  cancelled_no_rebook: "Cancelled, no rebook — new rhythm invite",
+  one_lesson_only: "One lesson only — light re-invite",
+};
+
+export const SEGMENT_TEMPLATE_PROMPT: Record<CampaignSegment, string> = {
+  active: "warmly telling {firstName} about their new regular slot starting {firstRegularDate} ({proposedSlot}), plus a bridge session offer in the meantime if they'd like one",
+  cancelled_no_rebook: "a warm 'here's the new rhythm' invitation for {firstName}, gently re-inviting them back with their proposed new regular slot of {proposedSlot} starting {firstRegularDate} — no pressure",
+  one_lesson_only: "a light, low-pressure re-invite for {firstName}, mentioning the new regular schedule ({proposedSlot} from {firstRegularDate}) as an easy way back in if they'd like",
+};

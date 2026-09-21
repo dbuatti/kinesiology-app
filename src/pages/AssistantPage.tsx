@@ -14,15 +14,16 @@ import AssistantInput from "@/components/assistant/AssistantInput";
 import KeyMetricsBar from "@/components/assistant/KeyMetricsBar";
 import NeedsAttentionWidget from "@/components/assistant/NeedsAttentionWidget";
 import FollowUpTab from "@/components/assistant/FollowUpTab";
+import LaunchCampaignTab from "@/components/assistant/LaunchCampaignTab";
 import ClientEmailThread from "@/components/assistant/ClientEmailThread";
 import CommsInbox from "@/components/assistant/CommsInbox";
 import ClientSnapshotPanel from "@/components/assistant/ClientSnapshotPanel";
 import { VoiceStudentOption } from "@/types/assistant";
-import { Bot, ChevronLeft, MessageCircle, Mail, AlertCircle, CalendarRange, ArrowUpRight, Copy } from "lucide-react";
+import { Bot, ChevronLeft, MessageCircle, Mail, AlertCircle, CalendarRange, ArrowUpRight, Copy, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-type AssistantTab = "chat" | "followup" | "inbox";
+type AssistantTab = "chat" | "followup" | "inbox" | "launch";
 
 interface ClientOption {
   id: string;
@@ -165,6 +166,7 @@ export default function AssistantPage() {
             <TabsTrigger value="chat" className="gap-1.5"><MessageCircle className="h-3.5 w-3.5" /> Chat</TabsTrigger>
             <TabsTrigger value="followup" className="gap-1.5"><AlertCircle className="h-3.5 w-3.5" /> Follow-up</TabsTrigger>
             <TabsTrigger value="inbox" className="gap-1.5"><Mail className="h-3.5 w-3.5" /> Inbox</TabsTrigger>
+            <TabsTrigger value="launch" className="gap-1.5"><Rocket className="h-3.5 w-3.5" /> Launch</TabsTrigger>
           </TabsList>
           {/* Not a true embedded tab — the Timetable Simulator is a large, separate
               page (2600+ lines) that doesn't yet follow this app's pane-extraction
@@ -280,6 +282,12 @@ export default function AssistantPage() {
         <TabsContent value="inbox" className="flex-1 min-h-0 m-0">
           <div className="h-full flex flex-col">
             <CommsInbox />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="launch" className="flex-1 min-h-0 m-0">
+          <div className="h-full flex flex-col">
+            <LaunchCampaignTab />
           </div>
         </TabsContent>
       </Tabs>

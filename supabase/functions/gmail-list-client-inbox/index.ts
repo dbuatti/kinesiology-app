@@ -153,6 +153,13 @@ serve(async (req) => {
     // For each distinct thread, check whether the practice has already sent a
     // later reply — that's what actually determines "needs a reply" vs
     // "already handled", not just that a client message exists at all.
+    // Compare the last message's sender against THIS CLIENT's own email
+    // (always known for certain) rather than a hardcoded GMAIL_USER_EMAIL env
+    // var — same real bug already fixed once in gmail-get-client-thread
+    // (GMAIL_USER_EMAIL didn't match the actual sending address
+    // "info@danielebuatti.com", so a real reply was never recognised as one).
+    const threadClientEmail = new Map<string, string>();
+    for (const m of clean as any[]) threadClientEmail.set(m.thread_id, m.email);
     const threadIds = Array.from(new Set(clean.map((m: any) => m.thread_id)));
     const needsReplyByThread = new Map<string, boolean>();
     await Promise.all(
@@ -169,8 +176,9 @@ serve(async (req) => {
           if (msgs.length === 0) { needsReplyByThread.set(threadId, true); return; }
           const last = msgs[msgs.length - 1];
           const lastFrom = extractEmail(headerValue(last.payload?.headers || [], "From"));
-          // Last message in the thread is FROM the practice → already replied.
-          needsReplyByThread.set(threadId, !PRACTICE_EMAIL || lastFrom !== PRACTICE_EMAIL);
+          const clientEmail = threadClientEmail.get(threadId) || "";
+          // Needs a reply only if the LAST message is from the client, not the practice.
+          needsReplyByThread.set(threadId, lastFrom === clientEmail);
         } catch {
           needsReplyByThread.set(threadId, true);
         }

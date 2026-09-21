@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { showError, showSuccess } from "@/utils/toast";
 import { Button } from "@/components/ui/button";
@@ -77,6 +77,19 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [loadingSuggestion, setLoadingSuggestion] = useState(false);
   const [pendingProposal, setPendingProposal] = useState<PendingBooking | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Without this, a loaded thread renders scrolled to the OLDEST message —
+  // the practitioner's own latest reply sits below the fold and looks
+  // missing ("Lauren still doesn't show my reply" was this, not a data bug:
+  // the reply was in the DOM, just never scrolled into view). Depends only on
+  // messages.length (a genuinely new load/reply), same convention as
+  // MessageList.tsx's own scroll effect, to avoid re-triggering on unrelated
+  // state changes.
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [messages.length]);
 
   // Surfaces an existing pencilled-in slot (from propose_booking, in chat)
   // right here next to their real reply, so confirming a client's "yes that
@@ -306,7 +319,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
         </Select>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto space-y-3 px-1">
+      <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto space-y-3 px-1">
         {loading ? (
           <div className="flex justify-center py-10"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
         ) : messages.length === 0 ? (

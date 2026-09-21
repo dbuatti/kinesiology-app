@@ -57,7 +57,7 @@ function melbourneDayHour(iso: string): { day: number; hour: number } {
 export async function computeCampaignAudience(): Promise<CampaignAudienceMember[]> {
   const { data, error } = await supabase
     .from("appointments")
-    .select("client_id, date, status, clients(id, name, email)")
+    .select("client_id, date, status, clients(id, name, email, is_practitioner)")
     .order("date", { ascending: false });
   if (error || !data) return [];
 
@@ -65,9 +65,12 @@ export async function computeCampaignAudience(): Promise<CampaignAudienceMember[
   const hasFuture = new Set<string>();
   const agg = new Map<string, { name: string; email: string | null; appointments: { date: string; status: string }[] }>();
 
-  type Row = { client_id: string | null; date: string; status: string; clients: { name: string | null; email: string | null } | null };
+  type Row = { client_id: string | null; date: string; status: string; clients: { name: string | null; email: string | null; is_practitioner: boolean | null } | null };
   for (const a of data as unknown as Row[]) {
-    if (!a.client_id || !a.clients) continue;
+    // Excludes the practitioner's own self-test client record — same
+    // convention ClientsPage.tsx uses — which would otherwise show up in a
+    // campaign audience as if it were a real client needing re-engagement.
+    if (!a.client_id || !a.clients || a.clients.is_practitioner) continue;
     const d = new Date(a.date);
     if (a.status === "Scheduled" && d > now) { hasFuture.add(a.client_id); continue; }
     if (d > now) continue;

@@ -245,10 +245,10 @@ export default function AssistantPage() {
         <NeedsAttentionWidget />
       </div>
       <div
-        className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-0 rounded-2xl border border-border overflow-hidden bg-card"
+        className={cn("grid grid-cols-1 gap-0 rounded-2xl border border-border overflow-hidden bg-card", viewMode === "inbox" ? "md:grid-cols-1" : "md:grid-cols-[260px_1fr]")}
         style={{ height: "calc(100vh - 300px)", minHeight: 420 }}
       >
-        <div className={cn("min-h-0 min-w-0", mobileShowList ? "flex" : "hidden", "md:flex")}>
+        <div className={cn("min-h-0 min-w-0", mobileShowList && viewMode !== "inbox" ? "flex" : "hidden", viewMode === "inbox" ? "md:hidden" : "md:flex")}>
           <ConversationList
             conversations={conversations}
             activeId={activeId}

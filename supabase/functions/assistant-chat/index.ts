@@ -167,17 +167,18 @@ const functionDeclarations = [
   },
   {
     name: "propose_booking",
-    description: "Propose booking a specific real, available slot (from get_available_slots) for a client. This does NOT create the booking — it only returns a proposal for human review and confirmation. Always call get_available_slots first to confirm the exact time is genuinely free before proposing it; never invent a time.",
+    description: "Propose booking a specific real, available slot (from get_available_slots) for a client OR a voice student — both work identically now. This does NOT create the booking — it only returns a proposal for human review and confirmation, and also appears pencilled into the Timetable Simulator. Always call get_available_slots first to confirm the exact time is genuinely free before proposing it; never invent a time. Provide client_id for kinesiology, or voice_student_email for voice — not both.",
     parameters: {
       type: "OBJECT",
       properties: {
-        client_id: { type: "STRING" },
-        client_name: { type: "STRING" },
+        client_id: { type: "STRING", description: "Kinesiology client id. Provide this OR voice_student_email." },
+        voice_student_email: { type: "STRING", description: "Voice student email. Provide this OR client_id." },
+        client_name: { type: "STRING", description: "The client or voice student's display name." },
         start_iso: { type: "STRING", description: "Exact ISO datetime of the slot, taken verbatim from a prior get_available_slots result." },
-        event_type_id: { type: "NUMBER", description: "Cal.com event type id. Omit to use the default kinesiology session type." },
+        event_type_id: { type: "NUMBER", description: "Cal.com event type id. Omit to use the default (kinesiology default if client_id is set, voice default if voice_student_email is set)." },
         notes: { type: "STRING", description: "Optional short note about why this slot / session." },
       },
-      required: ["client_id", "client_name", "start_iso"],
+      required: ["client_name", "start_iso"],
     },
   },
   {
@@ -340,16 +341,20 @@ async function runProposeBooking(supabase: any, userId: string, args: any) {
   // Writes into the SAME booking_proposals table the Timetable Simulator's
   // fortnight view reads (useBookingProposals hook) — a slot proposed here
   // shows up there too as pencilled-in, and vice versa, instead of the
-  // assistant running its own disconnected shadow booking system.
+  // assistant running its own disconnected shadow booking system. The table
+  // (and useBookingProposals' confirmProposal) already distinguishes "fnh" vs
+  // "voice" kind — this just needs to populate it correctly for both.
+  const isVoice = !!args.voice_student_email;
   const startISO = args.start_iso;
   const endISO = new Date(new Date(startISO).getTime() + 60 * 60000).toISOString();
   const { data, error } = await supabase
     .from("booking_proposals")
     .insert({
       user_id: userId,
-      kind: "fnh",
-      client_id: args.client_id,
+      kind: isVoice ? "voice" : "fnh",
+      client_id: isVoice ? null : args.client_id,
       student_name: args.client_name,
+      student_email: isVoice ? args.voice_student_email : null,
       event_type_id: args.event_type_id ? String(args.event_type_id) : null,
       slot_start: startISO,
       slot_end: endISO,
@@ -360,7 +365,9 @@ async function runProposeBooking(supabase: any, userId: string, args: any) {
     .single();
 
   const pendingBooking = {
-    client_id: args.client_id, client_name: args.client_name, start_iso: startISO,
+    client_id: isVoice ? null : args.client_id,
+    voice_student_email: isVoice ? args.voice_student_email : null,
+    client_name: args.client_name, start_iso: startISO,
     event_type_id: args.event_type_id || null, notes: args.notes || null,
     proposal_id: error ? null : data.id,
   };
@@ -1002,11 +1009,11 @@ Use the available tools to ground your answers in real data — never invent app
 ${client_id
   ? `This conversation is focused on one specific kinesiology client (client_id: ${client_id}). Call get_client_context first to load their history, current rate vs target rate, and communication style, and match their tone when drafting anything.`
   : voice_student_email
-  ? `This conversation is focused on one specific voice student (email: ${voice_student_email}${voice_student_name ? `, name: ${voice_student_name}` : ""}). Call search_voice_client with their email first to load their lesson history, notes, and likely_usual_slot before answering or drafting anything — they are NOT in the clients table, so get_client_context (kinesiology-only) doesn't apply, but get_available_slots DOES work for them: pass voice_student_email instead of client_id and it ranks slots by their booking history exactly like it does for a kinesiology client. propose_booking still doesn't create a real voice booking (that goes through Cal.com directly, not this system) — for a voice student, confirm a time in conversation and let Daniele book it himself, rather than implying you've created anything.`
+  ? `This conversation is focused on one specific voice student (email: ${voice_student_email}${voice_student_name ? `, name: ${voice_student_name}` : ""}). Call search_voice_client with their email first to load their lesson history, notes, and likely_usual_slot before answering or drafting anything — they are NOT in the clients table, so get_client_context (kinesiology-only) doesn't apply, but get_available_slots and propose_booking BOTH work for them: pass voice_student_email instead of client_id and they behave exactly like they do for a kinesiology client, including creating a real Cal.com booking once the practitioner clicks Confirm.`
   : "This is a general conversation, not focused on one client."}
 You can draft an email for review via draft_email_reply, but you can never send one yourself — always say the draft is ready for review, never that it has been sent. Never invent a recipient address (no "@example.com" placeholders) — always pull the real email from get_client_context, get_anchor_candidates, or search_voice_client first. Critical: after calling draft_email_reply, do NOT repeat the drafted subject/body in your text reply — it already renders as its own editable card with a Send button right above your message, and re-typing the same content is confusing (the practitioner can't tell if your text version or the card is "the real one," and on a small screen the card can get lost under a wall of repeated text). Just briefly confirm it's ready, e.g. "Draft's ready above — edit anything you like, then hit Send when you're happy with it."
 Clients also have a self-serve portal at /portal/login (email OTP, no password) where they can view their own upcoming/past sessions, cancel a booking, book a new one, and message Daniele directly. If a client seems unaware of it, or asks how to manage/cancel their own booking, or Daniele wants to point someone there, feel free to mention it and include the link in a drafted email.
-You can propose an actual booking via propose_booking, but you can never create one yourself — it only becomes real when the practitioner clicks Confirm on the proposal card. Always call get_available_slots first and propose a real slot from that result, never a guessed time. When finding a slot for a specific client, always pass client_id to get_available_slots — it returns a ranked "suggested" shortlist (weighted by that client's availability_notes and their actual booking history, not just chronological order), each with a "reason". Lead with the top suggested slot and its reason ("Tuesday 4pm usually works well for her, and it fits the note about after-work sessions") rather than defaulting to whichever slot happens to be soonest — the earliest slot is very often NOT the one a client actually wants.
+You can propose an actual booking via propose_booking (kinesiology or voice — same tool, pass client_id or voice_student_email), but you can never create one yourself — it only becomes real when the practitioner clicks Confirm on the proposal card, which creates a real Cal.com booking either way. Always call get_available_slots first and propose a real slot from that result, never a guessed time. When finding a slot for a specific person, always pass client_id (kinesiology) or voice_student_email (voice) to get_available_slots — it returns a ranked "suggested" shortlist (weighted by their availability_notes/booking history, not just chronological order), each with a "reason". Lead with the top suggested slot and its reason ("Tuesday 4pm usually works well for her, and it fits the note about after-work sessions") rather than defaulting to whichever slot happens to be soonest — the earliest slot is very often NOT the one they actually want.
 Whenever the practitioner tells you something new about a client's OR voice student's availability (a day/time that works or doesn't), call update_client_availability right away to remember it for next time (client_id for kinesiology, voice_student_email for voice) — don't just acknowledge it in the chat and let it evaporate.
 You can search the inbox read-only via search_inbox (Gmail search syntax) to check for replies or past correspondence — you cannot send, modify, or delete anything through it.
 For business questions ("who's active", "who should I raise rates for", "what times are free"), use get_active_clients, get_revenue_opportunities, and get_practice_schedule_overview rather than guessing — they compute real numbers from appointment history.

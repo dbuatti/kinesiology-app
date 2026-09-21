@@ -52,6 +52,7 @@ serve(async (req) => {
     const CLIENT_ID = Deno.env.get("GMAIL_CLIENT_ID");
     const CLIENT_SECRET = Deno.env.get("GMAIL_CLIENT_SECRET");
     const REFRESH = Deno.env.get("GMAIL_READONLY_INBOX_REFRESH_TOKEN");
+    const PRACTICE_EMAIL = (Deno.env.get("GMAIL_USER_EMAIL") || "").toLowerCase();
     if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH) throw new Error("Gmail inbox read is not configured.");
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
@@ -128,7 +129,36 @@ serve(async (req) => {
 
     const clean = messages.filter(Boolean).sort((a: any, b: any) => new Date(b.date_iso).getTime() - new Date(a.date_iso).getTime());
 
-    return new Response(JSON.stringify({ messages: clean }), {
+    // For each distinct thread, check whether the practice has already sent a
+    // later reply — that's what actually determines "needs a reply" vs
+    // "already handled", not just that a client message exists at all.
+    const threadIds = Array.from(new Set(clean.map((m: any) => m.thread_id)));
+    const needsReplyByThread = new Map<string, boolean>();
+    await Promise.all(
+      threadIds.map(async (threadId) => {
+        try {
+          const url = new URL(`https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}`);
+          url.searchParams.set("format", "metadata");
+          url.searchParams.append("metadataHeaders", "From");
+          url.searchParams.append("metadataHeaders", "Date");
+          const res = await fetch(url.toString(), { headers: authHeaders });
+          if (!res.ok) { needsReplyByThread.set(threadId, true); return; }
+          const data = await res.json();
+          const msgs = data.messages || [];
+          if (msgs.length === 0) { needsReplyByThread.set(threadId, true); return; }
+          const last = msgs[msgs.length - 1];
+          const lastFrom = extractEmail(headerValue(last.payload?.headers || [], "From"));
+          // Last message in the thread is FROM the practice → already replied.
+          needsReplyByThread.set(threadId, !PRACTICE_EMAIL || lastFrom !== PRACTICE_EMAIL);
+        } catch {
+          needsReplyByThread.set(threadId, true);
+        }
+      }),
+    );
+
+    const withStatus = clean.map((m: any) => ({ ...m, needs_reply: needsReplyByThread.get(m.thread_id) ?? true }));
+
+    return new Response(JSON.stringify({ messages: withStatus }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

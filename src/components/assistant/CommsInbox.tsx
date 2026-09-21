@@ -19,6 +19,7 @@ interface InboxMessage {
   subject: string;
   snippet: string;
   date_iso: string;
+  needs_reply: boolean;
 }
 
 interface Props {
@@ -29,6 +30,7 @@ export default function CommsInbox({ onOpenClient }: Props) {
   const [messages, setMessages] = useState<InboxMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [newestFirst, setNewestFirst] = useState(true);
+  const [needsReplyOnly, setNeedsReplyOnly] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -45,21 +47,38 @@ export default function CommsInbox({ onOpenClient }: Props) {
 
   useEffect(() => { load(); }, [load]);
 
-  const sorted = [...messages].sort((a, b) => {
-    const diff = new Date(b.date_iso).getTime() - new Date(a.date_iso).getTime();
-    return newestFirst ? diff : -diff;
-  });
+  const needsReplyCount = messages.filter((m) => m.needs_reply).length;
+
+  const sorted = [...messages]
+    .filter((m) => !needsReplyOnly || m.needs_reply)
+    .sort((a, b) => {
+      const diff = new Date(b.date_iso).getTime() - new Date(a.date_iso).getTime();
+      return newestFirst ? diff : -diff;
+    });
 
   const openFor = (m: InboxMessage) => onOpenClient(m.client_id || voiceStudentIdFor(m.voice_student_email || ""));
 
   return (
     <div className="flex-1 min-h-0 flex flex-col">
-      <div className="flex items-center justify-between gap-2 pb-3 border-b border-border mb-3">
+      <div className="flex items-center justify-between gap-2 pb-3 border-b border-border mb-3 flex-wrap">
         <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
           <Mail className="h-4 w-4 text-chart-primary" /> Client inbox
+          {needsReplyCount > 0 && (
+            <span className="text-[10px] font-black uppercase tracking-wider text-chart-destructive bg-chart-destructive/10 px-1.5 py-0.5 rounded-full">
+              {needsReplyCount} need{needsReplyCount === 1 ? "s" : ""} reply
+            </span>
+          )}
           <span className="text-[10px] font-normal text-muted-foreground">last 90 days</span>
         </div>
         <div className="flex items-center gap-1.5">
+          <Button
+            variant={needsReplyOnly ? "default" : "outline"}
+            size="sm"
+            className={cn("h-7 text-[11px]", needsReplyOnly && "bg-chart-destructive hover:bg-chart-destructive/90 text-white")}
+            onClick={() => setNeedsReplyOnly((v) => !v)}
+          >
+            Needs reply only
+          </Button>
           <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1" onClick={() => setNewestFirst((v) => !v)}>
             <ArrowUpDown className="h-3 w-3" /> {newestFirst ? "Newest first" : "Oldest first"}
           </Button>
@@ -73,13 +92,20 @@ export default function CommsInbox({ onOpenClient }: Props) {
         {loading && sorted.length === 0 ? (
           <div className="flex justify-center py-16"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
         ) : sorted.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-16">No client emails in the last 90 days.</p>
+          <p className="text-sm text-muted-foreground text-center py-16">
+            {needsReplyOnly ? "Nothing needs a reply right now." : "No client emails in the last 90 days."}
+          </p>
         ) : (
           sorted.map((m) => (
             <button
               key={m.id}
               onClick={() => openFor(m)}
-              className="w-full text-left rounded-xl border border-border p-3 hover:border-chart-primary/40 hover:bg-chart-primary/5 transition-colors"
+              className={cn(
+                "w-full text-left rounded-xl border p-3 transition-colors",
+                m.needs_reply
+                  ? "border-chart-destructive/30 bg-chart-destructive/5 hover:bg-chart-destructive/10"
+                  : "border-chart-emerald/20 bg-chart-emerald/5 hover:bg-chart-emerald/10",
+              )}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-1.5 min-w-0">
@@ -87,6 +113,12 @@ export default function CommsInbox({ onOpenClient }: Props) {
                     ? <Mic className="h-3.5 w-3.5 text-chart-destructive shrink-0" />
                     : <Brain className="h-3.5 w-3.5 text-chart-purple shrink-0" />}
                   <span className="text-sm font-semibold text-foreground truncate">{m.name}</span>
+                  <span className={cn(
+                    "text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0",
+                    m.needs_reply ? "bg-chart-destructive/15 text-chart-destructive" : "bg-chart-emerald/15 text-chart-emerald",
+                  )}>
+                    {m.needs_reply ? "Needs reply" : "Replied"}
+                  </span>
                 </div>
                 <span className="text-[10px] text-muted-foreground shrink-0">
                   {formatDistanceToNow(new Date(m.date_iso), { addSuffix: true })}

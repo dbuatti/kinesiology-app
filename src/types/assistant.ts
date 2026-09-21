@@ -7,7 +7,8 @@ export interface DraftEmail {
 }
 
 export interface PendingBooking {
-  client_id: string;
+  client_id: string | null;
+  voice_student_email?: string | null;
   client_name: string;
   start_iso: string;
   event_type_id?: number | null;

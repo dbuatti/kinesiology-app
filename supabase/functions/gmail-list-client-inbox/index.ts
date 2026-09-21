@@ -32,6 +32,22 @@ function headerValue(headers: { name: string; value: string }[], name: string) {
   return headers?.find((h: any) => h.name.toLowerCase() === name.toLowerCase())?.value || "";
 }
 
+// Gmail's own `snippet` field is generated from the HTML body and can leave
+// individual words still HTML-entity-encoded (seen live: "I&#39;m" next to an
+// already-clean "wasn't" in the same snippet) — decode before it reaches the UI.
+function decodeHtmlEntities(text: string): string {
+  if (!text) return text;
+  return text
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCharCode(parseInt(code, 16)))
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&nbsp;/g, " ");
+}
+
 // Pulls the bare address out of a "Name" <email@x.com> or plain email@x.com header.
 function extractEmail(fromHeader: string): string {
   const match = fromHeader.match(/<([^>]+)>/);
@@ -124,8 +140,8 @@ serve(async (req) => {
           from_display_name: extractDisplayName(fromHeader) || known.name,
           email,
           kind: known.kind,
-          subject: headerValue(headers, "Subject") || "(no subject)",
-          snippet: data.snippet || "",
+          subject: decodeHtmlEntities(headerValue(headers, "Subject")) || "(no subject)",
+          snippet: decodeHtmlEntities(data.snippet || ""),
           date: headerValue(headers, "Date"),
           date_iso: new Date(headerValue(headers, "Date")).toISOString(),
         };

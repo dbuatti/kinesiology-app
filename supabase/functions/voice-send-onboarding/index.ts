@@ -106,6 +106,10 @@ serve(async (req) => {
     if (!GMAIL_CLIENT_ID || !GMAIL_CLIENT_SECRET || !GMAIL_REFRESH_TOKEN || !SENDER_EMAIL) {
       throw new Error("Missing Gmail credentials in Supabase Secrets.");
     }
+    // Client-facing sends use the practice's real, verified alias — GMAIL_USER_EMAIL
+    // still authenticates the API call and is used as-is for the internal organizer
+    // notification below (that one goes to Daniele himself, not a client).
+    const FROM_ADDRESS = "info@danielebuatti.com";
 
     const { studentName, studentEmail, date, time, duration, cost, calcomBookingUid, discipline } = await req.json();
     if (!studentName || !studentEmail || !date || !time) {
@@ -330,7 +334,7 @@ ${duration ? `                          <div style="font-size: 14px; color: #94A
     // 4a. Send the student onboarding email. Non-fatal — a failure here must not
     // block the organizer notification below.
      try {
-       await sendGmail(accessToken, SENDER_EMAIL, studentEmail, subjectLine, htmlBody);
+       await sendGmail(accessToken, FROM_ADDRESS, studentEmail, subjectLine, htmlBody);
        console.log(`[${functionName}] Onboarding email sent to ${studentEmail}`);
        await logEmail(supabase, { fn: functionName, to: studentEmail, subject: subjectLine, status: "sent" });
      } catch (studentErr) {

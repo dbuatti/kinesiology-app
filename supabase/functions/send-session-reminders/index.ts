@@ -15,6 +15,9 @@ const GMAIL_CLIENT_ID = Deno.env.get("GMAIL_CLIENT_ID") || "";
 const GMAIL_CLIENT_SECRET = Deno.env.get("GMAIL_CLIENT_SECRET") || "";
 const GMAIL_REFRESH_TOKEN = Deno.env.get("GMAIL_REFRESH_TOKEN") || "";
 const GMAIL_USER_EMAIL = Deno.env.get("GMAIL_USER_EMAIL") || "";
+// GMAIL_USER_EMAIL authenticates the API call; clients see the practice's real,
+// verified alias as the sender instead.
+const FROM_ADDRESS = "info@danielebuatti.com";
 
 // Google OAuth token endpoint
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -117,7 +120,7 @@ async function sendEmail(
   // Encode the subject per RFC 2047 so non-ASCII (✦, –, curly quotes) survives.
   const utf8Subject = `=?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`;
   const rawEmail = [
-    `From: ${GMAIL_USER_EMAIL}`,
+    `From: ${FROM_ADDRESS}`,
     `To: ${to}`,
     "MIME-Version: 1.0",
     "Content-Type: text/html; charset=utf-8",

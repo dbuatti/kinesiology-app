@@ -61,6 +61,10 @@ serve(async (req) => {
     if (!GMAIL_CLIENT_ID || !GMAIL_CLIENT_SECRET || !GMAIL_REFRESH_TOKEN || !SENDER_EMAIL) {
       throw new Error("Missing Gmail credentials in Supabase Secrets.");
     }
+    // GMAIL_USER_EMAIL authenticates the API call but shouldn't be what clients
+    // see as the sender — everything client-facing goes out as the practice's
+    // real address instead (a verified "Send mail as" alias on this account).
+    const FROM_ADDRESS = "info@danielebuatti.com";
 
     const { clientName, clientEmail, currentRate, targetRate, effectiveMonth } = payload;
 
@@ -133,7 +137,7 @@ Daniele`;
       </html>`;
 
     const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
-    const raw = buildEmail(SENDER_EMAIL, clientEmail, `Session Rate Update — ${firstName}`, htmlBody);
+    const raw = buildEmail(FROM_ADDRESS, clientEmail, `Session Rate Update — ${firstName}`, htmlBody);
 
     const response = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
       method: "POST",

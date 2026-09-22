@@ -73,7 +73,7 @@ async function sendVoicePaymentConfirmation(session: any) {
           </table>
         </center>
       </body></html>`;
-    await sendGmail(token, SENDER, to, "Payment received 🎵 — Your lesson is confirmed", html);
+    await sendGmail(token, "info@danielebuatti.com", to, "Payment received 🎵 — Your lesson is confirmed", html);
     console.log(`[voice-stripe-webhook] Confirmation email sent to ${to}`);
   } catch (e) {
     console.error("[voice-stripe-webhook] Confirmation email failed (non-fatal):", e.message);

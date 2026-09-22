@@ -55,6 +55,7 @@ serve(async (req) => {
     const REFRESH = Deno.env.get("GMAIL_REFRESH_TOKEN");
     const SENDER = Deno.env.get("GMAIL_USER_EMAIL");
     if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH || !SENDER) throw new Error("Gmail is not configured.");
+    const FROM_ADDRESS = "info@danielebuatti.com";
 
     let dateLine = "";
     if (startISO) {
@@ -89,7 +90,7 @@ serve(async (req) => {
       </body></html>`;
 
     const token = await getGmailAccessToken(CLIENT_ID, CLIENT_SECRET, REFRESH);
-    await sendGmail(token, SENDER, to, subject, html);
+    await sendGmail(token, FROM_ADDRESS, to, subject, html);
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {

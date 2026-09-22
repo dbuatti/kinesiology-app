@@ -69,7 +69,9 @@ async function sendFnhPaymentConfirmation(to: string | null, name: string | null
           </table>
         </center>
       </body></html>`;
-    await sendGmail(token, SENDER, to, "Payment received — Your FNH session is confirmed", html);
+    // GMAIL_USER_EMAIL authenticates the send but shouldn't be the client-visible
+    // From — clients see the practice's real, verified alias instead.
+    await sendGmail(token, "info@danielebuatti.com", to, "Payment received — Your FNH session is confirmed", html);
     console.log(`[stripe-webhook] Confirmation email sent to ${to}`);
   } catch (e) {
     console.error("[stripe-webhook] Confirmation email failed (non-fatal):", e.message);

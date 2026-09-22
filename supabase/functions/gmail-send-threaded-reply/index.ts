@@ -45,6 +45,9 @@ serve(async (req) => {
     const REFRESH = Deno.env.get("GMAIL_REFRESH_TOKEN");
     const SENDER = Deno.env.get("GMAIL_USER_EMAIL");
     if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH || !SENDER) throw new Error("Gmail is not configured.");
+    // GMAIL_USER_EMAIL authenticates the API call; clients see the practice's
+    // real, verified alias as the sender instead.
+    const FROM_ADDRESS = "info@danielebuatti.com";
 
     const esc = (s: string) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const utf8Subject = `=?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`;
@@ -89,7 +92,7 @@ serve(async (req) => {
 
     const buildRaw = (withThreading: boolean) => {
       const headerLines = [
-        `From: ${SENDER}`, `To: ${to}`, `Cc: info@danielebuatti.com`, "MIME-Version: 1.0",
+        `From: ${FROM_ADDRESS}`, `To: ${to}`, "MIME-Version: 1.0",
         "Content-Type: text/html; charset=utf-8", `Subject: ${utf8Subject}`,
       ];
       if (withThreading && in_reply_to) headerLines.push(`In-Reply-To: ${in_reply_to}`);

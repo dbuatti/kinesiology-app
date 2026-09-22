@@ -119,6 +119,9 @@ serve(async (req) => {
     const GMAIL_CLIENT_SECRET = Deno.env.get('GMAIL_CLIENT_SECRET');
     const GMAIL_REFRESH_TOKEN = Deno.env.get('GMAIL_REFRESH_TOKEN');
     const SENDER_EMAIL = Deno.env.get('GMAIL_USER_EMAIL');
+    // GMAIL_USER_EMAIL authenticates the API call; clients see the practice's
+    // real, verified alias as the sender instead.
+    const FROM_ADDRESS = "info@danielebuatti.com";
     const STRIPE_KEY = Deno.env.get('STRIPE_SECRET_KEY');
     const APP_ORIGIN = Deno.env.get('SITE_URL') || 'https://kinesiology-app.vercel.app';
 
@@ -261,7 +264,7 @@ serve(async (req) => {
 
     const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
     try {
-      await sendGmail(accessToken, SENDER_EMAIL, client.email, subject, htmlBody);
+      await sendGmail(accessToken, FROM_ADDRESS, client.email, subject, htmlBody);
       console.log(`[send-manual-onboarding] Confirmation email sent to ${client.email}`);
       await logEmail(supabase, { fn: "send-manual-onboarding", to: client.email, subject, status: "sent", appointment_id: appointment?.id, client_id: clientId });
     } catch (sendErr) {

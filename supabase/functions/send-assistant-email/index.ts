@@ -61,6 +61,16 @@ serve(async (req) => {
     const REFRESH = Deno.env.get("GMAIL_REFRESH_TOKEN");
     const SENDER = Deno.env.get("GMAIL_USER_EMAIL");
     if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH || !SENDER) throw new Error("Gmail is not configured.");
+    // GMAIL_USER_EMAIL is the account these credentials authenticate as, not
+    // necessarily what a client should see as the sender — clients were
+    // seeing daniele.buatti@gmail.com instead of the practice's real
+    // address. info@danielebuatti.com is already a real, working identity
+    // on this account (Daniele's own manual Gmail replies go out under it —
+    // confirmed live in a real thread), so this only works if Gmail has it
+    // registered as a verified "Send mail as" alias; if it isn't, Gmail's
+    // API will reject the send with a clear error rather than silently
+    // sending as the wrong address.
+    const FROM_ADDRESS = "info@danielebuatti.com";
 
     const esc = (s: string) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const html = `
@@ -83,7 +93,7 @@ serve(async (req) => {
       </html>`;
 
     const token = await getGmailAccessToken(CLIENT_ID, CLIENT_SECRET, REFRESH);
-    await sendGmail(token, SENDER, to, subject, html);
+    await sendGmail(token, FROM_ADDRESS, to, subject, html);
 
     await supabase.from("email_log").insert({ ...logRow, status: "sent" });
 

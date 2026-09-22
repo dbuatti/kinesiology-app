@@ -109,7 +109,12 @@ export default function ClientHubPage() {
   const clientNameFor = () => client.name;
 
   return (
-    <AppLayout variant="wide">
+    // min-h-0 overrides AppLayout's default min-h-screen — same fix as
+    // AssistantPage's Chat tab: this page's own areaHeight measurement
+    // already keeps it at least viewport-filling, so the forced 100vh here
+    // only ever added a few dozen px of extra outer scroll on top of the
+    // chat/email pane's own internal scroll region.
+    <AppLayout variant="wide" className="min-h-0">
       <div ref={aboveRef}>
         <PageHeader
           icon={User}
@@ -193,7 +198,14 @@ export default function ClientHubPage() {
                   onSuggestion={handleSend}
                   onRetry={(cid, text) => handleSend(text, cid)}
                 />
-                <AssistantInput onSend={handleSend} disabled={isSending} initialValue={initialPrompt} />
+                {/* autoSend safe unconditionally here (unlike AssistantPage) —
+                    this component doesn't render past the loading/not-found
+                    guards above until `client` has already resolved, so
+                    there's no async race to gate on. Same fix as
+                    AssistantPage: a deep-linked "Book"/"Assistant" quick
+                    action is already a complete instruction, so it sends
+                    itself instead of waiting for a redundant manual Send. */}
+                <AssistantInput onSend={handleSend} disabled={isSending} initialValue={initialPrompt} autoSend={!!initialPrompt} />
               </>
             )}
           </div>

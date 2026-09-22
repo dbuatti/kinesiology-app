@@ -154,9 +154,23 @@ export default function AssistantPage() {
     : clients.find((c) => c.id === focusedClientId) || null;
 
   const activeClientName = focusedVoiceStudent?.name || clientNameFor(focusedClientId);
+  // Ready once the deep-linked client/voice-student target has actually
+  // resolved (both `clients` and `voiceStudents` load async) — auto-sending
+  // before then would go out as an unfocused general message instead of
+  // against the intended person. See AssistantInput's own autoSend effect.
+  const autoSendReady = !!initialClientId && !!initialPrompt && !!focusedClient;
 
   return (
-    <AppLayout variant="wide">
+    // min-h-0 overrides AppLayout's default min-h-screen (twMerge resolves the
+    // conflict) — that forced height meant the page was always at least
+    // 100vh tall regardless of how precisely gridHeight measured the Chat
+    // tab's own internal height, leaving #main-scroll-container a few dozen
+    // px taller than its own available space and giving it a scrollbar of
+    // its own alongside the two legitimate ones (conversation list, message
+    // list) — "several scroll bars", correctly flagged. Not needed here:
+    // Chat is always at least viewport-filling via gridHeight already, and
+    // Follow-up/Inbox/Launch are meant to size to their own content.
+    <AppLayout variant="wide" className="min-h-0">
       <div ref={aboveGridRef}>
         <PageHeader
           icon={Bot}
@@ -296,7 +310,7 @@ export default function AssistantPage() {
                     onSuggestion={handleSend}
                     onRetry={(id, text) => handleSend(text, id)}
                   />
-                  <AssistantInput onSend={handleSend} disabled={isSending} initialValue={initialPrompt} />
+                  <AssistantInput onSend={handleSend} disabled={isSending} initialValue={initialPrompt} autoSend={autoSendReady} />
                 </>
               )}
             </div>

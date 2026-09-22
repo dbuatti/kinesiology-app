@@ -149,7 +149,7 @@ const functionDeclarations = [
   },
   {
     name: "search_voice_client",
-    description: "Search for a Voice Studio (piano/voice lesson) student by name or email, and fetch their recent lesson booking history. Voice students are NOT in the kinesiology clients table — use this instead of get_client_context for anything voice/lesson related.",
+    description: "Search for a Voice Studio (piano/voice lesson) student by name or email, and fetch their recent lesson booking history. Voice students are NOT in the kinesiology clients table — use this instead of get_client_context for anything voice/lesson related. Returns their session length (session_length_min) and the Cal.com event type that maps to it (preferred_event_type_id) — reuse that event_type_id when finding slots or proposing bookings, never assume the default 60-minute one (real bug: a 45-min student got 60-min proposals).",
     parameters: {
       type: "OBJECT",
       properties: { query: { type: "STRING", description: "Student name or email to search for, e.g. 'Nikki' or 'nicolelrot@gmail.com'" } },
@@ -193,7 +193,7 @@ const functionDeclarations = [
       properties: {
         start: { type: "STRING", description: "ISO date, e.g. 2026-09-15" },
         end: { type: "STRING", description: "ISO date, e.g. 2026-09-22" },
-        event_type_id: { type: "NUMBER", description: "Cal.com event type id. Omit to use the default." },
+        event_type_id: { type: "NUMBER", description: "Cal.com event type id. For a voice student, omit it to auto-use THIS student's session length (preferred_event_type_id from search_voice_client); pass it explicitly when you know a different one is wanted. For kinesiology, omit to use the FNH default." },
         client_id: { type: "STRING", description: "Kinesiology client id — when provided, ranks slots by this client's availability_notes + booking history instead of returning an unranked list." },
         voice_student_email: { type: "STRING", description: "Voice student email — when provided (instead of client_id), ranks slots by this student's booking history the same way client_id does for kinesiology." },
       },
@@ -219,7 +219,7 @@ const functionDeclarations = [
         voice_student_email: { type: "STRING", description: "Voice student email. Provide this OR client_id." },
         client_name: { type: "STRING", description: "The client or voice student's display name." },
         start_iso: { type: "STRING", description: "Exact ISO datetime of the slot, taken verbatim from a prior get_available_slots result." },
-        event_type_id: { type: "NUMBER", description: "Cal.com event type id. Omit to use the default (kinesiology default if client_id is set, voice default if voice_student_email is set)." },
+        event_type_id: { type: "NUMBER", description: "Cal.com event type id. For a voice student, omit it to auto-default to THEIR session length (preferred_event_type_id from search_voice_client) — never let a voice student fall back to the 60-minute default without checking. Kinesiology omits to the FNH default." },
         notes: { type: "STRING", description: "Optional short note about why this slot / session." },
       },
       required: ["client_name", "start_iso"],
@@ -227,13 +227,15 @@ const functionDeclarations = [
   },
   {
     name: "update_client_availability",
-    description: "Save or update what you've learned about a client or voice student's availability (e.g. \"only Tuesday evenings now\", \"not Wednesdays\") so future scheduling remembers it — works for both arms equally. Pass client_id for kinesiology, or voice_student_email for voice. Use this whenever the practitioner tells you something new about when someone can/can't do sessions — this is a low-stakes internal note, not client-facing, so save it directly rather than asking permission first.",
+    description: "Save or update what you've learned about a client or voice student's availability (e.g. \"only Tuesday evenings now\", \"not Wednesdays\") so future scheduling remembers it — works for both arms equally. Pass client_id for kinesiology, or voice_student_email for voice. Use this whenever the practitioner tells you something new about when someone can/can't do sessions — this is a low-stakes internal note, not client-facing, so save it directly rather than asking permission first. ALSO pass session_length_min (30/45/60) and/or event_type_id whenever they mention how long someone's sessions are or what they should book as (e.g. \"Nicole does 45 minute sessions\" → session_length_min: 45), so future proposals book that length instead of the 60-minute default.",
     parameters: {
       type: "OBJECT",
       properties: {
         client_id: { type: "STRING", description: "Kinesiology client id. Provide this OR voice_student_email, not both." },
         voice_student_email: { type: "STRING", description: "Voice student email. Provide this OR client_id, not both." },
         availability_notes: { type: "STRING", description: "The full, updated availability note — replace the old note with the complete new text, don't just append a fragment." },
+        session_length_min: { type: "NUMBER", description: "Session length in minutes (30, 45 or 60). Pass it only when the practitioner tells you the session length — otherwise omit and existing preference is preserved." },
+        event_type_id: { type: "NUMBER", description: "Cal.com event type id to book this person as. Pass it only when the practitioner specifies a service — otherwise omit and existing preference is preserved." },
       },
       required: ["availability_notes"],
     },
@@ -531,7 +533,7 @@ async function runGetClientContext(supabase: any, userId: string, clientId: stri
   };
 }
 
-async function runUpdateClientAvailability(supabase: any, userId: string, clientId: string | undefined, voiceStudentEmail: string | undefined, availabilityNotes: string) {
+async function runUpdateClientAvailability(supabase: any, userId: string, clientId: string | undefined, voiceStudentEmail: string | undefined, availabilityNotes: string, sessionLengthMin?: number | null, eventTypeId?: number | string | null) {
   if (!clientId && !voiceStudentEmail) return { error: "Need either client_id or voice_student_email." };
 
   // Kinesiology clients have a `clients` row to update directly; voice students
@@ -550,15 +552,30 @@ async function runUpdateClientAvailability(supabase: any, userId: string, client
   // assistant reads. Same client_key convention the simulator itself uses for
   // kinesiology ("fnh:<id>"); voice uses its own "voice:<email>" key.
   const windows = parseAvailabilityText(availabilityNotes);
-  const clientKey = clientId ? `fnh:${clientId}` : `voice:${voiceStudentEmail}`;
-  await supabase.from("timetable_client_availability").upsert(
-    { user_id: userId, client_key: clientKey, windows, note: availabilityNotes, updated_at: new Date().toISOString() },
-    { onConflict: "user_id,client_key" },
-  );
+  // Same lowercase "voice:<email>" key convention the Timetable Simulator's
+  // auto-drafter uses (TimetablePage.tsx) and resolveVoiceSessionPrefs reads.
+  const clientKey = clientId ? `fnh:${clientId}` : `voice:${(voiceStudentEmail || "").toLowerCase().trim()}`;
+  // Only touch session_length_min/event_type_id when the practitioner actually
+  // taught one here — an upsert that blanks them on every availability note
+  // would destroy a preference set directly in the Timetable Simulator.
+  const upsertRow: any = {
+    user_id: userId, client_key: clientKey, windows, note: availabilityNotes, updated_at: new Date().toISOString(),
+  };
+  if (sessionLengthMin != null) upsertRow.session_length_min = sessionLengthMin;
+  if (eventTypeId != null) upsertRow.event_type_id = String(eventTypeId);
+  await supabase.from("timetable_client_availability").upsert(upsertRow, { onConflict: "user_id,client_key" });
+
+  const lengthNote = sessionLengthMin != null
+    ? ` Session length saved: ${sessionLengthMin} minutes — future proposals and slot lookups for this ${clientId ? "client" : "student"} default to that.`
+    : eventTypeId != null
+      ? ` Event type saved: ${eventTypeId} — future proposals book this exact service.`
+      : "";
 
   return {
     status: "saved",
-    note: `Availability note updated: "${availabilityNotes}"`,
+    note: `Availability note updated: "${availabilityNotes}".${lengthNote}`,
+    session_length_min: sessionLengthMin ?? null,
+    event_type_id: eventTypeId != null ? String(eventTypeId) : null,
     parsed_windows: windows.length ? windows : null,
     windows_note: windows.length
       ? "This was also parsed into structured availability windows for the Timetable Simulator's auto-drafter."
@@ -566,7 +583,7 @@ async function runUpdateClientAvailability(supabase: any, userId: string, client
   };
 }
 
-async function runProposeBooking(supabase: any, userId: string, args: any) {
+async function runProposeBooking(supabase: any, supabaseUrl: string, serviceKey: string, userId: string, args: any) {
   // Writes into the SAME booking_proposals table the Timetable Simulator's
   // fortnight view reads (useBookingProposals hook) — a slot proposed here
   // shows up there too as pencilled-in, and vice versa, instead of the
@@ -574,8 +591,24 @@ async function runProposeBooking(supabase: any, userId: string, args: any) {
   // (and useBookingProposals' confirmProposal) already distinguishes "fnh" vs
   // "voice" kind — this just needs to populate it correctly for both.
   const isVoice = !!args.voice_student_email;
+
+  // Resolve the event type BEFORE recording the proposal. Voice proposals used
+  // to silently fall back to the app-wide 60-min default (1945081) whenever the
+  // model omitted event_type_id — real bug: Nicole, a 45-min student, was
+  // pencilled in for 60-minute sessions. Now a voice proposal defaults to THAT
+  // student's own session length (Stored Simulator preference, else inferred
+  // from her cost/time history), and slot_end follows the resolved duration
+  // instead of always being +60 minutes.
+  let eventTypeId = args.event_type_id ? String(args.event_type_id) : null;
+  let durationMin: number | null = null;
+  if (isVoice) {
+    const prefs = await resolveVoiceSessionPrefs(supabase, supabaseUrl, serviceKey, userId, args.voice_student_email);
+    if (!eventTypeId) eventTypeId = prefs?.eventTypeId ? String(prefs.eventTypeId) : "1945081";
+    durationMin = prefs?.sessionLengthMin ?? 60;
+  }
+
   const startISO = args.start_iso;
-  const endISO = new Date(new Date(startISO).getTime() + 60 * 60000).toISOString();
+  const endISO = new Date(new Date(startISO).getTime() + (durationMin ?? 60) * 60000).toISOString();
   const { data, error } = await supabase
     .from("booking_proposals")
     .insert({
@@ -584,7 +617,7 @@ async function runProposeBooking(supabase: any, userId: string, args: any) {
       client_id: isVoice ? null : args.client_id,
       student_name: args.client_name,
       student_email: isVoice ? args.voice_student_email : null,
-      event_type_id: args.event_type_id ? String(args.event_type_id) : null,
+      event_type_id: eventTypeId,
       slot_start: startISO,
       slot_end: endISO,
       status: "proposed",
@@ -597,12 +630,13 @@ async function runProposeBooking(supabase: any, userId: string, args: any) {
     client_id: isVoice ? null : args.client_id,
     voice_student_email: isVoice ? args.voice_student_email : null,
     client_name: args.client_name, start_iso: startISO,
-    event_type_id: args.event_type_id || null, notes: args.notes || null,
+    event_type_id: eventTypeId, notes: args.notes || null,
     proposal_id: error ? null : data.id,
   };
+  const durationLabel = isVoice && durationMin ? `${durationMin}-minute` : null;
   const result = error
     ? { status: "proposed", note: "Booking proposed for human review (not yet saved to the shared timetable — it will still work, just won't show in the Timetable Simulator until confirmed)." }
-    : { status: "proposed", note: "Booking proposed for human review. It has not been created yet, and now also appears pencilled-in on the Timetable Simulator." };
+    : { status: "proposed", note: `Booking proposed for human review as a ${durationLabel || "standard"} session. It has not been created yet, and now also appears pencilled-in on the Timetable Simulator.` };
   return { pendingBooking, result };
 }
 
@@ -651,6 +685,22 @@ async function fetchCalcomSlots(calcomKey: string, start: string, endISO: string
 async function runGetAvailableSlots(supabase: any, supabaseUrl: string, serviceKey: string, userId: string, start: string, end: string, eventTypeId: number | undefined, clientId?: string, voiceStudentEmail?: string) {
   const CALCOM_KEY = Deno.env.get("CALCOM_API_KEY");
   if (!CALCOM_KEY) return { error: "Cal.com is not configured." };
+
+  // For a specific voice student, resolve THEIR session length BEFORE fetching
+  // slots — without this, a model that omits event_type_id would get (and then
+  // propose) the app-wide 60-min default instead of the student's actual length
+  // (real bug: Nicole's assistant-proposed lessons all came back 60-minute).
+  let voicePrefs = null;
+  let eventTypeNote: string | null = null;
+  if (voiceStudentEmail) {
+    voicePrefs = await resolveVoiceSessionPrefs(supabase, supabaseUrl, serviceKey, userId, voiceStudentEmail);
+    if (!eventTypeId && voicePrefs?.eventTypeId) {
+      eventTypeId = Number(voicePrefs.eventTypeId);
+      eventTypeNote = voicePrefs.sessionLengthMin
+        ? `Slots were fetched for this student's ${voicePrefs.sessionLengthMin}-minute event type (${voicePrefs.eventTypeId}).`
+        : `Slots were fetched for this student's event type (${voicePrefs.eventTypeId}).`;
+    }
+  }
 
   let widenedNote: string | null = null;
   let { slots, flatIsos, error } = await fetchCalcomSlots(CALCOM_KEY, start, end, eventTypeId);
@@ -702,13 +752,13 @@ async function runGetAvailableSlots(supabase: any, supabaseUrl: string, serviceK
     }
   } else if (voiceStudentEmail) {
     const now = new Date();
-    const [allVoiceRows, timetablePrefs] = await Promise.all([
-      fetchNormalizedVoiceBookings(supabase, supabaseUrl, serviceKey, ", lesson_time"),
-      fetchTimetableAvailability(supabase, `voice:${voiceStudentEmail}`),
-    ]);
-    windows = timetablePrefs.windows;
+    // Same resolution path as above (reuses the fetch, no double query) so the
+    // student's ranking uses the same stored windows/session prefs correctly.
+    windows = voicePrefs?.timetableEntry?.windows || [];
     const emailLower = voiceStudentEmail.toLowerCase().trim();
-    const pastLessons = allVoiceRows.filter((b: any) => b.student_email === emailLower && b.status !== "cancelled").slice(0, 30);
+    const pastLessons = (voicePrefs?.allVoiceRows || [])
+      .filter((b: any) => b.student_email === emailLower && b.status !== "cancelled")
+      .slice(0, 30);
     for (const b of pastLessons) {
       const d = new Date(b.lesson_date);
       if (isNaN(d.getTime()) || d > now) continue;
@@ -769,7 +819,8 @@ async function runGetAvailableSlots(supabase: any, supabaseUrl: string, serviceK
       reason: s.reasons.length ? s.reasons.join(", ") : "next available",
     }));
 
-  return { slots, suggested, note: widenedNote };
+  const combinedNote = [widenedNote, eventTypeNote].filter(Boolean).join(" ") || null;
+  return { slots, suggested, note: combinedNote };
 }
 
 async function runSearchInbox(supabaseUrl: string, serviceKey: string, query: string) {
@@ -888,6 +939,106 @@ async function fetchNormalizedVoiceBookings(supabase: any, supabaseUrl: string, 
   return normalized.sort((a, b) => new Date(b.lesson_date).getTime() - new Date(a.lesson_date).getTime());
 }
 
+// --- Voice session-length resolution. A real bug: Nicole Rotenstein is a
+// 45-minute student but every ASSISTANT-proposed lesson pencil-her in at 60
+// minutes, because propose_booking/confirm fell back to the app-wide default
+// event type (1945081 = 60 min) whenever the model didn't pass one — nothing in
+// the voice path knew her session length. The Timetable Simulator already keeps
+// a per-student session_length_min / event_type_id in timetable_client_availability,
+// so that (not a global default) is the source of truth here, with inference
+// from the student's own booking history (cost → length, then time-range text)
+// as a fallback. Kept in sync with src/config/integrations.ts DRAFT_SERVICES and
+// supabase_event_pricing.sql — voice event types are only ever 30/45/60. ---
+
+// Cal.com voice event type id → minutes (as booked).
+const VOICE_EVENT_TYPE_MIN = { "1945081": 60, "5925021": 45, "6488157": 30 } as const;
+
+function voiceEventTypeIdForLength(lengthMin: number | null | undefined): string | null {
+  for (const [id, min] of Object.entries(VOICE_EVENT_TYPE_MIN)) {
+    if (min === lengthMin) return id;
+  }
+  return null;
+}
+
+// Cost is a reliable length signal because calcom-voice-webhook prices from
+// event_pricing (50 = 30m, 75 = 45m, 95 = 60m) and Notion's DB1 carries cost too.
+function voiceLengthFromCost(cost: number | null | undefined): number | null {
+  if (cost == null) return null;
+  if (cost === 50) return 30;
+  if (cost === 75) return 45;
+  if (cost === 95) return 60;
+  return null;
+}
+
+// Port of src/utils/availability.ts voiceTimeDuration (kept in sync manually —
+// Deno edge functions can't import from src). Parses "5:30 PM – 6:15 PM" → 45.
+function voiceDurationFromTimeText(time: string | null): number | null {
+  if (!time) return null;
+  const parts = time.split(/\u2013|\u2014|\u2212|-/).map((s) => s.trim());
+  if (parts.length !== 2) return null;
+  const parseT = (s: string): number | null => {
+    const cleaned = s.replace(/(?:UTC|AEST|AEDT|GMT[+-]\d+|EST|EDST?|ACST|ACDT|AWST|AWDT)\b/gi, "").trim();
+    const m = cleaned.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
+    if (!m) return null;
+    let h = parseInt(m[1], 10);
+    const min = parseInt(m[2], 10);
+    if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
+    if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
+    return h * 60 + min;
+  };
+  const start = parseT(parts[0]);
+  const end = parseT(parts[1]);
+  if (start === null || end === null) return null;
+  return end < start ? end + 1440 - start : end - start;
+}
+
+// Prevailing session length across a student's own past lessons (most common
+// of the three supported lengths); only 30/45/60 count as real signals.
+function inferVoiceSessionLength(bookings: any[]): number | null {
+  const counts: Record<number, number> = {};
+  for (const b of bookings) {
+    let len = voiceLengthFromCost(b.cost);
+    if (len == null) len = b.lesson_time ? voiceDurationFromTimeText(b.lesson_time) : null;
+    if (len != null && (len === 30 || len === 45 || len === 60)) counts[len] = (counts[len] || 0) + 1;
+  }
+  const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+  return top ? Number(top[0]) : null;
+}
+
+// Single resolution path for "what length is this voice student's lesson, and
+// which Cal.com event type should new slots/bookings use?" — shared by
+// search_voice_client, get_available_slots and propose_booking so all three
+// agree instead of each guessing a different default. Explicit Simulator
+// preference wins; otherwise the student's own history is the best evidence.
+async function resolveVoiceSessionPrefs(supabase: any, supabaseUrl: string, serviceKey: string, userId: string, email: string) {
+  const emailLower = email.toLowerCase().trim();
+  const clientKey = `voice:${emailLower}`;
+  const [timetableEntry, allVoiceRows] = await Promise.all([
+    supabase.from("timetable_client_availability")
+      .select("note, windows, updated_at, session_length_min, event_type_id")
+      .eq("user_id", userId).eq("client_key", clientKey)
+      .maybeSingle(),
+    fetchNormalizedVoiceBookings(supabase, supabaseUrl, serviceKey, ", lesson_time, cost"),
+  ]);
+
+  const theirRows = (allVoiceRows as any[]).filter((b: any) => b.student_email === emailLower);
+  const explicit = timetableEntry?.session_length_min ?? null;
+  const inferred = explicit == null ? inferVoiceSessionLength(theirRows) : null;
+  const sessionLengthMin = explicit ?? inferred;
+
+  return {
+    sessionLengthMin,
+    sessionLengthSource: explicit != null
+      ? "timetable (stored preference)"
+      : inferred != null
+        ? "inferred from their booking history"
+        : null,
+    eventTypeId: timetableEntry?.event_type_id || voiceEventTypeIdForLength(sessionLengthMin),
+    timetableEntry,
+    allVoiceRows,
+  };
+}
+
 async function runSearchVoiceClient(supabaseUrl: string, serviceKey: string, supabase: any, userId: string, query: string) {
   const res = await fetch(`${supabaseUrl}/functions/v1/voice-clients`, {
     method: "POST",
@@ -908,13 +1059,9 @@ async function runSearchVoiceClient(supabaseUrl: string, serviceKey: string, sup
 
   const student = matches[0];
   const studentEmail = (student.email || "").toLowerCase().trim();
-  const [allVoiceRows, { data: simulatorEntry }] = await Promise.all([
-    fetchNormalizedVoiceBookings(supabase, supabaseUrl, serviceKey, ", lesson_time, cost, discipline"),
-    supabase.from("timetable_client_availability")
-      .select("note, windows, updated_at")
-      .eq("user_id", userId).eq("client_key", `voice:${studentEmail}`)
-      .maybeSingle(),
-  ]);
+  const prefs = await resolveVoiceSessionPrefs(supabase, supabaseUrl, serviceKey, userId, studentEmail);
+  const allVoiceRows = prefs.allVoiceRows;
+  const simulatorEntry = prefs.timetableEntry;
   // Matches by the normalized (backfilled) email — same fix as the anchor/
   // needs-attention aggregations above: some of a student's real lesson rows
   // can have student_email NULL in this table, which a direct .ilike() query
@@ -945,6 +1092,14 @@ async function runSearchVoiceClient(supabaseUrl: string, serviceKey: string, sup
   return {
     student: { name: student.name, email: student.email, phone: student.phone, discipline: student.discipline, tags: student.tags, notes: student.notes, last_communication: student.lastCommunication, latest_lesson_date: student.latestDate },
     recent_lessons: (bookings || []).map((b: any) => ({ date: b.lesson_date, time: b.lesson_time, cost: b.cost, status: b.status })),
+    // This student's session length and the Cal.com event type that maps to it
+    // — the fix for Nicole being pencilled as 60-min when she's a 45-min student.
+    // Pass preferred_event_type_id as event_type_id to get_available_slots and
+    // propose_booking so new lessons are proposed at THEIR length, never the
+    // app-wide 60-min default.
+    session_length_min: prefs.sessionLengthMin,
+    session_length_source: prefs.sessionLengthSource,
+    preferred_event_type_id: prefs.eventTypeId,
     likely_usual_slot: bestSlot && slotShare >= 0.4 && bestSlot.hourLabel !== "unknown" ? `${bestSlot.day} ${bestSlot.hourLabel}` : null,
     usual_slot_confidence: bestSlot ? `${Math.round(slotShare * 100)}% of their last ${completedCount} completed lessons` : null,
     timetable_simulator_note: simulatorEntry?.note || null,
@@ -1524,7 +1679,7 @@ You can draft an email for review via draft_email_reply, but you can never send 
 Whenever draft_email_reply is used for anything scheduling-flavoured ("let's find a time", proposing a session, re-engagement outreach that might lead to booking), call get_available_slots FIRST and embed 2-3 concrete suggested times with a one-line reason each in the draft body — never draft a vague "let me know what works for you" when real availability is one tool call away. get_available_slots also auto-widens its search window itself if the immediate range is fully booked, so it will still return real options even when the calendar looks packed short-term.
 Clients also have a self-serve portal at ${SITE_URL}/portal/login (email OTP, no password) where they can view their own upcoming/past sessions, cancel a booking, book a new one, and message Daniele directly. If a client seems unaware of it, or asks how to manage/cancel their own booking, or Daniele wants to point someone there, feel free to mention it and include the link in a drafted email — always as the full URL above, never a bare "/portal/login" (meaningless with no domain in plain email text).
 You can propose an actual booking via propose_booking (kinesiology or voice — same tool, pass client_id or voice_student_email), but you can never create one yourself — it only becomes real when the practitioner clicks Confirm on the proposal card, which creates a real Cal.com booking either way. Always call get_available_slots first and propose a real slot from that result, never a guessed time. When finding a slot for a specific person, always pass client_id (kinesiology) or voice_student_email (voice) to get_available_slots — it returns a ranked "suggested" shortlist (weighted by their availability_notes/booking history, not just chronological order), each with a "reason". Lead with the top suggested slot and its reason ("Tuesday 4pm usually works well for her, and it fits the note about after-work sessions") rather than defaulting to whichever slot happens to be soonest — the earliest slot is very often NOT the one they actually want.
-Whenever the practitioner tells you something new about a client's OR voice student's availability (a day/time that works or doesn't), call update_client_availability right away to remember it for next time (client_id for kinesiology, voice_student_email for voice) — don't just acknowledge it in the chat and let it evaporate.
+Whenever the practitioner tells you something new about a client's OR voice student's availability (a day/time that works or doesn't), call update_client_availability right away to remember it for next time (client_id for kinesiology, voice_student_email for voice) — don't just acknowledge it in the chat and let it evaporate. Same rule for session length: if they say a student does 45-minute sessions (or any 30/45/60, or mentions which service they should book as), call update_client_availability with session_length_min / event_type_id so future proposals book the RIGHT length — never silently keep proposing the 60-minute default for a student who's really 45 (that exact mistake cost Nicole three 60-min proposals).
 You can search the inbox read-only via search_inbox (Gmail search syntax) to check for replies or past correspondence — you cannot send, modify, or delete anything through it.
 For business questions ("who's active", "who should I raise rates for", "what times are free"), use get_active_clients, get_revenue_opportunities, and get_practice_schedule_overview rather than guessing — they compute real numbers from appointment history.
 Be proactive, not just reactive: if the conversation naturally touches on scheduling and get_active_clients shows active clients with no future booking, mention them and offer to help book their next session, rather than waiting to be asked. When a client's next-session cadence is clear from get_past_booking_patterns, feel free to suggest it ("she's usually every 2 weeks, so [date] would fit her pattern").
@@ -1554,11 +1709,11 @@ If Daniele says to skip, move on, or otherwise declines the client currently bei
           pendingDraft = { to: args.to, subject: stripMarkdown(args.subject), body: stripMarkdown(args.body), client_id: args.client_id || client_id || null, appointment_id: args.appointment_id || null };
           result = { status: "drafted", note: "Draft created for human review. It has not been sent." };
         } else if (name === "propose_booking") {
-          const proposed = await runProposeBooking(supabase, userId, args);
+          const proposed = await runProposeBooking(supabase, SUPABASE_URL, SERVICE_KEY, userId, args);
           pendingBooking = proposed.pendingBooking;
           result = proposed.result;
         } else if (name === "update_client_availability") {
-          result = await runUpdateClientAvailability(supabase, userId, args.client_id, args.voice_student_email, args.availability_notes);
+          result = await runUpdateClientAvailability(supabase, userId, args.client_id, args.voice_student_email, args.availability_notes, args.session_length_min, args.event_type_id);
         } else if (name === "search_inbox") {
           result = await runSearchInbox(SUPABASE_URL, SERVICE_KEY, args.query);
         } else if (name === "get_client_context") {

@@ -43,6 +43,7 @@ interface ClientWithStats extends Client {
   kind: "kinesiology" | "voice";
   session_count: number;
   last_session_at: string | null;
+  last_contacted_at: string | null;
   latest_bolt: number | null;
   upcoming_count: number;
   activity_score: number;
@@ -202,11 +203,36 @@ export function ClientsTool() {
     return results;
   };
 
+  // Session recency ("Last Session") only tells half the story — a client
+  // can look quiet on sessions while actually corresponding by email
+  // regularly, or the reverse. Not shown anywhere in this list before.
+  //
+  // Deliberately NOT sourced from `email_log` (the table the assistant's own
+  // draft-send flow writes to) — checked live and it's completely empty, no
+  // rows ever, since that flow hasn't been used for a real send yet. That
+  // would have made this column show "Never" for all 66 clients, which is
+  // worse than not having it. Reuses gmail-list-client-inbox instead (same
+  // one bulk call CommsInbox already makes) — real, populated data today,
+  // though it only sees INBOUND messages within the last 90 days, so this
+  // reads as "last heard from them", not a full bidirectional contact log.
+  const fetchLastContactedMap = async (): Promise<Map<string, string>> => {
+    const map = new Map<string, string>();
+    const { data } = await supabase.functions.invoke("gmail-list-client-inbox");
+    for (const m of (data?.messages || []) as { email: string; date_iso: string }[]) {
+      const key = (m.email || "").toLowerCase();
+      const existing = map.get(key);
+      if (!existing || new Date(m.date_iso) > new Date(existing)) map.set(key, m.date_iso);
+    }
+    return map;
+  };
+
   const loadAllClients = async () => {
     setLoading(true);
     try {
       const [kinesiology, voice] = await Promise.all([fetchKinesiologyClients(), fetchVoiceClients()]);
-      setClients([...kinesiology, ...voice]);
+      const all = [...kinesiology, ...voice];
+      const contactedMap = await fetchLastContactedMap();
+      setClients(all.map((c) => ({ ...c, last_contacted_at: c.email ? contactedMap.get(c.email.toLowerCase()) || null : null })));
     } catch (err) {
       console.error("Error fetching clients:", err);
       setError("Failed to load clients. Please try again.");

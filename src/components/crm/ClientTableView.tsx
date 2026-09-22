@@ -61,7 +61,9 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
           <TableRow className="hover:bg-transparent border-border">
             <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12 px-6">Client Name</TableHead>
             <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12">Age / Sign</TableHead>
+            <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12">Rate</TableHead>
             <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12">Last Session</TableHead>
+            <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12">Last Contacted</TableHead>
             <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12 text-center">Total</TableHead>
             <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12 text-center">Upcoming</TableHead>
             <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12 text-right px-6">Actions</TableHead>
@@ -117,10 +119,33 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
                 </div>
               </TableCell>
               <TableCell>
+                {/* Voice pricing is flat per-service, not a per-student rate
+                    (see CLAUDE.md) — nothing meaningful to show per row. */}
+                {isVoice ? (
+                  <span className="text-xs text-muted-foreground">—</span>
+                ) : client.standard_rate === 0 ? (
+                  <span className="text-sm font-semibold text-chart-emerald">$0 · Free</span>
+                ) : client.standard_rate != null ? (
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-foreground">${client.standard_rate}</span>
+                    {client.target_rate != null && client.target_rate !== client.standard_rate && (
+                      <span className="text-[10px] font-medium text-muted-foreground">→ target ${client.target_rate}</span>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-xs text-muted-foreground">No rate set</span>
+                )}
+              </TableCell>
+              <TableCell>
                 <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                   <CalendarPlus size={14} className="text-muted-foreground" />
                   {client.last_session_at ? format(new Date(client.last_session_at), "MMM d, yyyy") : "Never"}
                 </div>
+              </TableCell>
+              <TableCell>
+                <span className="text-sm font-medium text-muted-foreground">
+                  {client.last_contacted_at ? format(new Date(client.last_contacted_at), "MMM d, yyyy") : "Never"}
+                </span>
               </TableCell>
               <TableCell className="text-center">
                 <div className="inline-flex flex-col items-center px-3 py-1 bg-muted rounded-lg">

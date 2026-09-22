@@ -9,7 +9,6 @@ import {
   Clock,
   CreditCard,
   ArrowRight,
-  FlaskConical,
   Activity,
   Loader2,
   Mic,
@@ -116,19 +115,37 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
               <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                 {client.born && <span>{calculateAge(client.born)} yrs · {getStarSign(client.born)}</span>}
               </div>
+              {/* Voice pricing is flat per-service, not a per-student rate
+                  (see CLAUDE.md) — nothing meaningful to show per row. */}
+              {!isVoice && (
+                <div className="flex items-center gap-1 text-xs font-medium">
+                  {client.standard_rate === 0 ? (
+                    <span className="text-chart-emerald font-semibold">$0 · Free</span>
+                  ) : client.standard_rate != null ? (
+                    <span className="text-foreground font-semibold">${client.standard_rate}</span>
+                  ) : (
+                    <span className="text-muted-foreground">No rate set</span>
+                  )}
+                  {client.target_rate != null && client.target_rate !== client.standard_rate && (
+                    <span className="text-muted-foreground">→ target ${client.target_rate}</span>
+                  )}
+                </div>
+              )}
               <div className="pt-2">
                 <ActivityIndicator score={client.activity_score} />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <div className={cn(
-                "p-2.5 rounded-xl border flex flex-col items-center text-center",
-                client.latest_bolt === null ? "bg-muted/30 border-border" : (client.latest_bolt >= 25 ? "bg-chart-emerald/10 border-chart-emerald/20" : "bg-destructive/10 border-destructive/20")
-              )}>
-                <FlaskConical size={13} className={cn("mb-1", client.latest_bolt === null ? "text-muted-foreground" : (client.latest_bolt >= 25 ? "text-chart-emerald" : "text-destructive"))} />
-                <p className="text-[9px] font-medium uppercase tracking-wide opacity-60">Latest BOLT</p>
-                <p className="text-base font-semibold">{client.latest_bolt !== null ? `${client.latest_bolt}s` : "—"}</p>
+              {/* Last Contacted, not Latest BOLT — BOLT is kinesiology-only
+                  clinical data (always "—" for voice, dead space), and this
+                  business-relationship list benefits more from "have I
+                  actually reached out" than a clinical assessment score,
+                  which still lives in full on the Clinical Profile. */}
+              <div className="p-2.5 rounded-xl border border-border bg-muted/30 flex flex-col items-center text-center">
+                <Mail size={13} className="mb-1 text-muted-foreground" />
+                <p className="text-[9px] font-medium uppercase tracking-wide opacity-60">Last Contacted</p>
+                <p className="text-base font-semibold">{client.last_contacted_at ? format(new Date(client.last_contacted_at), "MMM d") : "Never"}</p>
               </div>
               <div className="p-2.5 rounded-xl border border-border bg-muted/30 flex flex-col items-center text-center">
                 <Activity size={13} className="mb-1 text-primary" />

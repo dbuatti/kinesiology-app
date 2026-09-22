@@ -335,14 +335,21 @@ function isRetryableModelError(message: string): boolean {
 // returns, so the main tool loop below doesn't need to know which provider
 // actually served a given round. Model choice is a live-verification item,
 // not a fixed guarantee — free models on OpenRouter get deprecated/repriced
-// without much notice (the original choice here, meta-llama/llama-3.3-70b-
+// without much notice (an earlier choice here, meta-llama/llama-3.3-70b-
 // instruct:free, was pulled from the free tier entirely — confirmed live via
 // real production logs on 2026-09-21: "This model is unavailable for free.").
-// Re-checked against OpenRouter's own /api/v1/models on 2026-09-21, filtering
-// price=0 AND "tools" in supported_parameters — if this starts failing again,
-// re-run that query rather than guessing:
+// A SINGLE free model is also its own single point of failure even when it's
+// not dead: qwen/qwen3.8-27b:free returned a real 429 live on 2026-09-22 —
+// "temporarily rate-limited upstream" — because OpenRouter's free models
+// share ONE capacity pool across every user of that model, independent of
+// our own usage; it recovers on its own but isn't something we control.
+// A short list tried in sequence (like the Gemini key rotation above) means
+// one model's shared pool being saturated doesn't take the whole fallback
+// down with it. Re-checked against OpenRouter's own /api/v1/models on
+// 2026-09-22, filtering price=0 AND "tools" in supported_parameters — if
+// these start failing too, re-run that query rather than guessing:
 //   curl -s https://openrouter.ai/api/v1/models | python3 -c "import json,sys; d=json.load(sys.stdin); [print(m['id']) for m in d['data'] if float(m['pricing']['prompt'] or 1)==0 and 'tools' in (m.get('supported_parameters') or [])]"
-const OPENROUTER_FALLBACK_MODEL = "qwen/qwen3.8-27b:free";
+const OPENROUTER_FALLBACK_MODELS = ["qwen/qwen3.8-27b:free", "google/gemma-4-31b-it:free", "nvidia/nemotron-3-super-120b-a12b:free"];
 
 function geminiTypeToJsonSchema(p: any): any {
   const TYPE_MAP: Record<string, string> = { OBJECT: "object", STRING: "string", NUMBER: "number", BOOLEAN: "boolean", ARRAY: "array" };
@@ -401,14 +408,24 @@ function openRouterToGeminiShape(data: any) {
 async function callOpenRouter(openRouterKey: string, contents: any[], systemInstruction: string) {
   const messages = contentsToOpenAIMessages(contents, systemInstruction);
   const tools = functionDeclarations.map((fd) => ({ type: "function", function: { name: fd.name, description: fd.description, parameters: geminiTypeToJsonSchema(fd.parameters) } }));
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${openRouterKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model: OPENROUTER_FALLBACK_MODEL, messages, tools, tool_choice: "auto", temperature: 0.4 }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data?.error?.message || `OpenRouter API error (status ${res.status})`);
-  return openRouterToGeminiShape(data);
+
+  let lastErr: Error | null = null;
+  for (const model of OPENROUTER_FALLBACK_MODELS) {
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${openRouterKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model, messages, tools, tool_choice: "auto", temperature: 0.4 }),
+    });
+    const data = await res.json();
+    if (res.ok) return openRouterToGeminiShape(data);
+    // "Provider returned error" (OpenRouter's own generic wrapper message)
+    // used to give zero insight into what actually failed underneath —
+    // include the raw error body so a real failure is diagnosable from the
+    // frontend's own error message without needing dashboard log access.
+    lastErr = new Error(`OpenRouter ${res.status} (${model}): ${JSON.stringify(data?.error || data)}`);
+    console.error("[assistant-chat] OPENROUTER_MODEL_FAILED (trying next if any):", lastErr.message);
+  }
+  throw lastErr || new Error("All OpenRouter fallback models failed.");
 }
 
 // Tries each configured Gemini key in turn (only continuing past a key on a

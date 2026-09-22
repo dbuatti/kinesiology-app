@@ -2250,7 +2250,10 @@ function FortnightMockup({
                 state={stateFor(d)}
                 slots={slots[zonedDateKey(d)] || []}
                 bookings={bookings[zonedDateKey(d)] || []}
-                proposals={proposals.filter((p) => isSameDay(new Date(p.slot_start), d))}
+                // Confirmed proposals already exist as real Cal.com bookings (that's
+                // what confirming does), so they'd otherwise render twice — once as
+                // the rose "booking" chip from `bookings`, once as this emerald chip.
+                proposals={proposals.filter((p) => isSameDay(new Date(p.slot_start), d) && p.status !== "confirmed")}
                 icloudEvents={icloudEvents.filter((ev) => {
                   if (!ev.start || ev.transparent) return false;
                   const s = new Date(ev.start);

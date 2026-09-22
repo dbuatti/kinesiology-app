@@ -1,13 +1,13 @@
 
 import { useState, useEffect, useMemo, type ElementType } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -73,7 +73,6 @@ import {
   Edit3,
   Columns,
   Inbox,
-  ArrowLeft,
 } from "lucide-react";
 import { format, formatDistanceToNow, differenceInMonths, startOfWeek, endOfWeek, startOfMonth } from "date-fns";
 import { Client, Appointment } from "@/types/crm";
@@ -160,7 +159,6 @@ const STATIC_STRATEGIES = [
 ];
 
 export function ClientAuditTool() {
-  const navigate = useNavigate();
   const [clients, setClients] = useState<ClientWithAppointments[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -169,7 +167,8 @@ export function ClientAuditTool() {
   const [filterRate, setFilterRate] = useState<string>("all");
   const [filterFollowUp, setFilterFollowUp] = useState<string>("all");
   const [compactRows, setCompactRows] = useState(false);
-  
+  const [auditTab, setAuditTab] = useState("rates");
+
   // Collapsible sections state
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
     lastMonth: false,
@@ -1203,17 +1202,17 @@ export function ClientAuditTool() {
 
   return (
       <>
-      <div className="space-y-8 animate-in fade-in duration-700 pb-20">
+      {/* pt-6 matches the top spacing the other Business Hub tools get for
+          free from their own p-6 root — this one only had pb-20, leaving no
+          gap between the tab bar's bottom border and this header. */}
+      <div className="space-y-8 animate-in fade-in duration-700 pt-6 pb-20">
+        {/* No "Back" button — this is a tab within the Business Hub, reached
+            via the sidebar nav, not a standalone route. */}
         <PageHeader
           title="Client Payment & Audit"
           subtitle="Review client rates, track appointment recency, identify follow-up needs, and perform financial audits with AI-driven pricing suggestions."
           icon={FileText}
           iconClassName="bg-muted"
-          actions={
-            <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
-              <ArrowLeft size={14} /> Back
-            </Button>
-          }
         />
 
         {loading ? (
@@ -1248,24 +1247,32 @@ export function ClientAuditTool() {
             ))}
           </div>
 
-          <Tabs defaultValue="rates" className="space-y-8">
-            <TabsList className="bg-muted/50 p-1 rounded-xl border border-border/50 w-full max-w-3xl grid grid-cols-5">
-              <TabsTrigger value="rates" className="rounded-xl font-medium text-xs py-2.5">
-                Rates
-              </TabsTrigger>
-              <TabsTrigger value="timetable" className="rounded-xl font-medium text-xs py-2.5">
-                Timetable
-              </TabsTrigger>
-              <TabsTrigger value="salary" className="rounded-xl font-medium text-xs py-2.5">
-                Salary Sim
-              </TabsTrigger>
-              <TabsTrigger value="audit" className="rounded-xl font-medium text-xs py-2.5">
-                Financials
-              </TabsTrigger>
-              <TabsTrigger value="suggestions" className="rounded-xl font-medium text-xs py-2.5">
-                AI Roadmap
-              </TabsTrigger>
-            </TabsList>
+          <Tabs value={auditTab} onValueChange={setAuditTab} className="space-y-8">
+            {/* Plain underline tabs, not the filled-pill grid — same "tacky"
+                pattern already fixed on the Business Hub's own tab row. */}
+            <div className="w-full max-w-3xl border-b border-border">
+              <div className="flex gap-6">
+                {[
+                  { id: "rates", label: "Rates" },
+                  { id: "timetable", label: "Timetable" },
+                  { id: "salary", label: "Salary Sim" },
+                  { id: "audit", label: "Financials" },
+                  { id: "suggestions", label: "AI Roadmap" },
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setAuditTab(t.id)}
+                    className={cn(
+                      "py-3 text-xs font-medium border-b-2 -mb-px transition-colors",
+                      auditTab === t.id ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             {/* TAB 1: RATES & RECENCY */}
             <TabsContent value="rates" className="space-y-6">

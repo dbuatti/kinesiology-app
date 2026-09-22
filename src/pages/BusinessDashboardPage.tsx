@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   TrendingUp, Users, DollarSign, Mic, Calendar, ChevronRight, Clock,
-  AlertCircle, RefreshCw, ArrowLeft,
+  AlertCircle, RefreshCw,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -157,13 +157,11 @@ export function BusinessDashboardTool() {
   return (
       <div className="flex flex-col gap-8 p-6">
 
-        <PageHeader title="Business Dashboard" subtitle="Today's overview and quick actions" icon={TrendingUp}
-          actions={
-            <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
-              <ArrowLeft size={14} /> Back
-            </Button>
-          }
-        />
+        {/* No "Back" button — this is a tab within the Business Hub, reached
+            via the sidebar nav (always visible), not a standalone route.
+            navigate(-1) here was a leftover from before these tools were
+            consolidated into tabs, and didn't mean "previous tab" anyway. */}
+        <PageHeader title="Business Dashboard" subtitle="Today's overview and quick actions" icon={TrendingUp} />
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

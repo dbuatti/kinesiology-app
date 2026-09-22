@@ -1,8 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 import {
-  TrendingUp, Users, DollarSign, Mic, Layers, ArrowLeft,
+  TrendingUp, Users, DollarSign, Mic, Layers,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -44,7 +43,6 @@ const SOURCE_COLORS: Record<string, string> = {
 };
 
 export function BusinessOverviewTool() {
-  const navigate = useNavigate();
   const [viewFilter, setViewFilter] = useState<ViewFilter>('all');
   const now = useMemo(() => new Date(), []);
   const monthStart = useMemo(() => new Date(now.getFullYear(), now.getMonth(), 1), [now]);
@@ -256,12 +254,10 @@ export function BusinessOverviewTool() {
   return (
       <div className="flex flex-col gap-8 p-6">
 
-        {/* Header + Filter */}
+        {/* Header + Filter — no "Back" button; this is a tab within the
+            Business Hub reached via the sidebar nav, not a standalone route. */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2 shrink-0">
-              <ArrowLeft size={14} /> Back
-            </Button>
             <PageHeader
               title={`Business Overview · ${d.titleLabel}`}
               subtitle="Revenue, clients, and performance metrics"

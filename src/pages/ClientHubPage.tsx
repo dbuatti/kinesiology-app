@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { showError } from "@/utils/toast";
 import { useAssistantConversation } from "@/hooks/useAssistantConversation";
 import { isVoiceStudentId, emailFromVoiceStudentId } from "@/lib/voice-student-id";
+import { fetchNormalizedVoiceBookings } from "@/lib/voiceBookings";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import ConversationList from "@/components/assistant/ConversationList";
@@ -48,16 +49,15 @@ export default function ClientHubPage() {
     (async () => {
       if (isVoice) {
         const email = emailFromVoiceStudentId(id);
-        const { data } = await supabase
-          .from("voice_bookings")
-          .select("student_name")
-          .ilike("student_email", email)
-          .not("student_name", "is", null)
-          .order("lesson_date", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+        // fetchNormalizedVoiceBookings merges Notion-only lessons in too —
+        // a raw voice_bookings query here missed anyone whose lessons were
+        // only ever logged in Notion (real bug: Bella's Hub page showed her
+        // raw email as the page title since she has zero voice_bookings
+        // rows at all).
+        const allBookings = await fetchNormalizedVoiceBookings();
+        const match = allBookings.find((b) => b.studentEmail.toLowerCase() === email.toLowerCase());
         if (cancelled) return;
-        setClient({ id, name: data?.student_name || email, email, phone: null, isVoice: true });
+        setClient({ id, name: match?.studentName || email, email, phone: null, isVoice: true });
         setLoading(false);
       } else {
         const { data, error } = await supabase.from("clients").select("id, name, email, phone").eq("id", id).maybeSingle();

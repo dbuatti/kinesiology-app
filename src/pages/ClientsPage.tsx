@@ -31,8 +31,16 @@ import ClientTableView from "@/components/crm/ClientTableView";
 import ClientGridView from "@/components/crm/ClientGridView";
 import { ClinicalOversightTool } from "@/pages/ClinicalOversightPage";
 import { computeClientLifecycleStatus, LifecycleStatus } from "@/lib/clientStatus";
+import { fetchNormalizedVoiceBookings } from "@/lib/voiceBookings";
+import { voiceStudentIdFor } from "@/lib/voice-student-id";
 
 interface ClientWithStats extends Client {
+  // "This whole tool must always be for voice, piano, and kinesiology" — the
+  // Client Database used to be kinesiology-only (voice students had their
+  // own separate list under Voice Studio), which was the actual bug being
+  // reported: one unified list, distinguished per-row, same convention
+  // already used in Follow-up/Launch Campaign (Mic vs Brain icon).
+  kind: "kinesiology" | "voice";
   session_count: number;
   last_session_at: string | null;
   latest_bolt: number | null;
@@ -63,14 +71,13 @@ export function ClientsTool() {
   });
   const { isPrivate } = usePrivacyMode();
   
-  const fetchClients = async () => {
-    try {
+  const fetchKinesiologyClients = async (): Promise<ClientWithStats[]> => {
       const { data, error } = await supabase
         .from('clients')
         .select('*, appointments(date, bolt_score, status)')
         .or('is_practitioner.eq.false,is_practitioner.is.null')
         .order('name', { ascending: true });
-      
+
       if (error) throw error;
       
       const mapped = (data || []).map(c => {
@@ -123,6 +130,7 @@ export function ClientsTool() {
 
         return {
           ...c,
+          kind: "kinesiology",
           born: c.born ? new Date(c.born) : null,
           suburbs: c.suburbs || [],
           session_count: pastApps.length,
@@ -134,8 +142,71 @@ export function ClientsTool() {
           lifecycle_status_reason,
         };
       }) as unknown as ClientWithStats[];
-      
-      setClients(mapped);
+
+      return mapped;
+  };
+
+  // Same "kept in sync" scoring convention as the kinesiology branch above —
+  // deliberately reuses fetchNormalizedVoiceBookings (already merges
+  // Cal.com + Notion-only lessons, see src/lib/voiceBookings.ts) so a voice
+  // student's real history shows up here exactly as it does everywhere else
+  // in the app, not a second, divergent computation.
+  const fetchVoiceClients = async (): Promise<ClientWithStats[]> => {
+    const bookings = await fetchNormalizedVoiceBookings();
+    const now = Date.now();
+    const agg = new Map<string, { name: string; email: string; appointments: { date: string; status: string }[] }>();
+    for (const b of bookings) {
+      const existing = agg.get(b.studentEmail) || { name: b.studentName, email: b.studentEmail, appointments: [] };
+      existing.appointments.push({ date: b.lessonDate, status: b.status === "cancelled" ? "Cancelled" : "Completed" });
+      agg.set(b.studentEmail, existing);
+    }
+
+    const results: ClientWithStats[] = [];
+    for (const [email, { name, appointments }] of agg.entries()) {
+      const activeApps = appointments.filter((a) => a.status !== "Cancelled");
+      const pastApps = activeApps.filter((a) => new Date(a.date).getTime() < now);
+      const upcomingApps = activeApps.filter((a) => new Date(a.date).getTime() >= now);
+      const sortedPast = [...pastApps].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      const lastMs = sortedPast[0] ? new Date(sortedPast[0].date).getTime() : null;
+      const recentCount = pastApps.filter((a) => new Date(a.date).getTime() >= now - 180 * 24 * 60 * 60 * 1000).length;
+      let recencyPts = 0;
+      if (lastMs != null) {
+        const days = (now - lastMs) / (24 * 60 * 60 * 1000);
+        if (days <= 30) recencyPts = 50;
+        else if (days <= 60) recencyPts = 40;
+        else if (days <= 90) recencyPts = 28;
+        else if (days <= 180) recencyPts = 16;
+      }
+      const freqPts = Math.min(50, recentCount * 5);
+
+      const { status: lifecycle_status, reason: lifecycle_status_reason } = computeClientLifecycleStatus({
+        appointments: pastApps,
+        hasFutureBooking: upcomingApps.length > 0,
+      });
+
+      results.push({
+        id: voiceStudentIdFor(email),
+        kind: "voice",
+        name, email, phone: null, born: null, suburbs: [],
+        standard_rate: null, target_rate: null,
+        onboarding_submitted_at: null, stripe_customer_id: null,
+        session_count: pastApps.length,
+        last_session_at: sortedPast[0]?.date || null,
+        latest_bolt: null,
+        upcoming_count: upcomingApps.length,
+        activity_score: recencyPts + freqPts,
+        lifecycle_status,
+        lifecycle_status_reason,
+      } as unknown as ClientWithStats);
+    }
+    return results;
+  };
+
+  const loadAllClients = async () => {
+    setLoading(true);
+    try {
+      const [kinesiology, voice] = await Promise.all([fetchKinesiologyClients(), fetchVoiceClients()]);
+      setClients([...kinesiology, ...voice]);
     } catch (err) {
       console.error("Error fetching clients:", err);
       setError("Failed to load clients. Please try again.");
@@ -145,7 +216,7 @@ export function ClientsTool() {
   };
 
   useEffect(() => {
-    fetchClients();
+    loadAllClients();
   }, []);
 
   const handleQuickBook = (clientId: string) => {
@@ -189,7 +260,7 @@ export function ClientsTool() {
                     <DialogTitle className="text-xl font-semibold">Add New Client</DialogTitle>
                     <DialogDescription className="font-medium">Create a new client profile in your clinical database.</DialogDescription>
                   </DialogHeader>
-                  <ClientForm onSuccess={() => { setOpen(false); fetchClients(); }} />
+                  <ClientForm onSuccess={() => { setOpen(false); loadAllClients(); }} />
                 </div>
               </DialogContent>
             </Dialog>
@@ -271,7 +342,7 @@ export function ClientsTool() {
               <AlertCircle size={28} className="text-destructive" />
             </div>
             <p className="text-destructive font-semibold text-sm">{error}</p>
-            <Button variant="outline" size="sm" onClick={() => { setError(null); setLoading(true); fetchClients(); }} className="rounded-xl text-xs gap-2">
+            <Button variant="outline" size="sm" onClick={() => { setError(null); setLoading(true); loadAllClients(); }} className="rounded-xl text-xs gap-2">
               <RefreshCw size={14} /> Retry
             </Button>
           </div>
@@ -324,7 +395,7 @@ export function ClientsTool() {
               <DialogTitle className="text-2xl font-black">Quick Book Session</DialogTitle>
               <DialogDescription className="font-medium">Schedule a new appointment for this client.</DialogDescription>
             </DialogHeader>
-            {selectedClientId && <AppointmentForm initialClientId={selectedClientId} onSuccess={() => { setBookOpen(false); fetchClients(); }} />}
+            {selectedClientId && <AppointmentForm initialClientId={selectedClientId} onSuccess={() => { setBookOpen(false); loadAllClients(); }} />}
           </div>
         </DialogContent>
       </Dialog>

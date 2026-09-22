@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import {
   Mail,
@@ -11,7 +11,9 @@ import {
   ArrowRight,
   FlaskConical,
   Activity,
-  Loader2
+  Loader2,
+  Mic,
+  Brain,
 } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -57,11 +59,14 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {clients.map((client) => (
+      {clients.map((client) => {
+        const isVoice = client.kind === "voice";
+        const profileHref = isVoice ? `/clients/${client.id}/hub` : `/clients/${client.id}`;
+        return (
         <Card
           key={client.id}
           className="hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 border border-border shadow-sm rounded-2xl overflow-hidden group cursor-pointer bg-card h-full"
-          onClick={() => navigate(`/clients/${client.id}`)}
+          onClick={() => navigate(profileHref)}
         >
           <CardContent className="p-6 space-y-5">
             <div className="flex items-start justify-between">
@@ -95,13 +100,14 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
 
             <div className="space-y-1">
               <div className="flex items-center gap-2">
+                {isVoice ? <Mic className="h-3.5 w-3.5 text-chart-destructive shrink-0" /> : <Brain className="h-3.5 w-3.5 text-chart-purple shrink-0" />}
                 <h3 className={cn(
                   "text-lg font-semibold text-foreground group-hover:text-primary transition-colors truncate",
                   isPrivate && "blur-sm select-none"
                 )}>{client.name}</h3>
-                <IntakeStatusBadge client={client} />
+                {!isVoice && <IntakeStatusBadge client={client} />}
                 <NewInfoBadge submittedAt={(client as any).onboarding_submitted_at} />
-                {client.stripe_customer_id && (
+                {!isVoice && client.stripe_customer_id && (
                   <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-medium uppercase border-primary/20 text-primary bg-primary/5">
                     <CreditCard size={8} className="mr-1" /> Synced
                   </Badge>
@@ -156,15 +162,36 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
 
             <div className="pt-3 flex items-center justify-between gap-2">
               <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="px-2 h-8 text-primary font-medium text-xs hover:bg-primary/5"
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickBook(client.id); }}
-                >
-                  <CalendarPlus size={14} className="mr-1.5" /> Quick Book
-                </Button>
-                {client.email && (
+                {isVoice ? (
+                  // Voice students don't have a `clients` row for
+                  // AppointmentForm's client_id FK to attach to — routes
+                  // into the Assistant Hub's own booking flow instead,
+                  // which auto-sends this prompt straight to a proposed
+                  // slot (see AssistantInput's autoSend).
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="px-2 h-8 text-primary font-medium text-xs hover:bg-primary/5"
+                    asChild
+                  >
+                    <Link
+                      to={`/clients/${client.id}/hub?prompt=${encodeURIComponent(`Find a good slot and book ${client.name.split(" ")[0]}'s next session — check their availability notes and usual pattern first.`)}`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <CalendarPlus size={14} className="mr-1.5" /> Quick Book
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="px-2 h-8 text-primary font-medium text-xs hover:bg-primary/5"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickBook(client.id); }}
+                  >
+                    <CalendarPlus size={14} className="mr-1.5" /> Quick Book
+                  </Button>
+                )}
+                {!isVoice && client.email && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -189,7 +216,8 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
             </div>
           </CardContent>
         </Card>
-      ))}
+        );
+      })}
     </div>
   );
 };

@@ -2,13 +2,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { 
-  Mail, 
-  Phone, 
-  CalendarPlus, 
-  Clock, 
-  CreditCard, 
-  Loader2 
+import {
+  Mail,
+  Phone,
+  CalendarPlus,
+  Clock,
+  CreditCard,
+  Loader2,
+  Mic,
+  Brain,
 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -66,22 +68,26 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
           </TableRow>
         </TableHeader>
         <TableBody>
-          {clients.map((client) => (
+          {clients.map((client) => {
+            const isVoice = client.kind === "voice";
+            const profileHref = isVoice ? `/clients/${client.id}/hub` : `/clients/${client.id}`;
+            return (
             <TableRow key={client.id} className="hover:bg-primary/5 transition-colors group border-border">
               <TableCell className="px-6 py-4">
-                <Link to={`/clients/${client.id}`} className="flex items-center gap-3">
+                <Link to={profileHref} className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold uppercase shrink-0">
                     {client.name.charAt(0)}
                   </div>
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
+                      {isVoice ? <Mic className="h-3.5 w-3.5 text-chart-destructive shrink-0" /> : <Brain className="h-3.5 w-3.5 text-chart-purple shrink-0" />}
                       <span className={cn(
                         "font-semibold text-foreground text-sm group-hover:text-primary transition-colors",
                         isPrivate && "blur-sm select-none"
                       )}>{client.name}</span>
-                      <IntakeStatusBadge client={client} />
+                      {!isVoice && <IntakeStatusBadge client={client} />}
                       <NewInfoBadge submittedAt={(client as any).onboarding_submitted_at} />
-                      {client.stripe_customer_id && (
+                      {!isVoice && client.stripe_customer_id && (
                         <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-black uppercase border-primary/20 text-primary bg-primary/5">
                           <CreditCard size={8} className="mr-1" /> Synced
                         </Badge>
@@ -150,7 +156,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
                       <TooltipContent className="text-xs">Call Client</TooltipContent>
                     </Tooltip>
                   )}
-                  {client.email && (
+                  {!isVoice && client.email && (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
@@ -168,26 +174,48 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
                       </TooltipContent>
                     </Tooltip>
                   )}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickBook(client.id); }}
-                      >
-                        <CalendarPlus size={16} />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent className="text-xs">Quick Book Session</TooltipContent>
-                  </Tooltip>
-                  <Link to={`/clients/${client.id}`}>
+                  {isVoice ? (
+                    // Voice students don't have a `clients` row for
+                    // AppointmentForm's client_id FK to attach to — routes
+                    // into the Assistant Hub's own booking flow instead,
+                    // which auto-sends this prompt straight to a proposed
+                    // slot (see AssistantInput's autoSend).
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10" asChild>
+                          <Link
+                            to={`/clients/${client.id}/hub?prompt=${encodeURIComponent(`Find a good slot and book ${client.name.split(" ")[0]}'s next session — check their availability notes and usual pattern first.`)}`}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <CalendarPlus size={16} />
+                          </Link>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="text-xs">Quick Book (via Assistant)</TooltipContent>
+                    </Tooltip>
+                  ) : (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onQuickBook(client.id); }}
+                        >
+                          <CalendarPlus size={16} />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="text-xs">Quick Book Session</TooltipContent>
+                    </Tooltip>
+                  )}
+                  <Link to={profileHref}>
                     <Button variant="outline" size="sm" className="h-8 rounded-lg font-medium text-xs border-border hover:bg-muted ml-1">View Profile</Button>
                   </Link>
                 </div>
               </TableCell>
             </TableRow>
-          ))}
+            );
+          })}
         </TableBody>
       </Table>
       </div>

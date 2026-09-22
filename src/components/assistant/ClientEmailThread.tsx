@@ -272,6 +272,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
         body: {
           client_id: hasClientRecord ? clientId : null,
           client_name: clientName,
+          is_voice: !hasClientRecord,
           thread_messages: messages.map((m) => ({ direction: m.direction, body: m.body })),
           available_slots: slots.slice(0, 40).map((s) => s.label),
           goal: suggestGoal.trim() || undefined,

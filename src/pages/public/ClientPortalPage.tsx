@@ -88,6 +88,14 @@ export default function ClientPortalPage() {
   const [slots, setSlots] = useState<{ iso: string; label: string }[] | null>(null);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [bookingSlot, setBookingSlot] = useState<string | null>(null);
+  // "Resonance Kinesiology" was hardcoded in the header regardless of which
+  // arm the logged-in client actually belongs to — a real, client-facing
+  // instance of "this tool must always be for voice, piano, and
+  // kinesiology": a voice/piano student landing here saw a brand name for a
+  // completely different service. isVoice is already resolved once at load
+  // time (client-portal-link-account is strictly one or the other, same
+  // convention as everywhere else in this app), just never kept in state.
+  const [isVoiceClient, setIsVoiceClient] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -97,6 +105,7 @@ export default function ClientPortalPage() {
       if (linkErr || linkData?.error) throw new Error(linkData?.error || linkErr?.message);
 
       const isVoice = !!linkData.voice_student_email;
+      setIsVoiceClient(isVoice);
       const [{ data: profileData, error: profileErr }, { data: rowData, error: rowErr }] = await Promise.all([
         supabase.rpc(isVoice ? "get_my_voice_profile" : "get_my_client_profile"),
         supabase.rpc(isVoice ? "get_my_voice_lessons" : "get_my_appointments"),
@@ -221,7 +230,7 @@ export default function ClientPortalPage() {
     <div className="min-h-screen bg-muted">
       <header className="bg-background border-b border-border px-6 py-5 flex items-center justify-between max-w-3xl mx-auto">
         <div>
-          <div className="text-lg font-serif font-bold text-foreground">✦ Resonance Kinesiology</div>
+          <div className="text-lg font-serif font-bold text-foreground">✦ {isVoiceClient ? "Voice Studio — Daniele Buatti" : "Resonance Kinesiology"}</div>
           {profile && <div className="text-sm text-muted-foreground mt-0.5">Welcome back, {firstName}</div>}
         </div>
         <Button variant="ghost" size="sm" onClick={handleSignOut} className="gap-1.5 text-xs">

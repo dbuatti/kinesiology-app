@@ -19,14 +19,18 @@ serve(async (req) => {
   if (authErr) return authErr;
 
   try {
-    const { client_id, client_name, thread_messages, goal, available_slots } = await req.json();
+    const { client_id, client_name, is_voice, thread_messages, goal, available_slots } = await req.json();
 
     const geminiKey = Deno.env.get("GEMINI_API_KEY");
     if (!geminiKey) throw new Error("GEMINI_API_KEY is missing.");
     // Same fallback pattern used elsewhere (send-manual-onboarding etc.) —
     // if a draft mentions the self-serve portal, it needs the real domain,
     // not a bare "/portal/login" (meaningless with no host in email text).
-    const SITE_URL = Deno.env.get("SITE_URL") || "https://kinesiology-app.vercel.app";
+    // A voice/piano student gets the friendlier studio.* domain instead of
+    // the kinesiology one (real feedback: "piano voice students will get
+    // confused with the kinesiology part of the domain").
+    const SITE_URL = (is_voice ? Deno.env.get("VOICE_SITE_URL") : null)
+      || Deno.env.get("SITE_URL") || "https://kinesiology-app.vercel.app";
 
     let styleSummary = "";
     let sessionNotesBlock = "";

@@ -123,8 +123,17 @@ const AppRoutes = () => {
         {/* Public marketing landing page for logged-out visitors at "/" — only
             present in the route tree while logged out, so it never competes
             with the real (MainLayout-wrapped, sidebar-having) Dashboard route
-            further below. */}
-        {!session && <Route path="/" element={<LandingPage />} />}
+            further below.
+            studio.danielebuatti.com is a second domain on this same
+            deployment, given out specifically to voice/piano students as a
+            friendlier portal link — its "/" should never show the FNH/
+            kinesiology sales pitch a voice student has no reason to see.
+            Skips straight to the portal login instead. */}
+        {!session && (
+          window.location.hostname === "studio.danielebuatti.com"
+            ? <Route path="/" element={<Navigate to="/portal/login" replace />} />
+            : <Route path="/" element={<LandingPage />} />
+        )}
 
         {/* Client portal — a client's own Supabase Auth session (email OTP),
             entirely separate from the practitioner's /login. Not wrapped in

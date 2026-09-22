@@ -216,7 +216,12 @@ export function ClientsTool() {
           })}
         </div>
 
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-card p-4 rounded-2xl border border-border shadow-sm">
+        {/* Just a toolbar (search + sort + view toggle), not a distinct
+            region — the search input and sort/view group already carry
+            their own subtle backgrounds, so the extra bordered/shadowed
+            card around the whole row was pure framing on top of framing
+            (the table right below already has its own single border). */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="relative flex-1 w-full max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
             <Input

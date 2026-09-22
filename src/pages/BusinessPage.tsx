@@ -35,17 +35,21 @@ const BusinessPage = () => {
           </TabsList>
         </div>
       </div>
+      {/* No px/py here — every Tool below already brings its own p-6, and
+          stacking this wrapper's padding on top of that was pure double
+          padding (max-w-6xl centering is the only thing actually needed
+          at this level). */}
       <TabsContent value="dashboard" className="m-0">
-          <div className="max-w-6xl mx-auto w-full px-4 md:px-8 py-6"><BusinessDashboardTool /></div>
+          <div className="max-w-6xl mx-auto w-full"><BusinessDashboardTool /></div>
         </TabsContent>
         <TabsContent value="overview" className="m-0">
-          <div className="max-w-6xl mx-auto w-full px-4 md:px-8 py-6"><BusinessOverviewTool /></div>
+          <div className="max-w-6xl mx-auto w-full"><BusinessOverviewTool /></div>
         </TabsContent>
         <TabsContent value="client-audit" className="m-0">
-          <div className="max-w-6xl mx-auto w-full px-4 md:px-8 py-6"><ClientAuditTool /></div>
+          <div className="max-w-6xl mx-auto w-full"><ClientAuditTool /></div>
         </TabsContent>
         <TabsContent value="marketing" className="m-0">
-          <div className="max-w-6xl mx-auto w-full px-4 md:px-8 py-6"><MarketingEngineTool /></div>
+          <div className="max-w-6xl mx-auto w-full"><MarketingEngineTool /></div>
         </TabsContent>
     </Tabs>
   );

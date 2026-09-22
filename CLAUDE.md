@@ -101,6 +101,15 @@ SVG/Recharts attributes support CSS variables: `stroke="hsl(var(--chart-primary)
 
 Do not hardcode `#4f46e5`, `#e11d48`, `#10b981`, or `#F9FBFD` — use the tokens above. Static domain colour data in `luscher-data.ts` and `tcm-channel-data.ts` is intentionally hardcoded (it represents the actual colour values of the Luscher and TCM systems).
 
+## Layout philosophy — flat, full-bleed, single-scroll
+
+Default to how most modern web apps feel (Linear, Notion, Superhuman), not a dashboard of boxed-in widgets:
+
+- **One scroll region per page.** A page should scroll via the outer `#main-scroll-container` (`MainLayout.tsx`), not grow its own nested `overflow-y-auto` pane for ordinary content. A fixed-height, internally-scrolling pane is only correct for something that behaves like a real chat UI (input anchored, history scrolls within it, e.g. `MessageList.tsx`/`AssistantPage.tsx`'s Chat tab) — a list, form, or table is not that, and should just flow in the page (see `FollowUpTab.tsx`, `LaunchCampaignTab.tsx`, `CommsInbox.tsx` for the corrected pattern).
+- **Content uses the full width it's given, not a narrower box floating in more padding.** Watch for compounding padding — a page's own `p-4`/`p-6`, plus a card's own `p-3`/`p-4`, plus a grid splitting that further, adds up fast on a narrow viewport (a real bug: a mobile input ended up ~130px wide from three layers of padding plus a 2-column grid). Prefer stacking full-width over splitting into columns unless there's real room.
+- **Borders and card chrome (`.panel`, `rounded-xl border`) are for separating genuinely distinct regions, not the default wrapper for every section.** A sidebar-vs-content split earns a border; a settings section sitting in normal page flow usually doesn't need its own boxed card — spacing (`space-y-6`) and a heading are often enough.
+- This is a standing preference, not a one-off fix — apply it by default in new work, and flatten what you touch in old screens, without waiting to be asked each time.
+
 ## Voice Calendar Fallback (`UnifiedCalendarPage.tsx`)
 
 Notion voice lessons and Cal.com voice_bookings are merged into `calendarItems` at `src/pages/UnifiedCalendarPage.tsx:405`. The logic:

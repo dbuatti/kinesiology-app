@@ -184,7 +184,19 @@ export default function AssistantPage() {
           </div>
         )}
       </div>
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as AssistantTab)} className="flex flex-col" style={{ height: gridHeight ? `${gridHeight}px` : "calc(100vh - 300px)", minHeight: 420 }}>
+      {/* Only Chat needs a fixed-height, internally-scrolling pane — that's
+          how a real chat UI should behave (input always anchored, history
+          scrolls within it). Follow-up/Inbox/Launch are long content lists,
+          not chat — boxing them into the same confined height gave them
+          their own inner scrollbar instead of just using the page's own
+          ("shouldn't it just take the whole page's scroll bar?" — yes).
+          So the fixed height only applies while Chat is the active tab. */}
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as AssistantTab)}
+        className={cn("flex flex-col", activeTab === "chat" && "min-h-[420px]")}
+        style={activeTab === "chat" ? { height: gridHeight ? `${gridHeight}px` : "calc(100vh - 300px)" } : undefined}
+      >
         <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
           <TabsList>
             <TabsTrigger value="chat" className="gap-1.5"><MessageCircle className="h-3.5 w-3.5" /> Chat</TabsTrigger>
@@ -291,28 +303,24 @@ export default function AssistantPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="followup" className="flex-1 min-h-0 m-0">
+        <TabsContent value="followup" className="m-0">
           {/* Deliberately no card/border/rounded box here — Chat, Follow-up, and
               Inbox are real working surfaces, not widgets, so each gets the full
               tab area as its own page-like space. (flex lives on this inner
               wrapper, not TabsContent itself — Tailwind's `.flex{display:flex}`
               beats Radix's [hidden] attribute at equal specificity when applied
-              directly to TabsContent, which made all panels render at once.) */}
-          <div className="h-full flex flex-col">
-            <FollowUpTab />
-          </div>
+              directly to TabsContent, which made all panels render at once.)
+              No fixed height/overflow here — this flows in the page's own
+              scroll, same as Inbox/Launch below. */}
+          <FollowUpTab />
         </TabsContent>
 
-        <TabsContent value="inbox" className="flex-1 min-h-0 m-0">
-          <div className="h-full flex flex-col">
-            <CommsInbox />
-          </div>
+        <TabsContent value="inbox" className="m-0">
+          <CommsInbox />
         </TabsContent>
 
-        <TabsContent value="launch" className="flex-1 min-h-0 m-0">
-          <div className="h-full flex flex-col">
-            <LaunchCampaignTab />
-          </div>
+        <TabsContent value="launch" className="m-0">
+          <LaunchCampaignTab />
         </TabsContent>
       </Tabs>
     </AppLayout>

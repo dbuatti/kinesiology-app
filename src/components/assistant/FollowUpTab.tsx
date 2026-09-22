@@ -31,14 +31,14 @@ export default function FollowUpTab() {
 
   if (loading) {
     return (
-      <div className="flex flex-1 items-center justify-center gap-2 text-sm text-muted-foreground">
+      <div className="flex items-center justify-center gap-2 py-16 text-sm text-muted-foreground">
         <Loader2 className="h-4 w-4 animate-spin" /> Checking who needs follow-up...
       </div>
     );
   }
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto p-4">
+    <div className="p-4">
       <div className="flex flex-wrap items-center gap-2 mb-4">
         {quickWinCount > 0 && (
           <button

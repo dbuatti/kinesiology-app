@@ -62,7 +62,7 @@ export default function CommsInbox() {
   };
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col">
+    <div className="p-4">
       <div className="flex items-center justify-between gap-2 pb-3 border-b border-border mb-3 flex-wrap">
         <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
           <Mail className="h-4 w-4 text-chart-primary" /> Client inbox
@@ -91,7 +91,7 @@ export default function CommsInbox() {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto space-y-2">
+      <div className="space-y-2">
         {loading && sorted.length === 0 ? (
           <div className="flex justify-center py-16"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
         ) : sorted.length === 0 ? (

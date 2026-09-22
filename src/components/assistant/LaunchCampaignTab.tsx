@@ -193,14 +193,14 @@ export default function LaunchCampaignTab() {
   };
 
   if (loading) {
-    return <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Loading campaign...</div>;
+    return <div className="flex items-center justify-center py-16 text-sm text-muted-foreground gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Loading campaign...</div>;
   }
 
   const bySegment = (seg: CampaignSegment) => entries.filter((e) => e.segment === seg && !e.excluded);
   const excludedCount = entries.filter((e) => e.excluded).length;
 
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-6">
+    <div className="p-4 space-y-6">
       <div className="rounded-xl border border-border bg-card p-4 space-y-4">
         <h3 className="text-sm font-bold text-foreground">Campaign config</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

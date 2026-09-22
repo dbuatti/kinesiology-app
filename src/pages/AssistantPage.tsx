@@ -178,10 +178,14 @@ export default function AssistantPage() {
           subtitle="Your practice EA — chat, follow-up, inbox, and scheduling in one place."
           actions={
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="h-9 text-xs gap-1.5" onClick={() => setMetricsCollapsed((v) => !v)}>
-                {metricsCollapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
-                {metricsCollapsed ? "Show metrics" : "Hide metrics"}
-              </Button>
+              {/* Nothing to toggle once a client is focused — metrics are
+                  hidden outright then, not just collapsible. */}
+              {!focusedClientId && (
+                <Button variant="outline" size="sm" className="h-9 text-xs gap-1.5" onClick={() => setMetricsCollapsed((v) => !v)}>
+                  {metricsCollapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
+                  {metricsCollapsed ? "Show metrics" : "Hide metrics"}
+                </Button>
+              )}
               <ClientPicker clients={clients} voiceStudents={voiceStudents} value={focusedClientId} onChange={setFocusedClientId} />
             </div>
           }
@@ -190,8 +194,14 @@ export default function AssistantPage() {
             same fixed viewport height as the chat tabs below, and taller chat
             was explicitly requested; collapsing this reclaims that space
             immediately since gridHeight recomputes off this container's
-            actual rendered height (see the ResizeObserver above). */}
-        {!metricsCollapsed && (
+            actual rendered height (see the ResizeObserver above).
+            Also hidden whenever a client is focused, not just on manual
+            collapse: whole-practice revenue/pipeline/quick-wins stats are
+            irrelevant once you're already in a specific person's
+            conversation, and stacking them above the chat was real,
+            reported friction on mobile — several screens of scroll before
+            reaching any actual chat content, on a real iPhone. */}
+        {!metricsCollapsed && !focusedClientId && (
           <div className="mt-6">
             <KeyMetricsBar onOpenFollowUp={() => setActiveTab("followup")} />
             <NeedsAttentionWidget onOpenFollowUp={() => setActiveTab("followup")} />
@@ -208,7 +218,12 @@ export default function AssistantPage() {
       <Tabs
         value={activeTab}
         onValueChange={(v) => setActiveTab(v as AssistantTab)}
-        className={cn("flex flex-col", activeTab === "chat" && "min-h-[420px]")}
+        // shrink-0 stops this explicitly-height-measured box from being
+        // compressed below its own height by the ancestor flex chain's
+        // default flex-shrink:1 — without it, the Chat pane rendered ~70px
+        // shorter than its own measured `style.height`, which was exactly
+        // the residual outer-scroll gap still showing on a real phone.
+        className={cn("flex flex-col shrink-0", activeTab === "chat" && "min-h-[420px]")}
         style={activeTab === "chat" ? { height: gridHeight ? `${gridHeight}px` : "calc(100vh - 300px)" } : undefined}
       >
         <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">

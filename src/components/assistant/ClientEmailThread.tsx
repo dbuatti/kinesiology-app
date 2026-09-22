@@ -68,7 +68,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
   const [threads, setThreads] = useState<ThreadSummary[]>([]);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [threadMeta, setThreadMeta] = useState<{ threadId: string | null; lastMessageId: string | null; references: string | null; lastSubject: string | null }>({ threadId: null, lastMessageId: null, references: null, lastSubject: null });
+  const [threadMeta, setThreadMeta] = useState<{ threadId: string | null; lastMessageId: string | null; references: string | null; lastSubject: string | null; practitionerFrom: string | null }>({ threadId: null, lastMessageId: null, references: null, lastSubject: null, practitionerFrom: null });
   const [status, setStatus] = useState<Status | null>(null);
   const [subject, setSubject] = useState("");
   const [replyBody, setReplyBody] = useState("");
@@ -141,10 +141,13 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
         lastMessageId: threadData.last_message_id_header,
         references: threadData.last_references_header,
         lastSubject: threadData.last_subject,
+        practitionerFrom: threadData.practitioner_from || null,
       });
       const resolvedStatus = statusRow?.status || threadData.suggested_status || null;
       setStatus(resolvedStatus);
-      setSubject(threadData.last_subject ? (/^re:/i.test(threadData.last_subject) ? threadData.last_subject : `Re: ${threadData.last_subject}`) : `Hi ${firstName}`);
+      setSubject(threadData.last_subject && threadData.last_subject !== "(no subject)"
+        ? (/^re:/i.test(threadData.last_subject) ? threadData.last_subject : `Re: ${threadData.last_subject}`)
+        : `Hi ${firstName}`);
     } catch (err: any) {
       showError(err.message || "Couldn't load the email thread.");
     } finally {
@@ -160,7 +163,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
     if (value === NEW_EMAIL_VALUE) {
       setSelectedThreadId(null);
       setMessages([]);
-      setThreadMeta({ threadId: null, lastMessageId: null, references: null, lastSubject: null });
+      setThreadMeta({ threadId: null, lastMessageId: null, references: null, lastSubject: null, practitionerFrom: null });
       setSubject(`Hi ${firstName}`);
     } else {
       load(value);
@@ -195,6 +198,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
           thread_id: threadMeta.threadId || undefined,
           in_reply_to: threadMeta.lastMessageId || undefined,
           references: threadMeta.references || undefined,
+          reply_from: threadMeta.practitionerFrom || undefined,
           client_id: hasClientRecord ? clientId : null,
         },
       });

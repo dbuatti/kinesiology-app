@@ -31,6 +31,16 @@ function headerValue(headers: { name: string; value: string }[], name: string) {
   return headers.find((h) => h.name.toLowerCase() === name.toLowerCase())?.value || "";
 }
 
+// Pull a bare email address out of a raw From header ("Daniele <d@x.com>" →
+// "d@x.com"). Used to decide which practice address a reply must use so the
+// client's Gmail keeps the whole conversation in ONE thread — replying under a
+// different address than the thread started with makes the recipient's Gmail
+// treat the reply as a brand-new sender and split out a new conversation.
+function extractEmail(raw: string) {
+  const m = String(raw || "").match(/<([^>]+)>/);
+  return (m ? m[1] : String(raw || "").trim()) || null;
+}
+
 function b64urlDecode(data: string) {
   try {
     const normalized = data.replace(/-/g, "+").replace(/_/g, "/");
@@ -98,6 +108,7 @@ function messageFromApi(data: any, clientEmail: string) {
     threadId: data.threadId,
     direction,
     from,
+    fromEmail: extractEmail(from),
     to: headerValue(headers, "To"),
     subject: headerValue(headers, "Subject"),
     date: headerValue(headers, "Date"),
@@ -138,6 +149,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({
         threads: [], messages: [], thread_id: null,
         last_message_id_header: null, last_references_header: null, last_subject: null, suggested_status: null,
+        practitioner_from: null,
       }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -182,13 +194,25 @@ serve(async (req) => {
     }
     const last = messages[messages.length - 1] || null;
 
+    // The address the practitioner's own most recent message used in this
+    // thread. A reply MUST reuse it — see extractEmail() comment above. Falls
+    // back to null for a brand-new conversation, where the caller uses the
+    // default practice sender.
+    const practitionerMsgs = messages.filter((m: any) => m.direction === "outbound");
+    const practitioner_from = practitionerMsgs.length ? practitionerMsgs[practitionerMsgs.length - 1].fromEmail : null;
+    // RFC-compliant References for a reply: the full Message-ID chain of the
+    // whole thread (root → last), de-duplicated, so the recipient's mail client
+    // can resolve the entire ancestry even if it never saw some middle hops.
+    const fullChain = [...new Set(messages.map((m: any) => m.messageIdHeader).filter(Boolean))].join(" ");
+
     return new Response(JSON.stringify({
       threads,
       messages,
       thread_id: activeThreadId,
       last_message_id_header: last?.messageIdHeader || null,
-      last_references_header: last ? `${last.referencesHeader || ""} ${last.messageIdHeader || ""}`.trim() : null,
+      last_references_header: fullChain || null,
       last_subject: last?.subject || null,
+      practitioner_from,
       suggested_status: last ? (last.direction === "inbound" ? "needs_reply" : "awaiting_client") : null,
     }), {
       status: 200,

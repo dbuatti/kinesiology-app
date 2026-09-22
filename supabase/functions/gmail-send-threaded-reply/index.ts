@@ -36,7 +36,7 @@ serve(async (req) => {
   let logRow: any = { function_name: "gmail-send-threaded-reply" };
 
   try {
-    const { to, subject, body, thread_id, in_reply_to, references, client_id, client_name } = await req.json();
+    const { to, subject, body, thread_id, in_reply_to, references, client_id, client_name, reply_from } = await req.json();
     if (!to || !subject || !body) throw new Error("Missing recipient, subject, or body.");
     logRow = { ...logRow, recipient: to, subject, client_id: client_id || null };
 
@@ -47,7 +47,15 @@ serve(async (req) => {
     if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH || !SENDER) throw new Error("Gmail is not configured.");
     // GMAIL_USER_EMAIL authenticates the API call; clients see the practice's
     // real, verified alias as the sender instead.
-    const FROM_ADDRESS = "info@danielebuatti.com";
+    // IMPORTANT — recipient-side threading: Gmail only keeps a conversation in
+    // one thread for the CLIENT when the reply comes from an address they
+    // recognise from that thread. Replying from a NEW address (e.g. the info@
+    // alias into a thread that predates it and was started from
+    // daniele.buatti@gmail.com) makes the recipient's Gmail split out a fresh
+    // conversation. So when the frontend knows the thread's established sender
+    // (`reply_from`), we reuse it; otherwise we default to the practice alias.
+    const KNOWN_FROM = ["info@danielebuatti.com", "daniele.buatti@gmail.com"];
+    const FROM_ADDRESS = reply_from && KNOWN_FROM.includes(reply_from) ? reply_from : "info@danielebuatti.com";
 
     const esc = (s: string) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const utf8Subject = `=?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`;

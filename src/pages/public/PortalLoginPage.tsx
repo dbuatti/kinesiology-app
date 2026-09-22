@@ -42,7 +42,13 @@ export default function PortalLoginPage() {
             {sent ? <CheckCircle2 size={32} /> : <Mail size={32} />}
           </div>
           <CardTitle className="text-2xl font-black tracking-tight">Client Portal</CardTitle>
-          <p className="text-white/90 text-sm font-medium mt-1">Resonance Kinesiology</p>
+          {/* Pre-auth, so who's logging in isn't known yet — but which
+              DOMAIN they arrived on is, and that's enough to avoid a voice/
+              piano student seeing "Resonance Kinesiology" as the very first
+              thing on the page. */}
+          <p className="text-white/90 text-sm font-medium mt-1">
+            {window.location.hostname === "studio.danielebuatti.com" ? "Voice Studio — Daniele Buatti" : "Resonance Kinesiology"}
+          </p>
         </div>
         <CardContent className="p-8">
           {sent ? (

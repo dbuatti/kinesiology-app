@@ -107,8 +107,8 @@ serve(async (req) => {
       throw new Error("Missing Gmail credentials in Supabase Secrets.");
     }
     // Client-facing sends use the practice's real, verified alias — GMAIL_USER_EMAIL
-    // still authenticates the API call and is used as-is for the internal organizer
-    // notification below (that one goes to Daniele himself, not a client).
+    // still authenticates the API call for everything sent from this function,
+    // including the internal organizer notification below.
     const FROM_ADDRESS = "info@danielebuatti.com";
 
     const { studentName, studentEmail, date, time, duration, cost, calcomBookingUid, discipline } = await req.json();
@@ -384,7 +384,7 @@ ${duration ? `                    <div style="font-size: 14px; color: #94A3B8; m
         </body>
         </html>
       `;
-      await sendGmail(accessToken, SENDER_EMAIL, organizerEmail, organizerSubject, organizerHtml);
+      await sendGmail(accessToken, FROM_ADDRESS, organizerEmail, organizerSubject, organizerHtml);
       console.log(`[${functionName}] Organizer notification sent to ${organizerEmail}`);
       await logEmail(supabase, { fn: functionName, to: organizerEmail, subject: organizerSubject, status: "sent" });
     } catch (orgErr) {

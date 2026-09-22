@@ -40,6 +40,10 @@ serve(async (req) => {
     const REFRESH = Deno.env.get("GMAIL_REFRESH_TOKEN");
     const SENDER = Deno.env.get("GMAIL_USER_EMAIL");
     if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH || !SENDER) throw new Error("Gmail is not configured.");
+    // GMAIL_USER_EMAIL is where the client's message lands; it also authenticates
+    // the API call. The visible sender is the practice identity instead, so a
+    // future "reply-to-sender" flow (or forwarding) shows the right address.
+    const FROM_ADDRESS = "info@danielebuatti.com";
 
     const supabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
     const client = await resolveClientContact(supabase, identity);
@@ -55,7 +59,7 @@ serve(async (req) => {
       </body></html>`;
 
     const headerLines = [
-      `From: ${SENDER}`, `To: ${SENDER}`, `Reply-To: ${client.email}`, "MIME-Version: 1.0",
+      `From: ${FROM_ADDRESS}`, `To: ${SENDER}`, `Reply-To: ${client.email}`, "MIME-Version: 1.0",
       "Content-Type: text/html; charset=utf-8", `Subject: ${utf8Subject}`,
     ];
     const raw = [...headerLines, "", html].join("\n");

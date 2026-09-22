@@ -113,7 +113,8 @@ serve(async (req) => {
     const GMAIL_CLIENT_SECRET = Deno.env.get('GMAIL_CLIENT_SECRET')
     const GMAIL_REFRESH_TOKEN = Deno.env.get('GMAIL_REFRESH_TOKEN')
     const SENDER_EMAIL = Deno.env.get('GMAIL_USER_EMAIL')
-    const RECIPIENT = body?.to || SENDER_EMAIL || 'info@danielebuatti.com'
+    const FROM_ADDRESS = 'info@danielebuatti.com'
+    const RECIPIENT = body?.to || SENDER_EMAIL || FROM_ADDRESS
 
     if (!GMAIL_CLIENT_ID || !GMAIL_CLIENT_SECRET || !GMAIL_REFRESH_TOKEN) {
       throw new Error("Missing Gmail OAuth secrets.")
@@ -221,7 +222,7 @@ serve(async (req) => {
     `
 
     const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN)
-    const result = await sendGmail(accessToken, SENDER_EMAIL, RECIPIENT, subject, htmlBody)
+    const result = await sendGmail(accessToken, FROM_ADDRESS, RECIPIENT, subject, htmlBody)
     console.log(`[gmail-schedule-email] Sent "${subject}" to ${RECIPIENT} (${totalEvents} events)`)
 
     return new Response(JSON.stringify({

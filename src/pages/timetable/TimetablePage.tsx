@@ -1370,12 +1370,16 @@ const TimetablePage = () => {
                 const slot = s.availableSlots[0];
                 if (!slot) return;
                 const endIso = new Date(new Date(slot.start).getTime() + 60 * 60 * 1000).toISOString();
-                const isVoice = s.source === "voice-pattern";
+                // voice-pattern suggestions carry the voice student's UUID as
+                // clientId; voice-overdue ones do too but were being misread as
+                // FNH and then failed to insert (that UUID isn't a clients row).
+                const voiceStudent = enrichedVoiceStudents.find((vs) => vs.id === s.clientId);
+                const isVoice = s.source === "voice-pattern" || !!voiceStudent;
                 await createProposal({
                   kind: isVoice ? "voice" : "fnh",
                   clientId: isVoice ? null : s.clientId,
                   studentName: isVoice ? s.clientName : null,
-                  studentEmail: isVoice ? enrichedVoiceStudents.find((vs) => vs.id === s.clientId)?.email || null : null,
+                  studentEmail: isVoice ? voiceStudent?.email || enrichedVoiceStudents.find((vs) => vs.id === s.clientId)?.email || null : null,
                   eventTypeId: isVoice ? voiceEventType : fnhEventType,
                   slotStart: slot.start,
                   slotEnd: endIso,
@@ -1772,7 +1776,7 @@ const TimetablePage = () => {
                         className="gap-1.5 bg-chart-emerald hover:bg-emerald-700 text-white"
                         onClick={async () => {
                           setWorkflowBusy(true);
-                          try { await confirmProposal(p.id); showSuccess("Locked in to Cal.com."); setWorkflowFor({ ...p, status: "confirmed" }); }
+                          try { await confirmProposal(p); showSuccess("Locked in to Cal.com."); setWorkflowFor({ ...p, status: "confirmed" }); }
                           catch (e: any) { showError(e?.message || "Couldn't lock in."); }
                           finally { setWorkflowBusy(false); }
                         }}
@@ -2320,6 +2324,21 @@ function DayCell({
   const isPast = differenceInMinutes(date, new Date()) < -1;
   const isOpen = state === DayState.OPEN;
 
+  // Auto-draft preview merges live proposals (amber) with unsaved draft chips
+  // (sky). If a real proposal already exists at the same slot for the same
+  // person, the mirrored draft chip is redundant — the Simulator used to show
+  // "Nicole Rotenstein 2:30pm" twice (draft + proposal). Drop the draft echo.
+  const draftIdentity = (p: BookingProposal) =>
+    p.kind === "fnh"
+      ? `fnh:${p.client_id}`
+      : `voice:${(p.student_email || p.student_name || "").toLowerCase().trim()}`;
+  const realSlots = new Set(
+    proposals.filter((p) => p.status !== "suggested").map((p) => `${p.slot_start}|${draftIdentity(p)}`)
+  );
+  const visibleProposals = proposals.filter(
+    (p) => p.status !== "suggested" || !realSlots.has(`${p.slot_start}|${draftIdentity(p)}`)
+  );
+
   return (
     <div
       onClick={() => onOpenDay(date)}
@@ -2366,7 +2385,7 @@ function DayCell({
                 </button>
               ),
             })),
-            ...proposals.map((p) => ({
+            ...visibleProposals.map((p) => ({
               t: new Date(p.slot_start).getTime(),
               node: (
                 <button
@@ -2404,7 +2423,14 @@ function DayCell({
 
         {!blocked && isOpen && (
           <div className="text-[9px] font-semibold text-chart-primary">
-            {slots.length} open slots
+            {(() => {
+              const used = new Set([
+                ...bookings.map((b) => (b.start ? new Date(b.start).getTime() : 0)),
+                ...visibleProposals.map((p) => new Date(p.slot_start).getTime()),
+              ]);
+              const open = slots.filter((s) => !used.has(new Date(s.start).getTime())).length;
+              return `${open} open slots`;
+            })()}
           </div>
         )}
         {!isOpen && state === DayState.EMPTY && (

@@ -609,6 +609,53 @@ async function runProposeBooking(supabase: any, supabaseUrl: string, serviceKey:
 
   const startISO = args.start_iso;
   const endISO = new Date(new Date(startISO).getTime() + (durationMin ?? 60) * 60000).toISOString();
+
+  // A proposal that can't be confirmed later is worse than a one-turn wait:
+  // pencilling a voice lesson with only a name (voice_student_email omitted, or
+  // passed under a different key like student_email) used to create a broken
+  // row that then failed on Confirm with "Missing student details for voice
+  // proposal" / "Missing client for FNH proposal". Require what the confirm
+  // path needs, so the model re-calls with real data instead of us inserting a
+  // stuck pencil.
+  if (!isVoice && !args.client_id) {
+    return {
+      pendingBooking: null,
+      result: { error: "propose_booking for a kinesiology client needs client_id — none was passed, so nothing was pencilled. Resolve the client with get_client_context or get_active_clients, then re-call with client_id." },
+    };
+  }
+  if (isVoice && !args.client_name) {
+    return {
+      pendingBooking: null,
+      result: { error: "propose_booking for a voice student also needs client_name (their display name) — none was passed. Resolve the student with search_voice_client, then re-call with both client_name and voice_student_email." },
+    };
+  }
+
+  // Dedup: never write a second proposal for the same student at the same slot
+  // while a live one already exists. Re-proposing the same slot used to stack
+  // duplicate rows (Net: Nicole's 2:30pm slot showed up three times on the
+  // Simulator). prev.lookup used an exact .eq() — a re-call with differently
+  // cased email slipped past, so match case-insensitively within a small window
+  // instead.
+  const dupeWindowMs = 5 * 60 * 1000;
+  const nearSlot = await supabase
+    .from("booking_proposals")
+    .select("id, kind, client_id, student_email, slot_start, status")
+    .eq("user_id", userId)
+    .neq("status", "dropped")
+    .gte("slot_start", new Date(new Date(startISO).getTime() - dupeWindowMs).toISOString())
+    .lte("slot_start", new Date(new Date(startISO).getTime() + dupeWindowMs).toISOString());
+  const existing = (nearSlot.data || []).find((p: any) => {
+    if (isVoice) return p.kind === "voice" && String(p.student_email || "").toLowerCase() === String(args.voice_student_email).toLowerCase().trim();
+    return p.kind === "fnh" && p.client_id === args.client_id;
+  });
+  if (existing) {
+    const label = isVoice && durationMin ? `${durationMin}-minute` : "standard";
+    return {
+      pendingBooking: { client_id: isVoice ? null : args.client_id, voice_student_email: isVoice ? args.voice_student_email : null, client_name: args.client_name, start_iso: startISO, event_type_id: eventTypeId, notes: args.notes || null, proposal_id: existing.id },
+      result: { status: "proposed", note: `That exact slot is already pencilled in for this ${label} ${isVoice ? "voice" : "FNH"} session — I reused the existing pencil instead of creating a duplicate. If you want a different time, pick a new slot or drop the existing pencil first.` },
+    };
+  }
+
   const { data, error } = await supabase
     .from("booking_proposals")
     .insert({
@@ -1698,6 +1745,7 @@ If Daniele says to skip, move on, or otherwise declines the client currently bei
       const candidate = resp?.candidates?.[0];
       const part = candidate?.content?.parts?.[0];
       if (!part) {
+        console.error("[assistant-chat] EMPTY_MODEL_RESPONSE:", JSON.stringify(candidate?.finishReason || null), "candidates:", resp?.candidates?.length ?? 0);
         finalText = "I couldn't generate a response just then — could you try rephrasing?";
         break;
       }

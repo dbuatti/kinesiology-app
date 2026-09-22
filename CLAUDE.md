@@ -18,9 +18,12 @@ There is no test suite.
 The Supabase CLI is installed via Homebrew at `/opt/homebrew/bin/supabase` (v2.115.0), already authenticated (`supabase login` was done — token lives outside the repo), and this project is linked (`Kinesiology App`, ref `xebtjnvfkroiplyzftas`). Restricted shells may not have `/opt/homebrew/bin` on PATH — call it by full path or `export PATH=/opt/homebrew/bin:$PATH` first. Do not reinstall Node/pnpm/supabase; they already exist.
 
 ```bash
+export PATH=/opt/homebrew/bin:$PATH   # run first if /opt/homebrew/bin isn't on PATH
 /opt/homebrew/bin/supabase functions deploy <function-name>   # deploy one edge function
 /opt/homebrew/bin/supabase functions list                    # verify (status + version)
 ```
+
+Deploying is the standing expectation (no need to ask the user) and the CLI is fully authenticated and project-linked — deploy, then confirm with `supabase functions list`. Subsequent deploys bump the version; new versions must be verified live.
 
 GitHub Actions also deploys functions on push to main. Never put `SUPABASE_ACCESS_TOKEN` in a committed file.
 

@@ -23,6 +23,53 @@ export interface BookingProposal {
 }
 
 /**
+ * Some legacy/assistant-created voice proposals lost one of the two details
+ * (name or email), which made Confirm fail with "Missing student details for
+ * voice proposal". Before giving up, backfill the missing side from the only
+ * other places the pairing exists: voice_bookings history and sibling proposal
+ * rows for the same student.
+ */
+async function resolveMissingVoiceDetails(
+  name: string,
+  email: string
+): Promise<{ name: string | null; email: string | null }> {
+  let resolvedName = name || null;
+  let resolvedEmail = email || null;
+  try {
+    if (resolvedName && !resolvedEmail) {
+      const { data: byName } = await supabase
+        .from("voice_bookings")
+        .select("student_name, student_email")
+        .not("student_email", "is", null)
+        .ilike("student_name", resolvedName)
+        .limit(1);
+      if (byName?.[0]?.student_email) resolvedEmail = byName[0].student_email;
+
+      if (!resolvedEmail) {
+        const { data: bySibling } = await supabase
+          .from("booking_proposals")
+          .select("student_name, student_email")
+          .eq("kind", "voice")
+          .eq("student_name", resolvedName)
+          .not("student_email", "is", null)
+          .limit(1);
+        if (bySibling?.[0]?.student_email) resolvedEmail = bySibling[0].student_email;
+      }
+    } else if (resolvedEmail && !resolvedName) {
+      const { data } = await supabase
+        .from("voice_bookings")
+        .select("student_name, student_email")
+        .eq("student_email", resolvedEmail)
+        .limit(1);
+      if (data?.[0]?.student_name) resolvedName = data[0].student_name;
+    }
+  } catch {
+    // Leave as-is; confirm will throw a clear error below.
+  }
+  return { name: resolvedName, email: resolvedEmail };
+}
+
+/**
  * Loads booking proposals in the given [start, end] window and exposes
  * create + confirm + drop actions. Phase 2 is manual: we create directly
  * as 'proposed' (pencil-in), then 'confirm' calls the appropriate cal.com
@@ -132,16 +179,35 @@ export function useBookingProposals(startISO: string, endISO: string) {
       }
 
       // voice path
-      if (!proposal.student_name || !proposal.student_email) {
-        throw new Error("Missing student details for voice proposal.");
+      let studentName = proposal.student_name?.trim() || null;
+      let studentEmail = proposal.student_email?.trim() || null;
+      if (!studentName || !studentEmail) {
+        const resolved = await resolveMissingVoiceDetails(studentName ?? "", studentEmail ?? "");
+        studentName = resolved.name;
+        studentEmail = resolved.email;
+        if (studentName && studentEmail) {
+          await supabase
+            .from("booking_proposals")
+            .update({
+              student_name: studentName,
+              student_email: studentEmail,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", proposal.id);
+        }
+      }
+      if (!studentName || !studentEmail) {
+        throw new Error(
+          "Missing student details for voice proposal — this pencil has no email anywhere in the system, so it can't be booked to Cal.com as-is. Drop it and re-pencil with the student's email."
+        );
       }
 
       const { data, error: invokeError } = await supabase.functions.invoke(
         "voice-create-booking",
         {
           body: {
-            studentName: proposal.student_name,
-            studentEmail: proposal.student_email,
+            studentName,
+            studentEmail,
             startTime: proposal.slot_start,
             eventTypeId: proposal.event_type_id || undefined,
           },

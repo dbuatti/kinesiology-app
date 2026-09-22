@@ -13,6 +13,17 @@ pnpm preview      # preview production build
 
 There is no test suite.
 
+### Edge function deploys
+
+The Supabase CLI is installed via Homebrew at `/opt/homebrew/bin/supabase` (v2.115.0), already authenticated (`supabase login` was done — token lives outside the repo), and this project is linked (`Kinesiology App`, ref `xebtjnvfkroiplyzftas`). Restricted shells may not have `/opt/homebrew/bin` on PATH — call it by full path or `export PATH=/opt/homebrew/bin:$PATH` first. Do not reinstall Node/pnpm/supabase; they already exist.
+
+```bash
+/opt/homebrew/bin/supabase functions deploy <function-name>   # deploy one edge function
+/opt/homebrew/bin/supabase functions list                    # verify (status + version)
+```
+
+GitHub Actions also deploys functions on push to main. Never put `SUPABASE_ACCESS_TOKEN` in a committed file.
+
 ## Architecture
 
 **Resonance Kinesiology CRM** — a single-page React 19 + TypeScript + Vite app. It is a clinical practice management tool for a kinesiology practitioner: scheduling, client records, session documentation, and a library of clinical assessment tools.

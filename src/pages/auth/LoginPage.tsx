@@ -177,6 +177,7 @@ const Login = () => {
           <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary">
             <ShieldCheck size={14} /> Secure Clinical Infrastructure
           </div>
+          <div className="text-[8px] font-medium tracking-wider text-muted-foreground/60">v1.0.0</div>
         </div>
       </div>
     </div>

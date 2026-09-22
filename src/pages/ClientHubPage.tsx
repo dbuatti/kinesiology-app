@@ -89,12 +89,24 @@ export default function ClientHubPage() {
   useLayoutEffect(() => {
     const el = aboveRef.current;
     if (!el) return;
-    const recompute = () => setAreaHeight(Math.max(420, window.innerHeight - el.getBoundingClientRect().bottom - 32));
+    // Same iPad/iOS Safari fix as AssistantPage's gridHeight — window.innerHeight
+    // doesn't shrink when the on-screen keyboard opens, only
+    // window.visualViewport.height does, which also fires its own resize
+    // event on keyboard show/hide (plain "resize" doesn't reliably catch it
+    // on iOS). Using plain innerHeight left real dead space behind the
+    // keyboard on a real iPad.
+    const vh = () => window.visualViewport?.height ?? window.innerHeight;
+    const recompute = () => setAreaHeight(Math.max(420, vh() - el.getBoundingClientRect().bottom - 32));
     recompute();
     window.addEventListener("resize", recompute);
+    window.visualViewport?.addEventListener("resize", recompute);
     const ro = new ResizeObserver(recompute);
     ro.observe(el);
-    return () => { window.removeEventListener("resize", recompute); ro.disconnect(); };
+    return () => {
+      window.removeEventListener("resize", recompute);
+      window.visualViewport?.removeEventListener("resize", recompute);
+      ro.disconnect();
+    };
   }, []);
 
   if (loading) {

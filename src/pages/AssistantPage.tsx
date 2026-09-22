@@ -69,15 +69,29 @@ export default function AssistantPage() {
   useLayoutEffect(() => {
     const el = aboveGridRef.current;
     if (!el) return;
+    // iPad/iOS Safari real-device bug ("white space at bottom... scroll
+    // bars in chat... generally weird"): window.innerHeight does NOT shrink
+    // when the on-screen keyboard opens — only window.visualViewport.height
+    // reflects the actually-visible area above it. Using plain innerHeight
+    // here sized the chat pane as if the full screen were visible, leaving
+    // real dead space behind the keyboard. visualViewport also fires its
+    // own resize event on keyboard show/hide, which plain "resize" doesn't
+    // reliably catch on iOS.
+    const vh = () => window.visualViewport?.height ?? window.innerHeight;
     const recompute = () => {
       const top = el.getBoundingClientRect().bottom;
-      setGridHeight(Math.max(420, window.innerHeight - top - 32));
+      setGridHeight(Math.max(420, vh() - top - 32));
     };
     recompute();
     window.addEventListener("resize", recompute);
+    window.visualViewport?.addEventListener("resize", recompute);
     const ro = new ResizeObserver(recompute);
     ro.observe(el);
-    return () => { window.removeEventListener("resize", recompute); ro.disconnect(); };
+    return () => {
+      window.removeEventListener("resize", recompute);
+      window.visualViewport?.removeEventListener("resize", recompute);
+      ro.disconnect();
+    };
   }, []);
 
   // Voice students use a "voice:<email>" pseudo-id (see ClientPicker) since they

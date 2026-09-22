@@ -45,9 +45,22 @@ export default function CommsInbox() {
 
   useEffect(() => { load(); }, [load]);
 
-  const needsReplyCount = messages.filter((m) => m.needs_reply).length;
+  // One row per THREAD, not per message — the underlying fetch returns every
+  // individual message in the last 90 days, so a client with a 3-message
+  // back-and-forth showed up as 3 separate rows ("I'm not seeing multiple
+  // from the same chain" — real complaint, they were). Keep only each
+  // thread's most recent message; needs_reply is already computed per-thread
+  // server-side, so every message sharing a thread_id agrees on it anyway.
+  const latestPerThread = new Map<string, InboxMessage>();
+  for (const m of messages) {
+    const existing = latestPerThread.get(m.thread_id);
+    if (!existing || new Date(m.date_iso) > new Date(existing.date_iso)) latestPerThread.set(m.thread_id, m);
+  }
+  const threadMessages = [...latestPerThread.values()];
 
-  const sorted = [...messages]
+  const needsReplyCount = threadMessages.filter((m) => m.needs_reply).length;
+
+  const sorted = threadMessages
     .filter((m) => !needsReplyOnly || m.needs_reply)
     .sort((a, b) => {
       const diff = new Date(b.date_iso).getTime() - new Date(a.date_iso).getTime();

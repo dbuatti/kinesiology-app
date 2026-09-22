@@ -19,10 +19,14 @@ serve(async (req) => {
   if (authErr) return authErr;
 
   try {
-    const { client_id, client_name, thread_messages, goal } = await req.json();
+    const { client_id, client_name, thread_messages, goal, available_slots } = await req.json();
 
     const geminiKey = Deno.env.get("GEMINI_API_KEY");
     if (!geminiKey) throw new Error("GEMINI_API_KEY is missing.");
+    // Same fallback pattern used elsewhere (send-manual-onboarding etc.) —
+    // if a draft mentions the self-serve portal, it needs the real domain,
+    // not a bare "/portal/login" (meaningless with no host in email text).
+    const SITE_URL = Deno.env.get("SITE_URL") || "https://kinesiology-app.vercel.app";
 
     let styleSummary = "";
     let sessionNotesBlock = "";
@@ -55,6 +59,10 @@ serve(async (req) => {
       ? recent.map((m: any) => `[${m.direction === "inbound" ? (client_name || "Client") : "Daniele"}]: ${(m.body || "").slice(0, 1200)}`).join("\n\n")
       : "(no prior messages — this will be a fresh email, not a reply)";
 
+    const slotsBlock = (available_slots || []).length
+      ? `Daniele's REAL AVAILABLE SLOTS right now (only source of truth for times — never invent one outside this list):\n${(available_slots as string[]).map((s) => `- ${s}`).join("\n")}\n`
+      : "";
+
     const prompt = `You are drafting an email reply on behalf of Daniele, a solo kinesiology/voice-lesson practitioner, to his client ${client_name || "the client"}.
 
 RECENT CONVERSATION:
@@ -62,15 +70,18 @@ ${transcript}
 
 ${sessionNotesBlock ? `RECENT SESSION HISTORY (from Daniele's own clinical notes — use this to sound like someone who actually knows this client, e.g. referencing real progress or what was flagged for next time, not generic pleasantries):\n${sessionNotesBlock}\n` : ""}
 ${styleSummary ? `HOW THIS CLIENT TYPICALLY COMMUNICATES:\n${styleSummary}\n` : ""}
-${goal ? `WHAT DANIELE WANTS THIS REPLY TO ACHIEVE: ${goal}\n` : ""}
+${slotsBlock}
+${goal ? `WHAT DANIELE WANTS THIS REPLY TO ACHIEVE (follow this closely — it's a direct instruction from Daniele, not a suggestion): ${goal}\n` : ""}
 
 Write a short reply body in plain, everyday English — the way a real person types an email to someone they know, not marketing copy. Concretely:
 - No corporate/generic filler ("I'm really looking forward to working with you on your goals", "please don't hesitate to reach out", "I hope this email finds you well").
 - Short sentences. Say the actual thing you mean, plainly.
+- CRITICAL — read the conversation for anything the CLIENT actually asked about scheduling (a day of the week, a date range, "do you have anything in October", etc.) and actively answer it: cross-reference their ask against the REAL AVAILABLE SLOTS list above and name 1-3 specific matching times, rather than a vague "let me know what works for you" when the answer to their exact question is sitting right there. If nothing in the slots list matches what they asked for, say so plainly and offer the closest real alternative instead of going vague.
 - If there's real session history above, ground the reply in it (a specific detail, not a vague "great session last time").
-- If there's nothing specific to say (no thread, no session history), keep it brief and concrete rather than padding it out with enthusiasm.
+- If there's nothing specific to say (no thread, no session history, no scheduling ask), keep it brief and concrete rather than padding it out with enthusiasm.
 - Do NOT include a greeting ("Hi X,") or a sign-off ("All the best, Daniele") — those are added automatically by the email template, so start directly with the message content.
-- Do not invent specific dates/times/prices unless they already appeared in the conversation or session notes above.
+- Never invent a specific date/time that isn't in the REAL AVAILABLE SLOTS list above (or didn't already appear in the conversation/session notes) — prices likewise only if they already appeared above.
+- Clients have a self-serve portal at ${SITE_URL}/portal/login (email OTP, no password) to view their sessions, cancel, book a new one, or message Daniele directly — only mention it if it's actually relevant (Daniele asked for it via the instruction above, or the client seems unaware of it), and if you do, use that exact full URL, never a bare "/portal/login".
 
 Also suggest a short subject line (only needed if this reads as a fresh email rather than a reply — otherwise reuse the natural "Re: ..." subject implied by the conversation, or leave it blank).
 

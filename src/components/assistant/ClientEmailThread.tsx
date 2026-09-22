@@ -76,6 +76,11 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
   const [suggestedSlots, setSuggestedSlots] = useState<{ iso: string; label: string }[] | null>(null);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [loadingSuggestion, setLoadingSuggestion] = useState(false);
+  // Free-text steer for "Suggest reply" — e.g. "offer Thu/Fri this week,
+  // then Mon/Tue next week, pencil him in for 10am if he goes for that".
+  // The backend already supported a `goal` param for this; nothing in the
+  // UI ever sent one until now.
+  const [suggestGoal, setSuggestGoal] = useState("");
   const [pendingProposal, setPendingProposal] = useState<PendingBooking | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -204,36 +209,44 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
     }
   };
 
+  // Shared by "Suggest times" (renders as chips) and "Suggest reply" (needs
+  // real availability to embed concrete times in the drafted text instead
+  // of a vague "let me know what works"). The practitioner's diary can be
+  // fully booked for the next couple of weeks — widen the search
+  // progressively rather than coming back empty for what's usually the most
+  // common case (busy period).
+  const fetchAvailableSlots = async (): Promise<{ iso: string; label: string }[]> => {
+    const windowsToTry = [14, 45, 90];
+    let flat: { iso: string; label: string }[] = [];
+    for (const days of windowsToTry) {
+      const start = new Date();
+      const end = new Date(); end.setDate(end.getDate() + days);
+      const { data, error } = await supabase.functions.invoke("get-calcom-slots", {
+        body: { start: start.toISOString(), end: end.toISOString(), timeZone: "Australia/Melbourne" },
+      });
+      if (error || data?.status === "error") throw new Error(data?.message || error?.message || "Couldn't load slots.");
+      flat = [];
+      for (const entries of Object.values<any>(data.data || {})) {
+        for (const e of entries || []) {
+          const iso = e.start || e.time;
+          if (!iso) continue;
+          const d = new Date(iso);
+          const label = d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: "Australia/Melbourne" }) +
+            " " + d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Australia/Melbourne" });
+          flat.push({ iso, label });
+        }
+        if (flat.length >= 20) break;
+      }
+      if (flat.length > 0) break;
+    }
+    return flat;
+  };
+
   const handleSuggestTimes = async () => {
     setLoadingSlots(true);
     setSuggestedSlots(null);
     try {
-      // The practitioner's diary can be fully booked for the next couple of
-      // weeks — widen the search progressively rather than coming back empty
-      // for what's usually the most common case (busy period).
-      const windowsToTry = [14, 45, 90];
-      let flat: { iso: string; label: string }[] = [];
-      for (const days of windowsToTry) {
-        const start = new Date();
-        const end = new Date(); end.setDate(end.getDate() + days);
-        const { data, error } = await supabase.functions.invoke("get-calcom-slots", {
-          body: { start: start.toISOString(), end: end.toISOString(), timeZone: "Australia/Melbourne" },
-        });
-        if (error || data?.status === "error") throw new Error(data?.message || error?.message || "Couldn't load slots.");
-        flat = [];
-        for (const entries of Object.values<any>(data.data || {})) {
-          for (const e of entries || []) {
-            const iso = e.start || e.time;
-            if (!iso) continue;
-            const d = new Date(iso);
-            const label = d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: "Australia/Melbourne" }) +
-              " " + d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Australia/Melbourne" });
-            flat.push({ iso, label });
-          }
-          if (flat.length >= 8) break;
-        }
-        if (flat.length > 0) break;
-      }
+      const flat = await fetchAvailableSlots();
       setSuggestedSlots(flat.length ? flat.slice(0, 8) : null);
       if (flat.length === 0) showError("No open slots found in the next 90 days — check the calendar directly.");
     } catch (err: any) {
@@ -246,11 +259,22 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
   const handleSuggestReply = async () => {
     setLoadingSuggestion(true);
     try {
+      // Real availability, not invented — lets the model actually answer a
+      // scheduling ask in the thread ("do you have Mon/Tue in October?")
+      // with concrete matching times instead of a vague "let me know what
+      // works", and the optional instruction below lets Daniele steer it
+      // directly ("offer Thu/Fri this week, then Mon/Tue next week...")
+      // rather than only ever getting the model's own generic guess.
+      let slots: { iso: string; label: string }[] = [];
+      try { slots = await fetchAvailableSlots(); } catch { /* draft still useful without real slots */ }
+
       const { data, error } = await supabase.functions.invoke("suggest-email-reply", {
         body: {
           client_id: hasClientRecord ? clientId : null,
           client_name: clientName,
           thread_messages: messages.map((m) => ({ direction: m.direction, body: m.body })),
+          available_slots: slots.slice(0, 40).map((s) => s.label),
+          goal: suggestGoal.trim() || undefined,
         },
       });
       if (error || data?.error) throw new Error(data?.error || error?.message || "Couldn't draft a reply.");
@@ -364,6 +388,17 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
 
       <div className="pt-3 border-t border-border mt-3 space-y-2">
         <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject" className="text-base md:text-sm h-9" disabled={isSending} />
+        {/* Optional steer for "Suggest reply" — the backend already accepted
+            a `goal` param, nothing in the UI ever sent one before. Enter
+            triggers the same suggestion, same as pressing the button. */}
+        <Input
+          value={suggestGoal}
+          onChange={(e) => setSuggestGoal(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleSuggestReply(); } }}
+          placeholder={'Optional: tell the AI what to suggest, e.g. "offer Thu/Fri this week, then Mon/Tue next week at 10am"'}
+          className="text-xs h-8"
+          disabled={loadingSuggestion}
+        />
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1.5" onClick={handleSuggestTimes} disabled={loadingSlots}>
             {loadingSlots ? <Loader2 className="h-3 w-3 animate-spin" /> : <CalendarClock className="h-3 w-3" />}

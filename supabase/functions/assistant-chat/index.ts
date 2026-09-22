@@ -434,7 +434,11 @@ async function callModel(geminiKeys: string[], openRouterKey: string | undefined
       return { data, servedBy: "openrouter-fallback" };
     } catch (err: any) {
       console.error("[assistant-chat] OPENROUTER_FALLBACK_FAILED:", err.message);
-      throw lastErr || err;
+      // Previously threw `lastErr` (the Gemini error) here, which masked a
+      // real OpenRouter failure behind Gemini's — impossible to tell, from
+      // what the practitioner saw, whether the fallback was ever even
+      // attempted. Surface both so a real failure is diagnosable next time.
+      throw new Error(`Gemini exhausted (${lastErr?.message || "unknown"}) and OpenRouter fallback also failed: ${err.message}`);
     }
   }
   throw lastErr || new Error("No model available.");

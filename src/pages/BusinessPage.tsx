@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { TrendingUp, PieChart, Users, Megaphone } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import { BusinessDashboardTool } from "@/pages/BusinessDashboardPage";
 import { BusinessOverviewTool } from "@/pages/BusinessOverviewPage";
 import { ClientAuditTool } from "@/pages/ClientAuditPage";
@@ -23,16 +24,28 @@ const BusinessPage = () => {
 
   return (
     <Tabs value={tab} onValueChange={setTab} className="w-full">
-      <div className="sticky top-0 z-10 bg-background border-b border-border pt-3">
+      {/* Plain underline tabs instead of the shadcn default filled-pill
+          TabsList — that rendered as an oversized capsule with a lot of
+          empty space on a wide screen ("tacky"). This drives the same
+          controlled Tabs value/onValueChange from outside TabsTrigger, so
+          Radix's show/hide logic below is untouched. */}
+      <div className="sticky top-0 z-10 bg-background border-b border-border">
         <div className="max-w-6xl mx-auto px-4 md:px-8">
-          <TabsList className="w-full flex-wrap gap-1 bg-muted/60 rounded-xl p-1">
+          <div className="flex gap-6">
             {TABS.map((t) => (
-              <TabsTrigger key={t.id} value={t.id} className="gap-2">
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={cn(
+                  "flex items-center gap-2 py-3 text-sm font-medium border-b-2 -mb-px transition-colors",
+                  tab === t.id ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
+                )}
+              >
                 <t.icon size={14} />
-                <span>{t.label}</span>
-              </TabsTrigger>
+                {t.label}
+              </button>
             ))}
-          </TabsList>
+          </div>
         </div>
       </div>
       {/* No px/py here — every Tool below already brings its own p-6, and

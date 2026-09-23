@@ -130,7 +130,7 @@ export default function CommsInbox() {
                         : <Brain className="h-3.5 w-3.5 text-chart-purple shrink-0" />}
                       <span className="text-sm font-semibold text-foreground truncate">{m.name}</span>
                       <span className={cn(
-                        "text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0",
+                        "text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0",
                         m.needs_reply ? "bg-chart-destructive/15 text-chart-destructive" : "bg-chart-emerald/15 text-chart-emerald",
                       )}>
                         {m.needs_reply ? "Needs reply" : "Replied"}

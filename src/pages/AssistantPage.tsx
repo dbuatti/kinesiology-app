@@ -241,11 +241,11 @@ export default function AssistantPage() {
         style={activeTab === "chat" ? { height: gridHeight ? `${gridHeight}px` : "calc(100vh - 300px)" } : undefined}
       >
         <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
-          <TabsList>
-            <TabsTrigger value="chat" className="gap-1.5"><MessageCircle className="h-3.5 w-3.5" /> Chat</TabsTrigger>
-            <TabsTrigger value="followup" className="gap-1.5"><AlertCircle className="h-3.5 w-3.5" /> Follow-up</TabsTrigger>
-            <TabsTrigger value="inbox" className="gap-1.5"><Mail className="h-3.5 w-3.5" /> Inbox</TabsTrigger>
-            <TabsTrigger value="launch" className="gap-1.5"><Rocket className="h-3.5 w-3.5" /> Launch</TabsTrigger>
+          <TabsList className="min-w-0 overflow-x-auto">
+            <TabsTrigger value="chat" className="gap-1.5 whitespace-nowrap"><MessageCircle className="h-3.5 w-3.5" /> Chat</TabsTrigger>
+            <TabsTrigger value="followup" className="gap-1.5 whitespace-nowrap"><AlertCircle className="h-3.5 w-3.5" /> Follow-up</TabsTrigger>
+            <TabsTrigger value="inbox" className="gap-1.5 whitespace-nowrap"><Mail className="h-3.5 w-3.5" /> Inbox</TabsTrigger>
+            <TabsTrigger value="launch" className="gap-1.5 whitespace-nowrap"><Rocket className="h-3.5 w-3.5" /> Launch</TabsTrigger>
           </TabsList>
           {/* Not a true embedded tab — the Timetable Simulator is a large, separate
               page (2600+ lines) that doesn't yet follow this app's pane-extraction
@@ -271,25 +271,36 @@ export default function AssistantPage() {
               />
             </div>
             <div className={cn("flex-col p-4 min-w-0 min-h-0", mobileShowList ? "hidden" : "flex", "md:flex")}>
-              {/* Mobile-only: back to the conversation list instead of stacking both panes full-height. */}
-              <div className="flex items-center gap-2 pb-3 md:hidden">
-                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setMobileShowList(true)}>
+              {/* One unified top bar instead of stacked rows eating chat height:
+                  mobile back + active name on the left, desktop copy, and the
+                  AI Chat / Email Thread toggle on the right. */}
+              <div className="flex items-center gap-2 pb-3">
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 md:hidden" onClick={() => setMobileShowList(true)}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <span className="text-sm font-semibold text-foreground truncate flex-1">{activeClientName || "General"}</span>
-                {messages.length > 0 && viewMode === "chat" && (
-                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={copyChatToClipboard} title="Copy chat to clipboard">
-                    <Copy className="h-3.5 w-3.5" />
-                  </Button>
-                )}
-              </div>
-              {messages.length > 0 && viewMode === "chat" && (
-                <div className="hidden md:flex justify-end mb-2">
-                  <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1.5" onClick={copyChatToClipboard}>
+                <span className="text-sm font-semibold text-foreground truncate flex-1 md:hidden">{activeClientName || "General"}</span>
+                {viewMode === "chat" && messages.length > 0 && (
+                  <Button variant="outline" size="sm" className="hidden h-7 text-[11px] gap-1.5 md:inline-flex" onClick={copyChatToClipboard}>
                     <Copy className="h-3 w-3" /> Copy chat
                   </Button>
-                </div>
-              )}
+                )}
+                {focusedClient && (
+                  <div className="flex items-center gap-1 bg-muted p-1 rounded-lg ml-auto">
+                    <button
+                      onClick={() => setViewMode("chat")}
+                      className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors", viewMode === "chat" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
+                    >
+                      <MessageCircle className="h-3.5 w-3.5" /> AI Chat
+                    </button>
+                    <button
+                      onClick={() => setViewMode("email")}
+                      className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors", viewMode === "email" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
+                    >
+                      <Mail className="h-3.5 w-3.5" /> Email Thread
+                    </button>
+                  </div>
+                )}
+              </div>
               {focusedClient && (
                 <ClientSnapshotPanel
                   clientId={focusedClient.id}
@@ -307,41 +318,30 @@ export default function AssistantPage() {
                   Open {focusedClient.name.split(" ")[0]}'s full Hub (all conversations, email, history) →
                 </RouterLink>
               )}
-              {focusedClient && (
-                <div className="flex items-center gap-1 bg-muted p-1 rounded-lg mb-3 w-fit">
-                  <button
-                    onClick={() => setViewMode("chat")}
-                    className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors", viewMode === "chat" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
-                  >
-                    <MessageCircle className="h-3.5 w-3.5" /> AI Chat
-                  </button>
-                  <button
-                    onClick={() => setViewMode("email")}
-                    className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors", viewMode === "email" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
-                  >
-                    <Mail className="h-3.5 w-3.5" /> Email Thread
-                  </button>
-                </div>
-              )}
-              {viewMode === "email" && focusedClient ? (
-                <ClientEmailThread clientId={focusedClient.id} clientEmail={focusedClient.email} clientName={focusedClient.name} />
-              ) : (
-                <>
-                  <MessageList
-                    messages={messages}
-                    isSending={isSending}
-                    pendingDraft={pendingDraft}
-                    onDraftSent={handleDraftSent}
-                    onDraftDiscard={handleDraftDiscard}
-                    pendingBooking={pendingBooking}
-                    onBookingConfirmed={handleBookingConfirmed}
-                    onBookingDiscard={handleBookingDiscard}
-                    onSuggestion={handleSend}
-                    onRetry={(id, text) => handleSend(text, id)}
-                  />
-                  <AssistantInput onSend={handleSend} disabled={isSending} initialValue={initialPrompt} autoSend={autoSendReady} />
-                </>
-              )}
+              {/* Cap the reading measure so bubbles/composer never span the
+                  whole pane on a wide monitor — premium chat keeps a comfortable
+                  column even when there's room to spare. */}
+              <div className="flex min-h-0 flex-1 flex-col w-full max-w-[880px]">
+                {viewMode === "email" && focusedClient ? (
+                  <ClientEmailThread clientId={focusedClient.id} clientEmail={focusedClient.email} clientName={focusedClient.name} />
+                ) : (
+                  <>
+                    <MessageList
+                      messages={messages}
+                      isSending={isSending}
+                      pendingDraft={pendingDraft}
+                      onDraftSent={handleDraftSent}
+                      onDraftDiscard={handleDraftDiscard}
+                      pendingBooking={pendingBooking}
+                      onBookingConfirmed={handleBookingConfirmed}
+                      onBookingDiscard={handleBookingDiscard}
+                      onSuggestion={handleSend}
+                      onRetry={(id, text) => handleSend(text, id)}
+                    />
+                    <AssistantInput onSend={handleSend} disabled={isSending} initialValue={initialPrompt} autoSend={autoSendReady} />
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </TabsContent>

@@ -161,21 +161,6 @@ export default function ClientHubPage() {
       </div>
 
       <div style={{ height: areaHeight ? `${areaHeight}px` : "calc(100vh - 300px)", minHeight: 420 }} className="flex flex-col">
-        <div className="flex items-center gap-1 bg-muted p-1 rounded-lg mb-3 w-fit">
-          <button
-            onClick={() => setViewMode("chat")}
-            className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors", viewMode === "chat" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
-          >
-            <MessageCircle className="h-3.5 w-3.5" /> AI Chat
-          </button>
-          <button
-            onClick={() => setViewMode("email")}
-            className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors", viewMode === "email" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
-          >
-            <Mail className="h-3.5 w-3.5" /> Email Thread
-          </button>
-        </div>
-
         <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-0 flex-1 min-h-0">
           <div className={cn("min-h-0 min-w-0", mobileShowList ? "flex" : "hidden", "md:flex")}>
             <ConversationList
@@ -188,38 +173,57 @@ export default function ClientHubPage() {
             />
           </div>
           <div className={cn("flex-col p-4 min-w-0 min-h-0", mobileShowList ? "hidden" : "flex", "md:flex")}>
-            <div className="flex items-center gap-2 pb-3 md:hidden">
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setMobileShowList(true)}>
+            {/* One unified top bar: mobile back + thread name on the left, the
+                AI Chat / Email Thread toggle on the right — matches the
+                Assistant page's toolbar instead of a separate stacked row. */}
+            <div className="flex items-center gap-2 pb-3">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 md:hidden" onClick={() => setMobileShowList(true)}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
-              <span className="text-sm font-semibold text-foreground truncate flex-1">Conversations with {client.name.split(" ")[0]}</span>
+              <span className="text-sm font-semibold text-foreground truncate flex-1 md:hidden">Conversations with {client.name.split(" ")[0]}</span>
+              <div className="flex items-center gap-1 bg-muted p-1 rounded-lg ml-auto">
+                <button
+                  onClick={() => setViewMode("chat")}
+                  className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors", viewMode === "chat" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
+                >
+                  <MessageCircle className="h-3.5 w-3.5" /> AI Chat
+                </button>
+                <button
+                  onClick={() => setViewMode("email")}
+                  className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors", viewMode === "email" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
+                >
+                  <Mail className="h-3.5 w-3.5" /> Email Thread
+                </button>
+              </div>
             </div>
-            {viewMode === "email" ? (
-              <ClientEmailThread clientId={client.id} clientEmail={client.email} clientName={client.name} />
-            ) : (
-              <>
-                <MessageList
-                  messages={messages}
-                  isSending={isSending}
-                  pendingDraft={pendingDraft}
-                  onDraftSent={handleDraftSent}
-                  onDraftDiscard={handleDraftDiscard}
-                  pendingBooking={pendingBooking}
-                  onBookingConfirmed={handleBookingConfirmed}
-                  onBookingDiscard={handleBookingDiscard}
-                  onSuggestion={handleSend}
-                  onRetry={(cid, text) => handleSend(text, cid)}
-                />
-                {/* autoSend safe unconditionally here (unlike AssistantPage) —
-                    this component doesn't render past the loading/not-found
-                    guards above until `client` has already resolved, so
-                    there's no async race to gate on. Same fix as
-                    AssistantPage: a deep-linked "Book"/"Assistant" quick
-                    action is already a complete instruction, so it sends
-                    itself instead of waiting for a redundant manual Send. */}
-                <AssistantInput onSend={handleSend} disabled={isSending} initialValue={initialPrompt} autoSend={!!initialPrompt} />
-              </>
-            )}
+            <div className="flex min-h-0 flex-1 flex-col w-full max-w-[880px]">
+              {viewMode === "email" ? (
+                <ClientEmailThread clientId={client.id} clientEmail={client.email} clientName={client.name} />
+              ) : (
+                <>
+                  <MessageList
+                    messages={messages}
+                    isSending={isSending}
+                    pendingDraft={pendingDraft}
+                    onDraftSent={handleDraftSent}
+                    onDraftDiscard={handleDraftDiscard}
+                    pendingBooking={pendingBooking}
+                    onBookingConfirmed={handleBookingConfirmed}
+                    onBookingDiscard={handleBookingDiscard}
+                    onSuggestion={handleSend}
+                    onRetry={(cid, text) => handleSend(text, cid)}
+                  />
+                  {/* autoSend safe unconditionally here (unlike AssistantPage) —
+                      this component doesn't render past the loading/not-found
+                      guards above until `client` has already resolved, so
+                      there's no async race to gate on. Same fix as
+                      AssistantPage: a deep-linked "Book"/"Assistant" quick
+                      action is already a complete instruction, so it sends
+                      itself instead of waiting for a redundant manual Send. */}
+                  <AssistantInput onSend={handleSend} disabled={isSending} initialValue={initialPrompt} autoSend={!!initialPrompt} />
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>

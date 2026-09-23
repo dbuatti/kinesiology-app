@@ -175,6 +175,18 @@ function zonedDateKey(d: Date): string {
   return practiceDateKey(d);
 }
 
+/** Session length (min) implied by a Cal.com event type, falling back to the
+ *  per-kind default. The manual "pencil in" dialog and suggestion accepts use
+ *  this so a 30/45-min voice proposal isn't stored as a 60-min slot. */
+function minutesForEventType(eventTypeId: string | undefined | null, kind: SessionKind): number {
+  if (kind === "voice") {
+    if (eventTypeId === CALCOM_CONFIG.VOICE_EVENT_TYPE_30) return 30;
+    if (eventTypeId === CALCOM_CONFIG.VOICE_EVENT_TYPE_45) return 45;
+    return 60;
+  }
+  return 60;
+}
+
 const TimetablePage = () => {
   const [tab, setTab] = useState(() => {
     const t = new URLSearchParams(window.location.search).get("view");
@@ -601,7 +613,7 @@ const TimetablePage = () => {
       if (r.away_until >= todayKey) map[r.client_key] = { until: r.away_until, reason: r.reason };
     }
     return map;
-  }, [awayRows, now]);
+  }, [awayRows]);
 
   const setAway = useCallback(
     async (key: string, untilISO: string | null, reason?: string) => {
@@ -616,8 +628,8 @@ const TimetablePage = () => {
           );
         }
         await queryClient.invalidateQueries({ queryKey: ["timetable-away"] });
-      } catch (e: any) {
-        showError(e?.message || "Couldn't update away status.");
+      } catch (e) {
+        showError((e as { message?: string } | undefined)?.message || "Couldn't update away status.");
       }
     },
     [queryClient],
@@ -695,8 +707,8 @@ const TimetablePage = () => {
           );
         }
         await queryClient.invalidateQueries({ queryKey: ["timetable-availability"] });
-      } catch (e: any) {
-        showError(e?.message || "Couldn't update scheduling prefs.");
+      } catch (e) {
+        showError((e as { message?: string } | undefined)?.message || "Couldn't update scheduling prefs.");
       }
     },
     [queryClient, availabilityByKey],
@@ -747,8 +759,8 @@ const TimetablePage = () => {
       setDraftAssignments((prev) => prev.filter((x) => x.clientId !== clientKey));
       showSuccess(`Penciled in ${a.name}.`);
       return created ?? null;
-    } catch (e: any) {
-      showError(e?.message || "Couldn't pencil in.");
+    } catch (e) {
+      showError((e as { message?: string } | undefined)?.message || "Couldn't pencil in.");
       return null;
     }
   };
@@ -933,7 +945,10 @@ const TimetablePage = () => {
     return out;
   }, [slots, voiceSlotsByDur]);
 
-  // Practitioner busy blocks: iCloud events + whole-day blocked dates.
+  // Practitioner busy blocks: iCloud events + whole-day blocked dates + the
+  // time ranges of existing Cal.com bookings (so a slot whose START differs
+  // from a booked slot's start — e.g. a 30-min voice lesson at 10:00 and a
+  // 45-min grid slot at 10:15 — still can't be drafted over it).
   const autoDraftBusy = useMemo<BusyBlock[]>(() => {
     const out: BusyBlock[] = [];
     for (const ev of icloudEvents) {
@@ -949,8 +964,15 @@ const TimetablePage = () => {
       const [y, mo, d] = key.split("-").map(Number);
       if (y && mo && d) out.push({ start: practiceWallToUtc(y, mo, d, 0, 0), end: practiceWallToUtc(y, mo, d, 23, 59) });
     }
+    for (const b of enrichedBookings) {
+      if (!b.start) continue;
+      const start = new Date(b.start);
+      if (isNaN(start.getTime())) continue;
+      const end = new Date(start.getTime() + minutesForEventType(b.eventTypeId, b.source) * 60 * 1000);
+      out.push({ start, end });
+    }
     return out;
-  }, [icloudEvents, blockedDates]);
+  }, [icloudEvents, blockedDates, enrichedBookings]);
 
   // Slots already taken by real bookings or existing proposals.
   const autoDraftTaken = useMemo<string[]>(() => {
@@ -980,6 +1002,18 @@ const TimetablePage = () => {
     if ((bookings[key] || []).length > 0) return DayState.BOOKED;
     if ((slots[key] || []).length > 0) return DayState.OPEN;
     return DayState.EMPTY;
+  };
+
+  // Manual "Pencil in" dialog lists the slot grid for the kind being planned:
+  // FNH uses the default 60-min grid, voice uses its own 30/45/60-min grid so a
+  // voice proposal is always pencilled at a time that's actually open for voice.
+  const slotListForDay = (d: Date): SlotInfo[] => {
+    const key = zonedDateKey(d);
+    if (kind === "voice") {
+      const dur = minutesForEventType(eventTypeId, "voice");
+      return voiceSlotsByDur[dur]?.[key] || slots[key] || [];
+    }
+    return slots[key] || [];
   };
 
   const summary = useMemo(() => {
@@ -1420,7 +1454,7 @@ const TimetablePage = () => {
                       onToggleWeek={(key) =>
                         setHiddenWeeks((prev) => {
                           const next = new Set(prev);
-                          next.has(key) ? next.delete(key) : next.add(key);
+                          if (next.has(key)) next.delete(key); else next.add(key);
                           return next;
                         })
                       }
@@ -1451,18 +1485,21 @@ const TimetablePage = () => {
               try {
                 const slot = s.availableSlots[0];
                 if (!slot) return;
-                const endIso = new Date(new Date(slot.start).getTime() + 60 * 60 * 1000).toISOString();
-                // voice-pattern suggestions carry the voice student's UUID as
-                // clientId; voice-overdue ones do too but were being misread as
-                // FNH and then failed to insert (that UUID isn't a clients row).
-                const voiceStudent = enrichedVoiceStudents.find((vs) => vs.id === s.clientId);
-                const isVoice = s.source === "voice-pattern" || !!voiceStudent;
+                const slotStart = new Date(slot.start).getTime();
+                const isVoice = s.source === "voice-pattern" || !!enrichedVoiceStudents.find((vs) => vs.id === s.clientId);
+                // Voice suggestions carry the voice student's UUID as clientId —
+                // match the voice student for email AND use their booked length
+                // for the proposal duration (not the FNH 60-min default).
+                const schedEventType = isVoice ? voiceEventType : fnhEventType;
+                const durMin = minutesForEventType(schedEventType, isVoice ? "voice" : "fnh");
+                const endIso = new Date(slotStart + durMin * 60 * 1000).toISOString();
+                const voiceStudent = isVoice ? enrichedVoiceStudents.find((vs) => vs.id === s.clientId) : undefined;
                 await createProposal({
                   kind: isVoice ? "voice" : "fnh",
                   clientId: isVoice ? null : s.clientId,
                   studentName: isVoice ? s.clientName : null,
-                  studentEmail: isVoice ? voiceStudent?.email || enrichedVoiceStudents.find((vs) => vs.id === s.clientId)?.email || null : null,
-                  eventTypeId: isVoice ? voiceEventType : fnhEventType,
+                  studentEmail: isVoice ? voiceStudent?.email || null : null,
+                  eventTypeId: schedEventType,
                   slotStart: slot.start,
                   slotEnd: endIso,
                 });
@@ -1492,7 +1529,7 @@ const TimetablePage = () => {
           </DialogHeader>
           {pickingDay && (
             <div className="grid gap-2 max-h-72 overflow-y-auto pr-1">
-              {(slots[zonedDateKey(pickingDay)] || []).map((s, i) => (
+              {(slotListForDay(pickingDay)).map((s, i) => (
                 <Button
                   key={i}
                   variant="outline"
@@ -1501,16 +1538,16 @@ const TimetablePage = () => {
                   onClick={() => {
                     const startIso = new Date(s.start).toISOString();
                     const endIso = new Date(
-                      new Date(s.start).getTime() + 60 * 60 * 1000
+                      new Date(s.start).getTime() + minutesForEventType(eventTypeId, kind) * 60 * 1000
                     ).toISOString();
                     handleCreateProposal(startIso, endIso);
                   }}
                 >
                   <PenLine size={14} className="mr-2 text-chart-primary" />
-                  {practiceFormat(new Date(s.start), "h:mm a")} — 60 min
+                  {practiceFormat(new Date(s.start), "h:mm a")} — {minutesForEventType(eventTypeId, kind)} min
                 </Button>
               ))}
-              {!slots[zonedDateKey(pickingDay)]?.length && (
+              {!slotListForDay(pickingDay).length && (
                 <p className="text-sm text-muted-foreground">No times on this day.</p>
               )}
             </div>
@@ -1789,8 +1826,8 @@ const TimetablePage = () => {
                             if (error) throw error;
                             showSuccess(`Emailed ${p.student_name || "the client"}.`);
                             setWorkflowEmailOpen(false);
-                          } catch (e: any) {
-                            showError(e?.message || "Couldn't send email.");
+                          } catch (e) {
+                            showError((e as { message?: string } | undefined)?.message || "Couldn't send email.");
                           } finally {
                             setWorkflowBusy(false);
                           }
@@ -1827,7 +1864,7 @@ const TimetablePage = () => {
                         onClick={async () => {
                           setWorkflowBusy(true);
                           try { await dropProposal(p.id); showSuccess("Dropped."); setWorkflowFor(null); }
-                          catch (e: any) { showError(e?.message || "Couldn't drop."); }
+                          catch (e) { showError((e as { message?: string } | undefined)?.message || "Couldn't drop."); }
                           finally { setWorkflowBusy(false); }
                         }}
                       >
@@ -1859,7 +1896,7 @@ const TimetablePage = () => {
                         onClick={async () => {
                           setWorkflowBusy(true);
                           try { await confirmProposal(p); showSuccess("Locked in to Cal.com."); setWorkflowFor({ ...p, status: "confirmed" }); fetchData(); }
-                          catch (e: any) { showError(e?.message || "Couldn't lock in."); }
+                          catch (e) { showError((e as { message?: string } | undefined)?.message || "Couldn't lock in."); }
                           finally { setWorkflowBusy(false); }
                         }}
                       >
@@ -2410,15 +2447,20 @@ function DayCell({
   // (sky). If a real proposal already exists at the same slot for the same
   // person, the mirrored draft chip is redundant — the Simulator used to show
   // "Nicole Rotenstein 2:30pm" twice (draft + proposal). Drop the draft echo.
+  // Draft preview rows carry the embedded client key in their id (draft:<key>);
+  // real proposals carry client_id / student_email, but both normalise to the
+  // same "<kind>:<key>" identity so the FNH case dedups too (a draft's
+  // client_id is null, so keying off client_id alone would never match).
   const draftIdentity = (p: BookingProposal) =>
-    p.kind === "fnh"
-      ? `fnh:${p.client_id}`
-      : `voice:${(p.student_email || p.student_name || "").toLowerCase().trim()}`;
-  const realSlots = new Set(
-    proposals.filter((p) => p.status !== "suggested").map((p) => `${p.slot_start}|${draftIdentity(p)}`)
-  );
+    String(p.id).startsWith("draft:")
+      ? String(p.id).replace(/^draft:/, "").split("#")[0].toLowerCase()
+      : p.kind === "fnh"
+        ? `fnh:${p.client_id}`
+        : `voice:${(p.student_email || p.student_name || "").toLowerCase().trim()}`;
+  const slotKey = (p: BookingProposal) => `${new Date(p.slot_start).toISOString()}|${draftIdentity(p)}`;
+  const realSlots = new Set(proposals.filter((p) => p.status !== "suggested").map(slotKey));
   const visibleProposals = proposals.filter(
-    (p) => p.status !== "suggested" || !realSlots.has(`${p.slot_start}|${draftIdentity(p)}`)
+    (p) => p.status !== "suggested" || !realSlots.has(slotKey(p))
   );
 
   return (

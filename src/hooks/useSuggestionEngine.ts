@@ -1,6 +1,7 @@
 import { useMemo } from "react";
-import { differenceInDays, addDays, format } from "date-fns";
+import { differenceInDays, addDays } from "date-fns";
 import { BookingProposal } from "./useBookingProposals";
+import { practiceDateKey, practiceWeekday, practiceFormat } from "@/utils/practice-time";
 
 export type SuggestionSource = "pattern" | "voice-pattern" | "availability" | "overdue" | "voice-overdue";
 
@@ -149,8 +150,7 @@ export function useSuggestionEngine({
       if (pattern) {
         const predictedDate = advancePastToday(pattern.lastDate, pattern.gapDays, todayMs);
         if (predictedDate) {
-          const dateKey = format(predictedDate, "yyyy-MM-dd");
-          const daySlots = slots[dateKey] || [];
+          const daySlots = slots[practiceDateKey(predictedDate)] || [];
           if (daySlots.length > 0) {
             results.push({
               clientId: client.id,
@@ -186,8 +186,7 @@ export function useSuggestionEngine({
       if (pattern) {
         const predictedDate = advancePastToday(pattern.lastDate, pattern.gapDays, todayMs);
         if (predictedDate) {
-          const dateKey = format(predictedDate, "yyyy-MM-dd");
-          const daySlots = slots[dateKey] || [];
+          const daySlots = slots[practiceDateKey(predictedDate)] || [];
           if (daySlots.length > 0) {
             results.push({
               clientId: student.id,
@@ -232,8 +231,7 @@ export function useSuggestionEngine({
       // Suggest booking on the next available day with slots
       for (let offset = 1; offset <= 14; offset++) {
         const candidateDate = addDays(today, offset);
-        const dateKey = format(candidateDate, "yyyy-MM-dd");
-        const daySlots = slots[dateKey] || [];
+        const daySlots = slots[practiceDateKey(candidateDate)] || [];
         if (daySlots.length === 0) continue;
 
         results.push({
@@ -278,8 +276,7 @@ export function useSuggestionEngine({
 
       for (let offset = 1; offset <= 14; offset++) {
         const candidateDate = addDays(today, offset);
-        const dateKey = format(candidateDate, "yyyy-MM-dd");
-        const daySlots = slots[dateKey] || [];
+        const daySlots = slots[practiceDateKey(candidateDate)] || [];
         if (daySlots.length === 0) continue;
 
         results.push({
@@ -333,12 +330,9 @@ export function useSuggestionEngine({
 
       for (let offset = 1; offset <= 14; offset++) {
         const candidateDate = addDays(today, offset);
-        const dayOfWeek = candidateDate.getDay();
+        if (!preferredDays.includes(practiceWeekday(candidateDate))) continue;
 
-        if (!preferredDays.includes(dayOfWeek)) continue;
-
-        const dateKey = format(candidateDate, "yyyy-MM-dd");
-        const daySlots = slots[dateKey] || [];
+        const daySlots = slots[practiceDateKey(candidateDate)] || [];
         if (daySlots.length === 0) continue;
 
         results.push({
@@ -349,7 +343,7 @@ export function useSuggestionEngine({
           confidence: 0.5,
           availableSlots: daySlots,
           source: "availability",
-          reason: `Available on ${format(candidateDate, "EEEE")}s (per notes)`,
+          reason: `Available on ${practiceFormat(candidateDate, "EEEE")}s (per notes)`,
         });
         break;
       }
@@ -367,7 +361,7 @@ export function useSuggestionEngine({
     });
 
     return results;
-  }, [appointmentsData, voiceBookingsData, enrichedClients, enrichedVoiceStudents, slots, proposals, calcomBookings]);
+  }, [appointmentsData, voiceBookingsData, enrichedClients, enrichedVoiceStudents, slots, proposals]);
 
   return { suggestions };
 }

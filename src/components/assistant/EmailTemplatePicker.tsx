@@ -105,7 +105,7 @@ export default function EmailTemplatePicker({ clientFirstName, currentSubject, c
                 </button>
                 <Button
                   variant="ghost" size="icon"
-                  className="h-6 w-6 shrink-0 mr-1 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
+                  className="h-6 w-6 shrink-0 mr-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 text-muted-foreground hover:text-destructive"
                   onClick={() => handleDelete(t.id)}
                 >
                   <Trash2 className="h-3 w-3" />

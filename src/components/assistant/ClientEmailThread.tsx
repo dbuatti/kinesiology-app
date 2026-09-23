@@ -42,10 +42,10 @@ interface Props {
 
 type Status = "needs_reply" | "awaiting_client" | "resolved";
 
-const STATUS_LABELS: Record<Status, string> = {
-  needs_reply: "🔴 Needs Reply",
-  awaiting_client: "🟡 Waiting on Them",
-  resolved: "🟢 Resolved",
+const STATUS_META: Record<Status, { label: string; dotClass: string }> = {
+  needs_reply: { label: "Needs Reply", dotClass: "bg-chart-destructive" },
+  awaiting_client: { label: "Waiting on Them", dotClass: "bg-chart-amber" },
+  resolved: { label: "Resolved", dotClass: "bg-chart-emerald" },
 };
 
 const NEW_EMAIL_VALUE = "__new__";
@@ -319,8 +319,13 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
           <Select value={status || undefined} onValueChange={(v) => handleStatusChange(v as Status)}>
             <SelectTrigger className="w-[170px] h-8 text-xs"><SelectValue placeholder="Set status" /></SelectTrigger>
             <SelectContent>
-              {(Object.keys(STATUS_LABELS) as Status[]).map((s) => (
-                <SelectItem key={s} value={s} className="text-xs">{STATUS_LABELS[s]}</SelectItem>
+              {(Object.keys(STATUS_META) as Status[]).map((s) => (
+                <SelectItem key={s} value={s} className="text-xs">
+                  <span className="flex items-center gap-2">
+                    <span className={cn("h-1.5 w-1.5 rounded-full", STATUS_META[s].dotClass)} />
+                    {STATUS_META[s].label}
+                  </span>
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -442,16 +447,16 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
             ))}
           </div>
         )}
-        <div className="flex items-end gap-2">
+        <div className="flex items-end gap-1.5 rounded-2xl border border-border bg-card p-1.5 shadow-sm transition-shadow focus-within:border-primary/40 focus-within:shadow-md">
           <Textarea
             value={replyBody}
             onChange={(e) => setReplyBody(e.target.value)}
             placeholder={`Message to ${firstName}...`}
             rows={3}
             disabled={isSending}
-            className="resize-none text-base md:text-sm"
+            className="min-h-0 max-h-40 resize-none border-0 bg-transparent px-3 py-2.5 text-base shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-sm"
           />
-          <Button onClick={handleSend} disabled={isSending || !replyBody.trim()} size="icon" className="shrink-0">
+          <Button onClick={handleSend} disabled={isSending || !replyBody.trim()} size="icon" className="h-9 w-9 shrink-0 rounded-xl" aria-label="Send email">
             {isSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
           </Button>
         </div>

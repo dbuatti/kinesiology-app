@@ -55,16 +55,18 @@ function renderFormatted(text: string): ReactNode {
 export default function MessageBubble({ message }: Props) {
   const isUser = message.role === "user";
   return (
-    <div className={cn("flex gap-3 max-w-[85%]", isUser ? "ml-auto flex-row-reverse" : "mr-auto")}>
+    <div className={cn("flex gap-3 max-w-[min(86%,42rem)]", isUser ? "ml-auto flex-row-reverse" : "mr-auto")}>
       <div className={cn(
-        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-        isUser ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full animate-in fade-in zoom-in-90 duration-150",
+        isUser ? "bg-primary text-primary-foreground" : "bg-gradient-to-br from-chart-primary/20 via-chart-primary/10 to-chart-primary/5 text-chart-primary",
       )}>
         {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
       </div>
       <div className={cn(
-        "rounded-2xl px-4 py-3 text-sm leading-relaxed",
-        isUser ? "bg-primary text-primary-foreground rounded-tr-sm whitespace-pre-wrap" : "bg-muted text-foreground rounded-tl-sm",
+        "rounded-2xl px-4 py-3 text-sm leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-200",
+        isUser
+          ? "bg-primary text-primary-foreground rounded-tr-sm whitespace-pre-wrap shadow-sm"
+          : "bg-card text-foreground rounded-tl-sm border border-border/70 shadow-sm",
       )}>
         {isUser ? message.content : renderFormatted(message.content || "")}
         {!!message.tool_calls?.length && (

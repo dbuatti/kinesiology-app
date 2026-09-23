@@ -492,12 +492,16 @@ export default function AutoDraftPanel({
   };
 
   // Which Cal.com event type (service/rate) to book for a client: their explicit
-  // choice, else a sensible default from kind + session length.
+  // choice, else the service that matches the ACTUAL length of the drafted slot
+  // (scheduler-set or manually overridden time), else the per-kind default. This
+  // keeps a 45-min voice draft bookable as a 45-min voice lesson rather than a
+  // 60-min one when the client only has a typical-duration hint, not a stored length.
   const resolveEventTypeId = (a: Assignment) => {
     const baseKey = a.clientId.split("#")[0];
     const explicit = availabilityByKey[baseKey]?.eventTypeId;
     if (explicit) return explicit;
-    return defaultServiceId(a.kind, availabilityByKey[baseKey]?.sessionLengthMin ?? null);
+    const slotDur = Math.round((a.slotEnd.getTime() - a.slotStart.getTime()) / 60_000);
+    return defaultServiceId(a.kind, slotDur);
   };
 
   // Pencil in a single drafted session.
@@ -516,7 +520,12 @@ export default function AutoDraftPanel({
         slotEnd: a.slotEnd.toISOString(),
         eventTypeId: resolveEventTypeId(a),
       });
-      setAcceptedKeys((prev) => new Set(prev).add(a.clientId));
+      const next = new Set(acceptedKeys);
+      next.add(a.clientId);
+      setAcceptedKeys(next);
+      // Drop the penciled-in item from the fortnight preview — it now exists as
+      // a real proposal, so the sky draft chip would otherwise keep showing.
+      if (result) onDraftChange?.(result.assignments.filter((x) => !next.has(x.clientId)));
     } catch (e) {
       /* toast handled upstream */
     } finally {
@@ -628,7 +637,7 @@ export default function AutoDraftPanel({
   const toggle = (key: string) =>
     setSelected((prev) => {
       const next = new Set(prev);
-      next.has(key) ? next.delete(key) : next.add(key);
+      if (next.has(key)) next.delete(key); else next.add(key);
       return next;
     });
 
@@ -779,8 +788,8 @@ export default function AutoDraftPanel({
       // Drop penciled-in items from the preview — they now exist as real proposals.
       onDraftChange?.(result.assignments.filter((a) => !done.has(a.clientId)));
       showSuccess(`Penciled in ${ok} session${ok === 1 ? "" : "s"} as drafts.`);
-    } catch (e: any) {
-      showError(e?.message || "Failed to save drafts.");
+    } catch (e) {
+      showError((e as { message?: string } | undefined)?.message || "Failed to save drafts.");
     } finally {
       setAccepting(false);
     }

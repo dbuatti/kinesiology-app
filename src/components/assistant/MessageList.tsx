@@ -21,6 +21,12 @@ interface Props {
 
 const STARTER_PROMPT = "What should I work on today?";
 
+const QUICK_PROMPTS: { label: string; prompt: string }[] = [
+  { label: STARTER_PROMPT, prompt: STARTER_PROMPT },
+  { label: "Who needs follow-up?", prompt: "Who needs follow-up this week?" },
+  { label: "How's my booking load?", prompt: "How is my booking load looking this week?" },
+];
+
 export default function MessageList({
   messages, isSending, pendingDraft, onDraftSent, onDraftDiscard, pendingBooking, onBookingConfirmed, onBookingDiscard, onSuggestion, onRetry,
 }: Props) {
@@ -46,17 +52,28 @@ export default function MessageList({
 
   if (messages.length === 0 && !isSending) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center text-center text-muted-foreground gap-3 py-16">
-        <Bot className="h-10 w-10 opacity-40" />
-        <p className="text-sm max-w-xs">
-          Ask about a client's schedule, book them into a real slot, teach me their availability, or switch into focused mode to draft a reply in their style.
-        </p>
-        <button
-          onClick={() => onSuggestion(STARTER_PROMPT)}
-          className="flex items-center gap-1.5 rounded-full border border-chart-primary/30 bg-chart-primary/5 px-3.5 py-2 text-xs font-semibold text-chart-primary hover:bg-chart-primary/10 transition-colors"
-        >
-          <Sparkles className="h-3.5 w-3.5" /> {STARTER_PROMPT}
-        </button>
+      <div className="flex flex-1 flex-col items-center justify-center text-center gap-3 py-16">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-chart-primary/10">
+          <Bot className="h-7 w-7 text-chart-primary" />
+        </div>
+        <div className="space-y-1.5">
+          <p className="text-sm font-semibold text-foreground">Your practice, at your fingertips</p>
+          <p className="text-sm text-muted-foreground max-w-xs">
+            Ask about a client's schedule, book them into a real slot, or draft a reply in their style.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-2 mt-1">
+          {QUICK_PROMPTS.map((q) => (
+            <button
+              key={q.label}
+              onClick={() => onSuggestion(q.prompt)}
+              className="flex items-center gap-1.5 rounded-full border border-chart-primary/30 bg-chart-primary/5 px-3.5 py-2 text-xs font-semibold text-chart-primary hover:bg-chart-primary/10 transition-colors"
+            >
+              {q.label === STARTER_PROMPT && <Sparkles className="h-3.5 w-3.5" />}
+              {q.label}
+            </button>
+          ))}
+        </div>
       </div>
     );
   }
@@ -80,20 +97,25 @@ export default function MessageList({
         </div>
       ))}
       {pendingDraft && (
-        <div className="max-w-[85%] mr-auto">
+        <div className="max-w-[min(85%,42rem)] mr-auto">
           <DraftEmailCard draft={pendingDraft} onSent={onDraftSent} onDiscard={onDraftDiscard} />
         </div>
       )}
       {pendingBooking && (
-        <div className="max-w-[85%] mr-auto">
+        <div className="max-w-[min(85%,42rem)] mr-auto">
           <BookingProposalCard booking={pendingBooking} onConfirmed={onBookingConfirmed} onDiscard={onBookingDiscard} />
         </div>
       )}
       {isSending && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground pl-11">
-          <span className="h-2 w-2 rounded-full bg-chart-primary animate-bounce [animation-delay:-0.3s]" />
-          <span className="h-2 w-2 rounded-full bg-chart-primary animate-bounce [animation-delay:-0.15s]" />
-          <span className="h-2 w-2 rounded-full bg-chart-primary animate-bounce" />
+        // Renders inside the same rounded, elevated bubble as a real assistant
+        // message so the "thinking" state reads as one of its replies, not a
+        // stray row of dots floating off to the side.
+        <div className="pl-11">
+          <div className="flex w-fit items-center gap-1.5 rounded-2xl rounded-tl-sm border border-border/70 bg-card px-4 py-3 shadow-sm animate-in fade-in duration-150">
+            <span className="h-1.5 w-1.5 rounded-full bg-chart-primary animate-bounce [animation-delay:-0.3s]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-chart-primary animate-bounce [animation-delay:-0.15s]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-chart-primary animate-bounce" />
+          </div>
         </div>
       )}
     </div>

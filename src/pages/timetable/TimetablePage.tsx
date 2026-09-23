@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CalendarRange,
@@ -464,6 +464,50 @@ const TimetablePage = () => {
 
   useEffect(() => {
     fetchData();
+  }, [fetchData]);
+
+  // Pull-down-to-refresh: drag down at the top of the page's scroll container
+  // past a threshold to refetch the timetable.
+  const [pullDist, setPullDist] = useState(0);
+  const pullDistRef = useRef(0);
+  const PULL_THRESHOLD = 72;
+  useEffect(() => {
+    const el = document.getElementById("main-scroll-container");
+    if (!el) return;
+    let startY = 0;
+    let pulling = false;
+    const onTouchStart = (e: TouchEvent) => {
+      if (el.scrollTop <= 0) {
+        startY = e.touches[0].clientY;
+        pulling = true;
+      }
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!pulling) return;
+      const delta = e.touches[0].clientY - startY;
+      if (delta > 0) {
+        const dist = Math.min(120, delta * 0.5);
+        pullDistRef.current = dist;
+        setPullDist(dist);
+        if (delta > 10) e.preventDefault();
+      }
+    };
+    const onTouchEnd = () => {
+      if (!pulling) return;
+      pulling = false;
+      const triggered = pullDistRef.current >= PULL_THRESHOLD;
+      pullDistRef.current = 0;
+      setPullDist(0);
+      if (triggered) fetchData();
+    };
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd);
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+    };
   }, [fetchData]);
 
   const dateRange = useMemo(() => {
@@ -1020,6 +1064,10 @@ const TimetablePage = () => {
       showSuccess("Confirmed — booking created in Cal.com.");
       setProposalFor(updated);
       setManageOpen(false);
+      // Confirmed proposals render as rose booking chips from `bookings`, which
+      // only the Cal.com fetch populates — refetch so the new booking shows up
+      // immediately instead of on the next page reload.
+      fetchData();
     } catch (err) {
       showError(err instanceof Error ? err.message : "Could not confirm proposal.");
     } finally {
@@ -1035,6 +1083,9 @@ const TimetablePage = () => {
       showSuccess("Proposal dropped.");
       setManageOpen(false);
       setProposalFor(null);
+      // Dropping frees its Cal.com slot back to "open" — refetch so the grid
+      // reflects it immediately.
+      fetchData();
     } catch (err) {
       showError(err instanceof Error ? err.message : "Could not drop proposal.");
     } finally {
@@ -1162,6 +1213,22 @@ const TimetablePage = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 space-y-6">
+      {/* Pull-to-refresh indicator */}
+      <div
+        className={cn(
+          "pointer-events-none flex items-center justify-center transition-[height,opacity] overflow-hidden",
+          pullDist > 0 ? "opacity-100" : "opacity-0 h-0"
+        )}
+        style={{ height: pullDist > 0 ? pullDist : 0 }}
+      >
+        <span className={cn("flex items-center gap-1.5 text-xs font-semibold text-muted-foreground")}>
+          <RefreshCw
+            size={14}
+            className={cn(pullDist >= PULL_THRESHOLD && "text-chart-emerald", loading && "animate-spin")}
+          />
+          {pullDist >= PULL_THRESHOLD ? "Release to refresh" : loading ? "Refreshing…" : "Pull to refresh"}
+        </span>
+      </div>
       {/* Header */}
       <PageHeader
         icon={CalendarRange}
@@ -1791,7 +1858,7 @@ const TimetablePage = () => {
                         className="gap-1.5 bg-chart-emerald hover:bg-emerald-700 text-white"
                         onClick={async () => {
                           setWorkflowBusy(true);
-                          try { await confirmProposal(p); showSuccess("Locked in to Cal.com."); setWorkflowFor({ ...p, status: "confirmed" }); }
+                          try { await confirmProposal(p); showSuccess("Locked in to Cal.com."); setWorkflowFor({ ...p, status: "confirmed" }); fetchData(); }
                           catch (e: any) { showError(e?.message || "Couldn't lock in."); }
                           finally { setWorkflowBusy(false); }
                         }}

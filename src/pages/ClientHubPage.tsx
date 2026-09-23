@@ -71,7 +71,7 @@ export default function ClientHubPage() {
   }, [id, isVoice]);
 
   const {
-    conversations, activeId, messages, isSending, pendingDraft, pendingBooking,
+    conversations, activeId, messages, isSending, streamingText, statusText, pendingDraft, pendingBooking,
     selectConversation, startNewChat, handleSend,
     handleDraftSent, handleDraftDiscard, handleBookingConfirmed, handleBookingDiscard, deleteConversation,
   } = useAssistantConversation({
@@ -215,6 +215,8 @@ export default function ClientHubPage() {
                   <MessageList
                     messages={messages}
                     isSending={isSending}
+                    streamingContent={streamingText}
+                    streamingStatus={statusText}
                     pendingDraft={pendingDraft}
                     onDraftSent={handleDraftSent}
                     onDraftDiscard={handleDraftDiscard}

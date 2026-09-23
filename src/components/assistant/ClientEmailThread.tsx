@@ -38,6 +38,11 @@ interface Props {
   clientId: string;
   clientEmail: string | null;
   clientName: string;
+  // Fresh-compose mode (Inbox → Compose): the composer opens on a blank new
+  // email instead of auto-loading the client's latest thread. Past threads
+  // are still listed in the dropdown to dip into, and picking one switches to
+  // a normal threaded view.
+  composeMode?: boolean;
 }
 
 type Status = "needs_reply" | "awaiting_client" | "resolved";
@@ -57,7 +62,7 @@ function fmtDate(dateStr: string) {
     " · " + d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Australia/Melbourne" });
 }
 
-export default function ClientEmailThread({ clientId, clientEmail, clientName }: Props) {
+export default function ClientEmailThread({ clientId, clientEmail, clientName, composeMode = false }: Props) {
   const firstName = clientName.split(" ")[0];
   // Voice students use a "voice:<email>" pseudo-id (see ClientPicker) — they have no
   // row in `clients`, so client_email_status (FK'd to clients) can't be read/written
@@ -133,27 +138,37 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
       if (threadErr) throw threadErr;
       if (threadData?.error) throw new Error(threadData.error);
 
+      // In compose mode the load with no explicit thread (initial mount, or
+      // after sending) must NOT yank the client's latest conversation into the
+      // view — that's what made "Compose → Maria" land on her old thread notes
+      // instead of a blank composer. Keep the thread list populated so the
+      // dropdown still offers past conversations, but select none of them.
+      const isComposeFresh = composeMode && !explicitThreadId;
       setThreads(threadData.threads || []);
-      setMessages(threadData.messages || []);
-      setSelectedThreadId(threadData.thread_id || null);
-      setThreadMeta({
-        threadId: threadData.thread_id,
-        lastMessageId: threadData.last_message_id_header,
-        references: threadData.last_references_header,
-        lastSubject: threadData.last_subject,
-        practitionerFrom: threadData.practitioner_from || null,
-      });
+      setMessages(isComposeFresh ? [] : (threadData.messages || []));
+      setSelectedThreadId(isComposeFresh ? null : (threadData.thread_id || null));
+      setThreadMeta(isComposeFresh
+        ? { threadId: null, lastMessageId: null, references: null, lastSubject: null, practitionerFrom: null }
+        : {
+          threadId: threadData.thread_id,
+          lastMessageId: threadData.last_message_id_header,
+          references: threadData.last_references_header,
+          lastSubject: threadData.last_subject,
+          practitionerFrom: threadData.practitioner_from || null,
+        });
       const resolvedStatus = statusRow?.status || threadData.suggested_status || null;
       setStatus(resolvedStatus);
-      setSubject(threadData.last_subject && threadData.last_subject !== "(no subject)"
-        ? (/^re:/i.test(threadData.last_subject) ? threadData.last_subject : `Re: ${threadData.last_subject}`)
-        : `Hi ${firstName}`);
+      setSubject(isComposeFresh
+        ? `Hi ${firstName}`
+        : threadData.last_subject && threadData.last_subject !== "(no subject)"
+          ? (/^re:/i.test(threadData.last_subject) ? threadData.last_subject : `Re: ${threadData.last_subject}`)
+          : `Hi ${firstName}`);
     } catch (err: any) {
       showError(err.message || "Couldn't load the email thread.");
     } finally {
       setLoading(false);
     }
-  }, [clientEmail, clientId, hasClientRecord, firstName]);
+  }, [clientEmail, clientId, hasClientRecord, firstName, composeMode]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -269,16 +284,16 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName }:
       // works", and the optional instruction below lets Daniele steer it
       // directly ("offer Thu/Fri this week, then Mon/Tue next week...")
       // rather than only ever getting the model's own generic guess.
-      let slots: { iso: string; label: string }[] = [];
-      try { slots = await fetchAvailableSlots(); } catch { /* draft still useful without real slots */ }
-
+      //
+      // Slots are resolved server-side now (suggest-email-reply fetches Cal.com
+      // in parallel with the client profile/session context), so this no longer
+      // blocks on up to three sequential get-calcom-slots round-trips.
       const { data, error } = await supabase.functions.invoke("suggest-email-reply", {
         body: {
           client_id: hasClientRecord ? clientId : null,
           client_name: clientName,
           is_voice: !hasClientRecord,
           thread_messages: messages.map((m) => ({ direction: m.direction, body: m.body })),
-          available_slots: slots.slice(0, 40).map((s) => s.label),
           goal: suggestGoal.trim() || undefined,
         },
       });

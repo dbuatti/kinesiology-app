@@ -18,6 +18,26 @@ const corsHeaders = {
 const GEMINI_MODEL = "gemini-2.5-flash";
 const MAX_TOOL_ROUNDS = 6;
 
+// Rounds that actually call out to tools are where chat wait time hides — the
+// model call itself is quick, but each tool round is a full extra interaction.
+// The SSE stream emits one of these between rounds so the client can show live
+// progress ("Checking real availability…") instead of a silent spinner.
+const TOOL_STATUS_LABEL: Record<string, string> = {
+  get_client_context: "Loading the client's history…",
+  search_voice_client: "Looking up the voice student…",
+  get_active_clients: "Reviewing active clients…",
+  get_revenue_opportunities: "Checking revenue opportunities…",
+  get_practice_schedule_overview: "Reviewing the schedule…",
+  get_anchor_candidates: "Finding anchor clients…",
+  get_available_slots: "Checking real availability…",
+  get_past_booking_patterns: "Reviewing booking patterns…",
+  propose_booking: "Pencilling in the booking…",
+  update_client_availability: "Saving availability…",
+  draft_email_reply: "Drafting your reply…",
+  search_inbox: "Searching the inbox…",
+  get_clients_needing_attention: "Checking who needs follow-up…",
+};
+
 // --- Ported from src/utils/timetable-scheduler.ts (kept in sync manually — pure
 // logic, no browser deps) so availability the assistant is told in chat parses
 // into the exact same structured windows the Timetable Simulator's auto-drafter
@@ -299,6 +319,11 @@ function fmtMelbourne(iso: string) {
   return `${date} at ${time}`;
 }
 
+// Cap the longest single generation (final text round). Tool-calling rounds
+// return short JSON args, so only the final reply round ever gets near this —
+// bounding it keeps the tail of a long reply from inflating wait time.
+const MAX_OUTPUT_TOKENS = 2048;
+
 async function callGemini(geminiKey: string, contents: any[], systemInstruction: string) {
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${geminiKey}`,
@@ -309,7 +334,7 @@ async function callGemini(geminiKey: string, contents: any[], systemInstruction:
         contents,
         systemInstruction: { parts: [{ text: systemInstruction }] },
         tools: [{ functionDeclarations }],
-        generationConfig: { temperature: 0.4 },
+        generationConfig: { temperature: 0.4, maxOutputTokens: MAX_OUTPUT_TOKENS },
       }),
     },
   );
@@ -323,6 +348,99 @@ async function callGemini(geminiKey: string, contents: any[], systemInstruction:
     throw new Error(res.status === 429 || res.status === 503 ? `RESOURCE_EXHAUSTED: ${message}` : message);
   }
   return data;
+}
+
+// Streaming equivalent of callGemini — the same request, but against Gemini's
+// `streamGenerateContent` SSE endpoint so text parts can be forwarded to the
+// client as a `delta` event the moment Gemini emits them (the final round is
+// where most chat wait time sits; streaming turns that into visible,
+// token-by-token output instead of a silent hold). Function-call rounds are
+// unaffected: Gemini emits the call as a part (not text deltas), which this
+// accumulates into the exact same `{ candidates: [...] }` shape callGemini
+// returns so the caller's parsing never changes. `onDelta` is invoked once per
+// text chunk, in order.
+async function streamGeminiRound(
+  geminiKey: string,
+  contents: any[],
+  systemInstruction: string,
+  onDelta: (text: string) => void,
+): Promise<any> {
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:streamGenerateContent?alt=sse&key=${geminiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents,
+        systemInstruction: { parts: [{ text: systemInstruction }] },
+        tools: [{ functionDeclarations }],
+        generationConfig: { temperature: 0.4, maxOutputTokens: MAX_OUTPUT_TOKENS },
+      }),
+    },
+  );
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const message = data?.error?.message || `Gemini API error (status ${res.status})`;
+    throw new Error(res.status === 429 || res.status === 503 ? `RESOURCE_EXHAUSTED: ${message}` : message);
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let accText = "";
+  let accFnName: string | null = null;
+  const accArgs: string[] = [];
+  let finishReason: string | null = null;
+
+  const combineArgs = () => {
+    if (accArgs.length === 0) return {};
+    const joined = accArgs.join("");
+    try {
+      return JSON.parse(joined) || {};
+    } catch {
+      // FunctionCall args JSON can arrive split across chunks; if the joined
+      // text still won't parse, salvage the first well-formed arg string.
+      for (const frag of accArgs) {
+        try { return JSON.parse(frag) || {}; } catch { /* keep trying */ }
+      }
+      return {};
+    }
+  };
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let nl: number;
+    while ((nl = buffer.indexOf("\n")) >= 0) {
+      const line = buffer.slice(0, nl).trim();
+      buffer = buffer.slice(nl + 1);
+      if (!line.startsWith("data: ")) continue;
+      let chunk: any;
+      try { chunk = JSON.parse(line.slice(6)); } catch { continue; }
+      const cand = chunk?.candidates?.[0];
+      if (cand?.finishReason) finishReason = cand.finishReason;
+      for (const part of cand?.content?.parts || []) {
+        if (typeof part.text === "string" && part.text) {
+          accText += part.text;
+          onDelta(part.text);
+        }
+        if (part.functionCall) {
+          if (part.functionCall.name) accFnName = part.functionCall.name;
+          if (part.functionCall.args !== undefined) {
+            if (typeof part.functionCall.args === "string") accArgs.push(part.functionCall.args);
+            else if (typeof part.functionCall.args === "object") accArgs.push(JSON.stringify(part.functionCall.args));
+          }
+        }
+      }
+    }
+  }
+
+  const parts: any[] = [];
+  if (accText) parts.push({ text: accText });
+  if (accFnName) parts.push({ functionCall: { name: accFnName, args: combineArgs() } });
+  if (parts.length === 0) parts.push({});
+  return { candidates: [{ finishReason, content: { parts } }] };
 }
 
 function isRetryableModelError(message: string): boolean {
@@ -635,6 +753,68 @@ async function callModel(
     }
   }
   throw lastErr || new Error("No model available.");
+}
+
+// Per-round model call: prefers a STREAMED Gemini response (so final-round text
+// reaches the client as `delta` events in real time), and only falls through to
+// the mature callModel fallback chain when streaming/rotation is exhausted. Pure
+// additive: callModel is unchanged, only now sits behind the streaming attempt.
+// `onDelta` feeds text chunks straight into the SSE response; `onReset` clears a
+// partially-streamed attempt when the rotating key fails mid-round.
+async function generateRound(
+  geminiKeys: string[],
+  openCodeGoKey: string | undefined,
+  groqKey: string | undefined,
+  openRouterKey: string | undefined,
+  contents: any[],
+  systemInstruction: string,
+  retryState: GeminiRetryState,
+  sessionId: string | undefined,
+  onDelta: (text: string) => void,
+  onReset: () => void,
+): Promise<{ data: any; servedBy: string; streamed: boolean }> {
+  let lastErr: Error | null = null;
+  for (const key of geminiKeys) {
+    try {
+      const data = await streamGeminiRound(key, contents, systemInstruction, onDelta);
+      return { data, servedBy: "gemini", streamed: true };
+    } catch (err: any) {
+      lastErr = err;
+      // Whatever text a failed stream already delivered is garbage (the rotation
+      // will regenerate the round) — the client must drop it.
+      onReset();
+      if (!isRetryableModelError(err.message)) throw err;
+      console.error("[assistant-chat] GEMINI_KEY_FAILED (streaming, retryable, trying next key if any):", err.message);
+    }
+  }
+
+  if (!retryState.waited && geminiKeys.length > 0) {
+    const hint = retryHintSeconds(lastErr?.message);
+    if (hint > 0) {
+      retryState.waited = true;
+      const waitSec = Math.min(hint, MAX_GEMINI_QUOTA_WAIT_SECONDS);
+      console.error(`[assistant-chat] ALL_GEMINI_KEYS_HOT — waiting ${waitSec}s for the free-tier quota window, then retrying Gemini before external fallbacks:`, lastErr?.message);
+      await sleep(waitSec * 1000);
+      for (const key of geminiKeys) {
+        try {
+          const data = await streamGeminiRound(key, contents, systemInstruction, onDelta);
+          return { data, servedBy: "gemini", streamed: true };
+        } catch (err: any) {
+          onReset();
+          if (!isRetryableModelError(err.message)) throw err;
+          console.error("[assistant-chat] GEMINI_KEY_FAILED (streaming, retryable, after waiting):", err.message);
+        }
+      }
+      lastErr = new Error(`Gemini still exhausted after a ${waitSec}s wait — ${lastErr?.message || "unknown"}`);
+    }
+  }
+
+  // Streaming is fully exhausted — hand the round to callModel (which skips the
+  // just-exhausted Gemini keys via the empty array and goes straight to the
+  // OpenCode Go / Groq / OpenRouter fallbacks). The final text lands as a single
+  // client delta; tool rounds work as before.
+  const result = await callModel([], openCodeGoKey, groqKey, openRouterKey, contents, systemInstruction, retryState, sessionId);
+  return { ...result, streamed: false };
 }
 
 function monthsSince(iso: string | null | undefined) {
@@ -1923,79 +2103,126 @@ If Daniele says to skip, move on, or otherwise declines the client currently bei
     let pendingBooking = null;
     let finalText = "";
 
-    for (let i = 0; i < MAX_TOOL_ROUNDS; i++) {
-      const { data: resp, servedBy } = await callModel(geminiKeys, openCodeGoKey, groqKey, openRouterKey, contents, systemInstruction, geminiRetryState, conversationId);
-      if (servedBy !== "gemini") console.log(`[assistant-chat] served_by: ${servedBy}`);
-      const candidate = resp?.candidates?.[0];
-      const part = candidate?.content?.parts?.[0];
-      if (!part) {
-        console.error("[assistant-chat] EMPTY_MODEL_RESPONSE:", JSON.stringify(candidate?.finishReason || null), "candidates:", resp?.candidates?.length ?? 0);
-        finalText = "I couldn't generate a response just then — could you try rephrasing?";
-        break;
-      }
+    // Persist the user's message BEFORE the model loop runs. Previously both
+    // rows landed in one batch only after generation finished, so an aborted
+    // request (page closed, network drop mid-generation) silently lost the
+    // practitioner's message. Now the prompt survives even if the reply never
+    // does, and a return to the conversation shows at least what they asked.
+    // The model row is still written at the end with a later timestamp, so
+    // user-before-model ordering (which Gemini requires in `contents`) holds.
+    const userAt = new Date().toISOString();
+    await supabase.from("assistant_messages").insert({
+      conversation_id: conversationId, role: "user", content: message, created_at: userAt,
+    });
 
-      if (part.functionCall) {
-        const { name, args } = part.functionCall;
-        let result: any;
-        if (name === "draft_email_reply") {
-          pendingDraft = { to: args.to, subject: stripMarkdown(args.subject), body: stripMarkdown(args.body), client_id: args.client_id || client_id || null, appointment_id: args.appointment_id || null };
-          result = { status: "drafted", note: "Draft created for human review. It has not been sent." };
-        } else if (name === "propose_booking") {
-          const proposed = await runProposeBooking(supabase, SUPABASE_URL, SERVICE_KEY, userId, args);
-          pendingBooking = proposed.pendingBooking;
-          result = proposed.result;
-        } else if (name === "update_client_availability") {
-          result = await runUpdateClientAvailability(supabase, userId, args.client_id, args.voice_student_email, args.availability_notes, args.session_length_min, args.event_type_id);
-        } else if (name === "search_inbox") {
-          result = await runSearchInbox(SUPABASE_URL, SERVICE_KEY, args.query);
-        } else if (name === "get_client_context") {
-          result = await runGetClientContext(supabase, userId, args.client_id);
-        } else if (name === "get_available_slots") {
-          result = await runGetAvailableSlots(supabase, SUPABASE_URL, SERVICE_KEY, userId, args.start, args.end, args.event_type_id, args.client_id, args.voice_student_email);
-        } else if (name === "get_past_booking_patterns") {
-          result = await runGetPastBookingPatterns(supabase, userId, args.client_id);
-        } else if (name === "search_voice_client") {
-          result = await runSearchVoiceClient(SUPABASE_URL, SERVICE_KEY, supabase, userId, args.query);
-        } else if (name === "get_active_clients") {
-          result = await runGetActiveClients(supabase, userId, args.months || 3);
-        } else if (name === "get_revenue_opportunities") {
-          result = await runGetRevenueOpportunities(supabase, userId, args.months || 3);
-        } else if (name === "get_practice_schedule_overview") {
-          result = await runGetPracticeScheduleOverview(supabase, userId, args.weeks || 8);
-        } else if (name === "get_anchor_candidates") {
-          result = await runGetAnchorCandidates(supabase, SUPABASE_URL, SERVICE_KEY, userId);
-        } else if (name === "get_clients_needing_attention") {
-          result = await runGetClientsNeedingAttention(supabase, SUPABASE_URL, SERVICE_KEY, userId);
-        } else {
-          result = { error: `Unknown tool: ${name}` };
+    // SSE stream — see useAssistantConversation.ts for the reader side.
+    //   event: meta   { conversation_id }              — conversation confirmed
+    //   event: status { text }                         — a tool round just ran
+    //   event: delta  { text }                         — streamed reply text
+    //   event: done   { conversation_id, reply, draft_email, pending_booking }
+    //   event: error  { error, quota_exceeded }        — generation failed
+    const encoder = new TextEncoder();
+    const sse = (event: string, payload: unknown) => encoder.encode(`event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`);
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        controller.enqueue(sse("meta", { conversation_id: conversationId }));
+        try {
+          for (let i = 0; i < MAX_TOOL_ROUNDS; i++) {
+            const { data: resp, servedBy, streamed } = await generateRound(
+              geminiKeys, openCodeGoKey, groqKey, openRouterKey, contents, systemInstruction, geminiRetryState, conversationId,
+              (text: string) => controller.enqueue(sse("delta", { text })),
+              () => controller.enqueue(sse("reset", {})),
+            );
+            if (servedBy !== "gemini") console.log(`[assistant-chat] served_by: ${servedBy}`);
+            const candidate = resp?.candidates?.[0];
+            const part = candidate?.content?.parts?.[0];
+            if (!part) {
+              console.error("[assistant-chat] EMPTY_MODEL_RESPONSE:", JSON.stringify(candidate?.finishReason || null), "candidates:", resp?.candidates?.length ?? 0);
+              finalText = "I couldn't generate a response just then — could you try rephrasing?";
+              break;
+            }
+
+            if (part.functionCall) {
+              const { name, args } = part.functionCall;
+              let result: any;
+              if (name === "draft_email_reply") {
+                pendingDraft = { to: args.to, subject: stripMarkdown(args.subject), body: stripMarkdown(args.body), client_id: args.client_id || client_id || null, appointment_id: args.appointment_id || null };
+                result = { status: "drafted", note: "Draft created for human review. It has not been sent." };
+              } else if (name === "propose_booking") {
+                const proposed = await runProposeBooking(supabase, SUPABASE_URL, SERVICE_KEY, userId, args);
+                pendingBooking = proposed.pendingBooking;
+                result = proposed.result;
+              } else if (name === "update_client_availability") {
+                result = await runUpdateClientAvailability(supabase, userId, args.client_id, args.voice_student_email, args.availability_notes, args.session_length_min, args.event_type_id);
+              } else if (name === "search_inbox") {
+                result = await runSearchInbox(SUPABASE_URL, SERVICE_KEY, args.query);
+              } else if (name === "get_client_context") {
+                result = await runGetClientContext(supabase, userId, args.client_id);
+              } else if (name === "get_available_slots") {
+                result = await runGetAvailableSlots(supabase, SUPABASE_URL, SERVICE_KEY, userId, args.start, args.end, args.event_type_id, args.client_id, args.voice_student_email);
+              } else if (name === "get_past_booking_patterns") {
+                result = await runGetPastBookingPatterns(supabase, userId, args.client_id);
+              } else if (name === "search_voice_client") {
+                result = await runSearchVoiceClient(SUPABASE_URL, SERVICE_KEY, supabase, userId, args.query);
+              } else if (name === "get_active_clients") {
+                result = await runGetActiveClients(supabase, userId, args.months || 3);
+              } else if (name === "get_revenue_opportunities") {
+                result = await runGetRevenueOpportunities(supabase, userId, args.months || 3);
+              } else if (name === "get_practice_schedule_overview") {
+                result = await runGetPracticeScheduleOverview(supabase, userId, args.weeks || 8);
+              } else if (name === "get_anchor_candidates") {
+                result = await runGetAnchorCandidates(supabase, SUPABASE_URL, SERVICE_KEY, userId);
+              } else if (name === "get_clients_needing_attention") {
+                result = await runGetClientsNeedingAttention(supabase, SUPABASE_URL, SERVICE_KEY, userId);
+              } else {
+                result = { error: `Unknown tool: ${name}` };
+              }
+              toolTrace.push({ name, args, result });
+              contents.push({ role: "model", parts: [{ functionCall: { name, args } }] });
+              contents.push({ role: "function", parts: [{ functionResponse: { name, response: result } }] });
+              controller.enqueue(sse("status", { text: TOOL_STATUS_LABEL[name] || name.replace(/_/g, " ") }));
+              continue;
+            }
+
+            finalText = part.text || "";
+            if (!streamed) controller.enqueue(sse("delta", { text: finalText }));
+            break;
+          }
+
+          if (!finalText) finalText = "I ran out of steps trying to answer that — could you narrow the question down?";
+
+          // Strictly-increasing timestamps — the conversation's user row was
+          // written earlier with `userAt`; cronologically the model row must land
+          // after it (ORDER BY created_at drives Gemini's user/model alternation).
+          await supabase.from("assistant_messages").insert({
+            conversation_id: conversationId, role: "model", content: finalText,
+            tool_calls: toolTrace.length ? toolTrace : null, draft_email: pendingDraft, pending_booking: pendingBooking,
+            created_at: new Date().toISOString(),
+          });
+
+          controller.enqueue(sse("done", {
+            conversation_id: conversationId, reply: finalText, draft_email: pendingDraft, pending_booking: pendingBooking,
+          }));
+        } catch (error) {
+          const msg = error.message || "Unknown error";
+          const isQuota = isRetryableModelError(msg);
+          // Distinct, greppable log line for quota exhaustion (all keys + OpenRouter
+          // fallback exhausted) vs any other failure — previously a single flat
+          // console.error made it impossible to tell "Gemini is out of capacity"
+          // from an unrelated bug in Supabase function logs.
+          if (isQuota) console.error("[assistant-chat] GEMINI_QUOTA_EXCEEDED (all keys + fallback exhausted):", msg);
+          else console.error("[assistant-chat] Error:", msg);
+          controller.enqueue(sse("error", { error: msg, quota_exceeded: isQuota }));
+        } finally {
+          controller.close();
         }
-        toolTrace.push({ name, args, result });
-        contents.push({ role: "model", parts: [{ functionCall: { name, args } }] });
-        contents.push({ role: "function", parts: [{ functionResponse: { name, response: result } }] });
-        continue;
-      }
+      },
+    });
 
-      finalText = part.text || "";
-      break;
-    }
-
-    if (!finalText) finalText = "I ran out of steps trying to answer that — could you narrow the question down?";
-
-    // Explicit, strictly-increasing timestamps — a batched insert can otherwise
-    // give both rows the same created_at, and ORDER BY created_at doesn't then
-    // guarantee user-before-model. Gemini requires strict user/model alternation
-    // in `contents`, so a flipped pair permanently breaks every future turn in
-    // this conversation (two consecutive "model" entries get rejected as a 400).
-    const userAt = new Date();
-    const modelAt = new Date(userAt.getTime() + 1);
-    await supabase.from("assistant_messages").insert([
-      { conversation_id: conversationId, role: "user", content: message, created_at: userAt.toISOString() },
-      { conversation_id: conversationId, role: "model", content: finalText, tool_calls: toolTrace.length ? toolTrace : null, draft_email: pendingDraft, pending_booking: pendingBooking, created_at: modelAt.toISOString() },
-    ]);
-
-    return new Response(JSON.stringify({ conversation_id: conversationId, reply: finalText, draft_email: pendingDraft, pending_booking: pendingBooking }), {
+    return new Response(stream, {
       status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "text/event-stream", "Cache-Control": "no-cache" },
     });
   } catch (error) {
     const msg = error.message || "Unknown error";

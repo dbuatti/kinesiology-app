@@ -13,6 +13,87 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// Drafts are short — capping output tokens keeps the generation tail short
+// without risking truncation of the actual email body.
+const MAX_OUTPUT_TOKENS = 700;
+
+// Real Cal.com availability, fetched straight from this function so the reply
+// can name concrete times. Previously the CLIENT did this first (up to three
+// sequential get-calcom-slots edge-function calls — 14/45/90-day widening)
+// and forwarded the labels here; moving it server-side removes up to three
+// full function cold-start round-trips from the critical path. Same widening
+// behaviour, same label format, and callers can still pass `available_slots`
+// to override (used by nothing today, kept for compatibility).
+async function fetchSlotsLabels(): Promise<string[]> {
+  const CALCOM_KEY = Deno.env.get("CALCOM_API_KEY");
+  if (!CALCOM_KEY) return [];
+  const eventTypeId = "4279898";
+  const windowsToTry = [14, 45, 90];
+  for (const days of windowsToTry) {
+    const start = new Date();
+    const end = new Date();
+    end.setDate(end.getDate() + days);
+    const url = new URL("https://api.cal.com/v2/slots");
+    url.searchParams.set("start", start.toISOString());
+    url.searchParams.set("end", end.toISOString());
+    url.searchParams.set("eventTypeId", eventTypeId);
+    url.searchParams.set("timeZone", "Australia/Melbourne");
+    let res: Response;
+    try {
+      res = await fetch(url.toString(), {
+        method: "GET",
+        headers: { Authorization: `Bearer ${CALCOM_KEY}`, "cal-api-version": "2024-09-04", "Content-Type": "application/json" },
+      });
+    } catch {
+      continue;
+    }
+    if (!res.ok) continue;
+    const data = await res.json().catch(() => ({}));
+    const raw = data?.data?.slots || data?.data || {};
+    const labels: string[] = [];
+    for (const entries of Object.values<any>(raw)) {
+      for (const e of entries || []) {
+        const iso = e?.start || e?.time;
+        if (!iso) continue;
+        const d = new Date(iso);
+        const label = d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: "Australia/Melbourne" }) +
+          " " + d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Australia/Melbourne" });
+        labels.push(label);
+        if (labels.length >= 40) break;
+      }
+      if (labels.length >= 40) break;
+    }
+    // First non-empty window wins — prefer the soonest real availability.
+    if (labels.length) return labels;
+  }
+  return [];
+}
+
+async function loadClientContext(client_id: string) {
+  const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
+  const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
+  const [{ data: profile }, { data: sessions }] = await Promise.all([
+    supabase.from("client_ai_profiles").select("style_summary").eq("client_id", client_id).maybeSingle(),
+    supabase.from("appointments")
+      .select("date, goal, notes, next_session_note")
+      .eq("client_id", client_id)
+      .eq("status", "Completed")
+      .order("date", { ascending: false })
+      .limit(3),
+  ]);
+  let styleSummary = profile?.style_summary || "";
+  let sessionNotesBlock = "";
+  if (sessions?.length) {
+    sessionNotesBlock = sessions.map((s: any) => {
+      const d = new Date(s.date).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" });
+      const bits = [s.goal && `goal: ${s.goal}`, s.notes && `notes: ${s.notes}`, s.next_session_note && `for next time: ${s.next_session_note}`].filter(Boolean);
+      return `- ${d}: ${bits.join(" | ") || "(no notes recorded)"}`;
+    }).join("\n").slice(0, 2000);
+  }
+  return { styleSummary, sessionNotesBlock };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   const authErr = await requirePractitioner(req, corsHeaders);
@@ -32,30 +113,13 @@ serve(async (req) => {
     const SITE_URL = (is_voice ? Deno.env.get("VOICE_SITE_URL") : null)
       || Deno.env.get("SITE_URL") || "https://kinesiology-app.vercel.app";
 
-    let styleSummary = "";
-    let sessionNotesBlock = "";
-    if (client_id) {
-      const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
-      const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-      const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
-      const [{ data: profile }, { data: sessions }] = await Promise.all([
-        supabase.from("client_ai_profiles").select("style_summary").eq("client_id", client_id).maybeSingle(),
-        supabase.from("appointments")
-          .select("date, goal, notes, next_session_note")
-          .eq("client_id", client_id)
-          .eq("status", "Completed")
-          .order("date", { ascending: false })
-          .limit(3),
-      ]);
-      styleSummary = profile?.style_summary || "";
-      if (sessions?.length) {
-        sessionNotesBlock = sessions.map((s: any) => {
-          const d = new Date(s.date).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" });
-          const bits = [s.goal && `goal: ${s.goal}`, s.notes && `notes: ${s.notes}`, s.next_session_note && `for next time: ${s.next_session_note}`].filter(Boolean);
-          return `- ${d}: ${bits.join(" | ") || "(no notes recorded)"}`;
-        }).join("\n").slice(0, 2000);
-      }
-    }
+    // Client context and real availability in ONE parallel fetch — neither
+    // depends on the other, so serialising them (as the old client-side flow
+    // implicitly did via sequenced edge-function calls) just added latency.
+    const [{ styleSummary, sessionNotesBlock }, availableSlots] = await Promise.all([
+      client_id ? loadClientContext(client_id) : Promise.resolve({ styleSummary: "", sessionNotesBlock: "" }),
+      (available_slots || []).length ? Promise.resolve((available_slots as string[]).slice(0, 40)) : fetchSlotsLabels(),
+    ]);
 
     // Keep only the last handful of messages — enough context, not the whole history.
     const recent = (thread_messages || []).slice(-8);
@@ -63,8 +127,8 @@ serve(async (req) => {
       ? recent.map((m: any) => `[${m.direction === "inbound" ? (client_name || "Client") : "Daniele"}]: ${(m.body || "").slice(0, 1200)}`).join("\n\n")
       : "(no prior messages — this will be a fresh email, not a reply)";
 
-    const slotsBlock = (available_slots || []).length
-      ? `Daniele's REAL AVAILABLE SLOTS right now (only source of truth for times — never invent one outside this list):\n${(available_slots as string[]).map((s) => `- ${s}`).join("\n")}\n`
+    const slotsBlock = availableSlots.length
+      ? `Daniele's REAL AVAILABLE SLOTS right now (only source of truth for times — never invent one outside this list):\n${availableSlots.map((s) => `- ${s}`).join("\n")}\n`
       : "";
 
     const prompt = `You are drafting an email reply on behalf of Daniele, a solo kinesiology/voice-lesson practitioner, to his client ${client_name || "the client"}.
@@ -98,7 +162,7 @@ Return ONLY a JSON object: {"subject": "...", "body": "..."} — body may contai
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.5, response_mime_type: "application/json" },
+          generationConfig: { temperature: 0.5, response_mime_type: "application/json", maxOutputTokens: MAX_OUTPUT_TOKENS },
         }),
       },
     );

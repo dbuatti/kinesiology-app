@@ -4,11 +4,17 @@ import MessageBubble from "./MessageBubble";
 import DraftEmailCard from "./DraftEmailCard";
 import BookingProposalCard from "./BookingProposalCard";
 import { Button } from "@/components/ui/button";
-import { Bot, Sparkles, RotateCcw } from "lucide-react";
+import { Bot, Sparkles, RotateCcw, Loader2 } from "lucide-react";
 
 interface Props {
   messages: AssistantMessage[];
   isSending: boolean;
+  // Reply text streamed in live from the edge function (SSE deltas). While
+  // populated it renders as a growing assistant bubble; the authoritative copy
+  // lands in assistant_messages once the stream finishes.
+  streamingContent?: string | null;
+  // Live status line ("Checking real availability…") shown under the reply.
+  streamingStatus?: string | null;
   pendingDraft: DraftEmail | null;
   onDraftSent: () => void;
   onDraftDiscard: () => void;
@@ -28,7 +34,7 @@ const QUICK_PROMPTS: { label: string; prompt: string }[] = [
 ];
 
 export default function MessageList({
-  messages, isSending, pendingDraft, onDraftSent, onDraftDiscard, pendingBooking, onBookingConfirmed, onBookingDiscard, onSuggestion, onRetry,
+  messages, isSending, streamingContent, streamingStatus, pendingDraft, onDraftSent, onDraftDiscard, pendingBooking, onBookingConfirmed, onBookingDiscard, onSuggestion, onRetry,
 }: Props) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -48,9 +54,11 @@ export default function MessageList({
   useEffect(() => {
     const el = scrollContainerRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [messages.length, isSending]);
+  }, [messages.length, isSending, streamingContent?.length]);
 
-  if (messages.length === 0 && !isSending) {
+  const hasStreaming = !!streamingContent && streamingContent.trim() !== "";
+
+  if (messages.length === 0 && !isSending && !hasStreaming) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center text-center gap-3 py-16">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-chart-primary/10">
@@ -106,16 +114,33 @@ export default function MessageList({
           <BookingProposalCard booking={pendingBooking} onConfirmed={onBookingConfirmed} onDiscard={onBookingDiscard} />
         </div>
       )}
-      {isSending && (
+      {(isSending || hasStreaming) && (
         // Renders inside the same rounded, elevated bubble as a real assistant
-        // message so the "thinking" state reads as one of its replies, not a
-        // stray row of dots floating off to the side.
+        // message so the in-flight state reads as one of its replies, not a
+        // stray row of dots floating off to the side. Once the reply text is
+        // actually streaming, that text replaces the dots and grows in place.
         <div className="pl-11">
-          <div className="flex w-fit items-center gap-1.5 rounded-2xl rounded-tl-sm border border-border/70 bg-card px-4 py-3 shadow-sm animate-in fade-in duration-150">
-            <span className="h-1.5 w-1.5 rounded-full bg-chart-primary animate-bounce [animation-delay:-0.3s]" />
-            <span className="h-1.5 w-1.5 rounded-full bg-chart-primary animate-bounce [animation-delay:-0.15s]" />
-            <span className="h-1.5 w-1.5 rounded-full bg-chart-primary animate-bounce" />
-          </div>
+          {hasStreaming ? (
+            <MessageBubble message={{
+              id: "streaming",
+              conversation_id: "",
+              role: "model",
+              content: streamingContent || "",
+              created_at: new Date().toISOString(),
+            }} />
+          ) : (
+            <div className="flex w-fit items-center gap-1.5 rounded-2xl rounded-tl-sm border border-border/70 bg-card px-4 py-3 shadow-sm animate-in fade-in duration-150">
+              <span className="h-1.5 w-1.5 rounded-full bg-chart-primary animate-bounce [animation-delay:-0.3s]" />
+              <span className="h-1.5 w-1.5 rounded-full bg-chart-primary animate-bounce [animation-delay:-0.15s]" />
+              <span className="h-1.5 w-1.5 rounded-full bg-chart-primary animate-bounce" />
+            </div>
+          )}
+          {(streamingStatus || (isSending && !hasStreaming)) && (
+            <p className="mt-1.5 flex items-center gap-1.5 pl-1 text-[11px] text-muted-foreground">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              {streamingStatus || "Thinking…"}
+            </p>
+          )}
         </div>
       )}
     </div>

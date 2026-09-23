@@ -175,6 +175,7 @@ export default function CommsInbox({ clients, voiceStudents }: Props) {
               <div className="h-[560px]">
                 <ClientEmailThread
                   key={composeTarget.clientId + ":" + composeTarget.clientEmail}
+                  composeMode
                   clientId={composeTarget.clientId}
                   clientEmail={composeTarget.clientEmail}
                   clientName={composeTarget.clientName}

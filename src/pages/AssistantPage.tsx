@@ -115,7 +115,7 @@ export default function AssistantPage() {
     : null;
 
   const {
-    conversations, activeId, messages, isSending, pendingDraft, pendingBooking,
+    conversations, activeId, messages, isSending, streamingText, statusText, pendingDraft, pendingBooking,
     loadConversations, selectConversation: selectConversationBase, startNewChat: startNewChatBase, handleSend,
     handleDraftSent, handleDraftDiscard, handleBookingConfirmed, handleBookingDiscard, deleteConversation,
   } = useAssistantConversation({
@@ -343,6 +343,8 @@ export default function AssistantPage() {
                     <MessageList
                       messages={messages}
                       isSending={isSending}
+                      streamingContent={streamingText}
+                      streamingStatus={statusText}
                       pendingDraft={pendingDraft}
                       onDraftSent={handleDraftSent}
                       onDraftDiscard={handleDraftDiscard}

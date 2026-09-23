@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { PRACTICE_TIMEZONE } from "@/utils/practice-time";
 
 export interface GoogleCalendarEvent {
   id: string;
@@ -47,7 +48,7 @@ export function useGoogleCalendar(startISO: string, endISO: string) {
           body: {
             start: startISO,
             end: endISO,
-            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            timeZone: PRACTICE_TIMEZONE,
           },
         }
       );

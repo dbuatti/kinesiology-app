@@ -33,6 +33,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { PRACTICE_TIMEZONE } from "@/utils/practice-time";
 import { CALCOM_CONFIG } from "@/config/integrations";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
@@ -115,7 +116,7 @@ const WeekByWeekOverview = ({
           start: fetchStart,
           end: fetchEnd,
           eventTypeId: CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID,
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          timeZone: PRACTICE_TIMEZONE,
         },
       });
       if (res.error) throw res.error;

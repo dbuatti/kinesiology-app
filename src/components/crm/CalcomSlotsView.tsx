@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { format, addWeeks, subWeeks, startOfToday, endOfDay, eachDayOfInterval, addDays, isBefore, startOfDay, nextMonday, isMonday, startOfWeek, parseISO } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import { PRACTICE_TIMEZONE } from "@/utils/practice-time";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -160,7 +161,7 @@ const CalcomSlotsView = () => {
           start, 
           end,
           eventTypeId: eventTypeId || undefined,
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          timeZone: PRACTICE_TIMEZONE,
           bookingUidToReschedule: bookingUidToReschedule || undefined
         }
       });

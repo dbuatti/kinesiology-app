@@ -1,5 +1,15 @@
 // Timetable auto-scheduler
 // ----------------------------------------------------------------------------
+// All wall-clock reads (weekday, time-of-day, week bucketing) are practice-
+// timezone anchored — see src/utils/practice-time.ts. Dates stay true instants
+// so persistence (slot_start ISO) is never shifted.
+
+import {
+  practiceMinuteOfDay,
+  practiceWeekday,
+  practiceWeekKey,
+} from "@/utils/practice-time";
+
 // Pure, UI-independent logic for the Timetable Simulator. Given a set of
 // selected clients (with whatever past-session history they have — often just
 // one or two sessions), the practitioner's open Cal.com slots, and the busy
@@ -127,8 +137,8 @@ export function parseAvailabilityText(text: string): AvailabilityWindow[] {
 
 export function slotMatchesAvailability(slot: OpenSlot, windows?: AvailabilityWindow[]): boolean {
   if (!windows || windows.length === 0) return true;
-  const wd = slot.start.getDay();
-  const mins = slot.start.getHours() * 60 + slot.start.getMinutes();
+  const wd = practiceWeekday(slot.start);
+  const mins = practiceMinuteOfDay(slot.start);
   return windows.some((w) => {
     if (w.days.length > 0 && !w.days.includes(wd)) return false;
     const from = hhmmToMinutes(w.from);
@@ -256,8 +266,8 @@ export function computePreferredTime(pastSessions: Date[]): PreferredTime | null
   const totalWeight = valid.reduce((s, _d, i) => s + weightOf(i), 0);
 
   const weekdayW = new Map<number, number>();
-  valid.forEach((d, i) => weekdayW.set(d.getDay(), (weekdayW.get(d.getDay()) ?? 0) + weightOf(i)));
-  let weekday = valid[valid.length - 1].getDay();
+  valid.forEach((d, i) => weekdayW.set(practiceWeekday(d), (weekdayW.get(practiceWeekday(d)) ?? 0) + weightOf(i)));
+  let weekday = practiceWeekday(valid[valid.length - 1]);
   let bestW = 0;
   weekdayW.forEach((w, wd) => {
     if (w > bestW) {
@@ -270,16 +280,16 @@ export function computePreferredTime(pastSessions: Date[]): PreferredTime | null
   let tw = 0;
   let ts = 0;
   valid.forEach((d, i) => {
-    if (d.getDay() !== weekday) return;
+    if (practiceWeekday(d) !== weekday) return;
     const w = weightOf(i);
     tw += w;
-    ts += w * (d.getHours() * 60 + d.getMinutes());
+    ts += w * practiceMinuteOfDay(d);
   });
   if (tw === 0) {
     valid.forEach((d, i) => {
       const w = weightOf(i);
       tw += w;
-      ts += w * (d.getHours() * 60 + d.getMinutes());
+      ts += w * practiceMinuteOfDay(d);
     });
   }
   // Round to the nearest 5 min so a weighted average of scattered times reads as
@@ -299,7 +309,7 @@ export function computePreferredTime(pastSessions: Date[]): PreferredTime | null
 // ── Scoring ─────────────────────────────────────────────────────────────────
 
 function minutesOfDay(d: Date): number {
-  return d.getHours() * 60 + d.getMinutes();
+  return practiceMinuteOfDay(d);
 }
 
 /** Circular weekday distance 0..3 (Tue↔Thu = 2, Sun↔Sat = 1). */
@@ -321,7 +331,7 @@ function scoreSlot(client: SchedulerClient, pref: PreferredTime | null, slot: Op
   if (!pref) return 0.15; // no history — neutral, low-confidence fill
 
   // Weekday component (1 when exact, decaying with distance).
-  const wdComponent = 1 - weekdayDistance(pref.weekday, slot.start.getDay()) / 3;
+  const wdComponent = 1 - weekdayDistance(pref.weekday, practiceWeekday(slot.start)) / 3;
 
   // Time-of-day component (1 when exact, 0 at ±4h). Skipped when the client's
   // history has no reliable times — we then match on weekday only.
@@ -360,12 +370,9 @@ function overlapsBusy(slot: OpenSlot, busy: BusyBlock[]): boolean {
   return busy.some((b) => s < b.end.getTime() && e > b.start.getTime());
 }
 
-/** Stable key for the Monday-based calendar week a date falls in (local time). */
+/** Stable key for the Monday-based calendar week a date falls in (practice time). */
 function weekKeyOf(d: Date): string {
-  const x = new Date(d);
-  const mondayOffset = (x.getDay() + 6) % 7; // Mon=0 … Sun=6
-  x.setDate(x.getDate() - mondayOffset);
-  return `${x.getFullYear()}-${x.getMonth()}-${x.getDate()}`;
+  return practiceWeekKey(d);
 }
 
 function slotKey(slot: OpenSlot): string {
@@ -484,7 +491,7 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     const upc = g.rep.upcomingSessions ?? [];
     if (upc.length) {
       const latest = new Date(Math.max(...upc.map((d) => d.getTime())));
-      addDemand(latest.getDay(), g.rep.kind);
+      addDemand(practiceWeekday(latest), g.rep.kind);
     } else {
       const pref = computePreferredTime(g.rep.pastSessions);
       if (pref) addDemand(pref.weekday, g.rep.kind);
@@ -515,8 +522,8 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     for (const slot of freeSlots) {
       if (!gridOk(slot, rep)) continue; // use this client's own kind + duration grid
       if (!slotMatchesAvailability(slot, rep.availability)) continue;
-      const wd = slot.start.getDay();
-      const mins = slot.start.getHours() * 60 + slot.start.getMinutes();
+      const wd = practiceWeekday(slot.start);
+      const mins = practiceMinuteOfDay(slot.start);
       const key = `${wd}:${mins}`;
       let sc = scoreSlot(rep, pref, slot);
       // Prefer the practitioner's chosen working days; other days score lower so
@@ -558,7 +565,7 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     const upc = rep.upcomingSessions ?? [];
     if (upc.length) {
       const latest = new Date(Math.max(...upc.map((d) => d.getTime())));
-      const hint = { p: { weekday: latest.getDay(), minutes: latest.getHours() * 60 + latest.getMinutes() }, score: 100 };
+      const hint = { p: { weekday: practiceWeekday(latest), minutes: practiceMinuteOfDay(latest) }, score: 100 };
       const hintKey = `${hint.p.weekday}:${hint.p.minutes}`;
       list = [hint, ...list.filter((x) => `${x.p.weekday}:${x.p.minutes}` !== hintKey)];
     }
@@ -691,7 +698,7 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
         if (!slotMatchesAvailability(slot, rep.availability)) return false;
         // Stay on kind-days (or the client's own home day, or a day they've said
         // they can come) so fill can't re-mix a day.
-        const wd = slot.start.getDay();
+        const wd = practiceWeekday(slot.start);
         if (!dayAllowsKind(wd, inst.kind) && !explicit && !(h && wd === h.weekday)) return false;
         // Honour "prioritise days" as a HARD rule: never slide a client onto a
         // non-preferred day. This is the practitioner saying which days THEY are
@@ -710,7 +717,7 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
           const inWeek = freeSlots.filter((s) => weekKeyOf(s.start) === weekKeyOf(inst.targetDate!));
           const inAvail = inWeek.filter((s) => slotMatchesAvailability(s, rep.availability));
           const onDay = inAvail.filter((s) => {
-            const wd = s.start.getDay();
+            const wd = practiceWeekday(s.start);
             if (!dayAllowsKind(wd, inst.kind) && !explicit && !(h && wd === h.weekday)) return false;
             if (preferSet && !preferSet.has(wd) && !(h && wd === h.weekday)) return false;
             return true;
@@ -727,12 +734,12 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
       const fillScore = (slot: OpenSlot) => {
         let s = 0;
         if (h) {
-          if (slot.start.getDay() === h.weekday) s += 3;
-          const mins = slot.start.getHours() * 60 + slot.start.getMinutes();
+          if (practiceWeekday(slot.start) === h.weekday) s += 3;
+          const mins = practiceMinuteOfDay(slot.start);
           s += Math.max(0, 1 - Math.abs(mins - h.minutes) / 240);
         }
         if (inst.targetDate) s += Math.max(0, 1 - Math.abs(slot.start.getTime() - inst.targetDate.getTime()) / DAY_MS / 7);
-        if (preferSet && !preferSet.has(slot.start.getDay())) s -= 2; // overflow days last
+        if (preferSet && !preferSet.has(practiceWeekday(slot.start))) s -= 2; // overflow days last
         return s;
       };
       cands.sort((x, y) => fillScore(y) - fillScore(x));
@@ -742,14 +749,14 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
       occupied.push({ s: start.getTime(), e: start.getTime() + dur * 60_000, kind: inst.kind, pre: preBufOf(inst) * 60_000 });
       usedWeeks.add(weekKeyOf(start));
       const pref = computePreferredTime(rep.pastSessions);
-      const slotMin = start.getHours() * 60 + start.getMinutes();
+      const slotMin = practiceMinuteOfDay(start);
       let reason = "best available";
       if (h) {
         // When the client's history has no reliable time (date-only voice
         // lessons), their "usual" minute-of-day is a noon placeholder — don't
         // quote it. Report the day and the actual slot time only.
         const timeKnown = rep.timeKnown !== false;
-        const onDay = start.getDay() === h.weekday;
+        const onDay = practiceWeekday(start) === h.weekday;
         const onTime = Math.abs(slotMin - h.minutes) <= 15;
         if (onDay && (onTime || !timeKnown)) reason = `${WEEKDAYS[h.weekday]} ${fmtMinutes(slotMin)}`;
         else if (onDay) reason = `${WEEKDAYS[h.weekday]}, moved to ${fmtMinutes(slotMin)} (usual ${fmtMinutes(h.minutes)})`;
@@ -800,7 +807,7 @@ export function computeCapacityInsights(
   const openByWeekday = new Map<number, number>();
   for (const s of openSlots) {
     if (s.start.getTime() <= nowMs) continue;
-    openByWeekday.set(s.start.getDay(), (openByWeekday.get(s.start.getDay()) ?? 0) + 1);
+    openByWeekday.set(practiceWeekday(s.start), (openByWeekday.get(practiceWeekday(s.start)) ?? 0) + 1);
   }
 
   const overdueByWeekday = new Map<number, string[]>();

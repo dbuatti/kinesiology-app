@@ -12,6 +12,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
+import { PRACTICE_TIMEZONE } from "@/utils/practice-time";
 import { cn } from "@/lib/utils";
 import { formatDateLine, formatSlotRanges } from "@/utils/availability";
 
@@ -114,7 +115,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
           start: new Date().toISOString(),
           end: addDays(new Date(), 365).toISOString(),
           eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_60,
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          timeZone: PRACTICE_TIMEZONE,
         },
       });
       if (res.error) throw res.error;
@@ -306,7 +307,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
                       start: new Date().toISOString(),
                       end: addDays(new Date(), 365).toISOString(),
                       eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_60,
-                      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                      timeZone: PRACTICE_TIMEZONE,
                     },
                   });
                   const freshSlotsByDate: Record<string, any[]> = res.data?.data || {};
@@ -356,7 +357,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
                       start: new Date().toISOString(),
                       end: addDays(new Date(), 365).toISOString(),
                       eventTypeId: CALCOM_CONFIG.VOICE_EVENT_TYPE_60,
-                      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                      timeZone: PRACTICE_TIMEZONE,
                     },
                   });
                   const freshSlotsByDate: Record<string, any[]> = res.data?.data || {};

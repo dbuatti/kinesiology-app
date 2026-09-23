@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from "@/integrations/supabase/client";
+import { PRACTICE_TIMEZONE } from "@/utils/practice-time";
 import { 
   format, 
   addDays, 
@@ -50,7 +51,7 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
           start, 
           end,
           eventTypeId: targetEventTypeId,
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+          timeZone: PRACTICE_TIMEZONE
         }
       });
 

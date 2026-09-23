@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
+import { PRACTICE_TIMEZONE } from "@/utils/practice-time";
 import { CALCOM_CONFIG } from "../../../config/integrations";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
@@ -122,7 +123,7 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
  const start = new Date().toISOString();
   const end = addDays(new Date(), 365).toISOString();
  supabase.functions.invoke('get-calcom-slots', {
- body: { start, end, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }
+ body: { start, end, timeZone: PRACTICE_TIMEZONE }
  }).then(({ data }) => {
  if (!data?.data) { setAvailableSlots([]); return; }
  const raw = data.data as Record<string, { time?: string; start?: string }[]>;

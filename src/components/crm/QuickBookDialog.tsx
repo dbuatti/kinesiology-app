@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { PRACTICE_TIMEZONE } from "@/utils/practice-time";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { useAuth } from "@/components/AuthProvider";
@@ -94,7 +95,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
           start: new Date().toISOString(),
           end: addDays(new Date(), 365).toISOString(),
           eventTypeId: CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID,
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          timeZone: PRACTICE_TIMEZONE,
         },
       });
       if (res.error) throw res.error;

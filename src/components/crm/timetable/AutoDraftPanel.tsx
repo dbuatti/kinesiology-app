@@ -5,6 +5,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Wand2, CalendarClock, AlertTriangle, Check, X, Plane, Search, Clock, Mail, BookmarkPlus, Copy, PenLine } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { format } from "date-fns";
+import {
+  practiceFormat,
+  practiceDatetimeLocal,
+  parsePracticeDatetimeLocal,
+  practiceDateKey,
+  practiceWeekKey,
+  practiceWallToUtc,
+} from "@/utils/practice-time";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -104,7 +112,7 @@ const WEEKDAY_CHIP = [
 
 function defaultProposalMessage(a: Assignment): string {
   const first = (a.name || "there").split(" ")[0];
-  const when = format(a.slotStart, "EEEE d MMMM 'at' h:mm a");
+  const when = practiceFormat(a.slotStart, "EEEE d MMMM 'at' h:mm a");
   return `Hi ${first},\n\nI've pencilled you in for ${when}. Does that work for you? Just reply and let me know — if it's not quite right, tell me what suits and I'll move it.\n\nAll the best,\nDaniele`;
 }
 
@@ -402,7 +410,7 @@ export default function AutoDraftPanel({
     if (!result) return;
     const byDay = new Map<string, Assignment[]>();
     for (const a of result.assignments) {
-      const key = format(a.slotStart, "EEE d MMM");
+      const key = practiceFormat(a.slotStart, "EEE d MMM");
       (byDay.get(key) ?? byDay.set(key, []).get(key)!).push(a);
     }
     const lines: string[] = [`Draft timetable — ${result.assignments.length} placed`, ""];
@@ -411,7 +419,7 @@ export default function AutoDraftPanel({
     )) {
       lines.push(day);
       for (const a of items.sort((p, q) => p.slotStart.getTime() - q.slotStart.getTime())) {
-        lines.push(`  ${format(a.slotStart, "h:mm a")} · ${a.name} (${a.kind === "voice" ? "Voice" : "FNH"}) — ${a.reason}`);
+        lines.push(`  ${practiceFormat(a.slotStart, "h:mm a")} · ${a.name} (${a.kind === "voice" ? "Voice" : "FNH"}) — ${a.reason}`);
       }
       lines.push("");
     }
@@ -438,7 +446,7 @@ export default function AutoDraftPanel({
           if (e.status !== status) continue;
           const t = new Date(e.start).getTime();
           if (isNaN(t)) continue;
-          rows.push({ t, label: `  ${format(new Date(t), "EEE d MMM · h:mm a")} · ${meta?.name ?? key} (${meta?.kind === "voice" ? "Voice" : "FNH"})` });
+          rows.push({ t, label: `  ${practiceFormat(new Date(t), "EEE d MMM · h:mm a")} · ${meta?.name ?? key} (${meta?.kind === "voice" ? "Voice" : "FNH"})` });
         }
       }
       return rows.sort((a, b) => a.t - b.t).map((r) => r.label);
@@ -453,7 +461,7 @@ export default function AutoDraftPanel({
       for (const d of c.upcomingSessions ?? []) {
         const t = d.getTime();
         if (isNaN(t) || propTimes.has(t)) continue;
-        bookedRows.push({ t, label: `  ${format(new Date(t), "EEE d MMM · h:mm a")} · ${c.name} (${c.kind === "voice" ? "Voice" : "FNH"})` });
+        bookedRows.push({ t, label: `  ${practiceFormat(new Date(t), "EEE d MMM · h:mm a")} · ${c.name} (${c.kind === "voice" ? "Voice" : "FNH"})` });
       }
     }
     const booked = bookedRows.sort((a, b) => a.t - b.t).map((r) => r.label);
@@ -520,15 +528,15 @@ export default function AutoDraftPanel({
   const [timeDraft, setTimeDraft] = useState<string>("");
   const applyTimeOverride = (a: Assignment) => {
     if (!timeDraft) return;
-    const newStart = new Date(timeDraft);
-    if (isNaN(newStart.getTime())) return;
+    const newStart = parsePracticeDatetimeLocal(timeDraft);
+    if (!newStart) return;
     const durMs = a.slotEnd.getTime() - a.slotStart.getTime();
     const newEnd = new Date(newStart.getTime() + durMs);
     setResult((prev) => {
       if (!prev) return prev;
       const assignments = prev.assignments.map((x) =>
         x.clientId === a.clientId
-          ? { ...x, slotStart: newStart, slotEnd: newEnd, reason: `set by you — ${format(newStart, "EEE h:mm a")}`, lowConfidence: false }
+          ? { ...x, slotStart: newStart, slotEnd: newEnd, reason: `set by you — ${practiceFormat(newStart, "EEE h:mm a")}`, lowConfidence: false }
           : x,
       );
       onDraftChange?.(assignments.filter((x) => !acceptedKeys.has(x.clientId)));
@@ -908,7 +916,7 @@ export default function AutoDraftPanel({
                         <span className="text-xs text-rose-500 font-medium">
                           {away.until >= "2900-01-01"
                             ? "Off the books (indefinite)"
-                            : `Away until ${format(new Date(away.until + "T00:00:00"), "d MMM")}`}
+                            : `Away until ${practiceFormat(practiceWallToUtc(Number(away.until.slice(0, 4)), Number(away.until.slice(5, 7)), Number(away.until.slice(8, 10)), 0, 0), "d MMM")}`}
                         </span>
                       ) : noHistory ? (
                         <span className="text-xs text-amber-600">No history yet</span>
@@ -1000,11 +1008,11 @@ export default function AutoDraftPanel({
                       type="date"
                       value={awayDraft}
                       className="text-xs rounded-lg border border-border bg-background px-2 py-1"
-                      min={new Date().toISOString().split("T")[0]}
+                      min={practiceDateKey(new Date())}
                       onChange={(e) => setAwayDraft(e.target.value)}
                     />
                     <button
-                      disabled={!awayDraft || awayDraft < new Date().toISOString().split("T")[0]}
+                      disabled={!awayDraft || awayDraft < practiceDateKey(new Date())}
                       onClick={() => {
                         onSetAway?.(c.key, awayDraft);
                         setAwayEditKey(null);
@@ -1211,7 +1219,7 @@ export default function AutoDraftPanel({
                     )}
                   </div>
                   <div className="text-xs text-muted-foreground mt-0.5">
-                    {format(a.slotStart, "EEE d MMM · h:mm a")} — {a.reason}
+                    {practiceFormat(a.slotStart, "EEE d MMM · h:mm a")} — {a.reason}
                   </div>
                   {editTimeKey === a.clientId && !accepted && (
                     <div className="flex items-center gap-1.5 mt-1.5 flex-wrap" onClick={(e) => e.stopPropagation()}>
@@ -1242,7 +1250,7 @@ export default function AutoDraftPanel({
                     <button
                       onClick={() => {
                         setEditTimeKey(editTimeKey === a.clientId ? null : a.clientId);
-                        setTimeDraft(format(a.slotStart, "yyyy-MM-dd'T'HH:mm"));
+                        setTimeDraft(practiceDatetimeLocal(a.slotStart));
                       }}
                       title="Change this time"
                       className={cn(
@@ -1373,7 +1381,7 @@ export default function AutoDraftPanel({
                 const medGap = gaps.length ? [...gaps].sort((a, b) => a - b)[Math.floor(gaps.length / 2)] : null;
                 const cadenceLbl = cadDays === 7 ? "Weekly" : cadDays === 14 ? "Fortnightly" : cadDays === 21 ? "3-weekly" : cadDays === 28 ? "Monthly"
                   : medGap == null ? "—" : medGap <= 8 ? "~Weekly" : medGap <= 17 ? "~Fortnightly" : medGap <= 24 ? "~3-weekly" : "~Monthly";
-                const weekKey = (t: number) => { const d = new Date(t); const off = (d.getDay() + 6) % 7; return Math.floor((t - off * DAY) / (7 * DAY)); };
+                const weekKey = (t: number) => practiceWeekKey(new Date(t));
 
                 const statusStyle: Record<Ev["status"], string> = {
                   confirmed: "border-l-4 border-emerald-500 bg-emerald-500/5",
@@ -1406,7 +1414,7 @@ export default function AutoDraftPanel({
                               </div>
                             )}
                             <div className={cn("flex items-center justify-between rounded-md px-2 py-1", statusStyle[e.status])}>
-                              <span className="text-xs text-foreground">{format(new Date(e.t), "EEE d MMM · h:mm a")}</span>
+                              <span className="text-xs text-foreground">{practiceFormat(new Date(e.t), "EEE d MMM · h:mm a")}</span>
                               <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">{e.status}</span>
                             </div>
                           </div>
@@ -1434,17 +1442,17 @@ export default function AutoDraftPanel({
                 <span>·</span>
                 <input
                   type="datetime-local"
-                  value={format(emailModal.a.slotStart, "yyyy-MM-dd'T'HH:mm")}
+                  value={practiceDatetimeLocal(emailModal.a.slotStart)}
                   onChange={(e) => {
                     const v = e.target.value;
                     if (!v) return;
-                    const ns = new Date(v);
-                    if (isNaN(ns.getTime())) return;
+                    const ns = parsePracticeDatetimeLocal(v);
+                    if (!ns) return;
                     const cid = emailModal.a.clientId;
                     setEmailModal((m) => {
                       if (!m) return m;
                       const durMs = m.a.slotEnd.getTime() - m.a.slotStart.getTime();
-                      const na: Assignment = { ...m.a, slotStart: ns, slotEnd: new Date(ns.getTime() + durMs), reason: `set by you — ${format(ns, "EEE h:mm a")}`, lowConfidence: false };
+                      const na: Assignment = { ...m.a, slotStart: ns, slotEnd: new Date(ns.getTime() + durMs), reason: `set by you — ${practiceFormat(ns, "EEE h:mm a")}`, lowConfidence: false };
                       return { a: na, message: defaultProposalMessage(na) };
                     });
                     setResult((prev) => {
@@ -1452,7 +1460,7 @@ export default function AutoDraftPanel({
                       const assignments = prev.assignments.map((x) => {
                         if (x.clientId !== cid) return x;
                         const durMs = x.slotEnd.getTime() - x.slotStart.getTime();
-                        return { ...x, slotStart: ns, slotEnd: new Date(ns.getTime() + durMs), reason: `set by you — ${format(ns, "EEE h:mm a")}`, lowConfidence: false };
+                        return { ...x, slotStart: ns, slotEnd: new Date(ns.getTime() + durMs), reason: `set by you — ${practiceFormat(ns, "EEE h:mm a")}`, lowConfidence: false };
                       });
                       onDraftChange?.(assignments.filter((x) => !acceptedKeys.has(x.clientId)));
                       return { ...prev, assignments };

@@ -55,15 +55,19 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { OpenSlot, BusyBlock, Assignment, AvailabilityWindow } from "@/utils/timetable-scheduler";
 import { CALCOM_CONFIG } from "@/config/integrations";
 import {
-  format,
-  startOfWeek,
-  addWeeks,
-  eachDayOfInterval,
-  addDays,
-  startOfDay,
-  endOfDay,
+  PRACTICE_TIMEZONE,
+  practiceDateKey,
+  practiceStartOfDay,
+  practiceStartOfWeek,
+  practiceAddDays,
+  practiceEndOfDay,
+  practiceFormat,
+  practiceSameDay,
+  practiceWallToUtc,
+  parsePracticeDatetimeLocal,
+} from "@/utils/practice-time";
+import {
   differenceInMinutes,
-  isSameDay,
   subDays,
   differenceInDays,
 } from "date-fns";
@@ -168,7 +172,7 @@ const VOICE_EVENT_TYPES = [
 ];
 
 function zonedDateKey(d: Date): string {
-  return format(d, "yyyy-MM-dd");
+  return practiceDateKey(d);
 }
 
 const TimetablePage = () => {
@@ -259,7 +263,7 @@ const TimetablePage = () => {
   });
 
   const enrichedClients = useMemo<EnrichedClient[]>(() => {
-    const today = startOfDay(now);
+    const today = practiceStartOfDay(now);
     return fnhClients.map((c) => {
       const appts = appointmentsData.filter((a) => a.client_id === c.id && a.status !== "Cancelled");
       const sessionCount = appts.length;
@@ -349,7 +353,7 @@ const TimetablePage = () => {
   });
 
   const enrichedVoiceStudents = useMemo<EnrichedVoiceStudent[]>(() => {
-    const today = startOfDay(now);
+    const today = practiceStartOfDay(now);
     return voiceStudents.map((s) => {
       const emailKey = s.email?.toLowerCase() || "";
       const bookings = voiceBookingsData.filter(
@@ -396,17 +400,17 @@ const TimetablePage = () => {
     setLoading(true);
     setError(null);
     try {
-      const today = startOfDay(new Date());
-      const start = startOfWeek(today, { weekStartsOn: 1 });
-      const end = endOfDay(addDays(start, VIEW_RANGE_WEEKS * 7 - 1));
+      const start = practiceStartOfWeek(new Date());
+      const end = practiceAddDays(start, VIEW_RANGE_WEEKS * 7 - 1);
+      const endIso = practiceEndOfDay(end);
 
       const { data, error: invokeError } = await supabase.functions.invoke<SlotsResponse>(
         "get-calcom-slots",
         {
           body: {
             start: start.toISOString(),
-            end: end.toISOString(),
-            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            end: endIso.toISOString(),
+            timeZone: PRACTICE_TIMEZONE,
           },
         }
       );
@@ -438,9 +442,9 @@ const TimetablePage = () => {
             const { data: vData } = await supabase.functions.invoke<SlotsResponse>("get-calcom-slots", {
               body: {
                 start: start.toISOString(),
-                end: end.toISOString(),
+                end: endIso.toISOString(),
                 eventTypeId: id,
-                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                timeZone: PRACTICE_TIMEZONE,
               },
             });
             byDur[dur] = vData && vData.status !== "error" ? vData.data || {} : {};
@@ -463,8 +467,10 @@ const TimetablePage = () => {
   }, [fetchData]);
 
   const dateRange = useMemo(() => {
-    const start = startOfWeek(startOfDay(new Date()), { weekStartsOn: 1 });
-    return eachDayOfInterval({ start, end: addDays(start, VIEW_RANGE_WEEKS * 7 - 1) });
+    const start = practiceStartOfWeek(new Date());
+    const days: Date[] = [];
+    for (let i = 0; i < VIEW_RANGE_WEEKS * 7; i++) days.push(practiceAddDays(start, i));
+    return days;
   }, []);
 
   const { proposals, proposalsInWindow, createProposal, confirmProposal, dropProposal } = useBookingProposals(
@@ -490,7 +496,7 @@ const TimetablePage = () => {
     const map: Record<string, EnrichedBooking[]> = {};
     enrichedBookings.forEach((b) => {
       if (!b.start) return;
-      const key = format(new Date(b.start), "yyyy-MM-dd");
+      const key = practiceDateKey(new Date(b.start));
       if (!map[key]) map[key] = [];
       map[key].push(b);
     });
@@ -545,7 +551,7 @@ const TimetablePage = () => {
   });
 
   const awayByKey = useMemo(() => {
-    const todayKey = format(startOfDay(now), "yyyy-MM-dd");
+    const todayKey = practiceDateKey(new Date());
     const map: Record<string, { until: string; reason: string | null }> = {};
     for (const r of awayRows) {
       if (r.away_until >= todayKey) map[r.client_key] = { until: r.away_until, reason: r.reason };
@@ -715,7 +721,7 @@ const TimetablePage = () => {
   };
 
   const autoDraftClients = useMemo<AutoDraftClient[]>(() => {
-    const today = startOfDay(now);
+    const today = practiceStartOfDay(now);
     const out: AutoDraftClient[] = [];
 
     // Never draft the practitioner's own records.
@@ -801,11 +807,11 @@ const TimetablePage = () => {
       const [y, mo, d] = String(b.lesson_date).split("T")[0].split("-").map(Number);
       if (!y || !mo || !d) continue;
       if (mins == null) {
-        const dt = new Date(y, mo - 1, d, 12, 0);
+        const dt = practiceWallToUtc(y, mo, d, 12, 0);
         if (dt < today) (dateOnly.get(email) ?? dateOnly.set(email, []).get(email)!).push(dt);
         continue;
       }
-      const dt = new Date(y, mo - 1, d, Math.floor(mins / 60), mins % 60);
+      const dt = practiceWallToUtc(y, mo, d, Math.floor(mins / 60), mins % 60);
       if (dt < today) (timed.get(email) ?? timed.set(email, []).get(email)!).push(dt);
       else (voiceUpcoming.get(email) ?? voiceUpcoming.set(email, []).get(email)!).push(dt);
     }
@@ -815,7 +821,11 @@ const TimetablePage = () => {
       if (!email || !l.date) continue;
       const raw = String(l.date);
       const hasTime = /T\d{2}:\d{2}/.test(raw) && !/T00:00(:00)?/.test(raw);
-      const dt = new Date(hasTime ? raw : `${raw.split("T")[0]}T12:00:00`);
+      const [yy, mm, dd] = raw.split("T")[0].split("-").map(Number);
+      if (!yy || !mm || !dd) continue;
+      const timePart = hasTime ? raw.split("T")[1]?.slice(0, 5) : "12:00";
+      const [hh, mi] = timePart.split(":").map(Number);
+      const dt = practiceWallToUtc(yy, mm, dd, hh ?? 12, mi ?? 0);
       if (isNaN(dt.getTime()) || dt >= today) continue;
       if (hasTime) (timed.get(email) ?? timed.set(email, []).get(email)!).push(dt);
       else (dateOnly.get(email) ?? dateOnly.set(email, []).get(email)!).push(dt);
@@ -886,14 +896,14 @@ const TimetablePage = () => {
       if (!ev.start) continue;
       if (ev.allDay) {
         const d = new Date(ev.start);
-        out.push({ start: startOfDay(d), end: endOfDay(d) });
+        out.push({ start: practiceStartOfDay(d), end: practiceEndOfDay(d) });
       } else if (ev.end) {
         out.push({ start: new Date(ev.start), end: new Date(ev.end) });
       }
     }
     for (const key of blockedDates) {
       const [y, mo, d] = key.split("-").map(Number);
-      if (y && mo && d) out.push({ start: new Date(y, mo - 1, d, 0, 0), end: new Date(y, mo - 1, d, 23, 59) });
+      if (y && mo && d) out.push({ start: practiceWallToUtc(y, mo, d, 0, 0), end: practiceWallToUtc(y, mo, d, 23, 59) });
     }
     return out;
   }, [icloudEvents, blockedDates]);
@@ -944,20 +954,21 @@ const TimetablePage = () => {
   // Weekly forecast buckets for the bar chart
   const forecastData = useMemo(() => {
     const weeksArr: { label: string; open: number; booked: number; blocked: number }[] = [];
+    const firstMonday = practiceStartOfWeek(new Date());
     for (let w = 0; w < VIEW_RANGE_WEEKS; w++) {
-      const weekStart = addWeeks(startOfWeek(startOfDay(new Date()), { weekStartsOn: 1 }), w);
-      const days = eachDayOfInterval({ start: weekStart, end: addDays(weekStart, 6) });
+      const weekStart = practiceAddDays(firstMonday, w * 7);
       let open = 0;
       let booked = 0;
       let blocked = 0;
-      days.forEach((d) => {
-        const key = zonedDateKey(d);
+      for (let i = 0; i < 7; i++) {
+        const d = practiceAddDays(weekStart, i);
+        const key = practiceDateKey(d);
         open += (slots[key] || []).length;
         booked += (bookings[key] || []).length;
         if (blockedDates.includes(key)) blocked++;
-      });
+      }
       weeksArr.push({
-        label: `W${w + 1} ${format(weekStart, "d MMM")}`,
+        label: `W${w + 1} ${practiceFormat(weekStart, "d MMM")}`,
         open,
         booked,
         blocked,
@@ -966,7 +977,7 @@ const TimetablePage = () => {
     return weeksArr;
   }, [slots, bookings, blockedDates]);
 
-  const weekdayLabel = (d: Date) => format(d, "EEE");
+  const weekdayLabel = (d: Date) => practiceFormat(d, "EEE");
 
   // ── Proposal actions ──────────────────────────────────────────
   const handleCreateProposal = async (slotStart: string, slotEnd: string) => {
@@ -1110,8 +1121,12 @@ const TimetablePage = () => {
       showError("Please pick a start and end.");
       return;
     }
-    const start = new Date(oooStart);
-    const end = new Date(oooEnd);
+    const start = parsePracticeDatetimeLocal(oooStart);
+    const end = parsePracticeDatetimeLocal(oooEnd);
+    if (!start || !end) {
+      showError("Please pick valid start and end times.");
+      return;
+    }
     if (end <= start) {
       showError("End must be after start.");
       return;
@@ -1333,7 +1348,7 @@ const TimetablePage = () => {
                       onPrev={() => {}}
                       onNext={() => {}}
                       hideNav
-                      title={`Fortnight ${fi + 1} · ${format(slice[0], "d MMM")} – ${format(slice[slice.length - 1], "d MMM")}`}
+                      title={`Fortnight ${fi + 1} · ${practiceFormat(slice[0], "d MMM")} – ${practiceFormat(slice[slice.length - 1], "d MMM")}`}
                       hiddenWeeks={hiddenWeeks}
                       onToggleWeek={(key) =>
                         setHiddenWeeks((prev) => {
@@ -1404,7 +1419,7 @@ const TimetablePage = () => {
           <DialogHeader>
             <DialogTitle>Pencil in a proposal</DialogTitle>
             <DialogDescription>
-              {pickingDay ? format(pickingDay, "EEEE d MMM yyyy") : ""} — choose a slot time to
+              {pickingDay ? practiceFormat(pickingDay, "EEEE d MMM yyyy") : ""} — choose a slot time to
               propose for {kind === "fnh" ? "an FNH session" : "a voice lesson"}.
             </DialogDescription>
           </DialogHeader>
@@ -1425,7 +1440,7 @@ const TimetablePage = () => {
                   }}
                 >
                   <PenLine size={14} className="mr-2 text-chart-primary" />
-                  {format(new Date(s.start), "h:mm a")} — 60 min
+                  {practiceFormat(new Date(s.start), "h:mm a")} — 60 min
                 </Button>
               ))}
               {!slots[zonedDateKey(pickingDay)]?.length && (
@@ -1448,7 +1463,7 @@ const TimetablePage = () => {
             <DialogTitle>Proposal</DialogTitle>
             <DialogDescription>
               {proposalFor
-                ? `${format(new Date(proposalFor.slot_start), "EEEE d MMM yyyy, h:mm a")}`
+                ? `${practiceFormat(new Date(proposalFor.slot_start), "EEEE d MMM yyyy, h:mm a")}`
                 : ""}
             </DialogDescription>
           </DialogHeader>
@@ -1553,7 +1568,7 @@ const TimetablePage = () => {
                     <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Date</div>
                     <div className="mt-0.5 text-sm font-semibold text-foreground">
                       {appointmentFor.start
-                        ? format(new Date(appointmentFor.start), "EEE d MMM yyyy")
+                        ? practiceFormat(new Date(appointmentFor.start), "EEE d MMM yyyy")
                         : "—"}
                     </div>
                   </div>
@@ -1561,7 +1576,7 @@ const TimetablePage = () => {
                     <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Time</div>
                     <div className="mt-0.5 text-sm font-semibold text-foreground">
                       {appointmentFor.start
-                        ? format(new Date(appointmentFor.start), "h:mm a")
+                        ? practiceFormat(new Date(appointmentFor.start), "h:mm a")
                         : "—"}
                     </div>
                   </div>
@@ -1662,7 +1677,7 @@ const TimetablePage = () => {
                     {p.student_name || (p.kind === "fnh" ? "FNH session" : "Voice lesson")}
                   </DialogTitle>
                   <DialogDescription>
-                    {format(new Date(p.slot_start), "EEEE d MMMM yyyy · h:mm a")} · {p.kind === "fnh" ? "FNH" : "Voice"}
+                    {practiceFormat(new Date(p.slot_start), "EEEE d MMMM yyyy · h:mm a")} · {p.kind === "fnh" ? "FNH" : "Voice"}
                   </DialogDescription>
                 </DialogHeader>
 
@@ -1729,7 +1744,7 @@ const TimetablePage = () => {
                         className="gap-1.5"
                         onClick={() => {
                           const first = (p.student_name || "there").split(" ")[0];
-                          setWorkflowMsg(`Hi ${first},\n\nI've got a time in mind for you — ${format(new Date(p.slot_start), "EEEE d MMMM 'at' h:mm a")}. What do you think? If it works I'll lock it in; if not, tell me what suits.\n\nAll the best,\nDaniele`);
+                          setWorkflowMsg(`Hi ${first},\n\nI've got a time in mind for you — ${practiceFormat(new Date(p.slot_start), "EEEE d MMMM 'at' h:mm a")}. What do you think? If it works I'll lock it in; if not, tell me what suits.\n\nAll the best,\nDaniele`);
                           setWorkflowEmailOpen(true);
                         }}
                       >
@@ -2006,13 +2021,13 @@ function PlannerBar({
                             )}
                             {c.last_session_at && (
                               <span className="rounded bg-muted px-1 py-[1px] text-[8px] font-semibold uppercase tracking-wide text-muted-foreground leading-none">
-                                Last {format(new Date(c.last_session_at), "d MMM")}
+                                Last {practiceFormat(new Date(c.last_session_at), "d MMM")}
                                 <span className="opacity-70">·&nbsp;{fmtSpan(differenceInDays(new Date(), new Date(c.last_session_at)))} ago</span>
                               </span>
                             )}
                             {c.next_session_at ? (
                               <span className="rounded bg-chart-primary/10 px-1 py-[1px] text-[8px] font-bold uppercase tracking-wide text-chart-primary leading-none">
-                                Next {format(new Date(c.next_session_at), "d MMM")}
+                                Next {practiceFormat(new Date(c.next_session_at), "d MMM")}
                                 {c.last_session_at && (
                                   <span className="opacity-70">
                                     {" · "}
@@ -2079,13 +2094,13 @@ function PlannerBar({
                           )}
                           {s.last_session_at && (
                             <span className="rounded bg-muted px-1 py-[1px] text-[8px] font-semibold uppercase tracking-wide text-muted-foreground leading-none">
-                              Last {format(new Date(s.last_session_at), "d MMM")}
+                              Last {practiceFormat(new Date(s.last_session_at), "d MMM")}
                               <span className="opacity-70">·&nbsp;{fmtSpan(differenceInDays(new Date(), new Date(s.last_session_at)))} ago</span>
                             </span>
                           )}
                           {s.next_session_at ? (
                             <span className="rounded bg-chart-primary/10 px-1 py-[1px] text-[8px] font-bold uppercase tracking-wide text-chart-primary leading-none">
-                              Next {format(new Date(s.next_session_at), "d MMM")}
+                              Next {practiceFormat(new Date(s.next_session_at), "d MMM")}
                               {s.last_session_at && (
                                 <span className="opacity-70">
                                   {" · "}
@@ -2194,7 +2209,7 @@ function FortnightMockup({
   const weeks = dateRange.length
     ? [dateRange.slice(0, 7), dateRange.slice(7, 14)]
     : [];
-  const weekdayLabel = (d: Date) => format(d, "EEE");
+  const weekdayLabel = (d: Date) => practiceFormat(d, "EEE");
 
   return (
     <div className="space-y-5">
@@ -2228,13 +2243,13 @@ function FortnightMockup({
         </div>
       )}
       {weeks.map((week, wi) => {
-        const weekKey = format(week[0], "yyyy-MM-dd");
+        const weekKey = practiceDateKey(week[0]);
         const isHidden = hiddenWeeks?.has(weekKey);
         return (
         <div key={wi} className="space-y-2">
           <div className="flex items-center justify-between px-1">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">
-              Week {wi + 1} — {format(week[0], "d MMM")} to {format(week[6], "d MMM yyyy")}
+              Week {wi + 1} — {practiceFormat(week[0], "d MMM")} to {practiceFormat(week[6], "d MMM yyyy")}
             </p>
             {onToggleWeek && (
               <button
@@ -2257,7 +2272,7 @@ function FortnightMockup({
                 // Confirmed proposals already exist as real Cal.com bookings (that's
                 // what confirming does), so they'd otherwise render twice — once as
                 // the rose "booking" chip from `bookings`, once as this emerald chip.
-                proposals={proposals.filter((p) => isSameDay(new Date(p.slot_start), d) && p.status !== "confirmed")}
+                proposals={proposals.filter((p) => practiceSameDay(new Date(p.slot_start), d) && p.status !== "confirmed")}
                 icloudEvents={icloudEvents.filter((ev) => {
                   if (!ev.start || ev.transparent) return false;
                   const s = new Date(ev.start);
@@ -2275,9 +2290,9 @@ function FortnightMockup({
                   });
                   if (overlapsBooked) return false;
                   return (
-                    isSameDay(s, d) ||
-                    isSameDay(e, d) ||
-                    (s < endOfDay(d) && e > startOfDay(d))
+                    practiceSameDay(s, d) ||
+                    practiceSameDay(e, d) ||
+                    (s < practiceEndOfDay(d) && e > practiceStartOfDay(d))
                   );
                 })}
                 blocked={blockedDates.includes(zonedDateKey(d))}
@@ -2356,7 +2371,7 @@ function DayCell({
           <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
             {weekdayLabel(date)}
           </p>
-          <p className="text-sm font-bold text-foreground leading-tight">{format(date, "d")}</p>
+          <p className="text-sm font-bold text-foreground leading-tight">{practiceFormat(date, "d")}</p>
         </div>
         <StateDot state={state} />
       </div>
@@ -2370,7 +2385,7 @@ function DayCell({
 
         {(() => {
           const fmtT = (iso: string | undefined | null) =>
-            iso ? format(new Date(iso), "h:mma").toLowerCase() + " · " : "";
+            iso ? practiceFormat(new Date(iso), "h:mma").toLowerCase() + " · " : "";
           const items = [
             ...bookings.map((b, i) => ({
               t: b.start ? new Date(b.start).getTime() : 0,
@@ -2613,7 +2628,7 @@ function SuggestionsPanel({
               {sourceBadge(s.source)}
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {s.reason} · {format(s.predictedDate, "EEE d MMM yyyy")}
+              {s.reason} · {practiceFormat(s.predictedDate, "EEE d MMM yyyy")}
             </p>
             <div className="flex items-center gap-1.5 mt-1.5">
               {s.availableSlots.slice(0, 4).map((sl, j) => (

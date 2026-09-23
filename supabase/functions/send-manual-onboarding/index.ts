@@ -121,7 +121,7 @@ serve(async (req) => {
     const SENDER_EMAIL = Deno.env.get('GMAIL_USER_EMAIL');
     // GMAIL_USER_EMAIL authenticates the API call; clients see the practice's
     // real, verified alias as the sender instead.
-    const FROM_ADDRESS = "info@danielebuatti.com";
+    const FROM_ADDRESS = "Daniele Buatti <info@danielebuatti.com>";
     const STRIPE_KEY = Deno.env.get('STRIPE_SECRET_KEY');
     const APP_ORIGIN = Deno.env.get('SITE_URL') || 'https://kinesiology-app.vercel.app';
 

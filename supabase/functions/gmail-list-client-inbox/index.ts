@@ -69,6 +69,16 @@ serve(async (req) => {
     const CLIENT_SECRET = Deno.env.get("GMAIL_CLIENT_SECRET");
     const REFRESH = Deno.env.get("GMAIL_READONLY_INBOX_REFRESH_TOKEN");
     const PRACTICE_EMAIL = (Deno.env.get("GMAIL_USER_EMAIL") || "").toLowerCase();
+    // Every address Daniele can appear as in a From header. GMAIL_USER_EMAIL is
+    // the auth account ("daniele.buatti@gmail.com"), but all client-facing reads
+    // and writes are sent from the verified alias "Daniele Buatti
+    // <info@danielebuatti.com>" AND self-Bcc'd (every send function writes
+    // "Bcc: info@danielebuatti.com"), so the practice's own sent mail lands back
+    // in the inbox with From = info@danielebuatti.com. The old self-test
+    // exclusion compared only against GMAIL_USER_EMAIL, so these Bcc copies were
+    // swept up as a phantom client called "Daniele Buatti" and flagged "needs
+    // reply" even though he sent them. Both addresses must count as "the practice".
+    const practiceEmails = new Set([PRACTICE_EMAIL, "info@danielebuatti.com", "daniele.buatti@gmail.com"].filter(Boolean));
     if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH) throw new Error("Gmail inbox read is not configured.");
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
@@ -83,18 +93,20 @@ serve(async (req) => {
     ]);
 
     // Daniele has his own self-test row in `clients` (same email he practices
-    // from) — without excluding it, his own sent mail (which lands back in his
-    // inbox) gets swept up and shown as if a client named "Daniele Buatti"
-    // emailed him, and opening it searches his own address against his whole
-    // inbox instead of one real client's thread.
+    // from, which is the alias the app sends as) — without excluding it, his own
+    // sent mail (which lands back in his inbox via Bcc-to-self) gets swept up and
+    // shown as if a client named "Daniele Buatti" emailed him, and opening it
+    // searches his own address against his whole inbox instead of one real
+    // client's thread. His own email on the receiving side is the only thing
+    // distinguishing these rows from a genuine client.
     const byEmail = new Map<string, { id: string; name: string; kind: "kinesiology" | "voice" }>();
     for (const c of (clients || []) as any[]) {
       const email = String(c.email || "").toLowerCase().trim();
-      if (email && email !== PRACTICE_EMAIL) byEmail.set(email, { id: c.id, name: c.name || "Unknown", kind: "kinesiology" });
+      if (email && !practiceEmails.has(email)) byEmail.set(email, { id: c.id, name: c.name || "Unknown", kind: "kinesiology" });
     }
     for (const v of (voiceRows || []) as any[]) {
       const email = String(v.student_email || "").toLowerCase().trim();
-      if (email && email !== PRACTICE_EMAIL && !byEmail.has(email)) byEmail.set(email, { id: `voice:${email}`, name: v.student_name || "Unknown", kind: "voice" });
+      if (email && !practiceEmails.has(email) && !byEmail.has(email)) byEmail.set(email, { id: `voice:${email}`, name: v.student_name || "Unknown", kind: "voice" });
     }
 
     const addresses = Array.from(byEmail.keys()).slice(0, MAX_ADDRESSES);
@@ -177,8 +189,11 @@ serve(async (req) => {
           const last = msgs[msgs.length - 1];
           const lastFrom = extractEmail(headerValue(last.payload?.headers || [], "From"));
           const clientEmail = threadClientEmail.get(threadId) || "";
-          // Needs a reply only if the LAST message is from the client, not the practice.
-          needsReplyByThread.set(threadId, lastFrom === clientEmail);
+          // Needs a reply only if the LAST message is from the client, not the
+          // practice (any of its sending addresses — not just GMAIL_USER_EMAIL,
+          // since replies can be sent from the info@ alias or a mail app).
+          const fromPractice = practiceEmails.has(lastFrom);
+          needsReplyByThread.set(threadId, !fromPractice && lastFrom === clientEmail);
         } catch {
           needsReplyByThread.set(threadId, true);
         }

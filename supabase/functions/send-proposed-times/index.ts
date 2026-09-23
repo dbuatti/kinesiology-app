@@ -53,7 +53,7 @@ serve(async (req) => {
     const REFRESH = Deno.env.get("GMAIL_REFRESH_TOKEN");
     const SENDER = Deno.env.get("GMAIL_USER_EMAIL");
     if (!CLIENT_ID || !CLIENT_SECRET || !REFRESH || !SENDER) throw new Error("Gmail is not configured.");
-    const FROM_ADDRESS = "info@danielebuatti.com";
+    const FROM_ADDRESS = "Daniele Buatti <info@danielebuatti.com>";
 
     const d = new Date(startISO);
     const friendlyDate = d.toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", timeZone: "Australia/Melbourne" });

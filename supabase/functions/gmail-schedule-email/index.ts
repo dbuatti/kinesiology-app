@@ -113,7 +113,7 @@ serve(async (req) => {
     const GMAIL_CLIENT_SECRET = Deno.env.get('GMAIL_CLIENT_SECRET')
     const GMAIL_REFRESH_TOKEN = Deno.env.get('GMAIL_REFRESH_TOKEN')
     const SENDER_EMAIL = Deno.env.get('GMAIL_USER_EMAIL')
-    const FROM_ADDRESS = 'info@danielebuatti.com'
+    const FROM_ADDRESS = 'Daniele Buatti <info@danielebuatti.com>'
     const RECIPIENT = body?.to || SENDER_EMAIL || FROM_ADDRESS
 
     if (!GMAIL_CLIENT_ID || !GMAIL_CLIENT_SECRET || !GMAIL_REFRESH_TOKEN) {

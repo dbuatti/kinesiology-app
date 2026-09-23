@@ -78,9 +78,22 @@ export default function AssistantPage() {
     // own resize event on keyboard show/hide, which plain "resize" doesn't
     // reliably catch on iOS.
     const vh = () => window.visualViewport?.height ?? window.innerHeight;
+    // Throttled via rAF with a change-guard. On iPad, the on-screen keyboard
+    // fires a burst of visualViewport/ResizeObserver resize events (keyboard
+    // opening animation + the autocorrect suggestion bar changing height while
+    // typing). Without coalescing, each event forced a sync layout read and a
+    // setGridHeight that re-rendered the ENTIRE page — every message bubble,
+    // conversation list row and metrics widget — per keystroke, which is
+    // exactly the slow-typing jank seen on a real iPad.
+    let raf = 0;
     const recompute = () => {
-      const top = el.getBoundingClientRect().bottom;
-      setGridHeight(Math.max(420, vh() - top - 32));
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const next = Math.max(420, vh() - el.getBoundingClientRect().bottom - 32);
+        // Functional update + equality guard: if nothing actually changed, React
+        // bails out and no re-render happens at all.
+        setGridHeight((prev) => (prev === next ? prev : next));
+      });
     };
     recompute();
     window.addEventListener("resize", recompute);
@@ -88,6 +101,7 @@ export default function AssistantPage() {
     const ro = new ResizeObserver(recompute);
     ro.observe(el);
     return () => {
+      cancelAnimationFrame(raf);
       window.removeEventListener("resize", recompute);
       window.visualViewport?.removeEventListener("resize", recompute);
       ro.disconnect();
@@ -359,7 +373,7 @@ export default function AssistantPage() {
         </TabsContent>
 
         <TabsContent value="inbox" className="m-0">
-          <CommsInbox />
+          <CommsInbox clients={clients} voiceStudents={voiceStudents} />
         </TabsContent>
 
         <TabsContent value="launch" className="m-0">

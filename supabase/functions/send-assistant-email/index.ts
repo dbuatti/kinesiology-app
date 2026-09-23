@@ -70,7 +70,7 @@ serve(async (req) => {
     // registered as a verified "Send mail as" alias; if it isn't, Gmail's
     // API will reject the send with a clear error rather than silently
     // sending as the wrong address.
-    const FROM_ADDRESS = "info@danielebuatti.com";
+    const FROM_ADDRESS = "Daniele Buatti <info@danielebuatti.com>";
 
     const esc = (s: string) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const html = `

@@ -43,7 +43,7 @@ serve(async (req) => {
     // GMAIL_USER_EMAIL is where the client's message lands; it also authenticates
     // the API call. The visible sender is the practice identity instead, so a
     // future "reply-to-sender" flow (or forwarding) shows the right address.
-    const FROM_ADDRESS = "info@danielebuatti.com";
+    const FROM_ADDRESS = "Daniele Buatti <info@danielebuatti.com>";
 
     const supabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
     const client = await resolveClientContact(supabase, identity);

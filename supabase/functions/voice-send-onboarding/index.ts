@@ -109,7 +109,7 @@ serve(async (req) => {
     // Client-facing sends use the practice's real, verified alias — GMAIL_USER_EMAIL
     // still authenticates the API call for everything sent from this function,
     // including the internal organizer notification below.
-    const FROM_ADDRESS = "info@danielebuatti.com";
+    const FROM_ADDRESS = "Daniele Buatti <info@danielebuatti.com>";
 
     const { studentName, studentEmail, date, time, duration, cost, calcomBookingUid, discipline } = await req.json();
     if (!studentName || !studentEmail || !date || !time) {

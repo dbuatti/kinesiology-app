@@ -96,13 +96,24 @@ export default function ClientHubPage() {
     // on iOS). Using plain innerHeight left real dead space behind the
     // keyboard on a real iPad.
     const vh = () => window.visualViewport?.height ?? window.innerHeight;
-    const recompute = () => setAreaHeight(Math.max(420, vh() - el.getBoundingClientRect().bottom - 32));
+    // rAF-coalesced + change-guarded, same iPad fix as AssistantPage's
+    // gridHeight — the on-screen keyboard fires a burst of resize events while
+    // typing, and each naive recompute re-rendered the whole page per keystroke.
+    let raf = 0;
+    const recompute = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const next = Math.max(420, vh() - el.getBoundingClientRect().bottom - 32);
+        setAreaHeight((prev) => (prev === next ? prev : next));
+      });
+    };
     recompute();
     window.addEventListener("resize", recompute);
     window.visualViewport?.addEventListener("resize", recompute);
     const ro = new ResizeObserver(recompute);
     ro.observe(el);
     return () => {
+      cancelAnimationFrame(raf);
       window.removeEventListener("resize", recompute);
       window.visualViewport?.removeEventListener("resize", recompute);
       ro.disconnect();

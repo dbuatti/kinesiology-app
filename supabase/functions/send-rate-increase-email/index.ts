@@ -64,7 +64,7 @@ serve(async (req) => {
     // GMAIL_USER_EMAIL authenticates the API call but shouldn't be what clients
     // see as the sender — everything client-facing goes out as the practice's
     // real address instead (a verified "Send mail as" alias on this account).
-    const FROM_ADDRESS = "info@danielebuatti.com";
+    const FROM_ADDRESS = "Daniele Buatti <info@danielebuatti.com>";
 
     const { clientName, clientEmail, currentRate, targetRate, effectiveMonth } = payload;
 

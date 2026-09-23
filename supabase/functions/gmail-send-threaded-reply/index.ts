@@ -55,7 +55,11 @@ serve(async (req) => {
     // conversation. So when the frontend knows the thread's established sender
     // (`reply_from`), we reuse it; otherwise we default to the practice alias.
     const KNOWN_FROM = ["info@danielebuatti.com", "daniele.buatti@gmail.com"];
-    const FROM_ADDRESS = reply_from && KNOWN_FROM.includes(reply_from) ? reply_from : "info@danielebuatti.com";
+    const FROM_DISPLAY: Record<string, string> = {
+      "info@danielebuatti.com": "Daniele Buatti <info@danielebuatti.com>",
+      "daniele.buatti@gmail.com": "Daniele Buatti <daniele.buatti@gmail.com>",
+    };
+    const FROM_ADDRESS = reply_from && KNOWN_FROM.includes(reply_from) ? FROM_DISPLAY[reply_from] : "Daniele Buatti <info@danielebuatti.com>";
 
     const esc = (s: string) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const utf8Subject = `=?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`;

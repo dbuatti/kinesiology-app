@@ -93,3 +93,9 @@ verify_jwt = false
 
 [functions.gmail-send-threaded-reply]
 verify_jwt = false
+
+[functions.assistant-chat]
+# Quota redundancy: callModel may park up to 30s waiting out an
+# all-Gemini-keys-exhausted free-tier window, plus up to MAX_TOOL_ROUNDS of
+# fallback-model time — the 60s default can be tight for that slow path.
+timeout_sec = 150

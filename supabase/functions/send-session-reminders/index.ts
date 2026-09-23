@@ -17,7 +17,7 @@ const GMAIL_REFRESH_TOKEN = Deno.env.get("GMAIL_REFRESH_TOKEN") || "";
 const GMAIL_USER_EMAIL = Deno.env.get("GMAIL_USER_EMAIL") || "";
 // GMAIL_USER_EMAIL authenticates the API call; clients see the practice's real,
 // verified alias as the sender instead.
-const FROM_ADDRESS = "info@danielebuatti.com";
+const FROM_ADDRESS = "Daniele Buatti <info@danielebuatti.com>";
 
 // Google OAuth token endpoint
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";

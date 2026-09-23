@@ -353,6 +353,35 @@ function isRetryableModelError(message: string): boolean {
 //   curl -s https://openrouter.ai/api/v1/models | python3 -c "import json,sys; d=json.load(sys.stdin); [print(m['id']) for m in d['data'] if float(m['pricing']['prompt'] or 1)==0 and 'tools' in (m.get('supported_parameters') or [])]"
 const OPENROUTER_FALLBACK_MODELS = ["qwen/qwen3.8-27b:free", "google/gemma-4-31b-it:free", "nvidia/nemotron-3-super-120b-a12b:free"];
 
+// --- Groq fallback: a SECOND, genuinely INDEPENDENT free tier (Groq runs its
+// own LPU inference fleet — its quota pool has nothing in common with Gemini's
+// free-tier, and nothing in common with OpenRouter's shared free-model pool, so
+// a day when all four Gemini keys are exhausted AND OpenRouter's free models
+// are 429ing its shared capacity is exactly when this tier still answers).
+// Its API is OpenAI-compatible, so the exact same message/tool translation
+// built for OpenRouter works unmodified — only the base URL and model list
+// differ. The model list is deliberately short: llama-3.3-70b-versatile (the
+// default Groq free model) has full tool-calling; llama-3.1-8b-instant is the
+// lighter older backup. gemma2-9b-it is deliberately excluded — it does NOT
+// support tool calls on Groq, and a chat-only model would silently break this
+// function's whole tool loop. Groq's free model lineup changes; if both stop
+// answering, re-verify rather than guessing:
+//   curl -s https://api.groq.com/openai/v1/models -H "Authorization: Bearer $GROQ_API_KEY"
+const GROQ_FALLBACK_MODELS = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"];
+
+// --- OpenCode Go fallback: a THIRD independent tier, and the only PAID one —
+// a $10/mo subscription (its own API key from opencode.ai) with a quota pool
+// genuinely separate from Gemini's free-tier, Groq's LPU fleet and OpenRouter's
+// shared free models, so it keeps answering on the days every free tier is
+// saturated. Served through an OpenAI-compatible endpoint, so the same message/
+// tool translation Groq/OpenRouter already use works unmodified — only the base
+// URL and model ids differ. Model ids below all map to Go's chat/completions
+// endpoint; each is an agentic coding model with first-class tool calling, a
+// $60/mo usage cap, and 0-day data retention. The /v1/models endpoint is the
+// source of truth if this list ever needs re-verifying:
+//   curl -s https://opencode.ai/zen/go/v1/models -H "Authorization: Bearer $OPENCODE_GO_API_KEY"
+const OPENCODE_GO_FALLBACK_MODELS = ["kimi-k2.7-code", "deepseek-v4.1-flash", "glm-5.3-flash"];
+
 function geminiTypeToJsonSchema(p: any): any {
   const TYPE_MAP: Record<string, string> = { OBJECT: "object", STRING: "string", NUMBER: "number", BOOLEAN: "boolean", ARRAY: "array" };
   const out: any = { type: TYPE_MAP[p?.type] || "string" };
@@ -395,7 +424,7 @@ function contentsToOpenAIMessages(contents: any[], systemInstruction: string) {
   return messages;
 }
 
-function openRouterToGeminiShape(data: any) {
+function openAICompatToGeminiShape(data: any) {
   const msg = data?.choices?.[0]?.message;
   if (!msg) return { candidates: [] };
   const toolCall = msg.tool_calls?.[0];
@@ -419,7 +448,7 @@ async function callOpenRouter(openRouterKey: string, contents: any[], systemInst
       body: JSON.stringify({ model, messages, tools, tool_choice: "auto", temperature: 0.4 }),
     });
     const data = await res.json();
-    if (res.ok) return openRouterToGeminiShape(data);
+    if (res.ok) return openAICompatToGeminiShape(data);
     // "Provider returned error" (OpenRouter's own generic wrapper message)
     // used to give zero insight into what actually failed underneath —
     // include the raw error body so a real failure is diagnosable from the
@@ -430,11 +459,110 @@ async function callOpenRouter(openRouterKey: string, contents: any[], systemInst
   throw lastErr || new Error("All OpenRouter fallback models failed.");
 }
 
+async function callGroq(groqKey: string, contents: any[], systemInstruction: string) {
+  const messages = contentsToOpenAIMessages(contents, systemInstruction);
+  const tools = functionDeclarations.map((fd) => ({ type: "function", function: { name: fd.name, description: fd.description, parameters: geminiTypeToJsonSchema(fd.parameters) } }));
+
+  let lastErr: Error | null = null;
+  for (const model of GROQ_FALLBACK_MODELS) {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${groqKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model, messages, tools, tool_choice: "auto", temperature: 0.4 }),
+    });
+    const data = await res.json();
+    if (res.ok) return openAICompatToGeminiShape(data);
+    lastErr = new Error(`Groq ${res.status} (${model}): ${JSON.stringify(data?.error || data)}`);
+    console.error("[assistant-chat] GROQ_MODEL_FAILED (trying next if any):", lastErr.message);
+  }
+  throw lastErr || new Error("All Groq fallback models failed.");
+}
+
+// Go's docs ask clients to send a stable session id (x-opencode-session) and a
+// distinctive User-Agent so traffic routes/caches well and isn't mistaken for
+// abuse — we forward the assistant conversation_id since it's stable for the
+// whole thread, and the same conversation reuses the same header per round.
+async function callOpenCodeGo(openCodeGoKey: string, contents: any[], systemInstruction: string, sessionId?: string) {
+  const messages = contentsToOpenAIMessages(contents, systemInstruction);
+  const tools = functionDeclarations.map((fd) => ({ type: "function", function: { name: fd.name, description: fd.description, parameters: geminiTypeToJsonSchema(fd.parameters) } }));
+
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${openCodeGoKey}`,
+    "Content-Type": "application/json",
+    "User-Agent": "kinesiology-crm-assistant/1.0",
+  };
+  if (sessionId) headers["x-opencode-session"] = sessionId;
+
+  let lastErr: Error | null = null;
+  for (const model of OPENCODE_GO_FALLBACK_MODELS) {
+    // Verifiably no temperature field: some Go models reject anything but
+    // their allowed default (kimi-k2.7-code 400s on "temperature: 0.4" with
+    // "only 1 is allowed"), so this tier omits it entirely and each model uses
+    // its own valid default — safer than a per-model allowlist to maintain.
+    const res = await fetch("https://opencode.ai/zen/go/v1/chat/completions", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ model, messages, tools, tool_choice: "auto" }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) return openAICompatToGeminiShape(data);
+    lastErr = new Error(`OpenCode Go ${res.status} (${model}): ${JSON.stringify(data?.error || data)}`);
+    console.error("[assistant-chat] OPENCODE_GO_MODEL_FAILED (trying next if any):", lastErr.message);
+  }
+  throw lastErr || new Error("All OpenCode Go fallback models failed.");
+}
+
+// Cap on how long a request parks waiting out an all-Gemini-keys-hot free-tier
+// quota window before falling through to the Groq/OpenRouter tiers. Free-tier
+// per-minute resets roll within this range in real logs (~24-52s hints); it
+// happens at most once per request, so this is a bounded, concrete cost.
+const MAX_GEMINI_QUOTA_WAIT_SECONDS = 30;
+
+// Gemini free-tier quota errors carry their own unlock hint in the body
+// ("Please retry in 24s"). Real logs show all four keys exhaust within ~1s of
+// each other (the same per-minute window), so parsing that hint (or the
+// HTTP Retry-After header value embedded in it) lets us actually wait it out
+// instead of surrendering requests a ~25s park would have fixed.
+function retryHintSeconds(message: string | undefined): number {
+  if (!message) return 0;
+  const m = message.match(/retry in (\d+(?:\.\d+)?)\s*s/i);
+  if (!m) return 0;
+  const sec = Number(m[1]);
+  return isFinite(sec) && sec > 0 ? Math.ceil(sec) : 0;
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Per-REQUEST flag, not per-round: the quota-window wait must fire at most once
+// for a whole multi-round conversation, or MAX_TOOL_ROUNDS × the wait would
+// blow the function timeout. On later rounds the exhausted Gemini keys are
+// simply skipped and the request goes straight to the external fallbacks.
+interface GeminiRetryState {
+  waited: boolean;
+}
+
 // Tries each configured Gemini key in turn (only continuing past a key on a
 // classified retryable/quota error — a genuine bad-request error fails fast
-// rather than burning through every key for nothing), then falls back to
-// OpenRouter only once every Gemini key is exhausted.
-async function callModel(geminiKeys: string[], openRouterKey: string | undefined, contents: any[], systemInstruction: string): Promise<{ data: any; servedBy: string }> {
+// rather than burning through every key for nothing), then falls back to the
+// paid OpenCode Go tier, then Groq, then OpenRouter — only once every Gemini
+// key is exhausted. The nuance hidden in the loop below: instead of handing
+// the request straight to an inferior free model the moment all keys are hot,
+// it parks once for the shortest unlock hint and retries the whole Gemini list
+// first — converting what real production logs show as an all-keys-
+// simultaneous free-tier window into a success. The three external tiers all
+// sit behind that as genuinely independent pools.
+async function callModel(
+  geminiKeys: string[],
+  openCodeGoKey: string | undefined,
+  groqKey: string | undefined,
+  openRouterKey: string | undefined,
+  contents: any[],
+  systemInstruction: string,
+  retryState: GeminiRetryState,
+  sessionId?: string,
+): Promise<{ data: any; servedBy: string }> {
   let lastErr: Error | null = null;
   for (const key of geminiKeys) {
     try {
@@ -446,6 +574,51 @@ async function callModel(geminiKeys: string[], openRouterKey: string | undefined
       console.error("[assistant-chat] GEMINI_KEY_FAILED (retryable, trying next key if any):", err.message);
     }
   }
+
+  if (!retryState.waited && geminiKeys.length > 0) {
+    const hint = retryHintSeconds(lastErr?.message);
+    if (hint > 0) {
+      retryState.waited = true;
+      const waitSec = Math.min(hint, MAX_GEMINI_QUOTA_WAIT_SECONDS);
+      console.error(`[assistant-chat] ALL_GEMINI_KEYS_HOT — waiting ${waitSec}s for the free-tier quota window, then retrying Gemini before external fallbacks:`, lastErr?.message);
+      await sleep(waitSec * 1000);
+      for (const key of geminiKeys) {
+        try {
+          const data = await callGemini(key, contents, systemInstruction);
+          return { data, servedBy: "gemini" };
+        } catch (err: any) {
+          if (!isRetryableModelError(err.message)) throw err;
+          console.error("[assistant-chat] GEMINI_KEY_FAILED (retryable, after waiting):", err.message);
+        }
+      }
+      lastErr = new Error(`Gemini still exhausted after a ${waitSec}s wait — ${lastErr?.message || "unknown"}`);
+    }
+  }
+
+  if (openCodeGoKey) {
+    console.error("[assistant-chat] GEMINI_ALL_KEYS_EXHAUSTED — falling back to OpenCode Go:", lastErr?.message);
+    try {
+      const data = await callOpenCodeGo(openCodeGoKey, contents, systemInstruction, sessionId);
+      return { data, servedBy: "opencode-go-fallback" };
+    } catch (err: any) {
+      console.error("[assistant-chat] OPENCODE_GO_FALLBACK_FAILED:", err.message);
+      lastErr = new Error(`${lastErr?.message || "Gemini exhausted"} — and OpenCode Go fallback failed: ${err.message}`);
+    }
+  }
+
+  if (groqKey) {
+    console.error("[assistant-chat] GEMINI_ALL_KEYS_EXHAUSTED — falling back to Groq:", lastErr?.message);
+    try {
+      const data = await callGroq(groqKey, contents, systemInstruction);
+      return { data, servedBy: "groq-fallback" };
+    } catch (err: any) {
+      console.error("[assistant-chat] GROQ_FALLBACK_FAILED:", err.message);
+      // Surface both the Gemini failure and Groq's own so a real failure of
+      // either is diagnosable rather than masked behind the other.
+      lastErr = new Error(`${lastErr?.message || "Gemini exhausted"} — and Groq fallback failed: ${err.message}`);
+    }
+  }
+
   if (openRouterKey) {
     console.error("[assistant-chat] GEMINI_ALL_KEYS_EXHAUSTED — falling back to OpenRouter:", lastErr?.message);
     try {
@@ -453,11 +626,12 @@ async function callModel(geminiKeys: string[], openRouterKey: string | undefined
       return { data, servedBy: "openrouter-fallback" };
     } catch (err: any) {
       console.error("[assistant-chat] OPENROUTER_FALLBACK_FAILED:", err.message);
-      // Previously threw `lastErr` (the Gemini error) here, which masked a
-      // real OpenRouter failure behind Gemini's — impossible to tell, from
-      // what the practitioner saw, whether the fallback was ever even
-      // attempted. Surface both so a real failure is diagnosable next time.
-      throw new Error(`Gemini exhausted (${lastErr?.message || "unknown"}) and OpenRouter fallback also failed: ${err.message}`);
+      // Previously threw only the Gemini error here, which masked a real
+      // OpenRouter failure behind Gemini's — impossible to tell whether the
+      // fallback was ever even attempted. Surface all four providers so a real
+      // failure is diagnosable from the frontend's own message, no log access
+      // needed.
+      throw new Error(`${lastErr?.message || "Gemini exhausted"} and OpenRouter fallback also failed: ${err.message}`);
     }
   }
   throw lastErr || new Error("No model available.");
@@ -1628,6 +1802,13 @@ serve(async (req) => {
       Deno.env.get("GEMINI_API_KEY_4"),
     ].filter((k): k is string => !!k);
     if (geminiKeys.length === 0) throw new Error("GEMINI_API_KEY is missing.");
+    // Paid third tier (see OPENCODE_GO_FALLBACK_MODELS) — its own API key and
+    // a quota pool independent of Gemini/Groq/OpenRouter, so it holds up the
+    // free tiers on their saturation days.
+    const openCodeGoKey = Deno.env.get("OPENCODE_GO_API_KEY") || undefined;
+    // Independent second-provider tier (see GROQ_FALLBACK_MODELS) — a separate
+    // quota pool from both Gemini and OpenRouter.
+    const groqKey = Deno.env.get("GROQ_API_KEY") || undefined;
     const openRouterKey = Deno.env.get("OPENROUTER_API_KEY");
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
@@ -1735,12 +1916,15 @@ When Daniele opens with something open-ended and undirected — "what should I w
 If Daniele says to skip, move on, or otherwise declines the client currently being discussed — in ANY conversation — drop that client immediately and go to the next relevant candidate (or ask what he'd like to do instead). Never re-explain who they are, re-verify their details, or bring them back up again later in the same conversation unless Daniele himself reintroduces them. Repeating a client he's already asked you to move past is a hard failure, not a minor annoyance.`;
 
     const toolTrace: any[] = [];
+    // Per-request (not per-round) so the all-keys-hot quota wait fires at most
+    // once even when the conversation needs several tool-calling rounds.
+    const geminiRetryState: GeminiRetryState = { waited: false };
     let pendingDraft = null;
     let pendingBooking = null;
     let finalText = "";
 
     for (let i = 0; i < MAX_TOOL_ROUNDS; i++) {
-      const { data: resp, servedBy } = await callModel(geminiKeys, openRouterKey, contents, systemInstruction);
+      const { data: resp, servedBy } = await callModel(geminiKeys, openCodeGoKey, groqKey, openRouterKey, contents, systemInstruction, geminiRetryState, conversationId);
       if (servedBy !== "gemini") console.log(`[assistant-chat] served_by: ${servedBy}`);
       const candidate = resp?.candidates?.[0];
       const part = candidate?.content?.parts?.[0];

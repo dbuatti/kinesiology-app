@@ -5,8 +5,10 @@ import { showError } from "@/utils/toast";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import ClientEmailThread from "./ClientEmailThread";
-import { voiceStudentIdFor } from "@/lib/voice-student-id";
-import { Loader2, RefreshCw, ArrowUpDown, Mic, Brain, Mail, ChevronDown } from "lucide-react";
+import ClientPicker from "./ClientPicker";
+import { voiceStudentIdFor, isVoiceStudentId, emailFromVoiceStudentId } from "@/lib/voice-student-id";
+import { VoiceStudentOption } from "@/types/assistant";
+import { Loader2, RefreshCw, ArrowUpDown, Mic, Brain, Mail, ChevronDown, PenSquare, X } from "lucide-react";
 
 interface InboxMessage {
   id: string;
@@ -23,12 +25,51 @@ interface InboxMessage {
   needs_reply: boolean;
 }
 
-export default function CommsInbox() {
+interface Props {
+  clients: { id: string; name: string; email: string | null }[];
+  voiceStudents: VoiceStudentOption[];
+}
+
+interface ComposeTarget {
+  clientId: string;
+  clientEmail: string | null;
+  clientName: string;
+}
+
+export default function CommsInbox({ clients, voiceStudents }: Props) {
   const [messages, setMessages] = useState<InboxMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [newestFirst, setNewestFirst] = useState(true);
   const [needsReplyOnly, setNeedsReplyOnly] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [composing, setComposing] = useState(false);
+  const [composePickerValue, setComposePickerValue] = useState<string | null>(null);
+  const [composeTarget, setComposeTarget] = useState<ComposeTarget | null>(null);
+
+  // Only clients with an email on file can be addressed — the rest would just
+  // hit ClientEmailThread's "no email address on file" empty state.
+  const emailClients = clients.filter((c) => c.email);
+
+  const pickComposeRecipient = (id: string | null) => {
+    setComposePickerValue(id);
+    if (!id) { setComposeTarget(null); return; }
+    if (isVoiceStudentId(id)) {
+      const email = emailFromVoiceStudentId(id);
+      const st = voiceStudents.find((s) => s.email.toLowerCase() === email.toLowerCase());
+      if (!st) return;
+      setComposeTarget({ clientId: id, clientEmail: st.email, clientName: st.name });
+    } else {
+      const c = clients.find((c) => c.id === id);
+      if (!c) return;
+      setComposeTarget({ clientId: c.id, clientEmail: c.email, clientName: c.name });
+    }
+  };
+
+  const closeCompose = () => {
+    setComposing(false);
+    setComposePickerValue(null);
+    setComposeTarget(null);
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -88,6 +129,14 @@ export default function CommsInbox() {
         </div>
         <div className="flex items-center gap-1.5">
           <Button
+            variant="default"
+            size="sm"
+            className="h-7 text-[11px] gap-1.5"
+            onClick={() => setComposing((v) => !v)}
+          >
+            <PenSquare className="h-3 w-3" /> Compose
+          </Button>
+          <Button
             variant={needsReplyOnly ? "default" : "outline"}
             size="sm"
             className={cn("h-7 text-[11px]", needsReplyOnly && "bg-chart-destructive hover:bg-chart-destructive/90 text-white")}
@@ -105,6 +154,39 @@ export default function CommsInbox() {
       </div>
 
       <div className="space-y-2">
+        {composing && (
+          <div className="rounded-xl border border-border bg-background overflow-hidden">
+            <div className="flex items-center justify-between gap-2 p-3 border-b border-border">
+              <div className="flex items-center gap-2 min-w-0">
+                <PenSquare className="h-4 w-4 text-chart-primary shrink-0" />
+                <span className="text-sm font-semibold text-foreground whitespace-nowrap">Compose new email</span>
+                <ClientPicker
+                  clients={emailClients}
+                  voiceStudents={voiceStudents}
+                  value={composePickerValue}
+                  onChange={pickComposeRecipient}
+                />
+              </div>
+              <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={closeCompose} title="Close composer">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            {composeTarget ? (
+              <div className="h-[560px]">
+                <ClientEmailThread
+                  key={composeTarget.clientId + ":" + composeTarget.clientEmail}
+                  clientId={composeTarget.clientId}
+                  clientEmail={composeTarget.clientEmail}
+                  clientName={composeTarget.clientName}
+                />
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-16">
+                Pick a recipient above to start composing.
+              </p>
+            )}
+          </div>
+        )}
         {loading && sorted.length === 0 ? (
           <div className="flex justify-center py-16"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
         ) : sorted.length === 0 ? (

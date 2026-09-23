@@ -224,7 +224,7 @@ const AppointmentV2Page = () => {
 
       {/* Content */}
       {viewMode === 'peace' && (
-        <div className="px-4 md:px-8 py-6 max-w-6xl mx-auto">
+        <div className="px-4 md:px-8 py-6 w-full">
           <ErrorBoundary>
             <PeaceWizard
               appointment={appointment}
@@ -251,7 +251,7 @@ const AppointmentV2Page = () => {
       )}
 
       {viewMode === 'grid' && (
-        <div className="px-4 md:px-8 py-6 max-w-6xl mx-auto">
+        <div className="px-4 md:px-8 py-6 w-full">
           <ErrorBoundary>
             <PathwayReflexStimGrid
               appointmentId={appointment.id}

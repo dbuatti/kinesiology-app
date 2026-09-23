@@ -92,9 +92,10 @@ const NAV_GROUPS: NavGroup[] = [
 interface SidebarProps {
   mobileOpen: boolean;
   onMobileOpenChange: (open: boolean) => void;
+  drawerOnly?: boolean;
 }
 
-const Sidebar = ({ mobileOpen, onMobileOpenChange }: SidebarProps) => {
+const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: SidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { mode } = useAppMode();
@@ -379,13 +380,16 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange }: SidebarProps) => {
 
   return (
     <>
-      {/* Desktop Sidebar */}
-      <aside className={cn(
-        "hidden lg:flex shrink-0 flex-col h-full border-r border-border transition-all duration-300 ease-in-out",
-        collapsed ? "w-16" : "w-64"
-      )}>
-        {sidebarContent}
-      </aside>
+      {/* Desktop Sidebar — skipped in drawer-only (iPad) mode, where the Sheet
+          below is the sole navigation surface. */}
+      {!drawerOnly && (
+        <aside className={cn(
+          "hidden lg:flex shrink-0 flex-col h-full border-r border-border transition-all duration-300 ease-in-out",
+          collapsed ? "w-16" : "w-64"
+        )}>
+          {sidebarContent}
+        </aside>
+      )}
 
       {/* Mobile: content only — the trigger + header bar live in MainLayout
           (which owns mobileOpen/onMobileOpenChange) so the header can sit

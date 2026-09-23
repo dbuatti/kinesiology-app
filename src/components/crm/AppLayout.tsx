@@ -24,7 +24,7 @@ const AppLayout = ({
     variant === "full" ? "max-w-none" : 
     variant === "wide" ? "max-w-[1600px]" :
     variant === "workspace" ? "max-w-7xl" : 
-    "max-w-6xl";
+    "max-w-none";
 
   return (
     <div

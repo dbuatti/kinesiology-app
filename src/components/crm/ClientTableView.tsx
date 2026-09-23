@@ -55,7 +55,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
 
   return (
     <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto overflow-y-clip">
       <Table>
         <TableHeader className="bg-muted/50">
           <TableRow className="hover:bg-transparent border-border">

@@ -122,19 +122,6 @@ const MainLayout = () => {
   // this footer, which read as broken sizing rather than expected page content.
   const isWorkingToolPage = location.pathname.startsWith('/assistant') || /^\/clients\/[^/]+\/hub/.test(location.pathname);
 
-  // iPad Mode: non-session, non-practice routes funnel to the Clinical Hub so
-  // the practitioner can just work with clients, free of the sidebar.
-  const shouldRedirectToHub =
-    ipadMode &&
-    !location.pathname.startsWith('/practice/') &&
-    !location.pathname.startsWith('/appointments/');
-
-  useEffect(() => {
-    if (shouldRedirectToHub) {
-      navigate('/practice/clinical-hub', { replace: true });
-    }
-  }, [shouldRedirectToHub, navigate]);
-
   return (
     <div className="flex h-screen transition-all duration-1000 relative overflow-hidden bg-background">
       {/* BACKGROUND ORBS */}
@@ -151,8 +138,10 @@ const MainLayout = () => {
       </div>
 
       <div className="relative z-10 flex h-full w-full">
-        {/* Sidebar */}
-        {!shouldHideSidebar && !ipadMode && <Sidebar mobileOpen={mobileNavOpen} onMobileOpenChange={setMobileNavOpen} />}
+        {/* Sidebar — rendered in every non-hidden mode so its Sheet drawer is
+            available; iPad Mode sets drawerOnly so just the drawer exists and
+            the full 256px is handed back to content. */}
+        {!shouldHideSidebar && <Sidebar drawerOnly={ipadMode} mobileOpen={mobileNavOpen} onMobileOpenChange={setMobileNavOpen} />}
 
         {/* iPad Mode Exit Button */}
         {ipadMode && !shouldHideHeader && (
@@ -173,9 +162,14 @@ const MainLayout = () => {
         <div className="flex flex-col flex-1 min-w-0 h-full">
           {/* Mobile nav header — a real hamburger entry point (in the
               content column's own vertical stack, above everything else)
-              rather than a floating FAB with no visible affordance. */}
-          {!shouldHideSidebar && !ipadMode && (
-            <header className="lg:hidden shrink-0 flex items-center gap-3 h-14 px-4 border-b border-border bg-card/95 backdrop-blur-sm">
+              rather than a floating FAB with no visible affordance. Also shown
+              at every width in iPad Mode, where the fixed sidebar is hidden
+              and the drawer is the only way back into navigation. */}
+          {!shouldHideSidebar && (
+            <header className={cn(
+              "shrink-0 flex items-center gap-3 h-14 px-4 border-b border-border bg-card/95 backdrop-blur-sm",
+              !ipadMode && "lg:hidden"
+            )}>
               <button
                 onClick={() => setMobileNavOpen(true)}
                 aria-label="Open navigation menu"

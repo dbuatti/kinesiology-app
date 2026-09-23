@@ -125,7 +125,7 @@ const ClinicalHubPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-6xl mx-auto px-4 md:px-8 py-6">
+      <div className="w-full px-4 md:px-8 py-6">
         {/* Header */}
         <div className="mb-10">
           <div className="flex items-center justify-between gap-3 mb-2">

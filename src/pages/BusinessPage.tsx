@@ -30,7 +30,7 @@ const BusinessPage = () => {
           controlled Tabs value/onValueChange from outside TabsTrigger, so
           Radix's show/hide logic below is untouched. */}
       <div className="sticky top-0 z-10 bg-background border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 md:px-8">
+        <div className="w-full px-4 md:px-8">
           <div className="flex gap-6">
             {TABS.map((t) => (
               <button
@@ -50,19 +50,19 @@ const BusinessPage = () => {
       </div>
       {/* No px/py here — every Tool below already brings its own p-6, and
           stacking this wrapper's padding on top of that was pure double
-          padding (max-w-6xl centering is the only thing actually needed
-          at this level). */}
+          padding (full-width is the only thing actually needed at this
+          level). */}
       <TabsContent value="dashboard" className="m-0">
-          <div className="max-w-6xl mx-auto w-full"><BusinessDashboardTool /></div>
+          <div className="w-full"><BusinessDashboardTool /></div>
         </TabsContent>
         <TabsContent value="overview" className="m-0">
-          <div className="max-w-6xl mx-auto w-full"><BusinessOverviewTool /></div>
+          <div className="w-full"><BusinessOverviewTool /></div>
         </TabsContent>
         <TabsContent value="client-audit" className="m-0">
-          <div className="max-w-6xl mx-auto w-full"><ClientAuditTool /></div>
+          <div className="w-full"><ClientAuditTool /></div>
         </TabsContent>
         <TabsContent value="marketing" className="m-0">
-          <div className="max-w-6xl mx-auto w-full"><MarketingEngineTool /></div>
+          <div className="w-full"><MarketingEngineTool /></div>
         </TabsContent>
     </Tabs>
   );

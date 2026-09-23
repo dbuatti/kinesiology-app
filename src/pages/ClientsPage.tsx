@@ -438,7 +438,7 @@ const ClientsPage = () => {
   return (
     <Tabs value={tab} onValueChange={setTab} className="w-full">
       <div className="sticky top-0 z-10 bg-background border-b border-border pt-3">
-        <div className="max-w-6xl mx-auto px-4 md:px-8">
+        <div className="w-full px-4 md:px-8">
           <TabsList className="w-full flex-wrap gap-1 bg-muted/60 rounded-xl p-1">
             <TabsTrigger value="database" className="gap-2">
               <Users size={14} />
@@ -452,12 +452,12 @@ const ClientsPage = () => {
         </div>
       </div>
       <TabsContent value="database" className="m-0">
-        <div className="max-w-6xl mx-auto w-full px-4 md:px-8 py-6">
+        <div className="w-full px-4 md:px-8 py-6">
           <ClientsTool />
         </div>
       </TabsContent>
       <TabsContent value="oversight" className="m-0">
-        <div className="max-w-6xl mx-auto w-full px-4 md:px-8 py-6">
+        <div className="w-full px-4 md:px-8 py-6">
           <ClinicalOversightTool />
         </div>
       </TabsContent>

@@ -12,7 +12,7 @@ const CorrectionsManualPage = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="border-b border-border bg-background sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+        <div className="w-full px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <BookOpen size={18} className="text-muted-foreground" />
             <h1 className="text-sm font-semibold tracking-tight">Corrections Manual</h1>

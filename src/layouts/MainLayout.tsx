@@ -4,8 +4,10 @@ import Sidebar from '@/components/crm/Sidebar';
 import BackToTop from '@/components/shared/BackToTop';
 import FooterLinks from '@/components/crm/FooterLinks';
 import TopBar from '@/components/layout/TopBar';
+import MobileTabBar from '@/components/layout/MobileTabBar';
 import { useAppMode } from '@/components/ModeProvider';
 import { useIpadMode } from '@/hooks/use-ipad-mode';
+import { cn } from '@/lib/utils';
 import { showSuccess } from '@/utils/toast';
 import { Tablet } from 'lucide-react';
 
@@ -125,6 +127,7 @@ const MainLayout = () => {
   const shouldHideSidebar = shouldHideHeader || isDocView;
   // The link footer doesn't belong under a working tool page — the panes
   // above size to the viewport, so a footer below them reads as broken sizing.
+  const showTabBar = !shouldHideSidebar && !isInSession;
   const isWorkingToolPage = location.pathname.startsWith('/assistant') || /^\/clients\/[^/]+\/hub/.test(location.pathname);
 
   return (
@@ -142,7 +145,7 @@ const MainLayout = () => {
             showSuccess("iPad Mode off — sidebar restored");
           }}
           title="Exit iPad Mode — restore the full sidebar"
-          className="fixed bottom-5 left-5 z-40 flex h-10 items-center gap-2 rounded-full border border-border bg-card/90 pl-3 pr-4 text-[13px] font-medium text-foreground shadow-lg backdrop-blur-xl hover:bg-card print:hidden"
+          className="fixed bottom-20 left-5 z-40 flex h-10 lg:bottom-5 items-center gap-2 rounded-full border border-border bg-card/90 pl-3 pr-4 text-[13px] font-medium text-foreground shadow-lg backdrop-blur-xl hover:bg-card print:hidden"
         >
           <Tablet size={15} className="text-chart-emerald" />
           Exit iPad mode
@@ -192,7 +195,10 @@ const MainLayout = () => {
             const next = (e.currentTarget as HTMLElement).scrollTop > 4;
             if (next !== scrolled) setScrolled(next);
           }}
-          className="relative flex flex-1 flex-col overflow-auto overscroll-contain"
+          className={cn(
+            "relative flex flex-1 flex-col overflow-auto overscroll-contain",
+            showTabBar && "pb-[calc(3.5rem+env(safe-area-inset-bottom))] lg:pb-0"
+          )}
         >
           <div key={location.pathname + location.search} className="page-enter flex-1">
             <Outlet />
@@ -201,6 +207,7 @@ const MainLayout = () => {
         </main>
       </div>
 
+      {showTabBar && <MobileTabBar onMore={() => setMobileNavOpen(true)} />}
       <BackToTop />
     </div>
   );

@@ -39,7 +39,7 @@ const BackToTop = () => {
       size="icon"
       onClick={scrollToTop}
       className={cn(
-        "fixed bottom-5 right-5 z-40 h-9 w-9 rounded-full shadow-lg transition-all duration-300 ease-out-expo border border-border bg-card/90 backdrop-blur-xl hover:bg-card print:hidden",
+        "fixed bottom-20 right-4 z-40 lg:bottom-5 lg:right-5 h-9 w-9 rounded-full shadow-lg transition-all duration-300 ease-out-expo border border-border bg-card/90 backdrop-blur-xl hover:bg-card print:hidden",
         isVisible ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0 pointer-events-none"
       )}
     >

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, LayoutGroup } from "framer-motion";
 import { useTheme } from "next-themes";
@@ -42,6 +42,7 @@ import {
   PanelLeftOpen,
   ChevronsUpDown,
   Sunrise,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { BrandMark } from "@/components/layout/BrandMark";
@@ -137,6 +138,7 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
   const { session } = useAuth();
   const { theme, setTheme } = useTheme();
   const { isPrivate, togglePrivacy } = usePrivacyMode();
+  const touchX = useRef<number | null>(null);
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSE_KEY) === "true");
 
   const toggleCollapsed = () => {
@@ -196,8 +198,12 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
     window.location.href = "/login";
   };
 
-  const renderContent = (isRail: boolean, scope: string) => (
-    <div className="flex h-full flex-col bg-sidebar text-[13px]">
+  const renderContent = (isRail: boolean, scope: string) => {
+    const isDrawer = scope === "drawer";
+    // Touch-sized rows in the drawer; compact rows on the desktop rail.
+    const rowH = isDrawer ? "h-11 text-[15px]" : "h-8";
+    return (
+    <div className={cn("flex h-full flex-col bg-sidebar", isDrawer ? "pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] text-[15px]" : "text-[13px]")}>
       {/* Brand */}
       <div className={cn("flex h-14 shrink-0 items-center gap-2.5", isRail ? "justify-center px-0" : "pl-4 pr-3")}>
         <Link to="/" onClick={close} className="group flex min-w-0 items-center gap-2.5" aria-label="Resonance — home">
@@ -209,7 +215,16 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
             </div>
           )}
         </Link>
-        {!isRail && !drawerOnly && (
+        {isDrawer && (
+          <button
+            onClick={close}
+            aria-label="Close navigation"
+            className="ml-auto flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/[0.05] hover:text-foreground"
+          >
+            <X size={18} />
+          </button>
+        )}
+        {!isRail && !drawerOnly && !isDrawer && (
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
               <button
@@ -257,7 +272,8 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
                     to={w.to}
                     onClick={close}
                     className={cn(
-                      "relative z-10 flex h-7 min-w-0 items-center justify-center gap-1.5 rounded-[7px] text-[12px] font-medium",
+                      "relative z-10 flex min-w-0 items-center justify-center gap-1.5 rounded-[7px] font-medium",
+                      isDrawer ? "h-9 text-[13px]" : "h-7 text-[12px]",
                       on ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                     )}
                   >
@@ -298,7 +314,7 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
                         onClick={close}
                         aria-current={active ? "page" : undefined}
                         className={cn(
-                          "group relative flex h-8 items-center gap-2.5 rounded-[7px] font-medium outline-none",
+                          cn("group relative flex items-center gap-2.5 rounded-[7px] font-medium outline-none", rowH),
                           isRail ? "justify-center px-0" : "px-2.5",
                           active ? "text-foreground" : "text-muted-foreground hover:bg-foreground/[0.045] hover:text-foreground"
                         )}
@@ -332,7 +348,7 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
           <button
             onClick={togglePrivacy}
             className={cn(
-              "flex h-8 w-full items-center gap-2.5 rounded-[7px] font-medium",
+              cn("flex w-full items-center gap-2.5 rounded-[7px] font-medium", rowH),
               isRail ? "justify-center" : "px-2.5",
               isPrivate ? "text-chart-destructive" : "text-muted-foreground hover:bg-foreground/[0.045] hover:text-foreground"
             )}
@@ -358,7 +374,7 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
             to="/settings"
             onClick={close}
             className={cn(
-              "flex h-8 items-center gap-2.5 rounded-[7px] font-medium",
+              cn("flex items-center gap-2.5 rounded-[7px] font-medium", rowH),
               isRail ? "justify-center" : "px-2.5",
               location.pathname.startsWith("/settings")
                 ? "bg-sidebar-active text-foreground shadow-sm ring-1 ring-border/70"
@@ -451,7 +467,8 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
         )}
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <>
@@ -470,7 +487,15 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
 
       {/* Drawer — opened from the top bar's menu button */}
       <Sheet open={mobileOpen} onOpenChange={onMobileOpenChange}>
-        <SheetContent side="left" className="w-[280px] max-w-[86vw] border-r border-sidebar-border p-0 [&>button]:hidden">
+        <SheetContent
+          side="left"
+          className="w-[300px] max-w-[86vw] border-r border-sidebar-border p-0 [&>button]:hidden"
+          onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }}
+          onTouchEnd={(e) => {
+            if (touchX.current !== null && e.changedTouches[0].clientX - touchX.current < -60) onMobileOpenChange(false);
+            touchX.current = null;
+          }}
+        >
           <SheetTitle className="sr-only">Navigation</SheetTitle>
           {renderContent(false, "drawer")}
         </SheetContent>

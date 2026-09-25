@@ -4,26 +4,40 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
+/**
+ * Buttons carry the tactile part of the design system:
+ * - solid variants get an inner top highlight + hairline ring + soft drop,
+ *   so they read as physical objects rather than flat rectangles
+ * - every button presses in (scale 0.98) and eases back out
+ * - focus is a soft tinted halo, never a hard offset outline
+ */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  [
+    "relative inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium",
+    "transition-[background-color,color,border-color,box-shadow,transform,filter] duration-150 ease-out-expo",
+    "focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25",
+    "active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50",
+    "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  ].join(" "),
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default:
+          "bg-primary text-primary-foreground shadow-button hover:brightness-[1.07] hover:shadow-button-hover",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+          "bg-destructive text-destructive-foreground shadow-button-destructive hover:brightness-[1.07]",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+          "border border-border bg-card text-foreground shadow-xs hover:border-foreground/15 hover:bg-accent hover:text-accent-foreground",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-foreground/[0.05] text-secondary-foreground hover:bg-foreground/[0.08]",
+        ghost: "hover:bg-foreground/[0.05] hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline active:scale-100",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
+        default: "h-9 px-3.5",
+        sm: "h-8 rounded-md px-3 text-[13px]",
+        lg: "h-10 px-5",
+        icon: "h-9 w-9",
       },
     },
     defaultVariants: {

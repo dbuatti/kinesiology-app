@@ -394,7 +394,7 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent side={isRail ? "right" : "top"} align={isRail ? "end" : "start"} sideOffset={8} className="w-60">
-            <DropdownMenuLabel className="font-normal">
+            <DropdownMenuLabel className="font-normal normal-case tracking-normal">
               <div className="truncate text-[13px] font-medium text-foreground">{displayName}</div>
               <div className="truncate text-xs text-muted-foreground">{email}</div>
             </DropdownMenuLabel>

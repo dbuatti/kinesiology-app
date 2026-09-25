@@ -105,6 +105,10 @@ export default {
         'premium': '0 12px 28px -12px hsl(var(--primary) / 0.22)',
         'inner-soft': 'inset 0 1px 2px 0 hsl(var(--shadow-color) / 0.04)',
         'ring': '0 0 0 1px hsl(var(--border))',
+        // Solid buttons: inner top highlight + hairline edge + soft drop
+        'button': 'inset 0 1px 0 hsl(0 0% 100% / 0.16), 0 0 0 1px hsl(var(--primary) / 0.9), 0 1px 2px hsl(var(--shadow-color) / 0.2), 0 2px 6px -2px hsl(var(--primary) / 0.35)',
+        'button-hover': 'inset 0 1px 0 hsl(0 0% 100% / 0.2), 0 0 0 1px hsl(var(--primary)), 0 2px 4px hsl(var(--shadow-color) / 0.18), 0 8px 18px -8px hsl(var(--primary) / 0.55)',
+        'button-destructive': 'inset 0 1px 0 hsl(0 0% 100% / 0.16), 0 0 0 1px hsl(var(--destructive) / 0.9), 0 1px 2px hsl(var(--shadow-color) / 0.2)',
       },
       transitionTimingFunction: {
         'out-expo': 'cubic-bezier(0.22, 1, 0.36, 1)',
@@ -112,6 +116,9 @@ export default {
       },
       transitionDuration: { DEFAULT: '160ms' },
       keyframes: {
+        shimmer: {
+          '100%': { transform: 'translateX(100%)' },
+        },
         'accordion-down': {
           from: { height: '0' },
           to: { height: 'var(--radix-accordion-content-height)' },
@@ -122,6 +129,7 @@ export default {
         },
       },
       animation: {
+        shimmer: 'shimmer 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite',
         'spin-slow': 'spin 8s linear infinite',
         'pulse-soft': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'accordion-down': 'accordion-down 0.24s cubic-bezier(0.22, 1, 0.36, 1)',

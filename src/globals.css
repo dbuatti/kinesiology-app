@@ -195,7 +195,6 @@
 
   ::selection { background: hsl(var(--primary) / 0.18); }
 
-  button:not(:disabled):active, [role="button"]:active { transform: translateY(0.5px); }
 
   input::placeholder, textarea::placeholder { color: hsl(var(--muted-foreground) / 0.75); }
 }
@@ -374,27 +373,6 @@
   animation-timing-function: var(--ease-in-out) !important;
 }
 
-/* Tabs (shadcn TabsList / Trigger): quiet segmented control */
-[role="tablist"].bg-muted {
-  box-shadow: inset 0 0 0 1px hsl(var(--border) / 0.55);
-}
-[role="tab"][data-state="active"].data-\[state\=active\]\:bg-background {
-  box-shadow: 0 1px 2px hsl(var(--shadow-color) / 0.08), 0 0 0 1px hsl(var(--border) / 0.7);
-}
-.dark [role="tab"][data-state="active"].data-\[state\=active\]\:bg-background {
-  background-color: hsl(var(--accent));
-}
-
-/* Inputs: calmer focus — a tinted halo instead of a hard offset ring */
-input.border-input:focus-visible,
-textarea.border-input:focus-visible,
-button[role="combobox"]:focus-visible {
-  outline: none;
-  --tw-ring-offset-width: 0px;
-  border-color: hsl(var(--ring) / 0.55);
-  box-shadow: 0 0 0 3px hsl(var(--ring) / 0.16) !important;
-}
-
 /* Toasts (sonner) */
 [data-sonner-toaster] [data-sonner-toast] {
   border-radius: 12px !important;
@@ -441,3 +419,21 @@ button[role="combobox"]:focus-visible {
 [cmdk-root] [cmdk-item] { padding-top: 7px !important; padding-bottom: 7px !important; }
 [cmdk-root] [cmdk-item] svg { width: 16px !important; height: 16px !important; }
 [cmdk-root] [cmdk-input-wrapper] svg { width: 16px !important; height: 16px !important; opacity: 0.55; }
+
+/* Spotlight — a soft light that follows the pointer across a surface.
+   Any element with .spotlight gets it; --mx/--my are set by a single
+   pointermove listener in main.tsx (no per-component JS). */
+.spotlight { position: relative; isolation: isolate; }
+.spotlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 300ms var(--ease-out);
+  background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 50%), hsl(var(--primary) / 0.07), transparent 70%);
+}
+.spotlight:hover::after { opacity: 1; }
+@media (hover: none) { .spotlight::after { display: none; } }

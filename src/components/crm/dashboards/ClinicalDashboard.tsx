@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import PractitionerGrounding from "../PractitionerGrounding";
 import DashboardStats from "../DashboardStats";
+import TodayTimeline from "../TodayTimeline";
 import DailyBriefing from "../DailyBriefing";
 import UpcomingAppointments from "../UpcomingAppointments";
 import RecentActivity from "../RecentActivity";
@@ -40,9 +41,11 @@ const ClinicalDashboard = ({ stats, todaySessions, activeSession, morningProgres
       {/* ROW 1: Stats */}
       <DashboardStats stats={stats} />
 
+      <TodayTimeline sessions={todaySessions} />
+
       {/* ROW 2: Today's checklist */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="mr-1 text-[13px] font-medium text-muted-foreground">Today</span>
+        <span className="mr-1 text-[13px] font-medium text-muted-foreground">Daily rituals</span>
         {missions.map((m, i) => {
           const done = m.status === 'done';
           return (

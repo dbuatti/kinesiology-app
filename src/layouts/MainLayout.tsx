@@ -33,7 +33,8 @@ const ROUTES: Record<string, [string, string, string]> = {
 };
 
 const MainLayout = () => {
-  const { setMode } = useAppMode();
+  const { mode, setMode } = useAppMode();
+  const [scrolled, setScrolled] = useState(false);
   const { enabled: ipadMode, toggle: toggleIpadMode } = useIpadMode();
   const location = useLocation();
   const navigate = useNavigate();
@@ -149,7 +150,29 @@ const MainLayout = () => {
       )}
 
       {/* Main column */}
-      <div className="flex h-full min-w-0 flex-1 flex-col">
+      <div className="relative isolate flex h-full min-w-0 flex-1 flex-col">
+        {/* Workspace aura — a soft light at the top of the canvas, tinted by
+            workspace (Clinical indigo · Voice rose · Business emerald). It
+            crossfades when you switch workspace, so each one has its own
+            atmosphere without any extra chrome. */}
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[460px] overflow-hidden print:hidden">
+          {([
+            ["clinical", "hsl(236 80% 62% / 0.11)", "hsl(266 70% 60% / 0.07)"],
+            ["voice", "hsl(346 80% 58% / 0.10)", "hsl(20 90% 60% / 0.06)"],
+            ["business", "hsl(160 60% 42% / 0.10)", "hsl(190 70% 45% / 0.06)"],
+          ] as const).map(([m, a, b]) => (
+            <div
+              key={m}
+              className="absolute inset-0 transition-opacity duration-1000 ease-out-expo"
+              style={{
+                opacity: mode === m ? 1 : 0,
+                background: `radial-gradient(60% 90% at 12% -10%, ${a}, transparent 70%), radial-gradient(50% 80% at 88% -20%, ${b}, transparent 70%)`,
+              }}
+            />
+          ))}
+          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-background" />
+        </div>
+
         {!shouldHideHeader && (
           <TopBar
             title={currentTitle}
@@ -159,10 +182,18 @@ const MainLayout = () => {
             mobileOnly={isInSession}
             showUpNext={!isInSession}
             onMenu={() => setMobileNavOpen(true)}
+            scrolled={scrolled}
           />
         )}
 
-        <main id="main-scroll-container" className="relative flex flex-1 flex-col overflow-auto overscroll-contain">
+        <main
+          id="main-scroll-container"
+          onScroll={(e) => {
+            const next = (e.currentTarget as HTMLElement).scrollTop > 4;
+            if (next !== scrolled) setScrolled(next);
+          }}
+          className="relative flex flex-1 flex-col overflow-auto overscroll-contain"
+        >
           <div key={location.pathname + location.search} className="page-enter flex-1">
             <Outlet />
           </div>

@@ -144,7 +144,7 @@ const LibraryPage = () => {
                   <button
                     key={x.id}
                     onClick={() => setSelectedId(x.id)}
-                    className="group flex items-center gap-3 rounded-xl border border-border bg-card px-3.5 py-3 text-left shadow-xs hover:border-foreground/15 hover:shadow-sm"
+                    className="spotlight group flex items-center gap-3 rounded-xl border border-border bg-card px-3.5 py-3 text-left shadow-xs transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:border-foreground/15 hover:shadow-md"
                   >
                     {x.icon && (
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/[0.07] text-primary">

@@ -1,3 +1,4 @@
+import { CountUp } from "@/hooks/use-count-up";
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -179,7 +180,7 @@ const VoiceDashboardPage = () => {
  <stat.icon size={15} strokeWidth={1.85} className={cn(stat.alert ? "text-chart-destructive" : "text-muted-foreground/80")} />
  <span className="truncate">{stat.label}</span>
  </div>
- <div className={cn("text-[28px] font-semibold leading-none tracking-[-0.03em] tabular-nums", stat.alert ? "text-chart-destructive" : "text-foreground")}>{stat.value}</div>
+ <div className={cn("text-[28px] font-semibold leading-none tracking-[-0.03em] tabular-nums", stat.alert ? "text-chart-destructive" : "text-foreground")}>{typeof stat.value === "number" ? <CountUp value={stat.value} /> : stat.value}</div>
  </div>
  ))}
  </div>

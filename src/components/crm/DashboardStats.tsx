@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Users, CalendarDays, Wind, ShieldAlert, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CountUp } from "@/hooks/use-count-up";
 
 interface DashboardStatsProps {
   stats: {
@@ -40,7 +41,7 @@ const DashboardStats = ({ stats }: DashboardStatsProps) => {
           key={t.label}
           to={t.to}
           className={cn(
-            "group relative flex flex-col gap-3 p-4 sm:p-5 hover:bg-foreground/[0.018]",
+            "spotlight group relative flex flex-col gap-3 p-4 sm:p-5",
             i % 2 === 1 && "border-l border-border",
             i >= 2 && "border-t border-border lg:border-t-0",
             i === 2 && "lg:border-l"
@@ -56,7 +57,7 @@ const DashboardStats = ({ stats }: DashboardStatsProps) => {
           </div>
           <div className="flex items-baseline gap-1">
             <span className={cn("text-[28px] font-semibold leading-none tracking-[-0.03em] tabular-nums", t.alert ? "text-destructive" : "text-foreground")}>
-              {t.value}
+              {typeof t.value === "number" ? <CountUp value={t.value} /> : t.value}
             </span>
             {t.unit && <span className="text-base font-medium text-muted-foreground">{t.unit}</span>}
           </div>

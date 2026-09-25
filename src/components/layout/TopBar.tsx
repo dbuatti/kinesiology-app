@@ -16,6 +16,8 @@ interface TopBarProps {
   mobileOnly?: boolean;
   showUpNext?: boolean;
   onMenu: () => void;
+  /** Content has scrolled under the bar — show its surface + hairline. */
+  scrolled?: boolean;
 }
 
 /**
@@ -24,14 +26,17 @@ interface TopBarProps {
  * old full-width "Up Next" strip and the floating + button, so nothing
  * hovers over page content any more.
  */
-export function TopBar({ section, sectionTo, title, menuDesktop, mobileOnly, showUpNext = true, onMenu }: TopBarProps) {
+export function TopBar({ section, sectionTo, title, menuDesktop, mobileOnly, showUpNext = true, onMenu, scrolled = false }: TopBarProps) {
   const { resolvedTheme, setTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
 
   return (
     <header
       className={cn(
-        "relative z-30 flex h-[calc(3.5rem+env(safe-area-inset-top))] shrink-0 items-center gap-2 border-b border-border/80 bg-topbar/85 px-3 backdrop-blur-xl supports-[backdrop-filter]:bg-topbar/70 sm:px-4 lg:h-[calc(52px+env(safe-area-inset-top))] lg:px-6 print:hidden",
+        "relative z-30 flex h-[calc(3.5rem+env(safe-area-inset-top))] shrink-0 items-center gap-2 border-b px-3 transition-[background-color,border-color,box-shadow] duration-300 sm:px-4 lg:h-[calc(52px+env(safe-area-inset-top))] lg:px-6 print:hidden",
+        scrolled
+          ? "border-border/80 bg-topbar/80 shadow-[0_1px_12px_-6px_hsl(var(--shadow-color)/0.12)] backdrop-blur-xl supports-[backdrop-filter]:bg-topbar/65"
+          : "border-transparent bg-transparent",
         "pt-[env(safe-area-inset-top)]",
         mobileOnly && "lg:hidden"
       )}

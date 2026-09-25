@@ -124,7 +124,7 @@ const MotorControlHierarchy = () => {
         ))}
       </div>
 
-      <Card className="border-none shadow-lg rounded-2xl bg-foreground text-primary-foreground overflow-hidden">
+      <Card className="border-none shadow-lg rounded-2xl bg-[hsl(238_26%_10%)] text-white ring-1 ring-white/[0.06] overflow-hidden">
         <CardContent className="p-8 flex flex-col md:flex-row items-center gap-8">
           <div className="w-20 h-20 rounded-2xl bg-indigo-600 flex items-center justify-center shrink-0 shadow-2xl shadow-indigo-500/20">
             <Workflow size={40} className="text-primary-foreground" />

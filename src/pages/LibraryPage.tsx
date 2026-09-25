@@ -4,6 +4,7 @@ import {
   GraduationCap, Trophy, BookOpen, Shield, Wind, Workflow, Dumbbell, Baby, Zap,
   Brain, ImageIcon, Youtube, Clock, RefreshCw, Layers, Target, Lightbulb,
   Heart, Calculator, Move, Printer,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import UnifiedEditor, { type UnifiedEditorSection } from "@/components/crm/UnifiedEditor";
@@ -114,8 +115,8 @@ const LibraryPage = () => {
       rightHeader={
         selected ? (
           <div className="px-6 h-12 flex items-center gap-3">
-            {selected.icon && <selected.icon size={16} className="text-chart-primary" />}
-            <span className="text-sm font-bold text-foreground">{selected.label}</span>
+            {selected.icon && <selected.icon size={16} className="text-primary" />}
+            <span className="text-sm font-semibold text-foreground">{selected.label}</span>
           </div>
         ) : null
       }
@@ -123,21 +124,40 @@ const LibraryPage = () => {
       selectedId={selectedId}
       onSelect={setSelectedId}
       emptyState={
-        <div className="h-full flex flex-col items-center justify-center gap-4 p-8 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-chart-primary/10 flex items-center justify-center">
-            <BookOpen size={28} className="text-chart-primary" />
+        <div className="mx-auto w-full max-w-5xl px-5 py-8 sm:px-8 lg:py-10">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h1 className="font-serif text-[28px] font-medium leading-tight tracking-[-0.02em] text-foreground">Library</h1>
+              <p className="mt-1 text-sm text-muted-foreground">Clinical references, worksheets and practice tools — pick one to open it.</p>
+            </div>
+            <Button asChild variant="outline" size="sm" className="h-9 gap-2 rounded-lg text-[13px]">
+              <Link to="/resources/print">
+                <Printer size={14} /> Print hub
+              </Link>
+            </Button>
           </div>
-          <div>
-            <p className="text-sm font-bold text-foreground">Select a reference from the left</p>
-            <p className="text-xs text-muted-foreground font-medium mt-1">
-              Clinical references, worksheets, and practice tools.
-            </p>
-          </div>
-          <Button asChild variant="outline" className="rounded-xl text-xs gap-2">
-            <Link to="/resources/print">
-              <Printer size={14} /> Print Hub
-            </Link>
-          </Button>
+          {Array.from(new Set(sections.map((x) => x.group ?? ""))).map((group) => (
+            <div key={group} className="mt-8">
+              {group && <h2 className="mb-3 text-[13px] font-medium text-muted-foreground">{group}</h2>}
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {sections.filter((x) => (x.group ?? "") === group).map((x) => (
+                  <button
+                    key={x.id}
+                    onClick={() => setSelectedId(x.id)}
+                    className="group flex items-center gap-3 rounded-xl border border-border bg-card px-3.5 py-3 text-left shadow-xs hover:border-foreground/15 hover:shadow-sm"
+                  >
+                    {x.icon && (
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/[0.07] text-primary">
+                        <x.icon size={16} />
+                      </span>
+                    )}
+                    <span className="flex-1 truncate text-sm font-medium text-foreground">{x.label}</span>
+                    <ChevronRight size={15} className="shrink-0 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       }
     />

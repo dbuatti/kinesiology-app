@@ -102,7 +102,7 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
                 ))}
               </div>
 
-              <div className="bg-foreground text-primary-foreground p-6 rounded-3xl relative overflow-hidden">
+              <div className="bg-[hsl(238_26%_10%)] text-white ring-1 ring-white/[0.06] p-6 rounded-3xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-10">
                   <Clock size={80} />
                 </div>

@@ -290,7 +290,7 @@ const PrimitiveReflexReference = () => {
     <div className="space-y-12">
       {/* Theory & Process Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <Card className="lg:col-span-2 border-none shadow-sm rounded-xl bg-foreground text-primary-foreground overflow-hidden relative">
+        <Card className="lg:col-span-2 border-none shadow-sm rounded-xl bg-[hsl(238_26%_10%)] text-white ring-1 ring-white/[0.06] overflow-hidden relative">
           <div className="absolute top-0 right-0 p-10 opacity-5"><Workflow size={150} /></div>
           <CardHeader className="p-10">
             <div className="flex items-center gap-4 mb-4">

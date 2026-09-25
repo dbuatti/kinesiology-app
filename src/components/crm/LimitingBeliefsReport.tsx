@@ -190,7 +190,7 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
             </div>
           </section>
 
-          <div className="p-6 bg-foreground text-primary-foreground rounded-2xl flex items-start gap-6 shadow-xl">
+          <div className="p-6 bg-[hsl(238_26%_10%)] text-white ring-1 ring-white/[0.06] rounded-2xl flex items-start gap-6 shadow-xl">
             <div className="w-12 h-12 rounded-2xl bg-rose-600 flex items-center justify-center shrink-0 shadow-lg">
               <Quote size={24} className="text-rose-300" />
             </div>

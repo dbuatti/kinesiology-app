@@ -85,7 +85,7 @@ const FiveElementCycle = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-lg rounded-2xl bg-foreground text-primary-foreground overflow-hidden relative">
+        <Card className="border-none shadow-lg rounded-2xl bg-[hsl(238_26%_10%)] text-white ring-1 ring-white/[0.06] overflow-hidden relative">
           <div className="absolute top-0 right-0 p-8 opacity-10"><Shield size={120} /></div>
           <CardHeader className="p-8">
             <CardTitle className="text-2xl font-semibold flex items-center gap-3">

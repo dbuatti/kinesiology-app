@@ -191,7 +191,7 @@ const IdentityWorkspacePage = () => {
       rightHeader={
         <div className="px-6 h-12 flex items-center gap-3">
           {selected.icon && <selected.icon size={16} className="text-primary" />}
-          <span className="text-sm font-bold text-foreground">{selected.label}</span>
+          <span className="text-sm font-semibold text-foreground">{selected.label}</span>
         </div>
       }
       sections={sections}

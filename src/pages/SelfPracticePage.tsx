@@ -204,7 +204,7 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
 
  return (
  <>
- <div className="space-y-6">
+ <div className={cn("space-y-6", nested && "p-5 sm:p-6 lg:p-8")}>
 
 
  <PageHeader
@@ -222,10 +222,10 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  <Button
  onClick={() => handleNewSelfSession()}
  disabled={creating}
- className="bg-destructive hover:bg-destructive/90 shadow-sm h-11 px-6 rounded-xl font-medium"
+ className="h-10 gap-1.5 rounded-xl px-4 font-medium shadow-sm"
  >
  {creating ? <Loader2 className="mr-2 animate-spin" /> : <Plus size={20} className="mr-2" />}
- Start Self-Session
+ Start self-session
  </Button>
  </>
  }
@@ -298,7 +298,7 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  </Card>
 
  <div className="space-y-6">
- <Card className="border-none shadow-sm bg-foreground text-primary-foreground rounded-3xl overflow-hidden relative">
+ <Card className="border-none shadow-lg bg-[hsl(238_26%_10%)] text-white ring-1 ring-white/[0.06] rounded-2xl overflow-hidden relative">
  <div className="absolute top-0 right-0 p-8 opacity-10">
  <Sparkles size={120} />
  </div>
@@ -306,25 +306,25 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  <CardTitle className="text-xl font-medium flex items-center gap-2">
  <Target size={20} className="text-amber-400" /> Protocol Mastery
  </CardTitle>
- <CardDescription className="text-muted-foreground/60">Quick start specific practice goals</CardDescription>
+ <CardDescription className="text-white/50">Quick start specific practice goals</CardDescription>
  </CardHeader>
  <CardContent className="space-y-3 relative z-10">
   {protocols.map((p) => (
   <button
   key={p.name}
   onClick={() => (p as any).isHeartWall ? setHeartWallOpen(true) : handleNewSelfSession(p.goal)}
- className="w-full flex items-center justify-between p-3 bg-card/5 hover:bg-card/10 border border-primary-foreground/10 rounded-xl transition-all group"
+ className="w-full flex items-center justify-between p-3 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-xl transition-all group"
  >
  <div className="flex items-center gap-3">
- <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-primary-foreground shadow-sm", p.color)}>
+ <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm", p.color)}>
  <p.icon size={20} />
  </div>
  <div className="text-left">
  <p className="text-sm font-medium">{p.name}</p>
- <p className="text-[10px] text-muted-foreground/60">Practice Drill</p>
+ <p className="text-[10px] text-white/50">Practice Drill</p>
  </div>
  </div>
- <ArrowRight size={16} className="text-muted-foreground group-hover:text-primary-foreground group-hover:translate-x-1 transition-all" />
+ <ArrowRight size={16} className="text-white/55 group-hover:text-white group-hover:translate-x-1 transition-all" />
  </button>
  ))}
  </CardContent>

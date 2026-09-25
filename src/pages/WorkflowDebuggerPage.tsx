@@ -1170,31 +1170,31 @@ const WorkflowDebuggerPage = () => {
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
           <div className="bg-card rounded-xl border border-border p-3 text-center">
             <div className="text-lg font-semibold text-amber-600">{WORKFLOWS.length}</div>
-            <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Workflows</div>
+            <div className="text-xs text-muted-foreground font-medium">Workflows</div>
           </div>
           <div className="bg-card rounded-xl border border-border p-3 text-center">
             <div className="text-lg font-semibold text-amber-600">{EDGE_FUNCTIONS.length}</div>
-            <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Edge Functions</div>
+            <div className="text-xs text-muted-foreground font-medium">Edge Functions</div>
           </div>
           <div className="bg-card rounded-xl border border-border p-3 text-center">
             <div className="text-lg font-semibold text-amber-600">{EMAIL_TEMPLATES.length}</div>
-            <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Email Templates</div>
+            <div className="text-xs text-muted-foreground font-medium">Email Templates</div>
           </div>
           <div className="bg-card rounded-xl border border-border p-3 text-center">
             <div className="text-lg font-semibold text-amber-600">{FNH_STATES.length}</div>
-            <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Client States</div>
+            <div className="text-xs text-muted-foreground font-medium">Client States</div>
           </div>
           <div className="bg-card rounded-xl border border-border p-3 text-center">
             <div className="text-lg font-semibold text-amber-600">{DB_TABLES.length}</div>
-            <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">DB Tables</div>
+            <div className="text-xs text-muted-foreground font-medium">DB Tables</div>
           </div>
           <div className="bg-card rounded-xl border border-border p-3 text-center">
             <div className="text-lg font-semibold text-amber-600">{ENV_VARS.length}</div>
-            <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Env Vars</div>
+            <div className="text-xs text-muted-foreground font-medium">Env Vars</div>
           </div>
           <div className="bg-card rounded-xl border border-border p-3 text-center">
             <div className="text-lg font-semibold text-amber-600">{EXTERNAL_APIS.length}</div>
-            <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">External APIs</div>
+            <div className="text-xs text-muted-foreground font-medium">External APIs</div>
           </div>
         </div>
 

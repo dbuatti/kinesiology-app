@@ -29,7 +29,7 @@ const StimResultsSummary = ({ kind, nerve, reflexId, reflexName, stimResults, fi
     <div className={cn("space-y-1.5", className)}>
       <div className="flex items-center gap-1.5">
         <span className="w-1.5 h-1.5 rounded-full bg-chart-destructive shrink-0" />
-        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+        <p className="text-xs font-medium text-muted-foreground">
           Marked Stims ({visible.length})
         </p>
       </div>

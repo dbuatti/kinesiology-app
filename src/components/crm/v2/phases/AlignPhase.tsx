@@ -187,7 +187,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                 <div key={catKey} className="space-y-2">
                   <div className="flex items-center gap-2">
                     {Icon && <Icon size={13} className="text-muted-foreground" />}
-                    <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{CATEGORY_LABELS[catKey] || catKey}</h4>
+                    <h4 className="text-xs font-medium text-muted-foreground">{CATEGORY_LABELS[catKey] || catKey}</h4>
                     <div className="flex-1 h-px bg-border" />
                     <span className="text-[10px] font-medium text-muted-foreground">{findings.length}</span>
                   </div>
@@ -251,7 +251,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                           {stims.length > 0 && (
                             <div className="border-t border-border/50">
                               <div className="flex items-center gap-1.5 px-4 pt-2.5 pb-1">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Stims</span>
+                                <span className="text-xs font-medium text-muted-foreground">Stims</span>
                                 <span className="text-[10px] font-medium text-muted-foreground/60">{stims.length}</span>
                               </div>
                               <div className="px-4 pb-2.5 space-y-1">

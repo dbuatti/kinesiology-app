@@ -302,17 +302,17 @@ const DebugAppointmentPage = () => {
  </div>
  <div className="grid grid-cols-2 gap-4">
  <div className="space-y-1">
- <p className="text-[10px] font-semibold text-muted-foreground uppercase">Client ID</p>
+ <p className="text-xs font-medium text-muted-foreground">Client ID</p>
  <p className="text-[10px] font-mono text-muted-foreground/60 truncate">{debugClient.id}</p>
  </div>
  <div className="space-y-1">
- <p className="text-[10px] font-semibold text-muted-foreground uppercase">App ID</p>
+ <p className="text-xs font-medium text-muted-foreground">App ID</p>
  <p className="text-[10px] font-mono text-muted-foreground/60 truncate">{debugApp?.id}</p>
  </div>
  </div>
  {debugApp && (
  <div className="pt-2 border-t border-primary-foreground/5">
- <p className="text-[10px] font-semibold text-muted-foreground uppercase mb-1">Current App Time</p>
+ <p className="text-xs font-medium text-muted-foreground mb-1">Current App Time</p>
  <p className="text-sm font-medium text-chart-emerald/60">{format(new Date(debugApp.date), "EEEE, MMM d @ h:mm a")}</p>
  </div>
  )}
@@ -363,7 +363,7 @@ const DebugAppointmentPage = () => {
  </div>
 
  <div className="space-y-4 pt-4 border-t border-primary-foreground/5">
- <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Other Triggers</Label>
+ <Label className="text-xs font-medium text-muted-foreground">Other Triggers</Label>
  <div className="grid grid-cols-2 gap-3">
  <Button 
  variant="outline" 

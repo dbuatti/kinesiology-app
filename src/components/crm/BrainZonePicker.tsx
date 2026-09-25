@@ -66,7 +66,7 @@ export default function BrainZonePicker({ value, onChange }: BrainZonePickerProp
 
   const renderGroup = (label: string, zones: BrainReflexPoint[]) => (
     <div className="space-y-1.5">
-      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{label}</p>
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <div className="flex flex-wrap gap-1.5">
         {zones.map(zone => {
           const sel = selected.find(s => s.id === zone.id);

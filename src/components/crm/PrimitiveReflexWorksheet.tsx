@@ -9,11 +9,11 @@ const PrimitiveReflexWorksheet = () => {
       <div className="border-b-2 border-border pb-1 mb-2 flex justify-between items-end">
         <div>
           <h1 className="text-2xl font-semibold tracking-tighter uppercase leading-none">Primitive Reflex Worksheet</h1>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Clinical Assessment Log • Foundational OS</p>
+          <p className="text-xs font-medium text-muted-foreground">Clinical Assessment Log • Foundational OS</p>
         </div>
         <div className="text-right flex gap-8">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Client: ________________________</p>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Date: ___/___/___</p>
+          <p className="text-xs font-medium text-muted-foreground">Client: ________________________</p>
+          <p className="text-xs font-medium text-muted-foreground">Date: ___/___/___</p>
         </div>
       </div>
 
@@ -96,14 +96,14 @@ const PrimitiveReflexWorksheet = () => {
           </div>
         </div>
         <div className="space-y-1 flex-[2]">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase">Primary Correction & Integration Plan:</p>
+          <p className="text-xs font-medium text-muted-foreground">Primary Correction & Integration Plan:</p>
           <div className="h-px w-full bg-muted mt-2" />
           <div className="h-px w-full bg-muted mt-2" />
         </div>
       </div>
 
       <div className="mt-2 pt-0.5 border-t border-border text-center">
-        <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Resonance Clinical Infrastructure • Worksheet v1.2</p>
+        <p className="text-xs font-medium text-muted-foreground/60">Resonance Clinical Infrastructure • Worksheet v1.2</p>
       </div>
 
       <style>{`

@@ -152,7 +152,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
           >
             <Heart size={16} />
           </Button>
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider text-center">
+          <span className="text-xs font-medium text-muted-foreground text-center">
             Step {activePhase + 1} of {PEACE_PHASES.length} · {PEACE_PHASES[activePhase].fullLabel}
           </span>
         </div>
@@ -185,7 +185,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
               style={{ width: `${progress}%` }}
             />
           </div>
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider tabular-nums">
+          <span className="text-xs font-medium text-muted-foreground tabular-nums">
             {completedCount}/{PEACE_PHASES.length}
           </span>
         </div>

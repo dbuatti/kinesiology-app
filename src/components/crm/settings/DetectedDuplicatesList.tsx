@@ -32,7 +32,7 @@ const DetectedDuplicatesList = ({
  return (
  <div className="py-12 flex flex-col items-center justify-center gap-4">
  <Loader2 className="animate-spin text-muted-foreground" size={32} />
- <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60">Scanning Database for Duplicates...</p>
+ <p className="text-xs font-medium text-muted-foreground/60">Scanning Database for Duplicates...</p>
  </div>
  );
  }
@@ -55,7 +55,7 @@ const DetectedDuplicatesList = ({
  <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
  <div className="flex items-center gap-2 px-1">
  <Sparkles size={16} className="text-muted-foreground" />
- <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Smart Duplicate Detector</p>
+ <p className="text-xs font-medium text-muted-foreground/60">Smart Duplicate Detector</p>
  </div>
  <div className="grid grid-cols-1 gap-3">
  {detectedDuplicates.map((group, idx) => (

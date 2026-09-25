@@ -25,7 +25,7 @@ const QuickAcupointSelector = ({ currentValue, onSelect }: QuickAcupointSelector
 
   return (
     <div className="space-y-3 animate-in fade-in slide-in-from-top-1 duration-500">
-      <div className="flex items-center gap-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
         <Sparkles size={10} className="text-amber-400" /> Quick Add Points
       </div>
       <div className="flex flex-wrap gap-1.5">

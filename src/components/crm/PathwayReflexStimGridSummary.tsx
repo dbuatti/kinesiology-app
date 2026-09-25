@@ -85,7 +85,7 @@ export function PathwayReflexStimGridSummary({
         </div>
         <div className="text-right shrink-0">
           <p className="text-2xl font-semibold text-chart-primary tabular-nums leading-none">{activeCount}</p>
-          <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">active</p>
+          <p className="mt-0.5 text-xs font-medium text-muted-foreground">active</p>
         </div>
       </div>
 

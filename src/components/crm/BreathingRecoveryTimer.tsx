@@ -160,11 +160,11 @@ const BreathingRecoveryTimer = ({ onSessionComplete }: BreathingRecoveryTimerPro
             
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 bg-muted/50 rounded-xl border border-border">
-                <p className="text-[10px] font-medium text-muted-foreground uppercase">Duration</p>
+                <p className="text-xs font-medium text-muted-foreground">Duration</p>
                 <p className="text-xl font-semibold">{formatTime(totalElapsed)}</p>
               </div>
               <div className="p-4 bg-muted/50 rounded-xl border border-border">
-                <p className="text-[10px] font-medium text-muted-foreground uppercase">Cycles</p>
+                <p className="text-xs font-medium text-muted-foreground">Cycles</p>
                 <p className="text-xl font-semibold">{cycles}</p>
               </div>
             </div>

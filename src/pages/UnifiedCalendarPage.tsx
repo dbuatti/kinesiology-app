@@ -773,7 +773,7 @@ const UnifiedCalendarPage = () => {
  subtitle="Kinesiology appointments and voice lessons at a glance."
             icon={CalendarIcon}
             />
- <div className="p-24 flex flex-col items-center justify-center gap-6 bg-destructive/10 rounded-xl">
+ <div className="py-24 flex flex-col items-center justify-center gap-3 bg-destructive/10 rounded-xl">
  <div className="w-16 h-16 rounded-full bg-destructive/20 flex items-center justify-center">
  <span className="text-2xl font-semibold text-destructive">!</span>
  </div>
@@ -825,10 +825,10 @@ const UnifiedCalendarPage = () => {
  />
 
  {isLoading ? (
- <div className="p-24 flex flex-col items-center justify-center gap-6">
- <Loader2 className="animate-spin text-primary" size={48} />
- <p className="text-muted-foreground font-semibold text-xs uppercase tracking-wider">
- Loading calendar...
+ <div className="py-24 flex flex-col items-center justify-center gap-3">
+ <Loader2 className="animate-spin text-muted-foreground" size={22} />
+ <p className="text-muted-foreground text-sm">
+ Loading calendar…
  </p>
  </div>
  ) : (
@@ -977,7 +977,7 @@ const UnifiedCalendarPage = () => {
    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
    <div
    key={day}
-   className="py-4 text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+   className="py-4 text-center text-xs font-medium text-muted-foreground"
    >
    {day}
    </div>
@@ -1356,7 +1356,7 @@ const UnifiedCalendarPage = () => {
         {/* Step 1 — choose what to book */}
         {!bookSvc ? (
           <div className="px-6 py-5 space-y-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Choose appointment</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2">Choose appointment</p>
             {SLOT_SERVICES.map((s) => {
               const isVoice = s.kind === "voice";
               return (
@@ -1389,7 +1389,7 @@ const UnifiedCalendarPage = () => {
           <>
 <div className="px-6 py-5 space-y-4">
                <div>
-                 <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Select Client</p>
+                 <p className="text-xs font-medium text-muted-foreground mb-2">Select Client</p>
                  <div className="relative mb-2">
                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                    <input

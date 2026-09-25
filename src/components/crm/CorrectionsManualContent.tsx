@@ -367,7 +367,7 @@ const CorrectionsManualContent = () => {
                 <div className="w-full border-t border-dashed border-border" />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-card px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Then Check</span>
+                <span className="bg-card px-3 text-xs font-medium text-muted-foreground">Then Check</span>
               </div>
             </div>
 

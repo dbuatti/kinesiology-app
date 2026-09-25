@@ -127,7 +127,7 @@ const MuscleReference = () => {
         </div>
 
         <div className="space-y-4">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-2">Filter by Body Region</p>
+          <p className="text-xs font-medium text-muted-foreground px-2">Filter by Body Region</p>
           <MuscleRegionFilter activeRegion={selectedGroup} onRegionChange={setSelectedGroup} />
         </div>
       </div>
@@ -168,7 +168,7 @@ const MuscleReference = () => {
               <CardContent className="p-6 space-y-4 flex-1 flex flex-col justify-between">
                 <div>
                   <h3 className="font-semibold text-lg text-foreground group-hover:text-indigo-600 transition-colors truncate">{muscle.name}</h3>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{muscle.group}</p>
+                  <p className="text-xs font-medium text-muted-foreground">{muscle.group}</p>
                 </div>
                 
                 <div className="space-y-2">

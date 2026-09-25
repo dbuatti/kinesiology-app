@@ -32,7 +32,7 @@ export default function PulsePointPicker({ selectedRow, onSelect }: PulsePointPi
       <div className="grid grid-cols-2 gap-6">
         {HANDS.map((hand) => (
           <div key={hand.label} className="space-y-2">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider text-center">
+            <p className="text-xs font-medium text-muted-foreground text-center">
               {hand.label}
             </p>
             <div className="space-y-2">

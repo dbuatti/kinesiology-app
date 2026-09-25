@@ -36,7 +36,7 @@ const IdentityShiftingReport = ({ session, onBack }: IdentityShiftingReportProps
         <Button variant="ghost" onClick={onBack} className="rounded-xl text-muted-foreground">
           <ArrowLeft size={18} className="mr-2" /> Back to History
         </Button>
-        <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
           <Calendar size={14} />
           {new Date(session.created_at).toLocaleDateString(undefined, { 
             year: 'numeric', 
@@ -70,7 +70,7 @@ const IdentityShiftingReport = ({ session, onBack }: IdentityShiftingReportProps
             </CardHeader>
             <CardContent className="p-6 space-y-6">
               <div className="space-y-2">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Original Problem</p>
+                <p className="text-xs font-medium text-muted-foreground">Original Problem</p>
                 <p className="text-sm font-bold text-foreground leading-relaxed">
                   {session.problem}
                 </p>
@@ -124,7 +124,7 @@ const IdentityShiftingReport = ({ session, onBack }: IdentityShiftingReportProps
                     )}
                   </div>
                   <div className="flex-1 pb-4">
-                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                    <p className="text-xs font-medium text-muted-foreground mb-1">
                       {loopQuestions[index % 5]}
                     </p>
                     <div className="p-4 bg-card rounded-2xl border border-border/50 shadow-sm group-hover:border-indigo-200 transition-colors">

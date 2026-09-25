@@ -79,7 +79,7 @@ const BacklogSelector = ({ type, onSelect, currentValue }: BacklogSelectorProps)
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-72 p-2 rounded-2xl border-none shadow-3xl bg-card">
         <div className="px-3 py-2 mb-1">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Pending {type === 'alignment' ? 'Goals' : type === 'belief' ? 'Beliefs' : 'Identities'}</p>
+          <p className="text-xs font-medium text-muted-foreground">Pending {type === 'alignment' ? 'Goals' : type === 'belief' ? 'Beliefs' : 'Identities'}</p>
         </div>
         {items.map((item) => (
           <DropdownMenuItem 

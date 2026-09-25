@@ -139,7 +139,7 @@ const IdentityHistoryList = () => {
                       <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-wider border-none bg-muted px-2 py-0.5">
                         {session.label}
                       </Badge>
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+                      <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                         <Calendar size={12} /> {format(new Date(session.created_at), "MMM d, yyyy")}
                       </span>
                     </div>

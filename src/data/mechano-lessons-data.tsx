@@ -76,7 +76,7 @@ export const lessons: Lesson[] = [
         </div>
 
         <div className="p-5 bg-foreground text-primary-foreground rounded-xl space-y-3">
-          <p className="text-xs font-bold text-muted-foreground/60 uppercase tracking-wider">The Neural Pathway</p>
+          <p className="text-xs font-medium text-muted-foreground/60">The Neural Pathway</p>
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-bold">
             <div className="px-3 py-2 bg-card/10 rounded-lg border border-primary-foreground/10 text-center w-full md:w-auto">Ligament Stretch</div>
             <ChevronRight className="text-muted-foreground hidden md:block" />
@@ -142,7 +142,7 @@ export const lessons: Lesson[] = [
         </div>
 
         <div className="p-5 bg-foreground text-primary-foreground rounded-xl space-y-3">
-          <p className="text-xs font-bold text-muted-foreground/60 uppercase tracking-wider">The Golden Rule</p>
+          <p className="text-xs font-medium text-muted-foreground/60">The Golden Rule</p>
           <p className="text-xs font-bold leading-relaxed italic">
             "Joints act, muscles and tissues react. Always focus on the joint action first, and let the muscles take care of themselves."
           </p>

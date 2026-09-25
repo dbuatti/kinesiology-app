@@ -151,7 +151,7 @@ const PricingSettings = () => {
                     onChange={(e) => updateRow(r.calcom_event_type_id, { price: e.target.value as any })}
                     className="w-24 rounded-xl font-bold"
                   />
-                  <span className="text-xs font-semibold uppercase text-muted-foreground">
+                  <span className="text-xs font-medium text-muted-foreground">
                     {r.currency}
                   </span>
                 </div>

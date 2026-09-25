@@ -142,7 +142,7 @@ const GaitReflexAssessment = ({
                 <Eye size={20} className="text-emerald-600" />
                 1. Diagnosis (Reciprocal Inhibition)
               </h3>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+              <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                 <MousePointer2 size={10} /> Click to toggle abnormal (X)
               </p>
             </div>

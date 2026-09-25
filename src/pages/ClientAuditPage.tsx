@@ -1233,7 +1233,7 @@ export function ClientAuditTool() {
               <div key={label} className={`relative bg-card rounded-xl border border-border px-5 py-4 space-y-1.5 overflow-hidden bg-gradient-to-br ${gradient} transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 group`}>
                 <div className="absolute inset-0 bg-grid-white/[0.02] pointer-events-none" />
                 <div className="flex items-center justify-between relative z-10">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+                  <p className="text-xs font-medium text-muted-foreground">{label}</p>
                   <Icon size={18} className="text-muted-foreground/20 group-hover:text-muted-foreground/40 transition-colors" />
                 </div>
                 <p className={`text-2xl font-bold relative z-10 ${colour}`}>{value}</p>
@@ -1308,7 +1308,7 @@ export function ClientAuditTool() {
 
                   {/* Quick Select Buttons */}
                   <div className="flex flex-wrap gap-2 p-3 bg-muted rounded-xl border border-border">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 self-center px-2">
+                    <span className="text-xs font-medium text-muted-foreground/60 self-center px-2">
                       Quick Select:
                     </span>
                     <Button
@@ -1348,7 +1348,7 @@ export function ClientAuditTool() {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
                       {/* Selected Badges */}
                       <div className="lg:col-span-6 space-y-3">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 block">
+                        <span className="text-xs font-medium text-muted-foreground/60 block">
                           This Week's Schedule ({weeklySimulatorMetrics.count})
                         </span>
                         <ScrollArea className="h-[100px] pr-2">
@@ -1375,7 +1375,7 @@ export function ClientAuditTool() {
                       {/* Projections */}
                       <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-3 gap-4 bg-muted p-5 rounded-xl border border-border">
                         <div className="space-y-1">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 block">Current Earnings</span>
+                          <span className="text-xs font-medium text-muted-foreground/60 block">Current Earnings</span>
                           <h4 className="text-2xl font-semibold text-foreground">${weeklySimulatorMetrics.currentTotal}</h4>
                           <span className="text-[10px] text-muted-foreground font-medium block">at current rates</span>
                         </div>
@@ -1557,7 +1557,7 @@ export function ClientAuditTool() {
                         <div className="overflow-x-auto">
                           <table className="w-full text-left border-collapse">
                             <thead>
-                              <tr className="border-b border-border/40 bg-muted/10 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              <tr className="border-b border-border/40 bg-muted/10 text-xs font-medium text-muted-foreground">
                                 <th className="p-4 pl-6 w-12">Sim</th>
                                 <th className="p-4">Client</th>
                                 <th className="p-4">Last Seen / Next Booked</th>
@@ -1644,7 +1644,7 @@ export function ClientAuditTool() {
                         <div className="overflow-x-auto">
                           <table className="w-full text-left border-collapse">
                             <thead>
-                              <tr className="border-b border-border/40 bg-muted/10 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              <tr className="border-b border-border/40 bg-muted/10 text-xs font-medium text-muted-foreground">
                                 <th className="p-4 pl-6 w-12">Sim</th>
                                 <th className="p-4">Client</th>
                                 <th className="p-4">Last Seen / Next Booked</th>
@@ -1731,7 +1731,7 @@ export function ClientAuditTool() {
                         <div className="overflow-x-auto">
                           <table className="w-full text-left border-collapse">
                             <thead>
-                              <tr className="border-b border-border/40 bg-muted/10 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              <tr className="border-b border-border/40 bg-muted/10 text-xs font-medium text-muted-foreground">
                                 <th className="p-4 pl-6 w-12">Sim</th>
                                 <th className="p-4">Client</th>
                                 <th className="p-4">Last Seen</th>
@@ -1806,7 +1806,7 @@ export function ClientAuditTool() {
                         </div>
                         {/* Editable weekly target */}
                         <div className="flex items-center gap-2 bg-muted/50 rounded-xl px-4 py-3 border border-border self-start shrink-0">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Target</span>
+                          <span className="text-xs font-medium text-muted-foreground/60">Target</span>
                           {editingWeeklyTarget ? (
                             <input autoFocus
                               className="w-20 bg-transparent text-foreground font-semibold text-sm text-right outline-none border-b border-primary pb-0.5"
@@ -1836,7 +1836,7 @@ export function ClientAuditTool() {
                           <p className="text-[10px] text-muted-foreground/60">{thisWeekSessions} session{thisWeekSessions !== 1 ? 's' : ''} · {pct}% of target</p>
                         </div>
                         <div className="p-4 bg-muted/50 rounded-xl border border-border space-y-1">
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">This month</p>
+                          <p className="text-xs font-medium text-muted-foreground">This month</p>
                           <p className="text-2xl font-semibold text-foreground">${thisMonthRevenue.toLocaleString()}</p>
                           <p className="text-[10px] text-muted-foreground/60">{thisMonthSessions} session{thisMonthSessions !== 1 ? 's' : ''} total</p>
                         </div>
@@ -1868,7 +1868,7 @@ export function ClientAuditTool() {
                               <p className="text-[10px] text-muted-foreground/60">at ${fhnRate} avg</p>
                             </div>
                             <div className="p-3.5 bg-muted/50 border border-border rounded-xl space-y-0.5">
-                              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Corporate gig</p>
+                              <p className="text-xs font-medium text-muted-foreground">Corporate gig</p>
                               <p className="text-xl font-semibold text-foreground">{corpGigsNeeded}</p>
                               <p className="text-[10px] text-muted-foreground/60">at ${corpRate}/gig</p>
                             </div>
@@ -1891,7 +1891,7 @@ export function ClientAuditTool() {
                       <CardDescription className="font-medium">All five streams combined — adjust rates and frequency per stream.</CardDescription>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Combined Monthly</p>
+                      <p className="text-xs font-medium text-muted-foreground">Combined Monthly</p>
                       <p className="text-2xl font-semibold text-foreground">
                         ${Math.round(salaryMetrics.current.monthly + extraStreamsMonthly).toLocaleString()}
                       </p>
@@ -2032,7 +2032,7 @@ export function ClientAuditTool() {
                 <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
                   <CardContent className="p-8 space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Progress to $150/Session</span>
+                      <span className="text-xs font-medium text-muted-foreground">Progress to $150/Session</span>
                       <div className="w-8 h-8 rounded-lg bg-muted text-chart-primary flex items-center justify-center">
                         <Target size={16} />
                       </div>
@@ -2059,7 +2059,7 @@ export function ClientAuditTool() {
                 <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
                   <CardContent className="p-8 space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Active Client Base</span>
+                      <span className="text-xs font-medium text-muted-foreground">Active Client Base</span>
                       <div className="w-8 h-8 rounded-lg bg-muted text-chart-emerald flex items-center justify-center">
                         <Users size={16} />
                       </div>
@@ -2140,7 +2140,7 @@ export function ClientAuditTool() {
                             onCheckedChange={setIsSandboxActive}
                             className="data-[state=checked]:bg-primary"
                           />
-                          <Label htmlFor="sandbox-mode-toggle" className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer">
+                          <Label htmlFor="sandbox-mode-toggle" className="text-xs font-medium text-muted-foreground cursor-pointer">
                             Preview Mode
                           </Label>
                         </div>
@@ -2149,7 +2149,7 @@ export function ClientAuditTool() {
                     <CardContent className="p-8 space-y-8">
                       {/* Projections Table */}
                       <div className="border border-border rounded-xl overflow-hidden">
-                        <div className="grid grid-cols-3 bg-muted/40 border-b border-border text-[10px] font-semibold uppercase tracking-wider text-muted-foreground p-4">
+                        <div className="grid grid-cols-3 bg-muted/40 border-b border-border text-xs font-medium text-muted-foreground p-4">
                           <div>Frequency</div>
                           <div>Current</div>
                           <div className="text-chart-primary">Preview</div>
@@ -2178,7 +2178,7 @@ export function ClientAuditTool() {
                       {/* Global Sandbox Controls */}
                       {isSandboxActive && (
                         <div className="space-y-6 p-6 bg-muted/30 rounded-xl border border-border animate-in slide-in-from-top-2 duration-300">
-                          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                          <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                             <Sparkles size={14} className="text-chart-primary" /> Global Preview Controls
                           </h4>
 
@@ -2315,7 +2315,7 @@ export function ClientAuditTool() {
                 <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
                   <CardContent className="p-6 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Active Clients</span>
+                      <span className="text-xs font-medium text-muted-foreground">Active Clients</span>
                       <div className="w-8 h-8 rounded-lg bg-muted text-chart-primary flex items-center justify-center">
                         <Users size={16} />
                       </div>
@@ -2331,7 +2331,7 @@ export function ClientAuditTool() {
                 <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
                   <CardContent className="p-6 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Avg Session Rate</span>
+                      <span className="text-xs font-medium text-muted-foreground">Avg Session Rate</span>
                       <div className="w-8 h-8 rounded-lg bg-muted text-chart-emerald flex items-center justify-center">
                         <DollarSign size={16} />
                       </div>
@@ -2347,7 +2347,7 @@ export function ClientAuditTool() {
                 <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
                   <CardContent className="p-6 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total Revenue</span>
+                      <span className="text-xs font-medium text-muted-foreground">Total Revenue</span>
                       <div className="w-8 h-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center">
                         <TrendingUp size={16} />
                       </div>
@@ -2363,7 +2363,7 @@ export function ClientAuditTool() {
                 <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
                   <CardContent className="p-6 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Free Session Ratio</span>
+                      <span className="text-xs font-medium text-muted-foreground">Free Session Ratio</span>
                       <div className="w-8 h-8 rounded-lg bg-muted text-chart-destructive flex items-center justify-center">
                         <Percent size={16} />
                       </div>
@@ -2381,7 +2381,7 @@ export function ClientAuditTool() {
                 <Card className="border-none shadow-sm rounded-xl bg-primary text-primary-foreground overflow-hidden relative group">
                   <CardContent className="p-6 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Projected Monthly</span>
+                      <span className="text-xs font-medium text-muted-foreground/60">Projected Monthly</span>
                       <div className="w-8 h-8 rounded-lg bg-muted text-foreground flex items-center justify-center">
                         <Sparkles size={16} />
                       </div>
@@ -2409,11 +2409,11 @@ export function ClientAuditTool() {
                     </div>
                     <div className="flex items-center gap-4 text-right">
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total (6mo)</p>
+                        <p className="text-xs font-medium text-muted-foreground">Total (6mo)</p>
                         <p className="text-lg font-semibold text-foreground">${monthlyRevenueData.reduce((s, m) => s + m.revenue, 0).toLocaleString()}</p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Avg / Month</p>
+                        <p className="text-xs font-medium text-muted-foreground">Avg / Month</p>
                         <p className="text-lg font-semibold text-chart-primary">${Math.round(monthlyRevenueData.reduce((s, m) => s + m.revenue, 0) / Math.max(monthlyRevenueData.length, 1)).toLocaleString()}</p>
                       </div>
                     </div>
@@ -2507,7 +2507,7 @@ export function ClientAuditTool() {
                 <CardContent className="p-8 md:p-10 relative z-10">
                   <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                     <div className="space-y-3 max-w-2xl">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Rate Increase Roadmap</p>
+                      <p className="text-xs font-medium text-muted-foreground">Rate Increase Roadmap</p>
                       <h2 className="text-3xl font-semibold tracking-tight leading-tight text-foreground">
                         $150/session by end of 2027
                       </h2>
@@ -2621,7 +2621,7 @@ export function ClientAuditTool() {
                       {/* Slider 1: Target Average Session Rate */}
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          <label className="text-xs font-medium text-muted-foreground">
                             Target Average Session Rate
                           </label>
                           <span className="text-sm font-semibold text-chart-primary">${targetRate}</span>
@@ -2644,7 +2644,7 @@ export function ClientAuditTool() {
                       {/* Slider 2: Active Client Count */}
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          <label className="text-xs font-medium text-muted-foreground">
                             Active Client Count
                           </label>
                           <span className="text-sm font-semibold text-chart-primary">{simulatorClients} clients</span>
@@ -2667,7 +2667,7 @@ export function ClientAuditTool() {
                       {/* Slider 3: Average Sessions per Client per Month */}
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          <label className="text-xs font-medium text-muted-foreground">
                             Avg Sessions per Client / Month
                           </label>
                           <span className="text-sm font-semibold text-chart-primary">{simulatorFrequency} sessions</span>
@@ -2842,8 +2842,8 @@ export function ClientAuditTool() {
                 {selectedWeeklyClients.length}
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60">Bulk Actions</p>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase">Apply changes to selected clients</p>
+                <p className="text-xs font-medium text-muted-foreground/60">Bulk Actions</p>
+                <p className="text-xs text-muted-foreground font-medium">Apply changes to selected clients</p>
               </div>
             </div>
 

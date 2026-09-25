@@ -27,7 +27,7 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
         <Button variant="ghost" onClick={onBack} className="rounded-xl text-muted-foreground">
           <ArrowLeft size={18} className="mr-2" /> Back to History
         </Button>
-        <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
           <Calendar size={14} />
           {new Date(session.created_at).toLocaleDateString(undefined, { 
             year: 'numeric', 
@@ -61,7 +61,7 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
             </CardHeader>
             <CardContent className="p-6 space-y-6">
               <div className="space-y-2">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Original Problem</p>
+                <p className="text-xs font-medium text-muted-foreground">Original Problem</p>
                 <p className="text-sm font-bold text-foreground leading-relaxed">
                   {session.problem}
                 </p>
@@ -136,21 +136,21 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
                     )}>
                       Part {log.type}: {log.type === 'A' ? "Limiting" : "Positive"}
                     </Badge>
-                    <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Cycle {Math.floor(index / 2) + 1}</span>
+                    <span className="text-xs font-medium text-muted-foreground/60">Cycle {Math.floor(index / 2) + 1}</span>
                   </div>
                   
                   <div className="space-y-4">
                     <div>
-                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Identity</p>
+                      <p className="text-xs font-medium text-muted-foreground mb-1">Identity</p>
                       <p className="text-sm font-bold text-foreground italic">"{log.identity}"</p>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">First Notice</p>
+                        <p className="text-xs font-medium text-muted-foreground mb-1">First Notice</p>
                         <p className="text-xs text-muted-foreground leading-relaxed">{log.notice1}</p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Second Notice</p>
+                        <p className="text-xs font-medium text-muted-foreground mb-1">Second Notice</p>
                         <p className="text-xs text-muted-foreground leading-relaxed">{log.notice2}</p>
                       </div>
                     </div>

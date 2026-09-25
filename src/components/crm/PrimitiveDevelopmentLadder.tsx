@@ -42,7 +42,7 @@ const PrimitiveDevelopmentLadder = () => {
                 <step.icon size={24} />
               </div>
               <p className="mt-3 text-[10px] font-semibold text-foreground uppercase tracking-tight">{step.label}</p>
-              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-0.5">{step.sub}</p>
+              <p className="text-xs text-muted-foreground font-medium mt-0.5">{step.sub}</p>
             </div>
             {i < LADDER_STEPS.length - 1 && (
               <ArrowRight size={16} className="text-muted-foreground/60 shrink-0 mt-[-20px]" />

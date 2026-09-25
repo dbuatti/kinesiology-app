@@ -72,7 +72,7 @@ export default function MessageBubble({ message }: Props) {
         {!!message.tool_calls?.length && (
           <div className="mt-2 flex flex-wrap gap-1.5 pt-2 border-t border-border/50">
             {message.tool_calls.map((t, i) => (
-              <span key={i} className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground/70 bg-background/40 rounded-full px-2 py-0.5">
+              <span key={i} className="text-xs font-medium text-muted-foreground/70 bg-background/40 rounded-full px-2 py-0.5">
                 {t.name.replace(/_/g, " ")}
               </span>
             ))}

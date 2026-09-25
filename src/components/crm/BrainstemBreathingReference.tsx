@@ -127,7 +127,7 @@ const BrainstemBreathingReference = () => {
                     </div>
                     <p className="text-xs text-foreground/80 font-bold mb-3 leading-relaxed">{p.desc}</p>
                     <div className="p-3 bg-card/60 rounded-xl border border-primary-foreground/80">
-                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">How to perform:</p>
+                      <p className="text-xs font-medium text-muted-foreground mb-1">How to perform:</p>
                       <p className="text-[11px] text-muted-foreground font-medium leading-relaxed">{p.howTo}</p>
                     </div>
                   </div>

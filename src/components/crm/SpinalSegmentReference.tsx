@@ -90,7 +90,7 @@ const SpinalSegmentReference = () => {
                   </button>
                   
                   <div className="p-4 bg-muted/50 rounded-2xl border border-border/50">
-                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
                       <Activity size={12} /> Organ / Gland
                     </p>
                     <p className="text-lg font-semibold text-foreground">{assoc.organ}</p>

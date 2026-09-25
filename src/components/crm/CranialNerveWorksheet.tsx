@@ -49,11 +49,11 @@ const CranialNerveWorksheet = () => {
       <div className="border-b-2 border-border pb-1 mb-2 flex justify-between items-end">
         <div>
           <h1 className="text-2xl font-semibold tracking-tighter uppercase leading-none">Cranial Nerve Worksheet</h1>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Clinical Assessment Log • Landscape Edition</p>
+          <p className="text-xs font-medium text-muted-foreground">Clinical Assessment Log • Landscape Edition</p>
         </div>
         <div className="text-right flex gap-8">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Client: ________________________</p>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Date: ___/___/___</p>
+          <p className="text-xs font-medium text-muted-foreground">Client: ________________________</p>
+          <p className="text-xs font-medium text-muted-foreground">Date: ___/___/___</p>
         </div>
       </div>
 
@@ -76,7 +76,7 @@ const CranialNerveWorksheet = () => {
                 <tr key={nerve.id} className="break-inside-avoid">
                   <td className="p-1 border-r border-foreground/20 bg-muted/30">
                     <p className="font-semibold text-[11px] leading-none">{nerve.name}</p>
-                    <p className="font-bold text-[10px] text-muted-foreground uppercase mt-0.5">{nerve.latinName}</p>
+                    <p className="font-medium text-xs text-muted-foreground mt-0.5">{nerve.latinName}</p>
                   </td>
                   
                   <td className="p-0.5 border-r border-foreground/20">
@@ -172,14 +172,14 @@ const CranialNerveWorksheet = () => {
           </div>
         </div>
         <div className="space-y-1 flex-[2]">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase">Primary Correction Applied:</p>
+          <p className="text-xs font-medium text-muted-foreground">Primary Correction Applied:</p>
           <div className="h-px w-full bg-muted mt-2" />
           <div className="h-px w-full bg-muted mt-2" />
         </div>
       </div>
 
       <div className="mt-2 pt-0.5 border-t border-border text-center">
-        <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Resonance Clinical Infrastructure • Worksheet v1.9</p>
+        <p className="text-xs font-medium text-muted-foreground/60">Resonance Clinical Infrastructure • Worksheet v1.9</p>
       </div>
 
       <style>{`

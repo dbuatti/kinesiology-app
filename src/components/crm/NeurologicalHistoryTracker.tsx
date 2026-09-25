@@ -60,7 +60,7 @@ const NeurologicalHistoryTracker = ({ appointments }: NeurologicalHistoryTracker
             <Brain size={20} />
           </div>
           <div>
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Total Findings</p>
+            <p className="text-xs font-medium text-muted-foreground">Total Findings</p>
             <p className="text-xl font-semibold text-foreground">{historyData.length}</p>
           </div>
         </Card>
@@ -69,7 +69,7 @@ const NeurologicalHistoryTracker = ({ appointments }: NeurologicalHistoryTracker
             <CheckCircle2 size={20} />
           </div>
           <div>
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Resolved</p>
+            <p className="text-xs font-medium text-muted-foreground">Resolved</p>
             <p className="text-xl font-semibold text-foreground">{resolvedCount}</p>
           </div>
         </Card>
@@ -78,7 +78,7 @@ const NeurologicalHistoryTracker = ({ appointments }: NeurologicalHistoryTracker
             <Zap size={20} />
           </div>
           <div>
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Active Priorities</p>
+            <p className="text-xs font-medium text-muted-foreground">Active Priorities</p>
             <p className="text-xl font-semibold text-foreground">{activeCount}</p>
           </div>
         </Card>
@@ -126,7 +126,7 @@ const NeurologicalHistoryTracker = ({ appointments }: NeurologicalHistoryTracker
                         </div>
                         <div>
                           <p className="font-semibold text-sm text-foreground">{finding.name}</p>
-                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{finding.category}</p>
+                          <p className="text-xs font-medium text-muted-foreground">{finding.category}</p>
                         </div>
                       </div>
                     </td>

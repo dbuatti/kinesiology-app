@@ -218,7 +218,7 @@ Please provide the final output ready to be reviewed.`;
  <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-muted/50 group-hover:text-muted-foreground transition-all">
  <Star size={20} className="fill-current" />
  </div>
- <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">{format(new Date(win.date), "MMM d")}</span>
+ <span className="text-xs font-medium text-muted-foreground/60">{format(new Date(win.date), "MMM d")}</span>
  </div>
  <div>
  <p className={cn("text-[10px] font-semibold text-chart-primary uppercase tracking-wider mb-1", isPrivate && "blur-sm")}>{win.clients?.name}</p>
@@ -248,7 +248,7 @@ Please provide the final output ready to be reviewed.`;
  <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-chart-destructive group-hover:bg-muted/50 group-hover:text-muted-foreground transition-all">
  <Quote size={20} className="fill-current" />
  </div>
- <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">{format(new Date(win.created_at), "MMM d")}</span>
+ <span className="text-xs font-medium text-muted-foreground/60">{format(new Date(win.created_at), "MMM d")}</span>
  </div>
  <div>
  <p className="text-[10px] font-semibold text-chart-destructive uppercase tracking-wider mb-1">{win.client_name}</p>
@@ -273,7 +273,7 @@ Please provide the final output ready to be reviewed.`;
  </CardHeader>
  <CardContent className="p-6 space-y-6">
  <div className="space-y-3">
- <label className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">1. Content Source</label>
+ <label className="text-xs font-medium text-muted-foreground/60">1. Content Source</label>
  <Select value={selectedWin} onValueChange={setSelectedWin}>
  <SelectTrigger className="h-12 rounded-xl font-medium bg-muted border-border">
  <SelectValue />
@@ -281,14 +281,14 @@ Please provide the final output ready to be reviewed.`;
  <SelectContent>
  <SelectItem value="custom" className="font-medium text-chart-primary">From Scratch / Custom Story</SelectItem>
  
- <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Testimonials (Nice Words)</div>
+ <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground/60">Testimonials (Nice Words)</div>
  {vaultWins.map(win => (
  <SelectItem key={win.id} value={`vault-${win.id}`}>
  {win.client_name}: {win.content.substring(0,30)}...
  </SelectItem>
  ))}
 
- <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Clinical Wins (Cases)</div>
+ <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground/60">Clinical Wins (Cases)</div>
  {recentWins.map(win => (
  <SelectItem key={win.id} value={win.id}>
  {win.clients?.name} - {win.issue?.substring(0,30)}...
@@ -301,18 +301,18 @@ Please provide the final output ready to be reviewed.`;
  {selectedWin === "custom" && (
  <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
  <div className="space-y-2">
- <label className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Story / Experience</label>
+ <label className="text-xs font-medium text-muted-foreground/60">Story / Experience</label>
  <Textarea placeholder="Briefly describe what happened..." value={customStory} onChange={e => setCustomStory(e.target.value)} className="resize-none h-20 rounded-xl" />
  </div>
  <div className="space-y-2">
- <label className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Core Insight / Lesson</label>
+ <label className="text-xs font-medium text-muted-foreground/60">Core Insight / Lesson</label>
  <Input placeholder="What is the takeaway?" value={customInsight} onChange={e => setCustomInsight(e.target.value)} className="h-10 rounded-xl" />
  </div>
  </div>
  )}
 
  <div className="space-y-3 pt-4 border-t border-border">
- <label className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">2. Output Format</label>
+ <label className="text-xs font-medium text-muted-foreground/60">2. Output Format</label>
  <Select value={outputFormat} onValueChange={setOutputFormat}>
  <SelectTrigger className="h-12 rounded-xl font-medium bg-muted border-border">
  <SelectValue />
@@ -327,7 +327,7 @@ Please provide the final output ready to be reviewed.`;
  </div>
 
  <div className="space-y-3">
- <label className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">3. Call to Action</label>
+ <label className="text-xs font-medium text-muted-foreground/60">3. Call to Action</label>
  <Select value={cta} onValueChange={setCta}>
  <SelectTrigger className="h-12 rounded-xl font-medium bg-muted border-border">
  <SelectValue />

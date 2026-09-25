@@ -422,7 +422,7 @@ export function QuickSessionDialog({ open, onOpenChange }: QuickSessionDialogPro
               />
 
               <details className="group">
-                <summary className="text-[10px] font-semibold text-muted-foreground/80 uppercase tracking-wider cursor-pointer hover:text-foreground/80 transition-colors select-none list-none flex items-center gap-2">
+                <summary className="text-xs font-medium text-muted-foreground/80 cursor-pointer hover:text-foreground/80 transition-colors select-none list-none flex items-center gap-2">
                   <ChevronDown size={14} className="transition-transform group-open:rotate-180" />
                   Add notes (optional)
                 </summary>

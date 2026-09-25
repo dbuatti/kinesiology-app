@@ -131,20 +131,20 @@ const PathwayAssessment = ({
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 px-4 border-r border-border">
               <Layers size={18} className="text-muted-foreground" />
-              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Session View</span>
+              <span className="text-xs font-medium text-muted-foreground">Session View</span>
             </div>
             
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-3">
                 <Switch id="show-images" checked={showImages} onCheckedChange={setShowImages} />
-                <Label htmlFor="show-images" className="text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer flex items-center gap-2">
+                <Label htmlFor="show-images" className="text-xs font-medium text-muted-foreground cursor-pointer flex items-center gap-2">
                   <ImageIcon size={14} className="text-muted-foreground" />
                   Reference Images
                 </Label>
               </div>
               <div className="flex items-center gap-3">
                 <Switch id="compact-mode" checked={compactMode} onCheckedChange={setCompactMode} />
-                <Label htmlFor="compact-mode" className="text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer flex items-center gap-2">
+                <Label htmlFor="compact-mode" className="text-xs font-medium text-muted-foreground cursor-pointer flex items-center gap-2">
                   <ListChecks size={14} className="text-muted-foreground" />
                   Compact
                 </Label>

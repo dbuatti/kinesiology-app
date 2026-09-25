@@ -202,7 +202,7 @@ const ClinicalHubPage = () => {
         {/* Up Next — Today & Upcoming */}
         <div className="mb-10">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            <h2 className="text-xs font-medium text-muted-foreground">
               Up Next — Today & Upcoming
             </h2>
             {upNext.length > 0 && (
@@ -245,7 +245,7 @@ const ClinicalHubPage = () => {
 
         {/* Recent Sessions */}
         <div>
-          <h2 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-4">Recent Sessions</h2>
+          <h2 className="text-xs font-medium text-muted-foreground mb-4">Recent Sessions</h2>
           {loading ? (
             <div className="flex justify-center py-6"><Loader2 className="animate-spin text-muted-foreground" size={20} /></div>
           ) : recentSessions.length === 0 ? (

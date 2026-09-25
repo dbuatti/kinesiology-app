@@ -58,7 +58,7 @@ const AppearanceSettings = () => {
             <div className="w-6 h-6 rounded-lg bg-muted" />
             <div className="w-6 h-6 rounded-lg bg-primary" />
           </div>
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <span className="text-xs font-medium text-muted-foreground">
             Current theme preview
           </span>
         </div>

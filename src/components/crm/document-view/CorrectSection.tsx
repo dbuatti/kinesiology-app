@@ -405,7 +405,7 @@ Correction Method: ${method}`;
             ) : (
               <div className="text-center py-12 border border-dashed border-border">
                 <History className="mx-auto text-muted-foreground/50 mb-3" size={32} />
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">No corrections logged yet</p>
+                <p className="text-xs font-medium text-muted-foreground">No corrections logged yet</p>
                 <p className="text-[10px] text-muted-foreground mt-1">Use the wizard to calibrate and log your first finding.</p>
               </div>
             )}
@@ -416,7 +416,7 @@ Correction Method: ${method}`;
             {/* Left Column: Target & Direction */}
             <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Target Finding</label>
+                <label className="text-xs font-medium text-muted-foreground">Target Finding</label>
                 <select 
                   value={showCustomInput ? "CUSTOM_INPUT" : (metadata.wizard_finding || "")}
                   onChange={(e) => {
@@ -455,7 +455,7 @@ Correction Method: ${method}`;
               </div>
 
               <div className="space-y-3">
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Pathway Direction</label>
+                <label className="text-xs font-medium text-muted-foreground">Pathway Direction</label>
                 <div className="flex gap-6">
                   <div className="flex items-center gap-2">
                     <Checkbox 
@@ -489,7 +489,7 @@ Correction Method: ${method}`;
               </div>
 
               <div className="space-y-3">
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Specific System</label>
+                <label className="text-xs font-medium text-muted-foreground">Specific System</label>
                 {metadata.wizard_direction === 'Afferent' ? (
                   <div className="grid grid-cols-2 gap-2">
                     {['Mechanoreceptor', 'Nociceptive', 'Physiological'].map(sys => (
@@ -528,7 +528,7 @@ Correction Method: ${method}`;
             <div className="space-y-6">
               <div className="space-y-4 border-l-2 border-border/50 pl-4">
                 <div className="flex items-center justify-between border-b border-border/50 pb-1">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Calibration Coordinates</p>
+                  <p className="text-xs font-medium text-muted-foreground">Calibration Coordinates</p>
                   <a 
                     href="/resources/brain-zones/print" 
                     target="_blank" 
@@ -540,7 +540,7 @@ Correction Method: ${method}`;
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-semibold uppercase text-muted-foreground">Coordinate 1 (Zone Name)</label>
+                  <label className="text-xs font-medium text-muted-foreground">Coordinate 1 (Zone Name)</label>
                   <select 
                     value={metadata.wizard_coord1_name || ""}
                     onChange={(e) => updateMetadataFields({ wizard_coord1_name: e.target.value })}
@@ -578,7 +578,7 @@ Correction Method: ${method}`;
                 </div>
 
                 <div className="space-y-2 pt-2">
-                  <label className="text-[10px] font-semibold uppercase text-muted-foreground">Coordinate 2 (Zone Name)</label>
+                  <label className="text-xs font-medium text-muted-foreground">Coordinate 2 (Zone Name)</label>
                   <select 
                     value={metadata.wizard_coord2_name || ""}
                     onChange={(e) => updateMetadataFields({ wizard_coord2_name: e.target.value })}
@@ -623,7 +623,7 @@ Correction Method: ${method}`;
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-border/50">
               <div className="space-y-3">
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Polarity</label>
+                <label className="text-xs font-medium text-muted-foreground">Polarity</label>
                 <div className="flex gap-6">
                   <div className="flex items-center gap-2">
                     <Checkbox 
@@ -647,7 +647,7 @@ Correction Method: ${method}`;
               </div>
 
               <div className="space-y-3">
-                <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Correction Method</label>
+                <label className="text-xs font-medium text-muted-foreground">Correction Method</label>
                 <div className="flex flex-wrap gap-4">
                   {['Tapping', 'Holding + Intention', 'Tuning Fork'].map(method => (
                     <div key={method} className="flex items-center gap-2">
@@ -666,7 +666,7 @@ Correction Method: ${method}`;
 
             {/* Log Correction Button */}
             <div className="pt-6 border-t border-border/50 flex justify-between items-center">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+              <p className="text-xs font-medium text-muted-foreground">
                 Ready to log this correction?
               </p>
               <Button

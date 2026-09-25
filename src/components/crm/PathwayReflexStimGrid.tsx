@@ -461,7 +461,7 @@ export function PathwayReflexStimGrid({
             <span
               key={track.title}
               title={track.title}
-              className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground"
             >
               <span className={`w-2 h-2 rounded-full ${track.color}`} />
               T{ti + 1} <span className="text-foreground tabular-nums">{trackCounts[ti]}</span>
@@ -472,14 +472,14 @@ export function PathwayReflexStimGrid({
             <span
               key={group.label}
               title={`${group.label} nuclei`}
-              className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground"
             >
               <span className={`w-2 h-2 rounded-full ${NUCLEI_COLORS[group.label]}`} />
               {group.label} <span className="text-foreground tabular-nums">{nucleiCounts[gi]}</span>
             </span>
           ))}
           <span className="flex-1" />
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
             <span className="w-2 h-2 rounded-full bg-sky-500" />
             Muscles <span className="text-foreground tabular-nums">{muscleCount}</span>
           </span>
@@ -501,7 +501,7 @@ export function PathwayReflexStimGrid({
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16 gap-4">
           <Loader2 className="animate-spin text-chart-primary" size={28} />
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Loading Grid...</p>
+          <p className="text-xs font-medium text-muted-foreground">Loading Grid...</p>
         </div>
       ) : (
         <>

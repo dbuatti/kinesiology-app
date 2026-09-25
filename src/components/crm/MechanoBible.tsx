@@ -133,7 +133,7 @@ const MechanoBible = () => {
                 <div key={i} className="flex items-center gap-4 p-4 bg-muted/50 rounded-2xl border border-border/50">
                   <span className="w-8 h-8 rounded-full bg-indigo-600 text-primary-foreground flex items-center justify-center font-semibold text-xs">{i + 1}</span>
                   <div>
-                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{step.label}</p>
+                    <p className="text-xs font-medium text-muted-foreground">{step.label}</p>
                     <p className="text-sm font-bold text-foreground">{step.value}</p>
                   </div>
                 </div>
@@ -159,7 +159,7 @@ const MechanoBible = () => {
             <div className="grid grid-cols-3 gap-3">
               {["Sagittal", "Frontal", "Transverse"].map(plane => (
                 <div key={plane} className="p-4 bg-muted/50 rounded-2xl border border-border/50 text-center">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Plane</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Plane</p>
                   <p className="text-xs font-semibold text-foreground">{plane}</p>
                 </div>
               ))}
@@ -193,17 +193,17 @@ const MechanoBible = () => {
                   </div>
                   
                   <div className="p-3 bg-muted/50 rounded-xl border border-border/50">
-                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Localization Path</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Localization Path</p>
                     <p className="text-xs font-bold text-indigo-600">{ex.localization}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 text-xs">
                     <div>
-                      <p className="text-muted-foreground font-bold uppercase tracking-wider text-[10px]">Plane</p>
+                      <p className="text-muted-foreground font-medium text-xs">Plane</p>
                       <p className="font-bold text-foreground/80">{ex.plane}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground font-bold uppercase tracking-wider text-[10px]">Action</p>
+                      <p className="text-muted-foreground font-medium text-xs">Action</p>
                       <p className="font-bold text-foreground/80">{ex.action}</p>
                     </div>
                   </div>
@@ -231,17 +231,17 @@ const MechanoBible = () => {
                   </div>
 
                   <div className="p-3 bg-muted/50 rounded-xl border border-border/50">
-                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Localization Path</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Localization Path</p>
                     <p className="text-xs font-bold text-emerald-600">{ex.localization}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 text-xs">
                     <div>
-                      <p className="text-muted-foreground font-bold uppercase tracking-wider text-[10px]">Tissue</p>
+                      <p className="text-muted-foreground font-medium text-xs">Tissue</p>
                       <p className="font-bold text-foreground/80">{ex.tissue}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground font-bold uppercase tracking-wider text-[10px]">Stimulus</p>
+                      <p className="text-muted-foreground font-medium text-xs">Stimulus</p>
                       <p className="font-bold text-foreground/80">{ex.stimulus}</p>
                     </div>
                   </div>
@@ -377,7 +377,7 @@ const MechanoBible = () => {
                   <p className="text-sm font-bold text-foreground">{plane.logic}</p>
                 </div>
                 <div className="space-y-2">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Key Movements</p>
+                  <p className="text-xs font-medium text-muted-foreground">Key Movements</p>
                   <div className="flex flex-wrap gap-1.5">
                     {plane.movements.map(m => (
                       <Badge key={m} variant="secondary" className="bg-muted text-muted-foreground border-none text-[10px] font-bold">

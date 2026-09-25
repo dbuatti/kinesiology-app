@@ -520,7 +520,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                   return (
                     <div key={s.key}>
                       {(!prev || prev.group !== s.group) && (
-                        <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{s.group}</div>
+                        <div className="px-2 py-1 text-xs font-medium text-muted-foreground">{s.group}</div>
                       )}
                       <DropdownMenuItem onClick={() => onNewBooking(s.key)}>
                         {isVoice ? <Mic size={14} className="mr-2 text-chart-destructive" /> : <User size={14} className="mr-2 text-chart-primary" />}
@@ -984,7 +984,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
               <p className="text-xs text-muted-foreground">No open times found in the next 3 weeks — use a custom time below.</p>
             )}
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Custom time</p>
+              <p className="text-xs font-medium text-muted-foreground mb-1">Custom time</p>
               <Input
                 type="datetime-local"
                 value={rescheduleAt && rescheduleAt.includes("T") && !rescheduleAt.endsWith("Z") ? rescheduleAt : ""}

@@ -217,7 +217,7 @@ const JointActionExplorer = () => {
                       {plane === 'Sagittal' ? <Zap size={16} className="text-primary" /> :
                        plane === 'Frontal' ? <Move size={16} className="text-emerald-500" /> :
                        <RefreshCw size={16} className="text-orange-500" />}
-                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{plane} Plane Actions</h4>
+                      <h4 className="text-xs font-medium text-muted-foreground">{plane} Plane Actions</h4>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {actions.map((action, idx) => (
@@ -300,7 +300,7 @@ const JointActionExplorer = () => {
               {quizJoint && quizPlane && (
                 <div className="space-y-6">
                   <div className="p-6 bg-muted/50 rounded-2xl border border-border/50 text-center space-y-2">
-                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">The Question</p>
+                    <p className="text-xs font-medium text-muted-foreground">The Question</p>
                     <h3 className="text-2xl font-semibold text-foreground">
                       Which of the following are valid actions for the <span className="text-indigo-600">"{quizJoint.name}"</span> in the <span className="text-indigo-600">"{quizPlane}"</span> plane?
                     </h3>
@@ -340,7 +340,7 @@ const JointActionExplorer = () => {
 
                   {quizSubmitted && (
                     <div className="p-6 bg-muted/50 rounded-2xl border border-border/50 space-y-4 animate-in fade-in duration-500">
-                      <h4 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground">Correct Actions & Explanations:</h4>
+                      <h4 className="font-medium text-xs text-muted-foreground">Correct Actions & Explanations:</h4>
                       <div className="space-y-3">
                         {quizJoint.actions[quizPlane]
                           .filter(a => a.label !== '-')

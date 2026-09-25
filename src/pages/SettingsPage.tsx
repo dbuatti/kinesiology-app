@@ -124,7 +124,7 @@ const SettingsPage = () => {
                 </div>
 
                 <div className="mt-4 p-4 bg-muted/30 rounded-2xl border border-border/50">
-                  <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">How it works</div>
+                  <div className="text-xs font-medium text-muted-foreground mb-2">How it works</div>
                   <ul className="space-y-1.5 text-xs text-muted-foreground">
                     <li className="flex items-start gap-2">
                       <span className="text-primary mt-0.5 shrink-0">1.</span>
@@ -211,15 +211,15 @@ const SettingsPage = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                   <div className="p-3 bg-muted/30 rounded-xl border border-border/50 text-center">
                     <div className="text-lg font-semibold text-chart-emerald">11</div>
-                    <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Workflows</div>
+                    <div className="text-xs text-muted-foreground font-medium">Workflows</div>
                   </div>
                   <div className="p-3 bg-muted/30 rounded-xl border border-border/50 text-center">
                     <div className="text-lg font-semibold text-chart-emerald">12</div>
-                    <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Edge Functions</div>
+                    <div className="text-xs text-muted-foreground font-medium">Edge Functions</div>
                   </div>
                   <div className="p-3 bg-muted/30 rounded-xl border border-border/50 text-center">
                     <div className="text-lg font-semibold text-chart-emerald">10</div>
-                    <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Client States</div>
+                    <div className="text-xs text-muted-foreground font-medium">Client States</div>
                   </div>
                 </div>
                 <button onClick={() => navigate("/settings/workflows")} className="w-full flex items-center justify-between p-4 bg-muted/40 rounded-2xl border border-border group hover:border-chart-emerald/50 transition-all text-left">

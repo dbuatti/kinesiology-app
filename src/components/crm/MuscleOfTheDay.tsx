@@ -96,7 +96,7 @@ const MuscleOfTheDay = ({ onViewDetails }: MuscleOfTheDayProps) => {
                   <Target size={20} className="text-indigo-400" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Primary Goal</p>
+                  <p className="text-xs font-medium text-muted-foreground">Primary Goal</p>
                   <p className="text-sm font-bold text-muted-foreground/60">Clinical Mastery</p>
                 </div>
               </div>
@@ -105,7 +105,7 @@ const MuscleOfTheDay = ({ onViewDetails }: MuscleOfTheDayProps) => {
                   <Activity size={20} className="text-rose-400" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Status</p>
+                  <p className="text-xs font-medium text-muted-foreground">Status</p>
                   <p className="text-sm font-bold text-muted-foreground/60">Reference Ready</p>
                 </div>
               </div>

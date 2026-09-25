@@ -98,7 +98,7 @@ const HeartMathBreathing = ({ onComplete, onCancel }: HeartMathBreathingProps) =
             transition={{ duration: 1, ease: "linear" }}
           />
         </div>
-        <div className="flex justify-between text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="flex justify-between text-xs font-medium text-muted-foreground">
           <span>4s Inhale</span>
           <span className="text-rose-400">{cycles} Cycles</span>
           <span>6s Exhale</span>

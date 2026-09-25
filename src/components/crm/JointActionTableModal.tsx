@@ -29,7 +29,7 @@ const JointActionTableModal = ({ open, onOpenChange }: JointActionTableModalProp
               </div>
               <div>
                 <DialogTitle className="text-2xl font-semibold">Joint Action Reference</DialogTitle>
-                <DialogDescription className="text-muted-foreground font-bold uppercase tracking-wider text-[10px] mt-1">
+                <DialogDescription className="text-muted-foreground font-medium text-xs mt-1">
                   Geometry of Movement & Planes of Motion
                 </DialogDescription>
               </div>

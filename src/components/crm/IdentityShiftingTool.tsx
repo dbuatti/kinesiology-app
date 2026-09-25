@@ -459,7 +459,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
 
       <div className="space-y-3">
         <div className="space-y-3">
-          <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ml-1">1. The Challenge</Label>
+          <Label className="text-xs font-medium text-muted-foreground ml-1">1. The Challenge</Label>
           <Textarea 
             placeholder="What is the problem or pattern you're facing?" 
             value={formData.problem}
@@ -470,7 +470,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
         
         <div className="space-y-3">
           <div className="space-y-3">
-            <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ml-1">2. Primary Emotion</Label>
+            <Label className="text-xs font-medium text-muted-foreground ml-1">2. Primary Emotion</Label>
             <Input 
               placeholder="Fear, Worry, Anger, etc." 
               value={formData.emotion}
@@ -479,7 +479,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
             />
           </div>
           <div className="space-y-3">
-            <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ml-1">3. Felt Sense</Label>
+            <Label className="text-xs font-medium text-muted-foreground ml-1">3. Felt Sense</Label>
             <Input 
               placeholder="Where is it in the body?" 
               value={formData.feltSense}
@@ -491,7 +491,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">4. Stuck Identity</Label>
+            <Label className="text-xs font-medium text-muted-foreground">4. Stuck Identity</Label>
             <div className="flex items-center gap-2">
               <BacklogSelector type="shifting" onSelect={handleBacklogSelect} currentValue={formData.identity} />
               <Button variant="ghost" size="sm" onClick={handleGenerateIdentity} disabled={isGenerating} className="h-8 text-chart-primary hover:bg-muted gap-1 font-semibold text-[11px] rounded-lg border border-indigo-100">
@@ -557,7 +557,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
     return (
       <div className="flex flex-col items-center text-center space-y-6 py-6 animate-in fade-in zoom-in-95 duration-500">
         <div className="w-full max-w-md space-y-3">
-          <div className="flex justify-between text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <div className="flex justify-between text-xs font-medium text-muted-foreground">
             <span>Dissolving Identity</span>
             <span>Step {loopStep + 1} of 5</span>
           </div>
@@ -676,7 +676,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
 
       <div className="grid grid-cols-1 gap-4">
         <div className="space-y-3">
-          <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2 border-l-2 border-indigo-500">Awareness</h4>
+          <h4 className="text-xs font-medium text-muted-foreground px-2 border-l-2 border-indigo-500">Awareness</h4>
           <div className="space-y-3">
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground ml-1">1. How do you feel about the problem now?</Label>
@@ -694,7 +694,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
         </div>
 
         <div className="space-y-3 pt-3 border-t border-border">
-          <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2 border-l-2 border-emerald-500">Action & Next Steps</h4>
+          <h4 className="text-xs font-medium text-muted-foreground px-2 border-l-2 border-emerald-500">Action & Next Steps</h4>
           <div className="space-y-3">
             <div className="space-y-2">
               <Label className="text-sm font-medium text-foreground ml-1">1. How are you going to put that intention or awareness into action?</Label>
@@ -740,7 +740,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
         
         {activeDrafts.length > 0 && (
           <div className="space-y-3">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               <Clock size={12} /> Active Drafts
             </p>
             <div className="grid grid-cols-1 gap-3">
@@ -752,7 +752,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
                     </div>
                     <div className="min-w-0">
                       <h4 className="font-semibold text-sm text-foreground truncate">{session.problem}</h4>
-                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-0.5">Phase {session.current_phase} • {new Date(session.created_at).toLocaleDateString()}</p>
+                      <p className="text-xs font-medium text-muted-foreground mt-0.5">Phase {session.current_phase} • {new Date(session.created_at).toLocaleDateString()}</p>
                     </div>
                   </div>
                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground/60 hover:text-chart-destructive" onClick={(e) => { e.stopPropagation(); setDeleteTargetId(session.id); setShowDeleteConfirm(true); }}><Trash2 size={14} /></Button>
@@ -763,7 +763,7 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
         )}
 
         <div className="space-y-3">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Completed Sessions</p>
+          <p className="text-xs font-medium text-muted-foreground">Completed Sessions</p>
           {completedSessions.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground bg-muted rounded-xl border border-dashed border-border">
               <History className="mx-auto mb-3 opacity-20" size={40} />
@@ -780,8 +780,8 @@ const IdentityShiftingTool = ({ singlePage = false, clientId, appointmentId }: I
                     <div className="min-w-0">
                       <h4 className="font-semibold text-sm text-foreground truncate">{session.problem}</h4>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <Badge variant="secondary" className="text-[10px] font-semibold uppercase tracking-wider bg-muted text-muted-foreground border-none px-1.5 py-0">{session.identity}</Badge>
-                        <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{new Date(session.created_at).toLocaleDateString()}</span>
+                        <Badge variant="secondary" className="text-xs font-medium bg-muted text-muted-foreground border-none px-1.5 py-0">{session.identity}</Badge>
+                        <span className="text-xs text-muted-foreground font-medium">{new Date(session.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </div>

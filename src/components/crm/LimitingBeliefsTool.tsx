@@ -356,7 +356,7 @@ const LimitingBeliefsTool = () => {
         <div className="space-y-5">
           {/* Active belief banner */}
           <div className="px-5 py-3 bg-violet-500/5 border border-violet-500/20 rounded-xl">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Working with</p>
+            <p className="text-xs font-medium text-muted-foreground">Working with</p>
             <p className="text-sm font-semibold text-foreground mt-0.5">
               "{limitingBelief}"
             </p>
@@ -365,7 +365,7 @@ const LimitingBeliefsTool = () => {
           {/* Round selector */}
           {rounds.length > 1 && (
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Rounds:</span>
+              <span className="text-xs font-medium text-muted-foreground">Rounds:</span>
               {rounds.map((r, i) => (
                 <button
                   key={r.loopCount}

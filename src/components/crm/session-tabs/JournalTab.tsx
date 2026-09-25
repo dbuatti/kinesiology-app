@@ -157,7 +157,7 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
               onChange={(e) => setContent(e.target.value)}
             />
             <div className="flex justify-between items-center">
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+              <p className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                 <Brain size={14} className="text-indigo-400" /> AI will extract identity insights automatically
               </p>
               <Button 

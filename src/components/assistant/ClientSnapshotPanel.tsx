@@ -134,7 +134,7 @@ export default function ClientSnapshotPanel({ clientId, clientName, isVoice, onD
   if (loading) {
     return (
       <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 mb-3">
-        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading client snapshot...
+        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading client snapshot…
       </div>
     );
   }

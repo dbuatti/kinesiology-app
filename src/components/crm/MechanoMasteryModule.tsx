@@ -113,11 +113,11 @@ const MechanoMasteryModule = () => {
         </div>
         <div className="flex items-center gap-2 bg-muted/50 p-1.5 rounded-xl border border-border/60 self-start md:self-auto">
           <div className="px-3 py-1 text-center border-r border-border">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Accuracy</p>
+            <p className="text-xs font-medium text-muted-foreground">Accuracy</p>
             <p className="text-sm font-bold text-foreground">{masteryLevel.accuracy}</p>
           </div>
           <div className="px-3 py-1 text-center">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Level</p>
+            <p className="text-xs font-medium text-muted-foreground">Level</p>
             <p className="text-sm font-bold text-foreground">{masteryLevel.level}</p>
           </div>
         </div>
@@ -130,7 +130,7 @@ const MechanoMasteryModule = () => {
         <div className="lg:col-span-3 space-y-6 bg-muted/50 p-4 rounded-2xl border border-border/50">
           {navigationGroups.map((group, gIdx) => (
             <div key={gIdx} className="space-y-1.5">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider px-3 mb-2">
+              <p className="text-xs font-medium text-muted-foreground px-3 mb-2">
                 {group.title}
               </p>
               <div className="space-y-1">

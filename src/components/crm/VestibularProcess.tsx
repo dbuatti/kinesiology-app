@@ -135,7 +135,7 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
 
           {canal && ['horizontal', 'utricle'].includes(canal.id) && (
             <div className="p-4 bg-muted rounded-xl border border-border space-y-3 animate-in fade-in zoom-in-95">
-              <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Specify Direction</label>
+              <label className="text-xs font-medium text-muted-foreground">Specify Direction</label>
               <div className="flex gap-2">
                 <Button 
                   variant={direction === 'Left' ? 'default' : 'outline'}

@@ -232,7 +232,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
           {/* SMS Templates */}
           {student.phone && (
             <>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-3 pt-1.5 pb-1">
+              <p className="text-xs font-medium text-muted-foreground px-3 pt-1.5 pb-1">
                 SMS Templates
               </p>
               {SMS_TEMPLATES.map((t) => (
@@ -276,7 +276,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
           {/* Email option */}
           {student.email && (
             <>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-3 pt-3 pb-1">
+              <p className="text-xs font-medium text-muted-foreground px-3 pt-3 pb-1">
                 Email
               </p>
               <button

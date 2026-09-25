@@ -282,7 +282,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
               <p className="text-xs text-muted-foreground font-medium">A visual breakdown of everything recorded this session.</p>
             </div>
           </div>
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+          <p className="text-xs font-medium text-muted-foreground flex items-center gap-2">
             <RefreshCw size={12} className="animate-spin-slow" /> Auto-populating from session data
           </p>
         </div>
@@ -292,7 +292,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
           <div className="space-y-6">
             <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
               <CardHeader className="pb-3 bg-muted border-b border-border">
-                <CardTitle className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <Target size={14} /> Intake & Vitals
                 </CardTitle>
               </CardHeader>
@@ -334,7 +334,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
             {hasSnsResets && (
 <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
               <CardHeader className="pb-3 bg-muted border-b border-border">
-                <CardTitle className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <Zap size={14} /> SNS Down-Regulation
                   </CardTitle>
                 </CardHeader>
@@ -368,7 +368,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
           <div className="lg:col-span-1">
               <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden h-full">
               <CardHeader className="pb-3 bg-muted border-b border-border">
-                <CardTitle className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <GitBranch size={14} /> Pathway Findings
                 </CardTitle>
               </CardHeader>
@@ -386,7 +386,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
           <div className="space-y-6">
             <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
               <CardHeader className="pb-3 bg-muted border-b border-border">
-                <CardTitle className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <Sparkles size={14} /> Corrections & Logic
                 </CardTitle>
               </CardHeader>
@@ -407,7 +407,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
             {appointment.emotion_primary_selection && (
               <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
                 <CardHeader className="pb-3 bg-muted border-b border-border">
-                  <CardTitle className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                     <Heart size={14} /> Emotional Context
                   </CardTitle>
                 </CardHeader>

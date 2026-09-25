@@ -26,7 +26,7 @@ const NotFound = () => {
         </div>
 
         <div className="space-y-3">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Error 404</p>
+          <p className="text-xs font-medium text-muted-foreground">Error 404</p>
           <h1 className="text-5xl md:text-7xl font-serif font-bold text-foreground tracking-tighter">
             Lost in space.
           </h1>

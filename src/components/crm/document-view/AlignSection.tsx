@@ -38,7 +38,7 @@ const muscleDesc = (name: string) => {
 };
 
 const SubHeader = ({ id, children }: { id?: string; children: ReactNode }) => (
-  <h3 id={id} className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-4 mt-10 border-l-4 border-border pl-3 scroll-mt-24">{children}</h3>
+  <h3 id={id} className="text-xs font-medium text-muted-foreground mb-4 mt-10 border-l-4 border-border pl-3 scroll-mt-24">{children}</h3>
 );
 
 const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway }: AlignSectionProps) => {
@@ -183,7 +183,7 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
             <div key={catKey} className="space-y-2">
               <div className="flex items-center gap-2 mb-3">
                 <Icon size={13} className="text-muted-foreground" />
-                <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{config.label}</h4>
+                <h4 className="text-xs font-medium text-muted-foreground">{config.label}</h4>
                 <div className="flex-1 h-px bg-border" />
                 <span className="text-[10px] font-medium text-muted-foreground">{findings.length}</span>
               </div>

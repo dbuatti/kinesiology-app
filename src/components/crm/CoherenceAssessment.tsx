@@ -179,7 +179,7 @@ const CoherenceAssessment = ({
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Heart size={14} className={cn("text-rose-500", heartTimerRunning && "animate-pulse")} />
-                    <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Heart (30s)</span>
+                    <span className="text-xs font-medium text-muted-foreground">Heart (30s)</span>
                   </div>
                   <span className="text-xl font-semibold text-foreground tabular-nums">{heartTimer}s</span>
                 </div>
@@ -196,7 +196,7 @@ const CoherenceAssessment = ({
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Brain size={14} className={cn("text-primary", breathTimerRunning && "animate-bounce")} />
-                    <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Breath (30s)</span>
+                    <span className="text-xs font-medium text-muted-foreground">Breath (30s)</span>
                   </div>
                   <span className="text-xl font-semibold text-foreground tabular-nums">{breathTimer}s</span>
                 </div>
@@ -240,7 +240,7 @@ const CoherenceAssessment = ({
 
               {calculatedScore !== null && (
                 <div className="text-center animate-in zoom-in-95 duration-300">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Ratio</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Ratio</p>
                   <div className="text-4xl font-semibold text-foreground">{calculatedScore.toFixed(2)}</div>
                   <Badge className={cn("mt-2 border-none font-semibold text-[10px] uppercase tracking-wider", isCoherent ? "bg-emerald-500" : "bg-rose-500")}>
                     {isCoherent ? "Coherent" : "Discordant"}

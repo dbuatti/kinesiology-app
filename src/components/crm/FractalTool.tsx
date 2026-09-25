@@ -335,7 +335,7 @@ const FractalTool = () => {
 
   if (loading) return (
     <div className="flex justify-center py-20">
-      <Loader2 className="animate-spin text-chart-primary" size={48} />
+      <Loader2 className="animate-spin text-muted-foreground" size={22} />
     </div>
   );
 
@@ -520,7 +520,7 @@ const FractalTool = () => {
             Scan for Fractals
           </Button>
           {lastScanned && (
-            <div className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
               <Clock size={10} /> Last Analyzed {formatDistanceToNow(new Date(lastScanned), { addSuffix: true })}
             </div>
           )}

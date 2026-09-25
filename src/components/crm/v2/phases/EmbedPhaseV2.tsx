@@ -194,7 +194,7 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
     if (!data || data.stims.length === 0) return null;
     return (
       <div className="mt-2 space-y-1.5">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+        <p className="text-xs font-medium text-muted-foreground">
           Marked Stims ({data.stims.length})
         </p>
         <div className="flex flex-wrap gap-1.5">

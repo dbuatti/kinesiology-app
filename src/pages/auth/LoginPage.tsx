@@ -119,7 +119,7 @@ const Login = () => {
 
             <form onSubmit={handleAuth} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-[10px] font-semibold uppercase tracking-wider ml-1 text-muted-foreground">Email Address</Label>
+                <Label htmlFor="email" className="text-xs font-medium ml-1 text-muted-foreground">Email Address</Label>
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={16} />
                   <Input
@@ -134,7 +134,7 @@ const Login = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-[10px] font-semibold uppercase tracking-wider ml-1 text-muted-foreground">Password</Label>
+                <Label htmlFor="password" className="text-xs font-medium ml-1 text-muted-foreground">Password</Label>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={16} />
                   <Input

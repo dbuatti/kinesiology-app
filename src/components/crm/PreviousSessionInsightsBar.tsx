@@ -76,7 +76,7 @@ const PreviousSessionInsightsBar = ({ history = [], manualData }: PreviousSessio
                 <Sparkles size={20} className="text-muted-foreground" />
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground/70">Next Session Focus (From Last Session)</p>
+                <p className="text-xs font-medium text-muted-foreground/70">Next Session Focus (From Last Session)</p>
                 <p className="text-base font-medium leading-relaxed">
                   "{previousSession.next_session_note}"
                 </p>
@@ -136,7 +136,7 @@ const PreviousSessionInsightsBar = ({ history = [], manualData }: PreviousSessio
           <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-8 animate-in fade-in slide-in-from-top-2 duration-300 border-t border-border">
             <div className="space-y-4">
               <div>
-                <p className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider mb-2">Previous Context</p>
+                <p className="text-xs font-medium text-muted-foreground/70 mb-2">Previous Context</p>
                 <div className="space-y-3">
                   <div>
                     <p className="text-xs font-medium text-muted-foreground">GOAL</p>
@@ -152,11 +152,11 @@ const PreviousSessionInsightsBar = ({ history = [], manualData }: PreviousSessio
 
             <div className="space-y-4">
               <div>
-                <p className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider mb-2">Last Recorded Vitals</p>
+                <p className="text-xs font-medium text-muted-foreground/70 mb-2">Last Recorded Vitals</p>
                 <div className="grid grid-cols-1 gap-3">
                   <div className="p-4 bg-muted rounded-2xl border border-border">
                     <div className="flex items-center justify-between mb-1">
-                      <p className="text-xs font-medium text-muted-foreground/70 uppercase">BOLT Score</p>
+                      <p className="text-xs font-medium text-muted-foreground/70">BOLT Score</p>
                       <p className="text-2xl font-semibold text-foreground">{previousSession.bolt_score !== null ? `${previousSession.bolt_score}s` : 'N/A'}</p>
                     </div>
                     {previousSession.bolt_date && (
@@ -178,7 +178,7 @@ const PreviousSessionInsightsBar = ({ history = [], manualData }: PreviousSessio
 
             <div className="space-y-4">
               <div>
-                <p className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider mb-2">Practitioner Notes</p>
+                <p className="text-xs font-medium text-muted-foreground/70 mb-2">Practitioner Notes</p>
                 <div className="p-3 bg-muted rounded-xl border border-border">
                   <p className="text-xs text-muted-foreground leading-relaxed line-clamp-4 italic">
                     {previousSession.notes || "No general notes recorded for this session."}

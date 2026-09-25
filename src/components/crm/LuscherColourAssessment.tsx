@@ -223,12 +223,12 @@ const LuscherColourAssessment = ({
                 </h3>
                 <div className="flex gap-3">
                   <div className="flex-1 p-3 rounded-lg border border-violet-300 bg-card text-center">
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Color 1</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Color 1</p>
                     <div className="h-8 w-full rounded-md mx-auto border" style={{ backgroundColor: LUSCHER_COLORS[color1]?.hex || '#e2e8f0' }} />
                     <p className="text-sm font-semibold mt-1 text-foreground">{LUSCHER_COLORS[color1]?.name || 'None'}</p>
                   </div>
                   <div className="flex-1 p-3 rounded-lg border border-violet-300 bg-card text-center">
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Color 2</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Color 2</p>
                     <div className="h-8 w-full rounded-md mx-auto border" style={{ backgroundColor: LUSCHER_COLORS[color2]?.hex || '#e2e8f0' }} />
                     <p className="text-sm font-semibold mt-1 text-foreground">{LUSCHER_COLORS[color2]?.name || 'None'}</p>
                   </div>

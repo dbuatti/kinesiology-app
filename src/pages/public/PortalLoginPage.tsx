@@ -61,7 +61,7 @@ export default function PortalLoginPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider ml-1">
+                <label className="text-xs font-medium text-muted-foreground ml-1">
                   Your email
                 </label>
                 <Input

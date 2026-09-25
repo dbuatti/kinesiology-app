@@ -109,7 +109,7 @@ const DocumentSidebar = ({ activeSection, scrollTo }: DocumentSidebarProps) => {
 
       {/* Document Outline */}
       <div className="space-y-1.5">
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-1 mb-3">Document Outline</p>
+        <p className="text-xs font-medium text-muted-foreground px-1 mb-3">Document Outline</p>
         {OUTLINE_ITEMS.map((item) => {
           const isActive = activeSection === item.id;
           const isSubItem = !item.letter;
@@ -136,7 +136,7 @@ const DocumentSidebar = ({ activeSection, scrollTo }: DocumentSidebarProps) => {
 
       {/* Protocol Reference Guides — always expanded */}
       <div className="space-y-5">
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-1">Protocol Reference</p>
+        <p className="text-xs font-medium text-muted-foreground px-1">Protocol Reference</p>
         {CORRECTIONS_GUIDE.map((guide) => (
           <div key={guide.title} className={cn("rounded-2xl border p-4 space-y-3", guide.accentClass)}>
             <div className="flex items-center gap-2.5">

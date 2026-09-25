@@ -182,7 +182,7 @@ export function ProceduresTool() {
 
   if (loading) return (
     <div className="flex min-h-screen items-center justify-center">
-      <Loader2 className="animate-spin text-chart-primary" size={48} />
+      <Loader2 className="animate-spin text-muted-foreground" size={22} />
     </div>
   );
 
@@ -263,7 +263,7 @@ export function ProceduresTool() {
                             )}>
                               {item.count === 0 ? 'Unpracticed' : item.masteryLevel}
                             </Badge>
-                            <span className="text-[10px] font-medium text-muted-foreground uppercase">{item.count} Logs</span>
+                            <span className="text-xs font-medium text-muted-foreground">{item.count} Logs</span>
                           </div>
                         </div>
                         <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:text-chart-primary transition-all">
@@ -305,7 +305,7 @@ export function ProceduresTool() {
               <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:scale-110 transition-transform duration-700"><Activity size={80} /></div>
                 <CardContent className="p-6 space-y-1 relative z-10">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Total Clinical Logs</p>
+                  <p className="text-xs font-medium text-muted-foreground">Total Clinical Logs</p>
                   <p className="text-4xl font-semibold text-foreground">{summary.totalLogs}</p>
                   <p className="text-xs text-muted-foreground font-medium">Cumulative experience</p>
                 </CardContent>

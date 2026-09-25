@@ -313,7 +313,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
               </div>
               {rebookSlots.length > 0 && (
                 <div className="shrink-0 space-y-1.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">{rebookInfo!.label}</p>
+                  <p className="text-xs font-medium text-muted-foreground text-right">{rebookInfo!.label}</p>
                   <div className="flex gap-1">
                     {rebookSlots.map((rs, idx) => (
                       <button
@@ -351,7 +351,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
             <div className="flex items-center justify-center py-16">
               <div className="flex flex-col items-center gap-3">
                 <Loader2 className="animate-spin text-indigo-500" size={28} />
-                <p className="text-xs font-bold text-muted-foreground">Loading availability...</p>
+                <p className="text-xs font-bold text-muted-foreground">Loading availability…</p>
               </div>
             </div>
           ) : slotsError ? (
@@ -363,7 +363,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
             <>
               {/* Date chips */}
               <div className="space-y-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Available Days</p>
+                <p className="text-xs font-medium text-muted-foreground">Available Days</p>
                 <div className="flex gap-2.5 pb-2 overflow-x-auto">
                   {availableDates.map((date) => (
                     <button
@@ -388,7 +388,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
               {selectedDate && (
                 <div className="space-y-3 animate-in fade-in duration-300 mt-6">
                   <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    <p className="text-xs font-medium text-muted-foreground">
                       Pick a start time &mdash; sessions run ~60m
                     </p>
                     <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/30 px-2 py-0.5 rounded-full">
@@ -430,7 +430,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
               {/* Session Price */}
               {selectedSlot && (
                 <div className="space-y-3 animate-in fade-in duration-300 mt-6">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Session Price</p>
+                  <p className="text-xs font-medium text-muted-foreground">Session Price</p>
                   <div className="grid grid-cols-3 gap-3">
                     {priceOptions.map((opt) => {
                       const isCurrentRate = opt.sublabel === "Current rate";
@@ -469,7 +469,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
               {/* Repeat */}
               {selectedSlot && (
                 <div className="space-y-3 animate-in fade-in duration-300 mt-6">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Repeat</p>
+                  <p className="text-xs font-medium text-muted-foreground">Repeat</p>
                   <div className="flex gap-2">
                     {(["none", "weekly", "fortnightly"] as const).map((r) => (
                       <button
@@ -521,7 +521,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                     </div>
                     <div className="space-y-0.5">
                       <p className="text-base font-semibold text-foreground">Send Onboarding + Payment Email</p>
-                      <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{selectedPrice > 0 ? "Emails intake form + Stripe payment link" : "Emails the intake form"}</p>
+                      <p className="text-xs text-muted-foreground font-medium">{selectedPrice > 0 ? "Emails intake form + Stripe payment link" : "Emails the intake form"}</p>
                     </div>
                   </div>
                   <div className={cn("w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all", sendOnboarding ? "bg-emerald-600 border-emerald-600" : "border-muted-foreground/30")}>

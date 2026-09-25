@@ -123,7 +123,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <PlayCircle size={16} className="text-indigo-600" />
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Interactive Recovery Exercise</span>
+                    <span className="text-xs font-medium text-muted-foreground">Interactive Recovery Exercise</span>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => setShowExercise(false)} className="h-7 px-2 text-muted-foreground hover:text-rose-600">
                     <X size={14} className="mr-1" /> Close Timer
@@ -153,11 +153,11 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 gap-2">
                       <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/50 border border-border">
-                        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Below 20s</span>
+                        <span className="text-xs font-medium text-muted-foreground">Below 20s</span>
                         <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400">Compromised</span>
                       </div>
                       <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/50 border border-border">
-                        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">25-35s</span>
+                        <span className="text-xs font-medium text-muted-foreground">25-35s</span>
                         <span className="text-[10px] font-bold text-primary dark:text-primary">Functional</span>
                       </div>
                       <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">

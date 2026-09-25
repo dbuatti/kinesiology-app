@@ -66,14 +66,14 @@ const OnboardingLookupPage = () => {
           {loading ? (
             <div className="py-12 flex flex-col items-center gap-4">
               <Loader2 className="animate-spin text-chart-primary" size={32} />
-              <p className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider">
+              <p className="text-muted-foreground font-medium text-xs">
                 Searching Database...
               </p>
             </div>
           ) : (
             <form onSubmit={handleManualSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider ml-1">
+                <label className="text-xs font-medium text-muted-foreground ml-1">
                   Enter your booking email
                 </label>
                 <div className="relative">

@@ -55,7 +55,7 @@ const MasteryItemCard = ({ stat, onClick }: MasteryItemCardProps) => {
             </div>
             <div>
               <h4 className="font-semibold text-sm text-foreground leading-tight group-hover:text-indigo-600 transition-colors">{stat.name}</h4>
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-0.5">{stat.category}</p>
+              <p className="text-xs font-medium text-muted-foreground mt-0.5">{stat.category}</p>
             </div>
           </div>
           <div className="flex flex-col items-end gap-1.5">

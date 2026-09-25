@@ -366,7 +366,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
           <div className="min-w-0 flex-1 space-y-3">
             <div className="flex items-center gap-3">
               <p className={cn("font-semibold text-xl text-foreground truncate", isIntegrated && "text-muted-foreground")}>"{item.content}"</p>
-              {isWIP && <Badge className="bg-muted text-muted-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full animate-pulse">Work in Progress</Badge>}
+              {isWIP && <Badge className="bg-muted text-muted-foreground border-none font-medium text-xs px-3 py-1 rounded-full animate-pulse">Work in Progress</Badge>}
               {isSuggested && <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">AI Insight</Badge>}
             </div>
             
@@ -377,14 +377,14 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
             ) : (
               <div className="flex items-center gap-6">
                 <div className="flex-1 max-w-[150px] space-y-1.5">
-                  <div className="flex justify-between text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  <div className="flex justify-between text-xs font-medium text-muted-foreground">
                     <span>{progressLabel}</span>
                     <span>{count} Sessions</span>
                   </div>
                   <Progress value={progressValue} className={cn("h-1.5 bg-muted", isIntegrated ? "[&>div]:bg-chart-emerald" : "[&>div]:bg-chart-primary")} />
                 </div>
                 <div className="h-6 w-px bg-border" />
-                <span className="text-[10px] font-medium text-muted-foreground uppercase flex items-center gap-1.5">
+                <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                   <Calendar size={12} /> {format(new Date(item.created_at), "MMM d, yyyy")}
                 </span>
               </div>
@@ -593,7 +593,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
           </div>
 
           <TabsContent value="active" className="mt-0 focus-visible:ring-0">
-            {loading ? <div className="flex justify-center py-20"><Loader2 className="animate-spin text-chart-primary" size={48} /></div> : sortedBacklog.length > 0 ? (
+            {loading ? <div className="flex justify-center py-20"><Loader2 className="animate-spin text-muted-foreground" size={22} /></div> : sortedBacklog.length > 0 ? (
               <div className="space-y-4">
                 {sortedBacklog.map((item) => <IdentityCard key={item.id} item={item} />)}
               </div>

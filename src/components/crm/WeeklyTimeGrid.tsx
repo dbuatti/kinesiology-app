@@ -281,7 +281,7 @@ export function EarningsPanel({ summary, voiceRate, fnhRate, label }: EarningsPa
         >
           <div className="space-y-3">
             <div>
-              <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+              <h4 className="text-xs font-medium text-muted-foreground mb-2">
                 Income — {label}
               </h4>
               <div className="space-y-1">
@@ -300,7 +300,7 @@ export function EarningsPanel({ summary, voiceRate, fnhRate, label }: EarningsPa
               </div>
             </div>
             <div>
-              <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+              <h4 className="text-xs font-medium text-muted-foreground mb-2">
                 Hours
               </h4>
               <div className="space-y-1">
@@ -491,7 +491,7 @@ const WeeklyTimeGrid = ({
                   isToday(day) && "bg-chart-destructive/[0.03]"
                 )}
               >
-                <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <div className="text-xs font-medium text-muted-foreground">
                   {DAY_LABELS[i]}
                 </div>
                 <div

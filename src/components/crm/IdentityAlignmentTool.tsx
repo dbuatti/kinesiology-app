@@ -426,7 +426,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
 
       <div className="space-y-3">
         <div className="space-y-3">
-          <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ml-1">1. The Goal</Label>
+          <Label className="text-xs font-medium text-muted-foreground ml-1">1. The Goal</Label>
           <Textarea 
             placeholder="Define a specific outcome..." 
             value={formData.goal}
@@ -436,7 +436,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
         </div>
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">2. Target Identity</Label>
+            <Label className="text-xs font-medium text-muted-foreground">2. Target Identity</Label>
             <div className="flex items-center gap-2">
               <BacklogSelector type="alignment" onSelect={handleBacklogSelect} currentValue={formData.targetIdentity} />
               <Button variant="ghost" size="sm" onClick={handleGenerateTargetIdentity} disabled={isGenerating || !formData.goal} className="h-8 text-chart-primary hover:bg-muted gap-1 font-semibold text-[11px] rounded-lg border border-border">
@@ -479,7 +479,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
     <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div className="space-y-3">
-          <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ml-1">3. Physical Sensation</Label>
+          <Label className="text-xs font-medium text-muted-foreground ml-1">3. Physical Sensation</Label>
           <Textarea 
             placeholder="What does being this identity feel like in your body?" 
             value={formData.physicalSensation}
@@ -488,7 +488,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
           />
         </div>
         <div className="space-y-3">
-          <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ml-1">4. Emotional State</Label>
+          <Label className="text-xs font-medium text-muted-foreground ml-1">4. Emotional State</Label>
           <Textarea 
             placeholder="What is the core emotion of this identity?" 
             value={formData.emotionalState}
@@ -541,7 +541,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
     return (
       <div className="flex flex-col items-center text-center space-y-3 py-2 animate-in fade-in zoom-in-95 duration-500">
         <div className="w-full max-w-md space-y-2">
-          <div className="flex justify-between text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <div className="flex justify-between text-xs font-medium text-muted-foreground">
             <span>Reconsolidation Loop</span>
             <span>Waypoint {loopStep} of 4</span>
           </div>
@@ -676,7 +676,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
         </div>
 
         <div className="space-y-3">
-          <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ml-1">Somatic Anchor of Inevitability</Label>
+          <Label className="text-xs font-medium text-muted-foreground ml-1">Somatic Anchor of Inevitability</Label>
           <Input 
             placeholder="e.g. A deep breath and a slight smile..." 
             value={formData.finalAnchor}
@@ -718,7 +718,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
         
         {activeDrafts.length > 0 && (
           <div className="space-y-3">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               <Clock size={12} /> Active Drafts
             </p>
             <div className="grid grid-cols-1 gap-3">
@@ -730,7 +730,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
                     </div>
                     <div className="min-w-0">
                       <h4 className="font-semibold text-sm text-foreground truncate">{session.goal}</h4>
-                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-0.5">Phase {session.current_phase} • {new Date(session.created_at).toLocaleDateString()}</p>
+                      <p className="text-xs font-medium text-muted-foreground mt-0.5">Phase {session.current_phase} • {new Date(session.created_at).toLocaleDateString()}</p>
                     </div>
                   </div>
                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-chart-destructive" onClick={(e) => { e.stopPropagation(); setDeleteTargetId(session.id); setShowDeleteConfirm(true); }}><Trash2 size={14} /></Button>
@@ -741,7 +741,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
         )}
 
         <div className="space-y-3">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Completed Sessions</p>
+          <p className="text-xs font-medium text-muted-foreground">Completed Sessions</p>
           {completedSessions.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground bg-muted rounded-xl border border-dashed border-border">
               <History className="mx-auto mb-3 opacity-20" size={40} />
@@ -758,8 +758,8 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
                     <div className="min-w-0">
                       <h4 className="font-semibold text-sm text-foreground truncate">{session.goal}</h4>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <Badge variant="secondary" className="text-[10px] font-semibold uppercase tracking-wider bg-muted text-muted-foreground border-none px-1.5 py-0">{session.target_identity}</Badge>
-                        <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{new Date(session.created_at).toLocaleDateString()}</span>
+                        <Badge variant="secondary" className="text-xs font-medium bg-muted text-muted-foreground border-none px-1.5 py-0">{session.target_identity}</Badge>
+                        <span className="text-xs text-muted-foreground font-medium">{new Date(session.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </div>

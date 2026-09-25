@@ -140,7 +140,7 @@ function Tile({ icon: Icon, label, children, onClick }: { icon: any; label: stri
         onClick && "hover:border-primary/40 transition-colors cursor-pointer"
       )}
     >
-      <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+      <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
         <Icon className="h-3 w-3" /> {label}
       </div>
       {children}
@@ -164,7 +164,7 @@ export default function KeyMetricsBar({ onOpenFollowUp }: Props) {
   if (!metrics) {
     return (
       <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 mb-4">
-        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading metrics...
+        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading metrics…
       </div>
     );
   }

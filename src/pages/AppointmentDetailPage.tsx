@@ -267,7 +267,7 @@ const AppointmentDetailPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-4">
         <Loader2 className="h-12 w-12 animate-spin text-muted-foreground" />
-        <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Initializing Workspace</p>
+        <p className="text-xs font-medium text-muted-foreground">Initializing Workspace</p>
       </div>
     </div>
   );
@@ -352,7 +352,7 @@ const AppointmentDetailPage = () => {
                       </Badge>
                     )}
                     {appointment.status === 'Completed' && (
-                      <Badge className="bg-muted text-muted-foreground border-none font-medium text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full shrink-0">
+                      <Badge className="bg-muted text-muted-foreground border-none font-medium text-xs px-2.5 py-0.5 rounded-full shrink-0">
                         Completed
                       </Badge>
                     )}
@@ -465,7 +465,7 @@ const AppointmentDetailPage = () => {
               {/* Condition Card */}
               <div className="rounded-lg border border-border bg-muted/30 p-3">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Condition</span>
+                  <span className="text-xs font-medium text-muted-foreground">Condition</span>
                   {appointment.clients.medical_history && (
                     <button
                       onClick={() => { setMedicalHistoryValue(appointment.clients.medical_history || ""); setMedicalHistoryEditing(true); }}

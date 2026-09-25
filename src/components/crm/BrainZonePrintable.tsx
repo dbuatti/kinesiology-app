@@ -148,7 +148,7 @@ const BrainZonePrintable = () => {
           </Button>
         </div>
         
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+        <p className="text-xs font-medium text-muted-foreground">
           {orientation.toUpperCase()} • {isCompact ? 'COMPACT' : 'NORMAL'}
         </p>
       </div>
@@ -157,10 +157,10 @@ const BrainZonePrintable = () => {
       <div className="border-b-2 border-foreground/20 pb-2 mb-6 flex justify-between items-end">
         <div className="space-y-0.5">
           <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight uppercase leading-none">Brain Zone Reference</h1>
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Functional Neuro Health • Clinical Infrastructure • v2.4</p>
+          <p className="text-xs font-medium text-muted-foreground">Functional Neuro Health • Clinical Infrastructure • v2.4</p>
         </div>
         <div className="text-right">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Neurological Correction Map</p>
+          <p className="text-xs font-medium text-muted-foreground">Neurological Correction Map</p>
         </div>
       </div>
 
@@ -214,7 +214,7 @@ const BrainZonePrintable = () => {
 
       {/* Footer */}
       <div className="mt-8 pt-2 border-t border-border flex justify-between items-center">
-        <div className="flex gap-6 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="flex gap-6 text-xs font-medium text-muted-foreground">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-purple-600" /> Cortical (Opposite Side)
           </div>
@@ -222,7 +222,7 @@ const BrainZonePrintable = () => {
             <div className="w-2 h-2 rounded-full bg-indigo-600" /> Subcortical (Same Side)
           </div>
         </div>
-        <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Confidential Practitioner Resource</p>
+        <p className="text-xs font-medium text-muted-foreground/60">Confidential Practitioner Resource</p>
       </div>
 
       {/* Brain Reflex Modal */}

@@ -49,7 +49,7 @@ const OnboardingPage = () => {
         <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground font-semibold text-2xl shadow-3xl animate-bounce mb-6">
           ✦
         </div>
-        <div className="flex items-center gap-2 text-muted-foreground font-semibold text-[10px] uppercase tracking-wider">
+        <div className="flex items-center gap-2 text-muted-foreground font-medium text-xs">
           <Loader2 className="animate-spin" size={14} /> Preparing Your Form
         </div>
       </div>
@@ -90,7 +90,7 @@ const OnboardingPage = () => {
               Thank you for taking the time to complete your onboarding. This helps me prepare for your upcoming sessions and ensures I have the most accurate context for your healing journey.
             </p>
             <div className="pt-4">
-              <div className="inline-flex items-center gap-2 px-6 py-3 bg-muted rounded-full text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+              <div className="inline-flex items-center gap-2 px-6 py-3 bg-muted rounded-full text-xs font-medium text-muted-foreground">
                 <ShieldCheck size={16} className="text-emerald-500" /> Securely Encrypted & Private
               </div>
             </div>
@@ -126,7 +126,7 @@ const OnboardingPage = () => {
                 <CardTitle className="text-2xl font-serif font-bold text-foreground">Personal Details</CardTitle>
               </div>
               <div className="flex flex-col md:items-end gap-2">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Clinical Intake Form</p>
+                <p className="text-xs font-medium text-muted-foreground">Clinical Intake Form</p>
                 <div className="w-full md:w-32 h-2 bg-muted rounded-full overflow-hidden">
                   <div className="h-full bg-primary w-full" />
                 </div>

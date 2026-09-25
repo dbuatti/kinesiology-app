@@ -79,7 +79,7 @@ const AcupointReference = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="p-3 bg-muted/50 rounded-xl border border-border/50">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
+                <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
                   <MapPin size={10} /> Location
                 </p>
                 <p className="text-xs text-foreground/80 font-medium leading-relaxed">{point.location}</p>

@@ -107,14 +107,14 @@ const MotorControlHierarchy = () => {
               item.targetLight, item.targetBorder
             )}>
               <p className={cn("text-2xl font-semibold mb-1", item.targetText)}>{item.target}</p>
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Motor Control</p>
+              <p className="text-xs font-medium text-muted-foreground">Motor Control</p>
             </div>
 
             {/* Associated Nerves */}
             <div className="pt-4 flex flex-col items-center gap-2">
               <div className="w-0.5 h-8 bg-muted rounded-full" />
               <div className="p-4 bg-card rounded-2xl border border-border/50 shadow-sm text-center">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Associated Pathway</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Associated Pathway</p>
                 {item.nerves.map(nerve => (
                   <p key={nerve} className="text-xs font-bold text-foreground/80">{nerve}</p>
                 ))}

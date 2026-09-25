@@ -121,7 +121,7 @@ const FiveElementCycle = () => {
             <CardContent className="space-y-4">
               <p className="text-xs text-muted-foreground font-medium leading-relaxed">{el.description}</p>
               <div className="space-y-2">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Meridians</p>
+                <p className="text-xs font-medium text-muted-foreground">Meridians</p>
                 <div className="flex flex-wrap gap-1">
                   {el.meridians.map(m => (
                     <Badge key={m} variant="secondary" className="bg-muted text-muted-foreground border-none text-[10px] font-bold">

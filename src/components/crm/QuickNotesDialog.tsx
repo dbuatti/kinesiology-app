@@ -154,7 +154,7 @@ const QuickNotesDialog = ({
               )}
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <span className="hidden sm:inline text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40">
+              <span className="hidden sm:inline text-xs font-medium text-muted-foreground/40">
                 ⌘/Ctrl + Enter
               </span>
               <Button

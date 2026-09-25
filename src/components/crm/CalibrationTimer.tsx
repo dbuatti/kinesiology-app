@@ -55,7 +55,7 @@ const CalibrationTimer = ({ duration }: CalibrationTimerProps) => {
   return (
     <div className="p-4 bg-card rounded-2xl border border-border space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-bold text-muted-foreground uppercase">Timer ({duration}s)</p>
+        <p className="text-xs font-medium text-muted-foreground">Timer ({duration}s)</p>
         <p className="text-2xl font-semibold text-foreground tabular-nums">{timeLeft}s</p>
       </div>
       <div className="w-full h-2 bg-muted rounded-full overflow-hidden">

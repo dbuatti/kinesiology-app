@@ -339,7 +339,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
         <div className="overflow-y-auto flex-1 px-8 py-6 space-y-6">
           {/* Student */}
           <div className="space-y-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Student</p>
+            <p className="text-xs font-medium text-muted-foreground">Student</p>
             {selectedStudent ? (
               <div className="space-y-2">
                 <div className="flex items-center justify-between bg-muted/40 rounded-xl p-3">
@@ -351,7 +351,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                       )}
                     </div>
                     {selectedStudent._source === "kinesiology" && (
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0 self-start">FNH</span>
+                      <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0 self-start">FNH</span>
                     )}
                   </div>
                   <button
@@ -461,7 +461,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
 
           {/* Discipline */}
           <div className="space-y-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Lesson Type</p>
+            <p className="text-xs font-medium text-muted-foreground">Lesson Type</p>
             <select
               value={discipline}
               onChange={(e) => setDiscipline(e.target.value as "voice" | "piano")}
@@ -474,7 +474,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
 
           {/* Duration */}
           <div className="space-y-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Duration</p>
+            <p className="text-xs font-medium text-muted-foreground">Duration</p>
             <div className="flex gap-2">
               {EVENT_TYPES.map((et) => (
                 <button
@@ -496,7 +496,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
           {/* Repeat */}
           {selectedStudent && (
             <div className="space-y-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Repeat</p>
+              <p className="text-xs font-medium text-muted-foreground">Repeat</p>
               <div className="flex gap-2">
                 {(["none", "weekly", "fortnightly"] as const).map((r) => (
                   <button
@@ -535,7 +535,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
           {/* Date & Time */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Date</p>
+              <p className="text-xs font-medium text-muted-foreground">Date</p>
               <input
                 type="date"
                 value={date}
@@ -545,7 +545,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
               />
             </div>
             <div className="space-y-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Time</p>
+              <p className="text-xs font-medium text-muted-foreground">Time</p>
               {calSlots === undefined ? (
                 <div className="h-12 flex items-center justify-center rounded-xl border border-border bg-card">
                   <Loader2 size={14} className="animate-spin text-muted-foreground" />
@@ -646,7 +646,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                 </div>
                 <div className="space-y-0.5">
                   <p className="text-xs font-semibold text-foreground">Send Onboarding Email</p>
-                  <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Booking confirmation + welcome email</p>
+                  <p className="text-xs text-muted-foreground font-medium">Booking confirmation + welcome email</p>
                 </div>
               </div>
               <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all", sendOnboarding ? "bg-emerald-600 border-emerald-600" : "border-muted-foreground/30")}>
@@ -658,7 +658,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
           {/* Confirmation summary */}
           {!bookingDone && selectedStudent && date && time && (
             <div className="bg-muted/50 rounded-xl p-5 space-y-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Summary</p>
+              <p className="text-xs font-medium text-muted-foreground">Summary</p>
               <div className="flex items-center gap-2 text-sm font-bold">
                 <Calendar size={14} className="text-rose-500" />
                 {format(new Date(date + "T" + time), "EEEE, MMMM d, yyyy")}
@@ -679,7 +679,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
 
         {/* Footer */}
         <div className="px-8 py-4 border-t border-border shrink-0 flex justify-between items-center">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{discipline === "piano" ? "Piano Studio" : "Voice Studio"}</p>
+          <p className="text-xs font-medium text-muted-foreground">{discipline === "piano" ? "Piano Studio" : "Voice Studio"}</p>
           <div className="flex gap-2">
             {!bookingDone ? (
               <>

@@ -104,8 +104,8 @@ const VoiceDashboardPage = () => {
  return (
  <AppLayout>
  <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
- <Loader2 className="animate-spin text-destructive" size={48} />
- <p className="text-muted-foreground font-semibold text-xs uppercase tracking-wider">Loading voice studio...</p>
+ <Loader2 className="animate-spin text-muted-foreground" size={22} />
+ <p className="text-muted-foreground text-sm">Loading voice studio…</p>
  </div>
  </AppLayout>
  );
@@ -167,34 +167,32 @@ const VoiceDashboardPage = () => {
       </div>
 
       {/* KPI Cards */}
- <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+ <div className="grid grid-cols-2 overflow-hidden rounded-xl border border-border bg-card shadow-xs lg:grid-cols-4">
  {[
- { label: "Students", value: students.length, icon: Users, color: "text-chart-destructive", bg: "bg-chart-destructive/10 " },
- { label: "Lessons This Month", value: stats.thisMonthLessons.length, icon: Music, color: "text-chart-primary", bg: "bg-chart-primary/10 " },
- { label: "Unpaid", value: stats.unpaid.length, icon: CreditCard, color: "text-muted-foreground", bg: "bg-muted " },
- { label: "Past Due (3+ mo)", value: stats.pastDue.length, icon: AlertCircle, color: "text-chart-destructive", bg: "bg-chart-destructive/10 " },
- ].map((stat) => (
- <div key={stat.label} className="bg-card rounded-xl border border-border p-5 flex items-center gap-4">
- <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shrink-0", stat.bg)}>
- <stat.icon size={22} className={stat.color} />
+ { label: "Students", value: students.length, icon: Users },
+ { label: "Lessons this month", value: stats.thisMonthLessons.length, icon: Music },
+ { label: "Unpaid", value: stats.unpaid.length, icon: CreditCard, alert: stats.unpaid.length > 0 },
+ { label: "Past due (3+ months)", value: stats.pastDue.length, icon: AlertCircle, alert: stats.pastDue.length > 0 },
+ ].map((stat, i) => (
+ <div key={stat.label} className={cn("flex flex-col gap-3 p-4 sm:p-5", i % 2 === 1 && "border-l border-border", i >= 2 && "border-t border-border lg:border-t-0", i === 2 && "lg:border-l")}>
+ <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
+ <stat.icon size={15} strokeWidth={1.85} className={cn(stat.alert ? "text-chart-destructive" : "text-muted-foreground/80")} />
+ <span className="truncate">{stat.label}</span>
  </div>
- <div>
- <div className={cn("text-3xl font-semibold", stat.color)}>{stat.value}</div>
- <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-0.5">{stat.label}</div>
- </div>
+ <div className={cn("text-[28px] font-semibold leading-none tracking-[-0.03em] tabular-nums", stat.alert ? "text-chart-destructive" : "text-foreground")}>{stat.value}</div>
  </div>
  ))}
  </div>
 
  {/* Quick Actions */}
  <div>
- <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Quick Actions</h3>
+ <h3 className="text-[13px] font-medium text-muted-foreground mb-3">Quick actions</h3>
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
  {quickActions.map((action) => (
  <button
  key={action.label}
  onClick={action.onClick}
- className="flex items-center gap-3 bg-card border border-border rounded-xl p-4 hover:border-border transition-all text-left group"
+ className="flex items-center gap-3 bg-card border border-border rounded-xl p-3.5 shadow-xs hover:border-foreground/15 hover:shadow-sm text-left group"
  >
  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", action.bgColor)}>
  <action.icon size={18} className={action.iconColor} />
@@ -215,7 +213,7 @@ const VoiceDashboardPage = () => {
  <Calendar size={16} className="text-destructive" />
  <h3 className="font-semibold text-sm">Upcoming Lessons</h3>
  </div>
- <Button variant="ghost" size="sm" onClick={() => navigate("/voice/calendar")} className="text-[11px] font-semibold text-destructive h-8">
+ <Button variant="ghost" size="sm" onClick={() => navigate("/voice/calendar")} className="h-7 gap-1 px-2 text-[13px] font-normal text-muted-foreground hover:text-foreground">
  View All
  </Button>
  </div>
@@ -229,7 +227,7 @@ const VoiceDashboardPage = () => {
  <Music size={14} className="text-chart-destructive" />
  </div>
  <div className="flex-1 min-w-0">
- <p className="font-medium text-xs truncate">{lesson.studentName || lesson.name || "Voice Lesson"}</p>
+ <p className="font-medium text-sm truncate">{lesson.studentName || lesson.name || "Voice Lesson"}</p>
                   <p className="text-[10px] text-muted-foreground">
                   {lesson.date && format(new Date(lesson.date), "EEE, MMM d")}
                   {lesson.date && lesson.time && ` · ${formatVoiceTime(lesson.date, lesson.time)}`}
@@ -258,7 +256,7 @@ const VoiceDashboardPage = () => {
  <AlertCircle size={16} className="text-muted-foreground" />
  <h3 className="font-semibold text-sm">Needs Attention</h3>
  </div>
- <Button variant="ghost" size="sm" onClick={() => navigate("/voice/clients")} className="text-[11px] font-semibold text-destructive h-8">
+ <Button variant="ghost" size="sm" onClick={() => navigate("/voice/clients")} className="h-7 gap-1 px-2 text-[13px] font-normal text-muted-foreground hover:text-foreground">
  View All
  </Button>
  </div>
@@ -272,7 +270,7 @@ const VoiceDashboardPage = () => {
  <Users size={14} className="text-chart-destructive" />
  </div>
  <div className="flex-1 min-w-0">
- <p className="font-medium text-xs truncate">{student.name || "Unnamed"}</p>
+ <p className="font-medium text-sm truncate">{student.name || "Unnamed"}</p>
  <p className="text-[10px] text-muted-foreground">
  {student.latestDate
  ? `Last seen ${format(new Date(student.latestDate), "MMM d, yyyy")}`
@@ -310,7 +308,7 @@ const VoiceDashboardPage = () => {
  <Clock size={16} className="text-primary" />
  <h3 className="font-semibold text-sm">Recent Lessons</h3>
  </div>
- <Button variant="ghost" size="sm" onClick={() => navigate("/voice/calendar")} className="text-[11px] font-semibold text-destructive h-8">
+ <Button variant="ghost" size="sm" onClick={() => navigate("/voice/calendar")} className="h-7 gap-1 px-2 text-[13px] font-normal text-muted-foreground hover:text-foreground">
  View Calendar
  </Button>
  </div>
@@ -330,7 +328,7 @@ const VoiceDashboardPage = () => {
  </div>
  <div className="flex-1 min-w-0">
  <div className="flex items-center gap-2">
- <p className="font-medium text-xs truncate">{lesson.studentName || lesson.name || "Voice Lesson"}</p>
+ <p className="font-medium text-sm truncate">{lesson.studentName || lesson.name || "Voice Lesson"}</p>
  {lesson.paymentStatus && (
  <Badge className={cn(
  "text-[10px] font-semibold border-none shrink-0",

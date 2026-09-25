@@ -43,10 +43,10 @@ const ManualMergeForm = ({
 
   return (
     <div className="space-y-4">
-      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider ml-1">Manual Merge Override</p>
+      <p className="text-xs font-medium text-muted-foreground ml-1">Manual Merge Override</p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider ml-1">Duplicate Client (To Remove)</label>
+          <label className="text-xs font-medium text-muted-foreground ml-1">Duplicate Client (To Remove)</label>
           <Select value={sourceClientId} onValueChange={setSourceClientId} disabled={loadingClients || merging}>
             <SelectTrigger className="h-12 rounded-xl font-bold bg-muted/40 border-border">
               <SelectValue placeholder={loadingClients ? "Loading..." : "Select duplicate..."} />
@@ -60,7 +60,7 @@ const ManualMergeForm = ({
         </div>
 
         <div className="space-y-2">
-          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider ml-1">Primary Client (To Keep)</label>
+          <label className="text-xs font-medium text-muted-foreground ml-1">Primary Client (To Keep)</label>
           <Select value={targetClientId} onValueChange={setTargetClientId} disabled={loadingClients || merging}>
             <SelectTrigger className="h-12 rounded-xl font-bold bg-muted/40 border-border">
               <SelectValue placeholder={loadingClients ? "Loading..." : "Select primary..."} />

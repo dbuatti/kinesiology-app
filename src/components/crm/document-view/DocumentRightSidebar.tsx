@@ -72,7 +72,7 @@ const DocumentRightSidebar = ({
 
       {/* Live clock */}
       <div className="text-center space-y-0.5">
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Time</p>
+        <p className="text-xs font-medium text-muted-foreground">Time</p>
         <p className="text-base font-semibold tabular-nums text-foreground dark:text-muted-foreground/60">{format(now, "HH:mm")}</p>
         {elapsedMinutes >= 0 && (
           <p className="text-[10px] font-bold text-muted-foreground tabular-nums">+{elapsedMinutes}m elapsed</p>
@@ -93,7 +93,7 @@ const DocumentRightSidebar = ({
 
       {/* Quick timers */}
       <div className="space-y-2">
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider text-center">Timers</p>
+        <p className="text-xs font-medium text-muted-foreground text-center">Timers</p>
         {TIMER_PRESETS.map((preset) => {
           const isActive = activeTimerDuration === preset.value;
           return (
@@ -123,7 +123,7 @@ const DocumentRightSidebar = ({
 
       {/* Quick reference: key durations */}
       <div className="space-y-2">
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider text-center">Reference</p>
+        <p className="text-xs font-medium text-muted-foreground text-center">Reference</p>
         {[
           { label: "Vagus stim", value: "30–60s" },
           { label: "T1 / Dia hold", value: "45–90s" },

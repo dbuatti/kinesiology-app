@@ -162,7 +162,7 @@ const FractalNode = ({
                 <Zap size={16} className="text-indigo-500" /> Process in Identity Map
               </DropdownMenuItem>
               
-              <div className="px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Move Hierarchy</div>
+              <div className="px-4 py-2 text-xs font-medium text-muted-foreground">Move Hierarchy</div>
               {item.parent_id && (
                 <DropdownMenuItem onClick={() => onMove(item.id, null)} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
                   <ArrowRight size={16} className="rotate-180" /> Move to Top Level

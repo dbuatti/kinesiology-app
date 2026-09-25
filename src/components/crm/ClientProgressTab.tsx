@@ -97,7 +97,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
       <div className="flex flex-wrap items-center gap-4 p-4 bg-card rounded-2xl border border-border shadow-sm">
         <div className="flex items-center gap-2 px-4 border-r border-border mr-2">
           <Zap size={18} className="text-amber-500 fill-amber-500/40" />
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Quick Assessment</span>
+          <span className="text-xs font-medium text-muted-foreground">Quick Assessment</span>
         </div>
         <Button 
           onClick={() => openAssessment('bolt')}
@@ -187,7 +187,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
             </div>
 
             <div className="space-y-3">
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Clinical Alerts</h4>
+              <h4 className="text-xs font-medium text-muted-foreground">Clinical Alerts</h4>
               {latestBolt !== null && latestBolt < 25 ? (
                 <div className="flex gap-3 p-3 bg-destructive/5 rounded-xl border border-destructive/20">
                   <AlertCircle className="text-destructive shrink-0" size={18} />
@@ -231,7 +231,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
             {boltData.length > 1 ? (
               <div className="space-y-8">
                 <div className="h-[200px] w-full">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-4">BOLT Score Trend</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-4">BOLT Score Trend</p>
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={boltData}>
                       <defs>
@@ -262,7 +262,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
 
                 {threatTrendData.length > 1 && (
                   <div className="h-[200px] w-full">
-                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-4">Brainstem Threat Trend (Lower is Better)</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-4">Brainstem Threat Trend (Lower is Better)</p>
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={threatTrendData}>
                         <defs>
@@ -320,7 +320,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
             </CardHeader>
             <CardContent className="space-y-4 relative z-10">
               <div className="p-4 bg-card/10 rounded-2xl border border-primary-foreground/10 shadow-inner">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Primary Focus</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Primary Focus</p>
                 <p className="text-sm font-bold leading-relaxed">
                   {latestBolt !== null && latestBolt < 25 
                     ? "Prioritize CO2 tolerance and respiratory mechanics. Shift from SNS to Receptive state."
@@ -328,7 +328,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
                 </p>
               </div>
               <div className="p-4 bg-card/10 rounded-2xl border border-primary-foreground/10 shadow-inner">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Shared Responsibility</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Shared Responsibility</p>
                 <p className="text-xs text-foreground/80 leading-relaxed italic">
                   "There needs to be a balance of shared responsibility, but ultimately the client must drive their own healing process."
                 </p>
@@ -348,13 +348,13 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
               </p>
               <div className="space-y-2">
                 <div className="flex items-center justify-between p-2 rounded-xl bg-muted/50 border border-border">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase">Fakuda Test</span>
+                  <span className="text-xs font-medium text-muted-foreground">Fakuda Test</span>
                   <Badge variant="outline" className="text-[10px] border-border">
                     {appointments.some(a => a.fakuda_notes) ? "Assessed" : "Pending"}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between p-2 rounded-xl bg-muted/50 border border-border">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase">Rhombergs</span>
+                  <span className="text-xs font-medium text-muted-foreground">Rhombergs</span>
                   <Badge variant="outline" className="text-[10px] border-border">
                     {appointments.some(a => a.sharpened_rhombergs_notes) ? "Assessed" : "Pending"}
                   </Badge>

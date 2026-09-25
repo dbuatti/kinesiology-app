@@ -328,8 +328,8 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
   if (loading) {
     return (
       <div className="p-12 flex flex-col items-center justify-center gap-4">
-        <Loader2 className="animate-spin text-chart-primary" size={48} />
-        <p className="text-muted-foreground font-semibold text-[10px] uppercase tracking-wider">Loading muscle log...</p>
+        <Loader2 className="animate-spin text-muted-foreground" size={22} />
+        <p className="text-muted-foreground text-sm">Loading muscle log…</p>
       </div>
     );
   }

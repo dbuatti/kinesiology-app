@@ -1654,7 +1654,7 @@ const TimetablePage = () => {
               </DialogHeader>
               <div className="space-y-2.5">
                 <div className="rounded-lg bg-muted/40 px-3 py-2.5">
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  <div className="text-xs font-medium text-muted-foreground">
                     {appointmentFor.source === "voice" ? "Student" : "Client"}
                   </div>
                   <div className="mt-0.5 text-[15px] font-bold text-foreground">
@@ -1663,13 +1663,13 @@ const TimetablePage = () => {
                 </div>
                 {appointmentFor.attendeeEmail && (
                   <div className="rounded-lg bg-muted/40 px-3 py-2.5">
-                    <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Email</div>
+                    <div className="text-xs font-medium text-muted-foreground">Email</div>
                     <div className="mt-0.5 text-sm font-medium text-foreground">{appointmentFor.attendeeEmail}</div>
                   </div>
                 )}
                 <div className="flex gap-2.5">
                   <div className="flex-1 rounded-lg bg-muted/40 px-3 py-2.5">
-                    <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Date</div>
+                    <div className="text-xs font-medium text-muted-foreground">Date</div>
                     <div className="mt-0.5 text-sm font-semibold text-foreground">
                       {appointmentFor.start
                         ? practiceFormat(new Date(appointmentFor.start), "EEE d MMM yyyy")
@@ -1677,7 +1677,7 @@ const TimetablePage = () => {
                     </div>
                   </div>
                   <div className="flex-1 rounded-lg bg-muted/40 px-3 py-2.5">
-                    <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Time</div>
+                    <div className="text-xs font-medium text-muted-foreground">Time</div>
                     <div className="mt-0.5 text-sm font-semibold text-foreground">
                       {appointmentFor.start
                         ? practiceFormat(new Date(appointmentFor.start), "h:mm a")
@@ -1687,7 +1687,7 @@ const TimetablePage = () => {
                 </div>
                 {appointmentFor.title && appointmentFor.title !== appointmentFor.attendeeName && (
                   <div className="rounded-lg bg-muted/40 px-3 py-2.5">
-                    <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Title</div>
+                    <div className="text-xs font-medium text-muted-foreground">Title</div>
                     <div className="mt-0.5 text-sm font-medium text-foreground">{appointmentFor.title}</div>
                   </div>
                 )}
@@ -1929,7 +1929,7 @@ const TimetablePage = () => {
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1.5">
-                <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <Label className="text-xs font-medium text-muted-foreground">
                   Start
                 </Label>
                 <Input
@@ -1939,7 +1939,7 @@ const TimetablePage = () => {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <Label className="text-xs font-medium text-muted-foreground">
                   End
                 </Label>
                 <Input
@@ -1950,7 +1950,7 @@ const TimetablePage = () => {
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <Label className="text-xs font-medium text-muted-foreground">
                 Reason (optional)
               </Label>
               <Input
@@ -1994,7 +1994,7 @@ function GcalStatusRow({
         ) : (
           <CalendarDays size={14} className="text-chart-primary" />
         )}
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <span className="text-xs font-medium text-muted-foreground">
           Calendar
         </span>
       </div>
@@ -2042,7 +2042,7 @@ function PlannerBar({
   return (
     <div className="rounded-xl border border-border bg-card p-3 flex flex-col lg:flex-row gap-3 lg:items-end">
       <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-        <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <label className="text-xs font-medium text-muted-foreground">
           Session type
         </label>
         <Select value={kind} onValueChange={(v) => onKindChange(v as SessionKind)}>
@@ -2061,7 +2061,7 @@ function PlannerBar({
       </div>
 
       <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-        <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <label className="text-xs font-medium text-muted-foreground">
           {kind === "fnh" ? "Event type" : "Lesson length"}
         </label>
         <Select
@@ -2088,7 +2088,7 @@ function PlannerBar({
       </div>
 
       <div className="flex flex-col gap-1.5 flex-[1.5] min-w-0">
-        <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <label className="text-xs font-medium text-muted-foreground">
           {kind === "fnh" ? "Client" : "Student"}
         </label>
         {kind === "fnh" ? (
@@ -2319,7 +2319,7 @@ function FortnightMockup({
     <div className="space-y-5">
       {hideNav ? (
         title ? (
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{title}</p>
+          <p className="text-xs font-medium text-muted-foreground">{title}</p>
         ) : null
       ) : (
         <div className="flex items-center justify-between gap-3">
@@ -2332,7 +2332,7 @@ function FortnightMockup({
           >
             <ChevronLeft size={14} /> Previous
           </Button>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <p className="text-xs font-medium text-muted-foreground">
             Fortnight {fortnightIndex + 1} of {totalFortnights}
           </p>
           <Button
@@ -2352,7 +2352,7 @@ function FortnightMockup({
         return (
         <div key={wi} className="space-y-2">
           <div className="flex items-center justify-between px-1">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+            <p className="text-xs font-medium text-muted-foreground/70">
               Week {wi + 1} — {practiceFormat(week[0], "d MMM")} to {practiceFormat(week[6], "d MMM yyyy")}
             </p>
             {onToggleWeek && (
@@ -2477,7 +2477,7 @@ function DayCell({
     >
       <div className="flex items-center justify-between mb-1.5">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <p className="text-xs font-medium text-muted-foreground">
             {weekdayLabel(date)}
           </p>
           <p className="text-sm font-bold text-foreground leading-tight">{practiceFormat(date, "d")}</p>
@@ -2487,7 +2487,7 @@ function DayCell({
 
       <div className="flex-1 space-y-1">
         {blocked && (
-          <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+          <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
             <Ban size={9} /> Blocked
           </div>
         )}
@@ -2652,7 +2652,7 @@ function ForecastPlot({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
           {data.map((w) => (
             <div key={w.label} className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{w.label}</span>
+              <span className="text-xs font-medium text-muted-foreground">{w.label}</span>
               <span className="text-[10px] font-semibold text-chart-primary">{w.open} open</span>
             </div>
           ))}

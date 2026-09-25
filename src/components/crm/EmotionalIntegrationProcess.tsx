@@ -145,7 +145,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
               </p>
             </div>
             <div className="p-3 bg-card rounded-lg border border-border relative z-10">
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Clinical Safety</p>
+              <p className="text-xs font-medium text-muted-foreground mb-1">Clinical Safety</p>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Always check for permission when working with deep emotional layers. If denied, perform <strong>Harmonic Rocking</strong> first to down-regulate the system.
               </p>
@@ -203,11 +203,11 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
           <StepHeader title="4. Timeline Regression" sub="Challenge the system for the specific age of origin." />
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Age</label>
+              <label className="text-xs text-muted-foreground">Age</label>
               <Input type="number" placeholder="e.g. 5" className="h-10 rounded-lg text-sm font-medium text-center" value={age} onChange={(e) => setAge(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Months (Optional)</label>
+              <label className="text-xs text-muted-foreground">Months (Optional)</label>
               <Input type="number" placeholder="e.g. 4" className="h-10 rounded-lg text-sm font-medium text-center" value={months} onChange={(e) => setMonths(e.target.value)} />
             </div>
           </div>
@@ -350,7 +350,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
             <div className="space-y-4 relative z-10">
               <div className="p-4 bg-card rounded-lg border border-border space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">The Context</p>
+                  <p className="text-xs font-medium text-muted-foreground">The Context</p>
                   <Badge className="bg-primary text-primary-foreground border-none font-medium text-[10px] uppercase tracking-wider">
                     {timeline === 'Historic' ? `Age ${age}` : 'Current'}
                   </Badge>
@@ -379,7 +379,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
                   </div>
 
                   <div className="p-4 bg-card rounded-lg border border-border space-y-2">
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Hold Simultaneously:</p>
+                    <p className="text-xs font-medium text-muted-foreground">Hold Simultaneously:</p>
                     <ul className="space-y-2 text-xs font-medium">
                       <li className="flex items-center gap-2"><CheckCircle2 size={12} className="text-primary" /> Frontal Lobe (ESR)</li>
                       <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-primary mt-0.5 shrink-0" /> <span>Eye Position: <span className="text-primary">{selectedEyePos.pos}</span><br /><span className="text-[10px] text-muted-foreground">{selectedEyePos.label} — {selectedEyePos.sub}</span></span></li>
@@ -392,7 +392,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
               </div>
 
               <div className="space-y-3 pt-3 border-t border-border">
-                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Observe for Shifts:</p>
+                <p className="text-xs font-medium text-muted-foreground">Observe for Shifts:</p>
                 <div className="flex flex-wrap gap-2">
                   {SIGNS_OF_SHIFT.map(shift => (
                     <Badge 
@@ -433,7 +433,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
                   "Now that we've cleared the negative, let's upload the positive state."
                 </p>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">What is the opposite state?</label>
+                  <label className="text-xs font-medium text-muted-foreground">What is the opposite state?</label>
                   <Input 
                     placeholder="e.g. Feeling Great, Confident, Safe..." 
                     className="bg-card border-border text-foreground font-medium h-10 rounded-lg"

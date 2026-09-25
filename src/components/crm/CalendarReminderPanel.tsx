@@ -212,15 +212,15 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
         <div className="grid grid-cols-3 gap-2.5">
           <div className="text-center p-3 rounded-2xl bg-muted/40 border border-border/40">
             <div className="text-xl font-bold text-foreground font-serif">{stats.total}</div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-0.5">This week</div>
+            <div className="text-xs text-muted-foreground mt-0.5">This week</div>
           </div>
           <div className="text-center p-3 rounded-2xl bg-chart-emerald/10 border border-chart-emerald/20">
             <div className="text-xl font-bold text-chart-emerald font-serif">{stats.sent}</div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-0.5">Reminded</div>
+            <div className="text-xs text-muted-foreground mt-0.5">Reminded</div>
           </div>
           <div className="text-center p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20">
             <div className="text-xl font-bold text-amber-600 dark:text-amber-500 font-serif">{pending}</div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-0.5">Pending</div>
+            <div className="text-xs text-muted-foreground mt-0.5">Pending</div>
           </div>
         </div>
 

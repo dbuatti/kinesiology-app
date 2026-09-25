@@ -91,10 +91,10 @@ const CranialNervePrintable = () => {
       <div className="border-b-2 border-foreground/20 pb-1.5 mb-4 flex justify-between items-end">
         <div className="space-y-0.5">
           <h1 className="text-2xl font-serif font-bold tracking-tight uppercase leading-none">Cranial Nerve Reference</h1>
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Functional Neuro Health • Clinical Infrastructure • v2.4</p>
+          <p className="text-xs font-medium text-muted-foreground">Functional Neuro Health • Clinical Infrastructure • v2.4</p>
         </div>
         <div className="text-right">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">A4 Landscape Edition</p>
+          <p className="text-xs font-medium text-muted-foreground">A4 Landscape Edition</p>
         </div>
       </div>
 
@@ -107,7 +107,7 @@ const CranialNervePrintable = () => {
 
       {/* Footer */}
       <div className="mt-4 pt-2 border-t border-border flex justify-between items-center">
-        <div className="flex gap-6 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="flex gap-6 text-xs font-medium text-muted-foreground">
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-purple-600" /> Cortex
           </div>

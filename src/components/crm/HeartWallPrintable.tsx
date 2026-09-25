@@ -43,10 +43,10 @@ const HeartWallPrintable = () => {
       <div className="border-b-2 border-foreground/20 pb-2 mb-4 flex justify-between items-end">
         <div className="space-y-0.5">
           <h1 className="text-3xl font-serif font-bold tracking-tight uppercase leading-none">Heart Wall Protocol Sheet</h1>
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Resonance Clinical Infrastructure • Protocol v3.0</p>
+          <p className="text-xs font-medium text-muted-foreground">Resonance Clinical Infrastructure • Protocol v3.0</p>
         </div>
         <div className="text-right">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Fractal Resolution OS</p>
+          <p className="text-xs font-medium text-muted-foreground">Fractal Resolution OS</p>
         </div>
       </div>
 

@@ -200,7 +200,7 @@ const LymphaticAssessment = ({
                 {/* Step 1 & 2: Suture and Zone */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-4">
-                    <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                    <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                       <Search size={14} className="text-chart-primary" /> 1. Temporal-Parietal Suture (Glide Test)
                     </label>
                     <p className="text-xs text-muted-foreground font-medium leading-relaxed -mt-2">
@@ -216,7 +216,7 @@ const LymphaticAssessment = ({
                   </div>
 
                   <div className="space-y-4">
-                    <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                    <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                       <Zap size={14} className="text-amber-500" /> 2. Circuit-Locate Lymph Zones
                     </label>
                     <p className="text-xs text-muted-foreground font-medium leading-relaxed -mt-2">
@@ -224,7 +224,7 @@ const LymphaticAssessment = ({
                     </p>
                     <div className="space-y-4">
                       <div>
-                        <p className="text-[10px] font-medium text-muted-foreground/50 uppercase mb-2">Primary (Neck-down)</p>
+                        <p className="text-xs font-medium text-muted-foreground/50 mb-2">Primary (Neck-down)</p>
                         <div className="flex flex-wrap gap-2">
                           {primaryZones.map(zone => (
                             <Button 
@@ -242,7 +242,7 @@ const LymphaticAssessment = ({
                         </div>
                       </div>
                       <div>
-                        <p className="text-[10px] font-medium text-muted-foreground/50 uppercase mb-2">Secondary (Lower Body)</p>
+                        <p className="text-xs font-medium text-muted-foreground/50 mb-2">Secondary (Lower Body)</p>
                         <div className="flex flex-wrap gap-2">
                           {secondaryZones.map(zone => (
                             <Button 
@@ -267,7 +267,7 @@ const LymphaticAssessment = ({
                   <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
                     {/* Zone Focus Switcher */}
                     <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                      <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mr-2">Zone Correction:</span>
+                      <span className="text-xs font-medium text-muted-foreground mr-2">Zone Correction:</span>
                       {priorityZones.map(zone => (
                         <Badge 
                           key={zone}
@@ -285,7 +285,7 @@ const LymphaticAssessment = ({
                     {/* Tenderness Tracker */}
                     <div className="p-6 bg-chart-primary/10 rounded-2xl border-2 border-chart-primary/20 space-y-6">
                       <div className="flex items-center justify-between">
-                        <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                        <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                           <Thermometer size={14} /> 3. Tenderness Reduction (Position of Ease)
                         </label>
                         <Badge className={cn(
@@ -305,7 +305,7 @@ const LymphaticAssessment = ({
                           step={1} 
                           className="[&>span:first-child]:h-2 [&>span:first-child]:bg-primary/20 dark:[&>span:first-child]:bg-primary/80 [&_[role=slider]]:h-6 [&_[role=slider]]:w-6 [&_[role=slider]]:border-4 [&_[role=slider]]:border-background [&_[role=slider]]:bg-primary [&_[role=slider]]:shadow-sm"
                         />
-                        <div className="flex justify-between mt-4 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                        <div className="flex justify-between mt-4 text-xs font-medium text-muted-foreground">
                           <span>Position of Ease (0)</span>
                           <span>Initial Pain (10)</span>
                         </div>
@@ -345,7 +345,7 @@ const LymphaticAssessment = ({
                           <div className="bg-card rounded-xl border-2 border-chart-primary/20 p-4 overflow-hidden flex flex-col shadow-sm">
                             <div className="flex items-center gap-2 px-4 py-2 border-b border-border mb-4">
                               <ImageIcon size={16} className="text-chart-primary" />
-                              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Visual Reference</span>
+                              <span className="text-xs font-medium text-muted-foreground">Visual Reference</span>
                             </div>
                             <div className="flex-1 flex items-center justify-center p-4 bg-muted rounded-3xl">
                               <img 
@@ -370,7 +370,7 @@ const LymphaticAssessment = ({
                         <Timer size={24} />
                       </div>
                       <div>
-                        <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Hold Timer</span>
+                        <span className="text-xs font-medium text-muted-foreground">Hold Timer</span>
                         <p className="text-xs font-medium text-muted-foreground">Hold position for 45-90 seconds</p>
                       </div>
                     </div>
@@ -419,7 +419,7 @@ const LymphaticAssessment = ({
               <div className="space-y-8">
                 <Card className="border-none shadow-inner bg-muted/50 rounded-2xl overflow-hidden">
                   <CardHeader className="pb-4 p-6">
-                    <CardTitle className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                    <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                       <HelpCircle size={16} className="text-chart-primary" /> Priority Check
                     </CardTitle>
                   </CardHeader>
@@ -438,7 +438,7 @@ const LymphaticAssessment = ({
 
                 {showGuide && (
                   <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500 p-2">
-                    <h4 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Step-by-Step</h4>
+                    <h4 className="text-xs font-medium text-muted-foreground">Step-by-Step</h4>
                     <div className="space-y-3">
                       {[
                         "Palpate temporal-parietal suture — glide test",
@@ -484,7 +484,7 @@ const LymphaticAssessment = ({
 
             <div className="space-y-4 pt-8 border-t border-border">
               <div className="flex items-center justify-between">
-                <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Cranial Reflex Zone Notes</label>
+                <label className="text-xs font-medium text-muted-foreground">Cranial Reflex Zone Notes</label>
                 <Button 
                   variant="ghost" 
                   size="sm" 

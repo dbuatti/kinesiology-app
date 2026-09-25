@@ -491,13 +491,13 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {info.brainstemControl && (
                 <div className="p-4 bg-muted rounded-xl border border-border">
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Brainstem Control</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Brainstem Control</p>
                   <p className="text-sm font-medium text-foreground">{info.brainstemControl}</p>
                 </div>
               )}
               {info.nerveSupply && (
                 <div className="p-4 bg-muted rounded-xl border border-border">
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Nerve Supply</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Nerve Supply</p>
                   <p className="text-sm font-medium text-foreground">{info.nerveSupply}</p>
                 </div>
               )}
@@ -511,13 +511,13 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {info.ligamentsJoints && (
                   <div className="p-4 bg-muted/50 rounded-xl border border-border">
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Ligaments / Joints</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Ligaments / Joints</p>
                     <p className="text-xs font-medium text-foreground leading-relaxed">{info.ligamentsJoints}</p>
                   </div>
                 )}
                 {info.spinalFixation && (
                   <div className="p-4 bg-muted/50 rounded-xl border border-border">
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Spinal Fixation</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Spinal Fixation</p>
                     <p className="text-sm font-medium text-foreground">{info.spinalFixation}</p>
                   </div>
                 )}
@@ -553,13 +553,13 @@ const MuscleInfoModal = ({ muscleName, open, onOpenChange }: MuscleInfoModalProp
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {info.neurolymphatic && (
                   <div>
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Neurolymphatic</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Neurolymphatic</p>
                     <p className="text-xs text-foreground font-medium">{info.neurolymphatic}</p>
                   </div>
                 )}
                 {info.neurovascular && (
                   <div>
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Neurovascular</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Neurovascular</p>
                     <p className="text-xs text-foreground font-medium">{info.neurovascular}</p>
                   </div>
                 )}

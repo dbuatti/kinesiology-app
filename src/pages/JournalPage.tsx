@@ -448,12 +448,12 @@ const JournalPage = () => {
         />
 
         {loading ? (
-          <div className="p-24 flex flex-col items-center justify-center gap-6 bg-muted rounded-xl">
-            <Loader2 className="animate-spin text-chart-primary" size={48} />
-            <p className="text-chart-primary font-semibold text-xs uppercase tracking-wider">Loading journal...</p>
+          <div className="py-24 flex flex-col items-center justify-center gap-3 bg-muted rounded-xl">
+            <Loader2 className="animate-spin text-muted-foreground" size={22} />
+            <p className="text-muted-foreground text-sm">Loading journal…</p>
           </div>
         ) : error ? (
-          <div className="p-24 flex flex-col items-center justify-center gap-6 bg-muted rounded-xl">
+          <div className="py-24 flex flex-col items-center justify-center gap-3 bg-muted rounded-xl">
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
               <span className="text-2xl font-semibold text-chart-destructive">!</span>
             </div>
@@ -564,7 +564,7 @@ const JournalPage = () => {
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
-                              <Badge variant="outline" className="border-none font-semibold text-[10px] uppercase tracking-wider p-0 text-muted-foreground">
+                              <Badge variant="outline" className="border-none font-medium text-xs p-0 text-muted-foreground">
                                 {ref.category}
                               </Badge>
                               {ref.appointments ? (
@@ -575,7 +575,7 @@ const JournalPage = () => {
                                   </Badge>
                                 </Link>
                               ) : (
-                                <Badge className="bg-muted text-muted-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
+                                <Badge className="bg-muted text-muted-foreground border-none font-medium text-xs px-3 py-1 rounded-full">
                                   Private Entry
                                 </Badge>
                               )}
@@ -610,7 +610,7 @@ const JournalPage = () => {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <Sparkles size={14} className="text-muted-foreground" />
-                              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Extracted Insights</p>
+                              <p className="text-xs font-medium text-muted-foreground">Extracted Insights</p>
                             </div>
                             {pendingExtractions.length > 1 && (
                               <Button 
@@ -703,11 +703,11 @@ const JournalPage = () => {
                         </div>
                         <div className="space-y-2 min-w-0">
                           <div className="flex items-center gap-3">
-                            <Badge variant="outline" className="border-none font-semibold text-[10px] uppercase tracking-wider p-0 text-muted-foreground">
+                            <Badge variant="outline" className="border-none font-medium text-xs p-0 text-muted-foreground">
                               {q.source}
                             </Badge>
                             {q.clientName && (
-                              <Badge className="bg-muted text-muted-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full">
+                              <Badge className="bg-muted text-muted-foreground border-none font-medium text-xs px-2 py-0.5 rounded-full">
                                 Client: {q.clientName}
                               </Badge>
                             )}
@@ -715,7 +715,7 @@ const JournalPage = () => {
                           <p className="text-xl font-medium leading-tight text-foreground">
                             {q.content}
                           </p>
-                          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                          <p className="text-xs font-medium text-muted-foreground">
                             Logged {format(new Date(q.date), "MMM d, yyyy")}
                           </p>
                         </div>

@@ -178,22 +178,22 @@ const ClientHistoryMatrixTab = ({ clientName, appointments }: ClientHistoryMatri
           <div className="flex items-center gap-4 shrink-0">
             <div className="text-center">
               <p className="text-2xl font-semibold text-chart-primary tabular-nums leading-none">{totals.sessions}</p>
-              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Sessions</p>
+              <p className="mt-1 text-xs font-medium text-muted-foreground">Sessions</p>
             </div>
             <div className="w-px h-8 bg-border" />
             <div className="text-center">
               <p className="text-2xl font-semibold text-foreground tabular-nums leading-none">{totals.findings}</p>
-              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Findings</p>
+              <p className="mt-1 text-xs font-medium text-muted-foreground">Findings</p>
             </div>
             <div className="w-px h-8 bg-border" />
             <div className="text-center">
               <p className="text-2xl font-semibold text-chart-destructive tabular-nums leading-none">{totals.marks}</p>
-              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Inhibited Marks</p>
+              <p className="mt-1 text-xs font-medium text-muted-foreground">Inhibited Marks</p>
             </div>
             <div className="w-px h-8 bg-border" />
             <div className="text-center">
               <p className="text-2xl font-semibold text-chart-emerald tabular-nums leading-none">{totals.clears}</p>
-              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Cleared</p>
+              <p className="mt-1 text-xs font-medium text-muted-foreground">Cleared</p>
             </div>
           </div>
         </div>
@@ -216,7 +216,7 @@ const ClientHistoryMatrixTab = ({ clientName, appointments }: ClientHistoryMatri
                 <TableHeader>
                   <TableRow>
                     <TableHead className="sticky left-0 z-20 bg-muted/60 backdrop-blur min-w-[220px]">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Finding</span>
+                      <span className="text-xs font-medium text-muted-foreground">Finding</span>
                     </TableHead>
                     {sessions.map((s) => (
                       <TableHead key={s.app.id} className="px-1 py-2 text-center align-bottom">
@@ -249,7 +249,7 @@ const ClientHistoryMatrixTab = ({ clientName, appointments }: ClientHistoryMatri
                         >
                           <div className="flex items-center gap-2">
                             <cat.Icon size={13} className="text-muted-foreground" />
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                            <span className="text-xs font-medium text-muted-foreground">
                               {cat.label}
                             </span>
                             <span className={cn("h-1.5 w-1.5 rounded-full", cat.dot)} />
@@ -284,7 +284,7 @@ const ClientHistoryMatrixTab = ({ clientName, appointments }: ClientHistoryMatri
                 </TableBody>
                 <TableFooter>
                   <TableRow>
-                    <TableCell className="sticky left-0 z-10 bg-muted/60 px-4 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    <TableCell className="sticky left-0 z-10 bg-muted/60 px-4 py-2 text-xs font-medium text-muted-foreground">
                       Inhibited
                     </TableCell>
                     {sessions.map((s) => (

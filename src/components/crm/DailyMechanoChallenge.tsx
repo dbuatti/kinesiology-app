@@ -104,7 +104,7 @@ const DailyMechanoChallenge = () => {
             </div>
 
             <div className="p-6 bg-muted rounded-xl border border-border">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-2">
+              <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-2">
                 <ShieldAlert size={14} /> Diagnostic Clue
               </p>
               <p className="text-sm font-medium text-foreground leading-relaxed">
@@ -116,7 +116,7 @@ const DailyMechanoChallenge = () => {
           {!showResult ? (
             <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
               <div className="space-y-2">
-                <div className="flex justify-between text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <div className="flex justify-between text-xs font-medium text-muted-foreground">
                   <span>Clinical Reasoning Flow</span>
                   <span>Step {challengeStep} of 6</span>
                 </div>
@@ -213,19 +213,19 @@ const DailyMechanoChallenge = () => {
                   <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">5. Review Your Clinical Logic</p>
                   <div className="grid grid-cols-2 gap-4 text-xs">
                     <div className="p-4 bg-muted rounded-xl border border-border">
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">Skeleton</span>
+                      <span className="text-xs font-medium text-muted-foreground">Skeleton</span>
                       <p className="font-medium text-sm mt-1">{userAnswers.skeleton}</p>
                     </div>
                     <div className="p-4 bg-muted rounded-xl border border-border">
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">Region</span>
+                      <span className="text-xs font-medium text-muted-foreground">Region</span>
                       <p className="font-medium text-sm mt-1">{userAnswers.region}</p>
                     </div>
                     <div className="p-4 bg-muted rounded-xl border border-border">
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">Joint</span>
+                      <span className="text-xs font-medium text-muted-foreground">Joint</span>
                       <p className="font-medium text-sm mt-1">{userAnswers.joint}</p>
                     </div>
                     <div className="p-4 bg-muted rounded-xl border border-border col-span-2">
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">Plane of Motion</span>
+                      <span className="text-xs font-medium text-muted-foreground">Plane of Motion</span>
                       <p className="font-medium text-sm mt-1">{userAnswers.plane}</p>
                     </div>
                   </div>
@@ -265,11 +265,11 @@ const DailyMechanoChallenge = () => {
 
               <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 text-xs">
                 <div className="p-4 bg-muted rounded-xl border border-border">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Correct Joint</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Correct Joint</p>
                   <p className="text-sm font-medium">{currentCase.localization.joint}</p>
                 </div>
                 <div className="p-4 bg-muted rounded-xl border border-border col-span-2 sm:col-span-1">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Correct Plane</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Correct Plane</p>
                   <p className="text-sm font-medium">{currentCase.localization.plane}</p>
                 </div>
               </div>

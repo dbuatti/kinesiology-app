@@ -221,7 +221,7 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
 
         <div className="space-y-6">
             <div className="space-y-2">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-1">Cortical Zones</p>
+                <p className="text-xs font-medium text-muted-foreground px-1">Cortical Zones</p>
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                     {corticalPoints.map(p => (
                         <ZoneCard 
@@ -237,7 +237,7 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
                 </div>
             </div>
             <div className="space-y-2">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-1">Subcortical Zones</p>
+                <p className="text-xs font-medium text-muted-foreground px-1">Subcortical Zones</p>
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                     {subcorticalPoints.map(p => (
                         <ZoneCard 
@@ -328,11 +328,11 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
           <div className="space-y-3 animate-in fade-in slide-in-from-right-2 duration-300">
             <div className="bg-muted/50 p-5 rounded-xl border border-border relative overflow-hidden">
               <div className="flex items-center justify-between mb-4 relative z-10">
-                <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20"><Zap size={20} className="text-primary" /></div><div><h3 className="text-base font-medium text-foreground tracking-tight">Calibration</h3><p className="text-muted-foreground font-bold uppercase tracking-wider text-[10px]">Integrating Pathways</p></div></div>
+                <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20"><Zap size={20} className="text-primary" /></div><div><h3 className="text-base font-medium text-foreground tracking-tight">Calibration</h3><p className="text-muted-foreground font-medium text-xs">Integrating Pathways</p></div></div>
                 <Badge className="bg-primary/10 text-primary border-primary/20 font-semibold text-[10px] uppercase tracking-wider px-3 py-1">{method}</Badge>
               </div>
               <div className="relative z-10 mb-4 p-4 bg-card rounded-xl text-foreground border border-border">
-                <div className="flex items-center gap-2 mb-1.5"><Info size={14} className="text-primary" /><p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Instructions</p></div>
+                <div className="flex items-center gap-2 mb-1.5"><Info size={14} className="text-primary" /><p className="text-xs font-medium text-muted-foreground">Instructions</p></div>
                 <div className="space-y-3">
                   {method === 'Tapping' && <p className="text-sm font-semibold leading-tight text-foreground">Simultaneously <span className="text-primary underline decoration-primary/30 underline-offset-4">TAP</span> both reflex points for 3-5 seconds.</p>}
                   {method === 'Holding + Intention' && <div className="space-y-2"><p className="text-[11px] font-bold leading-tight text-foreground">Hold both points lightly and mentally repeat:</p><div className="p-2.5 bg-primary/5 rounded-xl border border-primary/10 text-center italic font-semibold text-primary text-xs">"{entryPoint} — {formatCoordLabel(coord1)} — {formatCoordLabel(coord2)}"</div></div>}

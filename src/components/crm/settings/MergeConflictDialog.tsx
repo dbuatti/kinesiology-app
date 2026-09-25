@@ -84,7 +84,7 @@ const MergeConflictDialog = ({
           <div className="space-y-6">
             {/* Side-by-side comparison */}
             <div className="border border-border rounded-2xl overflow-hidden">
-              <div className="grid grid-cols-3 bg-muted/40 border-b border-border text-[10px] font-semibold uppercase tracking-wider text-muted-foreground p-3">
+              <div className="grid grid-cols-3 bg-muted/40 border-b border-border text-xs font-medium text-muted-foreground p-3">
                 <div>Field</div>
                 <div>Primary (Keep)</div>
                 <div>Duplicate (Merge & Delete)</div>
@@ -141,12 +141,12 @@ const MergeConflictDialog = ({
 
             {/* Custom Edit Area for Merged Fields */}
             <div className="space-y-4 p-5 bg-muted/40 rounded-2xl border border-border">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                 <Edit3 size={14} /> Edit Merged Values
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Name</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Name</Label>
                   <Input
                     value={activeMerge.fields.name || ""}
                     onChange={(e) => handleFieldEdit('name', e.target.value)}
@@ -154,7 +154,7 @@ const MergeConflictDialog = ({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Email</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Email</Label>
                   <Input
                     value={activeMerge.fields.email || ""}
                     onChange={(e) => handleFieldEdit('email', e.target.value)}
@@ -162,7 +162,7 @@ const MergeConflictDialog = ({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Phone</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Phone</Label>
                   <Input
                     value={activeMerge.fields.phone || ""}
                     onChange={(e) => handleFieldEdit('phone', e.target.value)}
@@ -170,7 +170,7 @@ const MergeConflictDialog = ({
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Suburbs</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Suburbs</Label>
                   <Input
                     value={Array.isArray(activeMerge.fields.suburbs) ? activeMerge.fields.suburbs.join(", ") : activeMerge.fields.suburbs || ""}
                     onChange={(e) => handleFieldEdit('suburbs', e.target.value.split(",").map(s => s.trim()).filter(Boolean))}
@@ -178,7 +178,7 @@ const MergeConflictDialog = ({
                   />
                 </div>
                 <div className="space-y-1.5 sm:col-span-2">
-                  <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Medical History</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Medical History</Label>
                   <Textarea
                     value={activeMerge.fields.medical_history || ""}
                     onChange={(e) => handleFieldEdit('medical_history', e.target.value)}
@@ -186,7 +186,7 @@ const MergeConflictDialog = ({
                   />
                 </div>
                 <div className="space-y-1.5 sm:col-span-2">
-                  <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Medications & Supplements</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Medications & Supplements</Label>
                   <Textarea
                     value={activeMerge.fields.medications_supplements || ""}
                     onChange={(e) => handleFieldEdit('medications_supplements', e.target.value)}

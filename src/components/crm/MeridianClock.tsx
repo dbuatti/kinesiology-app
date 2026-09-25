@@ -111,7 +111,7 @@ const MeridianClock = () => {
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-foreground">{displayChannel.name}</h3>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{displayChannel.peakTime}</p>
+                  <p className="text-xs font-medium text-muted-foreground">{displayChannel.peakTime}</p>
                 </div>
               </div>
               {nextChannel && !hoveredId && (

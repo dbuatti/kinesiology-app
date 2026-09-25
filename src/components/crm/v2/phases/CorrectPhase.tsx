@@ -99,7 +99,7 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
         {/* Inhibition/Hypertonic Finding Selector (hidden once a real pathway is set) */}
         {pathwayFindings.length > 0 && (!priorityPathway || isCustom || customMode) && (
           <div className="mb-4 p-3 bg-muted/50 rounded-xl border border-border">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Select Finding to Correct</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2">Select Finding to Correct</p>
             <Select
               value={priorityPathway && priorityPathway !== 'CUSTOM' ? priorityPathway : ''}
               onValueChange={selectPathway}
@@ -248,7 +248,7 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
             {priorityPathway && priorityPathway !== 'CUSTOM' && (
               <div className="space-y-3">
                 <div className="p-4 bg-muted rounded-xl border border-border space-y-2">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Priority Pathway</p>
+                  <p className="text-xs font-medium text-muted-foreground">Priority Pathway</p>
                   <p className="text-sm font-semibold text-foreground">{priorityPathway}</p>
                 </div>
                 {(() => {
@@ -263,13 +263,13 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
                   }
                   return pathwayCorrections.length > 0 ? (
                     <div className="space-y-2">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1">
+                      <p className="text-xs font-medium text-muted-foreground px-1">
                         Corrections Linked to {priorityPathway}
                       </p>
                       {pathwayCorrections.map((c: any, i: number) => (
                         <div key={i} className="p-4 bg-muted border border-border rounded-xl space-y-2">
                           {pathwayCorrections.length > 1 && (
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                            <p className="text-xs font-medium text-muted-foreground">
                               Correction #{i + 1}
                             </p>
                           )}

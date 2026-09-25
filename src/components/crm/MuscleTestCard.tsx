@@ -189,7 +189,7 @@ const MuscleTestCard = ({
                 <div className="w-full border-t border-border/50"></div>
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-card px-2 text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Bilateral</span>
+                <span className="bg-card px-2 text-xs font-medium text-muted-foreground/60">Bilateral</span>
               </div>
             </div>
             <StatusRow side="R" result={currentResultR} />

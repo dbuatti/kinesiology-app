@@ -219,7 +219,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
             <span className="text-xs font-semibold text-foreground truncate privacy-mode-active:blur-sm">
               {clientName}
             </span>
-            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider hidden md:inline">
+            <span className="text-xs font-medium text-muted-foreground hidden md:inline">
               {format(appointmentDate, "h:mm a")}
             </span>
           </div>

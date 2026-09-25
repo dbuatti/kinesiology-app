@@ -134,7 +134,7 @@ const CranialNerveReference = () => {
                       )}>
                         {nerve.nuclei}
                       </Badge>
-                      <Badge variant="outline" className="border-border text-muted-foreground font-medium text-[10px] uppercase tracking-wider">
+                      <Badge variant="outline" className="border-border text-muted-foreground font-medium text-xs">
                         {nerve.toneEffect} Tone
                       </Badge>
                     </div>
@@ -156,7 +156,7 @@ const CranialNerveReference = () => {
               <CardContent className="p-8 space-y-6">
                 <div className="grid grid-cols-1 gap-4">
                   <div className="p-4 bg-muted rounded-xl border border-border">
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
                       <Hand size={12} /> Touch Point
                     </p>
                     <p className="text-sm font-medium text-foreground leading-relaxed">{nerve.reflexPoint}</p>
@@ -182,7 +182,7 @@ const CranialNerveReference = () => {
                 )}
 
                 <div className="space-y-3">
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Key Functions</p>
+                  <p className="text-xs font-medium text-muted-foreground">Key Functions</p>
                   <div className="space-y-1.5">
                     {nerve.functions.map(f => (
                       <div key={f} className="flex items-start gap-2 text-xs font-medium text-muted-foreground">
@@ -195,7 +195,7 @@ const CranialNerveReference = () => {
 
                 <div className="p-5 bg-muted rounded-3xl border border-border relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-4 opacity-10"><Sparkles size={40} className="text-muted-foreground" /></div>
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-2">
                     <Info size={14} /> Clinical Pearl
                   </p>
                   <p className="text-xs text-foreground font-medium leading-relaxed">

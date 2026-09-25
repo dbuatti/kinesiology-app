@@ -260,7 +260,7 @@ const FakudaStepTest = ({
 
       <div className="p-5 bg-muted/50 rounded-2xl border border-border/50 space-y-4">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+          <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
             <ArrowRightLeft size={14} className="text-indigo-500" /> Clinical Metrics
           </h4>
           <div className="flex items-center gap-2">
@@ -293,7 +293,7 @@ const FakudaStepTest = ({
         )}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Drift Direction</Label>
+            <Label className="text-xs font-medium text-muted-foreground">Drift Direction</Label>
             <ToggleGroup type="single" value={driftDirection} onValueChange={handleDriftChange} className="justify-start gap-1">
               <ToggleGroupItem value="Left" className="rounded-lg border border-border text-xs font-bold px-3 py-1.5 data-[state=on]:bg-indigo-600 data-[state=on]:text-primary-foreground">L</ToggleGroupItem>
               <ToggleGroupItem value="Right" className="rounded-lg border border-border text-xs font-bold px-3 py-1.5 data-[state=on]:bg-indigo-600 data-[state=on]:text-primary-foreground">R</ToggleGroupItem>
@@ -301,14 +301,14 @@ const FakudaStepTest = ({
             </ToggleGroup>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Angle of Rotation</Label>
+            <Label className="text-xs font-medium text-muted-foreground">Angle of Rotation</Label>
             <div className="relative">
               <Input type="number" placeholder="e.g. 30" value={angleRotation} onChange={(e) => handleAngleChange(e.target.value)} className="h-10 rounded-xl pr-8 text-xs font-bold" />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">°</span>
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Distance Displaced</Label>
+            <Label className="text-xs font-medium text-muted-foreground">Distance Displaced</Label>
             <div className="relative">
               <Input type="number" placeholder="e.g. 50" value={distanceDisplaced} onChange={(e) => handleDistanceChange(e.target.value)} className="h-10 rounded-xl pr-10 text-xs font-bold" />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">cm</span>

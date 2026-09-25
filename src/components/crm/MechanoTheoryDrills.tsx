@@ -58,7 +58,7 @@ const MechanoTheoryDrills = () => {
             <h3 className="text-2xl font-semibold text-foreground leading-tight">
               {currentCard.question}
             </h3>
-            <div className="mt-10 flex items-center gap-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider animate-pulse">
+            <div className="mt-10 flex items-center gap-2 text-xs font-medium text-muted-foreground animate-pulse">
               <RotateCcw size={12} /> Click to reveal answer
             </div>
           </Card>
@@ -89,7 +89,7 @@ const MechanoTheoryDrills = () => {
         </Button>
         
         <div className="flex flex-col items-center gap-1">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          <span className="text-xs font-medium text-muted-foreground">
             {cardIndex + 1} / {MECHANO_FLASHCARDS.length}
           </span>
           <div className="flex gap-1">

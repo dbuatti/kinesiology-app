@@ -406,7 +406,7 @@ const SandboxV2Page = () => {
             return (
               <div className="px-0">
                 <div className="h-px bg-border/40 -mx-6 mb-4" />
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Data to save</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Data to save</p>
                 <div className="flex flex-wrap gap-1">
                   {filled.map(s => (
                     <span key={s} className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary">{s}</span>

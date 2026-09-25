@@ -60,11 +60,11 @@ const BrainReflexModal = ({
             {/* Location & Stimulus */}
             <div className="grid grid-cols-2 divide-x divide-border">
               <div className="px-5 py-3.5 space-y-1">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Location</p>
+                <p className="text-xs font-medium text-muted-foreground">Location</p>
                 <p className="text-xs text-foreground leading-relaxed">{point.location}</p>
               </div>
               <div className="px-5 py-3.5 space-y-1">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Stimulus</p>
+                <p className="text-xs font-medium text-muted-foreground">Stimulus</p>
                 <p className="text-xs text-foreground leading-relaxed">{point.stimulus || point.technique || '—'}</p>
               </div>
             </div>
@@ -72,7 +72,7 @@ const BrainReflexModal = ({
             {/* Assessment Protocol */}
             {point.assessmentProtocol && (
               <div className="px-5 py-3.5 space-y-1 bg-muted/30">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Assessment</p>
+                <p className="text-xs font-medium text-muted-foreground">Assessment</p>
                 <p className="text-xs text-foreground leading-relaxed">{point.assessmentProtocol}</p>
               </div>
             )}
@@ -110,7 +110,7 @@ const BrainReflexModal = ({
             {/* Clinical Note */}
             {point.clinicalNote && (
               <div className="px-5 py-3.5 space-y-1">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Note</p>
+                <p className="text-xs font-medium text-muted-foreground">Note</p>
                 <p className="text-xs text-muted-foreground italic leading-relaxed">{point.clinicalNote}</p>
               </div>
             )}
@@ -118,7 +118,7 @@ const BrainReflexModal = ({
             {/* Images */}
             {showImages && (
               <div className="px-5 py-3.5 space-y-2">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">References</p>
+                <p className="text-xs font-medium text-muted-foreground">References</p>
                 <div className="flex gap-2">
                   {primaryUrl && (
                     <img src={primaryUrl} alt="Primary" className="w-20 h-14 rounded object-cover border border-border" />

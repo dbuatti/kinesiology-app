@@ -118,10 +118,10 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
       <Card className="border-none shadow-sm shadow-slate-900/5 rounded-xl bg-foreground text-primary-foreground overflow-hidden">
         <CardHeader className="p-5 pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-3">
+            <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-3">
               <Clock size={16} /> Session Strategy (60m)
             </CardTitle>
-            <Badge variant="outline" className="border-primary-foreground/10 text-muted-foreground font-medium text-[10px] uppercase tracking-wider">
+            <Badge variant="outline" className="border-primary-foreground/10 text-muted-foreground font-medium text-xs">
               {completedStages.length}/{SESSION_STAGES.length} Done
             </Badge>
           </div>
@@ -250,7 +250,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                       Default: {billingDefault}
                     </Badge>
                   </div>
-                  <p className="text-[10px] text-muted-foreground/70 font-medium uppercase tracking-wider">Enable billing for this session</p>
+                  <p className="text-xs text-muted-foreground/70 font-medium">Enable billing for this session</p>
                 </div>
                 <Switch 
                   id="is-paid-toggle"
@@ -268,7 +268,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                         <div className="absolute -right-4 -bottom-4 opacity-10">
                           <DollarSign size={80} className="text-muted-foreground" />
                         </div>
-                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 relative z-10">Amount Due</p>
+                        <p className="text-xs font-medium text-muted-foreground mb-2 relative z-10">Amount Due</p>
                         <p className="text-4xl font-semibold text-amber-900 dark:text-amber-400 relative z-10">${appointment.price_amount || 50}</p>
                       </div>
                       <Button 
@@ -308,7 +308,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                   )}
 
                   <div className="space-y-3">
-                    <p className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider ml-2">Payment Method</p>
+                    <p className="text-xs font-medium text-muted-foreground/70 ml-2">Payment Method</p>
                     <ToggleGroup 
                       type="single" 
                       value={appointment.payment_method || ""} 
@@ -343,7 +343,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                   <div className="w-10 h-10 rounded-xl bg-card/10 flex items-center justify-center">
                     <Layers size={20} />
                   </div>
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Session Context</p>
+                  <p className="text-xs font-medium text-muted-foreground">Session Context</p>
                 </div>
                 <ChevronDown className={cn("h-5 w-5 text-muted-foreground transition-transform duration-500", contextOpen && "rotate-180")} />
               </div>
@@ -355,7 +355,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 px-2">
                     <CreditCard size={16} className="text-emerald-400" />
-                    <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Payment Link</span>
+                    <span className="text-xs font-medium text-muted-foreground">Payment Link</span>
                   </div>
                   <EditableField 
                     key={`payment-link-${appointment.id}`} 
@@ -371,7 +371,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 px-2">
                     <Target size={16} className="text-indigo-400" />
-                    <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Acupoints</span>
+                    <span className="text-xs font-medium text-muted-foreground">Acupoints</span>
                   </div>
                   <EditableField 
                     key={`acupoints-${appointment.id}`} 
@@ -392,7 +392,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                   <div className="flex items-center justify-between px-2">
                     <div className="flex items-center gap-3">
                       <MessageSquare size={16} className="text-amber-400" />
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Practitioner Reflection</span>
+                      <span className="text-xs font-medium text-muted-foreground">Practitioner Reflection</span>
                     </div>
                     <Button variant="ghost" size="sm" asChild className="h-8 px-3 text-[11px] font-semibold text-indigo-400 hover:text-primary-foreground hover:bg-card/10 rounded-lg">
                       <Link to="/practice/journal" state={{ appointmentId: appointment.id }}>

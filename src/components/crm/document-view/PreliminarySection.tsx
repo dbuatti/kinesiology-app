@@ -193,7 +193,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
           <div className="flex items-center justify-between p-5 bg-muted border border-border">
             <div className="space-y-0.5">
               <p className="text-[11px] font-semibold uppercase tracking-wider">Hydration Check</p>
-              <p className="text-[10px] font-medium text-muted-foreground uppercase">Systemic Conductivity</p>
+              <p className="text-xs font-medium text-muted-foreground">Systemic Conductivity</p>
             </div>
             <Checkbox 
               checked={appointment.hydrated || false} 
@@ -217,7 +217,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
       <div className="space-y-4">
         {/* Horizontal BOLT Score Assessment */}
         <div className="space-y-3">
-          <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">BOLT Score Assessment</label>
+          <label className="text-xs font-medium text-muted-foreground">BOLT Score Assessment</label>
           <div className="border border-foreground/20 p-6 bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div className="space-y-2 flex-1">
               <h4 className="text-sm font-semibold uppercase tracking-wider text-foreground">Body Oxygen Level Test</h4>
@@ -268,7 +268,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
 
             <div className="flex items-center gap-6 shrink-0 border-l border-border/50 pl-6">
               <div className="text-right">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Score</p>
+                <p className="text-xs font-medium text-muted-foreground">Score</p>
                 <div className="flex items-baseline gap-0.5">
                   <span className="text-5xl font-semibold tabular-nums">{boltTime}</span>
                   <span className="text-sm font-medium text-muted-foreground">s</span>
@@ -288,12 +288,12 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
 
         {/* Horizontal Heart Coherence Calculator */}
         <div className="space-y-3">
-          <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Heart Coherence Calculator</label>
+          <label className="text-xs font-medium text-muted-foreground">Heart Coherence Calculator</label>
           <div className="border border-foreground/20 p-6 bg-card flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-4 flex-1">
               <div className="grid grid-cols-2 gap-4 max-w-md">
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-semibold uppercase text-muted-foreground">Heart (30s)</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Heart (30s)</Label>
                   <Input 
                     type="number" 
                     placeholder="Count" 
@@ -303,7 +303,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-semibold uppercase text-muted-foreground">Breath (30s)</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Breath (30s)</Label>
                   <Input 
                     type="number" 
                     placeholder="Count" 
@@ -349,7 +349,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
             {coherenceScore !== null && (
               <div className="flex items-center gap-6 shrink-0 border-l border-border/50 pl-6">
                 <div className="text-right">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Coherence Ratio</p>
+                  <p className="text-xs font-medium text-muted-foreground">Coherence Ratio</p>
                   <p className="text-5xl font-semibold tabular-nums">{coherenceScore.toFixed(2)}</p>
                 </div>
                 <Badge className={cn(
@@ -394,7 +394,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
             
             <div className="grid grid-cols-3 gap-2">
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase text-muted-foreground">Drift</label>
+                <label className="text-xs font-medium text-muted-foreground">Drift</label>
                 <input 
                   type="text" 
                   placeholder="e.g. Left"
@@ -408,7 +408,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase text-muted-foreground">Angle</label>
+                <label className="text-xs font-medium text-muted-foreground">Angle</label>
                 <input 
                   type="text" 
                   placeholder="e.g. 30°"
@@ -422,7 +422,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase text-muted-foreground">Distance</label>
+                <label className="text-xs font-medium text-muted-foreground">Distance</label>
                 <input 
                   type="text" 
                   placeholder="e.g. 50cm"
@@ -467,7 +467,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
 
             <div className="grid grid-cols-3 gap-2">
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase text-muted-foreground">Eyes Open</label>
+                <label className="text-xs font-medium text-muted-foreground">Eyes Open</label>
                 <input 
                   type="text" 
                   placeholder="e.g. 30s"
@@ -481,7 +481,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase text-muted-foreground">Eyes Closed</label>
+                <label className="text-xs font-medium text-muted-foreground">Eyes Closed</label>
                 <input 
                   type="text" 
                   placeholder="e.g. 15s"
@@ -495,7 +495,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase text-muted-foreground">Sway</label>
+                <label className="text-xs font-medium text-muted-foreground">Sway</label>
                 <input 
                   type="text" 
                   placeholder="e.g. Left"
@@ -540,7 +540,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
 
             <div className="grid grid-cols-3 gap-2">
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase text-muted-foreground">L Speed</label>
+                <label className="text-xs font-medium text-muted-foreground">L Speed</label>
                 <input 
                   type="text" 
                   placeholder="e.g. 8/10"
@@ -554,7 +554,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase text-muted-foreground">R Speed</label>
+                <label className="text-xs font-medium text-muted-foreground">R Speed</label>
                 <input 
                   type="text" 
                   placeholder="e.g. 6/10"
@@ -568,7 +568,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase text-muted-foreground">Asymmetry</label>
+                <label className="text-xs font-medium text-muted-foreground">Asymmetry</label>
                 <input 
                   type="text" 
                   placeholder="e.g. Yes"
@@ -613,7 +613,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
 
             <div className="grid grid-cols-3 gap-2">
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase text-muted-foreground">Ocular</label>
+                <label className="text-xs font-medium text-muted-foreground">Ocular</label>
                 <input 
                   type="text" 
                   placeholder="e.g. Pass"
@@ -627,7 +627,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase text-muted-foreground">Labyrinthine</label>
+                <label className="text-xs font-medium text-muted-foreground">Labyrinthine</label>
                 <input 
                   type="text" 
                   placeholder="e.g. Fail"
@@ -641,7 +641,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase text-muted-foreground">Tilt Angle</label>
+                <label className="text-xs font-medium text-muted-foreground">Tilt Angle</label>
                 <input 
                   type="text" 
                   placeholder="e.g. 15°"

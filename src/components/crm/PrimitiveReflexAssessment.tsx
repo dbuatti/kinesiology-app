@@ -130,7 +130,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                 Track {reflex.track}
               </Badge>
             )}
-            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider hidden sm:inline">
+            <span className="text-xs font-medium text-muted-foreground hidden sm:inline">
               {reflex.category} • {reflex.developmentalWindow}
             </span>
             {!isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') && (
@@ -180,7 +180,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                     onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, 'L', reflex.name)}
                     className="h-3.5 w-3.5 border-border rounded-none"
                   />
-                  <label htmlFor={`inhib-l-${reflex.id}`} className="text-[10px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
+                  <label htmlFor={`inhib-l-${reflex.id}`} className="text-xs font-medium cursor-pointer text-muted-foreground">
                     L
                   </label>
                 </div>
@@ -191,7 +191,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                     onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, 'R', reflex.name)}
                     className="h-3.5 w-3.5 border-border rounded-none"
                   />
-                  <label htmlFor={`inhib-r-${reflex.id}`} className="text-[10px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
+                  <label htmlFor={`inhib-r-${reflex.id}`} className="text-xs font-medium cursor-pointer text-muted-foreground">
                     R
                   </label>
                 </div>
@@ -215,7 +215,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                   onCheckedChange={(checked) => onUpdate(reflex.id, { is_inhibited: !!checked }, undefined, reflex.name)}
                   className="h-3.5 w-3.5 border-border rounded-none"
                 />
-                <label htmlFor={`inhib-mid-${reflex.id}`} className="text-[10px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
+                <label htmlFor={`inhib-mid-${reflex.id}`} className="text-xs font-medium cursor-pointer text-muted-foreground">
                   Inhib
                 </label>
               </div>
@@ -229,7 +229,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
               onCheckedChange={(checked) => onUpdate(reflex.id, { is_priority: !!checked })}
               className="h-3.5 w-3.5 border-border rounded-none"
             />
-            <label htmlFor={`priority-reflex-${reflex.id}`} className="text-[10px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
+            <label htmlFor={`priority-reflex-${reflex.id}`} className="text-xs font-medium cursor-pointer text-muted-foreground">
               Priority
             </label>
           </div>
@@ -266,7 +266,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
       {!compact && (
         <>
           <div className="mt-1.5 pt-1.5 border-t border-border/50 space-y-1">
-            <div className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
               <FileText size={10} /> Notes
             </div>
             <textarea 
@@ -296,7 +296,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
                   )}
                   {reflex.relatedBrainAreas && reflex.relatedBrainAreas.length > 0 && (
                     <div className="flex flex-wrap gap-1">
-                      <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider self-center mr-1">Brain:</span>
+                      <span className="text-xs font-medium text-muted-foreground self-center mr-1">Brain:</span>
                       {reflex.relatedBrainAreas.map(area => (
                         <Badge key={area} variant="outline" className="border-border text-muted-foreground font-medium text-[7px] px-1.5 py-0 rounded-full">
                           {area}
@@ -388,7 +388,7 @@ export function PrimitiveReflexAssessment({
     return (
       <div className="flex flex-col items-center justify-center p-12 gap-4">
         <Loader2 className="animate-spin text-chart-primary" size={32} />
-        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Loading Assessment...</p>
+        <p className="text-xs font-medium text-muted-foreground">Loading Assessment...</p>
       </div>
     );
   }
@@ -413,7 +413,7 @@ export function PrimitiveReflexAssessment({
               onCheckedChange={setShowOnlyInhibited}
               className="data-[state=checked]:bg-destructive scale-[0.6]"
             />
-            <Label htmlFor="inhibited-filter-reflex" className="text-[10px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
+            <Label htmlFor="inhibited-filter-reflex" className="text-xs font-medium cursor-pointer text-muted-foreground">
               Only Inhibited
             </Label>
           </div>
@@ -478,7 +478,7 @@ export function PrimitiveReflexAssessment({
                   <div className="w-6 h-6 rounded-md bg-muted flex items-center justify-center text-[10px] font-bold text-muted-foreground">
                     —
                   </div>
-                  <h3 className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Other</h3>
+                  <h3 className="text-xs font-medium text-muted-foreground">Other</h3>
                   <div className="flex-1 h-px bg-border" />
                 </div>
                 {noTrack.map(reflex => (

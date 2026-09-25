@@ -111,7 +111,7 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
         </div>
         <div className="space-y-1">
           <p className="text-sm font-bold text-foreground">Syncing Availability</p>
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Checking Cal.com...</p>
+          <p className="text-xs font-medium text-muted-foreground">Checking Cal.com...</p>
         </div>
       </div>
     );
@@ -137,7 +137,7 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
       {/* Date Scroller */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Available Days</p>
+          <p className="text-xs font-medium text-muted-foreground">Available Days</p>
           <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-wider">
             Next 30 Days
           </Badge>
@@ -197,7 +197,7 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
       {selectedDate && (
         <div className="space-y-3 animate-in fade-in duration-300">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <p className="text-xs font-medium text-muted-foreground">
               Pick a start time &mdash; sessions run ~60m
             </p>
             <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">

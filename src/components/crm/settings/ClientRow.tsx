@@ -311,7 +311,7 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
 
  {/* Templates */}
  <div className="p-2 bg-card">
- <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 px-3 pt-1.5 pb-1">Templates</p>
+ <p className="text-xs font-medium text-muted-foreground/60 px-3 pt-1.5 pb-1">Templates</p>
  {TEMPLATES.map((t) => (
  <button
  key={t.id}
@@ -348,7 +348,7 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
 
  {/* Availability actions */}
  <div className="px-2 pb-2 bg-card border-t border-border">
- <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 px-3 pt-3 pb-1">Send Availability</p>
+ <p className="text-xs font-medium text-muted-foreground/60 px-3 pt-3 pb-1">Send Availability</p>
 
  <button
  onClick={() => setAvailabilityType("share")}
@@ -473,7 +473,7 @@ function AvailabilityPopover({
  return (
  <div className="p-3 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
  <div className="flex items-center justify-between">
- <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Send via</p>
+ <p className="text-xs font-medium text-muted-foreground/60">Send via</p>
  <button onClick={onClose} className="text-muted-foreground/60 hover:text-muted-foreground">
  <X size={13} />
  </button>
@@ -993,7 +993,7 @@ Daniele`;
  <div className="flex items-center gap-3">
  {/* Priority Score */}
  <div className="space-y-0.5">
- <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">Priority Score</span>
+ <span className="text-xs font-medium text-muted-foreground block">Priority Score</span>
  <div className="flex items-center gap-2">
  <Badge className={cn(
  "font-semibold text-xs px-2.5 py-1 rounded-xl border-none",
@@ -1009,7 +1009,7 @@ Daniele`;
 
   {/* Re-engagement Tag */}
   <div className="space-y-0.5">
-  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">Status</span>
+  <span className="text-xs font-medium text-muted-foreground block">Status</span>
   <Select
   value={reengagementTag || "neutral"}
   onValueChange={(val: any) => onSetReengagementTag(client.id, val === "neutral" ? null : val)}
@@ -1034,7 +1034,7 @@ Daniele`;
 
   {/* Re-engagement Nudge Tracking */}
   <div className="space-y-0.5">
-  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">Nudge</span>
+  <span className="text-xs font-medium text-muted-foreground block">Nudge</span>
   <div className="flex items-center gap-1">
   {(['sent', 'booked', 'no_reply'] as const).map(status => {
   const isActive = journalData.reengagement_status === status;
@@ -1076,7 +1076,7 @@ Daniele`;
  {client.preferredTimeAnalyzed.text}
  </span>
  {client.preferredTimeAnalyzed.isLowData && !client.preferred_time && (
- <Badge className="bg-muted text-muted-foreground border-none font-medium text-[10px] uppercase tracking-wider px-1.5 py-0">
+ <Badge className="bg-muted text-muted-foreground border-none font-medium text-xs px-1.5 py-0">
  Low Data
  </Badge>
  )}

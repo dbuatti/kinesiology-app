@@ -220,7 +220,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Full Name</FormLabel>
+                <FormLabel className="text-xs font-medium text-muted-foreground">Full Name</FormLabel>
                 <FormControl>
                   <Input placeholder="Georg Gleeson" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                 </FormControl>
@@ -235,7 +235,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Email</FormLabel>
+                  <FormLabel className="text-xs font-medium text-muted-foreground">Email</FormLabel>
                   <FormControl>
                     <Input placeholder="georg@example.com" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                   </FormControl>
@@ -248,7 +248,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Phone</FormLabel>
+                  <FormLabel className="text-xs font-medium text-muted-foreground">Phone</FormLabel>
                   <FormControl>
                     <Input placeholder="0400 000 000" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                   </FormControl>
@@ -264,7 +264,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="pronouns"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Pronouns</FormLabel>
+                  <FormLabel className="text-xs font-medium text-muted-foreground">Pronouns</FormLabel>
                   <FormControl>
                     <Input placeholder="They/Them" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                   </FormControl>
@@ -277,7 +277,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="born"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Date of Birth</FormLabel>
+                  <FormLabel className="text-xs font-medium text-muted-foreground">Date of Birth</FormLabel>
                   <FormControl>
                     <Input type="date" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                   </FormControl>
@@ -292,7 +292,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="suburbs"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Suburbs (comma separated)</FormLabel>
+                <FormLabel className="text-xs font-medium text-muted-foreground">Suburbs (comma separated)</FormLabel>
                 <FormControl>
                   <Input placeholder="Brunswick, Fitzroy" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                 </FormControl>
@@ -310,7 +310,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="medical_history"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Medical History & Past Injuries</FormLabel>
+                <FormLabel className="text-xs font-medium text-muted-foreground">Medical History & Past Injuries</FormLabel>
                 <FormControl>
                   <Textarea placeholder="Past surgeries, chronic issues..." className="min-h-[100px] rounded-xl border-border resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" {...field} />
                 </FormControl>
@@ -324,7 +324,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="medications_supplements"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Medications & Supplements</FormLabel>
+                <FormLabel className="text-xs font-medium text-muted-foreground">Medications & Supplements</FormLabel>
                 <FormControl>
                   <Textarea placeholder="Current intake..." className="min-h-[80px] rounded-xl border-border resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" {...field} />
                 </FormControl>
@@ -339,7 +339,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="sleep_quality"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Sleep Quality</FormLabel>
+                  <FormLabel className="text-xs font-medium text-muted-foreground">Sleep Quality</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g. 6hrs, wake often" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                   </FormControl>
@@ -352,7 +352,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="digestive_health"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Digestive Health</FormLabel>
+                  <FormLabel className="text-xs font-medium text-muted-foreground">Digestive Health</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g. Regular, bloating" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                   </FormControl>
@@ -368,7 +368,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             render={({ field }) => (
               <FormItem className="space-y-4 p-6 bg-muted/50 rounded-2xl border border-border/50">
                 <div className="flex items-center justify-between">
-                  <FormLabel className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Current Stress Level</FormLabel>
+                  <FormLabel className="text-xs font-medium text-muted-foreground">Current Stress Level</FormLabel>
                   <span className="text-2xl font-semibold text-primary">{field.value}</span>
                 </div>
                 <FormControl>
@@ -381,7 +381,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
                     className="[&_[role=slider]]:h-6 [&_[role=slider]]:w-6"
                   />
                 </FormControl>
-                <div className="flex justify-between text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                <div className="flex justify-between text-xs font-medium text-muted-foreground">
                   <span>Low</span>
                   <span>High</span>
                 </div>
@@ -400,7 +400,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="status"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Status</FormLabel>
+                  <FormLabel className="text-xs font-medium text-muted-foreground">Status</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger className="h-12 rounded-xl border-border">
@@ -423,7 +423,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="programme"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Programme</FormLabel>
+                  <FormLabel className="text-xs font-medium text-muted-foreground">Programme</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger className="h-12 rounded-xl border-border">
@@ -447,7 +447,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="priority_pathways"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Priority Pathways</FormLabel>
+                <FormLabel className="text-xs font-medium text-muted-foreground">Priority Pathways</FormLabel>
                 <FormControl>
                   <Textarea placeholder="Top 3 pathways from first assessment..." className="min-h-[60px] rounded-xl border-border resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" {...field} />
                 </FormControl>
@@ -461,7 +461,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="corrections_holding"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Corrections Holding?</FormLabel>
+                  <FormLabel className="text-xs font-medium text-muted-foreground">Corrections Holding?</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger className="h-12 rounded-xl border-border">
@@ -483,7 +483,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="homework_assigned"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Homework Assigned</FormLabel>
+                  <FormLabel className="text-xs font-medium text-muted-foreground">Homework Assigned</FormLabel>
                   <FormControl>
                     <Input placeholder="e.g. Breathing exercises" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                   </FormControl>
@@ -497,7 +497,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="next_session_focus"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Next Session Focus</FormLabel>
+                <FormLabel className="text-xs font-medium text-muted-foreground">Next Session Focus</FormLabel>
                 <FormControl>
                   <Input placeholder="What to focus on next session..." {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                 </FormControl>
@@ -516,7 +516,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="emergency_contact_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Emergency Contact Name</FormLabel>
+                  <FormLabel className="text-xs font-medium text-muted-foreground">Emergency Contact Name</FormLabel>
                   <FormControl>
                     <Input placeholder="Name" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                   </FormControl>
@@ -529,7 +529,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
               name="emergency_contact_phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Emergency Contact Phone</FormLabel>
+                  <FormLabel className="text-xs font-medium text-muted-foreground">Emergency Contact Phone</FormLabel>
                   <FormControl>
                     <Input placeholder="Phone" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                   </FormControl>
@@ -544,7 +544,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="referral_source"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Referral Source</FormLabel>
+                <FormLabel className="text-xs font-medium text-muted-foreground">Referral Source</FormLabel>
                 <FormControl>
                   <Input placeholder="How did they find you?" {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                 </FormControl>
@@ -558,7 +558,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="chatgpt_url"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">ChatGPT URL</FormLabel>
+                <FormLabel className="text-xs font-medium text-muted-foreground">ChatGPT URL</FormLabel>
                 <FormControl>
                   <Input placeholder="https://chat.openai.com/c/..." {...field} className="h-12 rounded-xl border-border focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors" />
                 </FormControl>
@@ -572,7 +572,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="journal"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Practitioner Notes (Journal)</FormLabel>
+                <FormLabel className="text-xs font-medium text-muted-foreground">Practitioner Notes (Journal)</FormLabel>
                 <FormControl>
                   <Textarea 
                     placeholder="Long-term history, key notes, and personal reflections..." 
@@ -590,7 +590,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             name="availability_notes"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Availability Notes</FormLabel>
+                <FormLabel className="text-xs font-medium text-muted-foreground">Availability Notes</FormLabel>
                 <FormControl>
                   <Textarea 
                     placeholder="e.g. Free all day Mon/Tue, Wed-Fri only before 2pm. Weekend OK. Record the client's own scheduling preferences here so the timetable can propose good windows."

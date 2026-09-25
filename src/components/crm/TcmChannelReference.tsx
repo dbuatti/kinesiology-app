@@ -115,7 +115,7 @@ const TcmChannelReference = () => {
                   )}>
                     <Clock size={18} className={isPeak ? "text-amber-600" : "text-indigo-500"} />
                     <div>
-                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Peak Time</p>
+                      <p className="text-xs font-medium text-muted-foreground">Peak Time</p>
                       <p className={cn("text-sm font-bold", isPeak ? "text-amber-900" : "text-foreground")}>{channel.peakTime}</p>
                     </div>
                   </div>
@@ -125,7 +125,7 @@ const TcmChannelReference = () => {
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                  <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                     <Heart size={14} className="text-rose-500" /> Core Emotions
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -141,7 +141,7 @@ const TcmChannelReference = () => {
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                  <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                     <Target size={14} className="text-emerald-500" /> Primary Acupoints
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -158,10 +158,10 @@ const TcmChannelReference = () => {
 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                    <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                       <Dumbbell size={14} className="text-indigo-500" /> Associated Muscles
                     </h4>
-                    <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider flex items-center gap-1">
+                    <span className="text-xs font-medium text-muted-foreground/60 flex items-center gap-1">
                       <MousePointer2 size={8} /> Click for info
                     </span>
                   </div>

@@ -68,19 +68,19 @@ const CogsLearningPage = () => {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="p-3 rounded-lg bg-card border border-border">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">What to prompt</span>
+                <span className="text-xs font-medium text-muted-foreground">What to prompt</span>
                 <p className="text-sm text-foreground mt-1">Tilt pelvis forward (bum out), rib cage rounds back, chin tucks. Then scoop pelvis under.</p>
               </div>
               <div className="p-3 rounded-lg bg-card border border-border">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">What to look for</span>
+                <span className="text-xs font-medium text-muted-foreground">What to look for</span>
                 <p className="text-sm text-muted-foreground mt-1">Do all three segments sequence? Does the neck automatically tuck when pelvis tips forward? Is there a disconnect?</p>
               </div>
               <div className="p-3 rounded-lg bg-card border border-border">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Step 1 — Isolate</span>
+                <span className="text-xs font-medium text-muted-foreground">Step 1 — Isolate</span>
                 <p className="text-sm text-muted-foreground mt-1">First test each segment alone: just pelvic tilt, just thoracic flexion/extension, just neck flexion/extension.</p>
               </div>
               <div className="p-3 rounded-lg bg-card border border-border">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Step 2 — Integrate</span>
+                <span className="text-xs font-medium text-muted-foreground">Step 2 — Integrate</span>
                 <p className="text-sm text-muted-foreground mt-1">Now prompt just ONE movement (e.g. round shoulders) and watch if the other two automatically follow.</p>
               </div>
             </div>
@@ -101,19 +101,19 @@ const CogsLearningPage = () => {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="p-3 rounded-lg bg-card border border-border">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">What to prompt</span>
+                <span className="text-xs font-medium text-muted-foreground">What to prompt</span>
                 <p className="text-sm text-foreground mt-1">"Bend to your side." Don't tell them what you're looking at.</p>
               </div>
               <div className="p-3 rounded-lg bg-card border border-border">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">What to look for</span>
+                <span className="text-xs font-medium text-muted-foreground">What to look for</span>
                 <p className="text-sm text-muted-foreground mt-1">Does the neck naturally tilt? Does the pelvis shift? Or is all movement coming from the thoracic spine only?</p>
               </div>
               <div className="p-3 rounded-lg bg-card border border-border">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Step 1 — Isolate</span>
+                <span className="text-xs font-medium text-muted-foreground">Step 1 — Isolate</span>
                 <p className="text-sm text-muted-foreground mt-1">Side-bend just the rib cage. Keep the head facing forward. See if they can dissociate.</p>
               </div>
               <div className="p-3 rounded-lg bg-card border border-border">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Step 2 — Integrate</span>
+                <span className="text-xs font-medium text-muted-foreground">Step 2 — Integrate</span>
                 <p className="text-sm text-muted-foreground mt-1">Let the whole body follow the side-bend. Neck tilts, pelvis shifts laterally. Should be automatic.</p>
               </div>
             </div>
@@ -134,19 +134,19 @@ const CogsLearningPage = () => {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="p-3 rounded-lg bg-card border border-border">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">What to prompt</span>
+                <span className="text-xs font-medium text-muted-foreground">What to prompt</span>
                 <p className="text-sm text-foreground mt-1">"Keep your head facing forward. Now rotate just your rib cage right."</p>
               </div>
               <div className="p-3 rounded-lg bg-card border border-border">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">What to look for</span>
+                <span className="text-xs font-medium text-muted-foreground">What to look for</span>
                 <p className="text-sm text-muted-foreground mt-1">Can the rib cage rotate independently? Does the head stay facing forward? Does the pelvis stay still?</p>
               </div>
               <div className="p-3 rounded-lg bg-card border border-border">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Step 1 — Dissociate</span>
+                <span className="text-xs font-medium text-muted-foreground">Step 1 — Dissociate</span>
                 <p className="text-sm text-muted-foreground mt-1">Rotate rib cage right while pelvis and head stay. Then rotate pelvis left while rib cage and head stay.</p>
               </div>
               <div className="p-3 rounded-lg bg-card border border-border">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Step 2 — Integrate</span>
+                <span className="text-xs font-medium text-muted-foreground">Step 2 — Integrate</span>
                 <p className="text-sm text-muted-foreground mt-1">Rib cage rotates right, pelvis rotates left (opposite directions). Head stays facing forward.</p>
               </div>
             </div>

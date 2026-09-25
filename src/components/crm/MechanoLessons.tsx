@@ -401,7 +401,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                             <Icon size={20} />
                           </div>
                           <div className="flex gap-1.5">
-                            <Badge className="bg-muted text-muted-foreground border-none font-bold text-[10px] uppercase tracking-wider">
+                            <Badge className="bg-muted text-muted-foreground border-none font-medium text-xs">
                               {lesson.duration}
                             </Badge>
                             {isCompleted && (
@@ -457,7 +457,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                   </div>
                   <div>
                     <CardTitle className="text-lg font-bold text-foreground">{activeLesson?.title}</CardTitle>
-                    <CardDescription className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">
+                    <CardDescription className="font-medium text-xs text-muted-foreground mt-0.5">
                       {activeLesson?.difficulty} • {activeLesson?.duration}
                     </CardDescription>
                   </div>
@@ -608,7 +608,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                       <Badge className="bg-muted text-foreground border-none font-bold text-[10px] uppercase tracking-wider">
                         {currentStructure.type}
                       </Badge>
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Anatomy Guide</span>
+                      <span className="text-xs font-medium text-muted-foreground">Anatomy Guide</span>
                     </div>
                     <CardTitle className="text-lg font-bold text-foreground">{currentStructure.name}</CardTitle>
                   </CardHeader>
@@ -616,7 +616,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     {/* Real-time Image Upload Zone */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Reference Image</p>
+                        <p className="text-xs font-medium text-muted-foreground">Reference Image</p>
                         <div className="flex bg-muted p-0.5 rounded-lg border border-border">
                           <Button 
                             variant={imageSourceMode === 'sourced' ? 'default' : 'ghost'} 
@@ -689,7 +689,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                                   <div className="w-10 h-10 rounded-xl bg-card shadow-sm border border-border/50 flex items-center justify-center mx-auto text-muted-foreground group-hover/img:text-indigo-600 transition-all">
                                     <ImageIcon size={20} />
                                   </div>
-                                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Click or Drop Reference Image</p>
+                                  <p className="text-xs font-medium text-muted-foreground">Click or Drop Reference Image</p>
                                 </>
                               )}
                             </div>
@@ -699,7 +699,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     </div>
 
                     <div className="space-y-1">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Description</p>
+                      <p className="text-xs font-medium text-muted-foreground">Description</p>
                       <p className="text-xs text-muted-foreground font-medium leading-relaxed">{currentStructure.desc}</p>
                     </div>
 
@@ -716,7 +716,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     </div>
 
                     <div className="p-4 bg-foreground text-primary-foreground rounded-xl space-y-1">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Neurological Logic</p>
+                      <p className="text-xs font-medium text-muted-foreground">Neurological Logic</p>
                       <p className="text-xs text-muted-foreground/60 leading-relaxed">
                         {currentStructure.type === 'Ligament' 
                           ? "Targets the Spinocerebellar tract to the ipsilateral cerebellum. Hold GV16 to clear the threat." 
@@ -756,7 +756,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
             {/* Left Column: Configuration */}
             <Card className="md:col-span-5 border border-border shadow-sm rounded-2xl bg-card p-6 space-y-5">
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">1. Select Joint</label>
+                <label className="text-xs font-medium text-muted-foreground">1. Select Joint</label>
                 <div className="grid grid-cols-4 gap-1.5">
                   {["Knee", "Ankle", "Shoulder", "Hip"].map(j => (
                     <Button 
@@ -772,7 +772,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">2. Select Tissue Type</label>
+                <label className="text-xs font-medium text-muted-foreground">2. Select Tissue Type</label>
                 <div className="grid grid-cols-2 gap-2">
                   <Button 
                     variant={sandboxTissue === 'Ligament' ? 'default' : 'outline'}
@@ -794,7 +794,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
               {sandboxTissue === 'Tendon' && (
                 <>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">3. Select Plane of Motion</label>
+                    <label className="text-xs font-medium text-muted-foreground">3. Select Plane of Motion</label>
                     <div className="grid grid-cols-3 gap-2">
                       {["Sagittal", "Frontal", "Transverse"].map(p => (
                         <Button 
@@ -810,7 +810,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">4. Select Action</label>
+                    <label className="text-xs font-medium text-muted-foreground">4. Select Action</label>
                     <div className="grid grid-cols-2 gap-2">
                       {sandboxActions[sandboxJoint as keyof typeof sandboxActions][sandboxPlane as keyof typeof sandboxActions['Knee']].map(a => (
                         <Button 
@@ -836,19 +836,19 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     <Badge className="bg-card/10 text-primary-foreground border-none font-bold text-[10px] uppercase tracking-wider">
                       {sandboxTissue} Priority
                     </Badge>
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Generated Protocol</span>
+                    <span className="text-xs font-medium text-muted-foreground">Generated Protocol</span>
                   </div>
                   <CardTitle className="text-xl font-bold">{sandboxProtocol.title}</CardTitle>
                   <p className="text-xs text-muted-foreground/60 font-bold mt-0.5">Pathway: {sandboxProtocol.pathway}</p>
                 </CardHeader>
                 <CardContent className="p-6 space-y-5">
                   <div className="p-4 bg-card/5 rounded-xl border border-primary-foreground/10 space-y-1">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Step 1: Stimulate (Find the Threat)</p>
+                    <p className="text-xs font-medium text-muted-foreground">Step 1: Stimulate (Find the Threat)</p>
                     <p className="text-xs font-bold text-primary-foreground leading-relaxed">{sandboxProtocol.text}</p>
                   </div>
 
                   <div className="p-4 bg-card/5 rounded-xl border border-primary-foreground/10 space-y-1">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Step 2: Calibrate (Apply Correction)</p>
+                    <p className="text-xs font-medium text-muted-foreground">Step 2: Calibrate (Apply Correction)</p>
                     <p className="text-xs font-bold text-primary-foreground leading-relaxed">{sandboxProtocol.correction}</p>
                   </div>
 

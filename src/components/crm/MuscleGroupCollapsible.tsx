@@ -55,7 +55,7 @@ const MuscleGroupCollapsible = ({
                 </div>
                 <div>
                   <CardTitle className="text-xl font-semibold">{groupName}</CardTitle>
-                  <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-0.5">
+                  <p className="text-xs text-muted-foreground font-medium mt-0.5">
                     {muscles.length} Muscles • {testedInGroup} Tested
                   </p>
                 </div>

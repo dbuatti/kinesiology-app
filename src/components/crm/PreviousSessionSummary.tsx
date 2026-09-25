@@ -87,7 +87,7 @@ const PreviousSessionSummary = ({ previousSession, clientId }: PreviousSessionSu
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
               <div className="p-4 bg-muted rounded-xl border border-border text-center">
-                <p className="text-xs font-medium text-muted-foreground uppercase mb-1">BOLT Score</p>
+                <p className="text-xs font-medium text-muted-foreground mb-1">BOLT Score</p>
                 <p className="text-3xl font-semibold text-foreground">{previousSession.bolt_score ? `${previousSession.bolt_score}s` : 'N/A'}</p>
                 {previousSession.bolt_score && (
                   <Badge className={cn(
@@ -99,7 +99,7 @@ const PreviousSessionSummary = ({ previousSession, clientId }: PreviousSessionSu
                 )}
               </div>
               <div className="p-4 bg-muted rounded-xl border border-border text-center">
-                <p className="text-xs font-medium text-muted-foreground uppercase mb-1">Coherence</p>
+                <p className="text-xs font-medium text-muted-foreground mb-1">Coherence</p>
                 <p className="text-3xl font-semibold text-foreground">{previousSession.coherence_score ? previousSession.coherence_score.toFixed(2) : 'N/A'}</p>
                 {previousSession.coherence_score && (
                   <Badge className={cn(

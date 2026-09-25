@@ -385,7 +385,7 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20"><Loader2 className="animate-spin text-indigo-600" size={48} /></div>
+        <div className="flex justify-center py-20"><Loader2 className="animate-spin text-muted-foreground" size={22} /></div>
       ) : recheckGroups.length > 0 ? (
         <div className="grid grid-cols-1 gap-6">
           {recheckGroups.map((group, idx) => {
@@ -404,7 +404,7 @@ const RecheckTab = ({ appointment, history, onUpdate, saveField, updatePriorityP
                     </div>
                     <div>
                       <h4 className="font-medium text-xl text-foreground">{group.name}</h4>
-                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{group.category}</p>
+                      <p className="text-xs font-medium text-muted-foreground">{group.category}</p>
                     </div>
                   </div>
 

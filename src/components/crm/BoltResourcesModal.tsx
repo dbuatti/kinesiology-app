@@ -108,7 +108,7 @@ const BoltResourcesModal = ({ open, onOpenChange, currentScore, onStartBolt }: B
                       style={{ width: `${progress}%` }}
                     />
                   </div>
-                  <div className="flex justify-between mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <div className="flex justify-between mt-1 text-xs font-medium text-muted-foreground">
                     <span>25s Functional</span>
                     <span>40s+ Optimal</span>
                   </div>

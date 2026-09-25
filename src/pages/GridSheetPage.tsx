@@ -92,7 +92,7 @@ const GridSheetPage = () => {
         <div className="max-w-[297mm] mx-auto bg-white shadow-2xl rounded-xl print:shadow-none">
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <Loader2 className="animate-spin text-chart-primary" size={28} />
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Loading Grid Sheet...</p>
+            <p className="text-xs font-medium text-muted-foreground">Loading Grid Sheet...</p>
           </div>
         </div>
       ) : (

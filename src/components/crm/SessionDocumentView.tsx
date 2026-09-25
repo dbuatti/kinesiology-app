@@ -64,7 +64,7 @@ const SectionHeader = ({ id, title, subtitle }: { id: string; title: string; sub
         )}
         <div className="min-w-0">
           <h2 className="text-xl md:text-2xl font-semibold uppercase tracking-tighter leading-tight">{title}</h2>
-          {subtitle && <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-0.5">{subtitle}</p>}
+          {subtitle && <p className="text-xs font-medium text-muted-foreground mt-0.5">{subtitle}</p>}
         </div>
       </div>
       {meta?.focus && (
@@ -202,7 +202,7 @@ const SessionDocumentView = ({
               </PopoverTrigger>
               <PopoverContent className="w-[320px] p-0 max-h-[400px] overflow-y-auto" align="start">
                 <div className="p-3 border-b border-border">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Recent Sessions</p>
+                  <p className="text-xs font-medium text-muted-foreground">Recent Sessions</p>
                 </div>
                 <div className="py-1">
                   {loadingSessions ? (
@@ -233,7 +233,7 @@ const SessionDocumentView = ({
                 </div>
               </PopoverContent>
             </Popover>
-            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60 shrink-0">{appointment.status}</span>
+            <span className="text-xs font-medium text-muted-foreground/60 shrink-0">{appointment.status}</span>
             <button
               onClick={async () => {
                 if (!appointment.is_paid) {
@@ -261,7 +261,7 @@ const SessionDocumentView = ({
 
           <div className="flex items-center gap-3 shrink-0">
             <div className="flex items-center gap-2">
-              <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider hidden sm:inline">Last Sync</p>
+              <p className="text-xs font-medium text-muted-foreground/60 hidden sm:inline">Last Sync</p>
               <p className="text-[10px] font-medium tabular-nums">{format(lastSaved, "HH:mm:ss")}</p>
             </div>
             
@@ -397,7 +397,7 @@ const SessionDocumentView = ({
               <div className="flex items-center gap-2"><div className="w-2 h-2 bg-foreground" /> Integrated</div>
               <div className="flex items-center gap-2"><div className="w-2 h-2 bg-foreground" /> Encrypted</div>
             </div>
-            <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">Session Complete</p>
+            <p className="text-xs font-medium text-muted-foreground/60">Session Complete</p>
           </div>
         </div>
 

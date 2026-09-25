@@ -149,19 +149,19 @@ const SiteAuditPage = () => {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="bg-card rounded-xl border border-border p-4 text-center">
             <div className="text-lg font-semibold text-indigo-600">{annotated.length}</div>
-            <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Documented Pages</div>
+            <div className="text-xs text-muted-foreground font-medium">Documented Pages</div>
           </div>
           <div className="bg-card rounded-xl border border-border p-4 text-center">
             <div className="text-lg font-semibold text-emerald-600">{covered}</div>
-            <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Verified Routes</div>
+            <div className="text-xs text-muted-foreground font-medium">Verified Routes</div>
           </div>
           <div className="bg-card rounded-xl border border-border p-4 text-center">
             <div className="text-lg font-semibold text-amber-600">{missing.length}</div>
-            <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Missing Routes</div>
+            <div className="text-xs text-muted-foreground font-medium">Missing Routes</div>
           </div>
           <div className="bg-card rounded-xl border border-border p-4 text-center">
             <div className="text-lg font-semibold text-rose-600">{tableHealth.filter(t => t.status === "error").length}</div>
-            <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">DB Issues</div>
+            <div className="text-xs text-muted-foreground font-medium">DB Issues</div>
           </div>
         </div>
 
@@ -251,7 +251,7 @@ const SiteAuditPage = () => {
                     </p>
 
                     <div className="pt-2 space-y-2">
-                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Key Components</p>
+                      <p className="text-xs font-medium text-muted-foreground">Key Components</p>
                       <div className="flex flex-wrap gap-2">
                         {page.keyFeatures.map(feature => (
                           <span key={feature} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-muted/50 border border-border text-xs font-semibold text-muted-foreground">

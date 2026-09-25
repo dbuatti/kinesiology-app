@@ -232,7 +232,7 @@ export function MuscleAssessment({
       <div className="space-y-8">
         {Object.entries(filteredGroups).map(([group, muscles]) => (
           <div key={group} className="space-y-2">
-            <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-2 mb-3">{group}</h3>
+            <h3 className="text-xs font-medium text-muted-foreground px-2 mb-3">{group}</h3>
             <div className="grid grid-cols-1 gap-1.5">
               {muscles.map(muscle => (
                 <MuscleTestItem 

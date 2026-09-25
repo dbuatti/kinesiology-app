@@ -279,7 +279,7 @@ const LimitingBeliefsAnalysis = () => {
           </div>
           <Select value={selectedSessionId} onValueChange={handleSessionSelect} disabled={loadingSessions}>
             <SelectTrigger className="h-8 text-xs">
-              <SelectValue placeholder={loadingSessions ? "Loading sessions..." : "Choose a session..."} />
+              <SelectValue placeholder={loadingSessions ? "Loading sessions…" : "Choose a session..."} />
             </SelectTrigger>
             <SelectContent>
               {pastSessions.map(s => {

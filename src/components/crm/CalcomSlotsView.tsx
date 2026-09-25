@@ -560,7 +560,7 @@ const CalcomSlotsView = () => {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-card p-5 rounded-2xl border border-border shadow-sm">
         <div className="flex items-center gap-6">
           <div className="flex flex-col">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Available Slots</p>
+            <p className="text-xs font-medium text-muted-foreground mb-1">Available Slots</p>
             <div className="flex items-center gap-2">
               <span className="text-3xl font-semibold text-emerald-600">{stats.totalSlots}</span>
               <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-100 font-bold">Open</Badge>
@@ -568,7 +568,7 @@ const CalcomSlotsView = () => {
           </div>
           <div className="w-px h-10 bg-border hidden md:block" />
           <div className="flex flex-col">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Upcoming Bookings</p>
+            <p className="text-xs font-medium text-muted-foreground mb-1">Upcoming Bookings</p>
             <div className="flex items-center gap-2">
               <span className="text-3xl font-semibold text-indigo-600">{stats.totalBookings}</span>
               <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-100 font-bold">Confirmed</Badge>
@@ -649,7 +649,7 @@ const CalcomSlotsView = () => {
           <div className="w-px h-4 bg-border" />
 
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Session Type:</span>
+            <span className="text-xs font-medium text-muted-foreground">Session Type:</span>
             <Select value={eventTypeId} onValueChange={(val) => {
               setEventTypeId(val);
               setTimeout(fetchSlots, 100);
@@ -715,7 +715,7 @@ const CalcomSlotsView = () => {
 
       {/* Row 3: Quick Copy */}
       <div className="px-4 py-2.5 bg-muted/50 rounded-xl border border-border/60 flex flex-wrap items-center gap-2">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mr-1">Quick Copy</span>
+        <span className="text-xs font-medium text-muted-foreground mr-1">Quick Copy</span>
         <div className="w-px h-3 bg-border" />
         
         <Button
@@ -755,7 +755,7 @@ const CalcomSlotsView = () => {
             <Card className="border-none shadow-sm bg-muted/30 rounded-2xl p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider ml-1">Event Type ID</label>
+                  <label className="text-xs font-medium text-muted-foreground ml-1">Event Type ID</label>
                   <Input 
                     placeholder="e.g. 4279898" 
                     value={eventTypeId}
@@ -764,7 +764,7 @@ const CalcomSlotsView = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider ml-1">Schedule ID</label>
+                  <label className="text-xs font-medium text-muted-foreground ml-1">Schedule ID</label>
                   <Input 
                     placeholder="Optional override" 
                     value={scheduleId}
@@ -792,7 +792,7 @@ const CalcomSlotsView = () => {
             <div className="w-20 h-20 rounded-2xl bg-indigo-600/10 animate-pulse" />
             <Loader2 className="absolute inset-0 m-auto w-10 h-10 text-indigo-600 animate-spin" />
           </div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Syncing with Cal.com...</p>
+          <p className="text-xs font-medium text-muted-foreground">Syncing with Cal.com...</p>
         </div>
       ) : (
         <div className="space-y-10">
@@ -909,7 +909,7 @@ const CalcomSlotsView = () => {
                           <>
                             {dayBookings.length > 0 && (
                               <div className="space-y-3">
-                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider ml-1">Confirmed Sessions</p>
+                                <p className="text-xs font-medium text-muted-foreground ml-1">Confirmed Sessions</p>
                                 <div className="grid grid-cols-1 gap-2">
                                   {dayBookings.map((booking) => (
                                     <div 
@@ -976,7 +976,7 @@ const CalcomSlotsView = () => {
 
                             {daySlots.length > 0 && (
                               <div className="space-y-3 flex-1">
-                                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider ml-1">Available Slots</p>
+                                <p className="text-xs font-medium text-muted-foreground ml-1">Available Slots</p>
                                 <div className="grid grid-cols-2 gap-2">
                                   {visibleSlots.map((slot, idx) => {
                                     const timeStr = slot.time || slot.start;
@@ -1091,7 +1091,7 @@ const CalcomSlotsView = () => {
                 <div className="space-y-6">
                   {availableSlotsByDate.map(({ date, daySlots }) => (
                     <div key={date} className="space-y-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground ml-1">
+                      <p className="text-xs font-medium text-muted-foreground ml-1">
                         {format(new Date(date), "EEEE, MMMM d")}
                       </p>
                       <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
@@ -1182,7 +1182,7 @@ const CalcomSlotsView = () => {
                 return (
                   <div key={s.key}>
                     {(!prev || prev.group !== s.group) && (
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mt-3 mb-1.5 ml-1">{s.group}</p>
+                      <p className="text-xs font-medium text-muted-foreground mt-3 mb-1.5 ml-1">{s.group}</p>
                     )}
                     <button
                       onClick={() => handleChooseService(s)}

@@ -411,7 +411,7 @@ const ClientDetailPage = () => {
 
   if (loading) return (
     <div className="flex min-h-screen items-center justify-center">
-      <Loader2 className="animate-spin text-chart-primary" size={48} />
+      <Loader2 className="animate-spin text-muted-foreground" size={22} />
     </div>
   );
 
@@ -729,7 +729,7 @@ const ClientDetailPage = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Next Session</h3>
+                          <h3 className="text-xs font-medium text-muted-foreground">Next Session</h3>
                           <Badge className="bg-chart-emerald/10 text-chart-emerald border-none font-semibold text-[10px] uppercase tracking-wider">
                             {daysUntil(nextAppointment.date)}
                           </Badge>
@@ -798,14 +798,14 @@ const ClientDetailPage = () => {
                 {/* Clinical Tracking Panel */}
                 <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
                   <CardHeader className="bg-muted/50 border-b border-border pb-3">
-                    <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                       <Stethoscope size={14} className="text-violet-500" /> Clinical Tracking
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="space-y-1">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Status</span>
+                        <span className="text-xs font-medium text-muted-foreground">Status</span>
                         <Badge className={cn("text-[10px] font-semibold uppercase tracking-wider border-none w-fit",
                           (client as any).status === 'Active' ? "bg-chart-emerald/10 text-chart-emerald" :
                           (client as any).status === 'On Hold' ? "bg-yellow-500/10 text-yellow-600" :
@@ -817,22 +817,22 @@ const ClientDetailPage = () => {
                         </Badge>
                       </div>
                       <div className="space-y-1">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Programme</span>
+                        <span className="text-xs font-medium text-muted-foreground">Programme</span>
                         <span className="text-sm font-medium text-foreground block">{(client as any).programme || '—'}</span>
                       </div>
                       <div className="space-y-1">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">First Session</span>
+                        <span className="text-xs font-medium text-muted-foreground">First Session</span>
                         <span className="text-sm font-medium text-foreground block">{(client as any).first_session_date ? format(new Date((client as any).first_session_date), "MMM d, yyyy") : '—'}</span>
                       </div>
                       <div className="space-y-1">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Last Session</span>
+                        <span className="text-xs font-medium text-muted-foreground">Last Session</span>
                         <span className="text-sm font-medium text-foreground block">{(client as any).most_recent_session ? format(new Date((client as any).most_recent_session), "MMM d, yyyy") : '—'}</span>
                       </div>
                     </div>
                     {(client as any).corrections_holding && (
                       <div className="mt-4 pt-4 border-t border-border">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Corrections Holding:</span>
+                          <span className="text-xs font-medium text-muted-foreground">Corrections Holding:</span>
                           <Badge className={cn("text-[10px] font-semibold uppercase tracking-wider border-none",
                             (client as any).corrections_holding?.includes('holding well') ? "bg-chart-emerald/10 text-chart-emerald" :
                             (client as any).corrections_holding?.includes('Partially') ? "bg-yellow-500/10 text-yellow-600" :
@@ -845,7 +845,7 @@ const ClientDetailPage = () => {
                     )}
                     {(client as any).priority_pathways && (
                       <div className="mt-3">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Priority Pathways</span>
+                        <span className="text-xs font-medium text-muted-foreground">Priority Pathways</span>
                         <p className="text-sm text-foreground mt-1">{(client as any).priority_pathways}</p>
                       </div>
                     )}
@@ -855,7 +855,7 @@ const ClientDetailPage = () => {
                 {/* Voice Studio — voice lessons matched to this client's email */}
                 <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
                   <CardHeader className="bg-muted/50 border-b border-border flex items-center justify-between space-y-0 pb-3">
-                    <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                       <Mic size={14} className="text-chart-destructive" /> Voice Studio
                     </CardTitle>
                     {!voiceLoading && voiceHistory.length > 0 && (
@@ -899,7 +899,7 @@ const ClientDetailPage = () => {
                               <div className={cn("text-sm font-bold tabular-nums", l.free ? "text-muted-foreground" : l.paid ? "text-chart-emerald" : "text-chart-destructive")}>
                                 {l.free ? "Free" : `$${l.cost ?? ""}`}
                               </div>
-                              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              <div className="text-xs font-medium text-muted-foreground">
                                 {l.free ? "Complimentary" : l.paid ? "Paid" : "Unpaid"}
                               </div>
                             </div>
@@ -942,7 +942,7 @@ const ClientDetailPage = () => {
 
                     <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
                       <CardHeader className="bg-muted/50 border-b border-border">
-                        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                        <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                           <Zap size={14} /> Medications & Supplements
                         </CardTitle>
                       </CardHeader>
@@ -961,11 +961,11 @@ const ClientDetailPage = () => {
                       </CardHeader>
                       <CardContent className="p-6 space-y-3">
                         <div>
-                          <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase">Contact Name</p>
+                          <p className="text-xs font-medium text-muted-foreground/60">Contact Name</p>
                           <p className="text-sm font-medium text-foreground">{client.emergency_contact_name || "Not provided"}</p>
                         </div>
                         <div>
-                          <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase">Contact Phone</p>
+                          <p className="text-xs font-medium text-muted-foreground/60">Contact Phone</p>
                           <p className="text-sm font-medium text-foreground">{client.emergency_contact_phone || "Not provided"}</p>
                         </div>
                       </CardContent>
@@ -979,15 +979,15 @@ const ClientDetailPage = () => {
                       </CardHeader>                      <CardContent className="p-6">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase">Stress Level</p>
+                            <p className="text-xs font-medium text-muted-foreground/60">Stress Level</p>
                             <p className="text-lg font-semibold text-chart-primary">{client.current_stress_level || "—"} / 10</p>
                           </div>
                           <div>
-                            <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase">Sleep Quality</p>
+                            <p className="text-xs font-medium text-muted-foreground/60">Sleep Quality</p>
                             <p className="text-sm font-medium text-foreground">{client.sleep_quality || "Not set"}</p>
                           </div>
                           <div className="col-span-2">
-                            <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase">Digestive Health</p>
+                            <p className="text-xs font-medium text-muted-foreground/60">Digestive Health</p>
                             <p className="text-sm font-medium text-foreground">{client.digestive_health || "Not set"}</p>
                           </div>
                         </div>
@@ -998,7 +998,7 @@ const ClientDetailPage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Card className="bg-muted border-border shadow-none rounded-xl">
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                        <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                           <Info size={14} /> Referral Source
                         </CardTitle>
                       </CardHeader>
@@ -1009,7 +1009,7 @@ const ClientDetailPage = () => {
 
                     <Card className="bg-muted/50 border-border shadow-none rounded-xl">
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                        <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                           <CalendarClock size={14} /> Availability Notes
                         </CardTitle>
                       </CardHeader>
@@ -1022,7 +1022,7 @@ const ClientDetailPage = () => {
 
                     <Card className="bg-muted/50 border-border shadow-none rounded-xl">
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                        <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                           <History size={14} /> Practitioner Journal
                         </CardTitle>
                       </CardHeader>

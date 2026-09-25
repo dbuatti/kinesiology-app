@@ -214,7 +214,7 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  actions={
  <>
  <div className="hidden sm:flex flex-col items-end mr-2">
- <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Practice Streak</p>
+ <p className="text-xs font-medium text-muted-foreground">Practice Streak</p>
  <p className="text-xl font-semibold text-orange-500 flex items-center gap-1">
  <Zap size={18} className="fill-current" /> {streak} Days
  </p>
@@ -254,13 +254,13 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  </div>
  <div className="flex gap-3">
  <div className="text-right">
- <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Latest BOLT</p>
+ <p className="text-xs font-medium text-muted-foreground">Latest BOLT</p>
  <p className={cn("text-2xl font-semibold", lastBolt && lastBolt >= 25 ? "text-chart-emerald" : "text-muted-foreground")}>
  {lastBolt ? `${lastBolt}s` : 'N/A'}
  </p>
  </div>
  <div className="text-right border-l border-border pl-3">
- <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Latest Coh</p>
+ <p className="text-xs font-medium text-muted-foreground">Latest Coh</p>
  <p className="text-2xl font-semibold text-chart-primary ">
  {lastCoh ? lastCoh.toFixed(2) : 'N/A'}
  </p>

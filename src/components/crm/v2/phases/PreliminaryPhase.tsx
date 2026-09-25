@@ -124,7 +124,7 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
               )}>
                 <div className="flex items-center gap-3 mb-4">
                   <Compass size={18} className="text-muted-foreground" />
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Session Goal</h3>
+                  <h3 className="text-xs font-medium text-muted-foreground">Session Goal</h3>
                 </div>
                 <EditableField
                   key={`goal-${appointment.id}`}
@@ -144,7 +144,7 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
               )}>
                 <div className="flex items-center gap-3 mb-4">
                   <ClipboardList size={18} className="text-muted-foreground" />
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Primary Concern</h3>
+                  <h3 className="text-xs font-medium text-muted-foreground">Primary Concern</h3>
                 </div>
                 <EditableField
                   key={`issue-${appointment.id}`}

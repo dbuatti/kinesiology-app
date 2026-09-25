@@ -33,7 +33,7 @@ const AccountSettings = () => {
           </div>
           <div>
             <p className="font-semibold text-foreground">Daniele Buatti</p>
-            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Practitioner · Active Session</p>
+            <p className="text-xs text-muted-foreground font-medium">Practitioner · Active Session</p>
           </div>
         </div>
         <Button

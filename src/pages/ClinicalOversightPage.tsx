@@ -84,7 +84,7 @@ export function ClinicalOversightTool() {
 
  if (loading) return (
  <div className="flex min-h-screen items-center justify-center">
- <Loader2 className="animate-spin text-primary" size={48} />
+ <Loader2 className="animate-spin text-muted-foreground" size={22} />
  </div>
  );
 

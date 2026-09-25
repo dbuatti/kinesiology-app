@@ -26,7 +26,7 @@ const BrainstemToneMap = ({ priorityPattern, activeFilter, onSelectNuclei }: Bra
           <div className="w-8 h-8 rounded-lg bg-card dark:bg-muted/50 flex items-center justify-center text-muted-foreground/60">
             <Brain size={16} />
           </div>
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+          <p className="text-xs font-medium text-muted-foreground">
             Log pathway findings to activate →
           </p>
         </div>
@@ -78,7 +78,7 @@ const BrainstemToneMap = ({ priorityPattern, activeFilter, onSelectNuclei }: Bra
 
                 <div>
                   <h4 className="font-semibold text-xl text-foreground tracking-tight">{nuclei.name}</h4>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-0.5">Nuclei Status</p>
+                  <p className="text-xs font-medium text-muted-foreground mt-0.5">Nuclei Status</p>
                 </div>
 
                 <div className="space-y-2">
@@ -90,7 +90,7 @@ const BrainstemToneMap = ({ priorityPattern, activeFilter, onSelectNuclei }: Bra
                 </div>
 
                 <div className="pt-2 border-t border-border/50 dark:border-border">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Inhibited Findings</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-2">Inhibited Findings</p>
                   <div className="flex flex-wrap gap-1.5">
                     {nuclei.findings.map(f => (
                       <Badge key={f} className="bg-muted text-muted-foreground border-none text-[10px] font-bold px-2 py-0.5 rounded-md">

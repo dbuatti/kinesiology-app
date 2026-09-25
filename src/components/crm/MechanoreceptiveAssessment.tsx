@@ -62,7 +62,7 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
   const SectionHeader = ({ title, subtitle }: { title: string, subtitle?: string }) => (
     <div className="border-b border-foreground/20 pb-1 mb-4 mt-8 first:mt-0">
       <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">{title}</h3>
-      {subtitle && <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{subtitle}</p>}
+      {subtitle && <p className="text-xs font-medium text-muted-foreground">{subtitle}</p>}
     </div>
   );
 
@@ -97,7 +97,7 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b-4 border-foreground/20 pb-8 mb-12">
         <div className="space-y-1">
           <h1 className="text-4xl font-semibold tracking-tighter uppercase leading-none">Mechanoreceptive Protocol</h1>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Resonance Clinical Infrastructure • Section IV.A</p>
+          <p className="text-xs font-medium text-muted-foreground">Resonance Clinical Infrastructure • Section IV.A</p>
         </div>
         <div className="flex gap-3 print:hidden">
           <Button 
@@ -133,7 +133,7 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
                   Targets the <strong>15%</strong> of afferent input processed by the contralateral Sensory Cortex (S1). Used for "smudged" sensory maps and chronic pain patterns.
                 </p>
                 <div className="pt-2 border-t border-border/50">
-                  <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1">Correction</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Correction</p>
                   <p className="text-[10px] font-bold">Isometric Contraction (30-40% effort) for 60-90s.</p>
                 </div>
               </div>
@@ -147,7 +147,7 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
                   Targets the <strong>85%</strong> of afferent input processed by the Cerebellum via Spinocerebellar tracts. Used for ligamentous threat and stability issues.
                 </p>
                 <div className="pt-2 border-t border-border/50">
-                  <p className="text-[10px] font-semibold uppercase text-muted-foreground mb-1">Correction</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Correction</p>
                   <p className="text-[10px] font-bold">Ligament Stretch + GV16 + 128Hz Tuning Fork.</p>
                 </div>
               </div>
@@ -241,7 +241,7 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
                   className="max-w-full h-auto opacity-80"
                 />
               </div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mt-4 text-center">Cortical Homunculus (S1/M1 Map)</p>
+              <p className="text-xs font-medium text-muted-foreground mt-4 text-center">Cortical Homunculus (S1/M1 Map)</p>
             </CardContent>
           </Card>
 
@@ -266,7 +266,7 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
 
       {/* Footer */}
       <div className="mt-20 pt-8 border-t-2 border-border/50 text-center">
-        <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">Fractal Resolution OS • Confidential Practitioner Resource</p>
+        <p className="text-xs font-medium text-muted-foreground/60">Fractal Resolution OS • Confidential Practitioner Resource</p>
       </div>
 
       <JointActionTableModal open={actionTableOpen} onOpenChange={setActionTableOpen} />

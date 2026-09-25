@@ -182,7 +182,7 @@ const MechanoreceptiveProcess = ({
           </div>
 
           <div className="space-y-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Region</p>
+            <p className="text-xs font-medium text-muted-foreground">Region</p>
             <div className="grid grid-cols-2 gap-2">
               {REGIONS.map(r => (
                 <Button key={r} variant="outline" size="sm" className={cn("rounded-lg font-medium", region === r ? "border-primary bg-primary/10" : "border-border")} onClick={() => setRegion(r)}>
@@ -193,7 +193,7 @@ const MechanoreceptiveProcess = ({
           </div>
 
           <div className="space-y-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Side</p>
+            <p className="text-xs font-medium text-muted-foreground">Side</p>
             <div className="grid grid-cols-2 gap-2">
               {SIDES.map(s => (
                 <Button key={s} variant="outline" size="sm" className={cn("rounded-lg font-medium", side === s ? "border-primary bg-primary/10" : "border-border")} onClick={() => setSide(s)}>
@@ -204,7 +204,7 @@ const MechanoreceptiveProcess = ({
           </div>
 
           <div className="space-y-2">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Joint</p>
+            <p className="text-xs font-medium text-muted-foreground">Joint</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {JOINT_GROUPS.flatMap(g => g.joints).map(j => (
                 <Button key={j} variant="outline" size="sm" className={cn("rounded-lg text-xs font-medium", joint === j ? "border-primary bg-primary/10" : "border-border")} onClick={() => setJoint(j)}>
@@ -216,7 +216,7 @@ const MechanoreceptiveProcess = ({
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Ligament (specific)</p>
+              <p className="text-xs font-medium text-muted-foreground">Ligament (specific)</p>
               <Button variant="link" size="sm" className="text-[10px] h-auto p-0 text-muted-foreground" onClick={onOpenLigamentCharts}>
                 View Charts
               </Button>

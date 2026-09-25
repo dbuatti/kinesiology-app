@@ -113,7 +113,7 @@ const ClinicalReasoningModal = ({ muscleName, status, open, onOpenChange }: Clin
             </div>
             <div>
               <DialogTitle className="text-2xl font-semibold">Clinical Reasoning</DialogTitle>
-              <DialogDescription className="text-muted-foreground font-bold uppercase tracking-wider text-[10px] mt-1">
+              <DialogDescription className="text-muted-foreground font-medium text-xs mt-1">
                 Diagnostic Assistant for {muscleName}
               </DialogDescription>
             </div>

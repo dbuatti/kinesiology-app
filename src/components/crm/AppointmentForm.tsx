@@ -543,7 +543,7 @@ const AppointmentForm = ({
                   </div>
                   <div className="space-y-0.5">
                     <FormLabel className="text-base font-semibold text-foreground cursor-pointer">Send Onboarding Email</FormLabel>
-                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Automatically email the intake form</p>
+                    <p className="text-xs text-muted-foreground font-medium">Automatically email the intake form</p>
                   </div>
                 </div>
                 <div className={cn("w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all", field.value ? "bg-chart-emerald border-chart-emerald" : "border-border")}>

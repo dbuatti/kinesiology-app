@@ -59,7 +59,7 @@ const QuizSetup = ({ onStart }: QuizSetupProps) => {
                 <p className="text-sm text-muted-foreground font-medium mt-1 leading-relaxed">{cat.desc}</p>
               </div>
               <div className="pt-4 flex items-center justify-between border-t border-border">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground group-hover:text-indigo-600 transition-colors">Start Training</span>
+                <span className="text-xs font-medium text-muted-foreground group-hover:text-indigo-600 transition-colors">Start Training</span>
                 <ArrowRight size={18} className="text-muted-foreground group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
               </div>
             </CardContent>

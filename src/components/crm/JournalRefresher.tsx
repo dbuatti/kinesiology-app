@@ -82,7 +82,7 @@ const JournalRefresher = ({ reflectionId, className }: JournalRefresherProps) =>
           ) : reflection ? (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="bg-muted/50 border-border/50 text-muted-foreground text-[10px] font-semibold uppercase px-1.5 py-0">
+                <Badge variant="outline" className="bg-muted/50 border-border/50 text-muted-foreground text-xs font-medium px-1.5 py-0">
                   {reflection.category}
                 </Badge>
                 {reflection.appointments?.clients?.name && (
@@ -102,7 +102,7 @@ const JournalRefresher = ({ reflectionId, className }: JournalRefresherProps) =>
               </ScrollArea>
 
               <div className="pt-4 border-t border-border/50 flex items-center justify-between">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Source Reflection</p>
+                <p className="text-xs font-medium text-muted-foreground">Source Reflection</p>
                 <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
               </div>
             </div>

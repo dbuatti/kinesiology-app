@@ -68,7 +68,7 @@ const SympatheticTab = ({ appointment, onUpdate, saveField }: SympatheticTabProp
               </div>
               <div>
                 <h3 className="text-sm font-medium text-foreground">Other SNS Techniques</h3>
-                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">ESR, Vagus Nerve, etc.</p>
+                <p className="text-xs font-medium text-muted-foreground">ESR, Vagus Nerve, etc.</p>
               </div>
             </div>
             <EditableField 

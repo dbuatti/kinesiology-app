@@ -181,7 +181,7 @@ export function QuizTool({ embedded = false, onExit }: QuizToolProps = {}) {
             </Button>
             <div className="h-6 w-px bg-border" />
             <div className="flex flex-col">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Category</span>
+              <span className="text-xs font-medium text-muted-foreground">Category</span>
               <span className="text-xs font-semibold text-foreground">{category}</span>
             </div>
           </div>
@@ -206,7 +206,7 @@ export function QuizTool({ embedded = false, onExit }: QuizToolProps = {}) {
             {currentQuestion.id.startsWith('ai') ? <Sparkles size={14} /> : <BrainCircuit size={14} />}
             <span className="text-[10px] font-semibold uppercase tracking-wider">{currentQuestion.category}</span>
           </div>
-          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Question {totalAnswered + 1}</span>
+          <span className="text-xs font-medium text-muted-foreground">Question {totalAnswered + 1}</span>
         </div>
 
         <div className="bg-card rounded-2xl p-8 md:p-12 shadow-xl shadow-slate-200/50 dark:shadow-none border border-border relative overflow-hidden">
@@ -261,17 +261,17 @@ export function QuizTool({ embedded = false, onExit }: QuizToolProps = {}) {
 
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-card p-6 rounded-3xl border border-border text-center">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Accuracy</p>
+            <p className="text-xs font-medium text-muted-foreground mb-1">Accuracy</p>
             <p className="text-2xl font-semibold text-foreground">
               {totalAnswered > 0 ? Math.round((score / totalAnswered) * 100) : 0}%
             </p>
           </div>
           <div className="bg-card p-6 rounded-3xl border border-border text-center">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Streak</p>
+            <p className="text-xs font-medium text-muted-foreground mb-1">Streak</p>
             <p className="text-2xl font-semibold text-primary">{streak}</p>
           </div>
           <div className="bg-card p-6 rounded-3xl border border-border text-center">
-            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Total</p>
+            <p className="text-xs font-medium text-muted-foreground mb-1">Total</p>
             <p className="text-2xl font-semibold text-foreground">{totalAnswered}</p>
           </div>
         </div>

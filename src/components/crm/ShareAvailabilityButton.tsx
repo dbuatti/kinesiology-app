@@ -95,7 +95,7 @@ const ShareAvailabilityButton = () => {
       <PopoverContent align="end" className="w-[340px] p-4 rounded-2xl">
         <div className="space-y-3">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">Service</p>
+            <p className="text-xs font-medium text-muted-foreground mb-1.5">Service</p>
             <div className="flex bg-muted rounded-lg p-0.5 border border-border">
               {SERVICES.map((s) => (
                 <button
@@ -113,7 +113,7 @@ const ShareAvailabilityButton = () => {
           </div>
 
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">Horizon</p>
+            <p className="text-xs font-medium text-muted-foreground mb-1.5">Horizon</p>
             <div className="flex bg-muted rounded-lg p-0.5 border border-border">
               {RANGES.map((r) => (
                 <button

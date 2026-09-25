@@ -512,7 +512,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  </div>
  )}
  {isEmpty && !isDragging && (
- <span className="block text-center text-[10px] font-medium text-muted-foreground/30 uppercase tracking-wider pt-2">Open</span>
+ <span className="block text-center text-xs font-medium text-muted-foreground/30 pt-2">Open</span>
  )}
  </div>
  )}
@@ -581,7 +581,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  <td colSpan={6} className="py-2 px-5 bg-muted/30">
  <div className="flex items-center gap-3">
  <div className="flex-1 h-px bg-border" />
- <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 shrink-0">
+ <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5 shrink-0">
  <Coffee size={11} /> Lunch Break · 12:00 – 2:00 PM
  </span>
  <div className="flex-1 h-px bg-border" />
@@ -690,7 +690,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  <Card key={label} className="border-none shadow-md rounded-xl bg-card overflow-hidden col-span-1">
  <CardContent className="p-5 space-y-2">
  <div className="flex items-center justify-between">
- <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
+ <span className="text-xs font-medium text-muted-foreground">{label}</span>
  <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <DollarSign size={14} />
  </div>
@@ -814,7 +814,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  onDrop={handleDropUnscheduled}
  >
  <CardHeader className="pb-2 border-b border-border bg-muted/30">
- <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+ <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
  <User size={13} className="text-primary" />
  Unscheduled ({scheduledData.unscheduled.length})
  {dragOverKey === "unscheduled" && (
@@ -872,7 +872,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  {Object.keys(manualPlacements).length > 0 ? (
  <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden border border-violet-200 ">
  <CardHeader className="pb-2 border-b border-border bg-muted/30">
- <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center justify-between gap-2">
+ <CardTitle className="text-xs font-medium text-muted-foreground flex items-center justify-between gap-2">
  <span className="flex items-center gap-2">
  <ListChecks size={13} className="text-primary" />
  Pending Changes ({Object.keys(manualPlacements).length})

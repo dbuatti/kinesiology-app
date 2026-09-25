@@ -54,7 +54,7 @@ const BaGuaReference = () => {
             </CardHeader>
             <CardContent className="p-8 space-y-6 flex-1 flex flex-col">
               <div className="space-y-3">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                <p className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <Activity size={14} className="text-indigo-500" /> Associated Meridians
                 </p>
                 <div className="flex flex-wrap gap-1.5">
@@ -67,7 +67,7 @@ const BaGuaReference = () => {
               </div>
 
               <div className="space-y-3">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                <p className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <Heart size={14} className="text-rose-500" /> Emotional Themes
                 </p>
                 <div className="flex flex-wrap gap-1.5">
@@ -80,7 +80,7 @@ const BaGuaReference = () => {
               </div>
 
               <div className="p-5 bg-muted/50 rounded-3xl border border-border/50 mt-auto">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-2">
+                <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-2">
                   <Info size={14} /> Clinical Insight
                 </p>
                 <p className="text-sm text-muted-foreground font-medium leading-relaxed italic">

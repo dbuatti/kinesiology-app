@@ -26,7 +26,7 @@ const CalcomSettings = () => {
       </CardHeader>
       <CardContent className="p-8 pt-0 space-y-6">
         <div className="space-y-3">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Your Unique Endpoint</p>
+          <p className="text-xs font-medium text-muted-foreground">Your Unique Endpoint</p>
           <div className="flex gap-2">
             <div className="flex-1 bg-muted/40 border border-border rounded-xl px-4 py-3 text-xs font-mono text-muted-foreground dark:text-muted-foreground truncate flex items-center">
               {webhookUrl}

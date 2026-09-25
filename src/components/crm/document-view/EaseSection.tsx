@@ -273,7 +273,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
 
             <div className="space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase text-muted-foreground">1. Side</label>
+                <label className="text-xs font-medium text-muted-foreground">1. Side</label>
                 <select value={vagusSide} onChange={(e) => setVagusSide(e.target.value as any)} className="w-full bg-transparent border-b border-border py-1 font-medium">
                   <option value="Left">Left</option>
                   <option value="Right">Right</option>
@@ -281,7 +281,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase text-muted-foreground">2. Reflex Point</label>
+                <label className="text-xs font-medium text-muted-foreground">2. Reflex Point</label>
                 <select value={reflexPoint} onChange={(e) => setReflexPoint(e.target.value)} className="w-full bg-transparent border-b border-border py-1 font-medium">
                   <option value="Occiput">Occiput</option>
                   <option value="Auricular">Auricular</option>
@@ -295,7 +295,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase text-muted-foreground">3. Vagal Function</label>
+                <label className="text-xs font-medium text-muted-foreground">3. Vagal Function</label>
                 <select value={selectedFunction} onChange={(e) => setSelectedFunction(e.target.value)} className="w-full bg-transparent border-b border-border py-1 font-medium">
                   <option value="">Select function...</option>
                   {VAGAL_FUNCTIONS.map(f => <option key={f} value={f}>{f}</option>)}
@@ -304,7 +304,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
 
               <div className="p-3 bg-card border border-border space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-semibold uppercase text-muted-foreground">4. Challenge Type</span>
+                  <span className="text-xs font-medium text-muted-foreground">4. Challenge Type</span>
                   <div className="flex gap-1">
                     <button type="button" onClick={() => setChallengeType('hand')} className={cn("text-[7px] font-semibold px-1.5 py-0.5 rounded-sm hover:bg-muted", challengeType === 'hand' ? "bg-foreground text-background" : "bg-muted")}>Hand</button>
                     <button type="button" onClick={() => setChallengeType('gland')} className={cn("text-[7px] font-semibold px-1.5 py-0.5 rounded-sm hover:bg-muted", challengeType === 'gland' ? "bg-foreground text-background" : "bg-muted")}>Gland</button>
@@ -337,7 +337,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase text-muted-foreground">5. Polarity</label>
+                <label className="text-xs font-medium text-muted-foreground">5. Polarity</label>
                 <select value={polarity || ""} onChange={(e) => setPolarity(e.target.value as any || null)} className="w-full bg-transparent border-b border-border py-1 font-medium text-[10px]">
                   <option value="">Select Polarity...</option>
                   <option value="Energy IN">Energy IN (+)</option>
@@ -346,7 +346,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase text-muted-foreground">6. Spinal Segment</label>
+                <label className="text-xs font-medium text-muted-foreground">6. Spinal Segment</label>
                 <select value={selectedAssociation} onChange={(e) => setSelectedAssociation(e.target.value)} className="w-full bg-transparent border-b border-border py-1 font-medium text-[10px]">
                   <option value="">Select Segment...</option>
                   {filteredAssociations.map(a => (
@@ -364,7 +364,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
 
               <div className="p-3 bg-muted border border-border space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-semibold uppercase text-muted-foreground">7. Correction</span>
+                  <span className="text-xs font-medium text-muted-foreground">7. Correction</span>
                   <span className="font-mono font-semibold text-[10px]">{formatTime(correctionTime)}</span>
                 </div>
                 <select value={breathingPattern} onChange={(e) => setBreathingPattern(e.target.value)} className="w-full bg-transparent border-b border-border py-0.5 font-medium text-[10px]">
@@ -383,7 +383,7 @@ const EaseSection = ({ appointment, saveField }: EaseSectionProps) => {
               </div>
 
               <div className="flex items-center justify-between pt-2 border-t border-border">
-                <span className="text-[10px] font-semibold uppercase text-muted-foreground">8. Re-assess</span>
+                <span className="text-xs font-medium text-muted-foreground">8. Re-assess</span>
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] font-medium">Balanced?</span>
                   <Checkbox checked={isCleared} onCheckedChange={(checked) => setIsCleared(!!checked)} className="border-foreground/20 rounded-none data-[state=checked]:bg-foreground" />

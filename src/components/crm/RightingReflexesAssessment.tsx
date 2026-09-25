@@ -178,7 +178,7 @@ const RightingReflexesAssessment = ({
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-muted/50 rounded-2xl border border-border/50">
         <div className="space-y-1">
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Assessment Result</p>
+          <p className="text-xs font-medium text-muted-foreground">Assessment Result</p>
           <div className="flex gap-2">
             <Button 
               size="sm" 
@@ -250,7 +250,7 @@ const RightingReflexesAssessment = ({
                   : "Client closes eyes and imagines the target. Tilt their body to the side."}
               </p>
               <div className="p-4 bg-muted/50 rounded-xl border border-border/50">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Expected Response</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Expected Response</p>
                 <p className="text-sm font-bold text-foreground">Head should reflexivey tilt back towards the midline/horizon.</p>
               </div>
             </div>
@@ -258,26 +258,26 @@ const RightingReflexesAssessment = ({
 
           {/* Structured Clinical Fields */}
           <div className="p-6 bg-muted/50 rounded-2xl border border-border/50 space-y-4">
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+            <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
               <ArrowRightLeft size={14} className="text-indigo-500" /> Clinical Metrics
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Ocular Righting</Label>
+                <Label className="text-xs font-medium text-muted-foreground">Ocular Righting</Label>
                 <ToggleGroup type="single" value={ocularStatus} onValueChange={handleOcularChange} className="justify-start gap-1">
                   <ToggleGroupItem value="Pass" className="rounded-lg border border-border text-xs font-bold px-2 py-1.5">Pass</ToggleGroupItem>
                   <ToggleGroupItem value="Fail" className="rounded-lg border border-border text-xs font-bold px-2 py-1.5">Fail</ToggleGroupItem>
                 </ToggleGroup>
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Labyrinthine</Label>
+                <Label className="text-xs font-medium text-muted-foreground">Labyrinthine</Label>
                 <ToggleGroup type="single" value={labyrinthineStatus} onValueChange={handleLabyrinthineChange} className="justify-start gap-1">
                   <ToggleGroupItem value="Pass" className="rounded-lg border border-border text-xs font-bold px-2 py-1.5">Pass</ToggleGroupItem>
                   <ToggleGroupItem value="Fail" className="rounded-lg border border-border text-xs font-bold px-2 py-1.5">Fail</ToggleGroupItem>
                 </ToggleGroup>
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Head Tilt Angle</Label>
+                <Label className="text-xs font-medium text-muted-foreground">Head Tilt Angle</Label>
                 <div className="relative">
                   <Input type="number" placeholder="e.g. 15" value={headTiltAngle} onChange={(e) => handleTiltChange(e.target.value)} className="h-10 rounded-xl pr-8 text-xs font-bold" />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">°</span>

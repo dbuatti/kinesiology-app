@@ -160,7 +160,7 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-3">
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground/70">Weekly Mastery Focus</p>
+                <p className="text-xs font-medium text-muted-foreground/70">Weekly Mastery Focus</p>
                 {practicedCount === 0 && (
                   <Badge variant="outline" className="text-muted-foreground text-[10px] font-medium animate-pulse">
                     <MousePointer2 size={10} className="mr-1" /> Tap to log today's focus
@@ -209,7 +209,7 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
                       </PopoverTrigger>
                       <PopoverContent className="w-72 p-2 rounded-2xl border-border bg-card text-foreground z-[100]">
                         <div className="space-y-1">
-                          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground/70 px-4 py-2">Quick Register</p>
+                          <p className="text-xs font-medium text-muted-foreground/70 px-4 py-2">Quick Register</p>
                           
                           {[
                             { id: 'Clear', label: 'Clear', icon: CheckCircle2 },
@@ -275,7 +275,7 @@ const WeeklyFocusBanner = ({ appointmentId, priorityPattern, onSaveField, onJump
           
           <div className="flex items-center gap-4">
             <div className="flex flex-col items-end">
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground/70 mb-1.5">Mastery Progress</p>
+              <p className="text-xs font-medium text-muted-foreground/70 mb-1.5">Mastery Progress</p>
               <div className="flex items-center gap-3">
                 <div className="w-32 h-1.5 bg-muted rounded-full overflow-hidden">
                   <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${(practicedCount / items.length) * 100}%` }} />

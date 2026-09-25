@@ -361,7 +361,7 @@ const PracticeNotes = () => {
  {loading && (
  <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center gap-4">
  <Loader2 className="w-10 h-10 text-chart-primary animate-spin" />
-  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Loading...</p>
+  <p className="text-xs font-medium text-muted-foreground">Loading...</p>
  </div>
  )}
 
@@ -417,28 +417,28 @@ const PracticeNotes = () => {
  <Section id="clinical-hierarchy" title="II. Clinical Hierarchy">
  <div className="grid grid-cols-2 gap-x-12 gap-y-6">
  <div className="space-y-3">
- <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Asterisk Tier</h3>
+ <h3 className="text-xs font-medium text-muted-foreground mb-2">Asterisk Tier</h3>
  <Item id="h-emotional" label="Emotional Charge" />
  <Item id="h-assemblage" label="Assemblage Point" />
  <Item id="h-hara" label="Hara Line" />
  <Item id="h-heartwall" label="Heart Wall" />
  </div>
  <div className="space-y-3">
- <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">1. Primary Tier</h3>
+ <h3 className="text-xs font-medium text-muted-foreground mb-2">1. Primary Tier</h3>
  <Item id="h-primitive" label="Primitive Reflexes" />
  <Item id="h-nociception" label="Nociception" />
  <Item id="h-cranial" label="Cranial Nerves" />
  <Item id="h-eyes" label="Eye Systems" />
  </div>
  <div className="space-y-3">
- <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">2. Secondary Tier</h3>
+ <h3 className="text-xs font-medium text-muted-foreground mb-2">2. Secondary Tier</h3>
  <Item id="h-immune" label="Immune Vials (TH1/2/17/9)" />
  <Item id="h-infections" label="Infections" />
  <Item id="h-krebs" label="Krebs Cycle" />
  <Item id="h-organ" label="Organ/Gland Balance" />
  </div>
  <div className="space-y-3">
- <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">3. Tertiary Tier</h3>
+ <h3 className="text-xs font-medium text-muted-foreground mb-2">3. Tertiary Tier</h3>
  <Item id="h-icv" label="Ileocecal Valve (ICV)" />
  <Item id="h-cranialbones" label="Cranial Bones" />
  <Item id="h-musculo" label="Musculoskeletal" />
@@ -451,7 +451,7 @@ const PracticeNotes = () => {
  <div className="space-y-8">
  <div className="grid grid-cols-2 gap-x-12">
  <div className="space-y-3">
- <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Preliminary Vitals</h3>
+ <h3 className="text-xs font-medium text-muted-foreground mb-2">Preliminary Vitals</h3>
  <Item id="v-bolt" label="BOLT Score" subtext="Measure CO2 tolerance. Target: 25s+ (Functional), 40s+ (Optimal)." hasInput />
  <Item id="v-coherence" label="Heart Coherence" subtext="Autonomic sync. HR/BR ratio. Check for coherence vs discordance." hasInput />
  </div>
@@ -461,7 +461,7 @@ const PracticeNotes = () => {
  </div>
 
  <div className="space-y-6">
- <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">SNS Down-Regulation Procedures</h3>
+ <h3 className="text-xs font-medium text-muted-foreground mb-2">SNS Down-Regulation Procedures</h3>
  
  <div className="grid grid-cols-1 gap-4">
  <div className="p-4 border border-foreground/20">
@@ -540,7 +540,7 @@ const PracticeNotes = () => {
  <div className="space-y-8">
  {/* The 9-Step Hierarchy */}
  <div className="p-6 border border-foreground/20">
- <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">The 9-Step Integration Hierarchy</h3>
+ <h3 className="text-xs font-medium text-muted-foreground mb-4">The 9-Step Integration Hierarchy</h3>
  <div className="space-y-2 text-xs">
  <p>1. <strong>Indicator Change:</strong> Hold Frontal Lobe (ESR) points to see if system is ready.</p>
  <p>2. <strong>Current or Historic:</strong> Determine if the stress is happening now or in the past.</p>
@@ -556,7 +556,7 @@ const PracticeNotes = () => {
 
  {/* Emotion-Organ Mapping */}
  <div className="space-y-4">
- <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Primary Emotion & Organ Mapping</h3>
+ <h3 className="text-xs font-medium text-muted-foreground mb-2">Primary Emotion & Organ Mapping</h3>
  <div className="grid grid-cols-1 gap-1 text-xs">
  {PRIMARY_EMOTIONS.map(e => (
  <div key={e.id} className="flex gap-2">
@@ -570,7 +570,7 @@ const PracticeNotes = () => {
  <div className="grid grid-cols-2 gap-12">
  {/* Pulse Points Diagram */}
  <div className="space-y-4">
- <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Organ Pulse Points</h3>
+ <h3 className="text-xs font-medium text-muted-foreground mb-2">Organ Pulse Points</h3>
  <div className="border border-foreground/20 p-1">
  <img 
  src="/images/pulse-points.png" 
@@ -583,7 +583,7 @@ const PracticeNotes = () => {
 
  {/* Eye Accessing Cues Diagram */}
  <div className="space-y-4">
- <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Eye Accessing Cues (NLP)</h3>
+ <h3 className="text-xs font-medium text-muted-foreground mb-2">Eye Accessing Cues (NLP)</h3>
  <div className="border border-foreground/20 p-1">
  <img 
  src="/images/eye-modes.png" 
@@ -597,7 +597,7 @@ const PracticeNotes = () => {
 
  {/* Signs of Shift */}
  <div className="p-6 border border-foreground/20">
- <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Signs of Neurological Shift</h3>
+ <h3 className="text-xs font-medium text-muted-foreground mb-4">Signs of Neurological Shift</h3>
  <ul className="list-none space-y-1 text-xs font-medium">
  {SIGNS_OF_SHIFT.map(s => (
  <li key={s}>• {s}</li>
@@ -634,7 +634,7 @@ const PracticeNotes = () => {
  <Section id="brain-zones" title="VII. Brain Zones (Cortical & Subcortical)">
  <div className="space-y-8">
  <div className="space-y-4">
- <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Cortical Zones</h3>
+ <h3 className="text-xs font-medium text-muted-foreground mb-2">Cortical Zones</h3>
  <div className="grid grid-cols-1 gap-2">
  {BRAIN_REFLEX_POINTS.filter(p => p.category === 'Cortical').map(point => (
  <BrainZoneCard key={point.id} point={point} />
@@ -643,7 +643,7 @@ const PracticeNotes = () => {
  </div>
 
  <div className="space-y-4">
- <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Subcortical Zones</h3>
+ <h3 className="text-xs font-medium text-muted-foreground mb-2">Subcortical Zones</h3>
  <div className="grid grid-cols-1 gap-2">
  {BRAIN_REFLEX_POINTS.filter(p => p.category === 'Subcortical').map(point => (
  <BrainZoneCard key={point.id} point={point} />
@@ -702,7 +702,7 @@ const PracticeNotes = () => {
 
  {/* Footer Notes */}
  <div id="observations" className="mt-16 pt-8 border-t border-foreground/20 scroll-mt-32">
- <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-6">Clinical Observations & Integration Notes</h3>
+ <h3 className="text-xs font-medium text-muted-foreground mb-6">Clinical Observations & Integration Notes</h3>
  <div className="relative">
  <textarea 
  value={textData.observations || ""}

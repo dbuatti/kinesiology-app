@@ -363,9 +363,9 @@ const WeekByWeekOverview = ({
       </div>
 
       {slotsLoading ? (
-        <div className="p-24 flex flex-col items-center justify-center gap-6 bg-card rounded-xl border border-border">
+        <div className="py-24 flex flex-col items-center justify-center gap-3 bg-card rounded-xl border border-border">
           <Loader2 className="animate-spin text-primary" size={32} />
-          <p className="text-muted-foreground font-semibold text-xs uppercase tracking-wider">
+          <p className="text-muted-foreground font-medium text-xs">
             Loading availability…
           </p>
         </div>
@@ -432,7 +432,7 @@ const WeekByWeekOverview = ({
                 </div>
                 <div className="px-4 py-2 border-b border-border/50 bg-muted/5">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Workload</span>
+                    <span className="text-xs font-medium text-muted-foreground">Workload</span>
                     <span className={cn("text-[10px] font-bold", overworkColor)}>
                       {fmtHours(wkSummary.totalHours)} / 25h max
                     </span>
@@ -479,7 +479,7 @@ const WeekByWeekOverview = ({
                             todayFlag && "bg-chart-destructive/5"
                           )}
                         >
-                          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          <div className="text-xs font-medium text-muted-foreground">
                             {format(day, "EEE")}
                           </div>
                           <div
@@ -618,7 +618,7 @@ const WeekByWeekOverview = ({
 
           <div className="px-6 py-5 space-y-4">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+              <p className="text-xs font-medium text-muted-foreground mb-2">
                 Select Client
               </p>
               <div className="max-h-64 overflow-y-auto space-y-1.5">

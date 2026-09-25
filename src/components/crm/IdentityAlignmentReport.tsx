@@ -84,11 +84,11 @@ const IdentityAlignmentReport = ({ session, onBack }: IdentityAlignmentReportPro
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Physical Sensation</h4>
+              <h4 className="text-xs font-medium text-muted-foreground mb-1">Physical Sensation</h4>
               <p className="text-sm leading-relaxed font-medium">{session.somatic_sensations}</p>
             </div>
             <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Core Emotional State</h4>
+              <h4 className="text-xs font-medium text-muted-foreground mb-1">Core Emotional State</h4>
               <p className="text-sm leading-relaxed font-medium">{session.emotional_states}</p>
             </div>
           </CardContent>
@@ -143,7 +143,7 @@ const IdentityAlignmentReport = ({ session, onBack }: IdentityAlignmentReportPro
                         <p className="text-sm font-bold italic">"{entry.block}"</p>
                       </div>
                       <div>
-                        <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Waypoint 2: The Resistance</h4>
+                        <h4 className="text-xs font-medium text-muted-foreground mb-1">Waypoint 2: The Resistance</h4>
                         <p className="text-sm font-medium text-muted-foreground">{entry.resistance}</p>
                       </div>
                     </div>

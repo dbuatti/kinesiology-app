@@ -118,14 +118,14 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
               <div className="p-3 rounded-lg bg-muted border border-border flex items-center gap-3">
                 <AlertTriangle size={14} className="text-chart-primary shrink-0" />
                 <div>
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Inhibited finding</p>
+                  <p className="text-xs font-medium text-muted-foreground">Inhibited finding</p>
                   <p className="text-xs font-medium text-foreground">{initialValue}</p>
                 </div>
               </div>
             )}
 
             <div className="space-y-1">
-              <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Known site of suspected nociception</label>
+              <label className="text-xs font-medium text-muted-foreground">Known site of suspected nociception</label>
               <div className="relative">
                 <AlertTriangle className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
                 <Input 
@@ -138,7 +138,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
             </div>
 
             <div className="space-y-2">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Common sites</p>
+              <p className="text-xs font-medium text-muted-foreground">Common sites</p>
               <div className="flex flex-wrap gap-1.5">
                 {SITE_PRESETS.map(tag => (
                   <button
@@ -366,7 +366,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
                 </div>
 
                 <div className="border-t border-border pt-3">
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Stack the collateral inputs (all at once):</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-2">Stack the collateral inputs (all at once):</p>
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2 p-2 rounded-md bg-background/80 border border-border">
                       <Eye size={12} className="text-chart-primary shrink-0" />

@@ -49,7 +49,7 @@ const JointActionPrintable = () => {
           </Button>
         </div>
         
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+        <p className="text-xs font-medium text-muted-foreground">
           Current: {orientation.toUpperCase()} • {isCompact ? 'COMPACT' : 'NORMAL'}
         </p>
       </div>
@@ -58,10 +58,10 @@ const JointActionPrintable = () => {
       <div className="border-b-2 border-foreground/20 pb-2 mb-3 flex justify-between items-end">
         <div className="space-y-0.5">
           <h1 className="text-2xl font-serif font-bold tracking-tight uppercase leading-none">Joint Action Reference Table</h1>
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Functional Neuro Health • Clinical Infrastructure • v1.6</p>
+          <p className="text-xs font-medium text-muted-foreground">Functional Neuro Health • Clinical Infrastructure • v1.6</p>
         </div>
         <div className="text-right">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Geometry of Movement Map</p>
+          <p className="text-xs font-medium text-muted-foreground">Geometry of Movement Map</p>
         </div>
       </div>
 

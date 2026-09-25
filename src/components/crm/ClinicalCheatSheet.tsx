@@ -55,7 +55,7 @@ const ClinicalCheatSheet = () => {
             <CardContent className="p-8 space-y-8">
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                  <p className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                     <Activity size={14} className="text-indigo-500" /> Priority Muscles
                   </p>
                   <div className="flex flex-wrap gap-1.5">
@@ -67,7 +67,7 @@ const ClinicalCheatSheet = () => {
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                  <p className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                     <Move size={14} className="text-emerald-500" /> Meridians
                   </p>
                   <div className="flex flex-wrap gap-1.5">
@@ -91,7 +91,7 @@ const ClinicalCheatSheet = () => {
               </div>
 
               <div className="space-y-3">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Key Reflex Points</p>
+                <p className="text-xs font-medium text-muted-foreground">Key Reflex Points</p>
                 <div className="flex flex-wrap gap-2">
                   {item.reflexPoints.map(p => (
                     <span key={p} className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">

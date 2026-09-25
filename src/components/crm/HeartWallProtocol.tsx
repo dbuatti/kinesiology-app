@@ -261,7 +261,7 @@ const HeartWallProtocol = () => {
             <div className="p-4 bg-card rounded-xl border border-border shadow-sm overflow-hidden">
               <div className="flex items-center gap-2 mb-4 px-2">
                 <Hand size={14} className="text-chart-primary" />
-                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Pulse Point Reference</span>
+                <span className="text-xs font-medium text-muted-foreground">Pulse Point Reference</span>
               </div>
               <img
                 src="/images/pulse-points.png"
@@ -272,7 +272,7 @@ const HeartWallProtocol = () => {
             </div>
 
             <div className="p-4 bg-card rounded-xl border border-border shadow-sm">
-              <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">Pulse Point Order (Demo Reference)</h4>
+              <h4 className="text-xs font-medium text-muted-foreground mb-3">Pulse Point Order (Demo Reference)</h4>
               <div className="space-y-1.5 text-xs">
                 {[
                   "Right pulse points — Deep touch → Lung / Colon",
@@ -536,7 +536,7 @@ const HeartWallProtocol = () => {
           </div>
           <div className="space-y-4">
             <div className="p-6 bg-card rounded-xl border border-border shadow-sm space-y-3">
-              <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">After the Correction</h4>
+              <h4 className="text-xs font-medium text-muted-foreground">After the Correction</h4>
               <p className="text-sm font-medium text-foreground leading-relaxed">
                 Give the client a few minutes to rest. Let them drift — their body is doing its thing,
                 replaying and integrating. Use this time to tap notes.

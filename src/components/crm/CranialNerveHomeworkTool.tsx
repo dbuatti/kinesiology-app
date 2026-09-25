@@ -75,7 +75,7 @@ const CranialNerveHomeworkTool = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div className="space-y-4">
-                <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">1. Measurement Unit</label>
+                <label className="text-xs font-medium text-muted-foreground">1. Measurement Unit</label>
                 <div className="flex gap-2">
                   <Button 
                     variant={unit === 'seconds' ? 'default' : 'outline'}
@@ -95,7 +95,7 @@ const CranialNerveHomeworkTool = () => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">2. Max Threshold (Inhibition Point)</label>
+                <label className="text-xs font-medium text-muted-foreground">2. Max Threshold (Inhibition Point)</label>
                 <Input 
                   type="number" 
                   placeholder={`e.g. 10 ${unit}`}
@@ -107,7 +107,7 @@ const CranialNerveHomeworkTool = () => {
             </div>
 
             <div className="space-y-4">
-              <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">3. 3-Week Progression Plan</label>
+              <label className="text-xs font-medium text-muted-foreground">3. 3-Week Progression Plan</label>
               <div className="grid grid-cols-1 gap-3">
                 {[
                   { week: 1, val: week1Value, label: "70% Threshold", color: "bg-indigo-50 border-indigo-100 text-indigo-700" },

@@ -174,7 +174,7 @@ const ReflexImageZone = ({
               )}>
                 <Plus size={24} />
               </div>
-              <p className="font-semibold text-muted-foreground uppercase tracking-wider text-[10px]">
+              <p className="font-medium text-muted-foreground text-xs">
                 {type === 'primary' ? "Add Main Image" : "Add Secondary"}
               </p>
             </>

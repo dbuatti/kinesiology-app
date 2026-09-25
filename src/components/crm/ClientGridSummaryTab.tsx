@@ -38,12 +38,12 @@ export const ClientGridSummaryTab = ({ clientName, appointments, gridFor }: Clie
           <div className="flex items-center gap-4 shrink-0">
             <div className="text-center">
               <p className="text-2xl font-semibold text-chart-primary tabular-nums leading-none">{gridApps.length}</p>
-              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Marked Sessions</p>
+              <p className="mt-1 text-xs font-medium text-muted-foreground">Marked Sessions</p>
             </div>
             <div className="w-px h-8 bg-border" />
             <div className="text-center">
               <p className="text-2xl font-semibold text-chart-destructive tabular-nums leading-none">{totalMarks}</p>
-              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Total Marks</p>
+              <p className="mt-1 text-xs font-medium text-muted-foreground">Total Marks</p>
             </div>
           </div>
         </div>
@@ -117,7 +117,7 @@ export const ClientGridSummaryTab = ({ clientName, appointments, gridFor }: Clie
 
                       <div className="text-right">
                         <p className="text-lg font-semibold text-chart-primary tabular-nums leading-none">{g.activeCount}</p>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">marked</p>
+                        <p className="text-xs font-medium text-muted-foreground">marked</p>
                       </div>
 
                       <div className="flex items-center gap-1.5">
@@ -158,7 +158,7 @@ export const ClientGridSummaryTab = ({ clientName, appointments, gridFor }: Clie
 
       {emptyApps.length > 0 && (
         <div className="rounded-xl border border-dashed border-border bg-muted/20 p-4">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
+          <p className="text-xs font-medium text-muted-foreground mb-2">
             Sessions without grid marks ({emptyApps.length})
           </p>
           <div className="flex flex-wrap gap-2">

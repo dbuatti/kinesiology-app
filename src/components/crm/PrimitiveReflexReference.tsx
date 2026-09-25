@@ -203,7 +203,7 @@ const ReflexImageZone = ({
               <div className="w-10 h-10 rounded-xl bg-card shadow-sm border border-border flex items-center justify-center mx-auto text-muted-foreground group-hover/image:text-chart-primary group-hover/image:scale-110 transition-all">
                 <Plus size={20} />
               </div>
-              <p className="font-medium text-muted-foreground uppercase tracking-wider text-[10px]">
+              <p className="font-medium text-muted-foreground text-xs">
                 {type === 'primary' ? "Add Main Image" : "Add Secondary"}
               </p>
             </>
@@ -362,15 +362,15 @@ const PrimitiveReflexReference = () => {
               <h4 className="text-[10px] font-medium text-chart-primary uppercase tracking-wider">Fractal Chains</h4>
               <div className="space-y-2">
                 <div className="p-3 bg-card rounded-xl border border-border">
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase mb-1">Master Chain</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Master Chain</p>
                   <p className="text-[10px] font-medium text-foreground">Fear Paralysis → Moro → Startle</p>
                 </div>
                 <div className="p-3 bg-card rounded-xl border border-border">
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase mb-1">Gait Chain</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Gait Chain</p>
                   <p className="text-[10px] font-medium text-foreground">ATNR → Babinski → Palmar</p>
                 </div>
                 <div className="p-3 bg-card rounded-xl border border-border">
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase mb-1">Oral Chain</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Oral Chain</p>
                   <p className="text-[10px] font-medium text-foreground">Rooting → Sucking</p>
                 </div>
               </div>
@@ -485,7 +485,7 @@ const PrimitiveReflexReference = () => {
 
                   <div className="grid grid-cols-1 gap-4">
                     <div className="p-4 bg-muted rounded-xl border border-border">
-                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
+                      <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
                         <PlayCircle size={12} className="text-chart-primary" /> Stimulus
                       </p>
                       <p className="text-sm font-medium text-foreground leading-relaxed line-clamp-2">{reflex.stimulus}</p>
@@ -500,7 +500,7 @@ const PrimitiveReflexReference = () => {
 
                   {reflex.clinicalSigns && reflex.clinicalSigns.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Clinical Signs</p>
+                      <p className="text-xs font-medium text-muted-foreground">Clinical Signs</p>
                       <div className="flex flex-wrap gap-1.5">
                         {reflex.clinicalSigns.map(sign => (
                           <Badge key={sign} variant="secondary" className="bg-muted text-muted-foreground border-none text-[10px] font-medium">

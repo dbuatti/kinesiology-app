@@ -70,8 +70,8 @@ const AnatomyModel = ({ selectedAnatomyJoint, selectedStructure, onSelectStructu
           />
 
           {/* Labels */}
-          <text x="100" y="30" textAnchor="middle" className="text-[8px] font-bold fill-slate-400 uppercase tracking-wider">Femur</text>
-          <text x="100" y="210" textAnchor="middle" className="text-[8px] font-bold fill-slate-400 uppercase tracking-wider">Tibia</text>
+          <text x="100" y="30" textAnchor="middle" className="text-[10px] font-bold fill-slate-400 uppercase tracking-wider">Femur</text>
+          <text x="100" y="210" textAnchor="middle" className="text-[10px] font-bold fill-slate-400 uppercase tracking-wider">Tibia</text>
         </svg>
       )}
 
@@ -118,8 +118,8 @@ const AnatomyModel = ({ selectedAnatomyJoint, selectedStructure, onSelectStructu
           />
 
           {/* Labels */}
-          <text x="92" y="30" textAnchor="middle" className="text-[8px] font-bold fill-slate-400 uppercase tracking-wider">Tibia</text>
-          <text x="100" y="200" textAnchor="middle" className="text-[8px] font-bold fill-slate-400 uppercase tracking-wider">Calcaneus</text>
+          <text x="92" y="30" textAnchor="middle" className="text-[10px] font-bold fill-slate-400 uppercase tracking-wider">Tibia</text>
+          <text x="100" y="200" textAnchor="middle" className="text-[10px] font-bold fill-slate-400 uppercase tracking-wider">Calcaneus</text>
         </svg>
       )}
 
@@ -179,8 +179,8 @@ const AnatomyModel = ({ selectedAnatomyJoint, selectedStructure, onSelectStructu
           />
 
           {/* Labels */}
-          <text x="150" y="30" textAnchor="middle" className="text-[8px] font-bold fill-slate-400 uppercase tracking-wider">Clavicle</text>
-          <text x="110" y="235" textAnchor="middle" className="text-[8px] font-bold fill-slate-400 uppercase tracking-wider">Humerus</text>
+          <text x="150" y="30" textAnchor="middle" className="text-[10px] font-bold fill-slate-400 uppercase tracking-wider">Clavicle</text>
+          <text x="110" y="235" textAnchor="middle" className="text-[10px] font-bold fill-slate-400 uppercase tracking-wider">Humerus</text>
         </svg>
       )}
 
@@ -227,8 +227,8 @@ const AnatomyModel = ({ selectedAnatomyJoint, selectedStructure, onSelectStructu
           />
 
           {/* Labels */}
-          <text x="100" y="30" textAnchor="middle" className="text-[8px] font-bold fill-slate-400 uppercase tracking-wider">Pelvis</text>
-          <text x="100" y="235" textAnchor="middle" className="text-[8px] font-bold fill-slate-400 uppercase tracking-wider">Femur</text>
+          <text x="100" y="30" textAnchor="middle" className="text-[10px] font-bold fill-slate-400 uppercase tracking-wider">Pelvis</text>
+          <text x="100" y="235" textAnchor="middle" className="text-[10px] font-bold fill-slate-400 uppercase tracking-wider">Femur</text>
         </svg>
       )}
     </div>

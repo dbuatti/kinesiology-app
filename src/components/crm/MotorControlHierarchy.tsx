@@ -81,7 +81,7 @@ const MotorControlHierarchy = () => {
           <div key={item.id} className="flex flex-col items-center space-y-6 group">
             {/* Brainstem Region */}
             <div className={cn(
-              "w-full p-6 rounded-[2rem] border-2 text-center transition-all duration-500 group-hover:shadow-xl group-hover:-translate-y-1",
+              "w-full p-6 rounded-2xl border-2 text-center transition-all duration-500 group-hover:shadow-xl group-hover:-translate-y-1",
               item.lightColor, item.borderColor
             )}>
               <div className={cn(
@@ -93,7 +93,7 @@ const MotorControlHierarchy = () => {
                  item.id === 'medulla' ? <Activity size={24} /> : 
                  <Move size={24} />}
               </div>
-              <h4 className={cn("text-xl font-black", item.textColor)}>{item.title}</h4>
+              <h4 className={cn("text-xl font-semibold", item.textColor)}>{item.title}</h4>
             </div>
 
             {/* Connector Arrow */}
@@ -103,18 +103,18 @@ const MotorControlHierarchy = () => {
 
             {/* Motor Output Target */}
             <div className={cn(
-              "w-full p-6 rounded-[2rem] border-2 text-center transition-all duration-500 group-hover:shadow-xl",
+              "w-full p-6 rounded-2xl border-2 text-center transition-all duration-500 group-hover:shadow-xl",
               item.targetLight, item.targetBorder
             )}>
-              <p className={cn("text-2xl font-black mb-1", item.targetText)}>{item.target}</p>
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Motor Control</p>
+              <p className={cn("text-2xl font-semibold mb-1", item.targetText)}>{item.target}</p>
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Motor Control</p>
             </div>
 
             {/* Associated Nerves */}
             <div className="pt-4 flex flex-col items-center gap-2">
               <div className="w-0.5 h-8 bg-muted rounded-full" />
               <div className="p-4 bg-card rounded-2xl border border-border/50 shadow-sm text-center">
-                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-2">Associated Pathway</p>
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Associated Pathway</p>
                 {item.nerves.map(nerve => (
                   <p key={nerve} className="text-xs font-bold text-foreground/80">{nerve}</p>
                 ))}
@@ -124,13 +124,13 @@ const MotorControlHierarchy = () => {
         ))}
       </div>
 
-      <Card className="border-none shadow-lg rounded-[2.5rem] bg-foreground text-primary-foreground overflow-hidden">
+      <Card className="border-none shadow-lg rounded-2xl bg-foreground text-primary-foreground overflow-hidden">
         <CardContent className="p-8 flex flex-col md:flex-row items-center gap-8">
-          <div className="w-20 h-20 rounded-[1.5rem] bg-indigo-600 flex items-center justify-center shrink-0 shadow-2xl shadow-indigo-500/20">
+          <div className="w-20 h-20 rounded-2xl bg-indigo-600 flex items-center justify-center shrink-0 shadow-2xl shadow-indigo-500/20">
             <Workflow size={40} className="text-primary-foreground" />
           </div>
           <div className="space-y-2">
-            <h4 className="text-xl font-black flex items-center gap-2">
+            <h4 className="text-xl font-semibold flex items-center gap-2">
               <Info size={20} className="text-indigo-400" /> Clinical Application
             </h4>
             <p className="text-muted-foreground font-medium leading-relaxed">

@@ -91,14 +91,14 @@ export const RecheckSection = ({
             </span>
           </div>
         </div>
-        <Badge variant="outline" className="border-border text-muted-foreground text-[8px] px-1.5 py-0 rounded-full">
+        <Badge variant="outline" className="border-border text-muted-foreground text-[10px] px-1.5 py-0 rounded-full">
           {recheckItems.length}
         </Badge>
       </button>
 
       {expanded && (
         <div className="px-4 pb-4 space-y-1.5 border-t border-border">
-          <p className="text-[9px] text-muted-foreground pt-2 leading-relaxed">
+          <p className="text-[10px] text-muted-foreground pt-2 leading-relaxed">
             Re-check each finding from the previous session. Mark as resolved or carry forward as a priority.
           </p>
           {recheckItems.map((item, i) => (
@@ -124,7 +124,7 @@ export const RecheckSection = ({
                     {item.side ? `${item.side}: ${item.name}` : item.name}
                   </span>
                   {item.correctionSummary && (
-                    <span className="text-[8px] text-muted-foreground block truncate">
+                    <span className="text-[10px] text-muted-foreground block truncate">
                       Last: {item.correctionSummary.split('|')[0]?.trim()}
                     </span>
                   )}
@@ -136,7 +136,7 @@ export const RecheckSection = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => onMarkResolved(item.name)}
-                  className="h-6 px-2 text-[8px] font-medium text-chart-emerald hover:bg-chart-emerald/10 rounded-md"
+                  className="h-6 px-2 text-[10px] font-medium text-chart-emerald hover:bg-chart-emerald/10 rounded-md"
                 >
                   <CheckCircle2 size={10} className="mr-1" /> Resolved
                 </Button>
@@ -144,7 +144,7 @@ export const RecheckSection = ({
                   variant="ghost"
                   size="sm"
                   onClick={() => onSetPriority(item.name)}
-                  className="h-6 px-2 text-[8px] font-medium text-chart-primary hover:bg-chart-primary/10 rounded-md"
+                  className="h-6 px-2 text-[10px] font-medium text-chart-primary hover:bg-chart-primary/10 rounded-md"
                 >
                   <ArrowRight size={10} className="mr-1" /> Set 1°
                 </Button>

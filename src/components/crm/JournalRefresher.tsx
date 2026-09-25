@@ -60,15 +60,15 @@ const JournalRefresher = ({ reflectionId, className }: JournalRefresherProps) =>
       <HoverCardContent 
         side="left" 
         align="start" 
-        className="w-80 p-0 rounded-[2rem] border-none shadow-3xl bg-card overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className="w-80 p-0 rounded-2xl border-none shadow-3xl bg-card overflow-hidden animate-in fade-in zoom-in-95 duration-200"
       >
         <div className="bg-indigo-600 p-4 text-primary-foreground flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MessageSquare size={14} className="text-indigo-200" />
-            <span className="text-[10px] font-black uppercase tracking-widest">Journal Refresher</span>
+            <span className="text-[10px] font-semibold uppercase tracking-wider">Journal Refresher</span>
           </div>
           {reflection && (
-            <span className="text-[8px] font-bold opacity-70">
+            <span className="text-[10px] font-bold opacity-70">
               {format(new Date(reflection.created_at), "MMM d, yyyy")}
             </span>
           )}
@@ -82,11 +82,11 @@ const JournalRefresher = ({ reflectionId, className }: JournalRefresherProps) =>
           ) : reflection ? (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="bg-muted/50 border-border/50 text-muted-foreground text-[8px] font-black uppercase px-1.5 py-0">
+                <Badge variant="outline" className="bg-muted/50 border-border/50 text-muted-foreground text-[10px] font-semibold uppercase px-1.5 py-0">
                   {reflection.category}
                 </Badge>
                 {reflection.appointments?.clients?.name && (
-                  <Badge className="bg-indigo-50 text-indigo-600 border-none text-[8px] font-black uppercase px-1.5 py-0">
+                  <Badge className="bg-indigo-50 text-indigo-600 border-none text-[10px] font-semibold uppercase px-1.5 py-0">
                     Client: {reflection.appointments.clients.name}
                   </Badge>
                 )}
@@ -102,7 +102,7 @@ const JournalRefresher = ({ reflectionId, className }: JournalRefresherProps) =>
               </ScrollArea>
 
               <div className="pt-4 border-t border-border/50 flex items-center justify-between">
-                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Source Reflection</p>
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Source Reflection</p>
                 <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
               </div>
             </div>

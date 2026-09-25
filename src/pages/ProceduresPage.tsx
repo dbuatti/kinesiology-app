@@ -207,11 +207,11 @@ export function ProceduresTool() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex justify-center mb-4">
-            <TabsList className="grid w-full grid-cols-2 h-14 bg-muted p-1.5 rounded-xl">
-              <TabsTrigger value="mastery" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
+            <TabsList className="grid w-full sm:w-auto sm:inline-grid grid-cols-2 h-10 bg-muted p-1 rounded-xl">
+              <TabsTrigger value="mastery" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px]">
                 <TrendingUp size={14} /> Clinical Mastery
               </TabsTrigger>
-              <TabsTrigger value="reference" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
+              <TabsTrigger value="reference" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px]">
                 <Zap size={14} /> Protocol Reference
               </TabsTrigger>
             </TabsList>
@@ -239,7 +239,7 @@ export function ProceduresTool() {
                     <Button 
                       onClick={handleCommitFocus}
                       disabled={committing}
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-12 px-8 font-medium text-xs uppercase tracking-wider shadow-sm"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-12 px-8 font-medium text-xs shadow-sm"
                     >
                       {committing ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 size={18} className="mr-2" />}
                       Commit to this Focus
@@ -334,7 +334,7 @@ export function ProceduresTool() {
                         size="sm" 
                         onClick={() => setActiveCategory(cat as any)}
                         className={cn(
-                          "rounded-md h-9 px-4 font-medium text-[10px] uppercase tracking-wider", 
+                          "rounded-md h-9 px-4 font-medium text-[11px]", 
                           activeCategory === cat ? "bg-card text-chart-primary shadow-sm hover:bg-card" : "text-muted-foreground"
                         )}
                       >
@@ -348,7 +348,7 @@ export function ProceduresTool() {
                       variant={sortBy === 'most' ? 'default' : 'ghost'} 
                       size="sm" 
                       onClick={() => setSortBy('most')}
-                      className={cn("rounded-md h-9 px-3 font-medium text-[10px] uppercase tracking-wider", sortBy === 'most' ? "bg-card text-chart-primary shadow-sm" : "text-muted-foreground")}
+                      className={cn("rounded-md h-9 px-3 font-medium text-[11px]", sortBy === 'most' ? "bg-card text-chart-primary shadow-sm" : "text-muted-foreground")}
                     >
                       Most Logged
                     </Button>
@@ -356,7 +356,7 @@ export function ProceduresTool() {
                       variant={sortBy === 'least' ? 'default' : 'ghost'} 
                       size="sm" 
                       onClick={() => setSortBy('least')}
-                      className={cn("rounded-md h-9 px-3 font-medium text-[10px] uppercase tracking-wider", sortBy === 'least' ? "bg-card text-chart-destructive shadow-sm" : "text-muted-foreground")}
+                      className={cn("rounded-md h-9 px-3 font-medium text-[11px]", sortBy === 'least' ? "bg-card text-chart-destructive shadow-sm" : "text-muted-foreground")}
                     >
                       Least Logged
                     </Button>
@@ -364,7 +364,7 @@ export function ProceduresTool() {
                       variant={sortBy === 'dysfunction' ? 'default' : 'ghost'} 
                       size="sm" 
                       onClick={() => setSortBy('dysfunction')}
-                      className={cn("rounded-md h-9 px-3 font-medium text-[10px] uppercase tracking-wider", sortBy === 'dysfunction' ? "bg-card text-chart-primary shadow-sm" : "text-muted-foreground")}
+                      className={cn("rounded-md h-9 px-3 font-medium text-[11px]", sortBy === 'dysfunction' ? "bg-card text-chart-primary shadow-sm" : "text-muted-foreground")}
                     >
                       High Dysfunction
                     </Button>
@@ -398,59 +398,59 @@ export function ProceduresTool() {
 
               <Tabs value={protocolTab} onValueChange={setProtocolTab} className="w-full">
                 <div className="mb-5 overflow-x-auto">
-                  <TabsList className="inline-flex h-12 items-center rounded-xl bg-muted p-1 text-muted-foreground border border-border">
+                  <TabsList className="inline-flex h-10 items-center rounded-xl bg-muted p-1 text-muted-foreground ">
                     <TabsTrigger 
                       value="cranial-nerves" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
                       <Brain className="h-4 w-4 mr-1.5" />
                       Nerves
                     </TabsTrigger>
                     <TabsTrigger 
                       value="primitive-reflexes" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
                       <Zap className="h-4 w-4 mr-1.5" />
                       Reflexes
                     </TabsTrigger>
                     <TabsTrigger 
                       value="brain-zones" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
                       <Activity className="h-4 w-4 mr-1.5" />
                       Brain Zones
                     </TabsTrigger>
                     <TabsTrigger 
                       value="muscles" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
                       <Dumbbell className="h-4 w-4 mr-1.5" />
                       Muscles
                     </TabsTrigger>
                     <TabsTrigger 
                       value="mechanoreceptive" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
                       <Activity className="h-4 w-4 mr-1.5" />
                       Mechano
                     </TabsTrigger>
                     <TabsTrigger 
                       value="emotions" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
                       <Heart className="h-4 w-4 mr-1.5" />
                       Emotions
                     </TabsTrigger>
                     <TabsTrigger 
                       value="heart-wall" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
                       <Shield className="h-4 w-4 mr-1.5" />
                       Heart Wall
                     </TabsTrigger>
                     <TabsTrigger 
                       value="trauma-clearing" 
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-xs font-medium transition-all data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm"
                     >
                       <Wind className="h-4 w-4 mr-1.5" />
                       Trauma

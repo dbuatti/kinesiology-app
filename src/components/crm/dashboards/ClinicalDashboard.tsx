@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sun, ShieldAlert, ClipboardCheck, Sparkles, Check } from "lucide-react";
+import { Sun, ShieldAlert, ClipboardCheck, Sparkles, Check, ArrowUpRight } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import PractitionerGrounding from "../PractitionerGrounding";
@@ -35,71 +35,79 @@ const ClinicalDashboard = ({ stats, todaySessions, activeSession, morningProgres
   ];
 
   return (
-    <div className="space-y-4 md:space-y-6 animate-in fade-in duration-700">
+    <div className="space-y-5 md:space-y-6">
 
       {/* ROW 1: Stats */}
       <DashboardStats stats={stats} />
 
-      {/* ROW 2: Daily Mission — compact pill bar */}
-      <div className="flex flex-wrap items-center gap-3 px-2">
-        {missions.map((m, i) => (
-          <Button
-            key={i}
-            asChild
-            variant="ghost"
-            className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-500 h-auto",
-              m.status === 'done'
-                ? "bg-emerald-50 border-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400"
-                : "bg-muted/50 border-border text-muted-foreground hover:border-primary/40 hover:bg-primary/5 hover:text-primary"
-            )}
-          >
-            <Link to={m.path}>
-              <m.icon size={14} className={cn(m.status === 'done' ? "text-emerald-500" : "opacity-50")} />
-              <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">{m.label}</span>
-              {m.status === 'done' && <Check size={12} className="ml-0.5 text-emerald-500" />}
+      {/* ROW 2: Today's checklist */}
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="mr-1 text-[13px] font-medium text-muted-foreground">Today</span>
+        {missions.map((m, i) => {
+          const done = m.status === 'done';
+          return (
+            <Link
+              key={i}
+              to={m.path}
+              className={cn(
+                "group inline-flex h-8 items-center gap-2 rounded-full border pl-2 pr-3 text-[13px] font-medium",
+                done
+                  ? "border-chart-emerald/25 bg-chart-emerald/[0.07] text-chart-emerald"
+                  : "border-border bg-card text-foreground/80 shadow-xs hover:border-foreground/15 hover:text-foreground"
+              )}
+            >
+              <span
+                className={cn(
+                  "flex h-4 w-4 items-center justify-center rounded-full border",
+                  done ? "border-transparent bg-chart-emerald text-white" : "border-muted-foreground/35 group-hover:border-primary/60"
+                )}
+              >
+                {done && <Check size={10} strokeWidth={3} />}
+              </span>
+              <span className={cn(done && "line-through decoration-chart-emerald/40")}>{m.label}</span>
             </Link>
-          </Button>
-        ))}
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50 hidden sm:inline">Daily Mission</span>
+          );
+        })}
       </div>
 
       {/* ROW 3: Practitioner Grounding + Morning Program */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
         <div className="lg:col-span-8">
           <PractitionerGrounding />
         </div>
         <div className="lg:col-span-4">
-          <Link to="/morning-program" className="block h-full">
-            <Card className="border border-border shadow-sm rounded-xl bg-card h-full overflow-hidden hover:border-primary/30 hover:shadow-md transition-all duration-500">
-              <CardContent className="p-5 flex flex-col justify-between h-full">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-primary">
-                    <Sun size={16} />
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.2em]">Morning Program</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-foreground">Daily Readiness</h3>
+          <Link to="/morning-program" className="group block h-full">
+            <div className="flex h-full min-h-[200px] flex-col justify-between rounded-2xl border border-border bg-card p-6 shadow-xs transition-shadow duration-300 group-hover:shadow-md">
+              <div>
+                <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
+                  <Sun size={15} className="text-chart-amber" />
+                  Morning program
+                  <ArrowUpRight size={14} className="ml-auto opacity-0 transition-opacity group-hover:opacity-60" />
                 </div>
-                <div className="space-y-3">
-                  <div className="flex justify-between text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    <span>Progress</span>
-                    <span className="text-primary">{morningProgress}%</span>
-                  </div>
-                  <Progress value={morningProgress} className="h-1.5 bg-muted [&>div]:bg-primary" />
+                <h3 className="mt-3 font-serif text-[26px] font-medium leading-tight tracking-[-0.02em] text-foreground">Daily readiness</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {morningProgress >= 100 ? "Complete — you're ready for the day." : morningProgress > 0 ? "Keep going — you're partway through." : "Not started yet today."}
+                </p>
+              </div>
+              <div className="mt-6 space-y-2">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Progress</span>
+                  <span className="font-medium tabular-nums text-foreground">{morningProgress}%</span>
                 </div>
-              </CardContent>
-            </Card>
+                <Progress value={morningProgress} className="h-1.5 bg-muted [&>div]:bg-primary [&>div]:transition-transform [&>div]:duration-700" />
+              </div>
+            </div>
           </Link>
         </div>
       </div>
 
       {/* ROW 4: Briefing + Scratchpad (left) / Activity + Upcoming (right) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-7 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
+        <div className="lg:col-span-7 space-y-4 md:space-y-6">
           <DailyBriefing todaySessions={todaySessions} activeSession={activeSession} />
           <Scratchpad />
         </div>
-        <div className="lg:col-span-5 space-y-6">
+        <div className="lg:col-span-5 space-y-4 md:space-y-6">
           <RecentActivity />
           <UpcomingAppointments />
         </div>

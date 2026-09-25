@@ -141,7 +141,7 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
               <p className="text-xs text-muted-foreground font-medium">Private insights for this session with {clientName}.</p>
             </div>
           </div>
-          <Button variant="outline" size="sm" asChild className="rounded-xl h-10 px-4 font-bold text-[10px] uppercase tracking-widest border-indigo-100 text-indigo-600 hover:bg-indigo-50">
+          <Button variant="outline" size="sm" asChild className="rounded-xl h-10 px-4 font-bold text-[11px] border-indigo-100 text-indigo-600 hover:bg-indigo-50">
             <Link to="/practice/journal">
               <ExternalLink size={14} className="mr-2" /> View Full Journal
             </Link>
@@ -157,13 +157,13 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
               onChange={(e) => setContent(e.target.value)}
             />
             <div className="flex justify-between items-center">
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                 <Brain size={14} className="text-indigo-400" /> AI will extract identity insights automatically
               </p>
               <Button 
                 onClick={handleSave} 
                 disabled={saving || !content.trim()}
-                className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-12 px-8 font-medium text-[10px] uppercase tracking-wider shadow-sm"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-12 px-8 font-medium text-[11px] shadow-sm"
               >
                 {saving ? <Loader2 className="mr-2 animate-spin" /> : <Save size={18} className="mr-2" />}
                 Log Reflection
@@ -175,7 +175,7 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
 
       <div className="space-y-6">
         <div className="flex items-center justify-between px-2">
-          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-[0.3em] flex items-center gap-2">
+          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <History size={16} /> Session Journal History
           </h3>
           <Badge variant="secondary" className="bg-muted text-muted-foreground border-none font-bold">
@@ -192,7 +192,7 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="text-[10px] font-medium text-indigo-600 uppercase tracking-widest">
+                      <span className="text-[10px] font-medium text-indigo-600 uppercase tracking-wider">
                         {format(new Date(ref.created_at), "MMM d, yyyy • h:mm a")}
                       </span>
                       {analyzingId === ref.id && (
@@ -212,7 +212,7 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
                     <div className="pt-4 border-t border-border/30 flex flex-wrap gap-2">
                       {ref.ai_extractions.map((ext: any, i: number) => (
                         <Badge key={i} variant="outline" className={cn(
-                          "text-[8px] font-medium uppercase tracking-widest px-2 py-0.5 rounded-md border-none",
+                          "text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-md border-none",
                           ext.type === 'belief' ? "bg-rose-50 text-rose-600" :
                           ext.type === 'shifting' ? "bg-indigo-50 text-indigo-600" :
                           ext.type === 'alignment' ? "bg-emerald-50 text-emerald-600" : "bg-muted text-muted-foreground"

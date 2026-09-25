@@ -77,11 +77,11 @@ const VoiceOnboardingPage = () => {
   if (submitted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 to-background p-4">
-        <div className="max-w-md w-full text-center space-y-6 bg-background rounded-[2.5rem] shadow-2xl p-12 border border-rose-100">
+        <div className="max-w-md w-full text-center space-y-6 bg-background rounded-2xl shadow-2xl p-12 border border-rose-100">
           <div className="w-20 h-20 rounded-3xl bg-emerald-50 flex items-center justify-center mx-auto">
             <CheckCircle2 size={40} className="text-emerald-500" />
           </div>
-          <h1 className="text-3xl font-black text-foreground">You're all set!</h1>
+          <h1 className="text-3xl font-semibold text-foreground">You're all set!</h1>
           <p className="text-muted-foreground font-medium">
             Your profile has been submitted. Daniele will review it before your first lesson.
           </p>
@@ -96,7 +96,7 @@ const VoiceOnboardingPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 to-background p-4">
-      <div className="max-w-lg w-full bg-background rounded-[2.5rem] shadow-2xl border border-rose-100 overflow-hidden">
+      <div className="max-w-lg w-full bg-background rounded-2xl shadow-2xl border border-rose-100 overflow-hidden">
         <div className="h-2 bg-gradient-to-r from-rose-400 to-rose-600" />
         <div className="p-10">
           <div className="flex items-center gap-4 mb-8">
@@ -104,21 +104,21 @@ const VoiceOnboardingPage = () => {
               <Mic size={26} />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-foreground">Voice Studio</h1>
+              <h1 className="text-2xl font-semibold text-foreground">Voice Studio</h1>
               <p className="text-sm text-muted-foreground font-medium">Complete your student profile</p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label className="text-xs font-black uppercase tracking-widest text-foreground">Email</Label>
+              <Label className="text-xs font-semibold uppercase tracking-wider text-foreground">Email</Label>
               <div className="h-12 rounded-2xl bg-rose-50 border border-rose-200 flex items-center px-4 text-sm font-bold text-foreground">
                 {decodedEmail}
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-black uppercase tracking-widest text-foreground">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-foreground">
                 Full Name <span className="text-rose-500">*</span>
               </Label>
               <Input
@@ -131,7 +131,7 @@ const VoiceOnboardingPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-black uppercase tracking-widest text-foreground">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-foreground">
                 Mobile Number <span className="text-muted-foreground font-normal normal-case tracking-normal">(optional)</span>
               </Label>
               <Input
@@ -144,7 +144,7 @@ const VoiceOnboardingPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-black uppercase tracking-widest text-foreground">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-foreground">
                 Goals <span className="text-muted-foreground font-normal normal-case tracking-normal">(what do you want to work on?)</span>
               </Label>
               <Textarea
@@ -156,7 +156,7 @@ const VoiceOnboardingPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-black uppercase tracking-widest text-foreground">Experience Level</Label>
+              <Label className="text-xs font-semibold uppercase tracking-wider text-foreground">Experience Level</Label>
               <select
                 value={experienceLevel}
                 onChange={(e) => setExperienceLevel(e.target.value)}
@@ -171,7 +171,7 @@ const VoiceOnboardingPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-black uppercase tracking-widest text-foreground">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-foreground">
                 Additional Notes <span className="text-muted-foreground font-normal normal-case tracking-normal">(optional)</span>
               </Label>
               <Textarea
@@ -186,7 +186,7 @@ const VoiceOnboardingPage = () => {
               type="submit"
               disabled={submitting || !studentName.trim()}
               className={cn(
-                "w-full h-14 rounded-[1.5rem] font-black text-sm uppercase tracking-widest gap-2 transition-all",
+                "w-full h-14 rounded-2xl font-semibold text-sm gap-2 transition-all",
                 "bg-rose-500 hover:bg-rose-600 text-primary-foreground shadow-xl shadow-rose-200"
               )}
             >

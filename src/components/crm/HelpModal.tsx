@@ -55,7 +55,7 @@ const HelpModal = ({ open, onOpenChange }: HelpModalProps) => {
 
         <div className="space-y-8 py-4">
           <section>
-            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
               <Clock size={14} /> Session Timer Stages (60m Total)
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
@@ -63,7 +63,7 @@ const HelpModal = ({ open, onOpenChange }: HelpModalProps) => {
                 <div key={s.name} className="flex flex-col items-center text-center p-3 bg-muted/50 rounded-xl border border-border/50">
                   <s.icon size={20} className={cn("mb-2", s.color)} />
                   <span className="text-[10px] font-bold text-foreground leading-tight mb-1">{s.name}</span>
-                  <span className="text-[10px] font-black text-muted-foreground">{s.time}</span>
+                  <span className="text-[10px] font-semibold text-muted-foreground">{s.time}</span>
                 </div>
               ))}
             </div>
@@ -73,7 +73,7 @@ const HelpModal = ({ open, onOpenChange }: HelpModalProps) => {
           </section>
 
           <section>
-            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
+            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
               <Command size={14} /> Keyboard Shortcuts
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -89,7 +89,7 @@ const HelpModal = ({ open, onOpenChange }: HelpModalProps) => {
           </section>
 
           <section>
-            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-3">Pro Tips</h3>
+            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">Pro Tips</h3>
             <div className="space-y-3">
               <Card className="border-none shadow-sm bg-indigo-50/50">
                 <CardContent className="p-4 flex gap-4">

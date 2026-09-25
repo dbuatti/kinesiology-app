@@ -429,7 +429,7 @@ const JournalPage = () => {
                 variant="outline" 
                 onClick={handleScanAll}
                 disabled={isScanning || reflections.length === 0}
-                className="rounded-xl h-12 px-6 font-medium text-xs uppercase tracking-wider text-chart-primary hover:bg-muted"
+                className="rounded-xl h-12 px-6 font-medium text-xs text-chart-primary hover:bg-muted"
               >
                 {isScanning ? <Loader2 className="animate-spin mr-2" /> : <Wand2 size={18} className="mr-2" />}
                 Scan All
@@ -438,7 +438,7 @@ const JournalPage = () => {
                 variant="outline" 
                 onClick={() => handleAddAllToBacklog()}
                 disabled={isAddingAll || reflections.length === 0}
-                className="rounded-xl h-12 px-6 font-medium text-xs uppercase tracking-wider border-border text-chart-emerald hover:bg-muted"
+                className="rounded-xl h-12 px-6 font-medium text-xs border-border text-chart-emerald hover:bg-muted"
               >
                 {isAddingAll ? <Loader2 className="animate-spin mr-2" /> : <Layers size={18} className="mr-2" />}
                 Add All to Backlog
@@ -465,11 +465,11 @@ const JournalPage = () => {
           </div>
         ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 h-14 bg-muted/50 p-1.5 rounded-xl mb-8">
-            <TabsTrigger value="log" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
+          <TabsList className="grid w-full sm:w-auto sm:inline-grid grid-cols-2 h-10 bg-muted/50 p-1 rounded-xl mb-8">
+            <TabsTrigger value="log" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px]">
               <BookOpen size={14} /> Journal Log
             </TabsTrigger>
-            <TabsTrigger value="meetup" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
+            <TabsTrigger value="meetup" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px]">
               <GraduationCap size={14} /> Meetup Questions
             </TabsTrigger>
           </TabsList>
@@ -484,7 +484,7 @@ const JournalPage = () => {
                         key={cat.id}
                         onClick={() => setCategory(cat.id)}
                         className={cn(
-                          "px-4 py-2 rounded-xl text-[10px] font-semibold uppercase tracking-wider transition-all flex items-center gap-2 border-2",
+                          "px-4 py-2 rounded-xl text-[11px] font-semibold transition-all flex items-center gap-2 border-2",
                           category === cat.id 
                             ? "bg-primary border-primary text-primary-foreground shadow-sm" 
                             : "bg-card border-border text-muted-foreground hover:border-border hover:text-foreground"
@@ -501,7 +501,7 @@ const JournalPage = () => {
                       value={selectedAppointmentId || "none"} 
                       onValueChange={(v) => setSelectedAppointmentId(v === "none" ? null : v)}
                     >
-                      <SelectTrigger className="h-10 rounded-xl border-border bg-muted font-medium text-[10px] uppercase tracking-wider">
+                      <SelectTrigger className="h-10 rounded-xl border-border bg-muted font-medium text-[11px]">
                         <div className="flex items-center gap-2">
                           <LinkIcon size={14} className="text-muted-foreground/40" />
                           <SelectValue placeholder="Link to Session" />
@@ -530,7 +530,7 @@ const JournalPage = () => {
                   <Button 
                     onClick={handleSave} 
                     disabled={saving || !content.trim()}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-14 px-10 font-semibold text-xs uppercase tracking-wider shadow-sm"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-14 px-10 font-semibold text-xs shadow-sm"
                   >
                     {saving ? <Loader2 className="mr-2 animate-spin" /> : <Save size={18} className="mr-2" />}
                     Save & Analyze
@@ -569,7 +569,7 @@ const JournalPage = () => {
                               </Badge>
                               {ref.appointments ? (
                                 <Link to={`/appointments/${ref.appointments.id}`}>
-                                  <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5">
+                                  <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[11px] px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5">
                                     <Zap size={10} className="fill-current" />
                                     Session: {ref.appointments.clients?.name}
                                   </Badge>
@@ -592,7 +592,7 @@ const JournalPage = () => {
                             </div>
                           ) : (
                             extractions.length === 0 && (
-                              <Button variant="ghost" size="sm" onClick={() => handleAnalyze(ref)} className="h-9 px-4 rounded-xl text-chart-primary hover:bg-muted font-semibold text-[10px] uppercase tracking-wider">
+                              <Button variant="ghost" size="sm" onClick={() => handleAnalyze(ref)} className="h-9 px-4 rounded-xl text-chart-primary hover:bg-muted font-semibold text-[11px]">
                                 <Wand2 size={14} className="mr-2" /> Extract Insights
                               </Button>
                             )
@@ -618,7 +618,7 @@ const JournalPage = () => {
                                 size="sm" 
                                 onClick={() => handleAddAllToBacklog(ref.id)}
                                 disabled={addingToBacklog === `all-${ref.id}`}
-                                className="h-7 px-3 rounded-lg border-border text-chart-primary hover:bg-muted font-semibold text-[10px] uppercase tracking-wider"
+                                className="h-7 px-3 rounded-lg border-border text-chart-primary hover:bg-muted font-semibold text-[11px]"
                               >
                                 {addingToBacklog === `all-${ref.id}` ? <Loader2 size={10} className="animate-spin mr-1.5" /> : <Layers size={10} className="mr-1.5" />}
                                 Add All to Backlog
@@ -667,7 +667,7 @@ const JournalPage = () => {
                                       size="sm" 
                                       onClick={() => handleAddToBacklog(ref.id, item, i)}
                                       disabled={isAddingThis}
-                                      className="h-9 px-3 rounded-xl text-chart-primary hover:bg-muted font-semibold text-[10px] uppercase tracking-wider"
+                                      className="h-9 px-3 rounded-xl text-chart-primary hover:bg-muted font-semibold text-[11px]"
                                     >
                                       {isAddingThis ? <Loader2 size={12} className="animate-spin mr-1.5" /> : <PlusCircle size={14} className="mr-1.5" />}
                                       Add
@@ -735,7 +735,7 @@ const JournalPage = () => {
                             setRespondingToId(q.id);
                             setTempResponse("");
                           }}
-                          className="rounded-xl h-11 px-6 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm font-semibold text-[10px] uppercase tracking-wider"
+                          className="rounded-xl h-11 px-6 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm font-semibold text-[11px]"
                         >
                           <MessageCircle size={14} className="mr-2" /> Add Response
                         </Button>
@@ -759,7 +759,7 @@ const JournalPage = () => {
                           <Button 
                             onClick={() => handleSaveResponse(q)}
                             disabled={!tempResponse.trim()}
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-10 px-6 font-semibold text-[10px] uppercase tracking-wider shadow-sm"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-10 px-6 font-semibold text-[11px] shadow-sm"
                           >
                             Save & Archive
                           </Button>

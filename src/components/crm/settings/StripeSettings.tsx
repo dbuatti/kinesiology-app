@@ -43,7 +43,7 @@ const StripeSettings = () => {
   return (
     <Card className="border-none shadow-xl rounded-xl bg-card overflow-hidden border-2 border-indigo-100 dark:border-indigo-900/30">
       <CardHeader className="p-4 pb-4 bg-indigo-50/50">
-        <CardTitle className="text-xl font-black flex items-center gap-3 text-indigo-900">
+        <CardTitle className="text-xl font-semibold flex items-center gap-3 text-indigo-900">
           <CreditCard size={24} /> Stripe Clinical Payments
         </CardTitle>
         <CardDescription className="text-indigo-700 font-medium">Link your CRM clients to Stripe for seamless Tap-to-Pay and invoicing.</CardDescription>
@@ -74,7 +74,7 @@ const StripeSettings = () => {
         <div className="p-4 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-100 dark:border-amber-900/30 space-y-3">
           <div className="flex items-center gap-2">
             <Info size={16} className="text-amber-600" />
-            <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest">Automation Active</p>
+            <p className="text-[10px] font-semibold text-amber-600 uppercase tracking-wider">Automation Active</p>
           </div>
           <p className="text-xs text-amber-800 dark:text-amber-200 font-medium">
             New bookings from Cal.com will now automatically create Stripe customers. Use the button above to sync your current database.

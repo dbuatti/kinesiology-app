@@ -28,7 +28,7 @@ const DocToggle = ({ options, value, onChange }: { options: { label: string, val
         type="button"
         onClick={() => onChange(opt.value)}
         className={cn(
-          "px-2 py-1 text-[10px] font-semibold uppercase rounded-sm transition-all",
+          "px-2 py-1 text-[11px] font-semibold rounded-sm transition-all",
           value === opt.value ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
         )}
       >
@@ -229,7 +229,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                   <Button 
                     type="button"
                     onClick={stopBolt} 
-                    className="h-10 px-6 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-xl text-xs font-semibold uppercase tracking-wider"
+                    className="h-10 px-6 bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-xl text-xs font-semibold"
                   >
                     Stop
                   </Button>
@@ -237,7 +237,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                   <Button 
                     type="button"
                     onClick={startBolt} 
-                    className="h-10 px-6 bg-foreground text-background hover:bg-foreground/90 rounded-xl text-xs font-semibold uppercase tracking-wider"
+                    className="h-10 px-6 bg-foreground text-background hover:bg-foreground/90 rounded-xl text-xs font-semibold"
                   >
                     Start BOLT
                   </Button>
@@ -247,7 +247,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     type="button"
                     onClick={saveBolt} 
                     disabled={savingBolt}
-                    className="h-10 px-6 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-semibold uppercase tracking-wider"
+                    className="h-10 px-6 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-semibold"
                   >
                     {savingBolt ? <Loader2 className="animate-spin" /> : <Save size={14} className="mr-1.5" />}
                     Save Score
@@ -318,7 +318,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                 <Button 
                   type="button"
                   onClick={calculateCoherence}
-                  className="h-10 px-6 bg-foreground text-background hover:bg-foreground/90 rounded-xl text-xs font-semibold uppercase tracking-wider"
+                  className="h-10 px-6 bg-foreground text-background hover:bg-foreground/90 rounded-xl text-xs font-semibold"
                 >
                   Calculate
                 </Button>
@@ -327,7 +327,7 @@ const PreliminarySection = ({ appointment, saveField }: PreliminarySectionProps)
                     type="button"
                     onClick={saveCoherence}
                     disabled={savingCoherence}
-                    className="h-10 px-6 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-semibold uppercase tracking-wider"
+                    className="h-10 px-6 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl text-xs font-semibold"
                   >
                     {savingCoherence ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} className="mr-1.5" />}
                     Save Coherence

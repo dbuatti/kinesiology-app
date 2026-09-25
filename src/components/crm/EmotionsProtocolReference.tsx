@@ -127,7 +127,7 @@ const EmotionsProtocolReference = () => {
             >
               <div className="flex items-start gap-6">
                 <div className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 font-black text-sm shadow-sm transition-transform group-hover:scale-105",
+                  "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 font-semibold text-sm shadow-sm transition-transform group-hover:scale-105",
                   step.bg, step.color
                 )}>
                   {step.id}
@@ -137,7 +137,7 @@ const EmotionsProtocolReference = () => {
                     <h4 className="font-serif font-bold text-xl text-foreground">
                       {step.title}
                     </h4>
-                    <Badge variant="outline" className="border-border/50 text-muted-foreground font-black text-[7px] uppercase tracking-widest px-1.5 py-0 rounded-none">
+                    <Badge variant="outline" className="border-border/50 text-muted-foreground font-semibold text-[7px] uppercase tracking-wider px-1.5 py-0 rounded-none">
                       Step {step.id}
                     </Badge>
                   </div>
@@ -151,7 +151,7 @@ const EmotionsProtocolReference = () => {
                       {step.details.map((detail, idx) => (
                         <div key={idx} className="flex flex-col p-3 rounded-xl bg-muted/50 border border-border/50">
                           <div className="flex items-center gap-2 mb-1">
-                            <Badge variant="outline" className="bg-card border-border text-[8px] font-black uppercase tracking-widest px-1.5 py-0 rounded-none">
+                            <Badge variant="outline" className="bg-card border-border text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0 rounded-none">
                               {detail.label}
                             </Badge>
                             <span className="text-xs font-bold text-foreground">{detail.items}</span>
@@ -175,15 +175,15 @@ const EmotionsProtocolReference = () => {
         <div className="lg:col-span-5 space-y-8">
           <div className="sticky top-8 space-y-8">
             {/* Pulse Points Reference */}
-            <Card className="border-none shadow-xl rounded-[2.5rem] bg-card overflow-hidden border-2 border-indigo-100">
+            <Card className="border-none shadow-xl rounded-2xl bg-card overflow-hidden border-2 border-indigo-100">
               <CardHeader className="bg-indigo-600 p-6 text-primary-foreground">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-card/20 flex items-center justify-center shadow-inner">
                     <Hand size={20} />
                   </div>
                   <div>
-                    <CardTitle className="text-lg font-black">Organ Pulse Points</CardTitle>
-                    <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-widest">TCM Diagnostic Reference</p>
+                    <CardTitle className="text-lg font-semibold">Organ Pulse Points</CardTitle>
+                    <p className="text-indigo-200 text-[10px] font-bold uppercase tracking-wider">TCM Diagnostic Reference</p>
                   </div>
                 </div>
               </CardHeader>
@@ -200,7 +200,7 @@ const EmotionsProtocolReference = () => {
                       if (parent) {
                         const placeholder = document.createElement('div');
                         placeholder.className = "flex flex-col items-center text-muted-foreground/60 gap-2";
-                        placeholder.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg><p class="text-[10px] font-black uppercase tracking-widest">Pulse Points Diagram</p>';
+                        placeholder.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg><p class="text-[10px] font-semibold uppercase tracking-wider">Pulse Points Diagram</p>';
                         parent.appendChild(placeholder);
                       }
                     }}
@@ -209,7 +209,7 @@ const EmotionsProtocolReference = () => {
                 <div className="mt-6 p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
                   <div className="flex items-center gap-2 mb-2">
                     <Info size={14} className="text-indigo-600" />
-                    <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Clinical Tip</span>
+                    <span className="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider">Clinical Tip</span>
                   </div>
                   <p className="text-xs text-indigo-900 font-medium leading-relaxed">
                     Hold the pulse point corresponding to the priority organ identified in Step 6. Use light pressure for Yang organs and deep pressure for Yin organs.
@@ -219,9 +219,9 @@ const EmotionsProtocolReference = () => {
             </Card>
 
             {/* Eye Accessing Cues */}
-            <Card className="border-none shadow-lg rounded-[2.5rem] bg-foreground text-primary-foreground overflow-hidden">
+            <Card className="border-none shadow-lg rounded-2xl bg-foreground text-primary-foreground overflow-hidden">
               <CardHeader className="p-6 pb-2">
-                <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-2">
+                <CardTitle className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                   <Eye size={14} /> Eye Accessing Cues (NLP)
                 </CardTitle>
               </CardHeader>
@@ -241,12 +241,12 @@ const EmotionsProtocolReference = () => {
       </div>
 
       {/* Clinical Note */}
-      <div className="mt-12 p-8 bg-muted/50 rounded-[2rem] border border-border/50 flex items-start gap-6">
+      <div className="mt-12 p-8 bg-muted/50 rounded-2xl border border-border/50 flex items-start gap-6">
         <div className="w-12 h-12 rounded-2xl bg-card flex items-center justify-center text-indigo-600 shadow-sm shrink-0">
           <Info size={24} />
         </div>
         <div className="space-y-2">
-          <p className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.3em]">Clinical Mastery Note</p>
+          <p className="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider">Clinical Mastery Note</p>
           <p className="text-sm text-muted-foreground font-medium leading-relaxed italic">
             "The shift occurs when the client can distinguish between the 'me' (the observer) and the 'not-me' (the identity/emotion). 
             Always wait for a clear parasympathetic response: Yawning, Sighing, Swallowing, Gurgling, or a spontaneous Deep Breath before proceeding to the Positive Upload."

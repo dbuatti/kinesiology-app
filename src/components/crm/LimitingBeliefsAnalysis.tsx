@@ -230,7 +230,7 @@ const LimitingBeliefsAnalysis = () => {
         <div className="flex items-center gap-2">
           <Icon size={14} className={color} />
           <h4 className="text-xs font-semibold tracking-wide uppercase text-foreground/80">{title}</h4>
-          <Badge variant="secondary" className="ml-auto text-[9px] h-4 px-1.5">{items.length}</Badge>
+          <Badge variant="secondary" className="ml-auto text-[10px] h-4 px-1.5">{items.length}</Badge>
         </div>
         {items.length === 0 ? (
           <p className="text-[10px] text-muted-foreground italic">{emptyMsg}</p>
@@ -288,8 +288,8 @@ const LimitingBeliefsAnalysis = () => {
                 return (
                   <SelectItem key={s.id} value={s.id} className="text-xs">
                     <span className="truncate max-w-[280px] inline-block align-middle">{belief}</span>
-                    <span className="text-[9px] text-muted-foreground ml-2">{date}</span>
-                    {s.is_complete && <span className="text-[9px] text-chart-emerald ml-1">✓</span>}
+                    <span className="text-[10px] text-muted-foreground ml-2">{date}</span>
+                    {s.is_complete && <span className="text-[10px] text-chart-emerald ml-1">✓</span>}
                   </SelectItem>
                 );
               })}

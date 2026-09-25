@@ -103,9 +103,9 @@ const PricingSettings = () => {
   };
 
   return (
-    <Card className="border-2 border-emerald-100 dark:border-emerald-900/30 shadow-xl rounded-[2.5rem] bg-card overflow-hidden">
+    <Card className="border-2 border-emerald-100 dark:border-emerald-900/30 shadow-xl rounded-2xl bg-card overflow-hidden">
       <CardHeader className="p-8 pb-4 bg-emerald-50/50 dark:bg-emerald-950/10">
-        <CardTitle className="text-xl font-black flex items-center gap-3 text-emerald-900 dark:text-emerald-200">
+        <CardTitle className="text-xl font-semibold flex items-center gap-3 text-emerald-900 dark:text-emerald-200">
           <DollarSign size={24} /> Appointment Pricing
         </CardTitle>
         <CardDescription className="text-emerald-700 dark:text-emerald-300/80 font-medium">

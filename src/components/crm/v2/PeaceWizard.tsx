@@ -206,7 +206,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
                 className={cn(
                   "flex flex-col items-center gap-2 transition-all group flex-1",
                   !canJump && "opacity-40 cursor-not-allowed",
-                  canJump && "cursor-pointer hover:scale-105"
+                  canJump && "cursor-pointer hover:scale-[1.03]"
                 )}
               >
                 <div className={cn(
@@ -229,7 +229,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
                     {phase.label}
                   </span>
                   <span className={cn(
-                    "hidden md:block text-[9px] font-medium uppercase tracking-wider",
+                    "hidden md:block text-[11px] font-medium",
                     isActive ? "text-primary/70" : "text-muted-foreground/60"
                   )}>
                     {phase.fullLabel}
@@ -247,7 +247,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
             return (
               <>
                 <span className={cn(
-                  "text-[10px] font-black uppercase tracking-wider",
+                  "text-[10px] font-semibold uppercase tracking-wider",
                   activeIsComplete ? "text-chart-emerald" : "text-muted-foreground/70"
                 )}>
                   {activeIsComplete ? "Complete" : "To complete this phase"}

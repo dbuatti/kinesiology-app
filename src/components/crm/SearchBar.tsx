@@ -35,7 +35,7 @@ interface SearchResult {
 
 const RECENT_SEARCHES_KEY = "rk_recent_searches";
 
-const SearchBar = ({ compact = false }: { compact?: boolean }) => {
+const SearchBar = ({ compact = false, responsive = false }: { compact?: boolean; responsive?: boolean }) => {
   const [open, setOpen] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [recentSearches, setRecentSearches] = useState<SearchResult[]>([]);
@@ -243,48 +243,47 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
 
   return (
     <>
-      {compact ? (
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" onClick={() => setOpen(true)} className="w-8 h-8 rounded-lg text-muted-foreground hover:text-foreground" title="Search (⌘K)">
-            <Search size={16} />
-          </Button>
-          <kbd className="hidden md:inline-flex h-4 select-none items-center gap-0.5 rounded border bg-muted px-1 font-mono text-[9px] font-bold text-muted-foreground pointer-events-none">
-            ⌘K
-          </kbd>
-        </div>
-      ) : (
+      {(compact || responsive) && (
         <button
           onClick={() => setOpen(true)}
-          className="flex items-center justify-center lg:justify-start gap-3 px-3 lg:px-4 py-2.5 text-sm text-muted-foreground bg-muted/50 dark:bg-foreground/50 border border-border/50 dark:border-foreground/20 rounded-2xl hover:bg-card dark:hover:bg-foreground hover:shadow-md transition-all w-full group"
+          className={cn("flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-foreground/[0.05] hover:text-foreground", responsive && "lg:hidden")}
+          title="Search (⌘K)"
+          aria-label="Search"
         >
-          <Search size={16} className="group-hover:text-chart-primary transition-colors shrink-0" />
-          <span className="font-medium hidden lg:inline">Command Center...</span>
-          <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded-lg border bg-card dark:bg-foreground px-2 font-mono text-[10px] font-black text-muted-foreground shadow-sm hidden lg:inline-flex">
-            <span className="text-xs">⌘</span>K
-          </kbd>
+          <Search size={16} strokeWidth={1.9} />
+        </button>
+      )}
+      {!compact && (
+        <button
+          onClick={() => setOpen(true)}
+          className={cn(
+            "group h-8 w-full items-center gap-2 rounded-lg border border-border bg-card pl-2.5 pr-1.5 text-[13px] text-muted-foreground shadow-xs hover:border-foreground/15 hover:text-foreground",
+            responsive ? "hidden lg:flex" : "flex"
+          )}
+        >
+          <Search size={14} strokeWidth={2} className="shrink-0" />
+          <span className="truncate">Search or jump to…</span>
+          <kbd className="kbd ml-auto">⌘K</kbd>
         </button>
       )}
 
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <div className="flex items-center border-b px-3">
-          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-          <CommandInput
-            placeholder="Search anything or type a command..."
-            className="flex h-14 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-            onValueChange={handleSearch}
-          />
-        </div>
-        <CommandList className="max-h-[450px]">
+        <CommandInput
+          placeholder="Search clients, sessions, tools…"
+          className="h-12 text-[15px]"
+          onValueChange={handleSearch}
+        />
+        <CommandList className="max-h-[min(460px,60vh)] p-1.5">
           <CommandEmpty>
             {loading ? (
               <div className="flex flex-col items-center justify-center py-10 gap-3">
                 <Sparkles className="animate-pulse text-chart-primary" size={24} />
-                <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Searching the Oracle...</p>
+                <p className="text-sm text-muted-foreground">Searching…</p>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-10 gap-2">
                 <p className="text-sm font-medium text-muted-foreground">No results found.</p>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Try searching for "Clinical Hub" or "PEACE"</p>
+                <p className="text-xs text-muted-foreground/80">Try a client name, "Clinical Hub" or "PEACE"</p>
               </div>
             )}
           </CommandEmpty>
@@ -293,19 +292,19 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
             <CommandGroup heading={
               <div className="flex items-center gap-2">
                 <Sparkles size={12} className="text-chart-primary" />
-                <span>Contextual Actions ({isVoiceMode ? 'voice' : mode})</span>
+                <span>Suggested</span>
               </div>
             }>
               {getQuickActions().map((action) => (
                 <CommandItem
                   key={action.id}
                   onSelect={() => handleSelect(action)}
-                  className="rounded-xl py-3 px-4 cursor-pointer"
+                  className="gap-3 rounded-lg px-2.5 py-2 cursor-pointer"
                 >
-                  <action.icon size={18} className={cn("mr-3", action.color)} />
+                  <action.icon size={16} className={cn("shrink-0", action.color)} />
                   <div className="flex flex-col">
-                    <span className="font-bold text-sm">{action.title}</span>
-                    <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{action.subtitle}</span>
+                    <span className="text-[13px] font-medium text-foreground">{action.title}</span>
+                    <span className="text-xs text-muted-foreground">{action.subtitle}</span>
                   </div>
                 </CommandItem>
               ))}
@@ -324,7 +323,7 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
                     </div>
                     <button 
                       onClick={clearRecentSearches}
-                      className="text-[10px] font-bold text-muted-foreground hover:text-rose-500 transition-colors flex items-center gap-1"
+                      className="text-[11px] font-medium normal-case tracking-normal text-muted-foreground hover:text-destructive transition-colors flex items-center gap-1"
                     >
                       <Trash2 size={10} /> Clear
                     </button>
@@ -335,13 +334,13 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
                   <CommandItem
                     key={`${result.type}-${result.id}`}
                     onSelect={() => handleSelect(result)}
-                    className="rounded-xl py-3 px-4 cursor-pointer"
+                    className="gap-3 rounded-lg px-2.5 py-2 cursor-pointer"
                   >
-                    <Clock size={18} className="mr-3 text-muted-foreground/60" />
+                    <Clock size={16} className="shrink-0 text-muted-foreground/70" />
                     <div className="flex flex-col">
-                      <span className="font-bold text-sm">{result.title}</span>
+                      <span className="text-[13px] font-medium text-foreground">{result.title}</span>
                       {result.subtitle && (
-                        <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                        <span className="text-xs text-muted-foreground">
                           {result.subtitle}
                         </span>
                       )}
@@ -365,12 +364,12 @@ const SearchBar = ({ compact = false }: { compact?: boolean }) => {
                       <CommandItem
                         key={result.id}
                         onSelect={() => handleSelect(result)}
-                        className="rounded-xl py-3 px-4 cursor-pointer"
+                        className="gap-3 rounded-lg px-2.5 py-2 cursor-pointer"
                       >
-                        {result.icon ? <result.icon size={18} className={cn("mr-3", result.color)} /> : <Search size={18} className="mr-3 text-muted-foreground/60" />}
+                        {result.icon ? <result.icon size={16} className={cn("shrink-0", result.color)} /> : <Search size={16} className="shrink-0 text-muted-foreground/70" />}
                         <div className="flex flex-col">
-                          <span className="font-bold text-sm">{result.title}</span>
-                          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                          <span className="text-[13px] font-medium text-foreground">{result.title}</span>
+                          <span className="text-xs text-muted-foreground">
                             {result.subtitle}
                           </span>
                         </div>

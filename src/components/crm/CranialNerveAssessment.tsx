@@ -128,7 +128,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
                     onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_inhibited: !!checked }, 'L')}
                     className="h-3.5 w-3.5 border-border rounded-none"
                   />
-                  <label htmlFor={`inhib-l-${nerve.id}`} className="text-[9px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
+                  <label htmlFor={`inhib-l-${nerve.id}`} className="text-[10px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
                     L
                   </label>
                 </div>
@@ -139,7 +139,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
                     onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_inhibited: !!checked }, 'R')}
                     className="h-3.5 w-3.5 border-border rounded-none"
                   />
-                  <label htmlFor={`inhib-r-${nerve.id}`} className="text-[9px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
+                  <label htmlFor={`inhib-r-${nerve.id}`} className="text-[10px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
                     R
                   </label>
                 </div>
@@ -163,7 +163,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
                   onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_inhibited: !!checked })}
                   className="h-3.5 w-3.5 border-border rounded-none"
                 />
-                  <label htmlFor={`inhib-mid-${nerve.id}`} className="text-[9px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
+                  <label htmlFor={`inhib-mid-${nerve.id}`} className="text-[10px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
                     Inhib
                   </label>
               </div>
@@ -178,7 +178,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
                 onCheckedChange={(checked) => onUpdate(nerve.id.toString(), { is_priority: !!checked })}
                 className="h-3.5 w-3.5 border-border rounded-none"
               />
-              <label htmlFor={`priority-${nerve.id}`} className="text-[9px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
+              <label htmlFor={`priority-${nerve.id}`} className="text-[10px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
                 Priority
               </label>
             </div>
@@ -187,7 +187,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
               size="sm" 
               onClick={() => onUpdate(nerve.id.toString(), { is_primary_priority: !test.is_primary_priority })}
               className={cn(
-                "h-5 px-2 text-[7px] font-medium uppercase tracking-wider transition-all rounded-md",
+                "h-5 px-2 text-[7px] font-medium transition-all rounded-md",
                 test.is_primary_priority ? "bg-foreground text-primary-foreground" : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -197,7 +197,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
               variant="ghost" 
               size="sm" 
               onClick={handleClear}
-              className="h-5 px-2 text-[7px] font-medium uppercase tracking-wider text-chart-emerald hover:bg-muted rounded-md"
+              className="h-5 px-2 text-[7px] font-medium text-chart-emerald hover:bg-muted rounded-md"
             >
               <CheckCircle2 size={10} className="mr-1" /> Clear
             </Button>
@@ -261,7 +261,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
                   <>
                     <button
                       onClick={() => setShowDysfunction(!showDysfunction)}
-                      className="flex items-center gap-1.5 text-[9px] font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+                      className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {showDysfunction ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
                       <AlertTriangle size={10} className="text-destructive" />
@@ -280,7 +280,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
                   <>
                     <button
                       onClick={() => setShowProtocol(!showProtocol)}
-                      className="flex items-center gap-1.5 text-[9px] font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+                      className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {showProtocol ? <ChevronDown size={10} /> : <ChevronRight size={10} />}
                       <Stethoscope size={10} className="text-chart-primary" />
@@ -425,7 +425,7 @@ export function CranialNerveAssessment({
               onCheckedChange={setShowOnlyInhibited}
               className="data-[state=checked]:bg-destructive scale-[0.6]"
             />
-            <Label htmlFor="inhibited-filter-nerve" className="text-[9px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
+            <Label htmlFor="inhibited-filter-nerve" className="text-[10px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
               Only Inhibited
             </Label>
           </div>
@@ -436,7 +436,7 @@ export function CranialNerveAssessment({
               onCheckedChange={setShowOnlyPriority}
               className="data-[state=checked]:bg-chart-primary scale-[0.6]"
             />
-            <Label htmlFor="priority-filter-nerve" className="text-[9px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
+            <Label htmlFor="priority-filter-nerve" className="text-[10px] font-medium uppercase tracking-wider cursor-pointer text-muted-foreground">
               Only Priority
             </Label>
           </div>

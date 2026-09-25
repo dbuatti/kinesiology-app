@@ -105,22 +105,22 @@ const ClinicalReasoningModal = ({ muscleName, status, open, onOpenChange }: Clin
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl">
+      <DialogContent className="sm:max-w-[600px] rounded-2xl p-0 overflow-hidden border-none shadow-2xl">
         <div className="p-8 bg-foreground text-primary-foreground">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg">
               <Lightbulb size={28} className="text-amber-400" />
             </div>
             <div>
-              <DialogTitle className="text-2xl font-black">Clinical Reasoning</DialogTitle>
-              <DialogDescription className="text-muted-foreground font-bold uppercase tracking-widest text-[10px] mt-1">
+              <DialogTitle className="text-2xl font-semibold">Clinical Reasoning</DialogTitle>
+              <DialogDescription className="text-muted-foreground font-bold uppercase tracking-wider text-[10px] mt-1">
                 Diagnostic Assistant for {muscleName}
               </DialogDescription>
             </div>
           </div>
           <div className="flex items-center gap-3 p-4 bg-card/5 rounded-2xl border border-primary-foreground/10">
             <Badge className={cn(
-              "border-none font-black text-[10px] uppercase tracking-widest px-3 py-1",
+              "border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1",
               status === 'Inhibition' ? "bg-amber-500" : status === 'Hypertonic' ? "bg-destructive" : "bg-purple-500"
             )}>
               {status}
@@ -139,17 +139,17 @@ const ClinicalReasoningModal = ({ muscleName, status, open, onOpenChange }: Clin
                   <step.icon size={24} />
                 </div>
                 <div className="space-y-1">
-                  <h4 className="font-black text-foreground text-sm uppercase tracking-tight">{step.title}</h4>
+                  <h4 className="font-semibold text-foreground text-sm uppercase tracking-tight">{step.title}</h4>
                   <p className="text-sm text-muted-foreground leading-relaxed font-medium">{step.desc}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="p-6 bg-amber-50 rounded-[2rem] border-2 border-amber-100">
+          <div className="p-6 bg-amber-50 rounded-2xl border-2 border-amber-100">
             <div className="flex items-center gap-3 mb-3">
               <ShieldAlert size={20} className="text-amber-600" />
-              <h4 className="font-black text-amber-900 text-xs uppercase tracking-widest">Practitioner Note</h4>
+              <h4 className="font-semibold text-amber-900 text-xs uppercase tracking-wider">Practitioner Note</h4>
             </div>
             <p className="text-xs text-amber-800 leading-relaxed italic font-medium">
               "If multiple muscles in the {info.meridian || 'same'} meridian are {status.toLowerCase()}, prioritize the Meridian balance first. If this is the only dysfunctional muscle, look for local mechanical or reflex issues."

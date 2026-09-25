@@ -1,8 +1,6 @@
 
 import type { ReactNode } from 'react';
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
-import { useLocation } from "react-router-dom";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -17,8 +15,6 @@ const AppLayout = ({
   className,
   variant = "standard",
 }: AppLayoutProps) => {
-  const location = useLocation();
-
   // Standardized max-width hierarchy
   const maxWidthClass = 
     variant === "full" ? "max-w-none" : 
@@ -29,27 +25,14 @@ const AppLayout = ({
   return (
     <div
       className={cn(
-        "w-full min-h-screen mx-auto px-4 md:px-8 transition-all duration-500",
-        hasFixedHeader ? "pt-16 md:pt-20 pb-8 md:pb-10" : "pt-3 md:pt-5 pb-8 md:pb-10",
+        "w-full mx-auto px-4 sm:px-6 lg:px-8",
+        hasFixedHeader ? "pt-16 md:pt-20 pb-10 md:pb-14" : "pt-5 sm:pt-6 lg:pt-8 pb-10 md:pb-14",
         maxWidthClass,
         className
       )}
     >
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={location.pathname}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -12 }}
-          transition={{ 
-            duration: 0.4, 
-            ease: [0.23, 1, 0.32, 1] 
-          }}
-          className="w-full"
-        >
-          {children}
-        </motion.div>
-      </AnimatePresence>
+      {/* Route entrance is handled once, by MainLayout's .page-enter */}
+      {children}
     </div>
   );
 };

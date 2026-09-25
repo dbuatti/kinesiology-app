@@ -340,7 +340,7 @@ Correction Method: ${method}`;
               variant="ghost"
               size="sm"
               onClick={() => setShowLog(!showLog)}
-              className="h-8 px-3 rounded-md border border-foreground/20 hover:bg-foreground hover:text-primary-foreground transition-all text-[10px] font-semibold uppercase tracking-wider gap-1.5"
+              className="h-8 px-3 rounded-md border border-foreground/20 hover:bg-foreground hover:text-primary-foreground transition-all text-[11px] font-semibold gap-1.5"
             >
               <History size={12} />
               {showLog ? "Show Wizard" : `View Log (${pastCorrections.length})`}
@@ -376,7 +376,7 @@ Correction Method: ${method}`;
                         variant="ghost"
                         size="sm"
                         onClick={() => handleLoadSingleLog(correction)}
-                        className="h-8 px-3 rounded-md border border-foreground/20 hover:bg-foreground hover:text-primary-foreground text-[10px] font-semibold uppercase tracking-wider"
+                        className="h-8 px-3 rounded-md border border-foreground/20 hover:bg-foreground hover:text-primary-foreground text-[11px] font-semibold"
                       >
                         Load
                       </Button>
@@ -533,7 +533,7 @@ Correction Method: ${method}`;
                     href="/resources/brain-zones/print" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-[10px] font-semibold text-chart-primary hover:text-indigo-800 hover:underline uppercase tracking-wider flex items-center gap-1 transition-colors"
+                    className="text-[11px] font-semibold text-chart-primary hover:text-indigo-800 hover:underline flex items-center gap-1 transition-colors"
                   >
                     <ExternalLink size={10} /> View Brain Zone Map
                   </a>
@@ -672,7 +672,7 @@ Correction Method: ${method}`;
               <Button
                 onClick={handleLogCorrection}
                 disabled={!metadata.wizard_finding}
-                className="bg-foreground text-background hover:bg-foreground/90 rounded-none h-10 px-6 font-semibold text-[10px] uppercase tracking-wider shadow-lg"
+                className="bg-foreground text-background hover:bg-foreground/90 rounded-none h-10 px-6 font-semibold text-[11px] shadow-lg"
               >
                 <CheckCircle2 size={14} className="mr-2" /> Log Correction
               </Button>

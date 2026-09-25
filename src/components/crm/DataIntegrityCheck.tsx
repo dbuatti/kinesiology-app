@@ -40,12 +40,12 @@ const DataIntegrityCheck = ({ clients }: DataIntegrityCheckProps) => {
 
   if (clientsWithMissingData.length === 0) {
     return (
-      <Card className="border-none shadow-lg rounded-[2.5rem] bg-chart-emerald/10 border-2 border-chart-emerald/20">
+      <Card className="border-none shadow-lg rounded-2xl bg-chart-emerald/10 border-2 border-chart-emerald/20">
         <CardContent className="p-10 text-center space-y-4">
           <div className="w-16 h-16 bg-card rounded-2xl flex items-center justify-center mx-auto shadow-sm">
             <CheckCircle2 size={32} className="text-chart-emerald" />
           </div>
-          <h3 className="text-xl font-black text-chart-emerald">Data Integrity: 100%</h3>
+          <h3 className="text-xl font-semibold text-chart-emerald">Data Integrity: 100%</h3>
           <p className="text-chart-emerald/80 font-medium">All clients have complete pivotal data profiles.</p>
         </CardContent>
       </Card>
@@ -53,16 +53,16 @@ const DataIntegrityCheck = ({ clients }: DataIntegrityCheckProps) => {
   }
 
   return (
-    <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+    <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
       <CardHeader className="p-8 border-b border-border bg-muted/30">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <CardTitle className="text-xl font-black flex items-center gap-3">
+            <CardTitle className="text-xl font-semibold flex items-center gap-3">
               <ShieldAlert size={24} className="text-amber-500" /> Data Integrity Check
             </CardTitle>
             <CardDescription className="font-medium">Identifying profiles missing pivotal contact or clinical data.</CardDescription>
           </div>
-          <Badge className="bg-amber-500 text-primary-foreground border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">
+          <Badge className="bg-amber-500 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1">
             {clientsWithMissingData.length} Profiles
           </Badge>
         </div>
@@ -72,14 +72,14 @@ const DataIntegrityCheck = ({ clients }: DataIntegrityCheckProps) => {
           {clientsWithMissingData.map((client) => (
             <div key={client.id} className="p-6 border-b border-border hover:bg-muted/20 transition-colors flex items-center justify-between group">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-black">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-semibold">
                   {client.name.charAt(0)}
                 </div>
                 <div>
-                  <p className="font-black text-foreground group-hover:text-primary transition-colors">{client.name}</p>
+                  <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{client.name}</p>
                   <div className="flex flex-wrap gap-2 mt-1.5">
                     {client.missingFields.map((field: any) => (
-                      <span key={field.label} className="inline-flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-destructive bg-destructive/5 px-2 py-0.5 rounded-md border border-destructive/20">
+                      <span key={field.label} className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-destructive bg-destructive/5 px-2 py-0.5 rounded-md border border-destructive/20">
                         <field.icon size={8} /> Missing {field.label}
                       </span>
                     ))}

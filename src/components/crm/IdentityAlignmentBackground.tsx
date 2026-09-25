@@ -95,13 +95,13 @@ const IdentityAlignmentBackground = () => {
             { step: 3, title: "Neural Reconsolidation", icon: Zap, desc: "The process of surfacing, challenging, and updating existing neural pathways through the reconsolidation loop." },
             { step: 4, title: "Identity Integration", icon: CheckCircle2, desc: "Anchoring the new identity into the present and future through behavioral and somatic checks." }
           ].map((item) => (
-            <div key={item.step} className="flex gap-4 p-6 bg-card dark:bg-foreground rounded-2xl border border-secondary/30 shadow-sm">
+            <div key={item.step} className="flex gap-4 p-6 bg-card dark:bg-card rounded-2xl border border-secondary/30 shadow-sm">
               <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0 text-primary">
                 <item.icon />
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] font-black bg-primary/20 text-primary px-2 py-0.5 rounded-full">STEP {item.step}</span>
+                  <span className="text-[10px] font-semibold bg-primary/20 text-primary px-2 py-0.5 rounded-full">STEP {item.step}</span>
                   <h3 className="font-bold">{item.title}</h3>
                 </div>
                 <p className="text-sm text-muted-foreground">{item.desc}</p>

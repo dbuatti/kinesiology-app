@@ -45,7 +45,7 @@ const MuscleRegionFilter = ({ activeRegion, onRegionChange }: MuscleRegionFilter
             )}>
               <region.icon size={20} className={cn(isActive ? "text-primary-foreground" : region.color)} />
             </div>
-            <span className="text-[9px] font-black uppercase tracking-widest text-center">
+            <span className="text-[11px] font-semibold text-center">
               {region.label}
             </span>
           </button>

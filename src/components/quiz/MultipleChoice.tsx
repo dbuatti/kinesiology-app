@@ -23,7 +23,7 @@ const MultipleChoice: FC<MultipleChoiceProps> = ({
 }) => {
   return (
     <div className="space-y-6">
-      <h3 className="text-xl md:text-2xl font-black leading-tight text-foreground dark:text-primary-foreground">
+      <h3 className="text-xl md:text-2xl font-semibold leading-tight text-foreground dark:text-foreground">
         {question}
       </h3>
       <div className="grid grid-cols-1 gap-3">
@@ -31,7 +31,7 @@ const MultipleChoice: FC<MultipleChoiceProps> = ({
           const isSelected = selectedAnswer === option;
           const isThisCorrect = option === correctAnswer;
           
-          let className = "justify-start h-auto py-5 px-8 text-left text-base font-bold transition-all duration-300 rounded-[1.5rem] border-2 shadow-sm";
+          let className = "justify-start h-auto py-5 px-8 text-left text-base font-bold transition-all duration-300 rounded-2xl border-2 shadow-sm";
           
           if (selectedAnswer) {
             if (isThisCorrect) {
@@ -43,7 +43,7 @@ const MultipleChoice: FC<MultipleChoiceProps> = ({
             }
           } else {
             // Using explicit text colors to prevent theme/variant conflicts
-            className += " bg-card dark:bg-foreground border-border/50 dark:border-border text-foreground dark:text-primary-foreground hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-700 dark:hover:text-indigo-300 hover:shadow-md hover:-translate-y-0.5";
+            className += " bg-card dark:bg-card border-border/50 dark:border-border text-foreground dark:text-foreground hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:text-indigo-700 dark:hover:text-indigo-300 hover:shadow-md hover:-translate-y-0.5";
           }
 
           return (

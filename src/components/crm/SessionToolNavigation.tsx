@@ -63,7 +63,7 @@ const SessionToolNavigation = ({
       variant="ghost"
       onClick={() => onViewChange(view)}
       className={cn(
-        "h-10 px-5 rounded-xl font-medium text-[10px] uppercase tracking-wider shrink-0 gap-2.5 text-foreground",
+        "h-10 px-5 rounded-xl font-medium text-[11px] shrink-0 gap-2.5 text-foreground",
         activeView === view && "bg-card shadow-sm border border-border"
       )}
     >
@@ -81,7 +81,7 @@ const SessionToolNavigation = ({
           variant="ghost"
           asChild
           className={cn(
-            "h-10 px-5 rounded-xl font-medium text-[10px] uppercase tracking-wider shrink-0 gap-2.5 text-foreground",
+            "h-10 px-5 rounded-xl font-medium text-[11px] shrink-0 gap-2.5 text-foreground",
             location.pathname.includes('/protocols') && "bg-card shadow-sm border border-border"
           )}
         >
@@ -98,7 +98,7 @@ const SessionToolNavigation = ({
           <DropdownMenuTrigger asChild>
             <button
               className={cn(
-                "h-10 px-5 rounded-xl transition-all font-medium text-[10px] uppercase tracking-wider shrink-0 flex items-center gap-2.5 text-foreground hover:bg-accent hover:text-accent-foreground",
+                "h-10 px-5 rounded-xl transition-all font-medium text-[11px] shrink-0 flex items-center gap-2.5 text-foreground hover:bg-accent hover:text-accent-foreground",
                 isToolActive && "bg-card shadow-sm border border-border"
               )}
             >

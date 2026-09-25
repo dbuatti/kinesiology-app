@@ -103,7 +103,7 @@ const SessionPhaseTabs = ({
                       isPast && !isActive && "opacity-70"
                     )}>{tab.label}</span>
                     <span className={cn(
-                      "hidden md:inline text-[10px] font-medium uppercase tracking-wider text-muted-foreground",
+                      "hidden md:inline text-[11px] font-medium text-muted-foreground",
                       isPast && !isActive && "opacity-40"
                     )}>
                       {tab.fullLabel}

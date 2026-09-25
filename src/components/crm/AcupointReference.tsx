@@ -38,7 +38,7 @@ const AcupointReference = () => {
           <Button 
             variant={!selectedCategory ? "default" : "outline"}
             onClick={() => setSelectedCategory(null)}
-            className="rounded-xl h-12 px-4 font-bold text-xs uppercase tracking-widest"
+            className="rounded-xl h-12 px-4 font-bold text-xs"
           >
             All
           </Button>
@@ -48,7 +48,7 @@ const AcupointReference = () => {
               variant={selectedCategory === cat ? "default" : "outline"}
               onClick={() => setSelectedCategory(cat)}
               className={cn(
-                "rounded-xl h-12 px-4 font-bold text-xs uppercase tracking-widest whitespace-nowrap",
+                "rounded-xl h-12 px-4 font-bold text-xs whitespace-nowrap",
                 selectedCategory === cat ? "bg-indigo-600" : "border-border"
               )}
             >
@@ -64,10 +64,10 @@ const AcupointReference = () => {
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
-                  <Badge className="bg-indigo-50 text-indigo-700 border-none font-black text-[10px] uppercase tracking-widest mb-2">
+                  <Badge className="bg-indigo-50 text-indigo-700 border-none font-semibold text-[10px] uppercase tracking-wider mb-2">
                     {point.category} Meridian
                   </Badge>
-                  <CardTitle className="text-2xl font-black text-foreground group-hover:text-indigo-600 transition-colors">
+                  <CardTitle className="text-2xl font-semibold text-foreground group-hover:text-indigo-600 transition-colors">
                     {point.code}
                   </CardTitle>
                   <p className="text-sm font-bold text-muted-foreground">{point.name}</p>
@@ -79,13 +79,13 @@ const AcupointReference = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="p-3 bg-muted/50 rounded-xl border border-border/50">
-                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1 flex items-center gap-1">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
                   <MapPin size={10} /> Location
                 </p>
                 <p className="text-xs text-foreground/80 font-medium leading-relaxed">{point.location}</p>
               </div>
               <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
-                <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider mb-1 flex items-center gap-1">
                   <Info size={10} /> Clinical Function
                 </p>
                 <p className="text-xs text-foreground font-bold leading-relaxed">{point.function}</p>

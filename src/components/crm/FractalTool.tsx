@@ -372,7 +372,7 @@ const FractalTool = () => {
                 {proposedPrimary.reasoning}
               </p>
               <div className="flex gap-3 pt-2">
-                <Button onClick={handleAcceptPrimary} className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-8 rounded-xl font-semibold text-xs uppercase tracking-wider shadow-sm">
+                <Button onClick={handleAcceptPrimary} className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-8 rounded-xl font-semibold text-xs shadow-sm">
                   Establish as Root
                 </Button>
                 <Button variant="ghost" onClick={() => { setProposedPrimary(null); updateCache(proposedRelationships, proposedMerges, null); }} className="text-muted-foreground hover:text-foreground">
@@ -401,7 +401,7 @@ const FractalTool = () => {
                     </div>
                     <Button 
                       onClick={() => handleAcceptMerge(merge)}
-                      className="bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-xl h-9 px-4 font-semibold text-[10px] uppercase tracking-wider shadow-sm"
+                      className="bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-xl h-9 px-4 font-semibold text-[11px] shadow-sm"
                     >
                       Merge Items
                     </Button>
@@ -423,7 +423,7 @@ const FractalTool = () => {
               <Sparkles size={20} className="text-muted-foreground" />
               <h3 className="text-xl font-semibold text-foreground">Proposed Fractal Groups</h3>
             </div>
-            <Button variant="ghost" size="sm" onClick={clearSuggestions} className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-chart-destructive">
+            <Button variant="ghost" size="sm" onClick={clearSuggestions} className="text-[11px] font-semibold text-muted-foreground hover:text-chart-destructive">
               Clear All Suggestions
             </Button>
           </div>
@@ -448,7 +448,7 @@ const FractalTool = () => {
                       </div>
                       <Button 
                         onClick={() => handleAcceptAll(parentId, rels)}
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-8 rounded-xl font-semibold text-xs uppercase tracking-wider shadow-sm"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-8 rounded-xl font-semibold text-xs shadow-sm"
                       >
                         <CheckCircle2 size={18} className="mr-2" /> Accept All ({rels.length})
                       </Button>
@@ -486,7 +486,7 @@ const FractalTool = () => {
                                 variant="ghost" 
                                 size="sm" 
                                 onClick={() => handleAcceptRelationship(rel)}
-                                className="h-8 px-3 rounded-lg text-[10px] font-semibold uppercase tracking-wider text-chart-primary hover:bg-muted"
+                                className="h-8 px-3 rounded-lg text-[11px] font-semibold text-chart-primary hover:bg-muted"
                               >
                                 Accept Single <ChevronRight size={14} className="ml-1" />
                               </Button>
@@ -514,7 +514,7 @@ const FractalTool = () => {
           <Button 
             onClick={handleScan} 
             disabled={isScanning || backlog.length < 2}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-14 px-8 font-semibold text-xs uppercase tracking-wider shadow-sm"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-14 px-8 font-semibold text-xs shadow-sm"
           >
             {isScanning ? <Loader2 className="mr-2 animate-spin" /> : <Wand2 size={18} className="mr-2" />}
             Scan for Fractals

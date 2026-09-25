@@ -29,7 +29,7 @@ const PrimitiveDevelopmentLadder = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between px-2">
-        <h3 className="text-sm font-black text-muted-foreground uppercase tracking-[0.3em] flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
           <TrendingUp size={16} className="text-indigo-500" /> Developmental Hierarchy
         </h3>
       </div>
@@ -41,8 +41,8 @@ const PrimitiveDevelopmentLadder = () => {
               <div className="w-12 h-12 rounded-2xl bg-card border-2 border-border/50 shadow-sm flex items-center justify-center text-muted-foreground group-hover:border-indigo-500 group-hover:text-indigo-600 transition-all duration-500">
                 <step.icon size={24} />
               </div>
-              <p className="mt-3 text-[10px] font-black text-foreground uppercase tracking-tight">{step.label}</p>
-              <p className="text-[8px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5">{step.sub}</p>
+              <p className="mt-3 text-[10px] font-semibold text-foreground uppercase tracking-tight">{step.label}</p>
+              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-0.5">{step.sub}</p>
             </div>
             {i < LADDER_STEPS.length - 1 && (
               <ArrowRight size={16} className="text-muted-foreground/60 shrink-0 mt-[-20px]" />

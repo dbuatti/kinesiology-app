@@ -81,7 +81,7 @@ const CranialNerveReference = () => {
               variant={selectedNuclei === opt ? "default" : "outline"}
               onClick={() => setSelectedNuclei(opt)}
               className={cn(
-                "rounded-xl h-14 px-6 font-medium text-[10px] uppercase tracking-wider whitespace-nowrap transition-all",
+                "rounded-xl h-14 px-6 font-medium text-[11px] whitespace-nowrap transition-all",
                 selectedNuclei === opt ? "bg-foreground shadow-sm" : "border-border bg-card hover:bg-muted"
               )}
             >
@@ -92,7 +92,7 @@ const CranialNerveReference = () => {
             <Button 
               variant="outline" 
               asChild
-              className="rounded-xl h-14 px-6 font-medium text-[10px] uppercase tracking-wider border-border text-chart-primary hover:bg-muted"
+              className="rounded-xl h-14 px-6 font-medium text-[11px] border-border text-chart-primary hover:bg-muted"
             >
               <Link to="/resources/cranial-nerves/print">
                 <Printer size={18} className="mr-2" /> Reference
@@ -101,7 +101,7 @@ const CranialNerveReference = () => {
             <Button 
               variant="outline" 
               asChild
-              className="rounded-xl h-14 px-6 font-medium text-[10px] uppercase tracking-wider border-border text-chart-destructive hover:bg-muted"
+              className="rounded-xl h-14 px-6 font-medium text-[11px] border-border text-chart-destructive hover:bg-muted"
             >
               <Link to="/resources/cranial-nerves/worksheet">
                 <FileText size={18} className="mr-2" /> Worksheet

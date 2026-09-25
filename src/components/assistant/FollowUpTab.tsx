@@ -44,7 +44,7 @@ export default function FollowUpTab() {
           <button
             onClick={() => setFilter("quick_win")}
             className={cn(
-              "flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border transition-colors",
+              "flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border transition-colors",
               filter === "quick_win" ? "bg-chart-emerald text-white border-chart-emerald" : "bg-chart-emerald/10 text-chart-emerald border-chart-emerald/30 hover:border-chart-emerald/60"
             )}
           >
@@ -59,7 +59,7 @@ export default function FollowUpTab() {
               key={s}
               onClick={() => setFilter(s)}
               className={cn(
-                "px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border transition-colors",
+                "px-3 py-1.5 rounded-full text-xs font-bold border transition-colors",
                 filter === s ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/40"
               )}
             >

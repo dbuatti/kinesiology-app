@@ -91,7 +91,7 @@ const BoltResourcesModal = ({ open, onOpenChange, currentScore, onStartBolt }: B
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-1">Current BOLT Score</p>
-                    <p className="text-4xl font-black text-foreground tabular-nums">{currentScore}s</p>
+                    <p className="text-4xl font-semibold text-foreground tabular-nums">{currentScore}s</p>
                     <p className={`text-xs font-medium mt-1 ${scoreBanner.subClass}`}>{scoreBanner.sub}</p>
                   </div>
                   <div className="text-right">
@@ -108,7 +108,7 @@ const BoltResourcesModal = ({ open, onOpenChange, currentScore, onStartBolt }: B
                       style={{ width: `${progress}%` }}
                     />
                   </div>
-                  <div className="flex justify-between mt-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <div className="flex justify-between mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                     <span>25s Functional</span>
                     <span>40s+ Optimal</span>
                   </div>

@@ -348,7 +348,7 @@ const VoiceClientsPage = () => {
  <Dialog open={onboardOpen} onOpenChange={setOnboardOpen}>
  <Button
  onClick={() => setOnboardOpen(true)}
- className="bg-destructive hover:bg-destructive/80 shadow-sm rounded-xl h-12 px-8 font-semibold text-xs uppercase tracking-wider"
+ className="bg-destructive hover:bg-destructive/80 shadow-sm rounded-xl h-12 px-8 font-semibold text-xs"
  >
  <Plus size={20} className="mr-2" /> Add Student
  </Button>
@@ -464,7 +464,7 @@ const VoiceClientsPage = () => {
  <button
  onClick={() => toggleSelectAll(ids)}
  className={cn(
- "text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-lg border transition-all",
+ "text-[11px] font-semibold px-3 py-1.5 rounded-lg border transition-all",
  allSelected
   ? "bg-destructive text-primary-foreground border-destructive"
  : "bg-card border-border text-muted-foreground hover:text-foreground"

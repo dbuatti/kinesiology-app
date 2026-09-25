@@ -1,13 +1,17 @@
-
-import { useState, useEffect, useMemo, Fragment } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { differenceInMinutes, isToday } from "date-fns";
-import { Play } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-const UpcomingMarquee = () => {
+/**
+ * "Up next" — today's next session as a compact live chip in the top bar
+ * (previously a full-width strip above every page). Refreshes each minute.
+ */
+const UpcomingMarquee = ({ className }: { className?: string }) => {
   const [upcoming, setUpcoming] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [, setTick] = useState(0);
 
   useEffect(() => {
     const fetchUpcoming = async () => {
@@ -19,64 +23,47 @@ const UpcomingMarquee = () => {
         .neq('status', 'Cancelled')
         .gte('date', now.toISOString())
         .order('date', { ascending: true })
-        .limit(2); // Only need the next two
+        .limit(2);
 
-      if (data) {
-        const todayOnly = data.filter(app => isToday(new Date(app.date)));
-        setUpcoming(todayOnly);
+      if (Array.isArray(data)) {
+        setUpcoming(data.filter(app => isToday(new Date(app.date))));
       }
-      setLoading(false);
+      setTick((t) => t + 1);
     };
 
     fetchUpcoming();
-    const interval = setInterval(fetchUpcoming, 60000); // Refresh every minute
+    const interval = setInterval(fetchUpcoming, 60000);
     return () => clearInterval(interval);
   }, []);
 
-  const nextSessions = useMemo(() => {
-    if (upcoming.length === 0) return null;
-
-    return upcoming.map(app => {
-      const diff = differenceInMinutes(new Date(app.date), new Date());
-      const timeLabel = diff <= 0 ? "NOW" : `${diff}m`;
-      return {
-        id: app.id,
-        name: app.clients.name,
-        time: timeLabel
-      };
-    });
+  const next = useMemo(() => {
+    const app = upcoming[0];
+    if (!app) return null;
+    const diff = differenceInMinutes(new Date(app.date), new Date());
+    const when = diff <= 0 ? "now" : diff < 60 ? `in ${diff}m` : `in ${Math.floor(diff / 60)}h ${diff % 60 ? `${diff % 60}m` : ""}`.trim();
+    return { id: app.id, name: app.clients?.name ?? "Session", when, soon: diff <= 15 };
   }, [upcoming]);
 
-  if (loading || !nextSessions || nextSessions.length === 0) return null;
+  if (!next) return null;
 
   return (
-    <div className="w-full bg-muted h-7 flex items-center justify-center px-4 border-b border-border z-[100]">
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1.5 text-chart-destructive">
-          <Play size={10} className="fill-current" />
-          <span className="text-[10px] font-medium tracking-wider">Up Next</span>
-        </div>
-        <span className="text-muted-foreground/30 mx-1">·</span>
-        {nextSessions.map((session, idx) => (
-          <Fragment key={idx}>
-            <div className="flex items-center gap-1.5">
-              <Link
-                to={`/appointments/${session.id}`}
-                className="text-xs font-medium text-foreground hover:text-muted-foreground transition-colors"
-              >
-                {session.name}
-              </Link>
-              <span className="text-[11px] text-muted-foreground/60 tabular-nums">
-                {session.time}
-              </span>
-            </div>
-            {idx < nextSessions.length - 1 && (
-              <span className="text-muted-foreground/30 text-xs mx-0.5">·</span>
-            )}
-          </Fragment>
-        ))}
-      </div>
-    </div>
+    <Link
+      to={`/appointments/${next.id}`}
+      className={cn(
+        "group inline-flex h-8 max-w-[260px] items-center gap-2 rounded-full border border-border bg-card pl-2.5 pr-2 text-[12.5px] shadow-xs hover:border-foreground/15 hover:shadow-sm",
+        className
+      )}
+      title="Open next session"
+    >
+      <span className="relative flex h-2 w-2 shrink-0">
+        {next.soon && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-chart-emerald opacity-60" />}
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-chart-emerald" />
+      </span>
+      <span className="text-muted-foreground">Up next</span>
+      <span className="truncate font-medium text-foreground blur-sensitive">{next.name}</span>
+      <span className="shrink-0 tabular-nums text-muted-foreground">{next.when}</span>
+      <ArrowUpRight size={13} className="shrink-0 text-muted-foreground transition-transform duration-200 group-hover:-translate-y-px group-hover:translate-x-px group-hover:text-foreground" />
+    </Link>
   );
 };
 

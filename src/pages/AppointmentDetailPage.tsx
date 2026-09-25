@@ -285,7 +285,7 @@ const AppointmentDetailPage = () => {
             )}
           </div>
           <div>
-            <h2 className="text-2xl font-black text-foreground">{isInvalidId ? "Appointment Not Found" : "Loading..."}</h2>
+            <h2 className="text-2xl font-semibold text-foreground">{isInvalidId ? "Appointment Not Found" : "Loading..."}</h2>
             <p className="text-sm text-muted-foreground mt-1">
               {isInvalidId ? "The appointment you're looking for doesn't exist or was deleted." : "Fetching appointment data..."}
             </p>
@@ -452,7 +452,7 @@ const AppointmentDetailPage = () => {
                 </DropdownMenu>
                 {isSessionToday && appointment.status === 'Scheduled' && (
                   <Button onClick={handleStartSession}
-                    className="h-8 px-4 bg-chart-primary text-primary-foreground rounded-lg font-medium text-xs transition-all hover:scale-105 active:scale-95 gap-1.5">
+                    className="h-8 px-4 bg-chart-primary text-primary-foreground rounded-lg font-medium text-xs transition-all hover:scale-[1.03] active:scale-95 gap-1.5">
                     <Zap size={13} className="md:hidden" />
                     <span className="hidden md:inline">Start Session</span>
                   </Button>
@@ -601,7 +601,7 @@ const AppointmentDetailPage = () => {
                 >
                   <div className="flex items-center gap-3">
                     <Printer size={15} className="text-muted-foreground" />
-                    <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Printable Session Worksheet</span>
+                    <span className="text-xs font-medium text-muted-foreground">Printable Session Worksheet</span>
                   </div>
                   {showWorksheet
                     ? <ChevronUp size={16} className="text-muted-foreground" />

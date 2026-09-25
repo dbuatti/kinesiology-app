@@ -346,7 +346,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button onClick={handleQuickLog14} disabled={saving} className="bg-card text-chart-primary hover:bg-muted rounded-xl font-semibold text-xs uppercase tracking-wider h-12 px-8 shadow-sm">
+            <Button onClick={handleQuickLog14} disabled={saving} className="bg-card text-chart-primary hover:bg-muted rounded-xl font-semibold text-xs h-12 px-8 shadow-sm">
               {saving ? <Loader2 className="mr-2 animate-spin" /> : <Zap size={18} className="mr-2 fill-current" />}
               Log 14 Primary
             </Button>
@@ -369,7 +369,7 @@ const MuscleTestingTab = ({ appointmentId }: MuscleTestingTabProps) => {
               size="sm" 
               onClick={() => setMeridianFilter(currentPeakMeridian.name)}
               className={cn(
-                "rounded-xl h-9 px-4 font-semibold text-[10px] uppercase tracking-wider transition-all",
+                "rounded-xl h-9 px-4 font-semibold text-[11px] transition-all",
                 meridianFilter === currentPeakMeridian.name ? "bg-primary text-primary-foreground border-none shadow-sm" : "border-border bg-card hover:bg-muted"
               )}
             >

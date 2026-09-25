@@ -150,7 +150,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
           <button
             onClick={() => setShowOnlyPriority(false)}
             className={cn(
-              "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-all",
+              "px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all",
               !showOnlyPriority
                 ? "bg-foreground text-primary-foreground border-foreground"
                 : "bg-card border-border text-muted-foreground hover:border-foreground/40"
@@ -161,7 +161,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
           <button
             onClick={() => setShowOnlyPriority(!showOnlyPriority)}
             className={cn(
-              "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-all flex items-center gap-1.5",
+              "px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all flex items-center gap-1.5",
               showOnlyPriority
                 ? "bg-chart-emerald text-primary-foreground border-chart-emerald"
                 : "bg-card border-border text-muted-foreground hover:border-chart-emerald/40"
@@ -187,9 +187,9 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                 <div key={catKey} className="space-y-2">
                   <div className="flex items-center gap-2">
                     {Icon && <Icon size={13} className="text-muted-foreground" />}
-                    <h4 className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground">{CATEGORY_LABELS[catKey] || catKey}</h4>
+                    <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{CATEGORY_LABELS[catKey] || catKey}</h4>
                     <div className="flex-1 h-px bg-border" />
-                    <span className="text-[9px] font-medium text-muted-foreground">{findings.length}</span>
+                    <span className="text-[10px] font-medium text-muted-foreground">{findings.length}</span>
                   </div>
                   <div className="divide-y divide-border border border-border rounded-lg">
                     {findings.map((item, i) => {
@@ -214,7 +214,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                                 {item.name}
                                 {item.side && <span className="text-muted-foreground ml-1">({item.side})</span>}
                                 {isPathway && (
-                                  <span className="ml-1.5 inline-block align-middle text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                                  <span className="ml-1.5 inline-block align-middle text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
                                     pathway
                                   </span>
                                 )}
@@ -229,7 +229,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                               title={isPriority ? "Remove from 1° priorities" : "Mark as 1° priority"}
                               onClick={() => handleSetPriority(item)}
                               className={cn(
-                                "px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider border transition-all",
+                                "px-2 py-1 rounded text-[11px] font-bold border transition-all",
                                 isPriority
                                   ? "bg-chart-emerald text-primary-foreground border-chart-emerald"
                                   : "bg-card border-border text-muted-foreground hover:border-chart-emerald/50 hover:text-chart-emerald"
@@ -241,7 +241,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                               variant="ghost"
                               size="sm"
                               title="Choose this finding as the correction pathway and open Correct"
-                              className="text-[10px] font-bold uppercase tracking-wider text-primary hover:bg-primary/10 rounded-lg ml-1"
+                              className="text-[11px] font-bold text-primary hover:bg-primary/10 rounded-lg ml-1"
                               onClick={() => setPriorityPathway(itemPathway)}
                             >
                               <Route size={11} className="mr-1" /> Set Pathway
@@ -251,8 +251,8 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                           {stims.length > 0 && (
                             <div className="border-t border-border/50">
                               <div className="flex items-center gap-1.5 px-4 pt-2.5 pb-1">
-                                <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Stims</span>
-                                <span className="text-[9px] font-medium text-muted-foreground/60">{stims.length}</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Stims</span>
+                                <span className="text-[10px] font-medium text-muted-foreground/60">{stims.length}</span>
                               </div>
                               <div className="px-4 pb-2.5 space-y-1">
                                 {stims.map(entry => {
@@ -262,7 +262,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                                   return (
                                     <div key={entry.stimKey} className="flex items-center justify-between gap-3 rounded-lg bg-background/60 border border-border/50 pl-3 pr-2 py-1">
                                       <span className="text-xs text-foreground/80 min-w-0 truncate">
-                                        {entry.side && <span className="font-black text-chart-destructive mr-1">{entry.side}</span>}
+                                        {entry.side && <span className="font-semibold text-chart-destructive mr-1">{entry.side}</span>}
                                         {entry.label}
                                       </span>
                                       <div className="flex items-center gap-1 shrink-0">
@@ -271,7 +271,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                                           title={isPriority ? "Remove from stim priorities" : "Mark this stim as 1° priority"}
                                           onClick={() => setStimPriority(entry.stimKey, !isPriority)}
                                           className={cn(
-                                            "px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border transition-all cursor-pointer",
+                                            "px-1.5 py-0.5 rounded text-[11px] font-bold border transition-all cursor-pointer",
                                             isPriority
                                               ? "bg-chart-emerald text-primary-foreground border-chart-emerald"
                                               : "bg-card border-border text-muted-foreground hover:border-chart-emerald/50 hover:text-chart-emerald"
@@ -284,7 +284,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                                           title={isPrimary ? "Remove primary stim (keeps 1°)" : "Set this stim as the primary priority"}
                                           onClick={() => setStimPrimary(entry.stimKey)}
                                           className={cn(
-                                            "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border transition-all cursor-pointer",
+                                            "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-bold border transition-all cursor-pointer",
                                             isPrimary
                                               ? "bg-primary text-primary-foreground border-primary"
                                               : "bg-card border-border text-muted-foreground hover:border-primary/50 hover:text-primary"

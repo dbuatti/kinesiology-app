@@ -1,3 +1,4 @@
+import HubTabs from "@/components/shared/HubTabs";
 import { useState } from "react";
 import { TrendingUp, PieChart, Users, Megaphone } from "lucide-react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -29,25 +30,7 @@ const BusinessPage = () => {
           empty space on a wide screen ("tacky"). This drives the same
           controlled Tabs value/onValueChange from outside TabsTrigger, so
           Radix's show/hide logic below is untouched. */}
-      <div className="sticky top-0 z-10 bg-background border-b border-border">
-        <div className="w-full px-4 md:px-8">
-          <div className="flex gap-6">
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className={cn(
-                  "flex items-center gap-2 py-3 text-sm font-medium border-b-2 -mb-px transition-colors",
-                  tab === t.id ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <t.icon size={14} />
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      <HubTabs value={tab} onChange={setTab} tabs={TABS} />
       {/* No px/py here — every Tool below already brings its own p-6, and
           stacking this wrapper's padding on top of that was pure double
           padding (full-width is the only thing actually needed at this

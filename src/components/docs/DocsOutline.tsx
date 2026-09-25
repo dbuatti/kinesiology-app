@@ -23,7 +23,7 @@ const DocsOutline = ({ items }: DocsOutlineProps) => {
     <div className="w-64 shrink-0 hidden xl:block sticky top-0 h-fit pt-4 print:hidden">
       <div className="flex items-center gap-2 px-4 mb-4 text-muted-foreground">
         <List size={18} />
-        <span className="text-xs font-bold uppercase tracking-widest">Document outline</span>
+        <span className="text-xs font-bold uppercase tracking-wider">Document outline</span>
       </div>
       <nav className="space-y-0.5">
         {items.map((item) => (

@@ -68,7 +68,7 @@ const AssessmentItem = ({
       {hasInhibition && (
         <button
           onClick={(e) => { e.stopPropagation(); onQuickCalibrate(); }}
-          className="absolute top-3 right-3 w-8 h-8 md:w-10 md:h-10 rounded-xl md:rounded-2xl flex items-center justify-center shadow-sm transition-all z-30 bg-muted text-muted-foreground scale-110 hover:scale-125 animate-in zoom-in duration-300"
+          className="absolute top-3 right-3 w-8 h-8 md:w-10 md:h-10 rounded-xl md:rounded-2xl flex items-center justify-center shadow-sm transition-all z-30 bg-muted text-muted-foreground scale-110 hover:scale-[1.03] animate-in zoom-in duration-300"
           title="Correct this inhibition"
         >
           <Zap size={14} className="fill-current" />
@@ -109,13 +109,13 @@ const AssessmentItem = ({
           {stimulus && (
             <div className="flex items-start gap-2">
               <PlayCircle size={12} className="text-chart-primary shrink-0 mt-0.5" />
-              <p className="text-[9px] md:text-[11px] text-muted-foreground leading-relaxed font-medium">{stimulus}</p>
+              <p className="text-[10px] md:text-[11px] text-muted-foreground leading-relaxed font-medium">{stimulus}</p>
             </div>
           )}
           {inhibitionPattern && (
             <div className="flex items-start gap-2">
               <ShieldAlert size={12} className="text-chart-destructive shrink-0 mt-0.5" />
-              <p className="text-[9px] md:text-[11px] text-destructive/80 leading-relaxed font-bold">{inhibitionPattern}</p>
+              <p className="text-[10px] md:text-[11px] text-destructive/80 leading-relaxed font-bold">{inhibitionPattern}</p>
             </div>
           )}
         </div>
@@ -137,7 +137,7 @@ const AssessmentItem = ({
                   onSetStatus(statusL === 'Clear' ? 'Inhibited' : 'Clear', 'L');
                 }}
                 className={cn(
-                  "border-none font-medium text-[10px] uppercase tracking-wider px-2 py-1 rounded-md transition-all hover:scale-110 active:scale-95 shadow-sm",
+                  "border-none font-medium text-[11px] px-2 py-1 rounded-md transition-all hover:scale-[1.03] active:scale-95 shadow-sm",
                   statusL === 'Clear' ? "bg-chart-emerald/10 hover:bg-chart-emerald text-chart-emerald hover:text-primary-foreground" : "bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                 )}
               >
@@ -151,7 +151,7 @@ const AssessmentItem = ({
                   onSetStatus(statusR === 'Clear' ? 'Inhibited' : 'Clear', 'R');
                 }}
                 className={cn(
-                  "border-none font-medium text-[10px] uppercase tracking-wider px-2 py-1 rounded-md transition-all hover:scale-110 active:scale-95 shadow-sm",
+                  "border-none font-medium text-[11px] px-2 py-1 rounded-md transition-all hover:scale-[1.03] active:scale-95 shadow-sm",
                   statusR === 'Clear' ? "bg-chart-emerald/10 hover:bg-chart-emerald text-chart-emerald hover:text-primary-foreground" : "bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                 )}
               >
@@ -167,7 +167,7 @@ const AssessmentItem = ({
                 onSetStatus(statusMidline === 'Clear' ? 'Inhibited' : 'Clear');
               }}
               className={cn(
-                "border-none font-medium text-[10px] uppercase tracking-wider px-2 py-1 rounded-md transition-all hover:scale-110 active:scale-95 shadow-sm",
+                "border-none font-medium text-[11px] px-2 py-1 rounded-md transition-all hover:scale-[1.03] active:scale-95 shadow-sm",
                 statusMidline === 'Clear' ? "bg-chart-emerald/10 hover:bg-chart-emerald text-chart-emerald hover:text-primary-foreground" : "bg-destructive hover:bg-destructive/90 text-destructive-foreground"
               )}
             >
@@ -181,7 +181,7 @@ const AssessmentItem = ({
         <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 px-4">
           <Button 
             size="sm" 
-            className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-10 md:h-12 px-4 md:px-6 shadow-sm font-medium text-[10px] uppercase tracking-wider border-none transition-all hover:scale-105" 
+            className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-10 md:h-12 px-4 md:px-6 shadow-sm font-medium text-[11px] border-none transition-all hover:scale-[1.03]" 
             onClick={(e) => { e.stopPropagation(); onSetStatus('Clear'); }}
           >
             <Check size={16} className="mr-2" /> Clear
@@ -191,14 +191,14 @@ const AssessmentItem = ({
             <div className="flex gap-2">
               <Button 
                 size="sm" 
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl h-10 md:h-12 px-3 md:px-4 shadow-sm font-medium text-[10px] uppercase tracking-wider border-none transition-all hover:scale-105" 
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl h-10 md:h-12 px-3 md:px-4 shadow-sm font-medium text-[11px] border-none transition-all hover:scale-[1.03]" 
                 onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited', 'L'); }}
               >
                 L Inhib
               </Button>
               <Button 
                 size="sm" 
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl h-10 md:h-12 px-3 md:px-4 shadow-sm font-medium text-[10px] uppercase tracking-wider border-none transition-all hover:scale-105" 
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl h-10 md:h-12 px-3 md:px-4 shadow-sm font-medium text-[11px] border-none transition-all hover:scale-[1.03]" 
                 onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited', 'R'); }}
               >
                 R Inhib
@@ -207,14 +207,14 @@ const AssessmentItem = ({
           ) : (
             <Button 
               size="sm" 
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl h-10 md:h-12 px-4 md:px-6 shadow-sm font-medium text-[10px] uppercase tracking-wider border-none transition-all hover:scale-105" 
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl h-10 md:h-12 px-4 md:px-6 shadow-sm font-medium text-[11px] border-none transition-all hover:scale-[1.03]" 
               onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited'); }}
             >
               <X size={16} className="mr-2" /> Inhibited
             </Button>
           )}
         </div>
-        <div className="flex items-center gap-2 text-[9px] md:text-[10px] font-medium text-foreground bg-background/95 px-5 md:px-6 py-2 md:py-2.5 rounded-full shadow-sm border border-border transition-all hover:bg-background">
+        <div className="flex items-center gap-2 text-[10px] md:text-[10px] font-medium text-foreground bg-background/95 px-5 md:px-6 py-2 md:py-2.5 rounded-full shadow-sm border border-border transition-all hover:bg-background">
           <Maximize2 size={12} className="text-chart-primary" /> View Details
         </div>
       </div>

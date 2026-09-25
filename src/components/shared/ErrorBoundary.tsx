@@ -33,11 +33,11 @@ class ErrorBoundary extends Component<Props, State> {
 
       return (
         <div className="min-h-[400px] flex flex-col items-center justify-center p-8 text-center space-y-6 animate-in fade-in duration-500">
-          <div className="w-20 h-20 rounded-[2rem] bg-rose-50 flex items-center justify-center text-rose-600 shadow-xl shadow-rose-100">
+          <div className="w-20 h-20 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-600 shadow-xl shadow-rose-100">
             <AlertTriangle size={40} />
           </div>
           <div className="space-y-2">
-            <h2 className="text-2xl font-black text-foreground">Something went wrong</h2>
+            <h2 className="text-2xl font-semibold text-foreground">Something went wrong</h2>
             <p className="text-muted-foreground max-w-md mx-auto font-medium">
               The clinical engine encountered an unexpected error. Your data is safe, but the view needs to be reset.
             </p>

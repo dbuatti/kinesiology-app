@@ -46,7 +46,7 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
           <h2 className="text-lg font-serif font-bold text-foreground">
             {point.name}
           </h2>
-          <Badge variant="outline" className="border-border text-muted-foreground font-black text-[7px] uppercase tracking-widest px-1.5 py-0 rounded-none">
+          <Badge variant="outline" className="border-border text-muted-foreground font-semibold text-[7px] uppercase tracking-wider px-1.5 py-0 rounded-none">
             {point.category} • {point.lateralization}
           </Badge>
         </div>
@@ -62,7 +62,7 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
                     onCheckedChange={(checked) => onUpdate('brainZones', point.name, checked ? 'Inhibited' : 'Clear', 'L')}
                     className="h-3.5 w-3.5 border-muted-foreground rounded-none"
                   />
-                  <label htmlFor={`inhib-l-${point.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-muted-foreground">
+                  <label htmlFor={`inhib-l-${point.id}`} className="text-[10px] font-semibold uppercase tracking-wider cursor-pointer text-muted-foreground">
                     L Inhib
                   </label>
                 </div>
@@ -73,7 +73,7 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
                     onCheckedChange={(checked) => onUpdate('brainZones', point.name, checked ? 'Inhibited' : 'Clear', 'R')}
                     className="h-3.5 w-3.5 border-muted-foreground rounded-none"
                   />
-                  <label htmlFor={`inhib-r-${point.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-muted-foreground">
+                  <label htmlFor={`inhib-r-${point.id}`} className="text-[10px] font-semibold uppercase tracking-wider cursor-pointer text-muted-foreground">
                     R Inhib
                   </label>
                 </div>
@@ -86,7 +86,7 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
                   onCheckedChange={(checked) => onUpdate('brainZones', point.name, checked ? 'Inhibited' : 'Clear')}
                   className="h-3.5 w-3.5 border-muted-foreground rounded-none"
                 />
-                <label htmlFor={`inhib-mid-${point.id}`} className="text-[8px] font-black uppercase tracking-widest cursor-pointer text-muted-foreground">
+                <label htmlFor={`inhib-mid-${point.id}`} className="text-[10px] font-semibold uppercase tracking-wider cursor-pointer text-muted-foreground">
                   Inhibited
                 </label>
               </div>
@@ -96,7 +96,7 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
             variant="ghost" 
             size="sm" 
             onClick={() => isLateralized ? (onUpdate('brainZones', point.name, 'Clear', 'L'), onUpdate('brainZones', point.name, 'Clear', 'R')) : onUpdate('brainZones', point.name, 'Clear')}
-            className="h-5 px-2 text-[7px] font-black uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 rounded-md"
+            className="h-5 px-2 text-[7px] font-semibold text-emerald-600 hover:bg-emerald-50 rounded-md"
           >
             <CheckCircle2 size={10} className="mr-1" /> Clear
           </Button>
@@ -108,14 +108,14 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
           <div className="lg:col-span-8 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-0.5">
-                <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-muted-foreground">
+                <div className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                   <Hand size={10} /> Location
                 </div>
                 <p className="text-xs font-bold text-foreground leading-tight">{point.location}</p>
               </div>
               
               <div className="space-y-0.5">
-                <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-muted-foreground">
+                <div className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                   <PlayCircle size={10} /> Stimulus
                 </div>
                 <p className="text-xs font-bold text-foreground leading-tight">{point.stimulus || point.technique || ""}</p>

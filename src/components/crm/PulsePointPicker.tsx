@@ -68,7 +68,7 @@ export default function PulsePointPicker({ selectedRow, onSelect }: PulsePointPi
                         {point.right}
                       </button>
                     </div>
-                    <p className="text-[8px] text-muted-foreground/60 text-center mt-1">{point.pos}</p>
+                    <p className="text-[10px] text-muted-foreground/60 text-center mt-1">{point.pos}</p>
                   </div>
                 );
               })}
@@ -81,11 +81,11 @@ export default function PulsePointPicker({ selectedRow, onSelect }: PulsePointPi
       <div className="flex items-center justify-center gap-4 pt-1">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-2 rounded-sm bg-primary" />
-          <span className="text-[9px] text-muted-foreground font-medium">Yang (light touch)</span>
+          <span className="text-[10px] text-muted-foreground font-medium">Yang (light touch)</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-2 rounded-sm bg-chart-destructive" />
-          <span className="text-[9px] text-muted-foreground font-medium">Yin (deep touch)</span>
+          <span className="text-[10px] text-muted-foreground font-medium">Yin (deep touch)</span>
         </div>
       </div>
     </div>

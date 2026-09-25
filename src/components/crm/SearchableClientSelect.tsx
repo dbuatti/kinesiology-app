@@ -60,11 +60,11 @@ const SearchableClientSelect = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-[--radix-popover-trigger-width] p-0 bg-card dark:bg-foreground border-none shadow-2xl z-[120]" 
+        className="w-[--radix-popover-trigger-width] p-0 bg-card dark:bg-card border-none shadow-2xl z-[120]" 
         align="start"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <Command className="rounded-xl bg-card dark:bg-foreground">
+        <Command className="rounded-xl bg-card dark:bg-card">
           <CommandInput placeholder="Search clients..." className="h-11" />
           <CommandList 
             className="max-h-[300px] overflow-y-auto custom-scrollbar"
@@ -88,7 +88,7 @@ const SearchableClientSelect = ({
                   className="flex items-center justify-between py-3 px-4 cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-rose-400 text-white flex items-center justify-center text-[10px] font-bold uppercase">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-rose-400 text-white flex items-center justify-center text-[11px] font-bold">
                       {client.name.charAt(0)}
                     </div>
                     <span className="font-medium">{client.name}</span>

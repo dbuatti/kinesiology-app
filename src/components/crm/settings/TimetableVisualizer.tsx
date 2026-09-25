@@ -668,7 +668,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  {!isLocked && scheduledData.conflictsList.length > 0 && (
  <Button onClick={() => setIsOptimized(!isOptimized)} size="sm"
   className={cn(
-  "rounded-xl h-9 px-5 font-semibold text-[10px] uppercase tracking-wider",
+  "rounded-xl h-9 px-5 font-semibold text-[11px]",
   isOptimized
   ? "bg-chart-emerald hover:bg-chart-emerald/90 text-primary-foreground "
   : "bg-muted hover:bg-muted/80 text-foreground "
@@ -754,7 +754,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  </CardDescription>
  </div>
   <Button onClick={() => setShowApplyConfirm(true)} disabled={applyingMoves}
- className="bg-chart-emerald hover:bg-chart-emerald/90 text-primary-foreground rounded-xl h-9 px-6 font-semibold text-[10px] uppercase tracking-wider shrink-0">
+ className="bg-chart-emerald hover:bg-chart-emerald/90 text-primary-foreground rounded-xl h-9 px-6 font-semibold text-[11px] shrink-0">
  {applyingMoves ? <Loader2 className="mr-2 animate-spin" size={13} /> : <CheckCircle2 size={13} className="mr-2" />}
  Apply Schedule
  </Button>

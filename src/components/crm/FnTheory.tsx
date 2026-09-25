@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import MotorControlHierarchy from './MotorControlHierarchy';
 
 const SectionHeader = ({ icon: Icon, title, color }: { icon: ElementType, title: string, color: string }) => (
-  <h3 className={`text-2xl font-black flex items-center gap-3 ${color}`}>
+  <h3 className={`text-2xl font-semibold flex items-center gap-3 ${color}`}>
     <Icon size={28} /> {title}
   </h3>
 );
@@ -19,13 +19,13 @@ const SectionHeader = ({ icon: Icon, title, color }: { icon: ElementType, title:
 const FnTheory = () => {
   return (
     <div className="space-y-12">
-      <Card className="border-none shadow-2xl rounded-[3.5rem] bg-foreground text-primary-foreground overflow-hidden relative">
+      <Card className="border-none shadow-2xl rounded-2xl bg-foreground text-primary-foreground overflow-hidden relative">
         <div className="absolute top-0 right-0 p-12 opacity-5"><Workflow size={200} /></div>
         <CardHeader className="p-12 relative z-10">
           <div className="flex items-center gap-5 mb-4">
             <div className="w-16 h-16 bg-card/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-primary-foreground/20"><GitBranch size={32} className="text-indigo-400" /></div>
             <div>
-              <CardTitle className="text-4xl font-black tracking-tight">Functional Neuro Approach</CardTitle>
+              <CardTitle className="text-4xl font-semibold tracking-tight">Functional Neuro Approach</CardTitle>
               <CardDescription className="text-muted-foreground text-xl font-medium mt-2">
                 The Hierarchy of Clinical Integration
               </CardDescription>
@@ -42,10 +42,10 @@ const FnTheory = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-900 text-primary-foreground overflow-hidden relative">
+          <Card className="border-none shadow-lg rounded-2xl bg-indigo-900 text-primary-foreground overflow-hidden relative">
             <div className="absolute top-0 right-0 p-6 opacity-10"><ShieldCheck size={100} /></div>
             <CardHeader>
-              <CardTitle className="text-xl font-black flex items-center gap-2">
+              <CardTitle className="text-xl font-semibold flex items-center gap-2">
                 <Zap size={20} className="text-amber-400" /> The Fractal Logic
               </CardTitle>
             </CardHeader>
@@ -54,7 +54,7 @@ const FnTheory = () => {
                 "The nervous system works in fractal patterns. If you correct the highest level reflex, you can knock out 3-4 others in one go."
               </p>
               <div className="p-4 bg-card/10 rounded-2xl border border-primary-foreground/10">
-                <p className="text-[10px] font-black text-indigo-300 uppercase tracking-widest mb-2">Master Chain</p>
+                <p className="text-[10px] font-semibold text-indigo-300 uppercase tracking-wider mb-2">Master Chain</p>
                 <div className="flex items-center gap-2 text-sm font-bold">
                   <span>Fear Paralysis</span>
                   <ArrowRight size={14} />
@@ -66,9 +66,9 @@ const FnTheory = () => {
             </CardContent>
           </Card>
 
-          <Card className="lg:col-span-2 border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+          <Card className="lg:col-span-2 border-none shadow-lg rounded-2xl bg-card overflow-hidden">
             <CardHeader className="bg-muted/50 p-8">
-              <h4 className="font-black text-foreground uppercase tracking-widest text-xs">Clinical Significance</h4>
+              <h4 className="font-semibold text-foreground uppercase tracking-wider text-xs">Clinical Significance</h4>
             </CardHeader>
             <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -95,7 +95,7 @@ const FnTheory = () => {
       <MotorControlHierarchy />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+        <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
           <CardHeader className="bg-primary/5 p-8">
             <SectionHeader icon={Brain} title="Mechanoreceptive Conscious" color="text-primary" />
             <p className="text-blue-800 font-medium">Targets the DCML pathway (15% of afferent input) to the contralateral sensory cortex (S1).</p>
@@ -106,7 +106,7 @@ const FnTheory = () => {
              </div>
           </CardContent>
         </Card>
-        <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+        <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
           <CardHeader className="bg-emerald-50 p-8">
             <SectionHeader icon={Activity} title="Mechanoreceptive Unconscious" color="text-emerald-600" />
             <p className="text-emerald-800 font-medium">Targets spinocerebellar tracts (85% of afferent input) to the cerebellum.</p>

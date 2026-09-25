@@ -398,7 +398,7 @@ const PrimitiveReflexReference = () => {
                 variant={selectedCategory === cat ? "default" : "outline"}
                 onClick={() => setSelectedCategory(cat)}
                 className={cn(
-                  "rounded-xl h-14 px-6 font-medium text-[10px] uppercase tracking-wider whitespace-nowrap transition-all",
+                  "rounded-xl h-14 px-6 font-medium text-[11px] whitespace-nowrap transition-all",
                   selectedCategory === cat ? "bg-foreground shadow-sm" : "border-border bg-card hover:bg-muted"
                 )}
               >
@@ -409,7 +409,7 @@ const PrimitiveReflexReference = () => {
               <Button 
                 variant="outline" 
                 asChild
-                className="rounded-xl h-14 px-6 font-medium text-[10px] uppercase tracking-wider border-border text-chart-destructive hover:bg-muted"
+                className="rounded-xl h-14 px-6 font-medium text-[11px] border-border text-chart-destructive hover:bg-muted"
               >
                 <Link to="/resources/primitive-reflexes/worksheet">
                   <FileText size={18} className="mr-2" /> Worksheet

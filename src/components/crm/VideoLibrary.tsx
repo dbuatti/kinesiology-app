@@ -49,7 +49,7 @@ const VideoLibrary = () => {
                       <User size={10} />
                       <span>{video.isPrimary ? "Your Collection" : video.author}</span>
                       <span className="opacity-40">·</span>
-                      <Badge className="text-[8px] font-semibold bg-muted text-muted-foreground border-none px-1.5 py-0 rounded">
+                      <Badge className="text-[10px] font-semibold bg-muted text-muted-foreground border-none px-1.5 py-0 rounded">
                         {video.type}
                       </Badge>
                     </div>
@@ -61,7 +61,7 @@ const VideoLibrary = () => {
               <p className="text-xs text-muted-foreground leading-relaxed">{video.description}</p>
               <div className="flex flex-wrap gap-1.5">
                 {video.tags.map(tag => (
-                  <Badge key={tag} variant="secondary" className="bg-muted text-muted-foreground border-none text-[9px] font-medium px-2 py-0.5 rounded-md">
+                  <Badge key={tag} variant="secondary" className="bg-muted text-muted-foreground border-none text-[10px] font-medium px-2 py-0.5 rounded-md">
                     {tag}
                   </Badge>
                 ))}
@@ -70,7 +70,7 @@ const VideoLibrary = () => {
                 asChild
                 size="sm"
                 className={cn(
-                  "w-full h-9 rounded-lg font-medium text-[10px] uppercase tracking-wider",
+                  "w-full h-9 rounded-lg font-medium text-[11px]",
                   video.isPrimary ? "bg-primary hover:bg-primary/90" : "bg-foreground hover:bg-foreground/90"
                 )}
               >

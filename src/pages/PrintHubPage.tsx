@@ -155,7 +155,7 @@ const PrintHubPage = () => {
  </div>
 
  <div className="pt-4 flex items-center justify-between border-t border-border">
- <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground group-hover:text-chart-primary transition-colors">
+ <span className="text-[11px] font-semibold text-muted-foreground group-hover:text-chart-primary transition-colors">
  Open Printable
  </span>
  <ChevronRight size={18} className="text-muted-foreground/60 group-hover:text-chart-primary group-hover:translate-x-1 transition-all" />

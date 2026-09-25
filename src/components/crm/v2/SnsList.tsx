@@ -84,7 +84,7 @@ const SnsItem = ({ title, subtitle, icon: Icon, iconColor, notes, notesField, ha
             </button>
           )}
           {hasNotes ? (
-            <Badge variant="outline" className="text-[9px] font-medium uppercase tracking-wider bg-chart-emerald/10 text-chart-emerald border-chart-emerald/20">
+            <Badge variant="outline" className="text-[10px] font-medium uppercase tracking-wider bg-chart-emerald/10 text-chart-emerald border-chart-emerald/20">
               Recorded
             </Badge>
           ) : (

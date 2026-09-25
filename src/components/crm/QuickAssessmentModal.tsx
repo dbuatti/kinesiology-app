@@ -70,9 +70,9 @@ const QuickAssessmentModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] rounded-[2rem]">
+      <DialogContent className="sm:max-w-[500px] rounded-2xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-black flex items-center gap-3">
+          <DialogTitle className="text-2xl font-semibold flex items-center gap-3">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-primary-foreground ${type === 'bolt' ? 'bg-chart-primary' : 'bg-rose-600'}`}>
               {type === 'bolt' ? <FlaskConical size={24} /> : <Activity size={24} />}
             </div>

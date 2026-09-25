@@ -401,11 +401,11 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                             <Icon size={20} />
                           </div>
                           <div className="flex gap-1.5">
-                            <Badge className="bg-muted text-muted-foreground border-none font-bold text-[8px] uppercase tracking-wider">
+                            <Badge className="bg-muted text-muted-foreground border-none font-bold text-[10px] uppercase tracking-wider">
                               {lesson.duration}
                             </Badge>
                             {isCompleted && (
-                              <Badge className="bg-foreground text-primary-foreground border-none font-bold text-[8px] uppercase tracking-wider flex items-center gap-1">
+                              <Badge className="bg-foreground text-primary-foreground border-none font-bold text-[10px] uppercase tracking-wider flex items-center gap-1">
                                 <CheckCircle2 size={10} /> Completed
                               </Badge>
                             )}
@@ -426,7 +426,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                             setQuizSubmitted(false);
                             setQuizIsCorrect(false);
                           }}
-                          className="w-full bg-foreground hover:bg-foreground h-10 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm transition-all"
+                          className="w-full bg-foreground hover:bg-foreground h-10 rounded-xl font-bold text-xs shadow-sm transition-all"
                         >
                           Start Lesson <PlayCircle size={14} className="ml-1.5" />
                         </Button>
@@ -447,7 +447,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                   >
                     <ChevronLeft size={16} className="mr-1" /> Back to Lessons
                   </Button>
-                  <Badge className="bg-foreground text-primary-foreground border-none font-bold text-[9px] uppercase tracking-wider px-3 py-1 rounded-full">
+                  <Badge className="bg-foreground text-primary-foreground border-none font-bold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
                     Lesson {activeLesson?.id} of {lessons.length}
                   </Badge>
                 </div>
@@ -457,7 +457,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                   </div>
                   <div>
                     <CardTitle className="text-lg font-bold text-foreground">{activeLesson?.title}</CardTitle>
-                    <CardDescription className="font-bold text-[9px] uppercase tracking-wider text-muted-foreground mt-0.5">
+                    <CardDescription className="font-bold text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">
                       {activeLesson?.difficulty} • {activeLesson?.duration}
                     </CardDescription>
                   </div>
@@ -469,7 +469,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                 {/* Check Your Understanding Mini-Quiz */}
                 {activeLesson && (
                   <div className="mt-8 p-6 bg-muted/50 rounded-2xl border border-border space-y-4">
-                    <h4 className="text-sm font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                       <HelpCircle size={16} className="text-indigo-600" /> Check Your Understanding
                     </h4>
                     <p className="text-sm font-bold text-foreground">{activeLesson.quiz.question}</p>
@@ -509,7 +509,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     {quizSubmitted && (
                       <div className="p-4 bg-card rounded-xl border border-border space-y-2 animate-in fade-in duration-300">
                         <p className={cn(
-                          "text-xs font-black uppercase tracking-widest",
+                          "text-xs font-semibold uppercase tracking-wider",
                           quizIsCorrect ? "text-emerald-600" : "text-rose-600"
                         )}>
                           {quizIsCorrect ? "Correct!" : "Incorrect"}
@@ -524,7 +524,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                       <Button 
                         onClick={handleQuizSubmit}
                         disabled={!selectedQuizAnswer}
-                        className="bg-indigo-600 hover:bg-indigo-700 text-primary-foreground rounded-xl h-10 px-6 font-bold text-xs uppercase tracking-wider"
+                        className="bg-indigo-600 hover:bg-indigo-700 text-primary-foreground rounded-xl h-10 px-6 font-bold text-xs"
                       >
                         Submit Answer
                       </Button>
@@ -544,7 +544,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     onClick={() => handleCompleteLesson(activeLesson!.id)}
                     disabled={!quizIsCorrect}
                     className={cn(
-                      "h-10 px-6 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm transition-all",
+                      "h-10 px-6 rounded-xl font-bold text-xs shadow-sm transition-all",
                       quizIsCorrect ? "bg-foreground hover:bg-foreground text-primary-foreground" : "bg-muted text-muted-foreground cursor-not-allowed"
                     )}
                   >
@@ -582,7 +582,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                         key={joint.id}
                         variant={selectedAnatomyJoint === joint.id ? 'default' : 'ghost'}
                         onClick={() => { setSelectedAnatomyJoint(joint.id as any); setSelectedStructure(joint.defaultStructure); }}
-                        className="h-8 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider"
+                        className="h-8 px-3 rounded-lg text-[11px] font-bold"
                       >
                         {joint.label}
                       </Button>
@@ -605,10 +605,10 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                 <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden border-l-4 border-border animate-in fade-in slide-in-from-right-2 duration-300">
                   <CardHeader className="p-6 pb-4">
                     <div className="flex items-center justify-between mb-2">
-                      <Badge className="bg-muted text-foreground border-none font-bold text-[8px] uppercase tracking-wider">
+                      <Badge className="bg-muted text-foreground border-none font-bold text-[10px] uppercase tracking-wider">
                         {currentStructure.type}
                       </Badge>
-                      <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Anatomy Guide</span>
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Anatomy Guide</span>
                     </div>
                     <CardTitle className="text-lg font-bold text-foreground">{currentStructure.name}</CardTitle>
                   </CardHeader>
@@ -616,13 +616,13 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     {/* Real-time Image Upload Zone */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Reference Image</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Reference Image</p>
                         <div className="flex bg-muted p-0.5 rounded-lg border border-border">
                           <Button 
                             variant={imageSourceMode === 'sourced' ? 'default' : 'ghost'} 
                             size="sm" 
                             onClick={() => setImageSourceMode('sourced')}
-                            className="h-6 px-2.5 rounded-md text-[8px] font-black uppercase tracking-widest"
+                            className="h-6 px-2.5 rounded-md text-[11px] font-semibold"
                           >
                             Sourced
                           </Button>
@@ -630,7 +630,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                             variant={imageSourceMode === 'custom' ? 'default' : 'ghost'} 
                             size="sm" 
                             onClick={() => setImageSourceMode('custom')}
-                            className="h-6 px-2.5 rounded-md text-[8px] font-black uppercase tracking-widest"
+                            className="h-6 px-2.5 rounded-md text-[11px] font-semibold"
                           >
                             Custom
                           </Button>
@@ -640,7 +640,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                       {imageSourceMode === 'sourced' ? (
                         <div className="aspect-video rounded-xl overflow-hidden border border-border bg-muted/50 flex items-center justify-center relative group/img">
                           <img src={currentStructure.defaultImageUrl} alt={currentStructure.name} className="w-full h-full object-cover" />
-                          <div className="absolute bottom-2 right-2 bg-foreground/60 backdrop-blur-md text-primary-foreground text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md">
+                          <div className="absolute bottom-2 right-2 bg-foreground/60 backdrop-blur-md text-primary-foreground text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md">
                             Sourced Reference
                           </div>
                         </div>
@@ -676,7 +676,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                                     <Button variant="secondary" size="icon" className="rounded-xl h-8 w-8 shadow-lg"><Upload size={14} /></Button>
                                     <Button variant="destructive" size="icon" className="rounded-xl h-8 w-8 shadow-lg" onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}><X size={14} /></Button>
                                   </div>
-                                  <p className="text-[8px] font-black text-primary-foreground uppercase tracking-widest">Click to Change</p>
+                                  <p className="text-[10px] font-semibold text-primary-foreground uppercase tracking-wider">Click to Change</p>
                                 </div>
                               </div>
                             </>
@@ -689,7 +689,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                                   <div className="w-10 h-10 rounded-xl bg-card shadow-sm border border-border/50 flex items-center justify-center mx-auto text-muted-foreground group-hover/img:text-indigo-600 transition-all">
                                     <ImageIcon size={20} />
                                   </div>
-                                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Click or Drop Reference Image</p>
+                                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Click or Drop Reference Image</p>
                                 </>
                               )}
                             </div>
@@ -699,24 +699,24 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                     </div>
 
                     <div className="space-y-1">
-                      <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Description</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Description</p>
                       <p className="text-xs text-muted-foreground font-medium leading-relaxed">{currentStructure.desc}</p>
                     </div>
 
                     <div className="p-4 bg-muted/50 rounded-xl border border-border space-y-1">
-                      <p className="text-[9px] font-bold text-foreground/80 uppercase tracking-wider">How to Test / Stimulate</p>
+                      <p className="text-[10px] font-bold text-foreground/80 uppercase tracking-wider">How to Test / Stimulate</p>
                       <p className="text-xs text-muted-foreground font-medium leading-relaxed">{currentStructure.test}</p>
                     </div>
 
                     <div className="p-4 bg-muted/50 rounded-xl border border-border space-y-1.5">
-                      <p className="text-[9px] font-bold text-foreground uppercase tracking-wider flex items-center gap-1">
+                      <p className="text-[10px] font-bold text-foreground uppercase tracking-wider flex items-center gap-1">
                         <Zap size={12} /> Correction Protocol
                       </p>
                       <p className="text-xs text-muted-foreground font-medium leading-relaxed">{currentStructure.correction}</p>
                     </div>
 
                     <div className="p-4 bg-foreground text-primary-foreground rounded-xl space-y-1">
-                      <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider">Neurological Logic</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Neurological Logic</p>
                       <p className="text-xs text-muted-foreground/60 leading-relaxed">
                         {currentStructure.type === 'Ligament' 
                           ? "Targets the Spinocerebellar tract to the ipsilateral cerebellum. Hold GV16 to clear the threat." 
@@ -726,7 +726,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
 
                     <Button 
                       onClick={handleSendToSandbox}
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-primary-foreground h-12 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg"
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-primary-foreground h-12 rounded-xl font-semibold text-xs shadow-lg"
                     >
                       <Compass size={16} className="mr-2" /> Practice with Selection
                     </Button>
@@ -756,7 +756,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
             {/* Left Column: Configuration */}
             <Card className="md:col-span-5 border border-border shadow-sm rounded-2xl bg-card p-6 space-y-5">
               <div className="space-y-2">
-                <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">1. Select Joint</label>
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">1. Select Joint</label>
                 <div className="grid grid-cols-4 gap-1.5">
                   {["Knee", "Ankle", "Shoulder", "Hip"].map(j => (
                     <Button 
@@ -772,7 +772,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">2. Select Tissue Type</label>
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">2. Select Tissue Type</label>
                 <div className="grid grid-cols-2 gap-2">
                   <Button 
                     variant={sandboxTissue === 'Ligament' ? 'default' : 'outline'}
@@ -794,7 +794,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
               {sandboxTissue === 'Tendon' && (
                 <>
                   <div className="space-y-2">
-                    <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">3. Select Plane of Motion</label>
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">3. Select Plane of Motion</label>
                     <div className="grid grid-cols-3 gap-2">
                       {["Sagittal", "Frontal", "Transverse"].map(p => (
                         <Button 
@@ -810,7 +810,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">4. Select Action</label>
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">4. Select Action</label>
                     <div className="grid grid-cols-2 gap-2">
                       {sandboxActions[sandboxJoint as keyof typeof sandboxActions][sandboxPlane as keyof typeof sandboxActions['Knee']].map(a => (
                         <Button 
@@ -833,22 +833,22 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
               <Card className="border border-border shadow-sm rounded-2xl bg-foreground text-primary-foreground overflow-hidden flex flex-col justify-between">
                 <CardHeader className="p-6 pb-3">
                   <div className="flex items-center justify-between mb-2">
-                    <Badge className="bg-card/10 text-primary-foreground border-none font-bold text-[8px] uppercase tracking-wider">
+                    <Badge className="bg-card/10 text-primary-foreground border-none font-bold text-[10px] uppercase tracking-wider">
                       {sandboxTissue} Priority
                     </Badge>
-                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Generated Protocol</span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Generated Protocol</span>
                   </div>
                   <CardTitle className="text-xl font-bold">{sandboxProtocol.title}</CardTitle>
                   <p className="text-xs text-muted-foreground/60 font-bold mt-0.5">Pathway: {sandboxProtocol.pathway}</p>
                 </CardHeader>
                 <CardContent className="p-6 space-y-5">
                   <div className="p-4 bg-card/5 rounded-xl border border-primary-foreground/10 space-y-1">
-                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Step 1: Stimulate (Find the Threat)</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Step 1: Stimulate (Find the Threat)</p>
                     <p className="text-xs font-bold text-primary-foreground leading-relaxed">{sandboxProtocol.text}</p>
                   </div>
 
                   <div className="p-4 bg-card/5 rounded-xl border border-primary-foreground/10 space-y-1">
-                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Step 2: Calibrate (Apply Correction)</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Step 2: Calibrate (Apply Correction)</p>
                     <p className="text-xs font-bold text-primary-foreground leading-relaxed">{sandboxProtocol.correction}</p>
                   </div>
 

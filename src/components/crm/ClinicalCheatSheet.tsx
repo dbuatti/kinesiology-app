@@ -30,12 +30,12 @@ const ClinicalCheatSheet = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {filtered.map((item) => (
-          <Card key={item.complaint} className="border-none shadow-lg rounded-[2.5rem] bg-card hover:shadow-2xl transition-all group overflow-hidden">
+          <Card key={item.complaint} className="border-none shadow-lg rounded-2xl bg-card hover:shadow-2xl transition-all group overflow-hidden">
             <CardHeader className="pb-4 bg-muted/50/50 border-b border-border/50">
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <Badge className={cn(
-                    "border-none font-black text-[9px] uppercase tracking-widest mb-2",
+                    "border-none font-semibold text-[10px] uppercase tracking-wider mb-2",
                     item.category === 'Structural' ? "bg-primary/10 text-primary" :
                     item.category === 'Emotional' ? "bg-rose-100 text-rose-700" :
                     item.category === 'Neurological' ? "bg-purple-100 text-purple-700" :
@@ -43,7 +43,7 @@ const ClinicalCheatSheet = () => {
                   )}>
                     {item.category} Focus
                   </Badge>
-                  <CardTitle className="text-2xl font-black text-foreground group-hover:text-indigo-600 transition-colors">
+                  <CardTitle className="text-2xl font-semibold text-foreground group-hover:text-indigo-600 transition-colors">
                     {item.complaint}
                   </CardTitle>
                 </div>
@@ -55,7 +55,7 @@ const ClinicalCheatSheet = () => {
             <CardContent className="p-8 space-y-8">
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                     <Activity size={14} className="text-indigo-500" /> Priority Muscles
                   </p>
                   <div className="flex flex-wrap gap-1.5">
@@ -67,7 +67,7 @@ const ClinicalCheatSheet = () => {
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                     <Move size={14} className="text-emerald-500" /> Meridians
                   </p>
                   <div className="flex flex-wrap gap-1.5">
@@ -82,7 +82,7 @@ const ClinicalCheatSheet = () => {
 
               <div className="p-5 bg-amber-50 rounded-3xl border border-amber-100 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-10"><Brain size={40} className="text-amber-600" /></div>
-                <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-2 flex items-center gap-2">
+                <p className="text-[10px] font-semibold text-amber-600 uppercase tracking-wider mb-2 flex items-center gap-2">
                   <Info size={14} /> Clinical Insight
                 </p>
                 <p className="text-sm text-amber-900 font-bold leading-relaxed">
@@ -91,7 +91,7 @@ const ClinicalCheatSheet = () => {
               </div>
 
               <div className="space-y-3">
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Key Reflex Points</p>
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Key Reflex Points</p>
                 <div className="flex flex-wrap gap-2">
                   {item.reflexPoints.map(p => (
                     <span key={p} className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
@@ -106,9 +106,9 @@ const ClinicalCheatSheet = () => {
       </div>
 
       {filtered.length === 0 && (
-        <div className="text-center py-32 bg-muted/50 rounded-[3rem] border-2 border-dashed border-border">
+        <div className="text-center py-32 bg-muted/50 rounded-2xl border-2 border-dashed border-border">
           <Search size={48} className="mx-auto text-muted-foreground/60 mb-4" />
-          <h3 className="text-xl font-black text-foreground">No complaints found</h3>
+          <h3 className="text-xl font-semibold text-foreground">No complaints found</h3>
           <p className="text-muted-foreground mt-2">Try searching for a different symptom or complaint.</p>
         </div>
       )}

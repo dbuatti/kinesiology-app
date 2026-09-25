@@ -64,7 +64,7 @@ const AssessmentSection = ({ id, title, description, icon: Icon, children, count
                   variant="ghost" 
                   size="sm" 
                   onClick={onClearAll}
-                  className="h-7 md:h-8 text-[8px] md:text-[9px] font-medium uppercase tracking-widest text-primary hover:bg-primary/10 rounded-lg md:rounded-xl animate-in fade-in zoom-in-95"
+                  className="h-7 md:h-8 text-[11px] md:text-[10px] font-medium text-primary hover:bg-primary/10 rounded-lg md:rounded-xl animate-in fade-in zoom-in-95"
                 >
                   <CheckCircle2 size={12} className="mr-1 md:mr-1.5" /> 
                   <span className="hidden sm:inline">Mark All Clear</span>
@@ -96,7 +96,7 @@ const AssessmentSection = ({ id, title, description, icon: Icon, children, count
               <Button 
                 variant="outline" 
                 onClick={onClearAll}
-                className="rounded-xl border-primary/20 text-primary hover:bg-primary/10 font-medium text-[10px] uppercase tracking-wider h-10 px-8"
+                className="rounded-xl border-primary/20 text-primary hover:bg-primary/10 font-medium text-[11px] h-10 px-8"
               >
                 <CheckCircle2 size={14} className="mr-2" /> Mark Entire Section as Clear
               </Button>

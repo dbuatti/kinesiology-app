@@ -230,7 +230,7 @@ const SandboxV2Page = () => {
               <ArrowLeft size={14} /> Back
             </button>
             <span className="h-4 w-px bg-border/60" />
-            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">Sandbox</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">Sandbox</span>
             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground hidden sm:flex">
               <Database size={12} className="text-muted-foreground" />
               <span className="font-medium">No data saved</span>
@@ -248,7 +248,7 @@ const SandboxV2Page = () => {
                     key={tab.id}
                     onClick={() => setViewMode(tab.id)}
                     className={cn(
-                      "flex items-center gap-1 px-2 h-7 text-[9px] font-bold uppercase tracking-wider transition-colors rounded-md",
+                      "flex items-center gap-1 px-2 h-7 text-[11px] font-bold transition-colors rounded-md",
                       isActive
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -262,14 +262,14 @@ const SandboxV2Page = () => {
             </div>
             <button
               onClick={() => setSaveOpen(true)}
-              className="flex items-center gap-1 px-2.5 h-7 text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground hover:bg-primary/90 transition-colors rounded-md"
+              className="flex items-center gap-1 px-2.5 h-7 text-[11px] font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors rounded-md"
             >
               <Save size={12} /> Save
             </button>
             <div className="w-px h-5 bg-border/60 mx-1" />
             <button
               onClick={() => setIsFullScreen(!isFullScreen)}
-              className="flex items-center gap-1 px-2 h-7 text-[9px] font-bold tracking-wider text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-muted/50"
+              className="flex items-center gap-1 px-2 h-7 text-[10px] font-bold tracking-wider text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-muted/50"
             >
               {isFullScreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
             </button>
@@ -319,7 +319,7 @@ const SandboxV2Page = () => {
               <button
                 onClick={() => { setUseNewClient(false); setNewClientName(""); }}
                 className={cn(
-                  "flex-1 h-9 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors",
+                  "flex-1 h-9 text-[11px] font-bold rounded-lg transition-colors",
                   !useNewClient
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -330,7 +330,7 @@ const SandboxV2Page = () => {
               <button
                 onClick={() => { setUseNewClient(true); setSelectedClientId(null); setClientSearch(""); setSearchResults([]); }}
                 className={cn(
-                  "flex-1 h-9 text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors",
+                  "flex-1 h-9 text-[11px] font-bold rounded-lg transition-colors",
                   useNewClient
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -406,10 +406,10 @@ const SandboxV2Page = () => {
             return (
               <div className="px-0">
                 <div className="h-px bg-border/40 -mx-6 mb-4" />
-                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Data to save</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">Data to save</p>
                 <div className="flex flex-wrap gap-1">
                   {filled.map(s => (
-                    <span key={s} className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary">{s}</span>
+                    <span key={s} className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary">{s}</span>
                   ))}
                 </div>
               </div>

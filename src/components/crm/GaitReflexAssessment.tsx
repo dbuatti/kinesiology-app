@@ -91,7 +91,7 @@ const GaitReflexAssessment = ({
       >
         <div className="flex items-center justify-between w-full mb-1">
           <span className={cn(
-            "text-[10px] font-black uppercase tracking-widest",
+            "text-[11px] font-semibold",
             status === 'normal' ? "text-emerald-600" : "text-rose-600"
           )}>
             Should {expected}
@@ -142,14 +142,14 @@ const GaitReflexAssessment = ({
                 <Eye size={20} className="text-emerald-600" />
                 1. Diagnosis (Reciprocal Inhibition)
               </h3>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
                 <MousePointer2 size={10} /> Click to toggle abnormal (X)
               </p>
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <p className="text-xs font-black text-indigo-600 uppercase tracking-widest px-1">Left Foot Forward</p>
+                <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wider px-1">Left Foot Forward</p>
                 <div className="grid grid-cols-2 gap-3">
                   {GAIT_TESTS.leftForward.map(test => (
                     <TestButton key={test.id} {...test} />
@@ -158,7 +158,7 @@ const GaitReflexAssessment = ({
               </div>
 
               <div className="space-y-3">
-                <p className="text-xs font-black text-indigo-600 uppercase tracking-widest px-1">Right Foot Forward</p>
+                <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wider px-1">Right Foot Forward</p>
                 <div className="grid grid-cols-2 gap-3">
                   {GAIT_TESTS.rightForward.map(test => (
                     <TestButton key={test.id} {...test} />
@@ -199,8 +199,8 @@ const GaitReflexAssessment = ({
                         <Move size={24} className="text-primary-foreground" />
                       </div>
                       <div className="space-y-1">
-                        <p className="text-xs font-black text-amber-600 uppercase tracking-widest">The Fix</p>
-                        <p className="text-xl font-black text-amber-900">{CORRECTIONS[eyePriority].fix}</p>
+                        <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider">The Fix</p>
+                        <p className="text-xl font-semibold text-amber-900">{CORRECTIONS[eyePriority].fix}</p>
                         <p className="text-sm text-amber-800 leading-relaxed">{CORRECTIONS[eyePriority].detail}</p>
                         <div className="pt-3 flex items-center gap-2 text-[10px] font-bold text-emerald-600 uppercase">
                           <CheckCircle2 size={12} /> Finish with 30s Cross Crawls

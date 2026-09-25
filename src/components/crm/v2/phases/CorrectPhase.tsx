@@ -73,14 +73,14 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
             <Target size={16} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[9px] font-bold text-destructive uppercase tracking-wider">Priority Pathway</p>
+            <p className="text-[10px] font-bold text-destructive uppercase tracking-wider">Priority Pathway</p>
             <p className="text-sm font-semibold text-foreground truncate">{priorityPathway}</p>
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setPathModalOpen(true)}
-            className="rounded-lg h-8 px-2.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:bg-destructive/10 shrink-0"
+            className="rounded-lg h-8 px-2.5 text-[11px] font-bold text-muted-foreground hover:bg-destructive/10 shrink-0"
           >
             Change
           </Button>
@@ -99,7 +99,7 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
         {/* Inhibition/Hypertonic Finding Selector (hidden once a real pathway is set) */}
         {pathwayFindings.length > 0 && (!priorityPathway || isCustom || customMode) && (
           <div className="mb-4 p-3 bg-muted/50 rounded-xl border border-border">
-            <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Select Finding to Correct</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Select Finding to Correct</p>
             <Select
               value={priorityPathway && priorityPathway !== 'CUSTOM' ? priorityPathway : ''}
               onValueChange={selectPathway}
@@ -248,7 +248,7 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
             {priorityPathway && priorityPathway !== 'CUSTOM' && (
               <div className="space-y-3">
                 <div className="p-4 bg-muted rounded-xl border border-border space-y-2">
-                  <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Priority Pathway</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Priority Pathway</p>
                   <p className="text-sm font-semibold text-foreground">{priorityPathway}</p>
                 </div>
                 {(() => {
@@ -263,13 +263,13 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
                   }
                   return pathwayCorrections.length > 0 ? (
                     <div className="space-y-2">
-                      <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground px-1">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1">
                         Corrections Linked to {priorityPathway}
                       </p>
                       {pathwayCorrections.map((c: any, i: number) => (
                         <div key={i} className="p-4 bg-muted border border-border rounded-xl space-y-2">
                           {pathwayCorrections.length > 1 && (
-                            <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                               Correction #{i + 1}
                             </p>
                           )}

@@ -314,7 +314,7 @@ const CorrectionsManualContent = () => {
                       </div>
                     ))}
                   </div>
-                  <p className="text-[9px] text-muted-foreground mt-3 italic leading-relaxed">
+                  <p className="text-[10px] text-muted-foreground mt-3 italic leading-relaxed">
                     Light pressure = Yang (superficial pulse). Deep pressure = Yin (deep pulse). Hold until therapeutic shift.
                   </p>
                 </div>
@@ -386,7 +386,7 @@ const CorrectionsManualContent = () => {
                         <div className="grid grid-cols-2 gap-3">
                           <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800">
                             <div className="flex items-center gap-1.5 mb-1">
-                              <span className="text-[9px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">YES</span>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">YES</span>
                               <ArrowRightCircle size={12} className="text-rose-500" />
                             </div>
                             <p className="text-[10px] text-rose-800 dark:text-rose-200 leading-relaxed">
@@ -395,7 +395,7 @@ const CorrectionsManualContent = () => {
                           </div>
                           <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
                             <div className="flex items-center gap-1.5 mb-1">
-                              <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">NO</span>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">NO</span>
                               <ArrowRightCircle size={12} className="text-emerald-500" />
                             </div>
                             <p className="text-[10px] text-emerald-800 dark:text-emerald-200 leading-relaxed">{cp.noAdvance}</p>

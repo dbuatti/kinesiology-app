@@ -1422,7 +1422,7 @@ export function ClientAuditTool() {
                             variant="ghost"
                             size="sm"
                             onClick={handleResetFilters}
-                            className="h-7 px-2 text-chart-primary hover:bg-muted rounded-lg text-[10px] font-semibold uppercase tracking-wider"
+                            className="h-7 px-2 text-chart-primary hover:bg-muted rounded-lg text-[11px] font-semibold"
                           >
                             Reset
                           </Button>
@@ -2524,7 +2524,7 @@ export function ClientAuditTool() {
                     <Button
                       onClick={handleGenerateSuggestions}
                       disabled={isAnalyzing}
-                      className="bg-muted hover:bg-muted/80 text-foreground font-semibold text-[10px] uppercase tracking-wider h-10 px-6 rounded-xl shadow-sm shrink-0 self-start"
+                      className="bg-muted hover:bg-muted/80 text-foreground font-semibold text-[11px] h-10 px-6 rounded-xl shadow-sm shrink-0 self-start"
                     >
                       {isAnalyzing ? (
                         <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Analysing...</>
@@ -2850,7 +2850,7 @@ export function ClientAuditTool() {
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
               {/* Bulk Target Rate */}
               <Select onValueChange={(val) => handleBulkSetTargetRate(parseInt(val))} disabled={bulkActionLoading}>
-                <SelectTrigger className="w-[120px] h-9 rounded-xl bg-muted border-border text-[10px] font-semibold uppercase tracking-wider text-chart-primary">
+                <SelectTrigger className="w-[120px] h-9 rounded-xl bg-muted border-border text-[11px] font-semibold text-chart-primary">
                   <SelectValue placeholder="Set Target" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl bg-card text-foreground border-border">
@@ -2864,7 +2864,7 @@ export function ClientAuditTool() {
 
               {/* Bulk Re-engagement Tag */}
               <Select onValueChange={(val: any) => handleBulkSetReengagementTag(val === "neutral" ? null : val)} disabled={bulkActionLoading}>
-                <SelectTrigger className="w-[120px] h-9 rounded-xl bg-muted border-border text-[10px] font-semibold uppercase tracking-wider text-chart-destructive">
+                <SelectTrigger className="w-[120px] h-9 rounded-xl bg-muted border-border text-[11px] font-semibold text-chart-destructive">
                   <SelectValue placeholder="Set Status" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl bg-card text-foreground border-border">
@@ -2880,7 +2880,7 @@ export function ClientAuditTool() {
                 size="sm"
                 onClick={handleBulkSendOnboardingClick}
                 disabled={bulkActionLoading}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-9 px-4 font-semibold text-[10px] uppercase tracking-wider"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-9 px-4 font-semibold text-[11px]"
               >
                 {bulkActionLoading ? <Loader2 className="animate-spin" size={12} /> : <Send size={12} className="mr-1.5" />}
                 Onboard
@@ -2890,7 +2890,7 @@ export function ClientAuditTool() {
                 variant="ghost"
                 size="sm"
                 onClick={handleClearWeeklyClients}
-                className="text-muted-foreground/60 hover:text-foreground rounded-xl h-9 px-3 font-semibold text-[10px] uppercase tracking-wider"
+                className="text-muted-foreground/60 hover:text-foreground rounded-xl h-9 px-3 font-semibold text-[11px]"
               >
                 Clear
               </Button>

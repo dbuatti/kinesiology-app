@@ -8,12 +8,12 @@ const PrimitiveReflexWorksheet = () => {
       {/* Header Section */}
       <div className="border-b-2 border-border pb-1 mb-2 flex justify-between items-end">
         <div>
-          <h1 className="text-2xl font-black tracking-tighter uppercase leading-none">Primitive Reflex Worksheet</h1>
-          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.3em]">Clinical Assessment Log • Foundational OS</p>
+          <h1 className="text-2xl font-semibold tracking-tighter uppercase leading-none">Primitive Reflex Worksheet</h1>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Clinical Assessment Log • Foundational OS</p>
         </div>
         <div className="text-right flex gap-8">
-          <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Client: ________________________</p>
-          <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Date: ___/___/___</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Client: ________________________</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Date: ___/___/___</p>
         </div>
       </div>
 
@@ -21,10 +21,10 @@ const PrimitiveReflexWorksheet = () => {
         <table className="w-full border-collapse text-[10px] leading-tight">
           <thead>
             <tr className="bg-muted border-b border-foreground/20">
-              <th className="p-1 text-left font-black uppercase border-r border-foreground/20 w-[12%]">Reflex</th>
-              <th className="p-1 text-center font-black uppercase border-r border-foreground/20 w-[6%]">Inhib</th>
-              <th className="p-1 text-left font-black uppercase border-r border-foreground/20 w-[42%]">Stimulus & Inhibition Pattern</th>
-              <th className="p-1 text-left font-black uppercase w-[40%]">Clinical Notes / Observations</th>
+              <th className="p-1 text-left font-semibold uppercase border-r border-foreground/20 w-[12%]">Reflex</th>
+              <th className="p-1 text-center font-semibold uppercase border-r border-foreground/20 w-[6%]">Inhib</th>
+              <th className="p-1 text-left font-semibold uppercase border-r border-foreground/20 w-[42%]">Stimulus & Inhibition Pattern</th>
+              <th className="p-1 text-left font-semibold uppercase w-[40%]">Clinical Notes / Observations</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-black">
@@ -32,7 +32,7 @@ const PrimitiveReflexWorksheet = () => {
               return (
                 <tr key={reflex.id} className="break-inside-avoid">
                   <td className="p-1 border-r border-foreground/20 bg-muted/30">
-                    <p className="font-black text-[11px] leading-none">{reflex.name}</p>
+                    <p className="font-semibold text-[11px] leading-none">{reflex.name}</p>
                     <p className="font-bold text-[7px] text-muted-foreground uppercase mt-0.5">{reflex.category}</p>
                   </td>
                   
@@ -42,17 +42,17 @@ const PrimitiveReflexWorksheet = () => {
                         <>
                           <div className="flex flex-col items-center gap-0.5">
                             <div className="w-3.5 h-3.5 border border-foreground/20 rounded-none" />
-                            <span className="font-black text-[7px]">L</span>
+                            <span className="font-semibold text-[7px]">L</span>
                           </div>
                           <div className="flex flex-col items-center gap-0.5">
                             <div className="w-3.5 h-3.5 border border-foreground/20 rounded-none" />
-                            <span className="font-black text-[7px]">R</span>
+                            <span className="font-semibold text-[7px]">R</span>
                           </div>
                         </>
                       ) : (
                         <div className="flex flex-col items-center gap-0.5">
                           <div className="w-3.5 h-3.5 border border-foreground/20 rounded-none" />
-                          <span className="font-black text-[7px]">Inhib</span>
+                          <span className="font-semibold text-[7px]">Inhib</span>
                         </div>
                       )}
                     </div>
@@ -60,12 +60,12 @@ const PrimitiveReflexWorksheet = () => {
 
                   <td className="p-1 border-r border-foreground/20 align-top">
                     <div className="space-y-1">
-                      <p className="text-[9px] leading-tight">
-                        <span className="font-black uppercase text-muted-foreground mr-1">Stim:</span>
+                      <p className="text-[10px] leading-tight">
+                        <span className="font-semibold uppercase text-muted-foreground mr-1">Stim:</span>
                         {reflex.stimulus}
                       </p>
-                      <p className="text-[9px] leading-tight font-bold text-foreground">
-                        <span className="font-black uppercase text-rose-400 mr-1">Pattern:</span>
+                      <p className="text-[10px] leading-tight font-bold text-foreground">
+                        <span className="font-semibold uppercase text-rose-400 mr-1">Pattern:</span>
                         {reflex.inhibitionPattern}
                       </p>
                     </div>
@@ -87,8 +87,8 @@ const PrimitiveReflexWorksheet = () => {
       {/* Footer Section */}
       <div className="mt-2 p-2 border border-foreground/20 bg-muted/50 flex justify-between items-start gap-8">
         <div className="space-y-1 flex-1">
-          <h4 className="font-black text-[10px] uppercase tracking-widest border-b border-foreground/10 pb-0.5">Fractal Logic</h4>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[8px] font-bold uppercase">
+          <h4 className="font-semibold text-[10px] uppercase tracking-wider border-b border-foreground/10 pb-0.5">Fractal Logic</h4>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[10px] font-bold uppercase">
             <p>• Fear Paralysis → Moro → Startle</p>
             <p>• ATNR → Babinski → Palmar</p>
             <p>• Rooting → Sucking</p>
@@ -96,14 +96,14 @@ const PrimitiveReflexWorksheet = () => {
           </div>
         </div>
         <div className="space-y-1 flex-[2]">
-          <p className="text-[9px] font-black text-muted-foreground uppercase">Primary Correction & Integration Plan:</p>
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase">Primary Correction & Integration Plan:</p>
           <div className="h-px w-full bg-muted mt-2" />
           <div className="h-px w-full bg-muted mt-2" />
         </div>
       </div>
 
       <div className="mt-2 pt-0.5 border-t border-border text-center">
-        <p className="text-[8px] font-black text-muted-foreground/60 uppercase tracking-[0.5em]">Resonance Clinical Infrastructure • Worksheet v1.2</p>
+        <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Resonance Clinical Infrastructure • Worksheet v1.2</p>
       </div>
 
       <style>{`

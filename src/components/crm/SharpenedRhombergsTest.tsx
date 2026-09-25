@@ -222,7 +222,7 @@ const SharpenedRhombergsTest = ({
             size="sm" 
             onClick={() => handleSetStatus('Clear')}
             className={cn(
-              "h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+              "h-9 px-4 rounded-xl font-semibold text-[11px] transition-all",
               currentStatus === 'Clear' ? "bg-emerald-600 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-emerald-50"
             )}
           >
@@ -232,7 +232,7 @@ const SharpenedRhombergsTest = ({
             size="sm" 
             onClick={() => handleSetStatus('Inhibited')}
             className={cn(
-              "h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+              "h-9 px-4 rounded-xl font-semibold text-[11px] transition-all",
               currentStatus === 'Inhibited' ? "bg-rose-600 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-rose-50"
             )}
           >
@@ -242,7 +242,7 @@ const SharpenedRhombergsTest = ({
             size="sm" 
             onClick={() => handleSetStatus('Recheck')}
             className={cn(
-              "h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+              "h-9 px-4 rounded-xl font-semibold text-[11px] transition-all",
               currentStatus === 'Recheck' ? "bg-amber-500 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-amber-50"
             )}
           >
@@ -250,7 +250,7 @@ const SharpenedRhombergsTest = ({
           </Button>
         </div>
         {currentStatus && (
-          <Badge className="bg-indigo-600 text-primary-foreground border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full">
+          <Badge className="bg-indigo-600 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
             Auto-synced to Align phase
           </Badge>
         )}
@@ -258,7 +258,7 @@ const SharpenedRhombergsTest = ({
 
       <div className="p-5 bg-muted/50 rounded-2xl border border-border/50 space-y-4">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <ArrowRightLeft size={14} className="text-indigo-500" /> Clinical Metrics
           </h4>
           <div className="flex items-center gap-2">
@@ -294,21 +294,21 @@ const SharpenedRhombergsTest = ({
         )}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Eyes Open Hold</Label>
+            <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Eyes Open Hold</Label>
             <div className="relative">
               <Input type="number" placeholder="e.g. 30" value={eyesOpenTime} onChange={(e) => handleOpenTimeChange(e.target.value)} className="h-10 rounded-xl pr-8 text-xs font-bold" />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">s</span>
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Eyes Closed Hold</Label>
+            <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Eyes Closed Hold</Label>
             <div className="relative">
               <Input type="number" placeholder="e.g. 15" value={eyesClosedTime} onChange={(e) => handleClosedTimeChange(e.target.value)} className="h-10 rounded-xl pr-8 text-xs font-bold" />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">s</span>
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Sway Direction</Label>
+            <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Sway Direction</Label>
             <ToggleGroup type="single" value={swayDirection} onValueChange={handleSwayChange} className="justify-start gap-1">
               <ToggleGroupItem value="Left" className="rounded-lg border border-border text-xs font-bold px-2 py-1.5 data-[state=on]:bg-purple-600 data-[state=on]:text-primary-foreground">L</ToggleGroupItem>
               <ToggleGroupItem value="Right" className="rounded-lg border border-border text-xs font-bold px-2 py-1.5 data-[state=on]:bg-purple-600 data-[state=on]:text-primary-foreground">R</ToggleGroupItem>

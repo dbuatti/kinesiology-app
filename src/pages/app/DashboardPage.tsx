@@ -29,6 +29,8 @@ const Index = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [morningProgress, setMorningProgress] = useState(0);
   const [quickSessionOpen, setQuickSessionOpen] = useState(false);
+  const hour = currentTime.getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -133,14 +135,14 @@ const Index = () => {
           <Skeleton className="h-10 w-72 rounded-xl" />
           <Skeleton className="h-4 w-96 max-w-full rounded-lg" />
         </div>
-        <Skeleton className="h-40 w-full rounded-[2.5rem]" />
+        <Skeleton className="h-40 w-full rounded-2xl" />
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          <Skeleton className="lg:col-span-8 h-64 rounded-[2rem]" />
-          <Skeleton className="lg:col-span-4 h-64 rounded-[2rem]" />
+          <Skeleton className="lg:col-span-8 h-64 rounded-2xl" />
+          <Skeleton className="lg:col-span-4 h-64 rounded-2xl" />
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-28 rounded-[2rem]" />
+            <Skeleton key={i} className="h-28 rounded-2xl" />
           ))}
         </div>
       </div>
@@ -164,33 +166,30 @@ const Index = () => {
   return (
     <AppLayout>
       <div className="space-y-6 md:space-y-8">
-        <PageHeader
-          title="Dashboard"
-          subtitle="Welcome back, Daniele. Here is your clinical landscape for today."
-          icon={LayoutDashboard}
-          iconClassName="bg-gradient-to-br from-chart-primary to-chart-destructive text-primary-foreground shadow-lg shadow-primary/20"
-          actions={
-            <div className="flex items-center gap-4 bg-card px-4 py-2 rounded-xl border border-border shadow-sm">
-              <div className="pr-4 border-r border-border">
-                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Today</p>
-                <p className="text-xs font-medium text-foreground">{format(currentTime, "MMM d")}</p>
-              </div>
-              <div>
-                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Time</p>
-                <p className="text-xs font-medium text-primary">{format(currentTime, "h:mm a")}</p>
-              </div>
-            </div>
-          }
-        />
-
-        <Button
-          onClick={() => setQuickSessionOpen(true)}
-          className="w-full bg-primary hover:bg-primary/90 h-16 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/10 flex items-center justify-center gap-3"
-        >
-          <Zap size={22} className="shrink-0" />
-          <span className="sm:hidden">Quick Session</span>
-          <span className="hidden sm:inline">Quick Session — Start instantly, no booking needed</span>
-        </Button>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-[13px] text-muted-foreground">
+              <time dateTime={currentTime.toISOString()}>{format(currentTime, "EEEE d MMMM")}</time>
+              <span className="mx-1.5 text-muted-foreground/40">·</span>
+              <span className="tabular-nums">{format(currentTime, "h:mm a")}</span>
+            </p>
+            <h1 className="mt-1 font-serif text-[30px] font-medium leading-[1.1] tracking-[-0.025em] text-foreground sm:text-[34px]">
+              {greeting}, Daniele
+            </h1>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              {todaySessions.length === 0
+                ? "No sessions booked today — a good day for practice and admin."
+                : `${todaySessions.length} session${todaySessions.length === 1 ? "" : "s"} on today${activeSession ? " · one is live now" : ""}.`}
+            </p>
+          </div>
+          <Button
+            onClick={() => setQuickSessionOpen(true)}
+            className="h-10 shrink-0 gap-2 rounded-xl px-4 text-sm font-medium shadow-[inset_0_1px_0_hsl(0_0%_100%/0.16),0_1px_2px_hsl(var(--shadow-color)/0.2),0_8px_20px_-8px_hsl(var(--primary)/0.5)]"
+          >
+            <Zap size={16} className="shrink-0" />
+            Start quick session
+          </Button>
+        </div>
 
         <ClinicalDashboard
           stats={stats}
@@ -199,20 +198,15 @@ const Index = () => {
           morningProgress={morningProgress}
         />
 
-        <div className="p-5 bg-muted/50 border border-border rounded-2xl shadow-sm">
-          <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0 text-lg">
-              💬
-            </div>
-            <div className="space-y-1">
-              <p className="text-[10px] font-black text-chart-emerald uppercase tracking-widest">Client Love</p>
-              <p className="text-sm text-foreground/80 font-medium leading-relaxed italic">
-                "Thank you for your valuable work yesterday — I slept well and now feeling relaxed and balanced today!!"
-              </p>
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">— Client (Jul 14)</p>
-            </div>
-          </div>
-        </div>
+        <figure className="relative overflow-hidden rounded-2xl border border-border bg-card px-6 py-6 shadow-xs sm:px-8">
+          <span aria-hidden className="absolute -left-1 -top-6 select-none font-serif text-[120px] leading-none text-primary/10">“</span>
+          <blockquote className="relative font-serif text-lg leading-relaxed text-foreground/90 sm:text-xl">
+            Thank you for your valuable work yesterday — I slept well and now feeling relaxed and balanced today!!
+          </blockquote>
+          <figcaption className="relative mt-3 flex items-center gap-2 text-[13px] text-muted-foreground">
+            <span className="h-px w-5 bg-border" /> A client, July 14
+          </figcaption>
+        </figure>
       </div>
 
       <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} />

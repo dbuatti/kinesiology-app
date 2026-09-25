@@ -51,13 +51,13 @@ const FollowUpTracker = ({ clients }: FollowUpTrackerProps) => {
 
   if (clientsNeedingFollowUp.length === 0) {
     return (
-      <Card className="border-none shadow-lg rounded-[2.5rem] bg-foreground text-primary-foreground overflow-hidden relative">
+      <Card className="border-none shadow-lg rounded-2xl bg-foreground text-primary-foreground overflow-hidden relative">
         <div className="absolute top-0 right-0 p-8 opacity-10"><CheckCircle2 size={120} /></div>
         <CardContent className="p-10 text-center space-y-4 relative z-10">
           <div className="w-16 h-16 bg-card/10 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto border border-primary-foreground/20">
             <CheckCircle2 size={32} className="text-chart-emerald" />
           </div>
-          <h3 className="text-xl font-black">Retention: Optimal</h3>
+          <h3 className="text-xl font-semibold">Retention: Optimal</h3>
           <p className="text-foreground/60 font-medium">All recent clients have future sessions scheduled.</p>
         </CardContent>
       </Card>
@@ -65,16 +65,16 @@ const FollowUpTracker = ({ clients }: FollowUpTrackerProps) => {
   }
 
   return (
-    <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+    <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
       <CardHeader className="p-8 border-b border-border bg-muted/30">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <CardTitle className="text-xl font-black flex items-center gap-3">
+            <CardTitle className="text-xl font-semibold flex items-center gap-3">
               <CalendarClock size={24} className="text-destructive" /> Follow-up Tracker
             </CardTitle>
             <CardDescription className="font-medium">Recent clients (last 30 days) with no future sessions booked.</CardDescription>
           </div>
-          <Badge className="bg-destructive text-primary-foreground border-none font-black text-[10px] uppercase tracking-widest px-3 py-1">
+          <Badge className="bg-destructive text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1">
             {clientsNeedingFollowUp.length} Pending
           </Badge>
         </div>
@@ -84,17 +84,17 @@ const FollowUpTracker = ({ clients }: FollowUpTrackerProps) => {
           {clientsNeedingFollowUp.map((client) => (
             <div key={client.id} className="p-6 border-b border-border hover:bg-muted/20 transition-colors flex items-center justify-between group">
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center font-black">
+                <div className="w-10 h-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center font-semibold">
                   {client.name.charAt(0)}
                 </div>
                 <div>
-                  <p className="font-black text-foreground group-hover:text-primary transition-colors">{client.name}</p>
+                  <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{client.name}</p>
                   <div className="flex items-center gap-3 mt-1">
                     <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
                       <History size={12} /> Last: {format(new Date(client.lastApp.date), "MMM d")}
                     </span>
                     <span className={cn(
-                      "text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md",
+                      "text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md",
                       client.daysSinceLast! > 14 ? "bg-destructive/10 text-destructive" : "bg-amber-100 text-amber-600"
                     )}>
                       {client.daysSinceLast} Days Ago
@@ -104,7 +104,7 @@ const FollowUpTracker = ({ clients }: FollowUpTrackerProps) => {
               </div>
               <div className="flex items-center gap-2">
                 <Link to={`/clients/${client.id}?tab=appointments`}>
-                  <Button variant="outline" size="sm" className="rounded-xl h-9 border-border font-bold text-[10px] uppercase tracking-widest">
+                  <Button variant="outline" size="sm" className="rounded-xl h-9 border-border font-bold text-[11px]">
                     <CalendarPlus size={14} className="mr-2" /> Book
                   </Button>
                 </Link>

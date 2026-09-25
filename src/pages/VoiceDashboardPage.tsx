@@ -215,7 +215,7 @@ const VoiceDashboardPage = () => {
  <Calendar size={16} className="text-destructive" />
  <h3 className="font-semibold text-sm">Upcoming Lessons</h3>
  </div>
- <Button variant="ghost" size="sm" onClick={() => navigate("/voice/calendar")} className="text-[10px] font-semibold uppercase tracking-wider text-destructive h-8">
+ <Button variant="ghost" size="sm" onClick={() => navigate("/voice/calendar")} className="text-[11px] font-semibold text-destructive h-8">
  View All
  </Button>
  </div>
@@ -258,7 +258,7 @@ const VoiceDashboardPage = () => {
  <AlertCircle size={16} className="text-muted-foreground" />
  <h3 className="font-semibold text-sm">Needs Attention</h3>
  </div>
- <Button variant="ghost" size="sm" onClick={() => navigate("/voice/clients")} className="text-[10px] font-semibold uppercase tracking-wider text-destructive h-8">
+ <Button variant="ghost" size="sm" onClick={() => navigate("/voice/clients")} className="text-[11px] font-semibold text-destructive h-8">
  View All
  </Button>
  </div>
@@ -310,7 +310,7 @@ const VoiceDashboardPage = () => {
  <Clock size={16} className="text-primary" />
  <h3 className="font-semibold text-sm">Recent Lessons</h3>
  </div>
- <Button variant="ghost" size="sm" onClick={() => navigate("/voice/calendar")} className="text-[10px] font-semibold uppercase tracking-wider text-destructive h-8">
+ <Button variant="ghost" size="sm" onClick={() => navigate("/voice/calendar")} className="text-[11px] font-semibold text-destructive h-8">
  View Calendar
  </Button>
  </div>

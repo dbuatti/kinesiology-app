@@ -263,13 +263,13 @@ export function EarningsPanel({ summary, voiceRate, fnhRate, label }: EarningsPa
           )}>
             <div className="flex flex-col items-center leading-tight">
               <DollarSign size={16} className="text-primary-foreground" />
-              <span className="text-primary-foreground text-lg font-black">
+              <span className="text-primary-foreground text-lg font-semibold">
                 {fmt(summary.totalIncome).replace(/^.\s?/, "$")}
               </span>
             </div>
             <div className="absolute inset-0 rounded-full ring-2 ring-white/20" />
             {overworked && (
-              <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive flex items-center justify-center text-primary-foreground text-[8px] font-bold animate-pulse">
+              <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive flex items-center justify-center text-primary-foreground text-[10px] font-bold animate-pulse">
                 !
               </div>
             )}
@@ -281,7 +281,7 @@ export function EarningsPanel({ summary, voiceRate, fnhRate, label }: EarningsPa
         >
           <div className="space-y-3">
             <div>
-              <h4 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+              <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                 Income — {label}
               </h4>
               <div className="space-y-1">
@@ -300,7 +300,7 @@ export function EarningsPanel({ summary, voiceRate, fnhRate, label }: EarningsPa
               </div>
             </div>
             <div>
-              <h4 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+              <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                 Hours
               </h4>
               <div className="space-y-1">
@@ -327,7 +327,7 @@ export function EarningsPanel({ summary, voiceRate, fnhRate, label }: EarningsPa
           </div>
         </TooltipContent>
       </Tooltip>
-      <div className="text-[9px] text-muted-foreground font-medium text-center leading-tight px-1">
+      <div className="text-[10px] text-muted-foreground font-medium text-center leading-tight px-1">
         {summary.eventCount} sess
         <br />
         {hr(summary.totalHours)}
@@ -431,7 +431,7 @@ const WeeklyTimeGrid = ({
     ((min - startHour * 60) / 60) * HOUR_HEIGHT;
 
   return (
-    <div className="bg-card rounded-[1.75rem] border border-border/60 shadow-[0_4px_30px_-12px_rgba(120,90,40,0.18)] overflow-hidden animate-in fade-in duration-500">
+    <div className="bg-card rounded-2xl border border-border/60 shadow-[0_4px_30px_-12px_rgba(120,90,40,0.18)] overflow-hidden animate-in fade-in duration-500">
       <div className="p-4 border-b border-border flex items-center justify-between bg-muted/30">
         <div className="flex items-center gap-3">
           <Button
@@ -636,7 +636,7 @@ const WeeklyTimeGrid = ({
                               {event.subtitle && (
                                 <div className="flex items-center gap-1 mt-0.5">
                                   <Clock size={8} className="shrink-0 opacity-50" />
-                                  <span className="text-[8px] text-muted-foreground truncate leading-tight">
+                                  <span className="text-[10px] text-muted-foreground truncate leading-tight">
                                     {event.subtitle}
                                   </span>
                                 </div>

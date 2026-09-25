@@ -62,7 +62,7 @@ export default function LandingPage() {
 
         {/* Who this is for */}
         <section className="mb-16">
-          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-6 text-center">Who this is for</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-6 text-center">Who this is for</h2>
           <p className="text-base text-foreground leading-relaxed mb-4">People usually arrive with something specific and physical:</p>
           <ul className="space-y-2.5 mb-6">
             {[
@@ -85,7 +85,7 @@ export default function LandingPage() {
 
         {/* What actually happens */}
         <section className="mb-16">
-          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-6 text-center">What actually happens</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-6 text-center">What actually happens</h2>
           <div className="grid sm:grid-cols-2 gap-8 mb-10">
             <div className="rounded-2xl border border-chart-purple/30 bg-chart-purple/10 p-6">
               <h3 className="font-serif font-bold text-lg text-foreground mb-4">Your first session</h3>
@@ -121,7 +121,7 @@ export default function LandingPage() {
 
         {/* How long this takes */}
         <section className="mb-16 max-w-xl mx-auto text-center">
-          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-6">How long this takes</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-6">How long this takes</h2>
           <p className="text-base text-muted-foreground leading-relaxed mb-4">
             Not one session. The first is mostly orientation. Things tend to start moving around the third or fourth, and the sessions after that are where anything durable happens.
           </p>
@@ -132,7 +132,7 @@ export default function LandingPage() {
 
         {/* What this isn't */}
         <section className="mb-16 max-w-xl mx-auto">
-          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-6 text-center">What this isn't</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-6 text-center">What this isn't</h2>
           <ul className="space-y-2 text-center">
             {[
               "Not a replacement for medical or psychological care. It works alongside it, and I'd rather you have both.",
@@ -153,7 +153,7 @@ export default function LandingPage() {
             className="w-28 h-28 rounded-full object-cover mb-6 shadow-lg"
             loading="lazy"
           />
-          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-4">About</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">About</h2>
           <p className="text-base text-muted-foreground leading-relaxed mb-4">
             Hi, I'm Daniele. I hold a Diploma of Kinesiology from the College of Complementary Medicine, and work within the Functional Neuro Health framework.
           </p>
@@ -167,7 +167,7 @@ export default function LandingPage() {
 
         {/* FAQ */}
         <section className="max-w-xl mx-auto mb-16">
-          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-6 text-center">Questions</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-6 text-center">Questions</h2>
           <Accordion type="single" collapsible>
             {[
               { q: "Do I need to know what's wrong?", a: "No. Most people can't name it, and naming it is part of the work." },

@@ -37,13 +37,13 @@ export const ClientGridSummaryTab = ({ clientName, appointments, gridFor }: Clie
           </div>
           <div className="flex items-center gap-4 shrink-0">
             <div className="text-center">
-              <p className="text-2xl font-black text-chart-primary tabular-nums leading-none">{gridApps.length}</p>
-              <p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Marked Sessions</p>
+              <p className="text-2xl font-semibold text-chart-primary tabular-nums leading-none">{gridApps.length}</p>
+              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Marked Sessions</p>
             </div>
             <div className="w-px h-8 bg-border" />
             <div className="text-center">
-              <p className="text-2xl font-black text-chart-destructive tabular-nums leading-none">{totalMarks}</p>
-              <p className="mt-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Total Marks</p>
+              <p className="text-2xl font-semibold text-chart-destructive tabular-nums leading-none">{totalMarks}</p>
+              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Total Marks</p>
             </div>
           </div>
         </div>
@@ -116,15 +116,15 @@ export const ClientGridSummaryTab = ({ clientName, appointments, gridFor }: Clie
                       </div>
 
                       <div className="text-right">
-                        <p className="text-lg font-black text-chart-primary tabular-nums leading-none">{g.activeCount}</p>
-                        <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">marked</p>
+                        <p className="text-lg font-semibold text-chart-primary tabular-nums leading-none">{g.activeCount}</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">marked</p>
                       </div>
 
                       <div className="flex items-center gap-1.5">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-8 px-2.5 rounded-lg text-[9px] font-semibold uppercase tracking-wider border-border"
+                          className="h-8 px-2.5 rounded-lg text-[11px] font-semibold border-border"
                           onClick={(e) => { e.stopPropagation(); navigate(`/appointments/${app.id}/grid-sheet`); }}
                           title="Printable grid sheet for this session"
                         >
@@ -133,7 +133,7 @@ export const ClientGridSummaryTab = ({ clientName, appointments, gridFor }: Clie
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-8 px-2.5 rounded-lg text-[9px] font-semibold uppercase tracking-wider"
+                          className="h-8 px-2.5 rounded-lg text-[11px] font-semibold"
                           onClick={(e) => { e.stopPropagation(); navigate(`/appointments/${app.id}`); }}
                           title="Open this session"
                         >

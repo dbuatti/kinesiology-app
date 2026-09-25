@@ -47,7 +47,7 @@ export default function ConversationList({ conversations, activeId, onSelect, on
                   <span className="min-w-0">
                     <span className="block truncate">{c.title || "New conversation"}</span>
                     {clientName && (
-                      <span className="block truncate text-[11px] text-chart-primary font-semibold uppercase tracking-wide mt-0.5">
+                      <span className="block truncate text-[11px] text-chart-primary font-semibold mt-0.5">
                         {clientName}
                       </span>
                     )}

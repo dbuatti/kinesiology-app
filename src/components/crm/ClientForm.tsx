@@ -171,7 +171,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
   const SectionHeader = ({ icon: Icon, title, color }: { icon: any, title: string, color: string }) => (
     <div className="flex items-center gap-2 mb-4 pt-6 border-t border-border/50 first:border-t-0 first:pt-0">
       <Icon size={16} className={color} />
-      <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground">{title}</h3>
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">{title}</h3>
     </div>
   );
 
@@ -182,7 +182,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
           <CheckCircle2 size={40} className="text-chart-emerald" />
         </div>
         <div className="space-y-2">
-          <h3 className="text-2xl font-bold text-foreground dark:text-primary-foreground tracking-tight">
+          <h3 className="text-2xl font-bold text-foreground dark:text-foreground tracking-tight">
             {createdClientName} added!
           </h3>
           <p className="text-sm text-muted-foreground font-medium">
@@ -191,7 +191,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full">
           <Button
-            className="flex-1 bg-primary hover:bg-primary/90 h-12 rounded-2xl font-black text-xs uppercase tracking-widest gap-2"
+            className="flex-1 bg-primary hover:bg-primary/90 h-12 rounded-2xl font-semibold text-xs gap-2"
             onClick={() => onSuccess(createdClientId)}
           >
             <CalendarPlus size={16} />
@@ -199,7 +199,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
           </Button>
           <Button
             variant="outline"
-            className="flex-1 h-12 rounded-2xl font-bold text-xs uppercase tracking-widest border-border"
+            className="flex-1 h-12 rounded-2xl font-bold text-xs border-border"
             onClick={() => onSuccess()}
           >
             Done
@@ -368,8 +368,8 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
             render={({ field }) => (
               <FormItem className="space-y-4 p-6 bg-muted/50 rounded-2xl border border-border/50">
                 <div className="flex items-center justify-between">
-                  <FormLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Current Stress Level</FormLabel>
-                  <span className="text-2xl font-black text-primary">{field.value}</span>
+                  <FormLabel className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Current Stress Level</FormLabel>
+                  <span className="text-2xl font-semibold text-primary">{field.value}</span>
                 </div>
                 <FormControl>
                   <Slider
@@ -381,7 +381,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
                     className="[&_[role=slider]]:h-6 [&_[role=slider]]:w-6"
                   />
                 </FormControl>
-                <div className="flex justify-between text-[8px] font-black text-muted-foreground uppercase tracking-widest">
+                <div className="flex justify-between text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                   <span>Low</span>
                   <span>High</span>
                 </div>
@@ -605,7 +605,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
         </div>
 
         <div className="sticky bottom-0 pt-4 bg-card/80 backdrop-blur-sm border-t border-border/50">
-          <Button type="submit" className="w-full bg-primary hover:bg-primary/90 h-14 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-primary/10" disabled={submitting}>
+          <Button type="submit" className="w-full bg-primary hover:bg-primary/90 h-14 rounded-2xl font-semibold text-xs shadow-xl shadow-primary/10" disabled={submitting}>
             {submitting ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />

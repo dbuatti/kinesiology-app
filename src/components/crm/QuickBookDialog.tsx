@@ -297,23 +297,23 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] rounded-[2.5rem] p-0 mx-4 w-[calc(100%-2rem)] flex flex-col max-h-[90vh] bg-background">
+      <DialogContent className="sm:max-w-[600px] rounded-2xl p-0 mx-4 w-[calc(100%-2rem)] flex flex-col max-h-[90vh] bg-background">
         {/* Header */}
         <div className="px-8 pt-8 pb-5 border-b border-border shrink-0">
           <DialogHeader>
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-rose-500 text-primary-foreground flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
                 <CalendarPlus size={22} />
               </div>
               <div className="flex-1 min-w-0">
-                <DialogTitle className="text-2xl font-black">Quick Book Session</DialogTitle>
+                <DialogTitle className="text-2xl font-semibold">Quick Book Session</DialogTitle>
                 <DialogDescription className="text-muted-foreground text-sm font-medium">
                   Schedule a new appointment
                 </DialogDescription>
               </div>
               {rebookSlots.length > 0 && (
                 <div className="shrink-0 space-y-1.5">
-                  <p className="text-[9px] font-black uppercase tracking-wider text-muted-foreground text-right">{rebookInfo!.label}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-right">{rebookInfo!.label}</p>
                   <div className="flex gap-1">
                     {rebookSlots.map((rs, idx) => (
                       <button
@@ -363,7 +363,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
             <>
               {/* Date chips */}
               <div className="space-y-3">
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Available Days</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Available Days</p>
                 <div className="flex gap-2.5 pb-2 overflow-x-auto">
                   {availableDates.map((date) => (
                     <button
@@ -376,9 +376,9 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                           : "bg-card border-border hover:border-indigo-300 dark:hover:border-indigo-700 text-foreground"
                       )}
                     >
-                      <span className="text-[9px] font-black uppercase tracking-wider opacity-60">{format(date, "EEE")}</span>
-                      <span className="text-xl font-black leading-tight">{format(date, "d")}</span>
-                      <span className="text-[8px] font-bold opacity-40 uppercase">{format(date, "MMM")}</span>
+                      <span className="text-[11px] font-semibold opacity-60">{format(date, "EEE")}</span>
+                      <span className="text-xl font-semibold leading-tight">{format(date, "d")}</span>
+                      <span className="text-[11px] font-bold opacity-40">{format(date, "MMM")}</span>
                     </button>
                   ))}
                 </div>
@@ -388,7 +388,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
               {selectedDate && (
                 <div className="space-y-3 animate-in fade-in duration-300 mt-6">
                   <div className="flex items-center justify-between">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                       Pick a start time &mdash; sessions run ~60m
                     </p>
                     <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/30 px-2 py-0.5 rounded-full">
@@ -404,7 +404,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                           key={slot.time}
                           onClick={() => { setSelectedSlot(slot); setConflictError(null); }}
                           className={cn(
-                            "flex items-center justify-center gap-2 p-3.5 rounded-xl border text-sm font-black transition-all group shadow-sm",
+                            "flex items-center justify-center gap-2 p-3.5 rounded-xl border text-sm font-semibold transition-all group shadow-sm",
                             isSelected
                               ? "bg-indigo-600 border-indigo-600 text-primary-foreground"
                               : "bg-card border-border text-foreground hover:bg-indigo-600 hover:border-indigo-600 hover:text-primary-foreground"
@@ -430,7 +430,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
               {/* Session Price */}
               {selectedSlot && (
                 <div className="space-y-3 animate-in fade-in duration-300 mt-6">
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Session Price</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Session Price</p>
                   <div className="grid grid-cols-3 gap-3">
                     {priceOptions.map((opt) => {
                       const isCurrentRate = opt.sublabel === "Current rate";
@@ -448,15 +448,15 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                           )}
                         >
                           {isCurrentRate && !isSelected && (
-                            <span className="absolute -top-2 right-2 bg-chart-emerald text-primary-foreground text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full">
+                            <span className="absolute -top-2 right-2 bg-chart-emerald text-primary-foreground text-[7px] font-semibold px-1.5 py-0.5 rounded-full">
                               Rate
                             </span>
                           )}
                           {isCurrentRate && isSelected && (
                             <Sparkles size={12} className="absolute top-2 right-2 opacity-70" />
                           )}
-                          <span className="text-lg font-black">{opt.label}</span>
-                          <span className="text-[8px] font-bold uppercase tracking-widest opacity-70">
+                          <span className="text-lg font-semibold">{opt.label}</span>
+                          <span className="text-[11px] font-bold opacity-70">
                             {opt.sublabel}
                           </span>
                         </button>
@@ -469,7 +469,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
               {/* Repeat */}
               {selectedSlot && (
                 <div className="space-y-3 animate-in fade-in duration-300 mt-6">
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Repeat</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Repeat</p>
                   <div className="flex gap-2">
                     {(["none", "weekly", "fortnightly"] as const).map((r) => (
                       <button
@@ -477,7 +477,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                         type="button"
                         onClick={() => setRepeat(r)}
                         className={cn(
-                          "flex-1 py-2.5 rounded-xl text-xs font-black transition-all border-2",
+                          "flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all border-2",
                           repeat === r
                             ? "bg-indigo-600 border-indigo-600 text-primary-foreground shadow-lg"
                             : "bg-card border-border text-foreground hover:border-indigo-300"
@@ -511,7 +511,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                 <div
                   onClick={() => setSendOnboarding(!sendOnboarding)}
                   className={cn(
-                    "flex flex-row items-center justify-between rounded-[1.5rem] border-2 p-5 transition-all cursor-pointer mt-3",
+                    "flex flex-row items-center justify-between rounded-2xl border-2 p-5 transition-all cursor-pointer mt-3",
                     sendOnboarding ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200" : "bg-card border-border hover:border-emerald-300"
                   )}
                 >
@@ -520,8 +520,8 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                       <Mail size={20} />
                     </div>
                     <div className="space-y-0.5">
-                      <p className="text-base font-black text-foreground">Send Onboarding + Payment Email</p>
-                      <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">{selectedPrice > 0 ? "Emails intake form + Stripe payment link" : "Emails the intake form"}</p>
+                      <p className="text-base font-semibold text-foreground">Send Onboarding + Payment Email</p>
+                      <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{selectedPrice > 0 ? "Emails intake form + Stripe payment link" : "Emails the intake form"}</p>
                     </div>
                   </div>
                   <div className={cn("w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all", sendOnboarding ? "bg-emerald-600 border-emerald-600" : "border-muted-foreground/30")}>
@@ -535,7 +535,7 @@ const QuickBookDialog = ({ clientId, open, onOpenChange, onSuccess, prefillPrice
                 <Button
                   onClick={handleBook}
                   disabled={submitting}
-                  className="w-full bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-primary-foreground border-none h-14 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-amber-200/50 mt-6"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground border-none h-14 rounded-2xl font-semibold text-sm shadow-xl shadow-amber-200/50 mt-6"
                 >
                   {submitting ? (
                     <>

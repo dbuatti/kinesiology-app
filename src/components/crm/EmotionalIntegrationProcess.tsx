@@ -145,7 +145,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
               </p>
             </div>
             <div className="p-3 bg-card rounded-lg border border-border relative z-10">
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-1">Clinical Safety</p>
+              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Clinical Safety</p>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Always check for permission when working with deep emotional layers. If denied, perform <strong>Harmonic Rocking</strong> first to down-regulate the system.
               </p>
@@ -174,7 +174,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
             >
               <div className="text-left">
                 <div className="font-medium text-sm">Current</div>
-                <div className="text-[10px] text-muted-foreground uppercase tracking-widest">Known stress or pattern</div>
+                <div className="text-[11px] text-muted-foreground">Known stress or pattern</div>
               </div>
               <Zap size={18} className={timeline === 'Current' ? "text-primary" : "text-muted-foreground"} />
             </Button>
@@ -189,7 +189,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
             >
               <div className="text-left">
                 <div className="font-medium text-sm">Historic</div>
-                <div className="text-[10px] text-muted-foreground uppercase tracking-widest">Past event or trauma</div>
+                <div className="text-[11px] text-muted-foreground">Past event or trauma</div>
               </div>
               <History size={18} className={timeline === 'Historic' ? "text-primary" : "text-muted-foreground"} />
             </Button>
@@ -203,11 +203,11 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
           <StepHeader title="4. Timeline Regression" sub="Challenge the system for the specific age of origin." />
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-[10px] text-muted-foreground uppercase tracking-widest">Age</label>
+              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Age</label>
               <Input type="number" placeholder="e.g. 5" className="h-10 rounded-lg text-sm font-medium text-center" value={age} onChange={(e) => setAge(e.target.value)} />
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] text-muted-foreground uppercase tracking-widest">Months (Optional)</label>
+              <label className="text-[10px] text-muted-foreground uppercase tracking-wider">Months (Optional)</label>
               <Input type="number" placeholder="e.g. 4" className="h-10 rounded-lg text-sm font-medium text-center" value={months} onChange={(e) => setMonths(e.target.value)} />
             </div>
           </div>
@@ -242,7 +242,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
                 </div>
                 <div className="text-left">
                   <span className="font-medium text-sm text-foreground block">{emotion.label}</span>
-                  <span className="text-[8px] text-muted-foreground uppercase tracking-widest">{emotion.element} Element</span>
+                  <span className="text-[11px] text-muted-foreground">{emotion.element} Element</span>
                 </div>
               </Button>
             ))}
@@ -294,7 +294,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
               <Zap size={20} className="text-foreground" />
               <div className="text-center">
                 <span className="font-medium block text-sm">Energy OUT (-)</span>
-                <span className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">Practitioner LEFT Hand</span>
+                <span className="text-[11px] text-muted-foreground mt-0.5">Practitioner LEFT Hand</span>
               </div>
             </Button>
             <Button 
@@ -308,7 +308,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
               <Zap size={20} className="text-foreground" />
               <div className="text-center">
                 <span className="font-medium block text-sm">Energy IN (+)</span>
-                <span className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">Practitioner RIGHT Hand</span>
+                <span className="text-[11px] text-muted-foreground mt-0.5">Practitioner RIGHT Hand</span>
               </div>
             </Button>
           </div>
@@ -332,7 +332,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
               >
                 <div className="flex items-center justify-between w-full">
                   <span className="font-medium text-sm text-foreground">{pos.label}</span>
-                  <Badge variant="secondary" className="text-[8px] font-medium uppercase bg-card border-border">{pos.pos}</Badge>
+                  <Badge variant="secondary" className="text-[11px] font-medium bg-card border-border">{pos.pos}</Badge>
                 </div>
                 <span className="text-[10px] text-muted-foreground leading-tight">{pos.sub}</span>
               </Button>
@@ -350,8 +350,8 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
             <div className="space-y-4 relative z-10">
               <div className="p-4 bg-card rounded-lg border border-border space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">The Context</p>
-                  <Badge className="bg-primary text-primary-foreground border-none font-medium text-[10px] uppercase tracking-widest">
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">The Context</p>
+                  <Badge className="bg-primary text-primary-foreground border-none font-medium text-[10px] uppercase tracking-wider">
                     {timeline === 'Historic' ? `Age ${age}` : 'Current'}
                   </Badge>
                 </div>
@@ -368,7 +368,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
                   <div className="p-4 bg-primary/10 text-foreground rounded-lg space-y-2">
                     <div className="flex items-center gap-2">
                       <Target size={16} className="text-primary" />
-                      <p className="text-[10px] font-medium uppercase tracking-widest text-primary">The Process</p>
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-primary">The Process</p>
                     </div>
                     <p className="text-xs font-medium leading-relaxed">
                       {selectedEyePos.prompt}
@@ -379,7 +379,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
                   </div>
 
                   <div className="p-4 bg-card rounded-lg border border-border space-y-2">
-                    <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Hold Simultaneously:</p>
+                    <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Hold Simultaneously:</p>
                     <ul className="space-y-2 text-xs font-medium">
                       <li className="flex items-center gap-2"><CheckCircle2 size={12} className="text-primary" /> Frontal Lobe (ESR)</li>
                       <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-primary mt-0.5 shrink-0" /> <span>Eye Position: <span className="text-primary">{selectedEyePos.pos}</span><br /><span className="text-[10px] text-muted-foreground">{selectedEyePos.label} — {selectedEyePos.sub}</span></span></li>
@@ -392,14 +392,14 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
               </div>
 
               <div className="space-y-3 pt-3 border-t border-border">
-                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">Observe for Shifts:</p>
+                <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Observe for Shifts:</p>
                 <div className="flex flex-wrap gap-2">
                   {SIGNS_OF_SHIFT.map(shift => (
                     <Badge 
                       key={shift} 
                       onClick={() => toggleShift(shift)}
                       className={cn(
-                        "cursor-pointer transition-all border-none font-medium text-[8px] uppercase tracking-widest px-2 py-1",
+                        "cursor-pointer transition-all border-none font-medium text-[10px] uppercase tracking-wider px-2 py-1",
                         observedShifts.includes(shift) ? "bg-chart-emerald text-primary-foreground" : "bg-muted text-muted-foreground"
                       )}
                     >
@@ -433,7 +433,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
                   "Now that we've cleared the negative, let's upload the positive state."
                 </p>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">What is the opposite state?</label>
+                  <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">What is the opposite state?</label>
                   <Input 
                     placeholder="e.g. Feeling Great, Confident, Safe..." 
                     className="bg-card border-border text-foreground font-medium h-10 rounded-lg"
@@ -446,7 +446,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
               <div className="p-4 bg-primary/10 text-foreground rounded-lg space-y-2">
                 <div className="flex items-center gap-2">
                   <Target size={16} className="text-primary" />
-                  <p className="text-[10px] font-medium uppercase tracking-widest text-primary">The Process</p>
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-primary">The Process</p>
                 </div>
                 <p className="text-xs font-medium leading-relaxed">
                   Maintain the same eye position ({selectedEyePos.pos} — {selectedEyePos.label}) and hold the points. Focus entirely on the feeling of <span className="underline decoration-primary underline-offset-4">{positiveState || 'the positive state'}</span>.

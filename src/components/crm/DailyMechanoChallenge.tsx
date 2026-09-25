@@ -131,14 +131,14 @@ const DailyMechanoChallenge = () => {
                     <Button 
                       variant="outline" 
                       onClick={() => handleSelectAnswer('skeleton', 'Axial')}
-                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs uppercase tracking-wider"
+                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs"
                     >
                       Axial (Spine/Skull)
                     </Button>
                     <Button 
                       variant="outline" 
                       onClick={() => handleSelectAnswer('skeleton', 'Appendicular')}
-                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs uppercase tracking-wider"
+                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs"
                     >
                       Appendicular (Limbs)
                     </Button>
@@ -154,14 +154,14 @@ const DailyMechanoChallenge = () => {
                     <Button 
                       variant="outline" 
                       onClick={() => handleSelectAnswer('region', 'Upper')}
-                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs uppercase tracking-wider"
+                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs"
                     >
                       Upper Body (Above T12)
                     </Button>
                     <Button 
                       variant="outline" 
                       onClick={() => handleSelectAnswer('region', 'Lower')}
-                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs uppercase tracking-wider"
+                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs"
                     >
                       Lower Body (Below T12)
                     </Button>
@@ -198,7 +198,7 @@ const DailyMechanoChallenge = () => {
                         key={plane}
                         variant="outline"
                         onClick={() => handleSelectAnswer('plane', plane)}
-                        className="h-16 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs uppercase tracking-wider"
+                        className="h-16 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs"
                       >
                         {plane}
                       </Button>
@@ -240,7 +240,7 @@ const DailyMechanoChallenge = () => {
                     </Button>
                     <Button 
                       onClick={checkAnswer}
-                      className="flex-[2] h-14 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs uppercase tracking-wider shadow-sm"
+                      className="flex-[2] h-14 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs shadow-sm"
                     >
                       Submit Clinical Logic
                     </Button>
@@ -276,7 +276,7 @@ const DailyMechanoChallenge = () => {
 
               <Button 
                 onClick={generateNewCase}
-                className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 font-semibold text-[10px] uppercase tracking-wider text-primary-foreground"
+                className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 font-semibold text-[11px] text-primary-foreground"
               >
                 <RefreshCw size={16} className="mr-2" /> Next Case Study
               </Button>

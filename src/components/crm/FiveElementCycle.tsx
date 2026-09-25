@@ -58,10 +58,10 @@ const FiveElementCycle = () => {
   return (
     <div className="space-y-10">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-900 text-primary-foreground overflow-hidden relative">
+        <Card className="border-none shadow-lg rounded-2xl bg-indigo-900 text-primary-foreground overflow-hidden relative">
           <div className="absolute top-0 right-0 p-8 opacity-10"><RefreshCw size={120} /></div>
           <CardHeader className="p-8">
-            <CardTitle className="text-2xl font-black flex items-center gap-3">
+            <CardTitle className="text-2xl font-semibold flex items-center gap-3">
               <RefreshCw size={24} className="text-teal-400" /> Sheng Cycle (Generating)
             </CardTitle>
             <CardDescription className="text-indigo-200">The 'Mother-Child' relationship. One element feeds the next.</CardDescription>
@@ -70,14 +70,14 @@ const FiveElementCycle = () => {
             <div className="flex flex-wrap gap-3">
               {ELEMENTS.map((el, i) => (
                 <Fragment key={el.name}>
-                  <div className={cn("px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg", el.color)}>
+                  <div className={cn("px-4 py-2 rounded-xl font-semibold text-xs uppercase tracking-wider shadow-lg", el.color)}>
                     {el.name}
                   </div>
                   {i < ELEMENTS.length - 1 && <ArrowRight size={16} className="mt-2 text-indigo-400" />}
                 </Fragment>
               ))}
               <ArrowRight size={16} className="mt-2 text-indigo-400" />
-              <div className="px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg bg-emerald-500">Wood</div>
+              <div className="px-4 py-2 rounded-xl font-semibold text-xs uppercase tracking-wider shadow-lg bg-emerald-500">Wood</div>
             </div>
             <p className="text-sm text-indigo-100 leading-relaxed italic pt-4">
               "Wood feeds Fire, Fire creates Earth (ash), Earth bears Metal, Metal carries Water (minerals), Water nourishes Wood."
@@ -85,10 +85,10 @@ const FiveElementCycle = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-lg rounded-[2.5rem] bg-foreground text-primary-foreground overflow-hidden relative">
+        <Card className="border-none shadow-lg rounded-2xl bg-foreground text-primary-foreground overflow-hidden relative">
           <div className="absolute top-0 right-0 p-8 opacity-10"><Shield size={120} /></div>
           <CardHeader className="p-8">
-            <CardTitle className="text-2xl font-black flex items-center gap-3">
+            <CardTitle className="text-2xl font-semibold flex items-center gap-3">
               <Shield size={24} className="text-rose-400" /> Ko Cycle (Controlling)
             </CardTitle>
             <CardDescription className="text-muted-foreground">The 'Grandmother-Grandchild' relationship. One element restrains another.</CardDescription>
@@ -111,20 +111,20 @@ const FiveElementCycle = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
         {ELEMENTS.map(el => (
-          <Card key={el.name} className="border-none shadow-md rounded-[2rem] bg-card hover:shadow-xl transition-all group">
+          <Card key={el.name} className="border-none shadow-md rounded-2xl bg-card hover:shadow-xl transition-all group">
             <CardHeader className="pb-3">
               <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center text-primary-foreground mb-3 shadow-lg", el.color)}>
                 <Zap size={24} />
               </div>
-              <CardTitle className="text-xl font-black">{el.name}</CardTitle>
+              <CardTitle className="text-xl font-semibold">{el.name}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-xs text-muted-foreground font-medium leading-relaxed">{el.description}</p>
               <div className="space-y-2">
-                <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Meridians</p>
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Meridians</p>
                 <div className="flex flex-wrap gap-1">
                   {el.meridians.map(m => (
-                    <Badge key={m} variant="secondary" className="bg-muted text-muted-foreground border-none text-[8px] font-bold">
+                    <Badge key={m} variant="secondary" className="bg-muted text-muted-foreground border-none text-[10px] font-bold">
                       {m}
                     </Badge>
                   ))}
@@ -135,7 +135,7 @@ const FiveElementCycle = () => {
         ))}
       </div>
 
-      <Alert className="bg-primary/5 border-primary/20 rounded-[2rem] p-6">
+      <Alert className="bg-primary/5 border-primary/20 rounded-2xl p-6">
         <Info className="h-5 w-5 text-primary" />
         <AlertDescription className="text-sm text-primary font-medium leading-relaxed">
           <strong>Clinical Application:</strong> If an element is deficient, you can strengthen its "Mother" (Sheng Cycle). If an element is overactive, you can strengthen the element that "Controls" it (Ko Cycle).

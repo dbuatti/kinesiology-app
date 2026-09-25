@@ -232,11 +232,11 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  />
 
  <Tabs value={activeTab} onValueChange={(v) => (nested ? setInternalTab(v) : setSearchParams({ tab: v }))} className="w-full">
- <TabsList className="grid w-full grid-cols-2 h-14 bg-muted p-1.5 rounded-xl mb-8">
- <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-destructive data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
+ <TabsList className="grid w-full sm:w-auto sm:inline-grid grid-cols-2 h-10 bg-muted p-1 rounded-xl mb-8">
+ <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-destructive data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px]">
  <LayoutDashboard size={14} /> Practice Dashboard
  </TabsTrigger>
- <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-destructive data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
+ <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-destructive data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px]">
  <TrendingUp size={14} /> Progress & Protocols
  </TabsTrigger>
  </TabsList>
@@ -375,7 +375,7 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  <CardContent className="p-6 space-y-4">
  <div className="flex items-start justify-between">
  <div className="space-y-1">
- <p className="text-[10px] font-semibold text-destructive uppercase tracking-wider">
+ <p className="text-[11px] font-semibold text-destructive">
  {isToday(new Date(session.date)) ? "TODAY" : format(new Date(session.date), "EEEE, MMM d")}
  </p>
  <h3 className="font-medium text-lg text-foreground group-hover:text-chart-destructive transition-colors">

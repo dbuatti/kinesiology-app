@@ -121,7 +121,7 @@ export default function CommsInbox({ clients, voiceStudents }: Props) {
         <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
           <Mail className="h-4 w-4 text-chart-primary" /> Client inbox
           {needsReplyCount > 0 && (
-            <span className="text-[10px] font-black uppercase tracking-wider text-chart-destructive bg-chart-destructive/10 px-1.5 py-0.5 rounded-full">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-chart-destructive bg-chart-destructive/10 px-1.5 py-0.5 rounded-full">
               {needsReplyCount} need{needsReplyCount === 1 ? "s" : ""} reply
             </span>
           )}
@@ -213,7 +213,7 @@ export default function CommsInbox({ clients, voiceStudents }: Props) {
                         : <Brain className="h-3.5 w-3.5 text-chart-purple shrink-0" />}
                       <span className="text-sm font-semibold text-foreground truncate">{m.name}</span>
                       <span className={cn(
-                        "text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0",
+                        "text-[11px] font-semibold px-1.5 py-0.5 rounded-full shrink-0",
                         m.needs_reply ? "bg-chart-destructive/15 text-chart-destructive" : "bg-chart-emerald/15 text-chart-emerald",
                       )}>
                         {m.needs_reply ? "Needs reply" : "Replied"}

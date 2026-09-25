@@ -54,15 +54,15 @@ const HeartMathBreathing = ({ onComplete, onCancel }: HeartMathBreathingProps) =
     : ((6 - timeLeft) / 6) * 100;
 
   return (
-    <div className="p-12 bg-foreground rounded-[3rem] border-2 border-border flex flex-col items-center text-center space-y-12 shadow-2xl relative overflow-hidden">
+    <div className="p-12 bg-foreground rounded-2xl border-2 border-border flex flex-col items-center text-center space-y-12 shadow-2xl relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(225,29,72,0.1),transparent_70%)]" />
       
       <div className="space-y-3 relative z-10">
         <div className="flex items-center justify-center gap-3 text-rose-500">
           <Heart size={24} className={cn(isActive && "animate-pulse")} />
-          <span className="text-[10px] font-black uppercase tracking-[0.4em]">HeartMath 4/6 Rhythm</span>
+          <span className="text-[10px] font-semibold uppercase tracking-wider">HeartMath 4/6 Rhythm</span>
         </div>
-        <h3 className="text-4xl font-black text-primary-foreground tracking-tight">Coherence Breathing</h3>
+        <h3 className="text-4xl font-semibold text-primary-foreground tracking-tight">Coherence Breathing</h3>
         <p className="text-muted-foreground text-sm font-medium max-w-xs mx-auto">Focus on the area of your heart. Imagine your breath flowing in and out of that space.</p>
       </div>
 
@@ -81,10 +81,10 @@ const HeartMathBreathing = ({ onComplete, onCancel }: HeartMathBreathingProps) =
           isActive && phase === 'inhale' ? "scale-110 border-rose-500/50" : "scale-100"
         )}>
           <div className="text-center">
-            <p className="text-4xl font-black text-rose-500 uppercase tracking-[0.2em]">
+            <p className="text-4xl font-semibold text-rose-500 uppercase tracking-wider">
               {isActive ? phase : "Ready"}
             </p>
-            {isActive && <p className="text-3xl font-black text-primary-foreground tabular-nums mt-2">{timeLeft}s</p>}
+            {isActive && <p className="text-3xl font-semibold text-primary-foreground tabular-nums mt-2">{timeLeft}s</p>}
           </div>
         </div>
       </div>
@@ -98,7 +98,7 @@ const HeartMathBreathing = ({ onComplete, onCancel }: HeartMathBreathingProps) =
             transition={{ duration: 1, ease: "linear" }}
           />
         </div>
-        <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+        <div className="flex justify-between text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
           <span>4s Inhale</span>
           <span className="text-rose-400">{cycles} Cycles</span>
           <span>6s Exhale</span>
@@ -114,7 +114,7 @@ const HeartMathBreathing = ({ onComplete, onCancel }: HeartMathBreathingProps) =
         <Button 
           onClick={toggleTimer} 
           className={cn(
-            "rounded-2xl px-12 h-16 font-black text-xs uppercase tracking-widest shadow-2xl transition-all hover:scale-105 active:scale-95",
+            "rounded-2xl px-12 h-16 font-semibold text-xs shadow-2xl transition-all hover:scale-[1.03] active:scale-95",
             isActive ? "bg-card text-foreground" : "bg-rose-600 hover:bg-rose-700 text-primary-foreground shadow-rose-500/20"
           )}
         >

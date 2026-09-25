@@ -228,7 +228,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
 
           {!isFinished && (
             <div className="hidden sm:flex items-center gap-2 shrink-0">
-              <Badge className={cn("border-none font-semibold text-[7px] md:text-[8px] uppercase tracking-wider px-1.5 py-0.5 rounded-md", activePhase.color, "text-primary-foreground")}>
+              <Badge className={cn("border-none font-semibold text-[7px] md:text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-md", activePhase.color, "text-primary-foreground")}>
                 {activePhase.name}
               </Badge>
             </div>
@@ -241,7 +241,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
             <Button
               size="sm"
               onClick={toggleDocumentView}
-              className="h-7 md:h-8 px-2 md:px-3 rounded-xl border border-border bg-card hover:bg-muted text-foreground font-semibold text-[10px] uppercase tracking-wider gap-1 md:gap-1.5"
+              className="h-7 md:h-8 px-2 md:px-3 rounded-xl border border-border bg-card hover:bg-muted text-foreground font-semibold text-[11px] gap-1 md:gap-1.5"
               title="Toggle Document View (Option + D)"
             >
               {isDocViewActive ? <LayoutGrid size={12} /> : <FileText size={12} />}
@@ -264,7 +264,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
               <Button 
                 size="sm" 
                 className={cn(
-                  "border-none h-7 md:h-8 px-2.5 md:px-4 rounded-xl font-semibold text-[10px] uppercase tracking-wider transition-colors",
+                  "border-none h-7 md:h-8 px-2.5 md:px-4 rounded-xl font-semibold text-[11px] transition-colors",
                   isOvertime && !isFinished ? "border border-destructive bg-destructive text-destructive-foreground hover:bg-destructive/90" : "border border-border bg-card hover:bg-muted text-foreground"
                 )}
               >

@@ -71,20 +71,20 @@ const NeurologicalAssessments = ({
         <CollapsibleContent>
           <div className="p-8 border-t border-border space-y-8 animate-in fade-in slide-in-from-top-2 duration-500">
             <Tabs defaultValue="fakuda" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 h-16 bg-muted p-1.5 rounded-2xl">
-                <TabsTrigger value="fakuda" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm rounded-xl h-13 font-black uppercase tracking-wider text-[10px] relative">
+              <TabsList className="grid w-full sm:w-auto sm:inline-grid grid-cols-4 h-10 bg-muted p-1 rounded-xl">
+                <TabsTrigger value="fakuda" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm rounded-xl h-13 font-semibold text-[11px] relative">
                   <Footprints size={16} /> <span className="hidden sm:inline">Fakuda</span>
                   {hasFakudaNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full" />}
                 </TabsTrigger>
-                <TabsTrigger value="rhombergs" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-purple-600 data-[state=active]:shadow-sm rounded-xl h-13 font-black uppercase tracking-wider text-[10px] relative">
+                <TabsTrigger value="rhombergs" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-purple-600 data-[state=active]:shadow-sm rounded-xl h-13 font-semibold text-[11px] relative">
                   <Scale size={16} /> <span className="hidden sm:inline">Rhombergs</span>
                   {hasRhombergsNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-purple-500 rounded-full" />}
                 </TabsTrigger>
-                <TabsTrigger value="frontal-lobe" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-13 font-black uppercase tracking-wider text-[10px] relative">
+                <TabsTrigger value="frontal-lobe" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-13 font-semibold text-[11px] relative">
                   <Hand size={16} /> <span className="hidden sm:inline">Frontal</span>
                   {hasFrontalLobeNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-indigo-500 rounded-full" />}
                 </TabsTrigger>
-                <TabsTrigger value="righting" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-xl h-13 font-black uppercase tracking-wider text-[10px] relative">
+                <TabsTrigger value="righting" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-xl h-13 font-semibold text-[11px] relative">
                   <RefreshCw size={16} /> <span className="hidden sm:inline">Righting</span>
                   {hasRightingNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full" />}
                 </TabsTrigger>
@@ -93,7 +93,7 @@ const NeurologicalAssessments = ({
               <TabsContent value="fakuda" className="mt-8 space-y-6">
                 <div className="flex items-center justify-between px-2">
                   <div className="space-y-1">
-                    <h4 className="text-lg font-black text-foreground">Fakuda Step Test</h4>
+                    <h4 className="text-lg font-semibold text-foreground">Fakuda Step Test</h4>
                     <p className="text-xs text-muted-foreground font-medium">Assess midline/vestibule cerebellum imbalances</p>
                   </div>
                   {hasFakudaNotes && <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 font-bold">Completed</Badge>}
@@ -108,7 +108,7 @@ const NeurologicalAssessments = ({
               <TabsContent value="rhombergs" className="mt-8 space-y-6">
                 <div className="flex items-center justify-between px-2">
                   <div className="space-y-1">
-                    <h4 className="text-lg font-black text-foreground">Sharpened Rhombergs Test</h4>
+                    <h4 className="text-lg font-semibold text-foreground">Sharpened Rhombergs Test</h4>
                     <p className="text-xs text-muted-foreground font-medium">Assess midline cerebellum and proprioception</p>
                   </div>
                   {hasRhombergsNotes && <Badge className="bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20 font-bold">Completed</Badge>}
@@ -123,7 +123,7 @@ const NeurologicalAssessments = ({
               <TabsContent value="frontal-lobe" className="mt-8 space-y-6">
                 <div className="flex items-center justify-between px-2">
                   <div className="space-y-1">
-                    <h4 className="text-lg font-black text-foreground">Frontal Lobe Assessment</h4>
+                    <h4 className="text-lg font-semibold text-foreground">Frontal Lobe Assessment</h4>
                     <p className="text-xs text-muted-foreground font-medium">Rapid hand drill for frontal cortex asymmetry</p>
                   </div>
                   {hasFrontalLobeNotes && <Badge className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20 font-bold">Completed</Badge>}
@@ -138,7 +138,7 @@ const NeurologicalAssessments = ({
               <TabsContent value="righting" className="mt-8 space-y-6">
                 <div className="flex items-center justify-between px-2">
                   <div className="space-y-1">
-                    <h4 className="text-lg font-black text-foreground">Righting Reflexes</h4>
+                    <h4 className="text-lg font-semibold text-foreground">Righting Reflexes</h4>
                     <p className="text-xs text-muted-foreground font-medium">Ocular & Labyrinthine postural organization</p>
                   </div>
                   {hasRightingNotes && <Badge className="bg-primary/10 text-primary dark:text-primary border-primary/20 font-bold">Completed</Badge>}
@@ -151,12 +151,12 @@ const NeurologicalAssessments = ({
               </TabsContent>
             </Tabs>
 
-            <div className="p-6 bg-muted/50 rounded-[2rem] border border-border flex items-start gap-4">
+            <div className="p-6 bg-muted/50 rounded-2xl border border-border flex items-start gap-4">
               <div className="w-10 h-10 bg-card rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm shrink-0">
                 <Info size={20} />
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-black text-foreground uppercase tracking-tight">Clinical Note</p>
+                <p className="text-xs font-semibold text-foreground uppercase tracking-tight">Clinical Note</p>
                 <p className="text-xs text-muted-foreground font-medium leading-relaxed">
                   Global assessments provide a baseline for the client's nervous system stability. If significant imbalances are found, prioritize <strong>SNS Down-regulation</strong> before proceeding with deep emotional or structural work.
                 </p>

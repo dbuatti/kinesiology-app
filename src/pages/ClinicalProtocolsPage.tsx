@@ -103,7 +103,7 @@ export default function ClinicalProtocolsPage() {
           variant="ghost" 
           size="icon" 
           onClick={() => navigate(`/appointments/${id}`)}
-          className="h-12 w-12 rounded-xl bg-card/5 text-primary-foreground hover:bg-card/10 mb-4 transition-all hover:scale-110"
+          className="h-12 w-12 rounded-xl bg-card/5 text-primary-foreground hover:bg-card/10 mb-4 transition-all hover:scale-[1.03]"
         >
           <ChevronLeft size={24} />
         </Button>
@@ -126,7 +126,7 @@ export default function ClinicalProtocolsPage() {
                   <div className="absolute left-0 w-1 h-8 bg-card rounded-r-full" />
                 )}
                 <p.icon size={22} className={cn("transition-transform duration-500", isActive ? "scale-110" : "group-hover:scale-110", !isActive && p.color)} />
-                <span className="text-[10px] font-semibold uppercase tracking-wider mt-2 text-center px-1">
+                <span className="text-[11px] font-semibold mt-2 text-center px-1">
                   {p.label}
                 </span>
               </button>
@@ -168,7 +168,7 @@ export default function ClinicalProtocolsPage() {
               asChild
               variant="ghost" 
               size="sm" 
-              className="h-10 px-4 rounded-xl text-chart-primary hover:bg-chart-primary/10 font-semibold text-[10px] uppercase tracking-wider"
+              className="h-10 px-4 rounded-xl text-chart-primary hover:bg-chart-primary/10 font-semibold text-[11px]"
             >
               <a href="https://fnhrefapp-ggs6ojfk.manus.space/brain-zones" target="_blank" rel="noopener noreferrer">
                 <Globe size={16} className="mr-2" /> Official App <ExternalLink size={12} className="ml-1.5 opacity-50" />
@@ -271,7 +271,7 @@ export default function ClinicalProtocolsPage() {
                     <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-1">Session Notes & Homework</p>
                   </div>
                 </div>
-                <Button variant="ghost" size="sm" className="h-11 px-6 rounded-xl text-chart-primary hover:bg-chart-primary/10 font-semibold text-[10px] uppercase tracking-wider border border-chart-primary/20">
+                <Button variant="ghost" size="sm" className="h-11 px-6 rounded-xl text-chart-primary hover:bg-chart-primary/10 font-semibold text-[11px] border border-chart-primary/20">
                   <Sparkles size={16} className="mr-2" /> AI Clinical Assist
                 </Button>
               </div>
@@ -283,7 +283,7 @@ export default function ClinicalProtocolsPage() {
               />
               <div className="mt-6 flex justify-end">
                 <Button 
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-14 px-12 font-semibold text-xs uppercase tracking-wider shadow-sm"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-14 px-12 font-semibold text-xs shadow-sm"
                   disabled={savingIntegration}
                   onClick={async () => {
                     if (!id) return;

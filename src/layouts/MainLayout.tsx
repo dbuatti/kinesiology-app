@@ -1,46 +1,53 @@
-
 import { useState, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from '@/components/crm/Sidebar';
-import QuickActions from '@/components/crm/QuickActions';
 import BackToTop from '@/components/shared/BackToTop';
-import UpcomingMarquee from '@/components/crm/UpcomingMarquee';
 import FooterLinks from '@/components/crm/FooterLinks';
+import TopBar from '@/components/layout/TopBar';
 import { useAppMode } from '@/components/ModeProvider';
 import { useIpadMode } from '@/hooks/use-ipad-mode';
-import { cn } from '@/lib/utils';
 import { showSuccess } from '@/utils/toast';
-import { Tablet, Menu } from 'lucide-react';
+import { Tablet } from 'lucide-react';
+
+// Route → [page title, breadcrumb section, section link]
+const ROUTES: Record<string, [string, string, string]> = {
+  "": ["Home", "Clinical", "/"],
+  assistant: ["Assistant", "Clinical", "/"],
+  timetable: ["Timetable", "Clinical", "/"],
+  calendar: ["Calendar", "Clinical", "/"],
+  clients: ["Clients", "Clinical", "/"],
+  sessions: ["Sessions", "Clinical", "/"],
+  appointments: ["Session", "Sessions", "/sessions"],
+  availability: ["Availability", "Clinical", "/"],
+  "morning-program": ["Morning Program", "Practitioner Growth", "/"],
+  journal: ["Journal", "Practitioner Growth", "/"],
+  practice: ["Practice Hub", "Practitioner Growth", "/"],
+  identity: ["Identity Work", "Practitioner Growth", "/"],
+  worksheets: ["Worksheets", "Reference", "/library"],
+  library: ["Library", "Reference", "/library"],
+  resources: ["Resources", "Reference", "/library"],
+  "peace-framework": ["PEACE Framework", "Reference", "/library"],
+  voice: ["Voice Studio", "Voice", "/voice"],
+  business: ["Business Hub", "Business", "/business"],
+  settings: ["Settings", "System", "/settings"],
+};
 
 const MainLayout = () => {
-  const { mode, setMode } = useAppMode();
+  const { setMode } = useAppMode();
   const { enabled: ipadMode, toggle: toggleIpadMode } = useIpadMode();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const ROUTE_TITLES: Record<string, string> = {
-    "": "Home",
-    assistant: "Assistant",
-    timetable: "Timetable",
-    calendar: "Calendar",
-    clients: "Clients",
-    sessions: "Sessions",
-    appointments: "Session",
-    business: "Business",
-    journal: "Journal",
-    practice: "Practice Hub",
-    worksheets: "Worksheets",
-    library: "Library",
-    identity: "Identity Work",
-    "morning-program": "Morning Program",
-    voice: "Voice Studio",
-    settings: "Settings",
-  };
-  const routeSegment = location.pathname.split("/").filter(Boolean)[0] ?? "";
-  const currentTitle = ROUTE_TITLES[routeSegment] ?? (routeSegment.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase()) || "Home");
+  const segments = location.pathname.split("/").filter(Boolean);
+  const routeSegment = segments[0] ?? "";
+  const fallbackTitle = routeSegment.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase()) || "Home";
+  let [currentTitle, section, sectionTo] = ROUTES[routeSegment] ?? [fallbackTitle, "", "/"];
+  // Deeper pages read as children of their hub: Clients › Client, Voice › Students
+  if (routeSegment === "clients" && segments[1]) [currentTitle, section, sectionTo] = ["Client", "Clients", "/clients"];
+  if (routeSegment === "voice" && segments[1] === "clients") [currentTitle, section, sectionTo] = [segments[2] === "new" ? "New student" : "Students", "Voice Studio", "/voice"];
+  if (routeSegment === "settings" && segments[1]) [currentTitle, section, sectionTo] = [fallbackTitleFor(segments[1]), "Settings", "/settings"];
 
-  // Per-route browser tab title, so tabs, history and bookmarks are
-  // distinguishable (they all read the same generic title otherwise).
+  // Per-route browser tab title, so tabs, history and bookmarks are distinguishable.
   useEffect(() => {
     document.title = currentTitle ? `${currentTitle} · Resonance` : "Resonance Kinesiology";
   }, [currentTitle]);
@@ -80,7 +87,7 @@ const MainLayout = () => {
     }
   }, [location.pathname]);
 
-  // Global Keyboard Shortcuts (macOS & Windows Robust)
+  // Session-page keyboard shortcuts (macOS & Windows)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const isInSessionPage = location.pathname.startsWith('/appointments/');
@@ -115,89 +122,61 @@ const MainLayout = () => {
   const isDocView = location.search.includes('view=document');
   const shouldHideHeader = (isFullScreen && isInSession) || isDocView;
   const shouldHideSidebar = shouldHideHeader || isDocView;
-  // The site-wide marketing footer (Navigate/Study/Practice/Resources links)
-  // doesn't belong under a working tool page — it was the actual cause of a
-  // "chat window sizing is weird" report: the panes above sized correctly to
-  // fill the viewport, but the page still scrolled well past them to reveal
-  // this footer, which read as broken sizing rather than expected page content.
+  // The link footer doesn't belong under a working tool page — the panes
+  // above size to the viewport, so a footer below them reads as broken sizing.
   const isWorkingToolPage = location.pathname.startsWith('/assistant') || /^\/clients\/[^/]+\/hub/.test(location.pathname);
 
   return (
-    <div className="flex h-screen transition-all duration-1000 relative overflow-hidden bg-background">
-      {/* BACKGROUND ORBS */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className={cn(
-          "absolute top-[-10%] left-[-10%] w-[60%] h-[60%] blur-[160px] rounded-full transition-all duration-1000 opacity-15 dark:opacity-10",
-          mode === 'clinical' ? "bg-primary/15" : mode === 'business' ? "bg-chart-emerald/15" : "bg-chart-destructive/15"
-        )} />
-        <div className={cn(
-          "absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] blur-[140px] rounded-full transition-all duration-1000 opacity-15 dark:opacity-10 delay-500",
-          mode === 'clinical' ? "bg-chart-primary/15" : mode === 'business' ? "bg-chart-emerald/15" : "bg-amber-500/15"
-        )} />
-        <div className="absolute top-[20%] right-[10%] w-[30%] h-[30%] bg-chart-primary/5 blur-[120px] rounded-full animate-pulse-soft" />
-      </div>
+    <div className="relative flex h-[100dvh] overflow-hidden bg-background">
+      {/* Sidebar — rendered in every non-hidden mode so its drawer is
+          available; iPad Mode sets drawerOnly so just the drawer exists and
+          the full width is handed back to content. */}
+      {!shouldHideSidebar && <Sidebar drawerOnly={ipadMode} mobileOpen={mobileNavOpen} onMobileOpenChange={setMobileNavOpen} />}
 
-      <div className="relative z-10 flex h-full w-full">
-        {/* Sidebar — rendered in every non-hidden mode so its Sheet drawer is
-            available; iPad Mode sets drawerOnly so just the drawer exists and
-            the full 256px is handed back to content. */}
-        {!shouldHideSidebar && <Sidebar drawerOnly={ipadMode} mobileOpen={mobileNavOpen} onMobileOpenChange={setMobileNavOpen} />}
+      {/* iPad Mode exit */}
+      {ipadMode && !shouldHideHeader && (
+        <button
+          onClick={() => {
+            toggleIpadMode();
+            showSuccess("iPad Mode off — sidebar restored");
+          }}
+          title="Exit iPad Mode — restore the full sidebar"
+          className="fixed bottom-5 left-5 z-40 flex h-10 items-center gap-2 rounded-full border border-border bg-card/90 pl-3 pr-4 text-[13px] font-medium text-foreground shadow-lg backdrop-blur-xl hover:bg-card print:hidden"
+        >
+          <Tablet size={15} className="text-chart-emerald" />
+          Exit iPad mode
+        </button>
+      )}
 
-        {/* iPad Mode Exit Button */}
-        {ipadMode && !shouldHideHeader && (
-          <button
-            onClick={() => {
-              toggleIpadMode();
-              showSuccess("iPad Mode Disabled — sidebar restored");
-            }}
-            title="Exit iPad Mode — restore the full sidebar"
-            className="fixed bottom-6 left-6 z-40 flex items-center gap-2 px-4 h-12 rounded-2xl bg-primary text-primary-foreground shadow-xl hover:bg-primary/90 transition-colors"
-          >
-            <Tablet size={18} />
-            <span className="text-[10px] font-bold uppercase tracking-wider">iPad</span>
-          </button>
+      {/* Main column */}
+      <div className="flex h-full min-w-0 flex-1 flex-col">
+        {!shouldHideHeader && (
+          <TopBar
+            title={currentTitle}
+            section={section}
+            sectionTo={sectionTo}
+            menuDesktop={ipadMode}
+            mobileOnly={isInSession}
+            showUpNext={!isInSession}
+            onMenu={() => setMobileNavOpen(true)}
+          />
         )}
 
-        {/* Main Content Area */}
-        <div className="flex flex-col flex-1 min-w-0 h-full">
-          {/* Mobile nav header — a real hamburger entry point (in the
-              content column's own vertical stack, above everything else)
-              rather than a floating FAB with no visible affordance. Also shown
-              at every width in iPad Mode, where the fixed sidebar is hidden
-              and the drawer is the only way back into navigation. */}
-          {!shouldHideSidebar && (
-            <header className={cn(
-              "shrink-0 flex items-center gap-3 h-14 px-4 border-b border-border bg-card/95 backdrop-blur-sm",
-              !ipadMode && "lg:hidden"
-            )}>
-              <button
-                onClick={() => setMobileNavOpen(true)}
-                aria-label="Open navigation menu"
-                className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-muted text-foreground transition-colors -ml-1.5"
-              >
-                <Menu size={20} />
-              </button>
-              <span className="text-sm font-bold text-foreground truncate">{currentTitle}</span>
-            </header>
-          )}
-          {!shouldHideHeader && !isInSession && <UpcomingMarquee />}
-
-          {/* Content */}
-          <div className="flex flex-col flex-1 overflow-hidden">
-            <main id="main-scroll-container" className="flex-1 flex flex-col overflow-auto relative">
-              <div key={location.pathname + location.search} className="flex-1 p-0 animate-in fade-in duration-500">
-                <Outlet />
-              </div>
-              {!shouldHideHeader && !isWorkingToolPage && <FooterLinks />}
-            </main>
+        <main id="main-scroll-container" className="relative flex flex-1 flex-col overflow-auto overscroll-contain">
+          <div key={location.pathname + location.search} className="page-enter flex-1">
+            <Outlet />
           </div>
-        </div>
+          {!shouldHideHeader && !isWorkingToolPage && <FooterLinks />}
+        </main>
       </div>
 
-      {!shouldHideHeader && <QuickActions />}
       <BackToTop />
     </div>
   );
 };
+
+function fallbackTitleFor(seg: string) {
+  return seg.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+}
 
 export default MainLayout;

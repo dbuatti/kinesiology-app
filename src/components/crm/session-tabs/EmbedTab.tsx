@@ -195,7 +195,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
             if (!open) setSelectedSlot(null);
           }}>
             <DialogTrigger asChild>
-              <Button className="w-full md:w-auto bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-14 px-12 font-medium text-xs uppercase tracking-wider">
+              <Button className="w-full md:w-auto bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-14 px-12 font-medium text-xs">
                 <Plus size={20} className="mr-2" /> Book Next Session
               </Button>
             </DialogTrigger>

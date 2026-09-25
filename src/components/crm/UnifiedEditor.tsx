@@ -52,7 +52,7 @@ const UnifiedEditor = ({
       >
         {leftTitle && (
           <div className="shrink-0 px-4 h-12 flex items-center border-b border-border">
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
               {leftTitle}
             </span>
           </div>
@@ -62,7 +62,7 @@ const UnifiedEditor = ({
             {groupKeys.map((groupKey) => (
               <div key={groupKey} className="space-y-0.5">
                 {groupKey && (
-                  <p className="px-3 mb-1 text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+                  <p className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
                     {groupKey}
                   </p>
                 )}
@@ -73,7 +73,7 @@ const UnifiedEditor = ({
                       key={s.id}
                       onClick={() => onSelect(s.id)}
                       className={cn(
-                        "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors text-left",
+                        "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-colors text-left",
                         active
                           ? "bg-primary/10 text-primary"
                           : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -82,7 +82,7 @@ const UnifiedEditor = ({
                       {s.icon && <s.icon size={16} className="shrink-0" />}
                       <span className="flex-1 truncate">{s.label}</span>
                       {s.badge && (
-                        <span className="text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                        <span className="text-[11px] font-bold bg-primary/10 text-primary px-1.5 py-0.5 rounded">
                           {s.badge}
                         </span>
                       )}
@@ -117,7 +117,7 @@ const UnifiedEditor = ({
                 emptyState
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-muted-foreground/60 gap-2 p-8">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em]">Select an item</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider">Select an item</p>
                 </div>
               )}
             </motion.div>

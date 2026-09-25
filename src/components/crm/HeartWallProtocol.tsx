@@ -120,7 +120,7 @@ const HeartWallProtocol = () => {
             </div>
             <div className="p-5 bg-destructive/5 rounded-xl border border-destructive/20">
               <p className="text-xs font-bold text-rose-800 leading-relaxed">
-                <span className="uppercase tracking-widest text-[8px]">Tip:</span> If the client is unaware of what the Heart Wall is, briefly explain:
+                <span className="uppercase tracking-wider text-[10px]">Tip:</span> If the client is unaware of what the Heart Wall is, briefly explain:
                 "You know when you've been through something and you can feel yourself shut down so it doesn't happen again?
                 Those physiological responses take a lot of bandwidth from the nervous system. We can calibrate that so your system doesn't have to compensate."
                 I haven't met anyone yet that didn't resonate with this explanation.
@@ -190,7 +190,7 @@ const HeartWallProtocol = () => {
                   </p>
                 </div>
                 <p className="font-medium leading-relaxed">
-                  <Badge className="bg-amber-100 text-amber-800 border-none mr-1 text-[9px]">Shortcut</Badge>
+                  <Badge className="bg-amber-100 text-amber-800 border-none mr-1 text-[10px]">Shortcut</Badge>
                   The pulse points tell you the organ instantly. Once you know the organ, you know which row in the chart to use.
                 </p>
               </div>
@@ -565,14 +565,14 @@ const HeartWallProtocol = () => {
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 bg-card rounded-lg space-y-2">
-              <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Timeline</p>
+              <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Timeline</p>
               <p className="text-xs text-indigo-800 font-medium leading-relaxed">
                 Hidden Heart Wall will not show for a few days, maybe weeks afterwards.
                 Screen for it in follow-up sessions using the same protocol.
               </p>
             </div>
             <div className="p-4 bg-card rounded-lg space-y-2">
-              <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Why It Exists</p>
+              <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Why It Exists</p>
               <p className="text-xs text-indigo-800 font-medium leading-relaxed">
                 The subconscious may hold deeper layers back until the system is ready.
                 "At the point of recording this, I still had one layer of the hidden Heart Wall left."

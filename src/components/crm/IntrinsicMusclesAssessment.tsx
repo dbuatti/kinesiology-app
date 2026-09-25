@@ -57,11 +57,11 @@ const MuscleTestItem = ({
             <h3 className="text-sm font-bold text-foreground truncate">
               {name}
             </h3>
-            <Badge variant="outline" className="border-border text-muted-foreground font-black text-[7px] uppercase tracking-widest px-1.5 py-0 rounded-none">
+            <Badge variant="outline" className="border-border text-muted-foreground font-semibold text-[7px] uppercase tracking-wider px-1.5 py-0 rounded-none">
               {info.meridian}
             </Badge>
           </div>
-          <div className="text-[9px] text-muted-foreground flex items-center gap-1">
+          <div className="text-[10px] text-muted-foreground flex items-center gap-1">
             <Zap size={10} className="text-chart-primary shrink-0" />
             <span>{info.testingPosition || info.description || 'Standard muscle test'}</span>
           </div>
@@ -69,7 +69,7 @@ const MuscleTestItem = ({
 
         <div className="flex items-center gap-3 shrink-0 print:hidden">
           <div className="flex items-center gap-2 border-r border-border pr-2">
-            <span className="text-[7px] font-black text-muted-foreground/60 uppercase tracking-widest">Inhib</span>
+            <span className="text-[7px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Inhib</span>
             {isLateralized ? (
               <div className="flex items-center gap-1.5">
                 <Checkbox
@@ -96,7 +96,7 @@ const MuscleTestItem = ({
           </div>
 
           <div className="flex items-center gap-2 border-r border-border pr-2">
-            <span className="text-[7px] font-black text-muted-foreground/60 uppercase tracking-widest">Hyper</span>
+            <span className="text-[7px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Hyper</span>
             {isLateralized ? (
               <div className="flex items-center gap-1.5">
                 <Checkbox
@@ -123,7 +123,7 @@ const MuscleTestItem = ({
           </div>
 
           <div className="flex items-center gap-2 pr-2">
-            <span className="text-[7px] font-black text-muted-foreground/60 uppercase tracking-widest">Norm</span>
+            <span className="text-[7px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Norm</span>
             {isLateralized ? (
               <div className="flex items-center gap-1.5">
                 <Checkbox
@@ -205,7 +205,7 @@ const IntrinsicMusclesAssessment = ({ findings, onSave, syncIntrinsicToMuscles }
     <div className="space-y-8">
       {Object.entries(PRELIMINARY_MUSCLES).map(([group, muscles]) => (
         <div key={group} className="space-y-2">
-          <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] px-2 mb-3">{group}</h3>
+          <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-2 mb-3">{group}</h3>
           <div className="grid grid-cols-1 gap-1.5">
             {muscles.map(muscle => (
               <MuscleTestItem

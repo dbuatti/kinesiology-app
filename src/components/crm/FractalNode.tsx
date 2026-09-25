@@ -85,7 +85,7 @@ const FractalNode = ({
     <div className="space-y-1">
       <div 
         className={cn(
-          "flex items-center gap-3 p-4 rounded-[2rem] border transition-all group",
+          "flex items-center gap-3 p-4 rounded-2xl border transition-all group",
           level === 0 ? "bg-card border-indigo-100 shadow-md" : "bg-muted/30 border-transparent hover:border-border",
           item.is_primary_primary && "ring-2 ring-amber-500/20 border-amber-200 bg-amber-50/5"
         )}
@@ -115,12 +115,12 @@ const FractalNode = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             {item.is_primary_primary && (
-              <Badge className="bg-amber-500 text-primary-foreground border-none font-black text-[7px] uppercase tracking-widest px-2 py-0.5 rounded-md flex items-center gap-1">
+              <Badge className="bg-amber-500 text-primary-foreground border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-0.5 rounded-md flex items-center gap-1">
                 <Star size={8} className="fill-current" /> Primary Root
               </Badge>
             )}
             <Badge className={cn(
-              "border-none font-black text-[7px] uppercase tracking-widest px-2 py-0.5 rounded-md",
+              "border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-0.5 rounded-md",
               tierInfo.color,
               tierInfo.tier < 2 && "text-muted-foreground"
             )}>
@@ -128,7 +128,7 @@ const FractalNode = ({
             </Badge>
             <p className={cn(
               "font-bold text-sm truncate",
-              level === 0 ? "text-lg font-black" : "text-foreground"
+              level === 0 ? "text-lg font-semibold" : "text-foreground"
             )}>"{item.content}"</p>
           </div>
           
@@ -141,7 +141,7 @@ const FractalNode = ({
               />
             </div>
             <div className="flex-1 max-w-[100px] space-y-1">
-              <div className="flex justify-between text-[6px] font-black uppercase text-muted-foreground">
+              <div className="flex justify-between text-[6px] font-semibold uppercase text-muted-foreground">
                 <span>Metabolized</span>
                 <span>{sessionCount} Sessions</span>
               </div>
@@ -162,7 +162,7 @@ const FractalNode = ({
                 <Zap size={16} className="text-indigo-500" /> Process in Identity Map
               </DropdownMenuItem>
               
-              <div className="px-4 py-2 text-[8px] font-black uppercase tracking-widest text-muted-foreground">Move Hierarchy</div>
+              <div className="px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Move Hierarchy</div>
               {item.parent_id && (
                 <DropdownMenuItem onClick={() => onMove(item.id, null)} className="rounded-xl py-2.5 px-4 cursor-pointer flex items-center gap-3">
                   <ArrowRight size={16} className="rotate-180" /> Move to Top Level
@@ -189,7 +189,7 @@ const FractalNode = ({
           
           <Button 
             size="sm" 
-            className="h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-primary-foreground font-black text-[10px] uppercase tracking-widest shadow-lg"
+            className="h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-primary-foreground font-semibold text-[11px] shadow-lg"
             onClick={() => onProcess(item)}
           >
             Process <ChevronRight size={14} className="ml-1" />
@@ -198,7 +198,7 @@ const FractalNode = ({
       </div>
 
       {isExpanded && hasChildren && (
-        <div className="animate-in fade-in slide-in-from-top-1 duration-300 border-l-2 border-border/50 dark:border-foreground ml-4">
+        <div className="animate-in fade-in slide-in-from-top-1 duration-300 border-l-2 border-border/50 dark:border-border ml-4">
           {children}
         </div>
       )}

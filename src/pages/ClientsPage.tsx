@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Loader2, LayoutGrid, List, Users, AlertCircle, RefreshCw, TrendingUp } from "lucide-react";
+import { Plus, Search, Loader2, LayoutGrid, List, Users, AlertCircle, RefreshCw, TrendingUp, ArrowUpDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import HubTabs from "@/components/shared/HubTabs";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
@@ -276,8 +277,8 @@ export function ClientsTool() {
             <div className="flex items-center gap-2">
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-primary hover:bg-primary/90 shadow-sm rounded-xl h-10 px-5 font-semibold text-sm">
-                  <Plus size={18} className="mr-2" /> New Client
+                <Button className="h-9 gap-1.5 rounded-lg px-3.5 text-[13px] font-medium shadow-sm">
+                  <Plus size={15} /> New client
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[550px] rounded-2xl p-0 overflow-hidden">
@@ -294,71 +295,69 @@ export function ClientsTool() {
           }
         />
 
-        <div className="flex flex-wrap items-center gap-2">
-          {(['all', 'lead', 'active', 'at_risk', 'lapsed'] as const).map((s) => {
-            const count = s === 'all' ? clients.length : clients.filter(c => c.lifecycle_status === s).length;
-            const label = s === 'all' ? 'All' : s === 'at_risk' ? 'At Risk' : s.charAt(0).toUpperCase() + s.slice(1);
-            return (
-              <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
-                className={cn(
-                  "px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border transition-colors",
-                  statusFilter === s ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/40"
-                )}
-              >
-                {label} <span className="opacity-70">({count})</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Just a toolbar (search + sort + view toggle), not a distinct
-            region — the search input and sort/view group already carry
-            their own subtle backgrounds, so the extra bordered/shadowed
-            card around the whole row was pure framing on top of framing
-            (the table right below already has its own single border). */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="relative flex-1 w-full max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+        {/* One toolbar: search · lifecycle filter · sort · view */}
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="relative w-full lg:max-w-xs">
+            <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={15} />
             <Input
-              placeholder="Search by name, email, or suburb..."
-              className="pl-12 bg-muted/50 border-none focus:ring-2 focus:ring-primary h-10 rounded-xl font-medium"
+              placeholder="Search name, email or suburb…"
+              className="h-9 rounded-lg border-border bg-card pl-9 text-[13px] shadow-xs"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
 
-          <div className="flex items-center gap-2 bg-muted p-1.5 rounded-xl">
+          <div className="no-scrollbar -mx-1 flex items-center gap-1 overflow-x-auto px-1">
+            {(['all', 'lead', 'active', 'at_risk', 'lapsed'] as const).map((s) => {
+              const count = s === 'all' ? clients.length : clients.filter(c => c.lifecycle_status === s).length;
+              const label = s === 'all' ? 'All' : s === 'at_risk' ? 'At risk' : s.charAt(0).toUpperCase() + s.slice(1);
+              const on = statusFilter === s;
+              return (
+                <button
+                  key={s}
+                  onClick={() => setStatusFilter(s)}
+                  className={cn(
+                    "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-medium",
+                    on ? "bg-foreground/[0.07] text-foreground" : "text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground"
+                  )}
+                >
+                  {label}
+                  <span className={cn("tabular-nums text-xs", on ? "text-foreground/60" : "text-muted-foreground/60")}>{count}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center gap-2 lg:ml-auto">
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-              <SelectTrigger className="h-9 rounded-lg bg-card border-none px-3 text-xs font-semibold text-primary gap-1.5 w-auto">
-                <TrendingUp size={14} />
+              <SelectTrigger className="h-8 w-auto gap-1.5 rounded-lg border-border bg-card px-2.5 text-[13px] font-medium shadow-xs">
+                <ArrowUpDown size={13} className="text-muted-foreground" />
                 <SelectValue />
               </SelectTrigger>
-  <SelectContent>
-    <SelectItem value="attention">Needs Attention</SelectItem>
-    <SelectItem value="active">Most Active</SelectItem>
-    <SelectItem value="recent">Recently Seen</SelectItem>
-    <SelectItem value="upcoming">Most Upcoming</SelectItem>
-    <SelectItem value="name">Name</SelectItem>
-  </SelectContent>
+              <SelectContent align="end">
+                <SelectItem value="attention">Needs attention</SelectItem>
+                <SelectItem value="active">Most active</SelectItem>
+                <SelectItem value="recent">Recently seen</SelectItem>
+                <SelectItem value="upcoming">Most upcoming</SelectItem>
+                <SelectItem value="name">Name</SelectItem>
+              </SelectContent>
             </Select>
-            <Button 
-              variant={view === 'table' ? 'default' : 'ghost'} 
-              size="sm" 
-              onClick={() => setView('table')}
-              className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", view === 'table' ? "bg-card text-primary shadow-sm hover:bg-card" : "text-muted-foreground")}
-            >
-              <List size={16} className="mr-2" /> Table
-            </Button>
-            <Button 
-              variant={view === 'grid' ? 'default' : 'ghost'} 
-              size="sm" 
-              onClick={() => setView('grid')}
-              className={cn("rounded-lg h-9 px-4 font-bold text-xs uppercase tracking-widest", view === 'grid' ? "bg-card text-primary shadow-sm hover:bg-card" : "text-muted-foreground")}
-            >
-              <LayoutGrid size={16} className="mr-2" /> Grid
-            </Button>
+            <div className="flex items-center rounded-lg border border-border bg-card p-0.5 shadow-xs">
+              {([['table', List, 'Table'], ['grid', LayoutGrid, 'Grid']] as const).map(([v, Icon, label]) => (
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
+                  aria-label={`${label} view`}
+                  title={`${label} view`}
+                  className={cn(
+                    "flex h-7 w-8 items-center justify-center rounded-md",
+                    view === v ? "bg-foreground/[0.07] text-foreground" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Icon size={15} />
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -373,9 +372,17 @@ export function ClientsTool() {
             </Button>
           </div>
         ) : loading ? (
-          <div className="p-24 flex flex-col items-center justify-center gap-6">
-            <Loader2 className="animate-spin text-primary" size={48} />
-            <p className="text-muted-foreground font-black text-xs uppercase tracking-widest">Loading clients...</p>
+          <div className="overflow-hidden rounded-xl border border-border bg-card">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 border-b border-border px-6 py-4 last:border-0">
+                <div className="h-9 w-9 animate-pulse rounded-full bg-muted" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3 w-40 animate-pulse rounded bg-muted" />
+                  <div className="h-2.5 w-56 animate-pulse rounded bg-muted/70" />
+                </div>
+                <div className="hidden h-3 w-24 animate-pulse rounded bg-muted sm:block" />
+              </div>
+            ))}
           </div>
         ) : filteredClients.length > 0 ? (
           view === 'table' ? (
@@ -392,22 +399,22 @@ export function ClientsTool() {
             />
           )
         ) : clients.length === 0 ? (
-          <div className="text-center py-32 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
+          <div className="text-center py-32 bg-muted/30 rounded-2xl border-2 border-dashed border-border">
             <div className="mx-auto w-20 h-20 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-xl">
                <Users className="text-muted-foreground" size={32} />
             </div>
-            <p className="text-foreground font-black text-xl">No clients yet</p>
+            <p className="text-foreground font-semibold text-xl">No clients yet</p>
             <p className="text-muted-foreground mt-2 mb-8 font-medium">Add your first client to start building your clinical database.</p>
             <Button className="h-12 px-8 bg-primary hover:bg-primary/90 rounded-2xl font-bold text-primary-foreground" onClick={() => setOpen(true)}>
               <Plus size={18} className="mr-2" /> Add First Client
             </Button>
           </div>
         ) : (
-          <div className="text-center py-32 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
+          <div className="text-center py-32 bg-muted/30 rounded-2xl border-2 border-dashed border-border">
             <div className="mx-auto w-20 h-20 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-xl">
                <Search className="text-muted-foreground" size={32} />
             </div>
-            <p className="text-foreground font-black text-xl">No clients match "{search}"</p>
+            <p className="text-foreground font-semibold text-xl">No clients match "{search}"</p>
             <p className="text-muted-foreground mt-2 mb-8 font-medium">Try a different name, email, or suburb.</p>
             <Button variant="outline" className="h-12 px-8 border-border hover:bg-card rounded-2xl font-bold" onClick={() => { setSearch(""); }}>Clear Search</Button>
           </div>
@@ -415,10 +422,10 @@ export function ClientsTool() {
       </div>
 
       <Dialog open={bookOpen} onOpenChange={setBookOpen}>
-        <DialogContent className="sm:max-w-[550px] rounded-[2rem] p-0 overflow-hidden">
+        <DialogContent className="sm:max-w-[550px] rounded-2xl p-0 overflow-hidden">
           <div className="p-8">
             <DialogHeader className="mb-6">
-              <DialogTitle className="text-2xl font-black">Quick Book Session</DialogTitle>
+              <DialogTitle className="text-2xl font-semibold">Quick Book Session</DialogTitle>
               <DialogDescription className="font-medium">Schedule a new appointment for this client.</DialogDescription>
             </DialogHeader>
             {selectedClientId && <AppointmentForm initialClientId={selectedClientId} onSuccess={() => { setBookOpen(false); loadAllClients(); }} />}
@@ -437,27 +444,21 @@ const ClientsPage = () => {
 
   return (
     <Tabs value={tab} onValueChange={setTab} className="w-full">
-      <div className="sticky top-0 z-10 bg-background border-b border-border pt-3">
-        <div className="w-full px-4 md:px-8">
-          <TabsList className="w-full flex-wrap gap-1 bg-muted/60 rounded-xl p-1">
-            <TabsTrigger value="database" className="gap-2">
-              <Users size={14} />
-              <span>Client Database</span>
-            </TabsTrigger>
-            <TabsTrigger value="oversight" className="gap-2">
-              <TrendingUp size={14} />
-              <span>Clinical Oversight</span>
-            </TabsTrigger>
-          </TabsList>
-        </div>
-      </div>
+      <HubTabs
+        value={tab}
+        onChange={setTab}
+        tabs={[
+          { id: "database", label: "Client database", icon: Users },
+          { id: "oversight", label: "Clinical oversight", icon: TrendingUp },
+        ]}
+      />
       <TabsContent value="database" className="m-0">
-        <div className="w-full px-4 md:px-8 py-6">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
           <ClientsTool />
         </div>
       </TabsContent>
       <TabsContent value="oversight" className="m-0">
-        <div className="w-full px-4 md:px-8 py-6">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
           <ClinicalOversightTool />
         </div>
       </TabsContent>

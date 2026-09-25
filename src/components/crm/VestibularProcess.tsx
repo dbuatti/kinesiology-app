@@ -127,7 +127,7 @@ const VestibularProcess = ({ onSave, onInhibited, onCancel }: VestibularProcessP
                 </div>
                 <div className="text-left">
                   <div className="font-semibold text-lg text-foreground">{pos.label}</div>
-                  <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{pos.action}</div>
+                  <div className="text-[11px] font-medium text-muted-foreground">{pos.action}</div>
                 </div>
               </Button>
             ))}

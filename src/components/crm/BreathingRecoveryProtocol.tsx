@@ -36,7 +36,7 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
                 <Wind size={28} />
               </div>
               <div>
-                <CardTitle className="text-2xl font-black">Breathing Recovery Exercise</CardTitle>
+                <CardTitle className="text-2xl font-semibold">Breathing Recovery Exercise</CardTitle>
                 <p className="text-teal-50 text-sm font-medium">Protocol for increasing CO2 tolerance and BOLT scores</p>
               </div>
             </div>
@@ -54,7 +54,7 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
           {showInteractive ? (
             <div className="animate-in fade-in zoom-in-95 duration-300">
               <div className="flex items-center justify-between mb-6">
-                <h4 className="text-sm font-black uppercase tracking-widest text-muted-foreground">Interactive Practice Mode</h4>
+                <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Interactive Practice Mode</h4>
                 <Button variant="ghost" size="sm" onClick={() => setShowInteractive(false)} className="text-muted-foreground hover:text-foreground">
                   Back to Instructions
                 </Button>
@@ -89,13 +89,13 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
                 ].map((item) => (
                   <div key={item.step} className={cn("flex gap-5 p-5 rounded-2xl border-2 transition-all", item.color)}>
                     <div className="flex flex-col items-center gap-2">
-                      <span className="w-10 h-10 rounded-full bg-card shadow-sm flex items-center justify-center font-black text-lg shrink-0 border border-current/10">
+                      <span className="w-10 h-10 rounded-full bg-card shadow-sm flex items-center justify-center font-semibold text-lg shrink-0 border border-current/10">
                         {item.step}
                       </span>
                       <div className="h-full w-0.5 bg-current/10 rounded-full" />
                     </div>
                     <div className="space-y-1">
-                      <h4 className="font-black uppercase tracking-widest text-xs opacity-70">{item.title}</h4>
+                      <h4 className="font-semibold uppercase tracking-wider text-xs opacity-70">{item.title}</h4>
                       <p className="text-lg font-bold leading-tight">{item.text}</p>
                     </div>
                   </div>
@@ -106,7 +106,7 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
                 <div className="absolute top-0 right-0 p-4 opacity-10">
                   <Clock size={80} />
                 </div>
-                <h4 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
+                <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4 flex items-center gap-2">
                   <Clock size={16} /> Recommended Schedule
                 </h4>
                 <p className="text-xl font-bold leading-snug relative z-10">
@@ -116,13 +116,13 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-5 bg-indigo-50 rounded-2xl border border-indigo-100">
-                  <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-2">Minimum Target</p>
-                  <p className="text-2xl font-black text-indigo-900">25 Seconds</p>
+                  <p className="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider mb-2">Minimum Target</p>
+                  <p className="text-2xl font-semibold text-indigo-900">25 Seconds</p>
                   <p className="text-xs text-indigo-700 mt-1 font-medium">Essential for optimizing health</p>
                 </div>
                 <div className="p-5 bg-emerald-50 rounded-2xl border border-emerald-100">
-                  <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-2">Optimal Goal</p>
-                  <p className="text-2xl font-black text-emerald-900">40+ Seconds</p>
+                  <p className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider mb-2">Optimal Goal</p>
+                  <p className="text-2xl font-semibold text-emerald-900">40+ Seconds</p>
                   <p className="text-xs text-emerald-700 mt-1 font-medium">Peak respiratory function</p>
                 </div>
               </div>

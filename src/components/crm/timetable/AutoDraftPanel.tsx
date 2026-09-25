@@ -913,7 +913,7 @@ export default function AutoDraftPanel({
                       <span className="text-sm font-semibold text-foreground truncate">{c.name}</span>
                       <span
                         className={cn(
-                          "text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0 rounded-full shrink-0",
+                          "text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0 rounded-full shrink-0",
                           c.kind === "voice" ? "bg-rose-500/10 text-rose-500" : "bg-indigo-500/10 text-indigo-500",
                         )}
                       >
@@ -1159,7 +1159,7 @@ export default function AutoDraftPanel({
         <Button
           onClick={generate}
           disabled={selected.size === 0}
-          className="w-full rounded-full bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-500 hover:to-rose-600 text-white border-none shadow-lg active:scale-[0.99] transition-transform"
+          className="w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20"
         >
           <Wand2 className="h-4 w-4 mr-2" />
           {selected.size > 0 ? `Draft ${selected.size} client${selected.size === 1 ? "" : "s"}` : "Generate draft timetable"}
@@ -1222,7 +1222,7 @@ export default function AutoDraftPanel({
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-foreground truncate">{a.name}</span>
                     {a.lowConfidence && (
-                      <Badge className="text-[9px] font-semibold uppercase tracking-wider border-none px-1.5 py-0 rounded-full bg-amber-500/10 text-amber-600">
+                      <Badge className="text-[10px] font-semibold uppercase tracking-wider border-none px-1.5 py-0 rounded-full bg-amber-500/10 text-amber-600">
                         guess
                       </Badge>
                     )}
@@ -1357,7 +1357,7 @@ export default function AutoDraftPanel({
                   )}
                 >
                   {c.name}
-                  <span className={cn("ml-1 text-[9px] uppercase", visualKey === c.key ? "text-background/70" : "text-muted-foreground")}>
+                  <span className={cn("ml-1 text-[11px]", visualKey === c.key ? "text-background/70" : "text-muted-foreground")}>
                     {c.kind === "voice" ? "Voice" : "FNH"}
                   </span>
                 </button>
@@ -1418,13 +1418,13 @@ export default function AutoDraftPanel({
                             {newWeek && (
                               <div className="flex items-center gap-2 my-1">
                                 <div className="h-px flex-1 bg-border" />
-                                <span className="text-[9px] uppercase tracking-wider text-muted-foreground">{gap}d gap</span>
+                                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{gap}d gap</span>
                                 <div className="h-px flex-1 bg-border" />
                               </div>
                             )}
                             <div className={cn("flex items-center justify-between rounded-md px-2 py-1", statusStyle[e.status])}>
                               <span className="text-xs text-foreground">{practiceFormat(new Date(e.t), "EEE d MMM · h:mm a")}</span>
-                              <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">{e.status}</span>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{e.status}</span>
                             </div>
                           </div>
                         );

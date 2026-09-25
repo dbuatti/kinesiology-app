@@ -89,14 +89,14 @@ const DetectedDuplicatesList = ({
  onClick={() => onReviewMerge(group.primary, group.duplicates[0])}
  disabled={merging}
  variant="outline"
- className="border-border text-muted-foreground hover:bg-muted rounded-xl h-9 px-4 font-semibold text-[10px] uppercase tracking-wider"
+ className="border-border text-muted-foreground hover:bg-muted rounded-xl h-9 px-4 font-semibold text-[11px]"
  >
  Review & Merge
  </Button>
  <Button 
  onClick={() => onAutoMerge(group)}
  disabled={merging}
- className="bg-muted hover:bg-muted/90 text-primary-foreground rounded-xl h-9 px-4 font-semibold text-[10px] uppercase tracking-wider shadow-md"
+ className="bg-muted hover:bg-muted/90 text-primary-foreground rounded-xl h-9 px-4 font-semibold text-[11px] shadow-md"
  >
  {merging ? <Loader2 className="mr-1.5" /> : <Merge size={12} className="mr-1.5" />}
  Auto-Merge

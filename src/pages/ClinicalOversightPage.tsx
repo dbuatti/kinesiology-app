@@ -194,7 +194,7 @@ export function ClinicalOversightTool() {
  <div className="flex items-start justify-between">
  <div className="space-y-1">
  <h3 className="font-semibold text-2xl text-foreground group-hover:text-chart-primary transition-colors">{client.name}</h3>
- <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+ <p className="text-[11px] font-semibold text-muted-foreground">
  {client.totalAssessments} Assessments Recorded
  </p>
  </div>
@@ -209,7 +209,7 @@ export function ClinicalOversightTool() {
  bolt === null ? "bg-muted/30 border-border" : (bolt >= 25 ? "bg-chart-emerald/10 border-border " : "bg-chart-destructive/10 border-border ")
  )}>
  <FlaskConical size={16} className={cn("mb-1.5", bolt === null ? "text-muted-foreground" : (bolt >= 25 ? "text-chart-emerald" : "text-chart-destructive"))} />
- <p className="text-[10px] font-semibold uppercase tracking-wider opacity-60">BOLT</p>
+ <p className="text-[11px] font-semibold opacity-60">BOLT</p>
  <p className="text-2xl font-semibold">{bolt !== null ? `${bolt}s` : "—"}</p>
  </div>
  <div className={cn(
@@ -217,7 +217,7 @@ export function ClinicalOversightTool() {
  coh === null ? "bg-muted/30 border-border" : "bg-chart-primary/10 border-border "
  )}>
  <Activity size={16} className={cn("mb-1.5", coh === null ? "text-muted-foreground" : "text-chart-primary ")} />
- <p className="text-[10px] font-semibold uppercase tracking-wider opacity-60">COH</p>
+ <p className="text-[11px] font-semibold opacity-60">COH</p>
  <p className="text-2xl font-semibold">{coh !== null ? coh.toFixed(1) : "—"}</p>
  </div>
  </div>
@@ -225,7 +225,7 @@ export function ClinicalOversightTool() {
  {isImperative && (
  <div className="flex items-center gap-3 p-3 bg-destructive text-primary-foreground rounded-xl shadow-sm ">
  <Wind size={18} className="shrink-0" />
- <span className="text-[10px] font-semibold uppercase tracking-wider">Imperative: Breathing Recovery</span>
+ <span className="text-[11px] font-semibold">Imperative: Breathing Recovery</span>
  </div>
  )}
  </CardContent>

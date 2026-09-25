@@ -38,7 +38,7 @@ const muscleDesc = (name: string) => {
 };
 
 const SubHeader = ({ id, children }: { id?: string; children: ReactNode }) => (
-  <h3 id={id} className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-4 mt-10 border-l-4 border-border pl-3 scroll-mt-24">{children}</h3>
+  <h3 id={id} className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-4 mt-10 border-l-4 border-border pl-3 scroll-mt-24">{children}</h3>
 );
 
 const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway }: AlignSectionProps) => {
@@ -136,7 +136,7 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
         <button
           onClick={() => setShowOnlyPriority(false)}
           className={cn(
-            "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-all",
+            "px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all",
             !showOnlyPriority
               ? "bg-foreground text-primary-foreground border-foreground"
               : "bg-card border-border text-muted-foreground hover:border-foreground/40"
@@ -147,7 +147,7 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
         <button
           onClick={() => setShowOnlyPriority(!showOnlyPriority)}
           className={cn(
-            "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-all flex items-center gap-1.5",
+            "px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all flex items-center gap-1.5",
             showOnlyPriority
               ? "bg-chart-emerald text-primary-foreground border-chart-emerald"
               : "bg-card border-border text-muted-foreground hover:border-chart-emerald/40"
@@ -161,12 +161,12 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
         <div className="flex items-center gap-2.5 p-2.5 bg-primary/5 border border-primary/20 rounded-lg">
           <Target size={13} className="text-primary shrink-0" />
           <div className="min-w-0 flex-1">
-            <p className="text-[9px] font-bold text-primary uppercase tracking-wider">Priority Pathway</p>
+            <p className="text-[10px] font-bold text-primary uppercase tracking-wider">Priority Pathway</p>
             <p className="text-[11px] font-semibold text-foreground truncate">{currentPathway}</p>
           </div>
           <button
             onClick={() => onSetPriorityPathway('')}
-            className="text-[9px] font-bold text-muted-foreground hover:text-foreground transition-colors shrink-0"
+            className="text-[10px] font-bold text-muted-foreground hover:text-foreground transition-colors shrink-0"
           >
             Clear
           </button>
@@ -183,9 +183,9 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
             <div key={catKey} className="space-y-2">
               <div className="flex items-center gap-2 mb-3">
                 <Icon size={13} className="text-muted-foreground" />
-                <h4 className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground">{config.label}</h4>
+                <h4 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{config.label}</h4>
                 <div className="flex-1 h-px bg-border" />
-                <span className="text-[9px] font-medium text-muted-foreground">{findings.length}</span>
+                <span className="text-[10px] font-medium text-muted-foreground">{findings.length}</span>
               </div>
 
               <div className="space-y-1">
@@ -220,10 +220,10 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
                               {finding.name}
                             </span>
                             {finding.side && (
-                              <span className="text-[9px] font-bold text-muted-foreground">({finding.side})</span>
+                              <span className="text-[10px] font-bold text-muted-foreground">({finding.side})</span>
                             )}
                           </div>
-                          <span className="text-[9px] text-muted-foreground/60">
+                          <span className="text-[10px] text-muted-foreground/60">
                             {finding.status}{finding.side ? ` · ${finding.side}` : ''}
                           </span>
                         </div>
@@ -233,7 +233,7 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
                         <button
                           onClick={() => handleSetPriority(finding)}
                           className={cn(
-                            "px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider border transition-all",
+                            "px-2 py-1 rounded text-[11px] font-bold border transition-all",
                             isPriority
                               ? "bg-chart-emerald text-primary-foreground border-chart-emerald"
                               : "bg-card border-border text-muted-foreground hover:border-chart-emerald/50 hover:text-chart-emerald"
@@ -244,7 +244,7 @@ const AlignSection = ({ pattern, onToggle, onSetPriorityPathway, currentPathway 
                         {onSetPriorityPathway && (
                           <button
                             onClick={() => handleSetPathway(finding)}
-                            className="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wider border border-border text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all"
+                            className="px-2 py-1 rounded text-[11px] font-bold border border-border text-muted-foreground hover:bg-primary/10 hover:text-primary hover:border-primary/30 transition-all"
                           >
                             Set 1°
                           </button>

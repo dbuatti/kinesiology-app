@@ -80,7 +80,7 @@ const ZoneCard = ({ point, images, isSelected, onSelect, onShowInfo, isLoading }
                 </div>
             </div>
             <p className={cn(
-                "font-black text-[8px] uppercase tracking-tight truncate w-full text-center",
+                "font-semibold text-[10px] uppercase tracking-tight truncate w-full text-center",
                 isSelected ? "text-primary-foreground" : "text-foreground"
             )}>
                 {point.name}
@@ -92,15 +92,15 @@ const ZoneCard = ({ point, images, isSelected, onSelect, onShowInfo, isLoading }
                   ? "opacity-100 pointer-events-auto" 
                   : "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"
             )}>
-                <p className="text-[7px] font-black text-indigo-300 uppercase tracking-widest mb-1">Select Side</p>
+                <p className="text-[7px] font-semibold text-indigo-300 uppercase tracking-wider mb-1">Select Side</p>
                 <div className="flex flex-col w-full gap-1">
                     {!isMidline && (
                         <div className="flex gap-1 w-full">
-                            <button onClick={(e) => { e.stopPropagation(); onSelect('Left'); }} className="flex-1 bg-primary-foreground/10 hover:bg-primary text-primary-foreground text-[8px] font-black py-1 rounded-md border border-primary-foreground/10 transition-colors">L</button>
-                            <button onClick={(e) => { e.stopPropagation(); onSelect('Right'); }} className="flex-1 bg-primary-foreground/10 hover:bg-primary text-primary-foreground text-[8px] font-black py-1 rounded-md border border-primary-foreground/10 transition-colors">R</button>
+                            <button onClick={(e) => { e.stopPropagation(); onSelect('Left'); }} className="flex-1 bg-primary-foreground/10 hover:bg-primary text-primary-foreground text-[10px] font-semibold py-1 rounded-md border border-primary-foreground/10 transition-colors">L</button>
+                            <button onClick={(e) => { e.stopPropagation(); onSelect('Right'); }} className="flex-1 bg-primary-foreground/10 hover:bg-primary text-primary-foreground text-[10px] font-semibold py-1 rounded-md border border-primary-foreground/10 transition-colors">R</button>
                         </div>
                     )}
-                    <button onClick={(e) => { e.stopPropagation(); onSelect('Bilateral'); }} className="w-full bg-primary-foreground/10 hover:bg-primary text-primary-foreground text-[8px] font-black py-1 rounded-md border border-primary-foreground/10 transition-colors">{isMidline ? 'Select' : 'Bilateral'}</button>
+                    <button onClick={(e) => { e.stopPropagation(); onSelect('Bilateral'); }} className="w-full bg-primary-foreground/10 hover:bg-primary text-primary-foreground text-[10px] font-semibold py-1 rounded-md border border-primary-foreground/10 transition-colors">{isMidline ? 'Select' : 'Bilateral'}</button>
                 </div>
             </div>
         </div>
@@ -210,18 +210,18 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
 
         <div className="grid grid-cols-2 gap-3">
           <div className={cn("p-3 rounded-xl border transition-all", coord.point?.category === 'Cortical' ? "bg-chart-emerald/10 text-chart-emerald border-chart-emerald/30" : "bg-muted/50 border-border")}>
-            <div className="flex items-center gap-2 mb-1"><ShieldAlert size={14} className="text-chart-emerald" /><p className="text-[8px] font-black text-chart-emerald uppercase tracking-widest">Cortical</p></div>
-            <p className="text-[9px] font-bold text-foreground">Contralateral Logic</p>
+            <div className="flex items-center gap-2 mb-1"><ShieldAlert size={14} className="text-chart-emerald" /><p className="text-[10px] font-semibold text-chart-emerald uppercase tracking-wider">Cortical</p></div>
+            <p className="text-[10px] font-bold text-foreground">Contralateral Logic</p>
           </div>
           <div className={cn("p-3 rounded-xl border transition-all", coord.point?.category === 'Subcortical' ? "bg-primary/10 text-primary border-primary/30" : "bg-muted/50 border-border")}>
-            <div className="flex items-center gap-2 mb-1"><ShieldAlert size={14} className="text-primary" /><p className="text-[8px] font-black text-primary uppercase tracking-widest">Subcortical</p></div>
-            <p className="text-[9px] font-bold text-foreground">Ipsilateral Logic</p>
+            <div className="flex items-center gap-2 mb-1"><ShieldAlert size={14} className="text-primary" /><p className="text-[10px] font-semibold text-primary uppercase tracking-wider">Subcortical</p></div>
+            <p className="text-[10px] font-bold text-foreground">Ipsilateral Logic</p>
           </div>
         </div>
 
         <div className="space-y-6">
             <div className="space-y-2">
-                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest px-1">Cortical Zones</p>
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-1">Cortical Zones</p>
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                     {corticalPoints.map(p => (
                         <ZoneCard 
@@ -237,7 +237,7 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
                 </div>
             </div>
             <div className="space-y-2">
-                <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest px-1">Subcortical Zones</p>
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-1">Subcortical Zones</p>
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                     {subcorticalPoints.map(p => (
                         <ZoneCard 
@@ -264,12 +264,12 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
   const SelectionSummary = () => (
     <div className="grid grid-cols-2 gap-2 mb-4">
       <div className={cn("p-3 rounded-xl border transition-all", coord1.point ? "bg-primary/10 border-primary/30" : "bg-muted/50 border-border")}>
-        <p className="text-[7px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Coordinate 1</p>
-        <p className="text-[11px] font-black text-foreground truncate">{formatCoordLabel(coord1)}</p>
+        <p className="text-[7px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">Coordinate 1</p>
+        <p className="text-[11px] font-semibold text-foreground truncate">{formatCoordLabel(coord1)}</p>
       </div>
       <div className={cn("p-3 rounded-xl border transition-all", coord2.point ? "bg-chart-emerald/10 border-chart-emerald/30" : "bg-muted/50 border-border")}>
-        <p className="text-[7px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">Coordinate 2</p>
-        <p className="text-[11px] font-black text-foreground truncate">{formatCoordLabel(coord2)}</p>
+        <p className="text-[7px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">Coordinate 2</p>
+        <p className="text-[11px] font-semibold text-foreground truncate">{formatCoordLabel(coord2)}</p>
       </div>
     </div>
   );
@@ -286,7 +286,7 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {isComplete && <Badge className="bg-chart-emerald/10 text-chart-emerald border-chart-emerald/30 font-black text-[8px]">Cleared</Badge>}
+          {isComplete && <Badge className="bg-chart-emerald/10 text-chart-emerald border-chart-emerald/30 font-semibold text-[10px]">Cleared</Badge>}
           {onCancel && <Button variant="ghost" size="sm" onClick={onCancel}><X size={14} className="text-muted-foreground" /></Button>}
         </div>
       </div>
@@ -316,7 +316,7 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
               ].map((m) => (
                 <Button key={m.id} variant="outline" className={cn("h-12 justify-start gap-4 px-6 rounded-xl border transition-all group", method === m.id ? "border-primary bg-primary/5 text-primary" : "border-border hover:border-primary/30")} onClick={() => { setMethod(m.id as IntegrationMethod); nextStep('CALIBRATE'); }}>
                   <div className="w-10 h-10 rounded-lg bg-card flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform"><m.icon size={20} className={m.color} /></div>
-                  <div className="text-left"><div className="font-black text-sm">{m.id}</div><div className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Best for: {m.best}</div></div>
+                  <div className="text-left"><div className="font-semibold text-sm">{m.id}</div><div className="text-[11px] font-semibold text-muted-foreground">Best for: {m.best}</div></div>
                 </Button>
               ))}
             </div>
@@ -328,22 +328,22 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
           <div className="space-y-3 animate-in fade-in slide-in-from-right-2 duration-300">
             <div className="bg-muted/50 p-5 rounded-xl border border-border relative overflow-hidden">
               <div className="flex items-center justify-between mb-4 relative z-10">
-                <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20"><Zap size={20} className="text-primary" /></div><div><h3 className="text-base font-medium text-foreground tracking-tight">Calibration</h3><p className="text-muted-foreground font-bold uppercase tracking-widest text-[8px]">Integrating Pathways</p></div></div>
-                <Badge className="bg-primary/10 text-primary border-primary/20 font-black text-[8px] uppercase tracking-widest px-3 py-1">{method}</Badge>
+                <div className="flex items-center gap-3"><div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20"><Zap size={20} className="text-primary" /></div><div><h3 className="text-base font-medium text-foreground tracking-tight">Calibration</h3><p className="text-muted-foreground font-bold uppercase tracking-wider text-[10px]">Integrating Pathways</p></div></div>
+                <Badge className="bg-primary/10 text-primary border-primary/20 font-semibold text-[10px] uppercase tracking-wider px-3 py-1">{method}</Badge>
               </div>
               <div className="relative z-10 mb-4 p-4 bg-card rounded-xl text-foreground border border-border">
-                <div className="flex items-center gap-2 mb-1.5"><Info size={14} className="text-primary" /><p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Instructions</p></div>
+                <div className="flex items-center gap-2 mb-1.5"><Info size={14} className="text-primary" /><p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Instructions</p></div>
                 <div className="space-y-3">
-                  {method === 'Tapping' && <p className="text-sm font-black leading-tight text-foreground">Simultaneously <span className="text-primary underline decoration-primary/30 underline-offset-4">TAP</span> both reflex points for 3-5 seconds.</p>}
-                  {method === 'Holding + Intention' && <div className="space-y-2"><p className="text-[11px] font-bold leading-tight text-foreground">Hold both points lightly and mentally repeat:</p><div className="p-2.5 bg-primary/5 rounded-xl border border-primary/10 text-center italic font-black text-primary text-xs">"{entryPoint} — {formatCoordLabel(coord1)} — {formatCoordLabel(coord2)}"</div></div>}
-                  {method === 'Tuning Fork' && <p className="text-sm font-black leading-tight text-foreground">TL both points and strike tuning fork on the <span className="text-primary underline decoration-primary/30 underline-offset-4">Cranium</span>.</p>}
+                  {method === 'Tapping' && <p className="text-sm font-semibold leading-tight text-foreground">Simultaneously <span className="text-primary underline decoration-primary/30 underline-offset-4">TAP</span> both reflex points for 3-5 seconds.</p>}
+                  {method === 'Holding + Intention' && <div className="space-y-2"><p className="text-[11px] font-bold leading-tight text-foreground">Hold both points lightly and mentally repeat:</p><div className="p-2.5 bg-primary/5 rounded-xl border border-primary/10 text-center italic font-semibold text-primary text-xs">"{entryPoint} — {formatCoordLabel(coord1)} — {formatCoordLabel(coord2)}"</div></div>}
+                  {method === 'Tuning Fork' && <p className="text-sm font-semibold leading-tight text-foreground">TL both points and strike tuning fork on the <span className="text-primary underline decoration-primary/30 underline-offset-4">Cranium</span>.</p>}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3 relative z-10">
                 <div className="space-y-1.5">
                   <div className="p-2 bg-card rounded-xl border border-border text-center">
-                    <p className="text-[7px] font-black text-primary uppercase tracking-widest mb-0.5">Coord 1</p>
-                    <p className="text-[9px] font-black truncate text-foreground">{formatCoordLabel(coord1)}</p>
+                    <p className="text-[7px] font-semibold text-primary uppercase tracking-wider mb-0.5">Coord 1</p>
+                    <p className="text-[10px] font-semibold truncate text-foreground">{formatCoordLabel(coord1)}</p>
                   </div>
                   {coord1.point && (customizations[coord1.point.id]?.secondaryUrl || customizations[coord1.point.id]?.primaryUrl) && (
                     <div className="aspect-[16/10] rounded-xl overflow-hidden border border-border bg-muted/50">
@@ -353,8 +353,8 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
                 </div>
                 <div className="space-y-1.5">
                   <div className="p-2 bg-card rounded-xl border border-border text-center">
-                    <p className="text-[7px] font-black text-primary uppercase tracking-widest mb-0.5">Coord 2</p>
-                    <p className="text-[9px] font-black truncate text-foreground">{formatCoordLabel(coord2)}</p>
+                    <p className="text-[7px] font-semibold text-primary uppercase tracking-wider mb-0.5">Coord 2</p>
+                    <p className="text-[10px] font-semibold truncate text-foreground">{formatCoordLabel(coord2)}</p>
                   </div>
                   {coord2.point && (customizations[coord2.point.id]?.secondaryUrl || customizations[coord2.point.id]?.primaryUrl) && (
                     <div className="aspect-[16/10] rounded-xl overflow-hidden border border-border bg-muted/50">
@@ -376,11 +376,11 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
             <div className="bg-chart-emerald/5 p-6 rounded-xl border border-chart-emerald/20 text-center">
               <div className="w-12 h-12 rounded-full bg-card flex items-center justify-center mx-auto mb-3"><RefreshCw size={24} className="text-chart-emerald" /></div>
               <h3 className="text-base font-medium text-foreground mb-1">Final Re-assessment</h3>
-              <p className="text-muted-foreground font-bold text-sm">Re-stimulate <span className="font-black underline decoration-primary/30 underline-offset-4">"{entryPoint}"</span> and test the IM.</p>
+              <p className="text-muted-foreground font-bold text-sm">Re-stimulate <span className="font-semibold underline decoration-primary/30 underline-offset-4">"{entryPoint}"</span> and test the IM.</p>
             </div>
             <div className="grid grid-cols-1 gap-2">
               <Button className="h-10 rounded-lg bg-chart-emerald/10 hover:bg-chart-emerald/20 text-chart-emerald text-xs font-medium" onClick={handleComplete}>Pathway is Clear <CheckCircle2 size={16} className="ml-2" /></Button>
-              <Button variant="outline" className="h-10 rounded-lg border-border text-muted-foreground hover:bg-muted/50 font-black text-[10px] uppercase tracking-widest" onClick={handleInhibited}>Still Inhibited - Add Layer</Button>
+              <Button variant="outline" className="h-10 rounded-lg border-border text-muted-foreground hover:bg-muted/50 font-semibold text-[11px]" onClick={handleInhibited}>Still Inhibited - Add Layer</Button>
             </div>
             <Button variant="ghost" size="sm" onClick={() => prevStep('CALIBRATE')} className="w-full"><ChevronLeft size={14} /> Back</Button>
           </div>

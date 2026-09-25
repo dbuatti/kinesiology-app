@@ -57,7 +57,7 @@ const MuscleOfTheDay = ({ onViewDetails }: MuscleOfTheDayProps) => {
   const info = getMuscleInfo(muscleName);
 
   return (
-    <Card className="border-none shadow-2xl rounded-[3rem] bg-foreground text-primary-foreground overflow-hidden relative group">
+    <Card className="border-none shadow-2xl rounded-2xl bg-foreground text-primary-foreground overflow-hidden relative group">
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 via-transparent to-rose-600/10" />
       <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-700">
         <Dumbbell size={180} />
@@ -67,19 +67,19 @@ const MuscleOfTheDay = ({ onViewDetails }: MuscleOfTheDayProps) => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
           <div className="space-y-6 flex-1">
             <div className="flex flex-wrap items-center gap-3">
-              <Badge className="bg-amber-400 text-foreground border-none font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1.5 shadow-lg">
+              <Badge className="bg-amber-400 text-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-4 py-1.5 shadow-lg">
                 <Sparkles size={12} className="mr-2 fill-current" /> Featured Muscle
               </Badge>
-              <Badge className="bg-card/10 text-primary-foreground border-primary-foreground/20 font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1.5 backdrop-blur-sm">
+              <Badge className="bg-card/10 text-primary-foreground border-primary-foreground/20 font-semibold text-[10px] uppercase tracking-wider px-4 py-1.5 backdrop-blur-sm">
                 Daily Rotation
               </Badge>
             </div>
             
             <div className="space-y-2">
-              <h2 className="text-5xl md:text-6xl font-black tracking-tighter leading-none">
+              <h2 className="text-5xl md:text-6xl font-semibold tracking-tighter leading-none">
                 {muscleName}
               </h2>
-              <p className="text-xl font-medium text-indigo-300 uppercase tracking-widest">
+              <p className="text-xl font-medium text-indigo-300 uppercase tracking-wider">
                 {info.meridian} Meridian • {info.brainstemControl || 'General Control'}
               </p>
             </div>
@@ -96,7 +96,7 @@ const MuscleOfTheDay = ({ onViewDetails }: MuscleOfTheDayProps) => {
                   <Target size={20} className="text-indigo-400" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Primary Goal</p>
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Primary Goal</p>
                   <p className="text-sm font-bold text-muted-foreground/60">Clinical Mastery</p>
                 </div>
               </div>
@@ -105,7 +105,7 @@ const MuscleOfTheDay = ({ onViewDetails }: MuscleOfTheDayProps) => {
                   <Activity size={20} className="text-rose-400" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Status</p>
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Status</p>
                   <p className="text-sm font-bold text-muted-foreground/60">Reference Ready</p>
                 </div>
               </div>
@@ -115,10 +115,10 @@ const MuscleOfTheDay = ({ onViewDetails }: MuscleOfTheDayProps) => {
           <div className="flex flex-col items-center gap-4 md:items-end">
             <Button 
               onClick={() => onViewDetails(muscleName)}
-              className="w-24 h-24 rounded-[2rem] bg-card text-foreground hover:bg-indigo-50 shadow-2xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 flex flex-col items-center justify-center gap-1"
+              className="w-24 h-24 rounded-2xl bg-card text-foreground hover:bg-indigo-50 shadow-2xl group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 flex flex-col items-center justify-center gap-1"
             >
               <ArrowRight size={32} />
-              <span className="text-[8px] font-black uppercase tracking-widest">Details</span>
+              <span className="text-[11px] font-semibold">Details</span>
             </Button>
           </div>
         </div>

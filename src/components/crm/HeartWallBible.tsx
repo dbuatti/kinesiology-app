@@ -28,7 +28,7 @@ const HeartWallBible = () => {
   return (
     <div className="space-y-12 animate-in fade-in duration-700">
       {/* Hero Section */}
-      <Card className="border-none shadow-2xl rounded-[3.5rem] bg-foreground text-primary-foreground overflow-hidden relative">
+      <Card className="border-none shadow-2xl rounded-2xl bg-foreground text-primary-foreground overflow-hidden relative">
         <div className="absolute top-0 right-0 p-12 opacity-5"><Heart size={200} /></div>
         <CardHeader className="p-12 relative z-10">
           <div className="flex items-center gap-5 mb-4">
@@ -36,7 +36,7 @@ const HeartWallBible = () => {
               <Heart size={32} className="text-primary-foreground" />
             </div>
             <div>
-              <CardTitle className="text-4xl font-black tracking-tight">The Heart Wall Bible</CardTitle>
+              <CardTitle className="text-4xl font-semibold tracking-tight">The Heart Wall Bible</CardTitle>
               <CardDescription className="text-muted-foreground text-xl font-medium mt-2">
                 Understanding the subconscious architecture of emotional protection.
               </CardDescription>
@@ -58,9 +58,9 @@ const HeartWallBible = () => {
 
       {/* Core Concept */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+        <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
           <CardHeader className="bg-rose-50 p-8">
-            <CardTitle className="text-xl font-black flex items-center gap-3 text-rose-900">
+            <CardTitle className="text-xl font-semibold flex items-center gap-3 text-rose-900">
               <Shield size={24} /> What is a Heart Wall?
             </CardTitle>
             <CardDescription className="text-rose-700 font-medium">The subconscious shield.</CardDescription>
@@ -70,13 +70,13 @@ const HeartWallBible = () => {
               A Heart Wall is a metaphorical barrier created by the subconscious mind using the energy of trapped emotions. Its primary purpose is to protect the heart from emotional pain, grief, or perceived threat.
             </p>
             <div className="p-4 bg-muted/50 rounded-2xl border border-border/50">
-              <h4 className="font-black text-foreground uppercase tracking-widest text-[10px] mb-2">The Trade-off</h4>
+              <h4 className="font-semibold text-foreground uppercase tracking-wider text-[10px] mb-2">The Trade-off</h4>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 While the wall provides safety during trauma, it also acts as a filter that numbs positive emotions, blocks connection with others, and creates a sense of isolation.
               </p>
             </div>
             <div className="p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
-              <h4 className="font-black text-indigo-900 uppercase tracking-widest text-[10px] mb-2">Ancient Parallel</h4>
+              <h4 className="font-semibold text-indigo-900 uppercase tracking-wider text-[10px] mb-2">Ancient Parallel</h4>
               <p className="text-xs text-indigo-700 leading-relaxed font-medium">
                 The Pericardium meridian in Chinese medicine is often seen as the "heart protector" —
                 the same concept as the Heart Wall, described thousands of years ago.
@@ -85,9 +85,9 @@ const HeartWallBible = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+        <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
           <CardHeader className="bg-indigo-50 p-8">
-            <CardTitle className="text-xl font-black flex items-center gap-3 text-indigo-900">
+            <CardTitle className="text-xl font-semibold flex items-center gap-3 text-indigo-900">
               <Layers size={24} /> Priority Primary Approach
             </CardTitle>
             <CardDescription className="text-indigo-700 font-medium">Work smarter, not harder.</CardDescription>
@@ -103,7 +103,7 @@ const HeartWallBible = () => {
                 { m: "Priority Primary", d: "5–10 corrections targeting the highest layers only." },
               ].map(item => (
                 <div key={item.m} className="p-3 bg-muted/50 rounded-xl border border-border/50">
-                  <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-1">{item.m}</p>
+                  <p className="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider mb-1">{item.m}</p>
                   <p className="text-xs font-medium text-muted-foreground">{item.d}</p>
                 </div>
               ))}
@@ -113,7 +113,7 @@ const HeartWallBible = () => {
       </div>
 
       {/* The Emperor Quote */}
-      <div className="p-8 bg-indigo-900 rounded-[2.5rem] shadow-lg text-primary-foreground relative overflow-hidden">
+      <div className="p-8 bg-indigo-900 rounded-2xl shadow-lg text-primary-foreground relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-5"><Crown size={160} /></div>
         <div className="relative z-10 max-w-3xl mx-auto text-center space-y-6">
           <Heart size={40} className="text-rose-400 mx-auto" />
@@ -132,7 +132,7 @@ const HeartWallBible = () => {
 
       {/* Clinical Significance */}
       <div className="space-y-8">
-        <h3 className="text-2xl font-black text-foreground px-2 flex items-center gap-3">
+        <h3 className="text-2xl font-semibold text-foreground px-2 flex items-center gap-3">
           <Activity size={28} className="text-rose-600" /> Clinical Significance
         </h3>
 
@@ -157,12 +157,12 @@ const HeartWallBible = () => {
               desc: "A block in the ability to give and receive love freely, and a disconnect from one's core purpose."
             }
           ].map((item, i) => (
-            <Card key={i} className="border-none shadow-md rounded-[2rem] bg-card overflow-hidden group hover:shadow-xl transition-all">
+            <Card key={i} className="border-none shadow-md rounded-2xl bg-card overflow-hidden group hover:shadow-xl transition-all">
               <CardContent className="p-8 space-y-4">
                 <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm mb-4 group-hover:scale-110 transition-transform bg-muted/50", item.color)}>
                   <item.icon size={24} />
                 </div>
-                <h4 className="font-black text-foreground text-lg">{item.title}</h4>
+                <h4 className="font-semibold text-foreground text-lg">{item.title}</h4>
                 <p className="text-sm text-muted-foreground font-medium leading-relaxed">{item.desc}</p>
               </CardContent>
             </Card>
@@ -171,8 +171,8 @@ const HeartWallBible = () => {
       </div>
 
       {/* When to Check */}
-      <div className="p-8 bg-rose-50 rounded-[2.5rem] border-2 border-rose-100 space-y-4">
-        <h3 className="text-xl font-black text-rose-900 flex items-center gap-3">
+      <div className="p-8 bg-rose-50 rounded-2xl border-2 border-rose-100 space-y-4">
+        <h3 className="text-xl font-semibold text-rose-900 flex items-center gap-3">
           <RefreshCw size={22} className="text-rose-600" /> When to Check the Heart Wall
         </h3>
         <p className="text-lg font-bold text-rose-800 italic leading-relaxed">
@@ -185,7 +185,7 @@ const HeartWallBible = () => {
             { t: "Self-Practice", d: "Work through your own Heart Wall. Practitioners report a huge difference in how they feel." },
           ].map(item => (
             <div key={item.t} className="p-4 bg-card rounded-2xl border border-rose-200">
-              <p className="font-black text-sm text-rose-700">{item.t}</p>
+              <p className="font-semibold text-sm text-rose-700">{item.t}</p>
               <p className="text-xs text-muted-foreground font-medium mt-1 leading-relaxed">{item.d}</p>
             </div>
           ))}
@@ -193,8 +193,8 @@ const HeartWallBible = () => {
       </div>
 
       {/* Hidden Heart Wall */}
-      <div className="p-8 bg-indigo-50 rounded-[2.5rem] border-2 border-indigo-100 space-y-4">
-        <h3 className="text-xl font-black text-indigo-900 flex items-center gap-3">
+      <div className="p-8 bg-indigo-50 rounded-2xl border-2 border-indigo-100 space-y-4">
+        <h3 className="text-xl font-semibold text-indigo-900 flex items-center gap-3">
           <Eye size={22} className="text-indigo-600" /> The Hidden Heart Wall
         </h3>
         <p className="text-sm text-indigo-800 font-medium leading-relaxed">
@@ -212,9 +212,9 @@ const HeartWallBible = () => {
 
       {/* Symbolic Materials */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+        <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
           <CardHeader className="bg-amber-50 p-8">
-            <CardTitle className="text-xl font-black flex items-center gap-3 text-amber-900">
+            <CardTitle className="text-xl font-semibold flex items-center gap-3 text-amber-900">
               <ShieldAlert size={24} /> Symbolic Materials
             </CardTitle>
             <CardDescription className="text-amber-700 font-medium">The language of the subconscious.</CardDescription>
@@ -231,7 +231,7 @@ const HeartWallBible = () => {
                 { m: "Glass", d: "Fragile, transparent." }
               ].map(item => (
                 <div key={item.m} className="p-3 bg-muted/50 rounded-xl border border-border/50">
-                  <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-1">{item.m}</p>
+                  <p className="text-[10px] font-semibold text-amber-600 uppercase tracking-wider mb-1">{item.m}</p>
                   <p className="text-xs font-medium text-muted-foreground">{item.d}</p>
                 </div>
               ))}
@@ -239,9 +239,9 @@ const HeartWallBible = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+        <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
           <CardHeader className="bg-emerald-50 p-8">
-            <CardTitle className="text-xl font-black flex items-center gap-3 text-emerald-900">
+            <CardTitle className="text-xl font-semibold flex items-center gap-3 text-emerald-900">
               <CheckCircle2 size={24} /> After the Wall Clears
             </CardTitle>
             <CardDescription className="text-emerald-700 font-medium">What shifts when the barrier drops.</CardDescription>
@@ -268,7 +268,7 @@ const HeartWallBible = () => {
               ))}
             </div>
             <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
-              <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest mb-1">It's not perfect</p>
+              <p className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider mb-1">It's not perfect</p>
               <p className="text-xs text-muted-foreground font-medium leading-relaxed">
                 Clearing the Heart Wall doesn't make life perfect, but it's a great load off the system.
                 You can definitely feel it as it happens.
@@ -289,12 +289,12 @@ const HeartWallBible = () => {
       </div>
 
       {/* Pro Tip */}
-      <div className="p-8 bg-amber-50 rounded-[2.5rem] border-2 border-amber-100 flex items-start gap-6 shadow-sm">
+      <div className="p-8 bg-amber-50 rounded-2xl border-2 border-amber-100 flex items-start gap-6 shadow-sm">
         <div className="w-14 h-14 rounded-2xl bg-amber-500 text-primary-foreground flex items-center justify-center shadow-xl shrink-0">
           <Lightbulb size={32} />
         </div>
         <div className="space-y-2">
-          <h4 className="text-xl font-black text-amber-900">Practitioner Pro-Tip</h4>
+          <h4 className="text-xl font-semibold text-amber-900">Practitioner Pro-Tip</h4>
           <p className="text-amber-800 font-medium leading-relaxed">
             Clearing a Heart Wall is often a multi-session process. The subconscious will only allow the release of emotions that the system is ready to process. If the body says 'No' to releasing more, honor that boundary. The wall was built for a reason — it must be dismantled with respect.
           </p>

@@ -287,14 +287,14 @@ const LimitingBeliefsTool = () => {
                     <Button
                       onClick={() => handleCheckpoint('Yes')}
                       variant="outline"
-                      className="h-9 px-5 rounded-xl border-rose-300 bg-rose-50/50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 font-semibold text-[11px] uppercase tracking-wider"
+                      className="h-9 px-5 rounded-xl border-rose-300 bg-rose-50/50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 font-semibold text-[11px]"
                     >
                       <ThumbsUp size={13} className="mr-1.5" /> Yes — Loop
                     </Button>
                     <Button
                       onClick={() => handleCheckpoint('No')}
                       variant="outline"
-                      className="h-9 px-5 rounded-xl border-emerald-300 bg-emerald-50/50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 font-semibold text-[11px] uppercase tracking-wider"
+                      className="h-9 px-5 rounded-xl border-emerald-300 bg-emerald-50/50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 font-semibold text-[11px]"
                     >
                       <ThumbsDown size={13} className="mr-1.5" /> No — Advance
                     </Button>

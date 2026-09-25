@@ -66,12 +66,12 @@ const UnmatchedPayments = () => {
   const count = rows.length;
 
   return (
-    <Card className="border-2 border-amber-100 dark:border-amber-900/30 shadow-xl rounded-[2.5rem] bg-card overflow-hidden">
+    <Card className="border-2 border-amber-100 dark:border-amber-900/30 shadow-xl rounded-2xl bg-card overflow-hidden">
       <CardHeader className="p-8 pb-4 bg-amber-50/50 dark:bg-amber-950/10">
-        <CardTitle className="text-xl font-black flex items-center gap-3 text-amber-900 dark:text-amber-200">
+        <CardTitle className="text-xl font-semibold flex items-center gap-3 text-amber-900 dark:text-amber-200">
           <AlertTriangle size={24} /> Payment &amp; Sync Issues
           {count > 0 && (
-            <Badge className="bg-amber-500 text-primary-foreground border-none text-xs font-black">{count}</Badge>
+            <Badge className="bg-amber-500 text-primary-foreground border-none text-xs font-semibold">{count}</Badge>
           )}
         </CardTitle>
         <CardDescription className="text-amber-700 dark:text-amber-300/80 font-medium">
@@ -101,7 +101,7 @@ const UnmatchedPayments = () => {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className={cn(
-                      "text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full",
+                      "text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full",
                       meta.kind === "payment"
                         ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
                         : "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400"

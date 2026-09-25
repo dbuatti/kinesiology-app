@@ -100,7 +100,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                             href={session.notion_link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-[9px] font-semibold text-primary hover:text-primary/80 bg-primary/10 hover:bg-primary/15 px-1.5 py-0.5 rounded transition-colors"
+                            className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary hover:text-primary/80 bg-primary/10 hover:bg-primary/15 px-1.5 py-0.5 rounded transition-colors"
                             title="Open in Notion"
                           >
                             <ExternalLink size={10} /> Notion
@@ -110,7 +110,7 @@ const ClientHistoryDropdown = ({ history, currentAppointmentId }: ClientHistoryD
                           href={`/appointments/${session.id}?view=document`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[9px] font-semibold text-muted-foreground hover:text-foreground bg-muted hover:bg-muted px-1.5 py-0.5 rounded transition-colors"
+                          className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground hover:text-foreground bg-muted hover:bg-muted px-1.5 py-0.5 rounded transition-colors"
                           title="Open session document"
                         >
                           <FileText size={10} /> Doc

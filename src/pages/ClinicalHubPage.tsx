@@ -141,7 +141,7 @@ const ClinicalHubPage = () => {
             <button
               onClick={toggleIpadMode}
               className={cn(
-                "flex items-center gap-2 px-3 h-9 rounded-xl text-[10px] font-bold uppercase tracking-wider border transition-colors shrink-0",
+                "flex items-center gap-2 px-3 h-9 rounded-xl text-[11px] font-bold border transition-colors shrink-0",
                 ipadMode
                   ? "bg-primary/10 border-primary/30 text-primary"
                   : "border-border text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -177,7 +177,7 @@ const ClinicalHubPage = () => {
                   <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", mode.iconBg)}>
                     <Icon size={16} className={mode.accent} />
                   </div>
-                  <span className={cn("text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border", mode.accent, "border-current/20 bg-current/5")}>
+                  <span className={cn("text-[11px] font-bold px-1.5 py-0.5 rounded border", mode.accent, "border-current/20 bg-current/5")}>
                     {mode.badge}
                   </span>
                 </div>
@@ -195,14 +195,14 @@ const ClinicalHubPage = () => {
             className="w-full flex items-center justify-center gap-3 h-16 rounded-xl border-2 border-dashed border-primary/30 hover:border-primary/60 hover:bg-primary/5 transition-all text-muted-foreground hover:text-primary"
           >
             <Plus size={20} />
-            <span className="font-bold text-sm uppercase tracking-wider">New Session</span>
+            <span className="font-bold text-sm">New Session</span>
           </button>
         </div>
 
         {/* Up Next — Today & Upcoming */}
         <div className="mb-10">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <h2 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
               Up Next — Today & Upcoming
             </h2>
             {upNext.length > 0 && (
@@ -234,7 +234,7 @@ const ClinicalHubPage = () => {
                       {s.tag && <span className="truncate">· {s.tag}</span>}
                     </div>
                   </div>
-                  <span className="text-[10px] font-medium text-muted-foreground group-hover:text-foreground transition-colors uppercase tracking-wider">
+                  <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                     Open →
                   </span>
                 </button>
@@ -245,7 +245,7 @@ const ClinicalHubPage = () => {
 
         {/* Recent Sessions */}
         <div>
-          <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4">Recent Sessions</h2>
+          <h2 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-4">Recent Sessions</h2>
           {loading ? (
             <div className="flex justify-center py-6"><Loader2 className="animate-spin text-muted-foreground" size={20} /></div>
           ) : recentSessions.length === 0 ? (
@@ -272,7 +272,7 @@ const ClinicalHubPage = () => {
                       <span>{format(new Date(s.date), "h:mm a")}</span>
                     </div>
                   </div>
-                  <span className="text-[10px] font-medium text-muted-foreground group-hover:text-foreground transition-colors uppercase tracking-wider">
+                  <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                     Open →
                   </span>
                 </button>

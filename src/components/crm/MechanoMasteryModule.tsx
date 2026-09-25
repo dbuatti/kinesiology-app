@@ -113,11 +113,11 @@ const MechanoMasteryModule = () => {
         </div>
         <div className="flex items-center gap-2 bg-muted/50 p-1.5 rounded-xl border border-border/60 self-start md:self-auto">
           <div className="px-3 py-1 text-center border-r border-border">
-            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Accuracy</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Accuracy</p>
             <p className="text-sm font-bold text-foreground">{masteryLevel.accuracy}</p>
           </div>
           <div className="px-3 py-1 text-center">
-            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Level</p>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Level</p>
             <p className="text-sm font-bold text-foreground">{masteryLevel.level}</p>
           </div>
         </div>
@@ -171,7 +171,7 @@ const MechanoMasteryModule = () => {
                 {/* Core Curriculum Card */}
                 <Card className="border border-border shadow-sm rounded-2xl bg-foreground text-primary-foreground overflow-hidden relative">
                   <CardHeader className="p-8 relative z-10">
-                    <Badge className="bg-card/10 text-primary-foreground border-none font-bold text-[9px] uppercase tracking-wider px-3 py-0.5 mb-3 w-fit">
+                    <Badge className="bg-card/10 text-primary-foreground border-none font-bold text-[10px] uppercase tracking-wider px-3 py-0.5 mb-3 w-fit">
                       Core Curriculum
                     </Badge>
                     <CardTitle className="text-3xl font-bold tracking-tight leading-tight">
@@ -192,14 +192,14 @@ const MechanoMasteryModule = () => {
                     <div className="flex flex-wrap gap-3">
                       <Button 
                         onClick={() => setActiveTab('lessons')} 
-                        className="bg-card text-foreground hover:bg-muted h-11 px-6 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm"
+                        className="bg-card text-foreground hover:bg-muted h-11 px-6 rounded-xl font-bold text-xs shadow-sm"
                       >
                         Confidence Lessons <Sparkles size={14} className="ml-1.5 text-foreground" />
                       </Button>
                       <Button 
                         onClick={() => setActiveTab('challenge')} 
                         variant="outline" 
-                        className="bg-transparent border-primary-foreground/20 text-primary-foreground hover:bg-card/10 h-11 px-6 rounded-xl font-bold text-xs uppercase tracking-wider"
+                        className="bg-transparent border-primary-foreground/20 text-primary-foreground hover:bg-card/10 h-11 px-6 rounded-xl font-bold text-xs"
                       >
                         Start Today's Case <ChevronRight size={16} className="ml-1" />
                       </Button>

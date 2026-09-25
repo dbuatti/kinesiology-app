@@ -90,7 +90,7 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
             key={tab.id}
             onClick={() => setSubTab(tab.id)}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all",
+              "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all",
               subTab === tab.id
                 ? "bg-card text-primary shadow-sm"
                 : "text-muted-foreground hover:text-foreground"

@@ -83,7 +83,7 @@ export const AssessmentItem = ({
           )}
           {testingInstructions && (
             <span className={cn(
-              "text-[9px] text-chart-primary/70 leading-tight flex items-start gap-1",
+              "text-[10px] text-chart-primary/70 leading-tight flex items-start gap-1",
               showFullInstructions ? "mt-1" : "truncate"
             )}>
               <Zap size={8} className="shrink-0 mt-0.5" />{testingInstructions}
@@ -94,7 +94,7 @@ export const AssessmentItem = ({
 
       {status && (
         <span className={cn(
-          "text-[7px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-sm shrink-0",
+          "text-[7px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-sm shrink-0",
           status === 'Inhibited' && "bg-amber-500/15 text-amber-600 dark:text-amber-300",
           status === 'Hypertonic' && "bg-destructive/15 text-destructive"
         )}>

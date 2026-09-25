@@ -52,7 +52,7 @@ const MuscleTestCard = ({
                   onStatusChange(muscle, nextStatus, side);
                 }}
                 className={cn(
-                  "text-[9px] font-black px-2 py-0.5 rounded-md border tracking-widest transition-all hover:scale-110 active:scale-95",
+                  "text-[10px] font-semibold px-2 py-0.5 rounded-md border tracking-wider transition-all hover:scale-[1.03] active:scale-95",
                   side === 'L' ? "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10" : "bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-100"
                 )}
               >
@@ -61,7 +61,7 @@ const MuscleTestCard = ({
             )}
             {isTested && (
               <div className={cn(
-                "px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 animate-in fade-in zoom-in-95 duration-300", 
+                "px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1.5 animate-in fade-in zoom-in-95 duration-300", 
                 statusDetails?.color
               )}>
                 {statusDetails?.label}
@@ -75,7 +75,7 @@ const MuscleTestCard = ({
                 variant="ghost" 
                 size="sm" 
                 onClick={() => onShowLogic(muscle, result.status)}
-                className="h-6 px-2 rounded-xl text-amber-600 hover:bg-amber-50 font-black text-[8px] uppercase tracking-widest"
+                className="h-6 px-2 rounded-xl text-amber-600 hover:bg-amber-50 font-semibold text-[11px]"
               >
                 <Lightbulb size={10} className="mr-1" /> Logic
               </Button>
@@ -94,7 +94,7 @@ const MuscleTestCard = ({
           </div>
         </div>
 
-        <div className="flex p-1 bg-muted/50 dark:bg-foreground/50 rounded-2xl border border-border/50 dark:border-border">
+        <div className="flex p-1 bg-muted/50 dark:bg-muted/50 rounded-2xl border border-border/50 dark:border-border">
           {MUSCLE_STATUSES.map(status => {
             const isSelected = result?.status === status.value;
             const StatusIcon = status.icon;
@@ -109,11 +109,11 @@ const MuscleTestCard = ({
                   "flex-1 flex flex-col items-center justify-center py-2.5 gap-1 rounded-xl transition-all duration-300 group/btn",
                   isSelected 
                     ? cn("shadow-md scale-[1.02] z-10 text-primary-foreground", activeColorClass)
-                    : "text-muted-foreground hover:text-muted-foreground hover:bg-card dark:hover:bg-foreground"
+                    : "text-muted-foreground hover:text-muted-foreground hover:bg-card dark:hover:bg-accent"
                 )}
               >
                 <StatusIcon size={14} className={cn("transition-transform duration-300", isSelected ? "scale-110" : "group-hover/btn:scale-110")} />
-                <span className="text-[7px] font-black uppercase tracking-widest">
+                <span className="text-[7px] font-semibold">
                   {status.label.split(' ')[0]}
                 </span>
               </button>
@@ -127,7 +127,7 @@ const MuscleTestCard = ({
   return (
     <div 
       className={cn(
-        "p-6 border rounded-[2.5rem] space-y-6 transition-all duration-500 group relative overflow-hidden",
+        "p-6 border rounded-2xl space-y-6 transition-all duration-500 group relative overflow-hidden",
         (currentResultL || currentResultR || currentResultMidline)
           ? "bg-card border-indigo-200 shadow-xl shadow-indigo-500/5" 
           : "bg-card border-border/50 hover:border-indigo-100 hover:shadow-lg"
@@ -149,7 +149,7 @@ const MuscleTestCard = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h4 className="font-black text-lg text-foreground tracking-tight">{muscle}</h4>
+              <h4 className="font-semibold text-lg text-foreground tracking-tight">{muscle}</h4>
               <button 
                 onClick={() => onShowInfo(muscle)}
                 className="text-muted-foreground/60 hover:text-indigo-600 transition-colors"
@@ -158,7 +158,7 @@ const MuscleTestCard = ({
               </button>
             </div>
             {proficiencyCount > 0 && (
-              <p className="text-[8px] font-black text-indigo-500 uppercase tracking-[0.2em] mt-0.5">
+              <p className="text-[10px] font-semibold text-indigo-500 uppercase tracking-wider mt-0.5">
                 Mastery: {proficiencyCount}x Tested
               </p>
             )}
@@ -169,7 +169,7 @@ const MuscleTestCard = ({
           <Badge 
             variant="outline" 
             className={cn(
-              "text-[9px] font-black uppercase tracking-widest border-none px-3 py-1 rounded-full shadow-sm", 
+              "text-[10px] font-semibold uppercase tracking-wider border-none px-3 py-1 rounded-full shadow-sm", 
               channel.color
             )}
           >
@@ -189,7 +189,7 @@ const MuscleTestCard = ({
                 <div className="w-full border-t border-border/50"></div>
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-card px-2 text-[8px] font-black text-muted-foreground/60 uppercase tracking-[0.3em]">Bilateral</span>
+                <span className="bg-card px-2 text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Bilateral</span>
               </div>
             </div>
             <StatusRow side="R" result={currentResultR} />

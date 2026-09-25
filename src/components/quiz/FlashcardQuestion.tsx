@@ -24,9 +24,9 @@ const FlashcardQuestion: FC<FlashcardQuestionProps> = ({
         onClick={() => setIsFlipped(!isFlipped)}
       >
         {/* Front */}
-        <div className="absolute inset-0 w-full h-full bg-card dark:bg-foreground border-2 border-border dark:border-border rounded-[2rem] p-8 flex flex-col items-center justify-center text-center [backface-visibility:hidden] shadow-xl">
-          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-4">Theory Flashcard</span>
-          <h3 className="text-2xl font-bold text-foreground dark:text-primary-foreground">
+        <div className="absolute inset-0 w-full h-full bg-card dark:bg-card border-2 border-border dark:border-border rounded-2xl p-8 flex flex-col items-center justify-center text-center [backface-visibility:hidden] shadow-xl">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-primary mb-4">Theory Flashcard</span>
+          <h3 className="text-2xl font-bold text-foreground dark:text-foreground">
             {question}
           </h3>
           <div className="mt-8 flex items-center gap-2 text-muted-foreground text-xs font-bold">
@@ -35,8 +35,8 @@ const FlashcardQuestion: FC<FlashcardQuestionProps> = ({
         </div>
 
         {/* Back */}
-        <div className="absolute inset-0 w-full h-full bg-primary/5 dark:bg-primary/10 border-2 border-primary/30 rounded-[2rem] p-8 flex flex-col items-center justify-center text-center [backface-visibility:hidden] [transform:rotateY(180deg)] shadow-xl">
-          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary mb-4">The Answer</span>
+        <div className="absolute inset-0 w-full h-full bg-primary/5 dark:bg-primary/10 border-2 border-primary/30 rounded-2xl p-8 flex flex-col items-center justify-center text-center [backface-visibility:hidden] [transform:rotateY(180deg)] shadow-xl">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-primary mb-4">The Answer</span>
           <h3 className="text-2xl font-bold text-primary mb-4">
             {correctAnswer}
           </h3>

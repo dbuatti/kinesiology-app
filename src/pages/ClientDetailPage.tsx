@@ -452,7 +452,7 @@ const ClientDetailPage = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-muted border-border text-foreground rounded-xl font-semibold text-[10px] uppercase tracking-wider h-10 px-4"
+                className="bg-muted border-border text-foreground rounded-xl font-semibold text-[11px] h-10 px-4"
                 onClick={() => navigate("/clients")}
               >
                 <ArrowLeft size={14} className="mr-2" /> Back
@@ -460,7 +460,7 @@ const ClientDetailPage = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-muted border-border text-chart-primary rounded-xl font-semibold text-[10px] uppercase tracking-wider h-10 px-4"
+                className="bg-muted border-border text-chart-primary rounded-xl font-semibold text-[11px] h-10 px-4"
                 onClick={() => setAssessmentModal({ open: true, type: 'bolt' })}
               >
                 <FlaskConical size={14} className="mr-2" /> Log BOLT
@@ -468,14 +468,14 @@ const ClientDetailPage = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-muted border-border text-chart-destructive rounded-xl font-semibold text-[10px] uppercase tracking-wider h-10 px-4"
+                className="bg-muted border-border text-chart-destructive rounded-xl font-semibold text-[11px] h-10 px-4"
                 onClick={() => setAssessmentModal({ open: true, type: 'coherence' })}
               >
                 <Activity size={14} className="mr-2" /> Log COH
               </Button>
               <Dialog open={editOpen} onOpenChange={setEditOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="bg-muted rounded-xl border-border h-10 px-4 font-semibold text-[10px] uppercase tracking-wider">
+                  <Button variant="outline" size="sm" className="bg-muted rounded-xl border-border h-10 px-4 font-semibold text-[11px]">
                     <Edit3 size={14} className="mr-2" /> Edit Profile
                   </Button>
                 </DialogTrigger>
@@ -539,23 +539,23 @@ const ClientDetailPage = () => {
         />
 
         <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 h-14 bg-muted p-1.5 rounded-xl mb-8 border border-border">
-            <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
+          <TabsList className="grid w-full sm:w-auto sm:inline-grid grid-cols-6 h-10 bg-muted p-1 rounded-xl mb-8 ">
+            <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px] hover:text-foreground">
               <LayoutDashboard size={14} /> <span className="hidden sm:inline">Overview</span>
             </TabsTrigger>
-            <TabsTrigger value="appointments" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
+            <TabsTrigger value="appointments" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px] hover:text-foreground">
               <History size={14} /> <span className="hidden sm:inline">Appointments</span>
             </TabsTrigger>
-            <TabsTrigger value="history" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
+            <TabsTrigger value="history" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px] hover:text-foreground">
               <Table2 size={14} /> <span className="hidden sm:inline">History</span>
             </TabsTrigger>
-            <TabsTrigger value="grid" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
+            <TabsTrigger value="grid" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px] hover:text-foreground">
               <LayoutGrid size={14} /> <span className="hidden sm:inline">Grid</span>
             </TabsTrigger>
-            <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
+            <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px] hover:text-foreground">
               <TrendingUp size={14} /> <span className="hidden sm:inline">Progress</span>
             </TabsTrigger>
-            <TabsTrigger value="assistant" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
+            <TabsTrigger value="assistant" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px] hover:text-foreground">
               <Bot size={14} /> <span className="hidden sm:inline">Assistant</span>
             </TabsTrigger>
           </TabsList>
@@ -585,7 +585,7 @@ const ClientDetailPage = () => {
                         size="sm" 
                         onClick={handleManualKitSync}
                         disabled={syncingKit}
-                        className="h-8 px-2.5 text-[10px] font-semibold uppercase tracking-wider text-chart-primary"
+                        className="h-8 px-2.5 text-[11px] font-semibold text-chart-primary"
                         title="Sync client to Kit"
                       >
                         {syncingKit ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
@@ -608,7 +608,7 @@ const ClientDetailPage = () => {
                           size="sm"
                           onClick={handleSyncToStripe}
                           disabled={syncingStripe}
-                          className="h-8 px-2.5 text-[10px] font-semibold uppercase tracking-wider text-chart-primary"
+                          className="h-8 px-2.5 text-[11px] font-semibold text-chart-primary"
                           title="Sync client to Stripe"
                         >
                           {syncingStripe ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
@@ -643,7 +643,7 @@ const ClientDetailPage = () => {
                           size="sm"
                           onClick={handleSyncToNotion}
                           disabled={syncingNotion}
-                          className="h-8 px-2.5 text-[10px] font-semibold uppercase tracking-wider text-chart-primary"
+                          className="h-8 px-2.5 text-[11px] font-semibold text-chart-primary"
                           title="Sync client to Notion"
                         >
                           {syncingNotion ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
@@ -741,7 +741,7 @@ const ClientDetailPage = () => {
                           {nextAppointment.name || `Session ${nextAppointment.display_id || nextAppointment.id.slice(0, 8)}`}
                         </p>
                       </div>
-                      <Button asChild size="sm" className="rounded-xl h-10 px-4 font-semibold text-[10px] uppercase tracking-wider shrink-0">
+                      <Button asChild size="sm" className="rounded-xl h-10 px-4 font-semibold text-[11px] shrink-0">
                         <Link to={`/appointments/${nextAppointment.id}`}>
                           Open Session <ArrowRight size={14} className="ml-1.5" />
                         </Link>
@@ -758,7 +758,7 @@ const ClientDetailPage = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-3xl font-extrabold text-foreground">{rollups.totalSessions}</p>
+                      <p className="text-3xl font-semibold text-foreground">{rollups.totalSessions}</p>
                       <p className="text-xs text-muted-foreground/60 mt-1">Last: {rollups.lastAppointment}</p>
                     </CardContent>
                   </Card>
@@ -771,7 +771,7 @@ const ClientDetailPage = () => {
                     </CardHeader>
                     <CardContent>
                       <p className={cn(
-                        "text-3xl font-extrabold",
+                        "text-3xl font-semibold",
                         appointments.find(a => a.bolt_score)?.bolt_score ? (appointments.find(a => a.bolt_score)!.bolt_score! >= 25 ? "text-chart-emerald" : "text-chart-destructive") : "text-muted-foreground/60"
                       )}>
                         {appointments.find(a => a.bolt_score)?.bolt_score ? `${appointments.find(a => a.bolt_score)!.bolt_score}s` : "N/A"}
@@ -787,7 +787,7 @@ const ClientDetailPage = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-3xl font-extrabold text-chart-destructive">
+                      <p className="text-3xl font-semibold text-chart-destructive">
                         {appointments.find(a => a.coherence_score)?.coherence_score?.toFixed(2) || "N/A"}
                       </p>
                       <p className="text-xs text-muted-foreground/60 mt-1">Autonomic sync ratio</p>
@@ -887,7 +887,7 @@ const ClientDetailPage = () => {
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-sm font-medium text-foreground">{format(l.date, "EEE, MMM d, yyyy")}</span>
                                 {l.discipline && (
-                                  <Badge className={cn("text-[9px] font-semibold uppercase tracking-wider border-none px-1.5 py-0",
+                                  <Badge className={cn("text-[10px] font-semibold uppercase tracking-wider border-none px-1.5 py-0",
                                     l.discipline === "piano" ? "bg-chart-primary/10 text-chart-primary" : "bg-chart-destructive/10 text-chart-destructive")}>
                                     {l.discipline}
                                   </Badge>

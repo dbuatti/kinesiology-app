@@ -105,7 +105,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
         )}>
           <div className="flex items-baseline gap-1">
             <span className={cn(
-              "text-5xl font-black tabular-nums transition-colors",
+              "text-5xl font-semibold tabular-nums transition-colors",
               isRunning ? "text-indigo-600" : getScoreColor(displayTime)
             )}>
               {displayTime}
@@ -116,7 +116,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
           {!isRunning && displayTime > 0 && (
             <div className="mt-1 flex items-center gap-2">
               <div className={cn(
-                "px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider",
+                "px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider",
                 displayTime >= 40 ? "bg-emerald-100 text-emerald-700" :
                 displayTime >= 25 ? "bg-primary/10 text-primary" :
                 "bg-amber-100 text-amber-700"

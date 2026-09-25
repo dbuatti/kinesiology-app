@@ -66,7 +66,7 @@ export default function BrainZonePicker({ value, onChange }: BrainZonePickerProp
 
   const renderGroup = (label: string, zones: BrainReflexPoint[]) => (
     <div className="space-y-1.5">
-      <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{label}</p>
+      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{label}</p>
       <div className="flex flex-wrap gap-1.5">
         {zones.map(zone => {
           const sel = selected.find(s => s.id === zone.id);
@@ -115,13 +115,13 @@ export default function BrainZonePicker({ value, onChange }: BrainZonePickerProp
 
       {selected.length > 0 && (
         <div className="p-2.5 bg-indigo-50 rounded-lg border border-indigo-100">
-          <p className="text-[9px] font-bold text-indigo-600 uppercase tracking-wider mb-1">Selected ({selected.length})</p>
+          <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider mb-1">Selected ({selected.length})</p>
           <div className="flex flex-wrap gap-1">
             {selected.map(z => (
               <span key={z.id} className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded text-[10px] font-semibold">
                 {z.name}
                 <span className={cn(
-                  "text-[8px] font-bold",
+                  "text-[10px] font-bold",
                   z.side === "L" && "text-blue-600",
                   z.side === "R" && "text-rose-600",
                   z.side === "B" && "text-amber-600",

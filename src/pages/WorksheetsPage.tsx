@@ -157,7 +157,7 @@ const WorksheetsPage = () => {
 
         {groups.map(({ group, items }) => (
           <section key={group} className="mb-10">
-            <h2 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-4">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 mb-4">
               {group}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

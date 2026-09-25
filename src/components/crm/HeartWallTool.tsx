@@ -509,7 +509,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                               i <= scanStep ? "bg-rose-500" : "bg-muted",
                             )} />
                             <span className={cn(
-                              "text-[9px] font-semibold uppercase tracking-wider",
+                              "text-[10px] font-semibold uppercase tracking-wider",
                               i === scanStep ? "text-rose-700" : "text-muted-foreground/60",
                             )}>{label}</span>
                           </div>
@@ -554,7 +554,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                                 onClick={() => { setScanColumn("A"); setScanHalf(null); setScanStep(2); }}
                                 className="p-4 rounded-xl border-2 border-border hover:border-rose-300 hover:bg-rose-50 transition-all text-left group"
                               >
-                                <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mb-2">Column A</p>
+                                <p className="text-[11px] font-bold text-rose-600 mb-2">Column A</p>
                                 <div className="space-y-1">
                                   {scanEmotions.columnA.map(e => (
                                     <p key={e} className="text-xs text-foreground font-medium">{e}</p>
@@ -565,7 +565,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                                 onClick={() => { setScanColumn("B"); setScanHalf(null); setScanStep(2); }}
                                 className="p-4 rounded-xl border-2 border-border hover:border-rose-300 hover:bg-rose-50 transition-all text-left group"
                               >
-                                <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mb-2">Column B</p>
+                                <p className="text-[11px] font-bold text-rose-600 mb-2">Column B</p>
                                 <div className="space-y-1">
                                   {scanEmotions.columnB.map(e => (
                                     <p key={e} className="text-xs text-foreground font-medium">{e}</p>
@@ -604,7 +604,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                                     onClick={() => { setScanHalf("top"); setScanStep(3); }}
                                     className="p-4 rounded-xl border-2 border-border hover:border-rose-300 hover:bg-rose-50 transition-all text-left"
                                   >
-                                    <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mb-2">Top Half</p>
+                                    <p className="text-[11px] font-bold text-rose-600 mb-2">Top Half</p>
                                     <div className="space-y-1">
                                       {topHalf.map(e => (
                                         <p key={e} className="text-xs text-foreground font-medium">{e}</p>
@@ -615,7 +615,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                                     onClick={() => { setScanHalf("bottom"); setScanStep(3); }}
                                     className="p-4 rounded-xl border-2 border-border hover:border-rose-300 hover:bg-rose-50 transition-all text-left"
                                   >
-                                    <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mb-2">Bottom Half</p>
+                                    <p className="text-[11px] font-bold text-rose-600 mb-2">Bottom Half</p>
                                     <div className="space-y-1">
                                       {bottomHalf.map(e => (
                                         <p key={e} className="text-xs text-foreground font-medium">{e}</p>
@@ -786,7 +786,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                             placeholder="e.g. Age 4, first 5 years"
                             className="rounded-xl bg-muted/50 text-sm h-10"
                           />
-                          <p className="text-[9px] text-muted-foreground/60">Timeline it: first/last half, decade, specific year</p>
+                          <p className="text-[10px] text-muted-foreground/60">Timeline it: first/last half, decade, specific year</p>
                         </div>
                         <div className="space-y-1.5">
                           <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Life Event</label>
@@ -796,7 +796,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                             placeholder="e.g. Parents separation"
                             className="rounded-xl bg-muted/50 text-sm h-10"
                           />
-                          <p className="text-[9px] text-muted-foreground/60">Is there a specific event associated?</p>
+                          <p className="text-[10px] text-muted-foreground/60">Is there a specific event associated?</p>
                         </div>
                       </div>
 
@@ -820,7 +820,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                             />
                           )}
                         </div>
-                        <p className="text-[9px] text-muted-foreground/60">
+                        <p className="text-[10px] text-muted-foreground/60">
                           Was it absorbed from someone else's energy field? From mom or dad?
                         </p>
                       </div>
@@ -977,7 +977,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                                     {name}
                                     {side && (
                                       <span className={cn(
-                                        "text-[9px] font-bold px-1 rounded",
+                                        "text-[10px] font-bold px-1 rounded",
                                         side === "L" && "bg-blue-100 text-blue-700",
                                         side === "R" && "bg-rose-100 text-rose-700",
                                         side === "B" && "bg-amber-100 text-amber-700",

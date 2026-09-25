@@ -46,10 +46,10 @@ const OnboardingPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
-        <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground font-black text-2xl shadow-3xl animate-bounce mb-6">
+        <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground font-semibold text-2xl shadow-3xl animate-bounce mb-6">
           ✦
         </div>
-        <div className="flex items-center gap-2 text-muted-foreground font-black text-[10px] uppercase tracking-[0.3em]">
+        <div className="flex items-center gap-2 text-muted-foreground font-semibold text-[10px] uppercase tracking-wider">
           <Loader2 className="animate-spin" size={14} /> Preparing Your Form
         </div>
       </div>
@@ -59,7 +59,7 @@ const OnboardingPage = () => {
   if (error) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
-        <Card className="max-w-md w-full border shadow-3xl rounded-[3rem] p-8 text-center bg-card">
+        <Card className="max-w-md w-full border shadow-3xl rounded-2xl p-8 text-center bg-card">
           <div className="w-16 h-16 bg-destructive/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-destructive">
             <Sparkles size={32} />
           </div>
@@ -76,10 +76,10 @@ const OnboardingPage = () => {
   if (submitted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
-        <Card className="max-w-2xl w-full border shadow-3xl rounded-[4rem] overflow-hidden animate-in zoom-in-95 duration-700 bg-card">
+        <Card className="max-w-2xl w-full border shadow-3xl rounded-2xl overflow-hidden animate-in zoom-in-95 duration-700 bg-card">
           <div className="bg-emerald-600 dark:bg-emerald-700 p-12 text-center text-primary-foreground relative">
             <div className="absolute top-0 right-0 p-8 opacity-10 hidden md:block"><Sparkles size={120} /></div>
-            <div className="w-20 md:w-24 md:h-24 bg-card/20 backdrop-blur-md rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-xl border border-primary-foreground/20">
+            <div className="w-20 md:w-24 md:h-24 bg-card/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl border border-primary-foreground/20">
               <CheckCircle2 size={48} />
             </div>
             <h2 className="text-3xl md:text-4xl font-serif font-bold tracking-tight mb-2">All Set, {client.name.split(' ')[0]}!</h2>
@@ -90,7 +90,7 @@ const OnboardingPage = () => {
               Thank you for taking the time to complete your onboarding. This helps me prepare for your upcoming sessions and ensures I have the most accurate context for your healing journey.
             </p>
             <div className="pt-4">
-              <div className="inline-flex items-center gap-2 px-6 py-3 bg-muted rounded-full text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+              <div className="inline-flex items-center gap-2 px-6 py-3 bg-muted rounded-full text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                 <ShieldCheck size={16} className="text-emerald-500" /> Securely Encrypted & Private
               </div>
             </div>
@@ -104,10 +104,10 @@ const OnboardingPage = () => {
     <div className="min-h-screen bg-background py-12 px-6 md:py-24">
       <div className="max-w-4xl mx-auto space-y-12">
         <div className="text-center space-y-6">
-          <div className="w-16 h-16 md:w-20 md:h-20 bg-primary rounded-[2rem] flex items-center justify-center text-primary-foreground font-black text-2xl md:text-3xl shadow-3xl mx-auto mb-8">
+          <div className="w-16 h-16 md:w-20 md:h-20 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground font-semibold text-2xl md:text-3xl shadow-3xl mx-auto mb-8">
             ✦
           </div>
-          <Badge className="bg-muted text-foreground border-none font-black text-[10px] uppercase tracking-[0.4em] px-6 py-2 rounded-full">
+          <Badge className="bg-muted text-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-6 py-2 rounded-full">
             Client Onboarding
           </Badge>
           <h1 className="text-4xl md:text-6xl font-serif font-bold tracking-tighter text-foreground">Welcome, {client.name}</h1>
@@ -116,7 +116,7 @@ const OnboardingPage = () => {
           </p>
         </div>
 
-        <Card className="border shadow-3xl rounded-[4rem] bg-card overflow-hidden">
+        <Card className="border shadow-3xl rounded-2xl bg-card overflow-hidden">
           <CardHeader className="p-10 md:p-16 pb-0">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
               <div className="flex items-center gap-4">
@@ -126,7 +126,7 @@ const OnboardingPage = () => {
                 <CardTitle className="text-2xl font-serif font-bold text-foreground">Personal Details</CardTitle>
               </div>
               <div className="flex flex-col md:items-end gap-2">
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Clinical Intake Form</p>
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Clinical Intake Form</p>
                 <div className="w-full md:w-32 h-2 bg-muted rounded-full overflow-hidden">
                   <div className="h-full bg-primary w-full" />
                 </div>
@@ -147,11 +147,11 @@ const OnboardingPage = () => {
           <div className="flex flex-wrap justify-center items-center gap-10 opacity-30 grayscale">
             <div className="flex items-center gap-3">
               <ShieldCheck size={20} />
-              <span className="text-[10px] font-black uppercase tracking-widest">HIPAA Compliant</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider">HIPAA Compliant</span>
             </div>
             <div className="flex items-center gap-3">
               <CheckCircle2 size={20} />
-              <span className="text-[10px] font-black uppercase tracking-widest">SSL Secure</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider">SSL Secure</span>
             </div>
           </div>
         </div>

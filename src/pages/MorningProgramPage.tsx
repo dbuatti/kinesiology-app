@@ -112,7 +112,7 @@ const MorningProgramPage = () => {
           title="Morning Program"
           subtitle="Establish your clinical state before the first session."
           actions={
-            <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-chart-destructive">
+            <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="text-[11px] font-semibold text-muted-foreground hover:text-chart-destructive">
               <RotateCcw size={14} className="mr-2" /> Reset Daily
             </Button>
           }
@@ -182,7 +182,7 @@ const MorningProgramPage = () => {
                         variant="ghost" 
                         size="sm" 
                         onClick={(e) => { e.stopPropagation(); setRitualMode(step.id); }}
-                        className="h-8 px-3 rounded-lg text-[10px] font-semibold uppercase tracking-wider text-primary hover:bg-primary/10"
+                        className="h-8 px-3 rounded-lg text-[11px] font-semibold text-primary hover:bg-primary/10"
                       >
                         <Play size={12} className="mr-1.5 fill-current" /> Launch
                       </Button>

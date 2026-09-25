@@ -1361,7 +1361,7 @@ const TimetablePage = () => {
             {suggestions.length > 0 && (
               <TabsTrigger value="suggestions" className="gap-2">
                 <Sparkles size={14} /> Suggestions
-                <span className="ml-1 h-5 w-5 rounded-full bg-chart-primary text-[10px] font-black text-primary-foreground flex items-center justify-center leading-none">
+                <span className="ml-1 h-5 w-5 rounded-full bg-chart-primary text-[10px] font-semibold text-primary-foreground flex items-center justify-center leading-none">
                   {suggestions.length}
                 </span>
               </TabsTrigger>
@@ -1628,7 +1628,7 @@ const TimetablePage = () => {
               <DialogHeader>
                 <div className="flex items-center gap-3">
                   <div
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-base font-black text-white"
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-base font-semibold text-white"
                     style={{
                       background: appointmentFor.source === "voice"
                         ? "hsl(var(--chart-emerald))"
@@ -1654,7 +1654,7 @@ const TimetablePage = () => {
               </DialogHeader>
               <div className="space-y-2.5">
                 <div className="rounded-lg bg-muted/40 px-3 py-2.5">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                     {appointmentFor.source === "voice" ? "Student" : "Client"}
                   </div>
                   <div className="mt-0.5 text-[15px] font-bold text-foreground">
@@ -1663,13 +1663,13 @@ const TimetablePage = () => {
                 </div>
                 {appointmentFor.attendeeEmail && (
                   <div className="rounded-lg bg-muted/40 px-3 py-2.5">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Email</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Email</div>
                     <div className="mt-0.5 text-sm font-medium text-foreground">{appointmentFor.attendeeEmail}</div>
                   </div>
                 )}
                 <div className="flex gap-2.5">
                   <div className="flex-1 rounded-lg bg-muted/40 px-3 py-2.5">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Date</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Date</div>
                     <div className="mt-0.5 text-sm font-semibold text-foreground">
                       {appointmentFor.start
                         ? practiceFormat(new Date(appointmentFor.start), "EEE d MMM yyyy")
@@ -1677,7 +1677,7 @@ const TimetablePage = () => {
                     </div>
                   </div>
                   <div className="flex-1 rounded-lg bg-muted/40 px-3 py-2.5">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Time</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Time</div>
                     <div className="mt-0.5 text-sm font-semibold text-foreground">
                       {appointmentFor.start
                         ? practiceFormat(new Date(appointmentFor.start), "h:mm a")
@@ -1687,7 +1687,7 @@ const TimetablePage = () => {
                 </div>
                 {appointmentFor.title && appointmentFor.title !== appointmentFor.attendeeName && (
                   <div className="rounded-lg bg-muted/40 px-3 py-2.5">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Title</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Title</div>
                     <div className="mt-0.5 text-sm font-medium text-foreground">{appointmentFor.title}</div>
                   </div>
                 )}
@@ -1929,7 +1929,7 @@ const TimetablePage = () => {
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1.5">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Start
                 </Label>
                 <Input
@@ -1939,7 +1939,7 @@ const TimetablePage = () => {
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                   End
                 </Label>
                 <Input
@@ -1950,7 +1950,7 @@ const TimetablePage = () => {
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Reason (optional)
               </Label>
               <Input
@@ -1994,7 +1994,7 @@ function GcalStatusRow({
         ) : (
           <CalendarDays size={14} className="text-chart-primary" />
         )}
-        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
           Calendar
         </span>
       </div>
@@ -2042,7 +2042,7 @@ function PlannerBar({
   return (
     <div className="rounded-xl border border-border bg-card p-3 flex flex-col lg:flex-row gap-3 lg:items-end">
       <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+        <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
           Session type
         </label>
         <Select value={kind} onValueChange={(v) => onKindChange(v as SessionKind)}>
@@ -2061,7 +2061,7 @@ function PlannerBar({
       </div>
 
       <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+        <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
           {kind === "fnh" ? "Event type" : "Lesson length"}
         </label>
         <Select
@@ -2088,7 +2088,7 @@ function PlannerBar({
       </div>
 
       <div className="flex flex-col gap-1.5 flex-[1.5] min-w-0">
-        <label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+        <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
           {kind === "fnh" ? "Client" : "Student"}
         </label>
         {kind === "fnh" ? (
@@ -2119,18 +2119,18 @@ function PlannerBar({
                           </span>
                           <span className="flex items-center gap-1 shrink-0 ml-2">
                             {c.last_session_at === null && (
-                              <span className="rounded bg-muted px-1 py-[1px] text-[8px] font-semibold uppercase tracking-wide text-muted-foreground leading-none">
+                              <span className="rounded bg-muted px-1 py-[1px] text-[11px] font-semibold text-muted-foreground leading-none">
                                 Never seen
                               </span>
                             )}
                             {c.last_session_at && (
-                              <span className="rounded bg-muted px-1 py-[1px] text-[8px] font-semibold uppercase tracking-wide text-muted-foreground leading-none">
+                              <span className="rounded bg-muted px-1 py-[1px] text-[11px] font-semibold text-muted-foreground leading-none">
                                 Last {practiceFormat(new Date(c.last_session_at), "d MMM")}
                                 <span className="opacity-70">·&nbsp;{fmtSpan(differenceInDays(new Date(), new Date(c.last_session_at)))} ago</span>
                               </span>
                             )}
                             {c.next_session_at ? (
-                              <span className="rounded bg-chart-primary/10 px-1 py-[1px] text-[8px] font-bold uppercase tracking-wide text-chart-primary leading-none">
+                              <span className="rounded bg-chart-primary/10 px-1 py-[1px] text-[11px] font-bold text-chart-primary leading-none">
                                 Next {practiceFormat(new Date(c.next_session_at), "d MMM")}
                                 {c.last_session_at && (
                                   <span className="opacity-70">
@@ -2140,14 +2140,14 @@ function PlannerBar({
                                 )}
                               </span>
                             ) : (
-                              <span className="rounded bg-amber-500/10 px-1 py-[1px] text-[8px] font-bold uppercase tracking-wide text-amber-600 leading-none">
+                              <span className="rounded bg-amber-500/10 px-1 py-[1px] text-[11px] font-bold text-amber-600 leading-none">
                                 No next
                               </span>
                             )}
                           </span>
                         </div>
                         {c.availability_notes && (
-                          <span className="truncate pl-4 text-[9px] italic text-muted-foreground/70 leading-none">
+                          <span className="truncate pl-4 text-[10px] italic text-muted-foreground/70 leading-none">
                             {c.availability_notes}
                           </span>
                         )}
@@ -2192,18 +2192,18 @@ function PlannerBar({
                         </span>
                         <span className="flex items-center gap-1 shrink-0 ml-2">
                           {s.last_session_at === null && (
-                            <span className="rounded bg-muted px-1 py-[1px] text-[8px] font-semibold uppercase tracking-wide text-muted-foreground leading-none">
+                            <span className="rounded bg-muted px-1 py-[1px] text-[11px] font-semibold text-muted-foreground leading-none">
                               Never seen
                             </span>
                           )}
                           {s.last_session_at && (
-                            <span className="rounded bg-muted px-1 py-[1px] text-[8px] font-semibold uppercase tracking-wide text-muted-foreground leading-none">
+                            <span className="rounded bg-muted px-1 py-[1px] text-[11px] font-semibold text-muted-foreground leading-none">
                               Last {practiceFormat(new Date(s.last_session_at), "d MMM")}
                               <span className="opacity-70">·&nbsp;{fmtSpan(differenceInDays(new Date(), new Date(s.last_session_at)))} ago</span>
                             </span>
                           )}
                           {s.next_session_at ? (
-                            <span className="rounded bg-chart-primary/10 px-1 py-[1px] text-[8px] font-bold uppercase tracking-wide text-chart-primary leading-none">
+                            <span className="rounded bg-chart-primary/10 px-1 py-[1px] text-[11px] font-bold text-chart-primary leading-none">
                               Next {practiceFormat(new Date(s.next_session_at), "d MMM")}
                               {s.last_session_at && (
                                 <span className="opacity-70">
@@ -2213,7 +2213,7 @@ function PlannerBar({
                               )}
                             </span>
                           ) : (
-                            <span className="rounded bg-amber-500/10 px-1 py-[1px] text-[8px] font-bold uppercase tracking-wide text-amber-600 leading-none">
+                            <span className="rounded bg-amber-500/10 px-1 py-[1px] text-[11px] font-bold text-amber-600 leading-none">
                               No next
                             </span>
                           )}
@@ -2319,7 +2319,7 @@ function FortnightMockup({
     <div className="space-y-5">
       {hideNav ? (
         title ? (
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{title}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{title}</p>
         ) : null
       ) : (
         <div className="flex items-center justify-between gap-3">
@@ -2332,7 +2332,7 @@ function FortnightMockup({
           >
             <ChevronLeft size={14} /> Previous
           </Button>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
             Fortnight {fortnightIndex + 1} of {totalFortnights}
           </p>
           <Button
@@ -2352,7 +2352,7 @@ function FortnightMockup({
         return (
         <div key={wi} className="space-y-2">
           <div className="flex items-center justify-between px-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
               Week {wi + 1} — {practiceFormat(week[0], "d MMM")} to {practiceFormat(week[6], "d MMM yyyy")}
             </p>
             {onToggleWeek && (
@@ -2477,7 +2477,7 @@ function DayCell({
     >
       <div className="flex items-center justify-between mb-1.5">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
             {weekdayLabel(date)}
           </p>
           <p className="text-sm font-bold text-foreground leading-tight">{practiceFormat(date, "d")}</p>
@@ -2487,7 +2487,7 @@ function DayCell({
 
       <div className="flex-1 space-y-1">
         {blocked && (
-          <div className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+          <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
             <Ban size={9} /> Blocked
           </div>
         )}
@@ -2503,7 +2503,7 @@ function DayCell({
                   key={`b-${b.uid || b.id || i}`}
                   onClick={(e) => { e.stopPropagation(); onOpenBooking(b); }}
                   title={b.title || b.attendeeName || "Appointment"}
-                  className="w-full text-left text-[9px] font-semibold bg-rose-600 text-primary-foreground rounded-md px-1.5 py-0.5 truncate hover:bg-rose-700 transition-colors cursor-pointer"
+                  className="w-full text-left text-[10px] font-semibold bg-rose-600 text-primary-foreground rounded-md px-1.5 py-0.5 truncate hover:bg-rose-700 transition-colors cursor-pointer"
                 >
                   {fmtT(b.start)}{b.attendeeName || b.title || "Booked"}
                 </button>
@@ -2516,7 +2516,7 @@ function DayCell({
                   key={`p-${p.id}`}
                   onClick={(e) => { e.stopPropagation(); onOpenProposal(p); }}
                   className={cn(
-                    "w-full text-left text-[9px] font-semibold rounded-md px-1.5 py-0.5 truncate border",
+                    "w-full text-left text-[10px] font-semibold rounded-md px-1.5 py-0.5 truncate border",
                     p.status === "confirmed" && "bg-emerald-600 text-primary-foreground border-emerald-700",
                     p.status === "suggested" && "bg-sky-600 text-primary-foreground border-sky-700",
                     p.status === "proposed" && "bg-amber-500 text-primary-foreground border-amber-600",
@@ -2534,19 +2534,19 @@ function DayCell({
           <div
             key={ev.id}
             title={ev.summary || "Busy"}
-            className="text-[9px] font-medium bg-violet-500/10 text-violet-700 border border-violet-200/60 rounded-md px-1.5 py-0.5 truncate"
+            className="text-[10px] font-medium bg-violet-500/10 text-violet-700 border border-violet-200/60 rounded-md px-1.5 py-0.5 truncate"
           >
             {ev.summary || "Busy"}
           </div>
         ))}
         {icloudEvents.length > 2 && (
-          <div className="text-[9px] font-bold text-violet-600 pl-0.5">
+          <div className="text-[10px] font-bold text-violet-600 pl-0.5">
             +{icloudEvents.length - 2} more
           </div>
         )}
 
         {!blocked && isOpen && (
-          <div className="text-[9px] font-semibold text-chart-primary">
+          <div className="text-[10px] font-semibold text-chart-primary">
             {(() => {
               const used = new Set([
                 ...bookings.map((b) => (b.start ? new Date(b.start).getTime() : 0)),
@@ -2558,7 +2558,7 @@ function DayCell({
           </div>
         )}
         {!isOpen && state === DayState.EMPTY && (
-          <div className="text-[9px] text-muted-foreground/50 font-medium">No availability</div>
+          <div className="text-[10px] text-muted-foreground/50 font-medium">No availability</div>
         )}
       </div>
     </div>
@@ -2711,14 +2711,14 @@ function SuggestionsPanel({
 
   const sourceBadge = (source: Suggestion["source"]) => {
     if (source === "pattern")
-      return <Badge className="bg-chart-primary/10 text-chart-primary border-none text-[8px]" variant="outline">FNH pattern</Badge>;
+      return <Badge className="bg-chart-primary/10 text-chart-primary border-none text-[10px]" variant="outline">FNH pattern</Badge>;
     if (source === "voice-pattern")
-      return <Badge className="bg-emerald-500/10 text-emerald-600 border-none text-[8px]" variant="outline">Voice pattern</Badge>;
+      return <Badge className="bg-emerald-500/10 text-emerald-600 border-none text-[10px]" variant="outline">Voice pattern</Badge>;
     if (source === "overdue")
-      return <Badge className="bg-rose-500/10 text-rose-600 border-none text-[8px]" variant="outline">FNH overdue</Badge>;
+      return <Badge className="bg-rose-500/10 text-rose-600 border-none text-[10px]" variant="outline">FNH overdue</Badge>;
     if (source === "voice-overdue")
-      return <Badge className="bg-rose-500/10 text-rose-600 border-none text-[8px]" variant="outline">Voice overdue</Badge>;
-    return <Badge className="bg-amber-500/10 text-amber-600 border-none text-[8px]" variant="outline">Availability</Badge>;
+      return <Badge className="bg-rose-500/10 text-rose-600 border-none text-[10px]" variant="outline">Voice overdue</Badge>;
+    return <Badge className="bg-amber-500/10 text-amber-600 border-none text-[10px]" variant="outline">Availability</Badge>;
   };
 
   return (
@@ -2741,12 +2741,12 @@ function SuggestionsPanel({
             </p>
             <div className="flex items-center gap-1.5 mt-1.5">
               {s.availableSlots.slice(0, 4).map((sl, j) => (
-                <span key={j} className="rounded bg-chart-primary/10 px-1.5 py-0.5 text-[9px] font-bold text-chart-primary">
+                <span key={j} className="rounded bg-chart-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-chart-primary">
                   {sl.time}
                 </span>
               ))}
               {s.availableSlots.length > 4 && (
-                <span className="text-[9px] text-muted-foreground">+{s.availableSlots.length - 4} more</span>
+                <span className="text-[10px] text-muted-foreground">+{s.availableSlots.length - 4} more</span>
               )}
             </div>
           </div>

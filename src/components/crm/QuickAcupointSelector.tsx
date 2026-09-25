@@ -25,7 +25,7 @@ const QuickAcupointSelector = ({ currentValue, onSelect }: QuickAcupointSelector
 
   return (
     <div className="space-y-3 animate-in fade-in slide-in-from-top-1 duration-500">
-      <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+      <div className="flex items-center gap-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
         <Sparkles size={10} className="text-amber-400" /> Quick Add Points
       </div>
       <div className="flex flex-wrap gap-1.5">
@@ -38,7 +38,7 @@ const QuickAcupointSelector = ({ currentValue, onSelect }: QuickAcupointSelector
               onClick={() => handleAddPoint(code)}
               disabled={isUsed}
               className={cn(
-                "px-2 py-1 rounded-lg text-[10px] font-black transition-all flex items-center gap-1",
+                "px-2 py-1 rounded-lg text-[10px] font-semibold transition-all flex items-center gap-1",
                 isUsed 
                   ? "bg-emerald-500/20 text-emerald-400 cursor-default" 
                   : "bg-card/5 hover:bg-indigo-600 text-muted-foreground hover:text-primary-foreground border border-primary-foreground/5"

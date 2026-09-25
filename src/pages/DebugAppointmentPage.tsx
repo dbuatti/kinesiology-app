@@ -370,7 +370,7 @@ const DebugAppointmentPage = () => {
  size="sm"
  disabled={!debugClient || !!activeTest}
  onClick={testKitSync}
- className="h-12 rounded-xl border-primary-foreground/10 bg-primary-foreground/5 text-primary-foreground text-[10px] font-medium uppercase"
+ className="h-12 rounded-xl border-primary-foreground/10 bg-primary-foreground/5 text-primary-foreground text-[11px] font-medium"
  >
  {activeTest === 'kit' ? <Loader2 className="animate-spin mr-2" /> : <Globe size={14} className="mr-2" />}
  Kit Sync
@@ -380,7 +380,7 @@ const DebugAppointmentPage = () => {
  size="sm" 
  disabled={!debugClient || !!activeTest}
  onClick={testEmailOnboarding}
- className="h-12 rounded-xl border-primary-foreground/10 bg-primary-foreground/5 text-primary-foreground text-[10px] font-medium uppercase"
+ className="h-12 rounded-xl border-primary-foreground/10 bg-primary-foreground/5 text-primary-foreground text-[11px] font-medium"
  >
  {activeTest === 'email' ? <Loader2 className="animate-spin mr-2" /> : <Mail size={14} className="mr-2" />}
  Email Test
@@ -421,7 +421,7 @@ const DebugAppointmentPage = () => {
  <Button 
  onClick={seedSusansWin} 
  disabled={loading}
- className="w-full h-14 rounded-xl bg-destructive hover:bg-destructive/80 text-primary-foreground font-semibold text-xs uppercase tracking-wider shadow-sm"
+ className="w-full h-14 rounded-xl bg-destructive hover:bg-destructive/80 text-primary-foreground font-semibold text-xs shadow-sm"
  >
  {loading ? <Loader2 className="mr-2 animate-spin" /> : <Sparkles size={18} className="mr-2" />}
  Add to Wins Vault
@@ -440,7 +440,7 @@ const DebugAppointmentPage = () => {
  <Button 
  onClick={simulateWebhook} 
  disabled={loading || !debugApp}
- className="w-full h-14 rounded-xl bg-chart-emerald hover:bg-chart-emerald/80 text-primary-foreground font-semibold text-xs uppercase tracking-wider shadow-sm"
+ className="w-full h-14 rounded-xl bg-chart-emerald hover:bg-chart-emerald/80 text-primary-foreground font-semibold text-xs shadow-sm"
  >
  {loading ? <Loader2 className="mr-2 animate-spin" /> : <Zap size={18} className="mr-2" />}
  Simulate Payment

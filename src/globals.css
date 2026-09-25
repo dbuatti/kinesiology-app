@@ -1,216 +1,405 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+/* Inter with optical sizing (opsz 14–32) — large text automatically picks up
+   Inter Display's tighter, more refined letterforms. Newsreader is the
+   editorial serif used sparingly for page titles (.font-serif). */
+@import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ─────────────────────────────────────────────────────────────────────────
+   DESIGN TOKENS
+   One cool-neutral scale + a single indigo accent. Surfaces step in small,
+   deliberate increments (canvas → sidebar → card → popover) so hierarchy
+   comes from tone and hairline borders rather than heavy shadows.
+   ───────────────────────────────────────────────────────────────────────── */
 @layer base {
   :root {
-    /* Clean cool-neutral palette — replaced the previous warm amber/stone
-       tint (explicitly "browns of the app are bad" feedback) with a true
-       slate-gray base, matching the neutral-gray-plus-one-accent convention
-       used by most professional SaaS tools (Linear, Stripe, Vercel) rather
-       than a warm/consumer-app tint. */
-    --background: 220 20% 99%;
-    --foreground: 222 20% 14%;
+    --background: 240 14% 98.8%;
+    --foreground: 240 12% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 20% 14%;
+    --card-foreground: 240 12% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 20% 14%;
+    --popover-foreground: 240 12% 11%;
 
-    --primary: 231 48% 45%;
+    --primary: 236 58% 54%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 20% 95%;
-    --secondary-foreground: 222 20% 22%;
+    --secondary: 240 8% 95.5%;
+    --secondary-foreground: 240 10% 18%;
 
-    --accent: 231 48% 45%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent is the neutral hover/selection wash used by menus, ghost and
+       outline buttons — NOT a brand colour (that's --primary). */
+    --accent: 240 8% 95%;
+    --accent-foreground: 240 12% 11%;
 
-    --muted: 220 20% 95%;
-    --muted-foreground: 220 10% 45%;
+    --muted: 240 8% 95.5%;
+    --muted-foreground: 240 5% 44%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 356 72% 52%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 18% 89%;
-    --input: 220 18% 89%;
-    --ring: 231 48% 45%;
+    --border: 240 8% 90.5%;
+    --input: 240 8% 88%;
+    --ring: 236 58% 54%;
 
-    --radius: 0.75rem;
+    --radius: 0.625rem;
 
-    /* Chart accent colours (fixed, not theme-aware) — chart-primary matches
-       the new indigo primary (was warm terracotta); the other three stay as
-       deliberate categorical differentiators (voice/revenue/FNH), not part
-       of the "browns" complaint. */
-    --chart-primary: 231 48% 55%;    /* indigo */
-    --chart-destructive: 345 56% 44%; /* rose (voice) */
-    --chart-emerald: 161 54% 36%;   /* emerald (earnings) */
-    --chart-purple: 266 45% 50%;    /* purple (FNH on the public landing page) */
-    --chart-amber: 36 80% 55%;      /* amber (at-risk / warning status) */
+    /* Shell surfaces */
+    --sidebar: 240 12% 97.2%;
+    --sidebar-border: 240 8% 91%;
+    --sidebar-active: 0 0% 100%;
+    --topbar: 240 14% 98.8%;
+
+    /* Shadow ink — shadows are tinted, never pure black */
+    --shadow-color: 240 24% 12%;
+
+    /* Motion */
+    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --ease-spring: cubic-bezier(0.34, 1.36, 0.64, 1);
+
+    /* Chart accents — categorical, deliberately stable across themes */
+    --chart-primary: 236 60% 58%;     /* indigo */
+    --chart-destructive: 346 62% 48%; /* rose (voice) */
+    --chart-emerald: 160 56% 36%;     /* emerald (earnings) */
+    --chart-purple: 266 48% 54%;      /* purple (FNH on the public landing page) */
+    --chart-amber: 36 86% 52%;        /* amber (at-risk / warning status) */
 
     /* Docs editor surface (Google Docs-style UI) */
-    --docs-surface: 210 17% 98%;
-    --docs-toolbar: 220 10% 94%;
+    --docs-surface: 240 14% 97.5%;
+    --docs-toolbar: 240 8% 94%;
   }
 
   .dark {
-    /* Clean cool-neutral dark palette — a real near-black slate instead of
-       the previous warm "espresso" brown-black. */
-    --background: 222 24% 8%;
-    --foreground: 220 20% 94%;
+    --background: 240 7% 7.5%;
+    --foreground: 240 8% 94%;
 
-    --card: 222 22% 11%;
-    --card-foreground: 220 20% 94%;
+    --card: 240 6% 10%;
+    --card-foreground: 240 8% 94%;
 
-    --popover: 222 22% 11%;
-    --popover-foreground: 220 20% 94%;
+    --popover: 240 6% 11.5%;
+    --popover-foreground: 240 8% 94%;
 
-    --primary: 231 62% 64%;
-    --primary-foreground: 222 24% 8%;
+    --primary: 236 85% 72%;
+    --primary-foreground: 240 20% 8%;
 
-    --secondary: 222 18% 16%;
-    --secondary-foreground: 220 20% 94%;
+    --secondary: 240 5% 15%;
+    --secondary-foreground: 240 8% 94%;
 
-    --accent: 231 62% 64%;
-    --accent-foreground: 222 24% 8%;
+    --accent: 240 5% 15.5%;
+    --accent-foreground: 240 8% 96%;
 
-    --muted: 222 18% 15%;
-    --muted-foreground: 220 10% 64%;
+    --muted: 240 5% 14%;
+    --muted-foreground: 240 5% 62%;
 
-    --border: 222 16% 20%;
-    --input: 222 16% 20%;
-    --ring: 231 62% 64%;
+    --destructive: 356 72% 60%;
+    --destructive-foreground: 240 20% 8%;
+
+    --border: 240 5% 16.5%;
+    --input: 240 5% 20%;
+    --ring: 236 85% 72%;
+
+    --sidebar: 240 7% 5.8%;
+    --sidebar-border: 240 5% 13.5%;
+    --sidebar-active: 240 5% 13%;
+    --topbar: 240 7% 7.5%;
+
+    --shadow-color: 240 30% 2%;
+
+    --chart-primary: 236 80% 70%;
+    --docs-surface: 240 6% 9%;
+    --docs-toolbar: 240 5% 13%;
   }
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   BASE
+   ───────────────────────────────────────────────────────────────────────── */
 @layer base {
   * {
     @apply border-border;
   }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-optical-sizing: auto;
+    /* Straight-sided alternates (single-storey a, flat-tailed l, open 4/6/9)
+       — the quieter, more "product" cut of Inter. */
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'calt';
     font-weight: 400;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.004em;
     /* Disables the double-tap-to-zoom gesture (quick taps on chat bubbles/buttons
        were triggering it) without touching pinch-zoom, which stays available. */
     touch-action: manipulation;
   }
 
   .font-serif {
-    font-family: 'Playfair Display', serif;
-    letter-spacing: -0.02em;
+    font-family: 'Newsreader', ui-serif, Georgia, serif;
+    font-optical-sizing: auto;
+    font-feature-settings: normal;
+    letter-spacing: -0.018em;
   }
-  
+  /* The serif is an accent face — it should never be heavy. Anything the
+     markup asks to be bold/black renders at a refined medium instead. */
+  .font-serif.font-bold,
+  .font-serif.font-black,
+  .font-serif.font-extrabold,
+  .font-serif.font-semibold { font-weight: 560; }
+
   h1, h2, h3, h4, h5, h6 {
-    @apply font-sans font-semibold tracking-tight;
+    @apply font-sans font-semibold;
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+  }
+  p { text-wrap: pretty; }
+
+  /* Tabular numbers everywhere numbers sit in columns or change live */
+  table, time, .tabular-nums, [data-numeric] {
+    font-variant-numeric: tabular-nums;
   }
 
-  /* Minimalist Scrollbar */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  /* Hairline scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.22) transparent;
   }
-  ::-webkit-scrollbar-track {
-    @apply bg-transparent;
-  }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground/20 rounded-full;
+    background: hsl(var(--muted-foreground) / 0.18);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
   }
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-muted-foreground/30;
-  }
+  ::-webkit-scrollbar-thumb:hover { background-color: hsl(var(--muted-foreground) / 0.32); }
 
   .privacy-mode-active .blur-sensitive {
     @apply blur-lg select-none opacity-20 pointer-events-none transition-all duration-700;
   }
 
-  /* Consistent keyboard focus ring app-wide (mouse/touch clicks unaffected, so
-     no rings appear on normal pointer use). Improves keyboard accessibility. */
+  /* Keyboard focus ring app-wide (pointer clicks unaffected) */
   :focus-visible {
-    outline: 2px solid hsl(var(--ring));
+    outline: 2px solid hsl(var(--ring) / 0.7);
     outline-offset: 2px;
-    border-radius: 4px;
+    border-radius: 6px;
   }
 
-  /* Themed text selection instead of the browser default blue. */
-  ::selection {
-    background: hsl(var(--primary) / 0.2);
-  }
+  ::selection { background: hsl(var(--primary) / 0.18); }
+
+  button:not(:disabled):active, [role="button"]:active { transform: translateY(0.5px); }
+
+  input::placeholder, textarea::placeholder { color: hsl(var(--muted-foreground) / 0.75); }
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   COMPONENT PATTERNS
+   ───────────────────────────────────────────────────────────────────────── */
 @layer components {
   .glass-panel {
-    @apply bg-background/70 backdrop-blur-xl border border-border/20;
+    @apply bg-background/75 backdrop-blur-xl border border-border/60;
   }
 
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* ── Consistent UI surface patterns ── */
+  /* Surfaces */
   .panel {
-    @apply bg-card border border-border rounded-xl shadow-sm;
+    @apply bg-card border border-border rounded-xl;
+    box-shadow: 0 1px 2px hsl(var(--shadow-color) / 0.04);
   }
-  .panel-muted {
-    @apply bg-muted/30 border border-border rounded-xl;
-  }
-  .surface {
-    @apply bg-muted/50 rounded-lg;
-  }
-  .surface-hover {
-    @apply hover:bg-muted/80 transition-colors;
-  }
+  .panel-muted { @apply bg-muted/40 border border-border rounded-xl; }
+  .surface { @apply bg-muted/60 rounded-lg; }
+  .surface-hover { @apply hover:bg-muted transition-colors; }
   .badge-step {
-    @apply inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold shrink-0;
+    @apply inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] font-semibold shrink-0;
   }
-  .txt-muted {
-    @apply text-muted-foreground;
-  }
-  .divider {
-    @apply border-t border-border;
+  .txt-muted { @apply text-muted-foreground; }
+  .divider { @apply border-t border-border; }
+
+  /* Eyebrow / overline — the ONE way to do small uppercase labels */
+  .eyebrow {
+    @apply text-[11px] font-medium uppercase text-muted-foreground;
+    letter-spacing: 0.06em;
   }
 
-  /* ── Dialog/modal consistency ── */
-  .modal-base {
-    @apply bg-background border border-border shadow-xl;
+  /* Keyboard hint chip */
+  .kbd {
+    @apply inline-flex h-5 min-w-5 items-center justify-center gap-0.5 rounded-[5px] border border-border bg-background px-1 font-sans text-[10.5px] font-medium text-muted-foreground;
+    box-shadow: 0 1px 0 hsl(var(--border));
   }
-  .modal-header {
-    @apply px-5 py-4 border-b border-border;
-  }
-  .modal-body {
-    @apply px-5 py-4;
-  }
-  .modal-footer {
-    @apply px-5 py-4 border-t border-border bg-muted/20;
+
+  /* Dialog/modal consistency */
+  .modal-base { @apply bg-background border border-border shadow-xl; }
+  .modal-header { @apply px-5 py-4 border-b border-border; }
+  .modal-body { @apply px-5 py-4; }
+  .modal-footer { @apply px-5 py-4 border-t border-border bg-muted/30; }
+
+  /* Page entrance — every route change settles in rather than popping */
+  .page-enter {
+    animation: page-enter 320ms var(--ease-out) both;
   }
 }
 
-/* Custom Animations */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
 @keyframes float {
   0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-8px); }
   100% { transform: translateY(0px); }
 }
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
+.animate-float { animation: float 6s ease-in-out infinite; }
 
 @keyframes pulse-soft {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.8; }
+}
+.animate-pulse-soft { animation: pulse-soft 4s ease-in-out infinite; }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   OVERLAYS — menus, popovers, selects, dialogs, sheets
+   Applied at the Radix data-attribute level so every menu in the app moves
+   and looks the same without forking the shadcn primitives.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Floating surfaces: hairline ring + soft layered shadow */
+[data-radix-popper-content-wrapper] > [role="menu"],
+[data-radix-popper-content-wrapper] > [role="listbox"],
+[data-radix-popper-content-wrapper] > [role="dialog"] {
+  border-color: hsl(var(--border));
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 1px hsl(var(--shadow-color) / 0.02),
+    0 12px 32px -8px hsl(var(--shadow-color) / 0.16),
+    0 4px 10px -4px hsl(var(--shadow-color) / 0.08) !important;
+}
+.dark [data-radix-popper-content-wrapper] > [role="menu"],
+.dark [data-radix-popper-content-wrapper] > [role="listbox"],
+.dark [data-radix-popper-content-wrapper] > [role="dialog"] {
+  box-shadow:
+    inset 0 1px 0 hsl(0 0% 100% / 0.04),
+    0 16px 40px -8px hsl(0 0% 0% / 0.6) !important;
+}
+[data-radix-popper-content-wrapper] > [role="menu"] { padding: 5px; }
+
+/* Menu motion: short, eased, origin-aware (Radix sets the transform origin) */
+[data-radix-popper-content-wrapper] > [data-state="open"],
+[data-radix-popper-content-wrapper] > [data-state="delayed-open"],
+[data-radix-popper-content-wrapper] > [data-state="instant-open"] {
+  animation-duration: 180ms !important;
+  animation-timing-function: var(--ease-out) !important;
+  --tw-enter-scale: 0.97 !important;
+}
+[data-radix-popper-content-wrapper] > [data-state="closed"] {
+  animation-duration: 110ms !important;
+  animation-timing-function: ease-in !important;
 }
 
-.animate-pulse-soft {
-  animation: pulse-soft 4s ease-in-out infinite;
+/* Menu rows: consistent height, radius and a soft hover wash */
+[role="menu"] [role="menuitem"],
+[role="menu"] [role="menuitemcheckbox"],
+[role="menu"] [role="menuitemradio"],
+[role="listbox"] [role="option"],
+[cmdk-item] {
+  border-radius: 7px;
+  min-height: 32px;
+  transition: background-color 120ms var(--ease-out), color 120ms var(--ease-out);
+}
+[role="menu"] [role="menuitem"][data-highlighted],
+[role="menu"] [role="menuitemcheckbox"][data-highlighted],
+[role="menu"] [role="menuitemradio"][data-highlighted],
+[role="listbox"] [role="option"][data-highlighted],
+[cmdk-item][data-selected="true"] {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+[role="menu"] [role="separator"] { background-color: hsl(var(--border)); }
+
+/* cmdk group headings */
+[cmdk-group-heading] {
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: hsl(var(--muted-foreground)) !important;
+  padding: 10px 8px 6px !important;
+}
+
+/* Scrims: lighter, blurred — the page stays present behind a dialog */
+.fixed.inset-0.bg-black\/80 {
+  background-color: hsl(240 20% 6% / 0.38) !important;
+  -webkit-backdrop-filter: blur(6px) saturate(120%);
+  backdrop-filter: blur(6px) saturate(120%);
+}
+.dark .fixed.inset-0.bg-black\/80 { background-color: hsl(240 20% 2% / 0.6) !important; }
+.fixed.inset-0.bg-black\/80[data-state="open"] { animation-duration: 240ms !important; }
+
+/* Dialogs rise gently instead of zooming from nowhere */
+[role="dialog"][data-state="open"].fixed {
+  animation-duration: 260ms !important;
+  animation-timing-function: var(--ease-out) !important;
+  --tw-enter-scale: 0.98 !important;
+}
+[role="dialog"][data-state="closed"].fixed {
+  animation-duration: 150ms !important;
+  animation-timing-function: ease-in !important;
+}
+[role="dialog"].fixed.left-\[50\%\] {
+  border-color: hsl(var(--border));
+  box-shadow:
+    0 0 0 1px hsl(var(--shadow-color) / 0.04),
+    0 24px 64px -16px hsl(var(--shadow-color) / 0.28),
+    0 8px 20px -8px hsl(var(--shadow-color) / 0.12) !important;
+}
+/* Sheets (drawers) slide with a real deceleration curve */
+[role="dialog"].fixed.inset-y-0[data-state="open"],
+[role="dialog"].fixed.inset-x-0[data-state="open"] {
+  animation-duration: 380ms !important;
+  animation-timing-function: var(--ease-out) !important;
+}
+[role="dialog"].fixed.inset-y-0[data-state="closed"],
+[role="dialog"].fixed.inset-x-0[data-state="closed"] {
+  animation-duration: 220ms !important;
+  animation-timing-function: var(--ease-in-out) !important;
+}
+
+/* Tabs (shadcn TabsList / Trigger): quiet segmented control */
+[role="tablist"].bg-muted {
+  box-shadow: inset 0 0 0 1px hsl(var(--border) / 0.55);
+}
+[role="tab"][data-state="active"].data-\[state\=active\]\:bg-background {
+  box-shadow: 0 1px 2px hsl(var(--shadow-color) / 0.08), 0 0 0 1px hsl(var(--border) / 0.7);
+}
+.dark [role="tab"][data-state="active"].data-\[state\=active\]\:bg-background {
+  background-color: hsl(var(--accent));
+}
+
+/* Inputs: calmer focus — a tinted halo instead of a hard offset ring */
+input.border-input:focus-visible,
+textarea.border-input:focus-visible,
+button[role="combobox"]:focus-visible {
+  outline: none;
+  --tw-ring-offset-width: 0px;
+  border-color: hsl(var(--ring) / 0.55);
+  box-shadow: 0 0 0 3px hsl(var(--ring) / 0.16) !important;
+}
+
+/* Toasts (sonner) */
+[data-sonner-toaster] [data-sonner-toast] {
+  border-radius: 12px !important;
+  font-family: inherit !important;
+  box-shadow: 0 12px 32px -10px hsl(var(--shadow-color) / 0.22) !important;
 }
 
 /* Respect user motion preferences */
@@ -239,3 +428,16 @@
   .print-doc { box-shadow: none !important; border: none !important; border-radius: 0 !important; background: #fff !important; }
   .print-doc-body { padding: 0 !important; margin: 0 !important; }
 }
+
+/* Command palette sits high on the screen, like Spotlight / Linear */
+[role="dialog"].fixed:has([cmdk-root]) {
+  top: 14vh !important;
+  --tw-translate-y: 0 !important;
+  max-width: min(640px, calc(100vw - 24px)) !important;
+  border-radius: 14px !important;
+  overflow: hidden;
+}
+[cmdk-input-wrapper] { padding-left: 16px; padding-right: 16px; }
+[cmdk-root] [cmdk-item] { padding-top: 7px !important; padding-bottom: 7px !important; }
+[cmdk-root] [cmdk-item] svg { width: 16px !important; height: 16px !important; }
+[cmdk-root] [cmdk-input-wrapper] svg { width: 16px !important; height: 16px !important; opacity: 0.55; }

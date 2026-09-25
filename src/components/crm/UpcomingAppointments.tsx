@@ -3,7 +3,8 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, Loader2, ArrowRight, EyeOff } from "lucide-react";
+import { Calendar, Clock, Loader2, ArrowRight, EyeOff, CalendarClock, ChevronRight } from "lucide-react";
+import SectionCard from "@/components/shared/SectionCard";
 import { Link } from "react-router-dom";
 import { format, isToday, isTomorrow } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -60,122 +61,104 @@ const UpcomingAppointments = () => {
 
   if (loading) {
     return (
-      <div className="p-8 bg-card dark:bg-foreground rounded-[2rem] border border-border/50 dark:border-foreground flex items-center justify-center">
-        <Loader2 className="animate-spin text-chart-primary" size={24} />
-      </div>
+      <SectionCard title="Upcoming sessions" icon={CalendarClock}>
+        <div className="space-y-1 px-3 pb-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex items-center gap-3 py-2.5">
+              <div className="h-10 w-10 animate-pulse rounded-lg bg-muted" />
+              <div className="flex-1 space-y-1.5">
+                <div className="h-3 w-1/3 animate-pulse rounded bg-muted" />
+                <div className="h-2.5 w-1/4 animate-pulse rounded bg-muted/70" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </SectionCard>
     );
   }
 
   return (
-    <div className="p-8 bg-card dark:bg-foreground rounded-[2rem] border border-border/50 dark:border-foreground shadow-sm">
-      <div className="flex items-center justify-between mb-8">
-        <h3 className="text-2xl font-serif font-bold flex items-center gap-4 text-foreground dark:text-primary-foreground">
-          <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500 shadow-sm">
-            <Calendar size={20} />
-          </div>
-          Upcoming Sessions
-        </h3>
-        {isPrivate && (
-          <Badge variant="outline" className="h-5 px-2 text-[8px] font-black uppercase border-rose-200 text-rose-400 rounded-full">
-            <EyeOff size={10} className="mr-1" /> Private
-          </Badge>
-        )}
-      </div>
-      
-      <div className="space-y-4">
+    <SectionCard
+      title="Upcoming sessions"
+      icon={CalendarClock}
+      action={
+        <>
+          {isPrivate && (
+            <span className="inline-flex h-6 items-center gap-1 rounded-full border border-border px-2 text-[11px] text-muted-foreground">
+              <EyeOff size={11} /> Private
+            </span>
+          )}
+          {appointments.length > 0 && (
+            <Link to="/appointments" className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-[13px] text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground">
+              View all <ArrowRight size={13} />
+            </Link>
+          )}
+        </>
+      }
+    >
+      <ul className="space-y-px">
         {appointments.map((appointment) => {
           const dateLabel = getDateLabel(appointment.date);
           const isUrgent = isToday(appointment.date) || isTomorrow(appointment.date);
 
           return (
-            <Link
-              key={appointment.id}
-              to={`/appointments/${appointment.id}`}
-              className={cn(
-                "flex items-center gap-5 p-5 rounded-2xl transition-all duration-500 group border",
-                isUrgent
-                  ? "border-amber-200 bg-amber-50/50 dark:bg-amber-900/10 hover:border-amber-400 hover:shadow-lg"
-                  : "border-border/30 dark:border-foreground bg-muted/50/50 dark:bg-foreground/50 hover:border-chart-primary/40 hover:shadow-lg"
-              )}
-            >
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3 mb-2">
-                  <Badge
+            <li key={appointment.id}>
+              <Link
+                to={`/appointments/${appointment.id}`}
+                className="group flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-foreground/[0.03]"
+              >
+                {/* Calendar leaf */}
+                <div
+                  className={cn(
+                    "flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-lg border leading-none",
+                    isUrgent ? "border-primary/25 bg-primary/[0.06] text-primary" : "border-border bg-background text-foreground"
+                  )}
+                >
+                  <span className="text-[9.5px] font-medium uppercase tracking-wide opacity-70">{format(appointment.date, "MMM")}</span>
+                  <span className="mt-0.5 text-[15px] font-semibold tabular-nums">{format(appointment.date, "d")}</span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className={cn("truncate text-sm font-medium text-foreground", isPrivate && "blur-sm select-none")}>
+                    {appointment.clients.name}
+                  </p>
+                  <p className={cn("flex items-center gap-1.5 truncate text-xs text-muted-foreground", isPrivate && "blur-[2px] select-none")}>
+                    <span className={cn(isUrgent && "font-medium text-primary")}>{dateLabel}</span>
+                    <span className="text-muted-foreground/40">·</span>
+                    <span className="tabular-nums">{format(appointment.date, "h:mm a")}</span>
+                    <span className="text-muted-foreground/40">·</span>
+                    {/* appointment.name deliberately not used — it's a booking-time
+                        snapshot that can go stale or contradict the live client
+                        record. appointment.tag is a real categorisation field. */}
+                    <span className="truncate">{appointment.tag || "Clinical session"}</span>
+                  </p>
+                </div>
+                {appointment.is_paid && (
+                  <span
                     className={cn(
-                      "text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-full border-none shadow-sm",
-                      isUrgent
-                        ? "bg-amber-500 text-primary-foreground"
-                        : "bg-chart-primary text-primary-foreground"
+                      "shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium tabular-nums",
+                      appointment.payment_received
+                        ? "bg-chart-emerald/10 text-chart-emerald"
+                        : "bg-chart-amber/10 text-[hsl(30_80%_38%)] dark:text-chart-amber"
                     )}
                   >
-                    {dateLabel}
-                  </Badge>
-                  <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest flex items-center gap-1.5">
-                    <Clock size={12} />
-                    {format(appointment.date, "h:mm a")}
+                    {appointment.payment_received ? "Paid" : `Due${appointment.price_amount ? ` $${appointment.price_amount}` : ""}`}
                   </span>
-                </div>
-                <p className={cn(
-                  "font-black text-lg text-foreground dark:text-primary-foreground group-hover:text-chart-primary transition-colors truncate",
-                  isPrivate && "blur-sm select-none"
-                )}>
-                  {appointment.clients.name}
-                </p>
-                <div className="flex items-center gap-3 mt-1.5">
-                  <p className={cn(
-                    "text-[10px] text-muted-foreground font-bold uppercase tracking-widest truncate",
-                    isPrivate && "blur-[2px] select-none"
-                  )}>
-                    {/* appointment.name deliberately not used here — it's a
-                        booking-time snapshot (almost always just "<client
-                        name> - Kinesiology (<date>)", i.e. pure duplication
-                        of the client name already shown above) that can go
-                        stale or mismatch the live client record. Confirmed
-                        live: a booking snapshot-named "Lesley Belgrave"
-                        contradicted the correct client name "Lesley
-                        Wiadrowski" shown right above it. appointment.tag is
-                        a real distinct categorisation field, kept. */}
-                    {appointment.tag || "Clinical Session"}
-                  </p>
-                  {appointment.is_paid && (
-                    <span className={cn(
-                      "px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest",
-                      appointment.payment_received ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600"
-                    )}>
-                      {appointment.payment_received ? "Paid" : `Due ${appointment.price_amount ? `$${appointment.price_amount}` : ''}`}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-card dark:bg-foreground flex items-center justify-center text-muted-foreground/60 group-hover:text-chart-primary group-hover:bg-chart-primary/10 transition-all shadow-sm">
-                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
+                )}
+                <ChevronRight size={16} className="shrink-0 text-muted-foreground/40 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-foreground" />
+              </Link>
+            </li>
           );
         })}
         {appointments.length === 0 && (
-          <div className="text-center py-16 bg-muted/50 dark:bg-foreground/50 rounded-2xl border border-dashed border-border dark:border-foreground">
-            <p className="text-muted-foreground text-sm font-medium mb-6">No upcoming sessions</p>
-            <Link to="/appointments">
-              <Button variant="outline" className="rounded-xl px-8 h-12 font-black text-[10px] uppercase tracking-widest border-border hover:bg-card shadow-sm">
-                Schedule Session
-              </Button>
-            </Link>
-          </div>
+          <li className="flex flex-col items-center gap-3 px-6 pb-8 pt-4 text-center">
+            <p className="text-[13px] text-muted-foreground">No upcoming sessions</p>
+            <Button asChild variant="outline" size="sm" className="h-8 rounded-lg text-[13px]">
+              <Link to="/appointments">Schedule a session</Link>
+            </Button>
+          </li>
         )}
-      </div>
-      
-      {appointments.length > 0 && (
-        <Link to="/appointments" className="mt-8 block">
-          <Button
-            variant="ghost"
-            className="w-full rounded-xl h-12 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-chart-primary hover:bg-chart-primary/10 group transition-all"
-          >
-            View All Appointments <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
-          </Button>
-        </Link>
-      )}
-    </div>
+      </ul>
+    </SectionCard>
   );
 };
 

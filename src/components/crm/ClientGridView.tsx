@@ -144,12 +144,12 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
                   which still lives in full on the Clinical Profile. */}
               <div className="p-2.5 rounded-xl border border-border bg-muted/30 flex flex-col items-center text-center">
                 <Mail size={13} className="mb-1 text-muted-foreground" />
-                <p className="text-[9px] font-medium uppercase tracking-wide opacity-60">Last Contacted</p>
+                <p className="text-[10px] font-medium uppercase tracking-wide opacity-60">Last Contacted</p>
                 <p className="text-base font-semibold">{client.last_contacted_at ? format(new Date(client.last_contacted_at), "MMM d") : "Never"}</p>
               </div>
               <div className="p-2.5 rounded-xl border border-border bg-muted/30 flex flex-col items-center text-center">
                 <Activity size={13} className="mb-1 text-primary" />
-                <p className="text-[9px] font-medium uppercase tracking-wide opacity-60">Sessions</p>
+                <p className="text-[10px] font-medium uppercase tracking-wide opacity-60">Sessions</p>
                 <p className="text-base font-semibold">{client.session_count}</p>
               </div>
             </div>

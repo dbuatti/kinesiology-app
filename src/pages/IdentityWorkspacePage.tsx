@@ -79,7 +79,7 @@ const IdentityWorkspacePage = () => {
                   <Target size={32} />
                 </div>
                 <div className="space-y-2">
-                  <h4 className="text-xl font-black text-foreground">The Goal of Identity Work</h4>
+                  <h4 className="text-xl font-semibold text-foreground">The Goal of Identity Work</h4>
                   <p className="text-muted-foreground font-medium leading-relaxed italic">
                     "Identity Work is where you become your own No.1 client. By processing your own identities and beliefs, you clear the static in your own system, allowing you to be a more precise mirror for your clients."
                   </p>
@@ -90,7 +90,7 @@ const IdentityWorkspacePage = () => {
                   <Layers size={32} />
                 </div>
                 <div className="space-y-2">
-                  <h4 className="text-xl font-black text-foreground">Active Integration</h4>
+                  <h4 className="text-xl font-semibold text-foreground">Active Integration</h4>
                   <p className="text-muted-foreground font-medium leading-relaxed">
                     Every insight extracted from your journal moves you closer to clinical mastery.
                   </p>

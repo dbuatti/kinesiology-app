@@ -72,20 +72,20 @@ const DocumentRightSidebar = ({
 
       {/* Live clock */}
       <div className="text-center space-y-0.5">
-        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Time</p>
-        <p className="text-base font-black tabular-nums text-foreground dark:text-muted-foreground/60">{format(now, "HH:mm")}</p>
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Time</p>
+        <p className="text-base font-semibold tabular-nums text-foreground dark:text-muted-foreground/60">{format(now, "HH:mm")}</p>
         {elapsedMinutes >= 0 && (
-          <p className="text-[9px] font-bold text-muted-foreground tabular-nums">+{elapsedMinutes}m elapsed</p>
+          <p className="text-[10px] font-bold text-muted-foreground tabular-nums">+{elapsedMinutes}m elapsed</p>
         )}
       </div>
 
       {/* Current meridian peak */}
       {currentPeakMeridian && (
         <div className="text-center p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 space-y-0.5">
-          <p className="text-[8px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest flex items-center justify-center gap-1">
+          <p className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center justify-center gap-1">
             <Zap size={9} /> Peak Meridian
           </p>
-          <p className="text-[11px] font-black text-amber-800 dark:text-amber-300 leading-tight">{currentPeakMeridian.name}</p>
+          <p className="text-[11px] font-semibold text-amber-800 dark:text-amber-300 leading-tight">{currentPeakMeridian.name}</p>
         </div>
       )}
 
@@ -93,7 +93,7 @@ const DocumentRightSidebar = ({
 
       {/* Quick timers */}
       <div className="space-y-2">
-        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest text-center">Timers</p>
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider text-center">Timers</p>
         {TIMER_PRESETS.map((preset) => {
           const isActive = activeTimerDuration === preset.value;
           return (
@@ -104,15 +104,15 @@ const DocumentRightSidebar = ({
                 "w-full rounded-xl border-2 flex flex-col items-center justify-center py-2 transition-all duration-300",
                 isActive
                   ? "bg-indigo-600 border-indigo-600 text-primary-foreground scale-[1.02] shadow-lg shadow-indigo-500/20"
-                  : "bg-card dark:bg-foreground border-foreground/20 dark:border-border text-foreground dark:text-muted-foreground/60 hover:bg-foreground hover:text-primary-foreground dark:hover:bg-card hover:scale-[1.02]"
+                  : "bg-card dark:bg-card border-foreground/20 dark:border-border text-foreground dark:text-muted-foreground/60 hover:bg-foreground hover:text-primary-foreground dark:hover:bg-card hover:scale-[1.02]"
               )}
               title={isActive ? "Click to stop" : `Start ${preset.label} timer — ${preset.note}`}
             >
-              <span className="text-[11px] font-black tabular-nums leading-tight">
+              <span className="text-[11px] font-semibold tabular-nums leading-tight">
                 {isActive ? formatCountdown(timeLeft) : preset.label}
               </span>
               {!isActive && (
-                <span className="text-[8px] font-bold opacity-50 leading-tight">{preset.note}</span>
+                <span className="text-[10px] font-bold opacity-50 leading-tight">{preset.note}</span>
               )}
             </button>
           );
@@ -123,7 +123,7 @@ const DocumentRightSidebar = ({
 
       {/* Quick reference: key durations */}
       <div className="space-y-2">
-        <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest text-center">Reference</p>
+        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider text-center">Reference</p>
         {[
           { label: "Vagus stim", value: "30–60s" },
           { label: "T1 / Dia hold", value: "45–90s" },
@@ -132,8 +132,8 @@ const DocumentRightSidebar = ({
           { label: "4-7-8 breath", value: "4×" },
         ].map(({ label, value }) => (
           <div key={label} className="flex justify-between items-baseline gap-1 px-0.5">
-            <span className="text-[9px] font-bold text-muted-foreground dark:text-muted-foreground truncate">{label}</span>
-            <span className="text-[9px] font-black text-foreground/80 dark:text-muted-foreground/60 shrink-0 tabular-nums">{value}</span>
+            <span className="text-[10px] font-bold text-muted-foreground dark:text-muted-foreground truncate">{label}</span>
+            <span className="text-[10px] font-semibold text-foreground/80 dark:text-muted-foreground/60 shrink-0 tabular-nums">{value}</span>
           </div>
         ))}
       </div>

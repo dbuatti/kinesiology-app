@@ -20,7 +20,7 @@ interface JointActionTableModalProps {
 const JointActionTableModal = ({ open, onOpenChange }: JointActionTableModalProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[900px] max-h-[90vh] rounded-[2.5rem] overflow-hidden p-0 border-none shadow-2xl">
+      <DialogContent className="sm:max-w-[900px] max-h-[90vh] rounded-2xl overflow-hidden p-0 border-none shadow-2xl">
         <DialogHeader className="p-8 bg-foreground text-primary-foreground">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -28,13 +28,13 @@ const JointActionTableModal = ({ open, onOpenChange }: JointActionTableModalProp
                 <List size={28} className="text-primary-foreground" />
               </div>
               <div>
-                <DialogTitle className="text-2xl font-black">Joint Action Reference</DialogTitle>
-                <DialogDescription className="text-muted-foreground font-bold uppercase tracking-widest text-[10px] mt-1">
+                <DialogTitle className="text-2xl font-semibold">Joint Action Reference</DialogTitle>
+                <DialogDescription className="text-muted-foreground font-bold uppercase tracking-wider text-[10px] mt-1">
                   Geometry of Movement & Planes of Motion
                 </DialogDescription>
               </div>
             </div>
-            <Button asChild variant="outline" className="bg-card/10 border-primary-foreground/20 text-primary-foreground hover:bg-card/20 rounded-xl h-10 px-4 font-bold text-[10px] uppercase tracking-widest">
+            <Button asChild variant="outline" className="bg-card/10 border-primary-foreground/20 text-primary-foreground hover:bg-card/20 rounded-xl h-10 px-4 font-bold text-[11px]">
               <Link to="/resources/joint-actions/print">
                 <Printer size={16} className="mr-2" /> Print Reference
               </Link>
@@ -54,14 +54,14 @@ const JointActionTableModal = ({ open, onOpenChange }: JointActionTableModalProp
             <table className="w-full text-sm">
               <thead className="bg-muted/50 sticky top-0 z-10">
                 <tr>
-                  <th className="p-4 text-left font-black text-muted-foreground text-[10px] uppercase tracking-widest">Joint</th>
-                  <th className="p-4 text-left font-black text-primary text-[10px] uppercase tracking-widest flex items-center gap-1.5">
+                  <th className="p-4 text-left font-semibold text-muted-foreground text-[10px] uppercase tracking-wider">Joint</th>
+                  <th className="p-4 text-left font-semibold text-primary text-[10px] uppercase tracking-wider flex items-center gap-1.5">
                     <Zap size={12} /> Sagittal
                   </th>
-                  <th className="p-4 text-left font-black text-emerald-500 text-[10px] uppercase tracking-widest">
+                  <th className="p-4 text-left font-semibold text-emerald-500 text-[10px] uppercase tracking-wider">
                     <Move size={12} className="inline mr-1.5" /> Frontal
                   </th>
-                  <th className="p-4 text-left font-black text-orange-500 text-[10px] uppercase tracking-widest">
+                  <th className="p-4 text-left font-semibold text-orange-500 text-[10px] uppercase tracking-wider">
                     <RefreshCw size={12} className="inline mr-1.5" /> Transverse
                   </th>
                 </tr>
@@ -69,7 +69,7 @@ const JointActionTableModal = ({ open, onOpenChange }: JointActionTableModalProp
               <tbody className="bg-card">
                 {JOINT_ACTION_LIBRARY.map((joint, i) => (
                   <tr key={i} className="border-t border-border/50 hover:bg-muted/50/50 transition-colors">
-                    <td className="p-4 font-black text-foreground">{joint.name}</td>
+                    <td className="p-4 font-semibold text-foreground">{joint.name}</td>
                     <td className="p-4 text-muted-foreground font-medium">
                       {joint.actions.Sagittal.map(a => a.label).join(', ')}
                     </td>

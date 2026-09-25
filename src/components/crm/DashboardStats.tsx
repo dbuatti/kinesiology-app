@@ -1,6 +1,5 @@
-
-import { Users, Calendar, FlaskConical, AlertCircle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
+import { Users, CalendarDays, Wind, ShieldAlert, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface DashboardStatsProps {
@@ -15,33 +14,54 @@ interface DashboardStatsProps {
   };
 }
 
+/**
+ * KPI strip — one continuous surface split by hairlines (not four floating
+ * cards), big tabular figures, quiet labels, each tile a link to its detail.
+ */
 const DashboardStats = ({ stats }: DashboardStatsProps) => {
+  const tiles = [
+    { label: "Clients", value: stats.clients, sub: `+${stats.newClients30d} in 30 days`, icon: Users, to: "/clients" },
+    { label: "Sessions this week", value: stats.sessionsThisWeek, sub: `${stats.sessions30d} in 30 days`, icon: CalendarDays, to: "/calendar" },
+    { label: "Average BOLT", value: stats.avgBolt, unit: "s", sub: "Functional breathing", icon: Wind, to: "/sessions" },
+    {
+      label: "Clinical alerts",
+      value: stats.imperativeAlerts,
+      sub: stats.imperativeAlerts > 0 ? "Need your attention" : "All clear",
+      icon: ShieldAlert,
+      to: "/clients?tool=oversight",
+      alert: stats.imperativeAlerts > 0,
+    },
+  ];
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {[
-        { label: "Total Clients", value: stats.clients, sub: `+${stats.newClients30d} new`, icon: Users },
-        { label: "Weekly Sessions", value: stats.sessionsThisWeek, sub: `${stats.sessions30d} in 30d`, icon: Calendar },
-        { label: "Avg BOLT", value: `${stats.avgBolt}s`, sub: "Functional", icon: FlaskConical },
-        { label: "Clinical Alerts", value: stats.imperativeAlerts, sub: "Case focus", icon: AlertCircle, alert: stats.imperativeAlerts > 0 },
-      ].map((stat, i) => (
-        <div key={i} className={cn(
-          "p-4 rounded-xl border bg-card dark:bg-foreground shadow-sm transition-all duration-500 hover:shadow-md",
-          stat.alert ? "border-rose-200 bg-rose-50/30 dark:border-rose-900/30" : "border-border/50 dark:border-border"
-        )}>
-          <div className="flex items-center gap-3 mb-4">
-            <div className={cn(
-              "w-8 h-8 rounded-xl flex items-center justify-center shadow-sm",
-              stat.alert ? "bg-rose-100 text-rose-600" : "bg-chart-primary/10 text-chart-primary"
-            )}>
-              <stat.icon size={16} />
-            </div>
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{stat.label}</p>
+    <div className="grid grid-cols-2 overflow-hidden rounded-xl border border-border bg-card shadow-xs lg:grid-cols-4">
+      {tiles.map((t, i) => (
+        <Link
+          key={t.label}
+          to={t.to}
+          className={cn(
+            "group relative flex flex-col gap-3 p-4 sm:p-5 hover:bg-foreground/[0.018]",
+            i % 2 === 1 && "border-l border-border",
+            i >= 2 && "border-t border-border lg:border-t-0",
+            i === 2 && "lg:border-l"
+          )}
+        >
+          <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
+            <t.icon size={15} strokeWidth={1.85} className={cn(t.alert ? "text-destructive" : "text-muted-foreground/80")} />
+            <span className="truncate">{t.label}</span>
+            <ArrowUpRight
+              size={14}
+              className="ml-auto shrink-0 opacity-0 transition-all duration-200 group-hover:-translate-y-px group-hover:opacity-60"
+            />
           </div>
-          <div className="flex items-baseline gap-2">
-            <p className="text-2xl font-black text-foreground dark:text-primary-foreground tracking-tight">{stat.value}</p>
-            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{stat.sub}</span>
+          <div className="flex items-baseline gap-1">
+            <span className={cn("text-[28px] font-semibold leading-none tracking-[-0.03em] tabular-nums", t.alert ? "text-destructive" : "text-foreground")}>
+              {t.value}
+            </span>
+            {t.unit && <span className="text-base font-medium text-muted-foreground">{t.unit}</span>}
           </div>
-        </div>
+          <div className={cn("text-xs", t.alert ? "text-destructive/80" : "text-muted-foreground")}>{t.sub}</div>
+        </Link>
       ))}
     </div>
   );

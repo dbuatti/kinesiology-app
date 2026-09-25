@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, type KeyboardEvent } from "react";
-import { Textarea } from "@/components/ui/textarea";
+import { useState, useEffect, useRef, useLayoutEffect, type KeyboardEvent } from "react";
 import { Button } from "@/components/ui/button";
-import { Send, Loader2 } from "lucide-react";
+import { ArrowUp, Loader2, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Props {
   onSend: (message: string) => void;
@@ -10,11 +10,15 @@ interface Props {
   // True once a deep-linked quick action's client/voice-student target has
   // actually resolved — see AssistantPage.tsx's autoSendReady.
   autoSend?: boolean;
+  /** Tap-to-fill starters shown under the field (context-aware from the page). */
+  suggestions?: string[];
+  placeholder?: string;
 }
 
-export default function AssistantInput({ onSend, disabled, initialValue, autoSend }: Props) {
+export default function AssistantInput({ onSend, disabled, initialValue, autoSend, suggestions, placeholder }: Props) {
   const [value, setValue] = useState(initialValue || "");
   const autoSentRef = useRef(false);
+  const ref = useRef<HTMLTextAreaElement>(null);
 
   const submit = (override?: string) => {
     const trimmed = (override ?? value).trim();
@@ -23,15 +27,9 @@ export default function AssistantInput({ onSend, disabled, initialValue, autoSen
     setValue("");
   };
 
-  // A deep-linked quick action (Follow-up's "Book" — "Find a good slot and
-  // book Bella's next session...") is already a complete instruction the
-  // practitioner chose by clicking it; making him also click Send on a
-  // message he wasn't going to edit was pure friction ("really ensure I can
-  // get from virtual assistant to booking someone in relatively quickly").
-  // Fires once the parent confirms the deep-linked target has actually
-  // resolved (autoSend flips true) — not on mount, since sending before then
-  // would go out as an unfocused general message instead of against the
-  // intended client.
+  // A deep-linked quick action (Follow-up's "Book") is already a complete
+  // instruction the practitioner chose — send it once the parent confirms the
+  // target has resolved (autoSend flips true), not on mount.
   useEffect(() => {
     if (autoSend && initialValue && !autoSentRef.current && !disabled) {
       autoSentRef.current = true;
@@ -40,41 +38,71 @@ export default function AssistantInput({ onSend, disabled, initialValue, autoSen
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoSend, disabled]);
 
+  // Auto-grow: the field hugs its content up to ~8 lines, then scrolls.
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = "0px";
+    el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
+  }, [value]);
+
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    // Don't submit mid-IME-composition (JP/CN keyboards) — Enter there confirms
-    // the composition instead of sending an unfinished message.
+    // Don't submit mid-IME-composition (JP/CN keyboards).
     if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       submit();
     }
   };
 
+  const canSend = !disabled && !!value.trim();
+
   return (
-    <div className="flex flex-col gap-1.5 border-t border-border pt-3">
-      {/* Anchored composer as a single rounded surface (input + send fused) so it
-          reads as one premium control instead of a box with a detached button. */}
-      <div className="flex items-end gap-1.5 rounded-2xl border border-border bg-card p-1.5 shadow-sm transition-shadow focus-within:border-primary/40 focus-within:shadow-md">
-        <Textarea
+    <div className="flex flex-col gap-2 pt-3">
+      <div
+        className={cn(
+          "rounded-2xl border border-border bg-card shadow-sm transition-[border-color,box-shadow] duration-200",
+          "focus-within:border-ring/50 focus-within:shadow-[0_0_0_4px_hsl(var(--ring)/0.10),0_8px_24px_-12px_hsl(var(--shadow-color)/0.2)]"
+        )}
+      >
+        <textarea
+          ref={ref}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask about scheduling, a client, or draft a reply..."
-          rows={2}
+          placeholder={placeholder || "Ask about scheduling, a client, or draft a reply…"}
+          rows={1}
           disabled={disabled}
-          // 16px (text-base) is deliberate, not stylistic — anything smaller makes
-          // iOS Safari auto-zoom the page on focus, per WebKit's documented behaviour.
-          // min-h-0/max-h-40 override the primitive's built-in 80px minimum so a
-          // short field stays short and grows naturally; focus rings live on the
-          // wrapper above, not on the naked textarea inside it.
-          className="min-h-0 max-h-40 resize-none border-0 bg-transparent px-3 py-2.5 text-base shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 md:text-sm"
+          // 16px on phones stops iOS Safari zooming the page on focus.
+          className="block max-h-[200px] min-h-[52px] w-full resize-none bg-transparent px-4 pb-1 pt-3.5 text-base leading-relaxed outline-none placeholder:text-muted-foreground/70 md:text-[14.5px]"
         />
-        <Button onClick={() => submit()} disabled={disabled || !value.trim()} size="icon" className="h-9 w-9 shrink-0 rounded-xl" aria-label="Send message">
-          {disabled ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-        </Button>
+        <div className="flex items-center gap-2 px-2.5 pb-2.5">
+          <span className="hidden text-[11px] text-muted-foreground/70 md:inline">
+            <kbd className="kbd">↵</kbd> send · <kbd className="kbd">⇧</kbd><kbd className="kbd">↵</kbd> new line
+          </span>
+          <Button
+            onClick={() => submit()}
+            disabled={!canSend}
+            size="icon"
+            className={cn("ml-auto h-8 w-8 rounded-full transition-transform", canSend && "scale-100", !canSend && "opacity-40")}
+            aria-label="Send message"
+          >
+            {disabled ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" strokeWidth={2.5} />}
+          </Button>
+        </div>
       </div>
-      <p className="hidden md:flex justify-end pr-1.5 text-[10px] text-muted-foreground/70 select-none">
-        Enter to send · Shift+Enter for a new line
-      </p>
+      {suggestions && suggestions.length > 0 && !value && !disabled && (
+        <div className="no-scrollbar -mx-1 flex gap-1.5 overflow-x-auto px-1">
+          {suggestions.map((s) => (
+            <button
+              key={s}
+              onClick={() => { setValue(s); ref.current?.focus(); }}
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-[12.5px] text-muted-foreground shadow-xs transition-colors hover:border-primary/30 hover:text-foreground"
+            >
+              <Sparkles className="h-3 w-3 text-primary/70" /> {s}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

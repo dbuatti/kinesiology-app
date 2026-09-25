@@ -1,3 +1,4 @@
+import { CountUp } from "@/hooks/use-count-up";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -226,7 +227,7 @@ export function ProceduresTool() {
                     <div className="space-y-1">
                       <div className="flex items-center gap-3">
                         <CardTitle className="text-xl font-semibold flex items-center gap-3 text-foreground">
-                          <Lightbulb size={24} className="text-chart-primary" /> Focus on this this week
+                          <Lightbulb size={24} className="text-chart-primary" /> Focus on this week
                         </CardTitle>
                         <Badge className="bg-chart-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
                           Study Priority
@@ -242,7 +243,7 @@ export function ProceduresTool() {
                       className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-12 px-8 font-medium text-xs shadow-sm"
                     >
                       {committing ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 size={18} className="mr-2" />}
-                      Commit to this Focus
+                      Commit to this focus
                     </Button>
                   </div>
                 </CardHeader>
@@ -277,45 +278,43 @@ export function ProceduresTool() {
             )}
 
             {/* Mastery Overview Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card className="border-none shadow-sm rounded-xl bg-chart-primary text-primary-foreground overflow-hidden relative group">
-                <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><Sparkles size={80} /></div>
-                <CardContent className="p-6 space-y-1 relative z-10">
-                  <p className="text-[10px] font-semibold text-primary-foreground/70 uppercase tracking-wider">Total Components</p>
-                  <p className="text-4xl font-semibold">{summary.total}</p>
-                  <p className="text-xs text-primary-foreground/50 font-medium">Registry of all loggable items</p>
-                </CardContent>
-              </Card>
-              <Card className="border-none shadow-sm rounded-xl bg-chart-emerald text-primary-foreground overflow-hidden relative group">
-                <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><ShieldCheck size={80} /></div>
-                <CardContent className="p-6 space-y-1 relative z-10">
-                  <p className="text-[10px] font-semibold text-primary-foreground/70 uppercase tracking-wider">Mastered Items</p>
-                  <p className="text-4xl font-semibold">{summary.masters}</p>
-                  <p className="text-xs text-primary-foreground/50 font-medium">11+ logs recorded</p>
-                </CardContent>
-              </Card>
-              <Card className="border-none shadow-sm rounded-xl bg-chart-destructive text-primary-foreground overflow-hidden relative group">
-                <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700"><AlertCircle size={80} /></div>
-                <CardContent className="p-6 space-y-1 relative z-10">
-                  <p className="text-[10px] font-semibold text-primary-foreground/70 uppercase tracking-wider">Unpracticed Items</p>
-                  <p className="text-4xl font-semibold">{summary.novices}</p>
-                  <p className="text-xs text-primary-foreground/50 font-medium">Items with 0-2 logs</p>
-                </CardContent>
-              </Card>
-              <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden relative group">
-                <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:scale-110 transition-transform duration-700"><Activity size={80} /></div>
-                <CardContent className="p-6 space-y-1 relative z-10">
-                  <p className="text-xs font-medium text-muted-foreground">Total Clinical Logs</p>
-                  <p className="text-4xl font-semibold text-foreground">{summary.totalLogs}</p>
-                  <p className="text-xs text-muted-foreground font-medium">Cumulative experience</p>
-                </CardContent>
-              </Card>
+            <div className="overflow-hidden rounded-xl border border-border bg-card shadow-xs">
+              <div className="grid grid-cols-2 lg:grid-cols-4">
+                {[
+                  { label: "Components", value: summary.total, sub: "Everything you can log", icon: Sparkles, tone: "text-foreground" },
+                  { label: "Mastered", value: summary.masters, sub: "11+ logs recorded", icon: ShieldCheck, tone: "text-chart-emerald" },
+                  { label: "Unpracticed", value: summary.novices, sub: "0–2 logs so far", icon: AlertCircle, tone: "text-chart-destructive" },
+                  { label: "Clinical logs", value: summary.totalLogs, sub: "Cumulative experience", icon: Activity, tone: "text-foreground" },
+                ].map((t, i) => (
+                  <div key={t.label} className={cn("spotlight flex flex-col gap-3 p-4 sm:p-5", i % 2 === 1 && "border-l border-border", i >= 2 && "border-t border-border lg:border-t-0", i === 2 && "lg:border-l")}>
+                    <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
+                      <t.icon size={15} strokeWidth={1.85} className={cn(t.tone === "text-foreground" ? "text-muted-foreground/80" : t.tone)} /> {t.label}
+                    </div>
+                    <div className={cn("text-[28px] font-semibold leading-none tracking-[-0.03em] tabular-nums", t.tone)}><CountUp value={t.value} /></div>
+                    <div className="text-xs text-muted-foreground">{t.sub}</div>
+                  </div>
+                ))}
+              </div>
+              {/* Mastery distribution */}
+              {summary.total > 0 && (
+                <div className="border-t border-border px-4 py-3 sm:px-5">
+                  <div className="flex h-2 overflow-hidden rounded-full bg-foreground/[0.06]">
+                    <div className="bg-chart-emerald transition-[width] duration-700 ease-out-expo" style={{ width: `${(summary.masters / summary.total) * 100}%` }} />
+                    <div className="bg-primary/70 transition-[width] duration-700 ease-out-expo" style={{ width: `${(Math.max(0, summary.total - summary.masters - summary.novices) / summary.total) * 100}%` }} />
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11.5px] text-muted-foreground">
+                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-chart-emerald" /> Mastered {Math.round((summary.masters / summary.total) * 100)}%</span>
+                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary/70" /> Learning {Math.round((Math.max(0, summary.total - summary.masters - summary.novices) / summary.total) * 100)}%</span>
+                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-foreground/15" /> Unpracticed {Math.round((summary.novices / summary.total) * 100)}%</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Filters and Search */}
             <div className="space-y-6">
               <div className="flex flex-col lg:flex-row gap-4 items-center justify-between bg-card p-4 rounded-xl border border-border shadow-sm">
-                <div className="relative flex-1 w-full max-w-md">
+                <div className="relative flex-1 w-full min-w-[220px] max-w-md">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                   <Input 
                     placeholder="Search components..." 

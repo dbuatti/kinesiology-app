@@ -35,6 +35,25 @@ interface SearchResult {
 
 const RECENT_SEARCHES_KEY = "rk_recent_searches";
 
+const NAV_DESTINATIONS: { title: string; path: string; icon: any; section: string; keywords?: string }[] = [
+  { title: "Home", path: "/", icon: LayoutDashboard, section: "Clinical", keywords: "dashboard today" },
+  { title: "Assistant", path: "/assistant", icon: Sparkles, section: "Clinical", keywords: "chat ai follow-up inbox" },
+  { title: "Calendar", path: "/calendar", icon: CalendarDays, section: "Clinical", keywords: "bookings appointments" },
+  { title: "Timetable", path: "/timetable", icon: Clock, section: "Clinical", keywords: "fortnight availability" },
+  { title: "Clients", path: "/clients", icon: Users, section: "Clinical", keywords: "database" },
+  { title: "Sessions", path: "/sessions", icon: Activity, section: "Clinical", keywords: "clinical hub peace" },
+  { title: "Morning Program", path: "/morning-program", icon: Zap, section: "Growth" },
+  { title: "Journal", path: "/journal", icon: BookOpen, section: "Growth", keywords: "reflections" },
+  { title: "Practice Hub", path: "/practice", icon: Heart, section: "Growth", keywords: "self practice quiz calibrate" },
+  { title: "Identity Work", path: "/identity", icon: Brain, section: "Growth", keywords: "beliefs fractals" },
+  { title: "Worksheets", path: "/worksheets", icon: Layers, section: "Reference" },
+  { title: "Library", path: "/library", icon: BookOpen, section: "Reference", keywords: "muscles reflexes cranial nerves tcm" },
+  { title: "Voice Studio", path: "/voice", icon: Mic, section: "Voice" },
+  { title: "Voice students", path: "/voice/clients", icon: Users, section: "Voice" },
+  { title: "Business Hub", path: "/business", icon: Target, section: "Business", keywords: "revenue audit marketing" },
+  { title: "Settings", path: "/settings", icon: Settings, section: "System" },
+];
+
 const SearchBar = ({ compact = false, responsive = false }: { compact?: boolean; responsive?: boolean }) => {
   const [open, setOpen] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -311,6 +330,25 @@ const SearchBar = ({ compact = false, responsive = false }: { compact?: boolean;
             </CommandGroup>
           )}
 
+          {results.length === 0 && (
+            <CommandGroup heading="Go to">
+              {NAV_DESTINATIONS.map((d) => (
+                <CommandItem
+                  key={d.path}
+                  value={`go ${d.title} ${d.keywords ?? ""}`}
+                  onSelect={() => { setOpen(false); navigate(d.path); }}
+                  className="gap-3 rounded-lg px-2.5 py-2 cursor-pointer"
+                >
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border bg-background">
+                    <d.icon size={13} className="text-muted-foreground" />
+                  </span>
+                  <span className="text-[13px] font-medium text-foreground">{d.title}</span>
+                  <span className="ml-auto text-xs text-muted-foreground">{d.section}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+
           {results.length === 0 && recentSearches.length > 0 && (
             <>
               <CommandSeparator />
@@ -381,6 +419,12 @@ const SearchBar = ({ compact = false, responsive = false }: { compact?: boolean;
             </div>
           )}
         </CommandList>
+        <div className="flex items-center gap-4 border-t border-border bg-muted/40 px-4 py-2 text-[11px] text-muted-foreground">
+          <span className="flex items-center gap-1.5"><kbd className="kbd">↑</kbd><kbd className="kbd">↓</kbd> navigate</span>
+          <span className="flex items-center gap-1.5"><kbd className="kbd">↵</kbd> open</span>
+          <span className="flex items-center gap-1.5"><kbd className="kbd">esc</kbd> close</span>
+          <span className="ml-auto hidden sm:inline">Type a client’s name to search records</span>
+        </div>
       </CommandDialog>
     </>
   );

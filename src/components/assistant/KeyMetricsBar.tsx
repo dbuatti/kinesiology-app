@@ -184,7 +184,7 @@ export default function KeyMetricsBar({ onOpenFollowUp }: Props) {
       </Tile>
 
       <Tile icon={Users} label="Pipeline">
-        <div className="flex items-end gap-2">
+        <div className="flex items-end gap-3.5">
           {(["lead", "active", "at_risk", "lapsed"] as LifecycleStatus[]).map((s) => (
             <button
               key={s}
@@ -192,8 +192,8 @@ export default function KeyMetricsBar({ onOpenFollowUp }: Props) {
               className="flex flex-col items-center hover:opacity-70 transition-opacity"
               title={s === "at_risk" ? "At Risk" : s.charAt(0).toUpperCase() + s.slice(1)}
             >
-              <span className="text-lg font-semibold text-foreground">{metrics.pipeline[s]}</span>
-              <span className="text-[11px] font-bold text-muted-foreground">{s === "at_risk" ? "Risk" : s.slice(0, 4)}</span>
+              <span className="text-lg font-semibold tabular-nums text-foreground">{metrics.pipeline[s]}</span>
+              <span className="text-[11px] font-medium text-muted-foreground">{s === "at_risk" ? "At risk" : s.charAt(0).toUpperCase() + s.slice(1)}</span>
             </button>
           ))}
         </div>

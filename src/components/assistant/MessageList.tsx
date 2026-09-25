@@ -1,3 +1,4 @@
+import { BrandMark } from "@/components/layout/BrandMark";
 import { useEffect, useRef } from "react";
 import { AssistantMessage, DraftEmail, PendingBooking } from "@/types/assistant";
 import MessageBubble from "./MessageBubble";
@@ -60,13 +61,14 @@ export default function MessageList({
 
   if (messages.length === 0 && !isSending && !hasStreaming) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center text-center gap-3 py-16">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-chart-primary/10">
-          <Bot className="h-7 w-7 text-chart-primary" />
+      <div className="flex flex-1 flex-col items-center justify-center text-center gap-4 py-16">
+        <div className="relative">
+          <div aria-hidden className="absolute inset-0 -m-6 rounded-full bg-[radial-gradient(closest-side,hsl(var(--primary)/0.18),transparent)] animate-pulse-soft" />
+          <BrandMark className="relative h-12 w-12 rounded-[14px] shadow-lg shadow-primary/20" />
         </div>
         <div className="space-y-1.5">
-          <p className="text-sm font-semibold text-foreground">Your practice, at your fingertips</p>
-          <p className="text-sm text-muted-foreground max-w-xs">
+          <p className="font-serif text-2xl font-medium tracking-[-0.02em] text-foreground">Your practice, at your fingertips</p>
+          <p className="mx-auto text-sm text-muted-foreground max-w-sm">
             Ask about a client's schedule, book them into a real slot, or draft a reply in their style.
           </p>
         </div>
@@ -75,9 +77,9 @@ export default function MessageList({
             <button
               key={q.label}
               onClick={() => onSuggestion(q.prompt)}
-              className="flex items-center gap-1.5 rounded-full border border-chart-primary/30 bg-chart-primary/5 px-3.5 py-2 text-xs font-semibold text-chart-primary hover:bg-chart-primary/10 transition-colors"
+              className="flex items-center gap-1.5 rounded-full border border-border bg-card px-3.5 py-2 text-[13px] font-medium text-foreground shadow-xs transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:border-primary/30 hover:shadow-sm"
             >
-              {q.label === STARTER_PROMPT && <Sparkles className="h-3.5 w-3.5" />}
+              {q.label === STARTER_PROMPT && <Sparkles className="h-3.5 w-3.5 text-primary" />}
               {q.label}
             </button>
           ))}

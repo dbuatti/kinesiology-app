@@ -177,67 +177,59 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
 
       {/* Progress + Phase Stepper */}
       <div className="space-y-4">
-        {/* Progress bar */}
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+        {/* PEACE rail — five stations on one line; the line fills as phases complete */}
+        <div className="relative px-2 pt-1 sm:px-6">
+          <div className="relative grid grid-cols-5">
+            <div aria-hidden className="absolute left-[10%] right-[10%] top-[25px] h-[2px] rounded-full bg-border" />
             <div
-              className="h-full bg-gradient-to-r from-primary via-chart-primary to-chart-emerald rounded-full transition-all duration-700 ease-out"
-              style={{ width: `${progress}%` }}
+              aria-hidden
+              className="absolute left-[10%] top-[25px] h-[2px] rounded-full bg-gradient-to-r from-chart-emerald to-primary transition-[width] duration-700 ease-out-expo"
+              style={{ width: `${(activePhase / (PEACE_PHASES.length - 1)) * 80}%` }}
             />
+            {PEACE_PHASES.map((phase, index) => {
+              const isCompleted = (phaseStatus as any)[phase.id];
+              const isActive = activePhase === index;
+              const isPast = index < activePhase;
+              const canJump = isCompleted || isPast || index === 0 || (phaseStatus as any)[PEACE_PHASES[index - 1]?.id];
+
+              return (
+                <button
+                  key={phase.id}
+                  onClick={() => canJump && jumpTo(index)}
+                  disabled={!canJump}
+                  className={cn("group flex flex-col items-center gap-2 outline-none", !canJump && "cursor-not-allowed opacity-45")}
+                  aria-current={isActive ? "step" : undefined}
+                >
+                  <span
+                    className={cn(
+                      "relative flex h-[52px] w-[52px] items-center justify-center rounded-full border transition-all duration-500 ease-out-expo",
+                      isActive
+                        ? "border-primary bg-primary text-primary-foreground shadow-button ring-[6px] ring-primary/12"
+                        : isCompleted
+                          ? "border-chart-emerald/40 bg-card text-chart-emerald"
+                          : "border-border bg-card text-muted-foreground",
+                      canJump && !isActive && "group-hover:-translate-y-0.5 group-hover:border-foreground/25 group-hover:shadow-md"
+                    )}
+                  >
+                    <span className="font-serif text-[22px] font-medium leading-none">{phase.label}</span>
+                    {isCompleted && !isActive && (
+                      <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-chart-emerald text-white ring-2 ring-background">
+                        <CheckCircle2 size={11} strokeWidth={3} />
+                      </span>
+                    )}
+                  </span>
+                  <span className="flex flex-col items-center leading-tight">
+                    <span className={cn("text-[12.5px] font-medium", isActive ? "text-foreground" : "text-muted-foreground")}>
+                      {phase.fullLabel}
+                    </span>
+                    <span className={cn("mt-0.5 hidden items-center gap-1 text-[11px] sm:flex", isActive ? "text-primary" : "text-muted-foreground/60")}>
+                      <phase.icon size={11} /> {isActive ? "In progress" : isCompleted ? "Done" : `Step ${index + 1}`}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
           </div>
-          <span className="text-xs font-medium text-muted-foreground tabular-nums">
-            {completedCount}/{PEACE_PHASES.length}
-          </span>
-        </div>
-
-        {/* Phase steps */}
-        <div className="flex items-center justify-between gap-2">
-          {PEACE_PHASES.map((phase, index) => {
-            const isCompleted = (phaseStatus as any)[phase.id];
-            const isActive = activePhase === index;
-            const isPast = index < activePhase;
-            const canJump = isCompleted || isPast || index === 0 || (phaseStatus as any)[PEACE_PHASES[index - 1]?.id];
-
-            return (
-              <button
-                key={phase.id}
-                onClick={() => canJump && jumpTo(index)}
-                disabled={!canJump}
-                className={cn(
-                  "flex flex-col items-center gap-2 transition-all group flex-1",
-                  !canJump && "opacity-40 cursor-not-allowed",
-                  canJump && "cursor-pointer hover:scale-[1.03]"
-                )}
-              >
-                <div className={cn(
-                  "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 border-2",
-                  isActive
-                    ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-110 ring-2 ring-primary/20"
-                    : isCompleted
-                      ? "bg-chart-emerald/10 text-chart-emerald border-chart-emerald/30"
-                      : "bg-muted text-muted-foreground border-transparent"
-                )}>
-                  {isCompleted && !isActive
-                    ? <CheckCircle2 size={22} />
-                    : <phase.icon size={22} />}
-                </div>
-                <div className="flex flex-col items-center">
-                  <span className={cn(
-                    "text-base font-bold tracking-tight",
-                    isActive ? "text-primary" : isCompleted ? "text-chart-emerald" : "text-muted-foreground"
-                  )}>
-                    {phase.label}
-                  </span>
-                  <span className={cn(
-                    "hidden md:block text-[11px] font-medium",
-                    isActive ? "text-primary/70" : "text-muted-foreground/60"
-                  )}>
-                    {phase.fullLabel}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
         </div>
 
         {/* Phase completion hint */}
@@ -247,12 +239,12 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
             return (
               <>
                 <span className={cn(
-                  "text-[10px] font-semibold uppercase tracking-wider",
-                  activeIsComplete ? "text-chart-emerald" : "text-muted-foreground/70"
+                  "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium",
+                  activeIsComplete ? "bg-chart-emerald/10 text-chart-emerald" : "bg-foreground/[0.05] text-muted-foreground"
                 )}>
-                  {activeIsComplete ? "Complete" : "To complete this phase"}
+                  {activeIsComplete ? "Phase complete" : "To complete"}
                 </span>
-                <span className="text-[10px] font-medium text-muted-foreground">
+                <span className="text-xs text-muted-foreground">
                   {PEACE_PHASES[activePhase].hint}
                 </span>
               </>

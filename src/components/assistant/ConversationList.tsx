@@ -1,3 +1,4 @@
+import EmptyState from "@/components/shared/EmptyState";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
@@ -64,11 +65,7 @@ export default function ConversationList({ conversations, activeId, onSelect, on
             );
           })}
           {conversations.length === 0 && (
-            <div className="px-3 py-10 text-center">
-              <MessageCircle className="h-5 w-5 mx-auto mb-2 opacity-30" />
-              <p className="text-xs text-muted-foreground">No conversations yet.</p>
-              <p className="text-[11px] text-muted-foreground/70 mt-1">Start one and it'll show up here.</p>
-            </div>
+            <EmptyState compact icon={MessageCircle} title="No conversations yet" description="Start one and it’ll show up here." />
           )}
         </div>
       </ScrollArea>

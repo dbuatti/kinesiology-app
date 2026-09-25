@@ -1,3 +1,4 @@
+import EmptyState from "@/components/shared/EmptyState";
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -430,13 +431,7 @@ const VoiceClientsPage = () => {
 
  {/* Empty state */}
  {students.length === 0 && !search ? (
- <div className="flex flex-col items-center justify-center py-16 text-center">
- <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mb-3">
- <Users size={20} className="text-muted-foreground" />
- </div>
- <h3 className="text-sm font-semibold text-foreground mb-1">No students yet</h3>
- <p className="text-xs text-muted-foreground max-w-[240px]">Students will appear here after they book their first lesson.</p>
- </div>
+ <EmptyState icon={Users} title="No students yet" description="Students will appear here after they book their first lesson." />
  ) : bucketConfig.map((cfg) => {
  const collapsedKey = `bucket_${cfg.key}`;
  const isCollapsed = collapsed[collapsedKey];

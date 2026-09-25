@@ -1,4 +1,5 @@
 
+import EmptyState from "@/components/shared/EmptyState";
 import { useState, useEffect, useMemo } from "react";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -541,13 +542,7 @@ const JournalPage = () => {
 
             <div className="grid grid-cols-1 gap-6">
               {reflections.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mb-3">
-                    <BookOpen size={20} className="text-muted-foreground" />
-                  </div>
-                  <h3 className="text-sm font-semibold text-foreground mb-1">No journal entries</h3>
-                  <p className="text-xs text-muted-foreground max-w-[240px]">Start writing to capture your thoughts and reflections.</p>
-                </div>
+                <EmptyState icon={BookOpen} title="No journal entries" description="Start writing to capture your thoughts and reflections." />
               ) : reflections.map((ref) => {
                 const catInfo = CATEGORIES.find(c => c.id === ref.category) || CATEGORIES[0];
                 const extractions = ref.ai_extractions || [];

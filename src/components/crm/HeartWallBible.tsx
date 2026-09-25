@@ -58,7 +58,7 @@ const HeartWallBible = () => {
 
       {/* Core Concept */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+        <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
           <CardHeader className="bg-rose-50 p-8">
             <CardTitle className="text-xl font-semibold flex items-center gap-3 text-rose-900">
               <Shield size={24} /> What is a Heart Wall?
@@ -85,7 +85,7 @@ const HeartWallBible = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+        <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
           <CardHeader className="bg-indigo-50 p-8">
             <CardTitle className="text-xl font-semibold flex items-center gap-3 text-indigo-900">
               <Layers size={24} /> Priority Primary Approach
@@ -212,7 +212,7 @@ const HeartWallBible = () => {
 
       {/* Symbolic Materials */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+        <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
           <CardHeader className="bg-amber-50 p-8">
             <CardTitle className="text-xl font-semibold flex items-center gap-3 text-amber-900">
               <ShieldAlert size={24} /> Symbolic Materials
@@ -239,7 +239,7 @@ const HeartWallBible = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+        <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
           <CardHeader className="bg-emerald-50 p-8">
             <CardTitle className="text-xl font-semibold flex items-center gap-3 text-emerald-900">
               <CheckCircle2 size={24} /> After the Wall Clears

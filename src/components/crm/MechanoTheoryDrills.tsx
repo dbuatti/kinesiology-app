@@ -48,7 +48,7 @@ const MechanoTheoryDrills = () => {
           isFlipped ? "rotate-y-180" : ""
         )}>
           {/* Front */}
-          <Card className="absolute inset-0 backface-hidden border-none shadow-2xl rounded-2xl bg-card flex flex-col items-center justify-center p-12 text-center border-2 border-border/30">
+          <Card className="absolute inset-0 backface-hidden border border-border shadow-sm rounded-2xl bg-card flex flex-col items-center justify-center p-12 text-center border-2 border-border/30">
             <Badge className="absolute top-8 left-8 bg-indigo-50 text-indigo-600 border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1">
               {currentCard.category}
             </Badge>
@@ -83,7 +83,7 @@ const MechanoTheoryDrills = () => {
           variant="ghost" 
           onClick={handlePrev}
           disabled={cardIndex === 0}
-          className="rounded-2xl h-12 px-6 font-semibold text-[11px] text-muted-foreground hover:bg-muted"
+          className="rounded-lg h-9 px-3.5 font-medium text-[13px] text-muted-foreground hover:bg-muted"
         >
           <ChevronLeft size={20} className="mr-2" /> Previous
         </Button>
@@ -106,7 +106,7 @@ const MechanoTheoryDrills = () => {
           variant="ghost" 
           onClick={handleNext}
           disabled={cardIndex === MECHANO_FLASHCARDS.length - 1}
-          className="rounded-2xl h-12 px-6 font-semibold text-[11px] text-indigo-600 hover:bg-indigo-50"
+          className="rounded-lg h-9 px-3.5 font-medium text-[13px] text-indigo-600 hover:bg-indigo-50"
         >
           Next <ChevronRight size={20} className="ml-2" />
         </Button>

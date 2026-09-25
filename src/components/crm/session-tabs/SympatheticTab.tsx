@@ -60,7 +60,7 @@ const SympatheticTab = ({ appointment, onUpdate, saveField }: SympatheticTabProp
         />
       </div>
       <div className="animate-in fade-in slide-in-from-bottom-3 duration-500" style={{ animationDelay: '300ms' }}>
-        <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+        <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">

@@ -70,7 +70,7 @@ const BacklogSelector = ({ type, onSelect, currentValue }: BacklogSelectorProps)
       <DropdownMenuTrigger asChild>
         <Button 
           variant="outline" 
-          className="h-10 rounded-xl border-indigo-100 bg-indigo-50/30 text-indigo-600 hover:bg-indigo-50 font-bold text-[11px] gap-2"
+          className="h-9 rounded-lg border-indigo-100 bg-indigo-50/30 text-indigo-600 hover:bg-indigo-50 font-medium text-[13px] gap-2"
         >
           {getIcon()}
           Select from Map

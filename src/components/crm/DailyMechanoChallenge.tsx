@@ -76,7 +76,7 @@ const DailyMechanoChallenge = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700">
-      <Card className="border-none shadow-sm rounded-xl bg-card text-card-foreground overflow-hidden relative">
+      <Card className="border border-border shadow-sm rounded-xl bg-card text-card-foreground overflow-hidden relative">
         <div className="absolute top-0 right-0 p-8 opacity-10"><Target size={120} /></div>
         <CardHeader className="p-8 pb-4">
           <div className="flex items-center justify-between">
@@ -179,7 +179,7 @@ const DailyMechanoChallenge = () => {
                         key={joint}
                         variant="outline"
                         onClick={() => handleSelectAnswer('joint', joint)}
-                        className="h-12 rounded-xl border border-border bg-muted hover:bg-muted/80 text-muted-foreground text-[10px] font-medium"
+                        className="h-9 rounded-lg border border-border bg-card hover:bg-muted/80 text-muted-foreground text-[13px] font-medium"
                       >
                         {joint}
                       </Button>
@@ -276,7 +276,7 @@ const DailyMechanoChallenge = () => {
 
               <Button 
                 onClick={generateNewCase}
-                className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 font-semibold text-[11px] text-primary-foreground"
+                className="w-full h-9 rounded-lg bg-primary hover:bg-primary/90 font-medium text-[13px] text-primary-foreground"
               >
                 <RefreshCw size={16} className="mr-2" /> Next Case Study
               </Button>

@@ -1342,7 +1342,7 @@ Daniele`;
  <Button
  onClick={handleCopyReengagementEmail}
  className={cn(
- "absolute bottom-4 right-4 h-10 px-4 rounded-xl font-semibold text-[11px] transition-all shadow-md",
+ "absolute bottom-4 right-4 h-9 px-4 rounded-lg font-medium text-[13px] transition-all shadow-md",
  copiedReengagementEmail ? "bg-primary text-primary-foreground" : "bg-card text-card-foreground border border-border hover:bg-muted"
  )}
  >
@@ -1405,7 +1405,7 @@ Daniele`;
  <Button
  onClick={handleCopyEmail}
  className={cn(
- "absolute bottom-4 right-4 h-10 px-4 rounded-xl font-semibold text-[11px] transition-all shadow-md",
+ "absolute bottom-4 right-4 h-9 px-4 rounded-lg font-medium text-[13px] transition-all shadow-md",
  copiedEmail ? "bg-primary text-primary-foreground" : "bg-card text-card-foreground border border-border hover:bg-muted"
  )}
  >

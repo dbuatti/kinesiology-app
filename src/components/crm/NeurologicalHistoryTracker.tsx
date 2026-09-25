@@ -37,7 +37,7 @@ const NeurologicalHistoryTracker = ({ appointments }: NeurologicalHistoryTracker
 
   if (historyData.length === 0) {
     return (
-      <Card className="border-none shadow-sm bg-muted/30 rounded-2xl border-2 border-dashed border-border">
+      <Card className="border border-border shadow-sm bg-muted/30 rounded-2xl border-2 border-dashed border-border">
         <CardContent className="p-12 text-center">
           <History size={48} className="mx-auto text-muted-foreground mb-4 opacity-20" />
           <h3 className="text-lg font-bold text-foreground">No Neurological History</h3>
@@ -55,7 +55,7 @@ const NeurologicalHistoryTracker = ({ appointments }: NeurologicalHistoryTracker
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
+        <Card className="border border-border shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
             <Brain size={20} />
           </div>
@@ -64,7 +64,7 @@ const NeurologicalHistoryTracker = ({ appointments }: NeurologicalHistoryTracker
             <p className="text-xl font-semibold text-foreground">{historyData.length}</p>
           </div>
         </Card>
-        <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
+        <Card className="border border-border shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <CheckCircle2 size={20} />
           </div>
@@ -73,7 +73,7 @@ const NeurologicalHistoryTracker = ({ appointments }: NeurologicalHistoryTracker
             <p className="text-xl font-semibold text-foreground">{resolvedCount}</p>
           </div>
         </Card>
-        <Card className="border-none shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
+        <Card className="border border-border shadow-sm bg-card rounded-2xl p-4 flex items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 flex items-center justify-center">
             <Zap size={20} />
           </div>
@@ -84,7 +84,7 @@ const NeurologicalHistoryTracker = ({ appointments }: NeurologicalHistoryTracker
         </Card>
       </div>
 
-      <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+      <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
         <CardHeader className="p-8 border-b border-border bg-muted/30">
           <div className="flex items-center justify-between">
             <div>

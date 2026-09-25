@@ -39,7 +39,7 @@ const NeurologicalAssessments = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="border-none shadow-sm rounded-2xl bg-card overflow-hidden transition-all hover:shadow-md">
+      <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden transition-all hover:shadow-md">
         <CollapsibleTrigger asChild>
           <div className={cn(
             "p-4 flex items-center justify-between cursor-pointer transition-all duration-300",
@@ -72,19 +72,19 @@ const NeurologicalAssessments = ({
           <div className="p-8 border-t border-border space-y-8 animate-in fade-in slide-in-from-top-2 duration-500">
             <Tabs defaultValue="fakuda" className="w-full">
               <TabsList className="grid w-full sm:w-auto sm:inline-grid grid-cols-4 h-10 bg-muted p-1 rounded-xl">
-                <TabsTrigger value="fakuda" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm rounded-xl h-13 font-semibold text-[11px] relative">
+                <TabsTrigger value="fakuda" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px] relative">
                   <Footprints size={16} /> <span className="hidden sm:inline">Fakuda</span>
                   {hasFakudaNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full" />}
                 </TabsTrigger>
-                <TabsTrigger value="rhombergs" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-purple-600 data-[state=active]:shadow-sm rounded-xl h-13 font-semibold text-[11px] relative">
+                <TabsTrigger value="rhombergs" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-purple-600 data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px] relative">
                   <Scale size={16} /> <span className="hidden sm:inline">Rhombergs</span>
                   {hasRhombergsNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-purple-500 rounded-full" />}
                 </TabsTrigger>
-                <TabsTrigger value="frontal-lobe" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-xl h-13 font-semibold text-[11px] relative">
+                <TabsTrigger value="frontal-lobe" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px] relative">
                   <Hand size={16} /> <span className="hidden sm:inline">Frontal</span>
                   {hasFrontalLobeNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-indigo-500 rounded-full" />}
                 </TabsTrigger>
-                <TabsTrigger value="righting" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-xl h-13 font-semibold text-[11px] relative">
+                <TabsTrigger value="righting" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px] relative">
                   <RefreshCw size={16} /> <span className="hidden sm:inline">Righting</span>
                   {hasRightingNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full" />}
                 </TabsTrigger>

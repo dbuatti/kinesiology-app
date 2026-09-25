@@ -28,7 +28,7 @@ const MusclePracticeStats = () => {
 
   if (loading) {
     return (
-      <Card className="border-none shadow-lg rounded-2xl bg-card">
+      <Card className="border border-border shadow-sm rounded-2xl bg-card">
         <CardHeader>
           <CardTitle className="text-xl font-bold flex items-center gap-2 text-foreground">
             <Dumbbell size={24} className="text-indigo-500" /> Muscle Practice Insights
@@ -45,7 +45,7 @@ const MusclePracticeStats = () => {
   const topMuscles = stats.slice(0, 5);
 
   return (
-    <Card className="border-none shadow-lg rounded-2xl bg-card">
+    <Card className="border border-border shadow-sm rounded-2xl bg-card">
       <CardHeader className="pb-3">
         <CardTitle className="text-xl font-bold flex items-center gap-2 text-foreground">
           <Dumbbell size={24} className="text-indigo-600" /> Muscle Practice Insights

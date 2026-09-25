@@ -115,7 +115,7 @@ const MechanoBible = () => {
 
       {/* Localization Process */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+        <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
           <CardHeader className="bg-indigo-50 p-8">
             <CardTitle className="text-xl font-semibold flex items-center gap-3 text-indigo-900">
               <Search size={24} /> 1. Localization Hierarchy
@@ -142,7 +142,7 @@ const MechanoBible = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+        <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
           <CardHeader className="bg-emerald-50 p-8">
             <CardTitle className="text-xl font-semibold flex items-center gap-3 text-emerald-900">
               <Move size={24} /> 2. Finding Joint Action
@@ -262,7 +262,7 @@ const MechanoBible = () => {
           <Layers size={28} className="text-indigo-600" /> The Tissues: Ligaments vs. Tendons
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden group hover:shadow-xl transition-all">
+          <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden group hover:shadow-xl transition-all">
             <div className="h-3 bg-emerald-500" />
             <CardHeader className="p-8">
               <div className="flex items-center justify-between">
@@ -294,7 +294,7 @@ const MechanoBible = () => {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden group hover:shadow-xl transition-all">
+          <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden group hover:shadow-xl transition-all">
             <div className="h-3 bg-rose-500" />
             <CardHeader className="p-8">
               <div className="flex items-center justify-between">
@@ -393,7 +393,7 @@ const MechanoBible = () => {
       </div>
 
       {/* Clinical Dictionary */}
-      <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+      <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
         <CardHeader className="bg-muted/50 border-b border-border/50 p-8">
           <CardTitle className="text-2xl font-semibold flex items-center gap-3">
             <Activity size={28} className="text-indigo-600" /> Clinical Dictionary

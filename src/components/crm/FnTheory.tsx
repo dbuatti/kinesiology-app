@@ -66,7 +66,7 @@ const FnTheory = () => {
             </CardContent>
           </Card>
 
-          <Card className="lg:col-span-2 border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+          <Card className="lg:col-span-2 border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
             <CardHeader className="bg-muted/50 p-8">
               <h4 className="font-semibold text-foreground uppercase tracking-wider text-xs">Clinical Significance</h4>
             </CardHeader>
@@ -95,7 +95,7 @@ const FnTheory = () => {
       <MotorControlHierarchy />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+        <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
           <CardHeader className="bg-primary/5 p-8">
             <SectionHeader icon={Brain} title="Mechanoreceptive Conscious" color="text-primary" />
             <p className="text-blue-800 font-medium">Targets the DCML pathway (15% of afferent input) to the contralateral sensory cortex (S1).</p>
@@ -106,7 +106,7 @@ const FnTheory = () => {
              </div>
           </CardContent>
         </Card>
-        <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+        <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
           <CardHeader className="bg-emerald-50 p-8">
             <SectionHeader icon={Activity} title="Mechanoreceptive Unconscious" color="text-emerald-600" />
             <p className="text-emerald-800 font-medium">Targets spinocerebellar tracts (85% of afferent input) to the cerebellum.</p>

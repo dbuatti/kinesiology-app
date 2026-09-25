@@ -141,14 +141,14 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
               <p className="text-xs text-muted-foreground font-medium">Private insights for this session with {clientName}.</p>
             </div>
           </div>
-          <Button variant="outline" size="sm" asChild className="rounded-xl h-10 px-4 font-bold text-[11px] border-indigo-100 text-indigo-600 hover:bg-indigo-50">
+          <Button variant="outline" size="sm" asChild className="rounded-lg h-9 px-4 font-medium text-[13px] border-indigo-100 text-indigo-600 hover:bg-indigo-50">
             <Link to="/practice/journal">
               <ExternalLink size={14} className="mr-2" /> View Full Journal
             </Link>
           </Button>
         </div>
 
-        <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+        <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
           <CardContent className="p-8 space-y-4">
             <Textarea 
               placeholder="What did you notice? Any doubts, breakthroughs, or patterns for Identity Work?"
@@ -163,7 +163,7 @@ const JournalTab = ({ appointmentId, clientName }: JournalTabProps) => {
               <Button 
                 onClick={handleSave} 
                 disabled={saving || !content.trim()}
-                className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-12 px-8 font-medium text-[11px] shadow-sm"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-9 px-3.5 font-medium text-[13px] shadow-sm"
               >
                 {saving ? <Loader2 className="mr-2 animate-spin" /> : <Save size={18} className="mr-2" />}
                 Log Reflection

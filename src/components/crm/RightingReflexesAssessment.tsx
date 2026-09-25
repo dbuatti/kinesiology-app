@@ -184,7 +184,7 @@ const RightingReflexesAssessment = ({
               size="sm" 
               onClick={() => handleSetStatus('Clear')}
               className={cn(
-                "h-10 px-6 rounded-xl font-semibold text-[11px] transition-all",
+                "h-9 px-3.5 rounded-lg font-medium text-[13px] transition-all",
                 currentStatus === 'Clear' ? "bg-emerald-600 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-emerald-50"
               )}
             >
@@ -194,7 +194,7 @@ const RightingReflexesAssessment = ({
               size="sm" 
               onClick={() => handleSetStatus('Inhibited')}
               className={cn(
-                "h-10 px-6 rounded-xl font-semibold text-[11px] transition-all",
+                "h-9 px-3.5 rounded-lg font-medium text-[13px] transition-all",
                 currentStatus === 'Inhibited' ? "bg-rose-600 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-rose-50"
               )}
             >
@@ -204,7 +204,7 @@ const RightingReflexesAssessment = ({
               size="sm" 
               onClick={() => handleSetStatus('Recheck')}
               className={cn(
-                "h-10 px-6 rounded-xl font-semibold text-[11px] transition-all",
+                "h-9 px-3.5 rounded-lg font-medium text-[13px] transition-all",
                 currentStatus === 'Recheck' ? "bg-amber-500 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-amber-50"
               )}
             >

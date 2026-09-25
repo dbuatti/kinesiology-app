@@ -28,7 +28,7 @@ const BreathingRecoveryProtocol = ({ currentScore, className }: BreathingRecover
         </Alert>
       )}
 
-      <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-card">
+      <Card className="border border-border shadow-sm rounded-3xl overflow-hidden bg-card">
         <div className="bg-gradient-to-r from-teal-600 to-emerald-600 p-6 text-primary-foreground">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">

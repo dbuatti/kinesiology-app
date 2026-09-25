@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const MuscleStatusLegend = () => {
   return (
-    <Card className="border-none shadow-sm rounded-2xl bg-card overflow-hidden">
+    <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
       <CardHeader className="bg-muted/50 border-b border-border/50 p-8">
         <CardTitle className="text-xl font-semibold">Muscle Status Legend</CardTitle>
       </CardHeader>

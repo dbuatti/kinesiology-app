@@ -168,7 +168,7 @@ export default function ClinicalProtocolsPage() {
               asChild
               variant="ghost" 
               size="sm" 
-              className="h-10 px-4 rounded-xl text-chart-primary hover:bg-chart-primary/10 font-semibold text-[11px]"
+              className="h-9 px-4 rounded-lg text-chart-primary hover:bg-chart-primary/10 font-medium text-[13px]"
             >
               <a href="https://fnhrefapp-ggs6ojfk.manus.space/brain-zones" target="_blank" rel="noopener noreferrer">
                 <Globe size={16} className="mr-2" /> Official App <ExternalLink size={12} className="ml-1.5 opacity-50" />
@@ -271,7 +271,7 @@ export default function ClinicalProtocolsPage() {
                     <p className="text-xs font-medium text-muted-foreground mt-1">Session Notes & Homework</p>
                   </div>
                 </div>
-                <Button variant="ghost" size="sm" className="h-11 px-6 rounded-xl text-chart-primary hover:bg-chart-primary/10 font-semibold text-[11px] border border-chart-primary/20">
+                <Button variant="ghost" size="sm" className="h-9 px-3.5 rounded-lg text-chart-primary hover:bg-chart-primary/10 font-medium text-[13px] border border-chart-primary/20">
                   <Sparkles size={16} className="mr-2" /> AI Clinical Assist
                 </Button>
               </div>

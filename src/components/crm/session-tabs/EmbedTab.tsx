@@ -290,7 +290,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Column 1: Intake & Vitals */}
           <div className="space-y-6">
-            <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+            <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
               <CardHeader className="pb-3 bg-muted border-b border-border">
                 <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <Target size={14} /> Intake & Vitals
@@ -332,7 +332,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
             </Card>
 
             {hasSnsResets && (
-<Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+<Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
               <CardHeader className="pb-3 bg-muted border-b border-border">
                 <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <Zap size={14} /> SNS Down-Regulation
@@ -366,7 +366,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
 
           {/* Column 2: Pathway Findings */}
           <div className="lg:col-span-1">
-              <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden h-full">
+              <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden h-full">
               <CardHeader className="pb-3 bg-muted border-b border-border">
                 <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <GitBranch size={14} /> Pathway Findings
@@ -384,7 +384,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
 
           {/* Column 3: Corrections & Context */}
           <div className="space-y-6">
-            <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+            <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
               <CardHeader className="pb-3 bg-muted border-b border-border">
                 <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <Sparkles size={14} /> Corrections & Logic
@@ -405,7 +405,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
             </Card>
 
             {appointment.emotion_primary_selection && (
-              <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+              <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
                 <CardHeader className="pb-3 bg-muted border-b border-border">
                   <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                     <Heart size={14} /> Emotional Context
@@ -478,7 +478,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
                     <Button 
                       onClick={() => handleClearItem(item)}
                       disabled={isClearing}
-                      className="bg-muted text-muted-foreground hover:bg-muted/80 rounded-xl h-10 px-4 font-medium text-[10px] transition-all border border-border"
+                      className="bg-card text-muted-foreground hover:bg-muted/80 rounded-lg h-9 px-4 font-medium text-[13px] transition-all border border-border"
                     >
                       {isClearing ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} className="mr-2" />}
                       Mark Clear

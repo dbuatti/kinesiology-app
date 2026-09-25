@@ -53,7 +53,7 @@ const OnboardingLookupPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted p-6">
-      <Card className="max-w-md w-full border-none shadow-2xl rounded-2xl overflow-hidden">
+      <Card className="max-w-md w-full border border-border shadow-sm rounded-2xl overflow-hidden">
         <div className="bg-gradient-to-br from-amber-400 to-rose-400 p-8 text-center text-white">
           <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl border border-white/20">
             <CheckCircle2 size={32} />

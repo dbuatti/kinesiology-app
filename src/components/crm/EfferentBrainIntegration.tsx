@@ -380,7 +380,7 @@ const EfferentBrainIntegration = ({ onSave, onInhibited, onCancel, initialEntryP
             </div>
             <div className="grid grid-cols-1 gap-2">
               <Button className="h-10 rounded-lg bg-chart-emerald/10 hover:bg-chart-emerald/20 text-chart-emerald text-xs font-medium" onClick={handleComplete}>Pathway is Clear <CheckCircle2 size={16} className="ml-2" /></Button>
-              <Button variant="outline" className="h-10 rounded-lg border-border text-muted-foreground hover:bg-muted/50 font-semibold text-[11px]" onClick={handleInhibited}>Still Inhibited - Add Layer</Button>
+              <Button variant="outline" className="h-9 rounded-lg border-border text-muted-foreground hover:bg-muted/50 font-medium text-[13px]" onClick={handleInhibited}>Still Inhibited - Add Layer</Button>
             </div>
             <Button variant="ghost" size="sm" onClick={() => prevStep('CALIBRATE')} className="w-full"><ChevronLeft size={14} /> Back</Button>
           </div>

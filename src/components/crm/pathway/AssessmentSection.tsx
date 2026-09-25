@@ -96,7 +96,7 @@ const AssessmentSection = ({ id, title, description, icon: Icon, children, count
               <Button 
                 variant="outline" 
                 onClick={onClearAll}
-                className="rounded-xl border-primary/20 text-primary hover:bg-primary/10 font-medium text-[11px] h-10 px-8"
+                className="rounded-lg border-primary/20 text-primary hover:bg-primary/10 font-medium text-[13px] h-9 px-3.5"
               >
                 <CheckCircle2 size={14} className="mr-2" /> Mark Entire Section as Clear
               </Button>

@@ -418,13 +418,13 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
                 variant="ghost" 
                 size="sm" 
                 onClick={() => setConfirmAction({callback: () => executeDelete(item.id), title: "Delete Identity", description: "Delete this identity from your map?"})}
-                className="h-11 px-5 rounded-xl text-muted-foreground/60 hover:text-chart-destructive hover:bg-muted font-medium text-[11px]"
+                className="h-9 px-3.5 rounded-lg text-muted-foreground/60 hover:text-chart-destructive hover:bg-muted font-medium text-[13px]"
               >
                 <X size={18} className="mr-2" /> Dismiss
               </Button>
               <Button 
                 onClick={() => handleAcceptSuggestion(item.id)}
-                className="h-11 px-8 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-[11px] shadow-sm"
+                className="h-9 px-3.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-[13px] shadow-sm"
               >
                 <Check size={18} className="mr-2" /> Accept & Add
               </Button>
@@ -469,7 +469,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
                 {!isIntegrated && (
                   <Button
                     className={cn(
-                      "h-11 px-8 rounded-xl font-medium text-[11px] shadow-sm transition-all",
+                      "h-9 px-3.5 rounded-lg font-medium text-[13px] shadow-sm transition-all",
                       isWIP ? "bg-muted text-muted-foreground" : "bg-primary hover:bg-primary/90 text-primary-foreground"
                     )}
                     asChild
@@ -515,7 +515,7 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {TOOLS.map((tool) => (
           <Link key={tool.id} to={tool.path} className="block group">
-            <Card className="border-none shadow-md rounded-xl bg-card hover:shadow-sm hover:-translate-y-1 transition-all duration-300 h-full overflow-hidden">
+            <Card className="border border-border shadow-md rounded-xl bg-card hover:shadow-sm hover:-translate-y-1 transition-all duration-300 h-full overflow-hidden">
               <CardContent className="p-5 space-y-4">
                 <div className="flex items-start justify-between">
                   <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm", tool.bgColor, tool.color)}>
@@ -541,22 +541,22 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 px-2">
             <TabsList className="bg-muted/50 p-1 rounded-xl h-10 ">
-              <TabsTrigger value="active" className="rounded-xl px-8 h-11 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm transition-all font-medium text-xs"><Zap className="mr-2" size={16} /> Active Map</TabsTrigger>
-              <TabsTrigger value="suggested" className="rounded-xl px-8 h-11 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm transition-all font-medium text-xs">
+              <TabsTrigger value="active" className="rounded-lg px-8 h-8 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all font-medium text-xs"><Zap className="mr-2" size={16} /> Active Map</TabsTrigger>
+              <TabsTrigger value="suggested" className="rounded-lg px-8 h-8 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all font-medium text-xs">
                 <Sparkles className="mr-2" size={16} /> Suggested
                 {backlog.filter(i => i.status === 'suggested').length > 0 && (
                   <span className="ml-2 w-2 h-2 rounded-full bg-chart-destructive animate-pulse" />
                 )}
               </TabsTrigger>
-              <TabsTrigger value="archive" className="rounded-xl px-8 h-11 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm transition-all font-medium text-xs"><Archive className="mr-2" size={16} /> Integrated</TabsTrigger>
-              <TabsTrigger value="history" className="rounded-xl px-8 h-11 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm transition-all font-medium text-xs"><History className="mr-2" size={16} /> Session History</TabsTrigger>
+              <TabsTrigger value="archive" className="rounded-lg px-8 h-8 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all font-medium text-xs"><Archive className="mr-2" size={16} /> Integrated</TabsTrigger>
+              <TabsTrigger value="history" className="rounded-lg px-8 h-8 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all font-medium text-xs"><History className="mr-2" size={16} /> Session History</TabsTrigger>
             </TabsList>
 
             {activeTab === 'suggested' && sortedBacklog.length > 0 && (
               <Button 
                 onClick={handleAcceptAllSuggestions}
                 disabled={isAcceptingAll}
-                className="h-12 px-8 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-[11px] shadow-sm"
+                className="h-9 px-3.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-[13px] shadow-sm"
               >
                 {isAcceptingAll ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 size={18} className="mr-2" />}
                 Accept All Suggestions
@@ -570,14 +570,14 @@ const SandboxPage = ({ isNested = false }: SandboxPageProps) => {
                   size="sm" 
                   onClick={handlePrioritize}
                   disabled={isPrioritizing || sortedBacklog.length === 0}
-                  className="h-11 px-5 rounded-xl text-chart-primary hover:bg-muted font-medium text-[11px]"
+                  className="h-9 px-3.5 rounded-lg text-chart-primary hover:bg-muted font-medium text-[13px]"
                 >
                   {isPrioritizing ? <Loader2 size={16} className="mr-2 animate-spin" /> : <Wand2 size={16} className="mr-2" />}
                   Reanalyze Map
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="rounded-xl h-11 px-5 border-border font-medium text-[11px]">
+                    <Button variant="outline" size="sm" className="rounded-lg h-9 px-3.5 border-border font-medium text-[13px]">
                       <ArrowDownWideNarrow size={16} className="mr-2" /> Sort: {sortBy.charAt(0).toUpperCase() + sortBy.slice(1)}
                     </Button>
                   </DropdownMenuTrigger>

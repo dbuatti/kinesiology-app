@@ -46,15 +46,15 @@ const QuizResults = ({ score, total, streak, onRestart, onExit }: QuizResultsPro
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <Card className="border-none shadow-lg rounded-2xl bg-background text-center p-8 space-y-2">
+        <Card className="border border-border shadow-sm rounded-2xl bg-background text-center p-8 space-y-2">
           <p className="text-xs font-medium text-muted-foreground">Accuracy</p>
           <p className="text-4xl font-semibold text-foreground">{accuracy}%</p>
         </Card>
-        <Card className="border-none shadow-lg rounded-2xl bg-background text-center p-8 space-y-2">
+        <Card className="border border-border shadow-sm rounded-2xl bg-background text-center p-8 space-y-2">
           <p className="text-xs font-medium text-muted-foreground">Best Streak</p>
           <p className="text-4xl font-semibold text-indigo-600">{streak}</p>
         </Card>
-        <Card className="border-none shadow-lg rounded-2xl bg-background text-center p-8 space-y-2">
+        <Card className="border border-border shadow-sm rounded-2xl bg-background text-center p-8 space-y-2">
           <p className="text-xs font-medium text-muted-foreground">Total Answered</p>
           <p className="text-4xl font-semibold text-foreground">{total}</p>
         </Card>

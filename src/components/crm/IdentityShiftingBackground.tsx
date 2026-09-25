@@ -11,7 +11,7 @@ const IdentityShiftingBackground = () => {
           Philosophical Foundations
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-secondary/20 border-none shadow-none hover:bg-secondary/30 transition-colors">
+          <Card className="bg-secondary/20 border border-border shadow-none hover:bg-secondary/30 transition-colors">
             <CardHeader>
               <CardTitle className="text-lg font-bold">Carl Jung</CardTitle>
               <CardDescription className="italic">"Until you make the unconscious conscious, it will direct your life and you will call it fate."</CardDescription>
@@ -21,7 +21,7 @@ const IdentityShiftingBackground = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-secondary/20 border-none shadow-none hover:bg-secondary/30 transition-colors">
+          <Card className="bg-secondary/20 border border-border shadow-none hover:bg-secondary/30 transition-colors">
             <CardHeader>
               <CardTitle className="text-lg font-bold">Terence McKenna</CardTitle>
               <CardDescription className="italic">"The cost of sanity in this society is a certain level of alienation."</CardDescription>
@@ -31,7 +31,7 @@ const IdentityShiftingBackground = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-secondary/20 border-none shadow-none hover:bg-secondary/30 transition-colors">
+          <Card className="bg-secondary/20 border border-border shadow-none hover:bg-secondary/30 transition-colors">
             <CardHeader>
               <CardTitle className="text-lg font-bold">Tao Te Ching</CardTitle>
               <CardDescription className="italic">"When I let go of what I am, I become what I might be."</CardDescription>

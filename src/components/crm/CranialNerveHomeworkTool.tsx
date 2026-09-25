@@ -30,7 +30,7 @@ const CranialNerveHomeworkTool = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+      <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
         <CardHeader className="bg-indigo-600 text-primary-foreground p-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">

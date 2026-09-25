@@ -249,11 +249,11 @@ const CoherenceAssessment = ({
               )}
 
               <div className="flex gap-2 w-full">
-                <Button onClick={calculateCoherence} className="flex-1 bg-primary hover:bg-primary/90 h-10 rounded-xl font-semibold text-[11px]">
+                <Button onClick={calculateCoherence} className="flex-1 bg-primary hover:bg-primary/90 h-9 rounded-lg font-medium text-[13px]">
                   Calculate
                 </Button>
                 {calculatedScore !== null && (
-                  <Button onClick={handleSave} disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 h-10 px-6 rounded-xl font-semibold text-[11px]">
+                  <Button onClick={handleSave} disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 h-9 px-3.5 rounded-lg font-medium text-[13px]">
                     {loading ? <Loader2 className="animate-spin" /> : "Save"}
                   </Button>
                 )}

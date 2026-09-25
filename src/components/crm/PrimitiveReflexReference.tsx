@@ -334,7 +334,7 @@ const PrimitiveReflexReference = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm rounded-xl bg-muted border-2 border-border overflow-hidden">
+        <Card className="border border-border shadow-sm rounded-xl bg-muted border-2 border-border overflow-hidden">
           <CardHeader className="p-8 pb-4">
             <CardTitle className="text-xl font-semibold flex items-center gap-3 text-foreground">
               <ListChecks size={24} className="text-chart-primary" /> Clinical Strategy

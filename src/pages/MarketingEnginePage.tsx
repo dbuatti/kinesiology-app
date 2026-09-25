@@ -147,12 +147,12 @@ Please provide the final output ready to be reviewed.`;
  // No "Back" button — this is a tab within the Business Hub, reached via
  // the sidebar nav, not a standalone route.
  <div className="flex flex-wrap gap-3 shrink-0">
- <Button asChild className="bg-card text-foreground hover:bg-muted h-12 px-6 rounded-xl font-semibold text-[11px] shadow-md border border-border">
+ <Button asChild className="bg-card text-foreground hover:bg-muted h-9 px-3.5 rounded-lg font-medium text-[13px] shadow-md border border-border">
  <a href={CLAUDE_MARKETING_CHAT} target="_blank" rel="noopener noreferrer">
  <MessageSquare size={18} className="mr-2 text-chart-emerald" /> Claude
  </a>
  </Button>
- <Button asChild className="bg-card text-foreground hover:bg-muted h-12 px-6 rounded-xl font-semibold text-[11px] shadow-md border border-border">
+ <Button asChild className="bg-card text-foreground hover:bg-muted h-9 px-3.5 rounded-lg font-medium text-[13px] shadow-md border border-border">
  <a href={GEMINI_BUSINESS_CHAT} target="_blank" rel="noopener noreferrer">
  <Sparkles size={18} className="mr-2 text-chart-primary" /> Gemini
  </a>
@@ -163,13 +163,13 @@ Please provide the final output ready to be reviewed.`;
 
  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
  <TabsList className="grid w-full sm:w-auto sm:inline-grid grid-cols-3 h-10 bg-muted p-1 rounded-xl mb-8">
- <TabsTrigger value="guide" className="flex items-center gap-2 rounded-xl h-11 font-semibold text-[11px]">
+ <TabsTrigger value="guide" className="flex items-center gap-2 rounded-lg h-8 font-medium text-[13px]">
  <BookOpen size={14} /> The OS Guide
  </TabsTrigger>
- <TabsTrigger value="studio" className="flex items-center gap-2 rounded-xl h-11 font-semibold text-[11px]">
+ <TabsTrigger value="studio" className="flex items-center gap-2 rounded-lg h-8 font-medium text-[13px]">
  <Wand2 size={14} /> Prompt Studio
  </TabsTrigger>
- <TabsTrigger value="templates" className="flex items-center gap-2 rounded-xl h-11 font-semibold text-[11px]">
+ <TabsTrigger value="templates" className="flex items-center gap-2 rounded-lg h-8 font-medium text-[13px]">
  <Code size={14} /> Template Studio
  </TabsTrigger>
  </TabsList>
@@ -355,7 +355,7 @@ Please provide the final output ready to be reviewed.`;
  <CardDescription className="text-muted-foreground/60 text-xs">Copy and paste this into Claude/ChatGPT.</CardDescription>
  </div>
  </div>
- <Button onClick={handleCopy} className={cn("h-10 px-4 rounded-xl font-medium text-[11px] transition-all", copied ? "bg-chart-emerald/10 text-chart-emerald" : "bg-muted text-muted-foreground")}>
+ <Button onClick={handleCopy} className={cn("h-9 px-4 rounded-lg font-medium text-[13px] transition-all", copied ? "bg-chart-emerald/10 text-chart-emerald" : "bg-muted text-muted-foreground")}>
  {copied ? <Check size={16} className="mr-2" /> : <Copy size={16} className="mr-2" />} {copied ? "Copied!" : "Copy Prompt"}
  </Button>
  </CardHeader>
@@ -371,7 +371,7 @@ Please provide the final output ready to be reviewed.`;
 
  <TabsContent value="templates" className="mt-0">
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
- <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+ <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
  <CardHeader className="p-8 bg-muted border-b border-border">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-4">
@@ -383,7 +383,7 @@ Please provide the final output ready to be reviewed.`;
  <CardDescription className="font-medium">The "Antigravity Clinical Standard" layout.</CardDescription>
  </div>
  </div>
- <Button onClick={handleCopyTemplate} className={cn("h-10 px-6 rounded-xl font-medium text-[11px] transition-all", templateCopied ? "bg-chart-emerald/10 text-chart-emerald" : "bg-primary text-primary-foreground")}>
+ <Button onClick={handleCopyTemplate} className={cn("h-9 px-3.5 rounded-lg font-medium text-[13px] transition-all", templateCopied ? "bg-chart-emerald/10 text-chart-emerald" : "bg-primary text-primary-foreground")}>
  {templateCopied ? <Check size={16} className="mr-2" /> : <Copy size={16} className="mr-2" />} Copy HTML
  </Button>
  </div>

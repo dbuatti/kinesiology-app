@@ -103,13 +103,13 @@ const MechanoreceptiveAssessment = ({ appointmentId, onSave }: MechanoreceptiveA
           <Button 
             variant="outline" 
             onClick={() => setActionTableOpen(true)}
-            className="rounded-none border-foreground/20 font-semibold text-[11px] h-10 px-4 hover:bg-muted/50"
+            className="rounded-none border-foreground/20 font-medium text-[13px] h-9 px-4 hover:bg-muted/50"
           >
             <List size={14} className="mr-2" /> Action Table
           </Button>
           <Button 
             onClick={() => setShowWizard(true)}
-            className="bg-foreground text-primary-foreground hover:bg-foreground rounded-none h-10 px-6 font-semibold text-[11px] shadow-lg"
+            className="bg-foreground text-primary-foreground hover:bg-foreground rounded-none h-9 px-3.5 font-medium text-[13px] shadow-lg"
           >
             <Zap size={14} className="mr-2 fill-current" /> Start Calibration
           </Button>

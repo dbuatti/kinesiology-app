@@ -171,7 +171,7 @@ const RoadmapTasks = ({ rateDistribution, averageSessionRate }: RoadmapTasksProp
   };
 
   return (
-    <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+    <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
       <CardHeader className="p-8 pb-4 border-b border-border bg-muted/20">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">

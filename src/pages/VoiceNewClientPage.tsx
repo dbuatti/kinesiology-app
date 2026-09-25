@@ -21,7 +21,7 @@ const VoiceNewClientPage = () => {
               variant="outline"
               size="sm"
               onClick={() => navigate(-1)}
-              className="h-10 px-4 rounded-xl border-border font-bold text-[11px] gap-2"
+              className="h-9 px-4 rounded-lg border-border font-medium text-[13px] gap-2"
             >
               <ArrowLeft size={14} />
               Back

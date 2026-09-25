@@ -45,7 +45,7 @@ const MuscleGroupCollapsible = ({
       onOpenChange={onToggle}
       className="w-full"
     >
-      <Card className="border-none shadow-xl rounded-2xl bg-card overflow-hidden">
+      <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
         <CollapsibleTrigger asChild>
           <CardHeader className="bg-[hsl(238_26%_10%)] text-white ring-1 ring-white/[0.06] p-6 cursor-pointer hover:bg-[hsl(238_26%_13%)] transition-colors">
             <div className="flex items-center justify-between">

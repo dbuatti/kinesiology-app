@@ -60,7 +60,7 @@ const PreviousSessionSummary = ({ previousSession, clientId }: PreviousSessionSu
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border-none shadow-sm bg-card rounded-xl">
+        <Card className="border border-border shadow-sm bg-card rounded-xl">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
               <Target size={16} className="text-chart-primary" /> Goal & Primary Issue
@@ -78,7 +78,7 @@ const PreviousSessionSummary = ({ previousSession, clientId }: PreviousSessionSu
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm bg-card rounded-xl">
+        <Card className="border border-border shadow-sm bg-card rounded-xl">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
               <FlaskConical size={16} className="text-chart-emerald" /> Baseline Assessments
@@ -115,7 +115,7 @@ const PreviousSessionSummary = ({ previousSession, clientId }: PreviousSessionSu
         </Card>
       </div>
 
-      <Card className="border-none shadow-sm bg-card rounded-xl">
+      <Card className="border border-border shadow-sm bg-card rounded-xl">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
             <Zap size={16} className="text-muted-foreground" /> Session Findings & Corrections

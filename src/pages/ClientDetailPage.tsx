@@ -445,14 +445,14 @@ const ClientDetailPage = () => {
           title={client.name}
           subtitle="Comprehensive client profile, clinical history, and progress tracking."
           icon={User}
-          iconClassName="bg-gradient-to-br from-amber-400 to-rose-400 text-white shadow-rose-500/15"
+          
 
           actions={
             <div className="flex flex-wrap gap-2">
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-muted border-border text-foreground rounded-xl font-semibold text-[11px] h-10 px-4"
+                className="bg-card border-border text-foreground rounded-lg font-medium text-[13px] h-9 px-4"
                 onClick={() => navigate("/clients")}
               >
                 <ArrowLeft size={14} className="mr-2" /> Back
@@ -460,7 +460,7 @@ const ClientDetailPage = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-muted border-border text-chart-primary rounded-xl font-semibold text-[11px] h-10 px-4"
+                className="bg-card border-border text-chart-primary rounded-lg font-medium text-[13px] h-9 px-4"
                 onClick={() => setAssessmentModal({ open: true, type: 'bolt' })}
               >
                 <FlaskConical size={14} className="mr-2" /> Log BOLT
@@ -468,14 +468,14 @@ const ClientDetailPage = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-muted border-border text-chart-destructive rounded-xl font-semibold text-[11px] h-10 px-4"
+                className="bg-card border-border text-chart-destructive rounded-lg font-medium text-[13px] h-9 px-4"
                 onClick={() => setAssessmentModal({ open: true, type: 'coherence' })}
               >
                 <Activity size={14} className="mr-2" /> Log COH
               </Button>
               <Dialog open={editOpen} onOpenChange={setEditOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="bg-muted rounded-xl border-border h-10 px-4 font-semibold text-[11px]">
+                  <Button variant="outline" size="sm" className="bg-card rounded-lg border-border h-9 px-4 font-medium text-[13px]">
                     <Edit3 size={14} className="mr-2" /> Edit Profile
                   </Button>
                 </DialogTrigger>
@@ -540,22 +540,22 @@ const ClientDetailPage = () => {
 
         <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
           <TabsList className="grid w-full sm:w-auto sm:inline-grid grid-cols-6 h-10 bg-muted p-1 rounded-xl mb-8 ">
-            <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px] hover:text-foreground">
+            <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px] hover:text-foreground">
               <LayoutDashboard size={14} /> <span className="hidden sm:inline">Overview</span>
             </TabsTrigger>
-            <TabsTrigger value="appointments" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px] hover:text-foreground">
+            <TabsTrigger value="appointments" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px] hover:text-foreground">
               <History size={14} /> <span className="hidden sm:inline">Appointments</span>
             </TabsTrigger>
-            <TabsTrigger value="history" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px] hover:text-foreground">
+            <TabsTrigger value="history" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px] hover:text-foreground">
               <Table2 size={14} /> <span className="hidden sm:inline">History</span>
             </TabsTrigger>
-            <TabsTrigger value="grid" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px] hover:text-foreground">
+            <TabsTrigger value="grid" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px] hover:text-foreground">
               <LayoutGrid size={14} /> <span className="hidden sm:inline">Grid</span>
             </TabsTrigger>
-            <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px] hover:text-foreground">
+            <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px] hover:text-foreground">
               <TrendingUp size={14} /> <span className="hidden sm:inline">Progress</span>
             </TabsTrigger>
-            <TabsTrigger value="assistant" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px] hover:text-foreground">
+            <TabsTrigger value="assistant" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px] hover:text-foreground">
               <Bot size={14} /> <span className="hidden sm:inline">Assistant</span>
             </TabsTrigger>
           </TabsList>
@@ -566,9 +566,9 @@ const ClientDetailPage = () => {
               <div className="lg:col-span-4 space-y-6">
                 <ClientProfileCard client={client} />
 
-                <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
-                  <CardHeader className="pb-3 bg-muted/50 border-b border-border">
-                    <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
+                  <CardHeader className="pb-3 border-b border-border">
+                    <CardTitle className="text-[15px] font-semibold tracking-tight text-foreground flex items-center gap-2">
                       <Zap size={16} className="text-chart-primary" /> Integrations
                     </CardTitle>
                   </CardHeader>
@@ -665,7 +665,7 @@ const ClientDetailPage = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-sm bg-card rounded-xl">
+                <Card className="border border-border shadow-sm bg-card rounded-xl">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg font-medium text-foreground">Contact & Background</CardTitle>
                   </CardHeader>
@@ -722,7 +722,7 @@ const ClientDetailPage = () => {
               {/* Right Column: Clinical Profile & History */}
               <div className="lg:col-span-8 space-y-8">
                 {nextAppointment && (
-                  <Card className="border-none shadow-sm rounded-xl bg-card border-t-4 border-chart-primary overflow-hidden">
+                  <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
                     <div className="p-6 flex flex-col md:flex-row md:items-center gap-4">
                       <div className="w-11 h-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm shrink-0">
                         <CalendarClock size={22} />
@@ -741,7 +741,7 @@ const ClientDetailPage = () => {
                           {nextAppointment.name || `Session ${nextAppointment.display_id || nextAppointment.id.slice(0, 8)}`}
                         </p>
                       </div>
-                      <Button asChild size="sm" className="rounded-xl h-10 px-4 font-semibold text-[11px] shrink-0">
+                      <Button asChild size="sm" className="rounded-lg h-9 px-4 font-medium text-[13px] shrink-0">
                         <Link to={`/appointments/${nextAppointment.id}`}>
                           Open Session <ArrowRight size={14} className="ml-1.5" />
                         </Link>
@@ -751,7 +751,7 @@ const ClientDetailPage = () => {
                 )}
 
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
-                  <Card className="border-none shadow-sm rounded-xl bg-card border-t-4 border-chart-primary">
+                  <Card className="border border-border shadow-sm rounded-xl bg-card">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2 text-foreground">
                         <Activity size={16} className="text-chart-primary" /> Total Sessions
@@ -763,7 +763,7 @@ const ClientDetailPage = () => {
                     </CardContent>
                   </Card>
                   
-                  <Card className="border-none shadow-sm rounded-xl bg-card border-t-4 border-chart-emerald">
+                  <Card className="border border-border shadow-sm rounded-xl bg-card">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2 text-foreground">
                         <FlaskConical size={16} className="text-chart-emerald" /> Latest BOLT
@@ -780,7 +780,7 @@ const ClientDetailPage = () => {
                     </CardContent>
                   </Card>
 
-                  <Card className="border-none shadow-sm rounded-xl bg-card border-t-4 border-chart-destructive">
+                  <Card className="border border-border shadow-sm rounded-xl bg-card">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2 text-foreground">
                         <Brain size={16} className="text-chart-destructive" /> Latest Coherence
@@ -796,7 +796,7 @@ const ClientDetailPage = () => {
                 </div>
 
                 {/* Clinical Tracking Panel */}
-                <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+                <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
                   <CardHeader className="bg-muted/50 border-b border-border pb-3">
                     <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                       <Stethoscope size={14} className="text-violet-500" /> Clinical Tracking
@@ -853,7 +853,7 @@ const ClientDetailPage = () => {
                 </Card>
 
                 {/* Voice Studio — voice lessons matched to this client's email */}
-                <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+                <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
                   <CardHeader className="bg-muted/50 border-b border-border flex items-center justify-between space-y-0 pb-3">
                     <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                       <Mic size={14} className="text-chart-destructive" /> Voice Studio
@@ -927,7 +927,7 @@ const ClientDetailPage = () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+                    <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
                       <CardHeader className="bg-muted/50 border-b border-border">
                         <CardTitle className="text-xs font-semibold uppercase tracking-wider text-chart-destructive flex items-center gap-2">
                           <Activity size={14} /> Medical History & Injuries
@@ -940,7 +940,7 @@ const ClientDetailPage = () => {
                       </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+                    <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
                       <CardHeader className="bg-muted/50 border-b border-border">
                         <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                           <Zap size={14} /> Medications & Supplements
@@ -953,7 +953,7 @@ const ClientDetailPage = () => {
                       </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+                    <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
                       <CardHeader className="bg-muted/50 border-b border-border">
                         <CardTitle className="text-xs font-semibold uppercase tracking-wider text-chart-primary flex items-center gap-2">
                           <ShieldAlert size={14} /> Emergency Contact
@@ -971,7 +971,7 @@ const ClientDetailPage = () => {
                       </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+                    <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
                       <CardHeader className="bg-muted/50 border-b border-border">
                         <CardTitle className="text-xs font-semibold uppercase tracking-wider text-chart-emerald flex items-center gap-2">
                           <TrendingUp size={14} /> Baseline Health Vitals

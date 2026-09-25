@@ -175,7 +175,7 @@ const EmotionsProtocolReference = () => {
         <div className="lg:col-span-5 space-y-8">
           <div className="sticky top-8 space-y-8">
             {/* Pulse Points Reference */}
-            <Card className="border-none shadow-xl rounded-2xl bg-card overflow-hidden border-2 border-indigo-100">
+            <Card className="shadow-sm rounded-2xl bg-card overflow-hidden border-2 border-indigo-100">
               <CardHeader className="bg-indigo-600 p-6 text-primary-foreground">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-card/20 flex items-center justify-center shadow-inner">

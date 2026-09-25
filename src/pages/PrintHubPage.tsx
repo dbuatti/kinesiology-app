@@ -133,7 +133,7 @@ const PrintHubPage = () => {
  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
  {section.items.map((item) => (
  <Link key={item.id} to={item.path} className="block group">
- <Card className="border-none shadow-md rounded-xl bg-card hover:shadow-sm hover:-translate-y-1 transition-all duration-300 h-full overflow-hidden">
+ <Card className="border border-border shadow-md rounded-xl bg-card hover:shadow-sm hover:-translate-y-1 transition-all duration-300 h-full overflow-hidden">
  <CardContent className="p-8 space-y-6">
  <div className="flex items-start justify-between">
  <div className={cn(
@@ -169,7 +169,7 @@ const PrintHubPage = () => {
  ))}
  </div>
 
-      <Card className="border-none shadow-sm rounded-xl bg-card text-primary-foreground overflow-hidden relative">
+      <Card className="border border-border shadow-sm rounded-xl bg-card text-primary-foreground overflow-hidden relative">
  <div className="absolute top-0 right-0 p-12 opacity-10"><Sparkles size={150} /></div>
  <CardContent className="p-10 md:p-14 flex flex-col md:flex-row items-center gap-10 relative z-10">
  <div className="w-24 h-24 rounded-xl bg-primary flex items-center justify-center shrink-0 shadow-sm ">

@@ -53,7 +53,7 @@ const DataIntegrityCheck = ({ clients }: DataIntegrityCheckProps) => {
   }
 
   return (
-    <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+    <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
       <CardHeader className="p-8 border-b border-border bg-muted/30">
         <div className="flex items-center justify-between">
           <div className="space-y-1">

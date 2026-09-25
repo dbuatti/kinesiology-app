@@ -53,7 +53,7 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: The Setup */}
         <div className="lg:col-span-1 space-y-6">
-          <Card className="border-none shadow-md rounded-2xl bg-card overflow-hidden">
+          <Card className="border border-border shadow-md rounded-2xl bg-card overflow-hidden">
             <CardHeader className="bg-muted/50 border-b border-border/50">
               <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <Zap size={16} className="text-amber-500" /> The Challenge
@@ -92,7 +92,7 @@ const LimitingBeliefsReport = ({ session, onBack }: LimitingBeliefsReportProps) 
             </Card>
           </div>
 
-          <Card className="border-none shadow-md rounded-2xl bg-card overflow-hidden">
+          <Card className="border border-border shadow-md rounded-2xl bg-card overflow-hidden">
             <CardHeader className="bg-muted/50 border-b border-border/50">
               <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <CheckCircle2 size={16} className="text-indigo-500" /> Verification

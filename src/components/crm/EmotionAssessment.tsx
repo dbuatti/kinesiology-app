@@ -131,7 +131,7 @@ const EmotionAssessment = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+      <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
         <CollapsibleTrigger asChild>
           <CardHeader className="bg-gradient-to-r from-red-50 to-pink-50 border-b border-destructive/20 cursor-pointer hover:from-red-100 hover:to-pink-100 transition-colors">
             <div className="flex items-center justify-between w-full">

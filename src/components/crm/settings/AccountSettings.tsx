@@ -20,7 +20,7 @@ const AccountSettings = () => {
   };
 
   return (
-    <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+    <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
       <CardHeader className="p-8 pb-4">
         <CardTitle className="text-xl font-semibold flex items-center gap-3">
           <User size={22} className="text-rose-500" /> Account
@@ -37,11 +37,11 @@ const AccountSettings = () => {
           </div>
         </div>
         <Button
-          variant="destructive"
+          variant="outline"
           onClick={handleSignOut}
-          className="w-full h-12 rounded-2xl font-semibold text-xs"
+          className="w-full h-10 rounded-xl text-sm font-medium text-destructive hover:text-destructive hover:bg-destructive/5 border-destructive/25"
         >
-          <LogOut size={16} className="mr-2" /> Sign Out
+          <LogOut size={16} className="mr-2" /> Sign out
         </Button>
       </CardContent>
     </Card>

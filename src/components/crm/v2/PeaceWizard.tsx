@@ -110,7 +110,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
   return (
     <div ref={wizardRef} className="space-y-8">
       {/* Top Navigation */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-2 sm:gap-4">
         <Button
           variant="outline"
           onClick={goBack}
@@ -152,7 +152,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
           >
             <Heart size={16} />
           </Button>
-          <span className="text-xs font-medium text-muted-foreground text-center">
+          <span className="hidden text-xs font-medium text-muted-foreground text-center sm:inline">
             Step {activePhase + 1} of {PEACE_PHASES.length} · {PEACE_PHASES[activePhase].fullLabel}
           </span>
         </div>

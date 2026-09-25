@@ -672,7 +672,7 @@ Correction Method: ${method}`;
               <Button
                 onClick={handleLogCorrection}
                 disabled={!metadata.wizard_finding}
-                className="bg-foreground text-background hover:bg-foreground/90 rounded-none h-10 px-6 font-semibold text-[11px] shadow-lg"
+                className="bg-foreground text-background hover:bg-foreground/90 rounded-none h-9 px-3.5 font-medium text-[13px] shadow-lg"
               >
                 <CheckCircle2 size={14} className="mr-2" /> Log Correction
               </Button>

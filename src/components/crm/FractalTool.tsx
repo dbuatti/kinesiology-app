@@ -356,7 +356,7 @@ const FractalTool = () => {
       )}
 
       {proposedPrimary && proposedPrimaryContent && (
-        <Card className="border-none shadow-sm bg-card text-card-foreground rounded-xl overflow-hidden animate-in slide-in-from-top-4 duration-500">
+        <Card className="border border-border shadow-sm bg-card text-card-foreground rounded-xl overflow-hidden animate-in slide-in-from-top-4 duration-500">
           <CardContent className="p-10 flex flex-col md:flex-row items-center gap-10 relative">
             <div className="absolute top-0 right-0 p-8 opacity-10"><Crown size={150} /></div>
             <div className="w-24 h-24 rounded-xl bg-muted flex items-center justify-center shrink-0 shadow-sm relative z-10">

@@ -112,7 +112,7 @@ const LuscherColourAssessment = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+      <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
         <CollapsibleTrigger asChild>
           <CardHeader className="bg-gradient-to-r from-violet-50 to-purple-50 border-b border-violet-100 cursor-pointer hover:from-violet-100 hover:to-purple-100 transition-colors">
             <div className="flex items-center justify-between w-full">

@@ -752,7 +752,7 @@ const CalcomSlotsView = () => {
 
         <Collapsible open={configOpen}>
           <CollapsibleContent className="animate-in slide-in-from-top-2 duration-300">
-            <Card className="border-none shadow-sm bg-muted/30 rounded-2xl p-6">
+            <Card className="border border-border shadow-sm bg-muted/30 rounded-2xl p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-muted-foreground ml-1">Event Type ID</label>
@@ -893,7 +893,7 @@ const CalcomSlotsView = () => {
                             <Button 
                               variant="outline" 
                               size="sm" 
-                              className="h-10 px-6 rounded-xl border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-semibold text-[11px] shadow-sm"
+                              className="h-9 px-3.5 rounded-lg border-emerald-200 text-emerald-700 hover:bg-emerald-50 font-medium text-[13px] shadow-sm"
                               onClick={() => setConfirmAction({
                                 callback: () => handleToggleBlock(date, true),
                                 title: "Unblock day?",
@@ -1013,7 +1013,7 @@ const CalcomSlotsView = () => {
                               <Button 
                                 variant="ghost" 
                                 size="sm" 
-                                className="w-full h-10 px-4 text-[11px] font-semibold rounded-xl text-rose-600 hover:bg-rose-50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2"
+                                className="w-full h-9 px-4 text-[13px] font-medium rounded-lg text-rose-600 hover:bg-rose-50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2"
                                 onClick={() => setConfirmAction({
                                   callback: () => handleToggleBlock(date, false),
                                   title: "Block day?",

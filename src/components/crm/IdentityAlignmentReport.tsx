@@ -75,7 +75,7 @@ const IdentityAlignmentReport = ({ session, onBack }: IdentityAlignmentReportPro
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Somatic Foundation */}
-        <Card className="rounded-2xl border-none shadow-sm bg-card dark:bg-card">
+        <Card className="rounded-2xl border border-border shadow-sm bg-card dark:bg-card">
           <CardHeader>
             <CardTitle className="text-lg font-bold flex items-center gap-2">
               <Activity className="text-indigo-600" size={20} />
@@ -95,7 +95,7 @@ const IdentityAlignmentReport = ({ session, onBack }: IdentityAlignmentReportPro
         </Card>
 
         {/* Time-Space Testing */}
-        <Card className="rounded-2xl border-none shadow-sm bg-card dark:bg-card">
+        <Card className="rounded-2xl border border-border shadow-sm bg-card dark:bg-card">
           <CardHeader>
             <CardTitle className="text-lg font-bold flex items-center gap-2">
               <Clock className="text-emerald-600" size={20} />
@@ -120,7 +120,7 @@ const IdentityAlignmentReport = ({ session, onBack }: IdentityAlignmentReportPro
       </div>
 
       {/* Reconsolidation Loop */}
-      <Card className="rounded-2xl border-none shadow-sm bg-card dark:bg-card overflow-hidden">
+      <Card className="rounded-2xl border border-border shadow-sm bg-card dark:bg-card overflow-hidden">
         <CardHeader className="bg-amber-500/5 border-b border-amber-500/10">
           <CardTitle className="text-lg font-bold flex items-center gap-2">
             <Zap className="text-amber-600" size={20} />

@@ -162,7 +162,7 @@ const LymphaticAssessment = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
-      <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+      <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
         <CollapsibleTrigger asChild>
           <div className={cn(
             "p-4 flex items-center justify-between cursor-pointer transition-all duration-300",
@@ -407,7 +407,7 @@ const LymphaticAssessment = ({
                       variant={isVerified ? "default" : "outline"}
                       size="sm"
                       onClick={() => setIsVerified(!isVerified)}
-                      className={cn("rounded-xl h-10 px-6 font-medium text-[11px] transition-all", isVerified ? "bg-chart-emerald shadow-sm" : "border-chart-emerald/20 text-chart-emerald hover:bg-chart-emerald/10")}
+                      className={cn("rounded-lg h-9 px-3.5 font-medium text-[13px] transition-all", isVerified ? "bg-chart-emerald shadow-sm" : "border-chart-emerald/20 text-chart-emerald hover:bg-chart-emerald/10")}
                     >
                       {isVerified ? <CheckCircle2 size={16} className="mr-2" /> : null}
                       {isVerified ? "Verified" : "Mark Verified"}
@@ -417,7 +417,7 @@ const LymphaticAssessment = ({
               </div>
 
               <div className="space-y-8">
-                <Card className="border-none shadow-inner bg-muted/50 rounded-2xl overflow-hidden">
+                <Card className="border border-border shadow-inner bg-muted/50 rounded-2xl overflow-hidden">
                   <CardHeader className="pb-4 p-6">
                     <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                       <HelpCircle size={16} className="text-chart-primary" /> Priority Check
@@ -430,7 +430,7 @@ const LymphaticAssessment = ({
                       </p>
                       <p className="text-[10px] text-muted-foreground mt-3 font-medium italic">If the muscle re-facilitates (locks again), that zone is the priority pathway.</p>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={() => setShowGuide(!showGuide)} className="w-full h-10 rounded-xl text-[11px] font-medium text-chart-primary hover:bg-muted border border-chart-primary/20">
+                    <Button variant="ghost" size="sm" onClick={() => setShowGuide(!showGuide)} className="w-full h-9 rounded-lg text-[13px] font-medium text-chart-primary hover:bg-muted border border-chart-primary/20">
                       {showGuide ? "Hide Protocol" : "View Full Protocol"}
                     </Button>
                   </CardContent>

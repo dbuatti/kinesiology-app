@@ -462,16 +462,16 @@ const CorrectionsManualContent = () => {
         <div className="px-4 py-2 flex items-center justify-between gap-4">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="h-8 bg-muted/60">
-              <TabsTrigger value="afferent" className="text-[10px] h-7 px-3 data-[state=active]:bg-primary/5 data-[state=active]:text-primary data-[state=active]:shadow-sm">
+              <TabsTrigger value="afferent" className="text-[13px] h-7 px-3 data-[state=active]:bg-primary/5 data-[state=active]:text-primary data-[state=active]:shadow-sm">
                 <ArrowDownCircle size={12} className="mr-1.5" /> Afferent
               </TabsTrigger>
-              <TabsTrigger value="efferent" className="text-[10px] h-7 px-3 data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700 data-[state=active]:shadow-sm">
+              <TabsTrigger value="efferent" className="text-[13px] h-7 px-3 data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700 data-[state=active]:shadow-sm">
                 <ArrowUpCircle size={12} className="mr-1.5" /> Efferent
               </TabsTrigger>
-              <TabsTrigger value="heart-wall" className="text-[10px] h-7 px-3 data-[state=active]:bg-rose-50 data-[state=active]:text-rose-700 data-[state=active]:shadow-sm">
+              <TabsTrigger value="heart-wall" className="text-[13px] h-7 px-3 data-[state=active]:bg-rose-50 data-[state=active]:text-rose-700 data-[state=active]:shadow-sm">
                 <Shield size={12} className="mr-1.5" /> Heart Wall
               </TabsTrigger>
-              <TabsTrigger value="limiting-beliefs" className="text-[10px] h-7 px-3 data-[state=active]:bg-destructive/10 data-[state=active]:text-destructive data-[state=active]:shadow-sm">
+              <TabsTrigger value="limiting-beliefs" className="text-[13px] h-7 px-3 data-[state=active]:bg-destructive/10 data-[state=active]:text-destructive data-[state=active]:shadow-sm">
                 <ShieldAlert size={12} className="mr-1.5" /> Limiting Beliefs
               </TabsTrigger>
             </TabsList>

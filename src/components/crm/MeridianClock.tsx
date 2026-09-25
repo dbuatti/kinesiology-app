@@ -40,7 +40,7 @@ const MeridianClock = () => {
   const oppositeChannel = displayChannel ? TCM_CHANNELS.find(c => c.id === displayChannel.oppositeId) : null;
 
   return (
-    <Card className="border-none shadow-sm bg-card rounded-2xl overflow-hidden">
+    <Card className="border border-border shadow-sm bg-card rounded-2xl overflow-hidden">
       <CardContent className="p-6 space-y-6">
         {/* The Visual Clock */}
         <div className="relative aspect-square max-w-[240px] mx-auto w-full">

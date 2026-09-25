@@ -111,7 +111,7 @@ const GaitReflexAssessment = ({
 
   return (
     <div className="space-y-6">
-      <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+      <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-100">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

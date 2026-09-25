@@ -244,7 +244,7 @@ const DebugAppointmentPage = () => {
  </div>
 
  {/* Onboarding Debug Suite */}
- <Card className="border-none shadow-sm rounded-xl bg-card text-primary-foreground overflow-hidden relative">
+ <Card className="border border-border shadow-sm rounded-xl bg-card text-primary-foreground overflow-hidden relative">
  <div className="absolute top-0 right-0 p-12 opacity-5"><Beaker size={200} /></div>
  <CardHeader className="p-10 pb-6 relative z-10">
  <div className="flex items-center gap-4 mb-2">
@@ -370,7 +370,7 @@ const DebugAppointmentPage = () => {
  size="sm"
  disabled={!debugClient || !!activeTest}
  onClick={testKitSync}
- className="h-12 rounded-xl border-primary-foreground/10 bg-primary-foreground/5 text-primary-foreground text-[11px] font-medium"
+ className="h-9 rounded-lg border-primary-foreground/10 bg-primary-foreground/5 text-primary-foreground text-[13px] font-medium"
  >
  {activeTest === 'kit' ? <Loader2 className="animate-spin mr-2" /> : <Globe size={14} className="mr-2" />}
  Kit Sync
@@ -380,7 +380,7 @@ const DebugAppointmentPage = () => {
  size="sm" 
  disabled={!debugClient || !!activeTest}
  onClick={testEmailOnboarding}
- className="h-12 rounded-xl border-primary-foreground/10 bg-primary-foreground/5 text-primary-foreground text-[11px] font-medium"
+ className="h-9 rounded-lg border-primary-foreground/10 bg-primary-foreground/5 text-primary-foreground text-[13px] font-medium"
  >
  {activeTest === 'email' ? <Loader2 className="animate-spin mr-2" /> : <Mail size={14} className="mr-2" />}
  Email Test
@@ -404,7 +404,7 @@ const DebugAppointmentPage = () => {
 
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
  {/* Susan's Win Seeder */}
- <Card className="border-none shadow-sm rounded-xl bg-card text-primary-foreground overflow-hidden relative">
+ <Card className="border border-border shadow-sm rounded-xl bg-card text-primary-foreground overflow-hidden relative">
  <div className="absolute top-0 right-0 p-8 opacity-10"><Heart size={120} /></div>
  <CardHeader className="p-8 pb-4">
  <CardTitle className="text-2xl font-semibold flex items-center gap-3">
@@ -429,7 +429,7 @@ const DebugAppointmentPage = () => {
  </CardContent>
  </Card>
 
- <Card className="border-none shadow-sm rounded-xl bg-card text-primary-foreground overflow-hidden relative">
+ <Card className="border border-border shadow-sm rounded-xl bg-card text-primary-foreground overflow-hidden relative">
  <div className="absolute top-0 right-0 p-8 opacity-10"><ShieldCheck size={120} /></div>
  <CardHeader className="p-8 pb-4">
  <CardTitle className="text-2xl font-semibold flex items-center gap-3">

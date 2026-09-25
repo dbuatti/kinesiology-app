@@ -72,7 +72,7 @@ const AppointmentSidebar = ({
                 </div>
                 <h3 className="text-sm font-semibold text-foreground">Reflections</h3>
               </div>
-              <Button variant="ghost" size="sm" asChild className="h-10 px-4 rounded-xl text-[10px] font-medium text-muted-foreground hover:bg-muted">
+              <Button variant="ghost" size="sm" asChild className="h-9 px-4 rounded-lg text-[13px] font-medium text-muted-foreground hover:bg-muted">
                 <Link to="/practice/journal" state={{ appointmentId: appointment.id }}>
                   + Add
                 </Link>
@@ -96,7 +96,7 @@ const AppointmentSidebar = ({
               </div>
             ))}
             {reflections.length > 3 && (
-              <Button variant="ghost" asChild className="w-full h-10 rounded-xl text-[10px] font-medium text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" asChild className="w-full h-9 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground">
                 <Link to="/practice/journal" state={{ appointmentId: appointment.id }}>
                   View All {reflections.length} Reflections
                 </Link>

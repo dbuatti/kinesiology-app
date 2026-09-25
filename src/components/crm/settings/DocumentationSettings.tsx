@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 const DocumentationSettings = () => {
   return (
-    <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+    <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
       <CardHeader className="p-8 pb-4">
         <CardTitle className="text-primary font-semibold flex items-center gap-3">
           <FileText size={22} className="text-primary" /> Documentation & Audit

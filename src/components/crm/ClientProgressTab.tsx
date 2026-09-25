@@ -152,7 +152,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Clinical Status Card */}
-        <Card className="lg:col-span-1 border-none shadow-lg rounded-3xl bg-card overflow-hidden">
+        <Card className="lg:col-span-1 border border-border shadow-sm rounded-3xl bg-card overflow-hidden">
           <CardHeader className="bg-muted/30 border-b border-border">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
               <Activity size={20} className="text-primary" /> Clinical Status
@@ -215,7 +215,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
         </Card>
 
         {/* Trends Chart */}
-        <Card className="lg:col-span-2 border-none shadow-lg rounded-3xl bg-card overflow-hidden">
+        <Card className="lg:col-span-2 border border-border shadow-sm rounded-3xl bg-card overflow-hidden">
           <CardHeader className="bg-muted/30 border-b border-border">
             <div className="flex items-center justify-between">
               <div>
@@ -336,7 +336,7 @@ const ClientProgressTab = ({ client, appointments, onRefresh }: ClientProgressTa
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-lg rounded-3xl bg-card">
+          <Card className="border border-border shadow-sm rounded-3xl bg-card">
             <CardHeader>
               <CardTitle className="text-lg font-bold flex items-center gap-2">
                 <Brain size={18} className="text-chart-emerald" /> Neuro Integration

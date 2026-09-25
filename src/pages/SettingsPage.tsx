@@ -68,9 +68,9 @@ const SettingsPage = () => {
 
         <Tabs defaultValue="account" className="space-y-8">
           <TabsList className="bg-muted/50 p-1 rounded-xl w-full max-w-lg grid grid-cols-3">
-            <TabsTrigger value="account" className="rounded-xl font-bold text-xs py-2.5">Account</TabsTrigger>
-            <TabsTrigger value="integrations" className="rounded-xl font-bold text-xs py-2.5">Integrations</TabsTrigger>
-            <TabsTrigger value="data" className="rounded-xl font-bold text-xs py-2.5">Data & Tools</TabsTrigger>
+            <TabsTrigger value="account" className="rounded-lg font-medium text-xs py-2.5">Account</TabsTrigger>
+            <TabsTrigger value="integrations" className="rounded-lg font-medium text-xs py-2.5">Integrations</TabsTrigger>
+            <TabsTrigger value="data" className="rounded-lg font-medium text-xs py-2.5">Data & Tools</TabsTrigger>
           </TabsList>
 
           {/* ════════════════════════════════════════════════

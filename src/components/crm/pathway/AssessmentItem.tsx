@@ -181,7 +181,7 @@ const AssessmentItem = ({
         <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 px-4">
           <Button 
             size="sm" 
-            className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-10 md:h-12 px-4 md:px-6 shadow-sm font-medium text-[11px] border-none transition-all hover:scale-[1.03]" 
+            className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-9 md:h-12 px-4 md:px-6 shadow-sm font-medium text-[13px] border-none transition-all hover:scale-[1.03]" 
             onClick={(e) => { e.stopPropagation(); onSetStatus('Clear'); }}
           >
             <Check size={16} className="mr-2" /> Clear
@@ -191,14 +191,14 @@ const AssessmentItem = ({
             <div className="flex gap-2">
               <Button 
                 size="sm" 
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl h-10 md:h-12 px-3 md:px-4 shadow-sm font-medium text-[11px] border-none transition-all hover:scale-[1.03]" 
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg h-9 md:h-12 px-3 md:px-4 shadow-sm font-medium text-[13px] border-none transition-all hover:scale-[1.03]" 
                 onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited', 'L'); }}
               >
                 L Inhib
               </Button>
               <Button 
                 size="sm" 
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl h-10 md:h-12 px-3 md:px-4 shadow-sm font-medium text-[11px] border-none transition-all hover:scale-[1.03]" 
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg h-9 md:h-12 px-3 md:px-4 shadow-sm font-medium text-[13px] border-none transition-all hover:scale-[1.03]" 
                 onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited', 'R'); }}
               >
                 R Inhib
@@ -207,7 +207,7 @@ const AssessmentItem = ({
           ) : (
             <Button 
               size="sm" 
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-xl h-10 md:h-12 px-4 md:px-6 shadow-sm font-medium text-[11px] border-none transition-all hover:scale-[1.03]" 
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg h-9 md:h-12 px-4 md:px-6 shadow-sm font-medium text-[13px] border-none transition-all hover:scale-[1.03]" 
               onClick={(e) => { e.stopPropagation(); onSetStatus('Inhibited'); }}
             >
               <X size={16} className="mr-2" /> Inhibited

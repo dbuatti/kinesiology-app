@@ -466,16 +466,16 @@ const JournalPage = () => {
         ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full sm:w-auto sm:inline-grid grid-cols-2 h-10 bg-muted/50 p-1 rounded-xl mb-8">
-            <TabsTrigger value="log" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px]">
+            <TabsTrigger value="log" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px]">
               <BookOpen size={14} /> Journal Log
             </TabsTrigger>
-            <TabsTrigger value="meetup" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px]">
+            <TabsTrigger value="meetup" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px]">
               <GraduationCap size={14} /> Meetup Questions
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="log" className="space-y-10 mt-0">
-            <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+            <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
               <CardContent className="p-8 space-y-6">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex flex-wrap gap-2">
@@ -735,7 +735,7 @@ const JournalPage = () => {
                             setRespondingToId(q.id);
                             setTempResponse("");
                           }}
-                          className="rounded-xl h-11 px-6 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm font-semibold text-[11px]"
+                          className="rounded-lg h-9 px-3.5 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm font-medium text-[13px]"
                         >
                           <MessageCircle size={14} className="mr-2" /> Add Response
                         </Button>
@@ -759,7 +759,7 @@ const JournalPage = () => {
                           <Button 
                             onClick={() => handleSaveResponse(q)}
                             disabled={!tempResponse.trim()}
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-10 px-6 font-semibold text-[11px] shadow-sm"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-9 px-3.5 font-medium text-[13px] shadow-sm"
                           >
                             Save & Archive
                           </Button>

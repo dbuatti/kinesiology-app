@@ -179,7 +179,7 @@ const AppointmentV2Page = () => {
                     )}
                   >
                     <Icon size={14} className={cn(isActive && "text-primary")} />
-                    {tab.label}
+                    <span className="hidden sm:inline">{tab.label}</span>
                   </button>
                 );
               })}

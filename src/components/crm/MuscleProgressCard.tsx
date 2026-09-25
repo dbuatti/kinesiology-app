@@ -11,7 +11,7 @@ const MuscleProgressCard = ({ testedCount, totalCount }: MuscleProgressCardProps
   const progressPercent = totalCount > 0 ? (testedCount / totalCount) * 100 : 0;
 
   return (
-    <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+    <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
       <CardContent className="p-6 flex flex-col justify-center h-full space-y-3">
         <div className="flex items-center justify-between">
           <p className="text-xs font-medium text-muted-foreground">Session Progress</p>

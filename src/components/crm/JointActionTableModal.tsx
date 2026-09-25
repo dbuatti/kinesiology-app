@@ -34,7 +34,7 @@ const JointActionTableModal = ({ open, onOpenChange }: JointActionTableModalProp
                 </DialogDescription>
               </div>
             </div>
-            <Button asChild variant="outline" className="bg-card/10 border-primary-foreground/20 text-primary-foreground hover:bg-card/20 rounded-xl h-10 px-4 font-bold text-[11px]">
+            <Button asChild variant="outline" className="bg-card/10 border-primary-foreground/20 text-primary-foreground hover:bg-card/20 rounded-lg h-9 px-4 font-medium text-[13px]">
               <Link to="/resources/joint-actions/print">
                 <Printer size={16} className="mr-2" /> Print Reference
               </Link>

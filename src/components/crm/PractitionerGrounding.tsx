@@ -130,7 +130,7 @@ const PractitionerGrounding = ({ onComplete, onCancel }: PractitionerGroundingPr
                 <h3 className="text-4xl font-semibold tracking-tight">State Shifted</h3>
                 <p className="text-indigo-200 text-xl font-medium">You are centered, present, and ready.</p>
               </div>
-              <Button variant="ghost" onClick={resetGrounding} className="text-indigo-300 hover:text-white hover:bg-white/5 font-semibold text-[11px] h-12 px-8 rounded-2xl border border-white/10">
+              <Button variant="ghost" onClick={resetGrounding} className="text-indigo-300 hover:text-white hover:bg-white/5 font-medium text-[13px] h-9 px-3.5 rounded-lg border border-white/10">
                 <RotateCcw size={18} className="mr-2" /> Reset Tool
               </Button>
             </motion.div>
@@ -191,7 +191,7 @@ const PractitionerGrounding = ({ onComplete, onCancel }: PractitionerGroundingPr
               </div>
 
               <div className="flex justify-center">
-                <Button variant="ghost" onClick={resetGrounding} className="text-white/20 hover:text-rose-400 hover:bg-rose-500/10 h-10 px-6 rounded-xl text-[11px] font-semibold transition-all">
+                <Button variant="ghost" onClick={resetGrounding} className="text-white/20 hover:text-rose-400 hover:bg-rose-500/10 h-9 px-3.5 rounded-lg text-[13px] font-medium transition-all">
                   <X size={14} className="mr-2" /> Cancel
                 </Button>
               </div>

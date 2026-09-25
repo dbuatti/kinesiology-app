@@ -602,7 +602,7 @@ const MechanoLessons = ({ activeSubTab = 'lessons' }: MechanoLessonsProps) => {
             {/* Right Column: Clinical Logic Card with Image Upload */}
             <div className="lg:col-span-5 space-y-6">
               {currentStructure ? (
-                <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden border-l-4 border-border animate-in fade-in slide-in-from-right-2 duration-300">
+                <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden animate-in fade-in slide-in-from-right-2 duration-300">
                   <CardHeader className="p-6 pb-4">
                     <div className="flex items-center justify-between mb-2">
                       <Badge className="bg-muted text-foreground border-none font-bold text-[10px] uppercase tracking-wider">

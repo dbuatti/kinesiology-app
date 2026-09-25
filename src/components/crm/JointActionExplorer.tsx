@@ -127,7 +127,7 @@ const JointActionExplorer = () => {
         <Button 
           onClick={handleToggleQuizMode}
           className={cn(
-            "rounded-xl h-10 px-6 font-semibold text-[11px] shadow-sm transition-all",
+            "rounded-lg h-9 px-3.5 font-medium text-[13px] shadow-sm transition-all",
             isQuizMode ? "bg-rose-600 hover:bg-rose-700 text-primary-foreground" : "bg-indigo-600 hover:bg-indigo-700 text-primary-foreground"
           )}
         >
@@ -189,7 +189,7 @@ const JointActionExplorer = () => {
           </div>
 
           {/* Detail View */}
-          <Card className="lg:col-span-8 border-none shadow-xl rounded-2xl bg-card overflow-hidden">
+          <Card className="lg:col-span-8 border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
             <CardHeader className="bg-muted/50 border-b border-border/50 p-8">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -278,7 +278,7 @@ const JointActionExplorer = () => {
       ) : (
         /* Quiz Mode UI */
         <div className="max-w-3xl mx-auto space-y-6 animate-in zoom-in-95 duration-300">
-          <Card className="border-none shadow-xl rounded-2xl bg-card overflow-hidden">
+          <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
             <CardHeader className="bg-indigo-900 text-primary-foreground p-8">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">

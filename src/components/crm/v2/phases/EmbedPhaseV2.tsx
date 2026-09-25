@@ -394,7 +394,7 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
                   <Button
                     onClick={() => handleClearItem(item)}
                     disabled={isClearing}
-                    className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 rounded-xl h-10 px-4 font-medium text-[10px] border border-emerald-500/20"
+                    className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 rounded-lg h-9 px-4 font-medium text-[13px] border border-emerald-500/20"
                   >
                     {isClearing ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} className="mr-2" />}
                     Mark Clear

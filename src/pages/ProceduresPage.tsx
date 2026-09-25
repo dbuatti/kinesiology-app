@@ -208,10 +208,10 @@ export function ProceduresTool() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex justify-center mb-4">
             <TabsList className="grid w-full sm:w-auto sm:inline-grid grid-cols-2 h-10 bg-muted p-1 rounded-xl">
-              <TabsTrigger value="mastery" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px]">
+              <TabsTrigger value="mastery" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px]">
                 <TrendingUp size={14} /> Clinical Mastery
               </TabsTrigger>
-              <TabsTrigger value="reference" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px]">
+              <TabsTrigger value="reference" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px]">
                 <Zap size={14} /> Protocol Reference
               </TabsTrigger>
             </TabsList>
@@ -302,7 +302,7 @@ export function ProceduresTool() {
                   <p className="text-xs text-primary-foreground/50 font-medium">Items with 0-2 logs</p>
                 </CardContent>
               </Card>
-              <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
+              <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden relative group">
                 <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:scale-110 transition-transform duration-700"><Activity size={80} /></div>
                 <CardContent className="p-6 space-y-1 relative z-10">
                   <p className="text-xs font-medium text-muted-foreground">Total Clinical Logs</p>

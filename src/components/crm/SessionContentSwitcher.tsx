@@ -288,10 +288,10 @@ const SessionContentSwitcher = ({
                 </div>
               </DialogHeader>
               <div className="flex gap-3 pt-4">
-                <Button variant="ghost" onClick={() => setCloneDialogOpen(false)} className="flex-1 h-12 rounded-xl font-medium text-[11px]">Cancel</Button>
+                <Button variant="ghost" onClick={() => setCloneDialogOpen(false)} className="flex-1 h-9 rounded-lg font-medium text-[13px]">Cancel</Button>
                 <Button 
                   onClick={() => { onClonePrevious(); setCloneDialogOpen(false); }}
-                  className="flex-[2] bg-primary text-primary-foreground rounded-xl h-12 font-medium text-[11px] shadow-sm"
+                  className="flex-[2] bg-primary text-primary-foreground rounded-lg h-9 font-medium text-[13px] shadow-sm"
                 >
                   Confirm Clone
                 </Button>
@@ -332,7 +332,7 @@ const SessionContentSwitcher = ({
               <div className="mt-12 flex justify-end shrink-0">
                 <Button 
                   onClick={() => setNoteDialogOpen(false)} 
-                  className="bg-primary text-primary-foreground rounded-xl h-12 px-8 font-medium text-[11px] shadow-sm transition-all hover:scale-[1.03] active:scale-95"
+                  className="bg-primary text-primary-foreground rounded-lg h-9 px-3.5 font-medium text-[13px] shadow-sm transition-all hover:scale-[1.03] active:scale-95"
                 >
                   Finish Note
                 </Button>

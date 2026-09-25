@@ -742,7 +742,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
 
  {/* Auto-resolve proposed moves */}
  {isOptimized && optimizedData.proposedMoves.length > 0 && (
- <Card className="border-none shadow-sm rounded-xl bg-card border border-border overflow-hidden animate-in slide-in-from-top-4 duration-500">
+ <Card className="border border-border shadow-sm rounded-xl bg-card border border-border overflow-hidden animate-in slide-in-from-top-4 duration-500">
  <CardHeader className="p-6 pb-4 bg-chart-emerald/10/50 border-b border-border ">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div className="space-y-1">
@@ -781,7 +781,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  {/* Bottom info panels */}
  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
  {/* Insights */}
- <Card className="border-none shadow-sm rounded-xl bg-card text-primary-foreground overflow-hidden relative">
+ <Card className="border border-border shadow-sm rounded-xl bg-card text-primary-foreground overflow-hidden relative">
  <div className="absolute top-0 right-0 p-6 opacity-[0.06] pointer-events-none"><Sparkles size={96} /></div>
  <CardHeader className="pb-2">
  <CardTitle className="text-sm font-semibold uppercase tracking-wider text-primary/70 flex items-center gap-2">
@@ -870,7 +870,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
 
  {/* Pending changes log */}
  {Object.keys(manualPlacements).length > 0 ? (
- <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden border border-violet-200 ">
+ <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden border border-violet-200 ">
  <CardHeader className="pb-2 border-b border-border bg-muted/30">
  <CardTitle className="text-xs font-medium text-muted-foreground flex items-center justify-between gap-2">
  <span className="flex items-center gap-2">
@@ -914,7 +914,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  </CardContent>
  </Card>
  ) : (
- <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden border border-border">
+ <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden border border-border">
  <CardContent className="p-5 flex flex-col items-center justify-center h-full text-center space-y-2 py-10">
  <ListChecks size={24} className="text-muted-foreground/30" />
  <p className="text-xs font-medium text-muted-foreground">No manual changes yet.</p>

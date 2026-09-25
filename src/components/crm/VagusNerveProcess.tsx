@@ -185,7 +185,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
   return (
     <>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+        <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
           <CollapsibleTrigger asChild>
             <CardHeader className="bg-muted/50 border-b border-border pb-4 cursor-pointer hover:bg-muted transition-colors">
               <div className="flex items-center justify-between">

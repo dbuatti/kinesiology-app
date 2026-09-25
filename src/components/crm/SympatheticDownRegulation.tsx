@@ -55,7 +55,7 @@ const SympatheticDownRegulation = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="border-none shadow-sm rounded-2xl bg-card overflow-hidden">
+      <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
         <CollapsibleTrigger asChild>
           <CardHeader className="bg-muted/50 border-b border-border cursor-pointer hover:bg-muted transition-colors">
             <div className="flex items-center justify-between w-full">

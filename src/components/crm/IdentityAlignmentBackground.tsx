@@ -11,7 +11,7 @@ const IdentityAlignmentBackground = () => {
           The Neuroscience of Identity Alignment
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-secondary/20 border-none shadow-none hover:bg-secondary/30 transition-colors">
+          <Card className="bg-secondary/20 border border-border shadow-none hover:bg-secondary/30 transition-colors">
             <CardHeader>
               <CardTitle className="text-lg font-bold">Prefrontal Cortex (PFC)</CardTitle>
               <CardDescription>Predictive Modeling</CardDescription>
@@ -21,7 +21,7 @@ const IdentityAlignmentBackground = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-secondary/20 border-none shadow-none hover:bg-secondary/30 transition-colors">
+          <Card className="bg-secondary/20 border border-border shadow-none hover:bg-secondary/30 transition-colors">
             <CardHeader>
               <CardTitle className="text-lg font-bold">Insula</CardTitle>
               <CardDescription>Interoceptive Awareness</CardDescription>
@@ -31,7 +31,7 @@ const IdentityAlignmentBackground = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-secondary/20 border-none shadow-none hover:bg-secondary/30 transition-colors">
+          <Card className="bg-secondary/20 border border-border shadow-none hover:bg-secondary/30 transition-colors">
             <CardHeader>
               <CardTitle className="text-lg font-bold">Vagus Nerve</CardTitle>
               <CardDescription>Autonomic Safety</CardDescription>

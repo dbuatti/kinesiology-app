@@ -233,17 +233,17 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
 
  <Tabs value={activeTab} onValueChange={(v) => (nested ? setInternalTab(v) : setSearchParams({ tab: v }))} className="w-full">
  <TabsList className="grid w-full sm:w-auto sm:inline-grid grid-cols-2 h-10 bg-muted p-1 rounded-xl mb-8">
- <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-destructive data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px]">
+ <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-destructive data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px]">
  <LayoutDashboard size={14} /> Practice Dashboard
  </TabsTrigger>
- <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-destructive data-[state=active]:shadow-sm rounded-xl h-11 font-semibold text-[11px]">
+ <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-destructive data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px]">
  <TrendingUp size={14} /> Progress & Protocols
  </TabsTrigger>
  </TabsList>
 
  <TabsContent value="overview" className="space-y-8">
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
- <Card className="lg:col-span-2 border-none shadow-sm bg-card rounded-3xl overflow-hidden">
+ <Card className="lg:col-span-2 border border-border shadow-sm bg-card rounded-3xl overflow-hidden">
  <CardHeader className="bg-muted/30 border-b border-border">
  <div className="flex items-center justify-between">
  <div>
@@ -330,7 +330,7 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  </CardContent>
  </Card>
 
- <Card className="border-none shadow-sm bg-card rounded-3xl">
+ <Card className="border border-border shadow-sm bg-card rounded-3xl">
  <CardHeader>
  <CardTitle className="text-lg font-medium flex items-center gap-2">
  <Info size={18} className="text-primary" /> Practice Tips

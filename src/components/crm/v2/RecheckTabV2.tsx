@@ -1,3 +1,4 @@
+import EmptyState from "@/components/shared/EmptyState";
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -151,15 +152,13 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
 
   if (!previousSession || rawItems.length === 0) {
     return (
-      <div className="text-center py-20 bg-muted/30 rounded-xl border border-dashed border-border">
-        <RotateCcw size={40} className="text-muted-foreground/30 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-foreground">No Items to Recheck</h3>
-        <p className="text-sm text-muted-foreground max-w-md mx-auto mt-1">
-          {previousSession
-            ? `No unresolved findings from the previous session (${format(new Date(previousSession.date), "MMM d, yyyy")}).`
-            : "This appears to be the client's first recorded session."}
-        </p>
-      </div>
+      <EmptyState
+        icon={RotateCcw}
+        title="Nothing to recheck"
+        description={previousSession
+          ? `No unresolved findings from the previous session (${format(new Date(previousSession.date), "d MMM yyyy")}).`
+          : "This appears to be the client's first recorded session."}
+      />
     );
   }
 
@@ -179,7 +178,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
         <button
           onClick={() => setOnlyInhibited(!onlyInhibited)}
           className={cn(
-            "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-all",
+            "px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all",
             onlyInhibited
               ? "bg-rose-500/10 text-rose-600 border-rose-500/20"
               : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
@@ -214,7 +213,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
                   <div className="flex items-center gap-2.5">
                     <h4 className="text-sm font-bold text-foreground">{item.name}</h4>
                     {item.side && (
-                      <Badge variant="outline" className="text-[9px] font-bold px-1.5 py-0 rounded border-border text-muted-foreground">
+                      <Badge variant="outline" className="text-[10px] font-bold px-1.5 py-0 rounded border-border text-muted-foreground">
                         {item.side}
                       </Badge>
                     )}
@@ -227,7 +226,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <span className={cn(
-                    "text-[9px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full border",
+                    "text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border",
                     item.status === 'Hypertonic'
                       ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
                       : "bg-rose-500/10 text-rose-600 border-rose-500/20"
@@ -235,7 +234,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
                     {item.status === 'Inhibition' ? 'Inhib' : item.status}
                   </span>
                   {item.wasPriority && (
-                    <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                       Prio
                     </span>
                   )}
@@ -258,7 +257,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
 
               {/* Category */}
               <div className="mb-4">
-                <span className={cn("inline-block text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border", catColor)}>
+                <span className={cn("inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border", catColor)}>
                   {CATEGORY_LABELS[item.rawCategory] || item.rawCategory}
                 </span>
               </div>
@@ -287,7 +286,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
                     size="sm"
                     variant="outline"
                     title="Choose this finding as the correction pathway and open Correct"
-                    className="h-7 px-3 rounded-md text-[10px] font-bold uppercase tracking-wider border-primary/20 text-primary hover:bg-primary/5"
+                    className="h-7 px-3 rounded-md text-[11px] font-bold border-primary/20 text-primary hover:bg-primary/5"
                   >
                     <Route size={11} className="mr-1" /> Set Pathway
                   </Button>
@@ -333,7 +332,7 @@ const ActionButton = ({
     size="sm"
     variant="outline"
     className={cn(
-      "h-7 px-3 rounded-md text-[10px] font-bold uppercase tracking-wider border-border text-muted-foreground hover:bg-muted",
+      "h-7 px-3 rounded-md text-[11px] font-bold border-border text-muted-foreground hover:bg-muted",
       className
     )}
   >

@@ -27,7 +27,7 @@ const ClientContextTab = ({ appointment }: ClientContextTabProps) => {
     <div className="space-y-3">
       <div className="flex items-center gap-2 px-2">
         <Icon size={14} className={color} />
-        <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{title}</h4>
+        <h4 className="text-xs font-medium text-muted-foreground">{title}</h4>
       </div>
       <div className="bg-card p-5 rounded-xl border border-border shadow-sm">
         {children}
@@ -70,11 +70,11 @@ const ClientContextTab = ({ appointment }: ClientContextTabProps) => {
           <Section icon={ShieldAlert} title="Safety & Emergency" color="text-chart-destructive">
             <div className="space-y-3">
               <div>
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase">Contact Name</p>
+                <p className="text-xs font-medium text-muted-foreground">Contact Name</p>
                 <p className="text-sm font-medium text-foreground">{client.emergency_contact_name || "Not provided"}</p>
               </div>
               <div>
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase">Contact Phone</p>
+                <p className="text-xs font-medium text-muted-foreground">Contact Phone</p>
                 <p className="text-sm font-medium text-foreground">{client.emergency_contact_phone || "Not provided"}</p>
               </div>
             </div>
@@ -83,11 +83,11 @@ const ClientContextTab = ({ appointment }: ClientContextTabProps) => {
           <Section icon={Info} title="Background Context" color="text-chart-primary">
             <div className="grid grid-cols-1 gap-4">
               <div>
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase">Occupation</p>
+                <p className="text-xs font-medium text-muted-foreground">Occupation</p>
                 <p className="text-sm font-medium text-foreground">{client.occupation || "Not set"}</p>
               </div>
               <div>
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase">Referral Source</p>
+                <p className="text-xs font-medium text-muted-foreground">Referral Source</p>
                 <p className="text-sm font-medium text-foreground">{client.referral_source || "Not set"}</p>
               </div>
             </div>

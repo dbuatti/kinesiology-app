@@ -28,10 +28,10 @@ const PracticeHubPage = () => {
   const sections = useMemo<UnifiedEditorSection[]>(
     () => [
       { id: "self-practice", label: "Self Practice", icon: User, group: "Daily Practice", render: () => <SelfPracticeTool nested /> },
-      { id: "procedures", label: "Procedures & Mastery", icon: Trophy, group: "Mastery", render: () => <ProceduresTool /> },
+      { id: "procedures", label: "Procedures & Mastery", icon: Trophy, group: "Mastery", render: () => <div className="p-5 sm:p-6 lg:p-8"><ProceduresTool /></div> },
       { id: "quiz", label: "Knowledge Quiz", icon: Brain, group: "Mastery", render: () => <QuizTool embedded onExit={() => setSelectedId("self-practice")} /> },
-      { id: "calibrate", label: "Quick Calibrate", icon: Zap, group: "Mastery", render: () => <QuickCalibrateTool /> },
-      { id: "corrections", label: "Corrections Reference", icon: ShieldCheck, group: "Reference", render: () => <CorrectionsReferenceTool /> },
+      { id: "calibrate", label: "Quick Calibrate", icon: Zap, group: "Mastery", render: () => <div className="p-5 sm:p-6 lg:p-8"><QuickCalibrateTool /></div> },
+      { id: "corrections", label: "Corrections Reference", icon: ShieldCheck, group: "Reference", render: () => <div className="p-5 sm:p-6 lg:p-8"><CorrectionsReferenceTool /></div> },
     ],
     []
   );
@@ -45,8 +45,8 @@ const PracticeHubPage = () => {
       rightHeader={
         selected ? (
           <div className="px-6 h-12 flex items-center gap-3">
-            {selected.icon && <selected.icon size={16} className="text-chart-primary" />}
-            <span className="text-sm font-bold text-foreground">{selected.label}</span>
+            {selected.icon && <selected.icon size={16} className="text-primary" />}
+            <span className="text-sm font-semibold text-foreground">{selected.label}</span>
           </div>
         ) : null
       }

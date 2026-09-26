@@ -1,3 +1,4 @@
+import EmptyState from "@/components/shared/EmptyState";
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -282,7 +283,7 @@ const VoiceClientsPage = () => {
  },
  {
  key: "oneToThree",
- label: "1\u20133 Months",
+ label: "1–3 months",
  desc: "Seen 30 to 90 days ago",
  color: "bg-muted",
  bg: "bg-muted ",
@@ -306,9 +307,9 @@ const VoiceClientsPage = () => {
  return (
  <AppLayout>
  <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">
- <Loader2 className="animate-spin text-destructive" size={48} />
- <p className="text-muted-foreground font-semibold text-xs uppercase tracking-wider">
- Loading students...
+ <Loader2 className="animate-spin text-muted-foreground" size={22} />
+ <p className="text-muted-foreground text-sm">
+ Loading students…
  </p>
  </div>
  </AppLayout>
@@ -347,9 +348,9 @@ const VoiceClientsPage = () => {
  <Dialog open={onboardOpen} onOpenChange={setOnboardOpen}>
  <Button
  onClick={() => setOnboardOpen(true)}
- className="bg-destructive hover:bg-destructive/80 shadow-sm rounded-xl h-12 px-8 font-semibold text-xs uppercase tracking-wider"
+ className="h-9 gap-1.5 rounded-lg px-3.5 text-[13px] font-medium shadow-sm"
  >
- <Plus size={20} className="mr-2" /> Add Student
+ <Plus size={15} /> Add student
  </Button>
  <DialogContent className="sm:max-w-[500px] rounded-xl p-0 overflow-hidden">
  <div className="p-8">
@@ -390,28 +391,28 @@ const VoiceClientsPage = () => {
   {/* Summary strip */}
   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
   <div className="bg-card rounded-xl border border-border p-5 flex flex-col gap-1">
-  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Students</span>
+  <span className="text-xs font-medium text-muted-foreground">Total Students</span>
   <span className="text-3xl font-semibold text-foreground">{students.length}</span>
   </div>
   <div className="bg-card rounded-xl border border-border p-5 flex flex-col gap-1">
-  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Active & Upcoming</span>
+  <span className="text-xs font-medium text-muted-foreground">Active & Upcoming</span>
   <span className="text-3xl font-semibold text-chart-emerald">{groups.active.length}</span>
   </div>
   <div className="bg-card rounded-xl border border-border p-5 flex flex-col gap-1">
-  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">1\u20133 Months</span>
+  <span className="text-xs font-medium text-muted-foreground">1–3 months</span>
   <span className="text-3xl font-semibold text-muted-foreground">{groups.oneToThree.length}</span>
   </div>
   <div className="bg-card rounded-xl border border-border p-5 flex flex-col gap-1">
-  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">3+ Months</span>
+  <span className="text-xs font-medium text-muted-foreground">3+ Months</span>
   <span className="text-3xl font-semibold text-chart-destructive">{groups.threePlus.length}</span>
   </div>
   <div className="bg-card rounded-xl border border-chart-destructive/20 p-5 flex flex-col gap-1">
-  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Outstanding</span>
+  <span className="text-xs font-medium text-muted-foreground">Outstanding</span>
   <span className="text-3xl font-semibold tabular-nums text-chart-destructive">${ledgerTotals.outstanding}</span>
   <span className="text-[10px] font-semibold text-muted-foreground/70">{ledgerTotals.unpaid} unpaid · {ledgerTotals.free} free</span>
   </div>
   <div className="bg-card rounded-xl border border-chart-emerald/20 p-5 flex flex-col gap-1">
-  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Collected</span>
+  <span className="text-xs font-medium text-muted-foreground">Collected</span>
   <span className="text-3xl font-semibold tabular-nums text-chart-emerald">${ledgerTotals.collected}</span>
   </div>
   </div>
@@ -429,13 +430,7 @@ const VoiceClientsPage = () => {
 
  {/* Empty state */}
  {students.length === 0 && !search ? (
- <div className="flex flex-col items-center justify-center py-16 text-center">
- <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mb-3">
- <Users size={20} className="text-muted-foreground" />
- </div>
- <h3 className="text-sm font-semibold text-foreground mb-1">No students yet</h3>
- <p className="text-xs text-muted-foreground max-w-[240px]">Students will appear here after they book their first lesson.</p>
- </div>
+ <EmptyState icon={Users} title="No students yet" description="Students will appear here after they book their first lesson." />
  ) : bucketConfig.map((cfg) => {
  const collapsedKey = `bucket_${cfg.key}`;
  const isCollapsed = collapsed[collapsedKey];
@@ -463,7 +458,7 @@ const VoiceClientsPage = () => {
  <button
  onClick={() => toggleSelectAll(ids)}
  className={cn(
- "text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-lg border transition-all",
+ "text-[11px] font-semibold px-3 py-1.5 rounded-lg border transition-all",
  allSelected
   ? "bg-destructive text-primary-foreground border-destructive"
  : "bg-card border-border text-muted-foreground hover:text-foreground"

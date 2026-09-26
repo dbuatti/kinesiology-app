@@ -89,7 +89,7 @@ Singleton that maps any finding (muscle name, nerve name, reflex) to its brainst
 ### Component directories
 
 - `src/components/crm/` — all domain components (100+). Clinical tools, assessments, reference modals, timers.
-- `src/components/ui/` — shadcn/ui primitives. **Do not edit these.** Create new wrapper components if customisation is needed.
+- `src/components/ui/` — shadcn/ui primitives, restyled to carry the design system (buttons, inputs, cards, tabs, menus, dialogs). Editing them is encouraged when a look should change app-wide — keep their props/APIs stable.
 - `src/components/shared/` — generic utility components (ErrorBoundary, Breadcrumbs, ScrollToTop, BackToTop).
 - `src/components/docs/` — Google Docs-style UI (DocsHeader, DocsToolbar, DocsRuler) used in the Practice Notes page.
 - `src/components/worksheets/` — long-form printable worksheet components.
@@ -99,6 +99,9 @@ Singleton that maps any finding (muscle name, nerve name, reflex) to its brainst
 `Client`, `Appointment`, `AppointmentWithClient`, `MuscleTestResult`, `CranialNerveTest`, `PrimitiveReflexTest`. The `Appointment` type is very wide — most clinical assessment fields are stored as nullable columns on the appointments table rather than in separate rows.
 
 ## Design tokens
+
+The visual system (Sept 2026 redesign): cool-neutral surfaces + one indigo accent, Inter (optical sizing) for UI and Newsreader for page titles, tinted layered shadows, 10px base radius, ease-out-expo motion. Shared building blocks: `shared/PageHeader`, `shared/SectionCard`, `shared/HubTabs`, `layout/TopBar`, `layout/BrandMark`, `.eyebrow`, `.kbd`, `.spotlight`, `hooks/use-count-up`. Prefer sentence case for labels and controls; no gradient CTA buttons.
+
 
 CSS variables are defined in `src/globals.css` and wired in `tailwind.config.ts`.
 

@@ -44,17 +44,17 @@ export const ShowingLog = ({ corrections, onStatusChange, onDelete, compact }: S
           <span className="text-xs font-medium text-foreground">Showing Log</span>
           <div className="flex gap-1">
             {pending.length > 0 && (
-              <Badge variant="outline" className="text-[8px] px-1.5 py-0 rounded-full border-border text-muted-foreground">
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 rounded-full border-border text-muted-foreground">
                 {pending.length} pending
               </Badge>
             )}
             {stillShowing.length > 0 && (
-              <Badge className="bg-amber-500/10 text-amber-600 border-none text-[8px] px-1.5 py-0 rounded-full">
+              <Badge className="bg-amber-500/10 text-amber-600 border-none text-[10px] px-1.5 py-0 rounded-full">
                 {stillShowing.length} showing
               </Badge>
             )}
             {cleared.length > 0 && (
-              <Badge className="bg-chart-emerald/10 text-chart-emerald border-none text-[8px] px-1.5 py-0 rounded-full">
+              <Badge className="bg-chart-emerald/10 text-chart-emerald border-none text-[10px] px-1.5 py-0 rounded-full">
                 {cleared.length} cleared
               </Badge>
             )}
@@ -68,7 +68,7 @@ export const ShowingLog = ({ corrections, onStatusChange, onDelete, compact }: S
             <div className="flex items-center gap-2 pt-2 print:hidden">
               <button
                 onClick={() => setShowCleared(!showCleared)}
-                className="text-[9px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 {showCleared ? 'Hide cleared' : 'Show cleared'}
               </button>
@@ -110,15 +110,15 @@ export const ShowingLog = ({ corrections, onStatusChange, onDelete, compact }: S
                         {correction.finding}
                       </span>
                     </div>
-                    <p className="text-[9px] text-muted-foreground leading-relaxed">
+                    <p className="text-[10px] text-muted-foreground leading-relaxed">
                       {correction.summary}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[8px] text-muted-foreground/60">
+                      <span className="text-[10px] text-muted-foreground/60">
                         {new Date(correction.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                       {correction.recheckTimestamp && (
-                        <span className="text-[8px] text-muted-foreground/60">
+                        <span className="text-[10px] text-muted-foreground/60">
                           rechecked {new Date(correction.recheckTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       )}
@@ -132,7 +132,7 @@ export const ShowingLog = ({ corrections, onStatusChange, onDelete, compact }: S
                           variant="ghost"
                           size="sm"
                           onClick={() => onStatusChange(realIndex, 'cleared')}
-                          className="h-6 px-2 text-[8px] font-medium text-chart-emerald hover:bg-chart-emerald/10 rounded-md"
+                          className="h-6 px-2 text-[10px] font-medium text-chart-emerald hover:bg-chart-emerald/10 rounded-md"
                         >
                           <CheckCircle2 size={10} className="mr-1" /> Clear
                         </Button>
@@ -142,7 +142,7 @@ export const ShowingLog = ({ corrections, onStatusChange, onDelete, compact }: S
                           variant="ghost"
                           size="sm"
                           onClick={() => onStatusChange(realIndex, 'still_showing')}
-                          className="h-6 px-2 text-[8px] font-medium text-amber-500 hover:bg-amber-500/10 rounded-md"
+                          className="h-6 px-2 text-[10px] font-medium text-amber-500 hover:bg-amber-500/10 rounded-md"
                         >
                           <AlertCircle size={10} className="mr-1" /> Still Showing
                         </Button>

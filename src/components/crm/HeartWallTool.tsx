@@ -509,7 +509,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                               i <= scanStep ? "bg-rose-500" : "bg-muted",
                             )} />
                             <span className={cn(
-                              "text-[9px] font-semibold uppercase tracking-wider",
+                              "text-[10px] font-semibold uppercase tracking-wider",
                               i === scanStep ? "text-rose-700" : "text-muted-foreground/60",
                             )}>{label}</span>
                           </div>
@@ -519,7 +519,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                       {/* Step 0: Pulse Point Picker */}
                       {scanStep === 0 && (
                         <div className="space-y-3">
-                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          <p className="text-xs font-medium text-muted-foreground">
                             1. Tap the pulse point — which organ lights up?
                           </p>
                           <div className="p-4 bg-card rounded-xl border border-border">
@@ -542,11 +542,11 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                       {/* Step 1: Column A or B */}
                       {scanStep === 1 && organRow && (
                         <div className="space-y-3">
-                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          <p className="text-xs font-medium text-muted-foreground">
                             2. Challenge: "Is it in <span className="text-rose-600">Column A</span> or <span className="text-rose-600">Column B</span>?"
                           </p>
                           <div className="p-4 bg-card rounded-xl border border-border">
-                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                            <p className="text-xs font-medium text-muted-foreground mb-3">
                               {pendingLayer.organ}
                             </p>
                             <div className="grid grid-cols-2 gap-3">
@@ -554,7 +554,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                                 onClick={() => { setScanColumn("A"); setScanHalf(null); setScanStep(2); }}
                                 className="p-4 rounded-xl border-2 border-border hover:border-rose-300 hover:bg-rose-50 transition-all text-left group"
                               >
-                                <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mb-2">Column A</p>
+                                <p className="text-[11px] font-bold text-rose-600 mb-2">Column A</p>
                                 <div className="space-y-1">
                                   {scanEmotions.columnA.map(e => (
                                     <p key={e} className="text-xs text-foreground font-medium">{e}</p>
@@ -565,7 +565,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                                 onClick={() => { setScanColumn("B"); setScanHalf(null); setScanStep(2); }}
                                 className="p-4 rounded-xl border-2 border-border hover:border-rose-300 hover:bg-rose-50 transition-all text-left group"
                               >
-                                <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mb-2">Column B</p>
+                                <p className="text-[11px] font-bold text-rose-600 mb-2">Column B</p>
                                 <div className="space-y-1">
                                   {scanEmotions.columnB.map(e => (
                                     <p key={e} className="text-xs text-foreground font-medium">{e}</p>
@@ -586,11 +586,11 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                       {/* Step 2: Top or Bottom half */}
                       {scanStep === 2 && scanColumn && organRow && (
                         <div className="space-y-3">
-                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          <p className="text-xs font-medium text-muted-foreground">
                             3. Challenge: "Top half or bottom half?"
                           </p>
                           <div className="p-4 bg-card rounded-xl border border-border">
-                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                            <p className="text-xs font-medium text-muted-foreground mb-3">
                               {pendingLayer.organ} — Column {scanColumn}
                             </p>
                             {(() => {
@@ -604,7 +604,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                                     onClick={() => { setScanHalf("top"); setScanStep(3); }}
                                     className="p-4 rounded-xl border-2 border-border hover:border-rose-300 hover:bg-rose-50 transition-all text-left"
                                   >
-                                    <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mb-2">Top Half</p>
+                                    <p className="text-[11px] font-bold text-rose-600 mb-2">Top Half</p>
                                     <div className="space-y-1">
                                       {topHalf.map(e => (
                                         <p key={e} className="text-xs text-foreground font-medium">{e}</p>
@@ -615,7 +615,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                                     onClick={() => { setScanHalf("bottom"); setScanStep(3); }}
                                     className="p-4 rounded-xl border-2 border-border hover:border-rose-300 hover:bg-rose-50 transition-all text-left"
                                   >
-                                    <p className="text-[10px] font-bold text-rose-600 uppercase tracking-wider mb-2">Bottom Half</p>
+                                    <p className="text-[11px] font-bold text-rose-600 mb-2">Bottom Half</p>
                                     <div className="space-y-1">
                                       {bottomHalf.map(e => (
                                         <p key={e} className="text-xs text-foreground font-medium">{e}</p>
@@ -638,11 +638,11 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                       {/* Step 3: Pick the specific emotion */}
                       {scanStep === 3 && scanColumn && scanHalf && organRow && (
                         <div className="space-y-3">
-                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          <p className="text-xs font-medium text-muted-foreground">
                             4. Challenge each one: "Is it this one?"
                           </p>
                           <div className="p-4 bg-card rounded-xl border border-border">
-                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                            <p className="text-xs font-medium text-muted-foreground mb-3">
                               {pendingLayer.organ} — Column {scanColumn} — {scanHalf === "top" ? "Top" : "Bottom"} Half
                             </p>
                             {(() => {
@@ -724,7 +724,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
 
                       {pendingLayer.organ && (
                         <div className="p-4 bg-card rounded-xl border border-border">
-                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                          <p className="text-xs font-medium text-muted-foreground mb-2">
                             Muscles to test — {pendingLayer.organ}
                           </p>
                           <p className="text-sm text-foreground font-medium leading-relaxed">
@@ -779,24 +779,24 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
 
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1.5">
-                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Age / Period</label>
+                          <label className="text-xs font-medium text-muted-foreground">Age / Period</label>
                           <Input
                             value={pendingLayer.contextAge || ""}
                             onChange={(e) => setPendingLayer({ ...pendingLayer, contextAge: e.target.value })}
                             placeholder="e.g. Age 4, first 5 years"
                             className="rounded-xl bg-muted/50 text-sm h-10"
                           />
-                          <p className="text-[9px] text-muted-foreground/60">Timeline it: first/last half, decade, specific year</p>
+                          <p className="text-[10px] text-muted-foreground/60">Timeline it: first/last half, decade, specific year</p>
                         </div>
                         <div className="space-y-1.5">
-                          <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Life Event</label>
+                          <label className="text-xs font-medium text-muted-foreground">Life Event</label>
                           <Input
                             value={pendingLayer.contextEvent || ""}
                             onChange={(e) => setPendingLayer({ ...pendingLayer, contextEvent: e.target.value })}
                             placeholder="e.g. Parents separation"
                             className="rounded-xl bg-muted/50 text-sm h-10"
                           />
-                          <p className="text-[9px] text-muted-foreground/60">Is there a specific event associated?</p>
+                          <p className="text-[10px] text-muted-foreground/60">Is there a specific event associated?</p>
                         </div>
                       </div>
 
@@ -820,7 +820,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                             />
                           )}
                         </div>
-                        <p className="text-[9px] text-muted-foreground/60">
+                        <p className="text-[10px] text-muted-foreground/60">
                           Was it absorbed from someone else's energy field? From mom or dad?
                         </p>
                       </div>
@@ -842,7 +842,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                       </div>
 
                       <div className="p-4 bg-card rounded-xl border border-border space-y-3">
-                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Layer summary</p>
+                        <p className="text-xs font-medium text-muted-foreground">Layer summary</p>
                         <div className="flex items-center gap-2 flex-wrap">
                           <Badge className="bg-rose-100 text-rose-800 border-none text-xs">{pendingLayer.organ}</Badge>
                           <span className="text-foreground font-semibold text-sm">{pendingLayer.emotion}</span>
@@ -937,7 +937,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                         </p>
                         {pendingLayer.relatedMuscles && (
                           <div className="p-3 bg-muted/50 rounded-lg">
-                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Associated muscles</p>
+                            <p className="text-xs font-medium text-muted-foreground mb-1">Associated muscles</p>
                             <p className="text-xs text-foreground font-medium">{pendingLayer.relatedMuscles}</p>
                           </div>
                         )}
@@ -977,7 +977,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                                     {name}
                                     {side && (
                                       <span className={cn(
-                                        "text-[9px] font-bold px-1 rounded",
+                                        "text-[10px] font-bold px-1 rounded",
                                         side === "L" && "bg-blue-100 text-blue-700",
                                         side === "R" && "bg-rose-100 text-rose-700",
                                         side === "B" && "bg-amber-100 text-amber-700",
@@ -1029,7 +1029,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                       </div>
 
                       <div className="p-4 bg-card rounded-xl border border-border space-y-3">
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Layers remaining after correction</p>
+                        <p className="text-xs font-medium text-muted-foreground">Layers remaining after correction</p>
                         <Input
                           value={layerCountInput}
                           onChange={(e) => setLayerCountInput(e.target.value.replace(/[^0-9]/g, ""))}
@@ -1091,22 +1091,22 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                 <div className="grid grid-cols-3 gap-3 text-center">
                   <div className="p-3 bg-white/60 rounded-lg">
                     <p className="text-lg font-bold text-foreground">{session?.initialLayerCount ?? "—"}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase">Initial</p>
+                    <p className="text-xs text-muted-foreground">Initial</p>
                   </div>
                   <div className="p-3 bg-white/60 rounded-lg">
                     <p className="text-lg font-bold text-emerald-600">{clearedCount}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase">Cleared</p>
+                    <p className="text-xs text-muted-foreground">Cleared</p>
                   </div>
                   <div className="p-3 bg-white/60 rounded-lg">
                     <p className="text-lg font-bold text-foreground">{layersRemaining ?? "—"}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase">Remaining</p>
+                    <p className="text-xs text-muted-foreground">Remaining</p>
                   </div>
                 </div>
               </div>
 
               {layers.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Layers Processed</p>
+                  <p className="text-xs font-medium text-muted-foreground">Layers Processed</p>
                   {layers.map((layer) => (
                     <div key={layer.id} className="flex items-center gap-3 p-3 bg-card rounded-xl border border-border">
                       <div className={cn(

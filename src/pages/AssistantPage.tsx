@@ -89,7 +89,9 @@ export default function AssistantPage() {
     const recompute = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        const next = Math.max(420, vh() - el.getBoundingClientRect().bottom - 32);
+        // Leave room for the phone/tablet bottom tab bar when it's showing.
+        const tabBar = (document.querySelector('nav[aria-label="Primary"]') as HTMLElement | null)?.offsetHeight ?? 0;
+        const next = Math.max(380, vh() - el.getBoundingClientRect().bottom - 32 - tabBar);
         // Functional update + equality guard: if nothing actually changed, React
         // bails out and no re-render happens at all.
         setGridHeight((prev) => (prev === next ? prev : next));
@@ -203,13 +205,13 @@ export default function AssistantPage() {
         <PageHeader
           icon={Bot}
           title="Assistant"
-          subtitle="Your practice EA — chat, follow-up, inbox, and scheduling in one place."
+          subtitle={<span className="hidden sm:inline">Your practice EA — chat, follow-up, inbox and scheduling in one place.</span>}
           actions={
             <div className="flex items-center gap-2">
               {/* Nothing to toggle once a client is focused — metrics are
                   hidden outright then, not just collapsible. */}
               {!focusedClientId && (
-                <Button variant="outline" size="sm" className="h-9 text-xs gap-1.5" onClick={() => setMetricsCollapsed((v) => !v)}>
+                <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground" onClick={() => setMetricsCollapsed((v) => !v)}>
                   {metricsCollapsed ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronUp className="h-3.5 w-3.5" />}
                   {metricsCollapsed ? "Show metrics" : "Hide metrics"}
                 </Button>
@@ -254,7 +256,7 @@ export default function AssistantPage() {
         className={cn("flex flex-col shrink-0", activeTab === "chat" && "min-h-[420px]")}
         style={activeTab === "chat" ? { height: gridHeight ? `${gridHeight}px` : "calc(100vh - 300px)" } : undefined}
       >
-        <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+        <div className="mb-3 mt-6 flex flex-wrap items-center justify-between gap-2">
           <TabsList className="min-w-0 overflow-x-auto">
             <TabsTrigger value="chat" className="gap-1.5 whitespace-nowrap"><MessageCircle className="h-3.5 w-3.5" /> Chat</TabsTrigger>
             <TabsTrigger value="followup" className="gap-1.5 whitespace-nowrap"><AlertCircle className="h-3.5 w-3.5" /> Follow-up</TabsTrigger>
@@ -265,7 +267,7 @@ export default function AssistantPage() {
               page (2600+ lines) that doesn't yet follow this app's pane-extraction
               convention, so embedding it inline safely needs its own pass. This
               link is styled to sit alongside the tabs rather than pretending to be one. */}
-          <Button asChild variant="outline" size="sm" className="h-9 text-xs gap-1.5">
+          <Button asChild variant="outline" size="sm" className="hidden gap-1.5 sm:inline-flex">
             <RouterLink to="/timetable"><CalendarRange className="h-3.5 w-3.5" /> Timetable Simulator <ArrowUpRight className="h-3 w-3" /></RouterLink>
           </Button>
         </div>
@@ -273,8 +275,17 @@ export default function AssistantPage() {
         <TabsContent value="chat" className="flex-1 min-h-0 m-0">
           {/* No outer card frame — ConversationList's own border-r is enough of a
               divider; the tab area itself is the page, not a widget inside it. */}
-          <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] gap-0 h-full">
-            <div className={cn("min-h-0 min-w-0", mobileShowList ? "flex" : "hidden", "md:flex")}>
+          {/* Chat workspace: history · conversation · client context. One framed
+              surface so it reads as a single tool, with the context column only
+              when a client is in focus (xl+; below that it collapses to a strip). */}
+          <div
+            className={cn(
+              "grid h-full grid-cols-1 overflow-hidden rounded-2xl border border-border bg-card shadow-sm",
+              "md:grid-cols-[272px_1fr]",
+              focusedClient && "xl:grid-cols-[272px_1fr_300px]"
+            )}
+          >
+            <div className={cn("min-h-0 min-w-0 border-r border-border bg-sidebar/50", mobileShowList ? "flex" : "hidden", "md:flex")}>
               <ConversationList
                 conversations={generalConversations}
                 activeId={activeId}
@@ -284,60 +295,57 @@ export default function AssistantPage() {
                 clientNameFor={clientNameFor}
               />
             </div>
-            <div className={cn("flex-col p-4 min-w-0 min-h-0", mobileShowList ? "hidden" : "flex", "md:flex")}>
-              {/* One unified top bar instead of stacked rows eating chat height:
-                  mobile back + active name on the left, desktop copy, and the
-                  AI Chat / Email Thread toggle on the right. */}
-              <div className="flex items-center gap-2 pb-3">
-                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 md:hidden" onClick={() => setMobileShowList(true)}>
+            <div className={cn("min-h-0 min-w-0 flex-col", mobileShowList ? "hidden" : "flex", "md:flex")}>
+              {/* Conversation header */}
+              <div className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-3 sm:px-4">
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 md:hidden" onClick={() => setMobileShowList(true)} aria-label="Back to chats">
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <span className="text-sm font-semibold text-foreground truncate flex-1 md:hidden">{activeClientName || "General"}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13.5px] font-medium text-foreground">
+                    {activeClientName ? <span className="blur-sensitive">{activeClientName}</span> : "General"}
+                  </p>
+                </div>
                 {viewMode === "chat" && messages.length > 0 && (
-                  <Button variant="outline" size="sm" className="hidden h-7 text-[11px] gap-1.5 md:inline-flex" onClick={copyChatToClipboard}>
-                    <Copy className="h-3 w-3" /> Copy chat
+                  <Button variant="ghost" size="sm" className="hidden h-8 gap-1.5 text-muted-foreground md:inline-flex" onClick={copyChatToClipboard}>
+                    <Copy className="h-3.5 w-3.5" /> Copy
                   </Button>
                 )}
                 {focusedClient && (
-                  <div className="flex items-center gap-1 bg-muted p-1 rounded-lg ml-auto">
-                    <button
-                      onClick={() => setViewMode("chat")}
-                      className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors", viewMode === "chat" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
-                    >
-                      <MessageCircle className="h-3.5 w-3.5" /> AI Chat
-                    </button>
-                    <button
-                      onClick={() => setViewMode("email")}
-                      className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors", viewMode === "email" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
-                    >
-                      <Mail className="h-3.5 w-3.5" /> Email Thread
-                    </button>
+                  <div className="flex items-center rounded-lg bg-foreground/[0.05] p-[3px]">
+                    {([["chat", MessageCircle, "AI chat"], ["email", Mail, "Email"]] as const).map(([v, Icon, label]) => (
+                      <button
+                        key={v}
+                        onClick={() => setViewMode(v)}
+                        className={cn(
+                          "flex h-7 items-center gap-1.5 rounded-md px-2.5 text-[12.5px] font-medium transition-colors",
+                          viewMode === v ? "bg-card text-foreground shadow-sm ring-1 ring-border/70" : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <Icon className="h-3.5 w-3.5" /> {label}
+                      </button>
+                    ))}
                   </div>
                 )}
               </div>
+
+              {/* Context strip below xl (the right column takes over above it) */}
               {focusedClient && (
-                <ClientSnapshotPanel
-                  clientId={focusedClient.id}
-                  clientName={focusedClient.name}
-                  isVoice={!!focusedVoiceStudent}
-                  onDraftRateEmail={(prompt) => handleSend(prompt)}
-                />
+                <div className="hidden px-3 pt-3 sm:px-4 md:block xl:hidden">
+                  <ClientSnapshotPanel
+                    clientId={focusedClient.id}
+                    clientName={focusedClient.name}
+                    isVoice={!!focusedVoiceStudent}
+                    onDraftRateEmail={(prompt) => handleSend(prompt)}
+                  />
+                </div>
               )}
-              {/* This chat's own thread stays right here (it's excluded from
-                  the general list above once created) — the Hub link is for
-                  jumping to their full conversation history + email thread,
-                  not a redirect away from what you're currently doing. */}
-              {focusedClient && !focusedVoiceStudent && (
-                <RouterLink to={`/clients/${focusedClient.id}/hub`} className="text-[11px] text-primary hover:underline mb-3 inline-flex items-center gap-1 w-fit">
-                  Open {focusedClient.name.split(" ")[0]}'s full Hub (all conversations, email, history) →
-                </RouterLink>
-              )}
-              {/* Cap the reading measure so bubbles/composer never span the
-                  whole pane on a wide monitor — premium chat keeps a comfortable
-                  column even when there's room to spare. */}
-              <div className="flex min-h-0 flex-1 flex-col w-full max-w-[880px]">
+
+              <div className="mx-auto flex min-h-0 w-full max-w-[860px] flex-1 flex-col px-3 pb-3 sm:px-5 sm:pb-4">
                 {viewMode === "email" && focusedClient ? (
-                  <ClientEmailThread clientId={focusedClient.id} clientEmail={focusedClient.email} clientName={focusedClient.name} />
+                  <div className="min-h-0 flex-1 pt-3">
+                    <ClientEmailThread clientId={focusedClient.id} clientEmail={focusedClient.email} clientName={focusedClient.name} />
+                  </div>
                 ) : (
                   <>
                     <MessageList
@@ -353,12 +361,56 @@ export default function AssistantPage() {
                       onBookingDiscard={handleBookingDiscard}
                       onSuggestion={handleSend}
                       onRetry={(id, text) => handleSend(text, id)}
+                      heroTitle={focusedClient ? `Working on ${focusedClient.name.split(" ")[0]}` : undefined}
+                      heroSubtitle={focusedClient ? "Everything here is scoped to this client — their history, schedule and emails." : undefined}
+                      prompts={
+                        focusedClient
+                          ? (() => {
+                              const f = focusedClient.name.split(" ")[0];
+                              return [
+                                { label: `Book ${f}'s next session`, prompt: `Find a good slot and book ${f}'s next session.` },
+                                { label: `How is ${f} tracking?`, prompt: `Summarise how ${f} is tracking — recent sessions, attendance and anything I should follow up.` },
+                                { label: `Draft a check-in`, prompt: `Draft a warm check-in email to ${f} in my usual style.` },
+                              ];
+                            })()
+                          : undefined
+                      }
                     />
-                    <AssistantInput onSend={handleSend} disabled={isSending} initialValue={initialPrompt} autoSend={autoSendReady} />
+                    <AssistantInput
+                      onSend={handleSend}
+                      disabled={isSending}
+                      initialValue={initialPrompt}
+                      autoSend={autoSendReady}
+                      placeholder={focusedClient ? `Ask about ${focusedClient.name.split(" ")[0]}, book them in, or draft a message…` : undefined}
+                      suggestions={
+                        messages.length === 0
+                          ? undefined
+                          : focusedClient
+                          ? [
+                              `Find ${focusedClient.name.split(" ")[0]}'s next best slot`,
+                              `Draft a check-in email to ${focusedClient.name.split(" ")[0]}`,
+                              `Summarise ${focusedClient.name.split(" ")[0]}'s last few sessions`,
+                            ]
+                          : ["Who needs a follow-up this week?", "How's my booking load?", "What should I work on today?"]
+                      }
+                    />
                   </>
                 )}
               </div>
             </div>
+
+            {/* Client context column */}
+            {focusedClient && (
+              <aside className="hidden min-h-0 overflow-y-auto border-l border-border bg-sidebar/40 xl:block">
+                <ClientSnapshotPanel
+                  variant="card"
+                  clientId={focusedClient.id}
+                  clientName={focusedClient.name}
+                  isVoice={!!focusedVoiceStudent}
+                  onDraftRateEmail={(prompt) => handleSend(prompt)}
+                />
+              </aside>
+            )}
           </div>
         </TabsContent>
 

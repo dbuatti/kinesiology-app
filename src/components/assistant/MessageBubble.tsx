@@ -1,3 +1,4 @@
+import { BrandMark } from "@/components/layout/BrandMark";
 import type { ReactNode } from "react";
 import { Bot, User } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -56,23 +57,24 @@ export default function MessageBubble({ message }: Props) {
   const isUser = message.role === "user";
   return (
     <div className={cn("flex gap-3 max-w-[min(86%,42rem)]", isUser ? "ml-auto flex-row-reverse" : "mr-auto")}>
-      <div className={cn(
-        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full animate-in fade-in zoom-in-90 duration-150",
-        isUser ? "bg-primary text-primary-foreground" : "bg-gradient-to-br from-chart-primary/20 via-chart-primary/10 to-chart-primary/5 text-chart-primary",
-      )}>
-        {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
-      </div>
+      {isUser ? (
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-indigo-700 text-[11px] font-semibold text-white animate-in fade-in zoom-in-90 duration-150">
+          DB
+        </div>
+      ) : (
+        <BrandMark className="h-8 w-8 shrink-0 rounded-[10px] animate-in fade-in zoom-in-90 duration-150" />
+      )}
       <div className={cn(
         "rounded-2xl px-4 py-3 text-sm leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-200",
         isUser
-          ? "bg-primary text-primary-foreground rounded-tr-sm whitespace-pre-wrap shadow-sm"
-          : "bg-card text-foreground rounded-tl-sm border border-border/70 shadow-sm",
+          ? "bg-primary text-primary-foreground rounded-tr-md whitespace-pre-wrap shadow-button"
+          : "bg-card text-foreground rounded-tl-md border border-border shadow-xs",
       )}>
         {isUser ? message.content : renderFormatted(message.content || "")}
         {!!message.tool_calls?.length && (
           <div className="mt-2 flex flex-wrap gap-1.5 pt-2 border-t border-border/50">
             {message.tool_calls.map((t, i) => (
-              <span key={i} className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground/70 bg-background/40 rounded-full px-2 py-0.5">
+              <span key={i} className="text-xs font-medium text-muted-foreground/70 bg-background/40 rounded-full px-2 py-0.5">
                 {t.name.replace(/_/g, " ")}
               </span>
             ))}

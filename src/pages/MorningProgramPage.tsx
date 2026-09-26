@@ -1,4 +1,5 @@
 
+import EmptyState from "@/components/shared/EmptyState";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { useState, useEffect } from 'react';
 import AppLayout from '@/components/crm/AppLayout';
@@ -112,28 +113,27 @@ const MorningProgramPage = () => {
           title="Morning Program"
           subtitle="Establish your clinical state before the first session."
           actions={
-            <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground hover:text-chart-destructive">
+            <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="text-[11px] font-semibold text-muted-foreground hover:text-chart-destructive">
               <RotateCcw size={14} className="mr-2" /> Reset Daily
             </Button>
           }
         />
 
         {/* Daily Intention Card */}
-        <Card className="border-none shadow-sm rounded-xl bg-primary text-primary-foreground overflow-hidden relative group">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent" />
-          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700"><Sparkles size={150} /></div>
-          <CardContent className="p-10 relative z-10 space-y-6">
+        <Card className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-xs">
+          <div aria-hidden className="absolute inset-0 bg-[radial-gradient(80%_120%_at_0%_0%,hsl(var(--chart-amber)/0.14),transparent_60%),radial-gradient(70%_120%_at_100%_0%,hsl(var(--primary)/0.10),transparent_60%)]" />
+          <CardContent className="relative z-10 space-y-4 p-6 sm:p-8">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary-foreground/10 flex items-center justify-center border border-primary-foreground/20">
-                <Target size={20} className="text-primary-foreground/70" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-background">
+                <Target size={15} className="text-chart-amber" />
               </div>
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-primary-foreground/70">Daily Intention</h3>
+              <h3 className="text-[13px] font-medium text-muted-foreground">Today’s intention</h3>
             </div>
             <textarea 
               value={intention}
               onChange={(e) => handleIntentionSave(e.target.value)}
               placeholder="What is your primary focus as a practitioner today?"
-              className="w-full bg-transparent border-none focus:ring-0 text-2xl md:text-3xl font-serif italic placeholder:text-primary-foreground/50 resize-none min-h-[100px]"
+              className="min-h-[88px] w-full resize-none border-none bg-transparent font-serif text-2xl italic leading-snug text-foreground outline-none placeholder:text-muted-foreground/50 focus:ring-0 md:text-[30px]"
             />
           </CardContent>
         </Card>
@@ -142,7 +142,7 @@ const MorningProgramPage = () => {
           {/* Ritual Steps Column */}
           <div className="lg:col-span-5 space-y-6">
             <div className="flex items-center justify-between px-2">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">The Protocol</h3>
+              <h3 className="text-[15px] font-semibold tracking-tight text-foreground">The protocol</h3>
               <Badge variant="outline" className="font-medium border-border text-primary">{completedTasks.length} / {RITUAL_STEPS.length} Done</Badge>
             </div>
 
@@ -182,7 +182,7 @@ const MorningProgramPage = () => {
                         variant="ghost" 
                         size="sm" 
                         onClick={(e) => { e.stopPropagation(); setRitualMode(step.id); }}
-                        className="h-8 px-3 rounded-lg text-[10px] font-semibold uppercase tracking-wider text-primary hover:bg-primary/10"
+                        className="h-8 px-3 rounded-lg text-[11px] font-semibold text-primary hover:bg-primary/10"
                       >
                         <Play size={12} className="mr-1.5 fill-current" /> Launch
                       </Button>
@@ -258,24 +258,12 @@ const MorningProgramPage = () => {
                   animate={{ opacity: 1 }}
                   className="space-y-8"
                 >
-                  <div className="p-10 bg-muted rounded-xl border-2 border-dashed border-border flex flex-col items-center text-center space-y-6">
-                    <div className="w-20 h-20 rounded-xl bg-card flex items-center justify-center text-muted shadow-sm">
-                      <Lock size={40} />
-                    </div>
-                    <div className="space-y-2">
-                      <h3 className="text-2xl font-semibold text-foreground">Ritual Focus</h3>
-                      <p className="text-muted-foreground font-medium max-w-xs mx-auto">
-                        Select a tool from the protocol list to begin your focused preparation.
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      {['grounding', 'coherence', 'vitals'].map(id => (
-                        <div key={id} className={cn(
-                          "w-3 h-3 rounded-full transition-all duration-500",
-                          completedTasks.includes(id) ? "bg-chart-emerald" : "bg-muted"
-                        )} />
-                      ))}
-                    </div>
+                  <div className="rounded-2xl border border-dashed border-foreground/15 bg-card/60">
+                    <EmptyState
+                      icon={Lock}
+                      title="Ritual focus"
+                      description="Choose a step from the protocol to begin your focused preparation."
+                    />
                   </div>
 
                   <div className="p-10 bg-primary/10 rounded-xl border-2 border-primary/20 flex items-start gap-8">

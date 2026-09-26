@@ -56,7 +56,7 @@ export default function HeartWallEmotionChart({ selectedEmotion, onSelect, known
               <p className="text-[10px] font-semibold text-chart-primary uppercase tracking-wider">
                 {data.organ}
               </p>
-              <p className="text-[9px] text-muted-foreground mt-0.5 line-clamp-1">
+              <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">
                 {data.muscles}
               </p>
             </div>
@@ -77,7 +77,7 @@ export default function HeartWallEmotionChart({ selectedEmotion, onSelect, known
                   >
                     {emotion}
                     <span className={cn(
-                      "ml-1.5 text-[8px] uppercase font-bold",
+                      "ml-1.5 text-[11px] font-bold",
                       isSelected ? "text-primary-foreground/60" : "text-muted-foreground/60"
                     )}>
                       {isColA ? "A" : "B"}

@@ -61,7 +61,7 @@ const EditableField = ({ label, value, field, onSave, editable = false }: {
   if (!editable) {
     return (
       <div className="mb-4 pb-4 border-b border-border/30 last:border-b-0">
-        <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-1">{label}</p>
+        <p className="text-xs font-medium text-muted-foreground mb-1">{label}</p>
         <p className="text-[12.5px] text-foreground leading-relaxed whitespace-pre-wrap">{value || "—"}</p>
       </div>
     );
@@ -69,7 +69,7 @@ const EditableField = ({ label, value, field, onSave, editable = false }: {
 
   return (
     <div className="mb-4 pb-4 border-b border-border/30 last:border-b-0">
-      <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-1">{label}</p>
+      <p className="text-xs font-medium text-muted-foreground mb-1">{label}</p>
       <textarea
         ref={taRef}
         value={draft}
@@ -101,7 +101,7 @@ const EditableNumberField = ({ label, value, field, onSave, editable = false, su
     if (value == null && !editable) return null;
     return (
       <div className="p-2.5 bg-muted/50 rounded border border-border text-center">
-        <p className="text-[8px] font-semibold text-muted-foreground uppercase">{label}</p>
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
         <p className="text-sm font-bold text-foreground">{value}{suffix}</p>
       </div>
     );
@@ -109,7 +109,7 @@ const EditableNumberField = ({ label, value, field, onSave, editable = false, su
 
   return (
     <div className="p-2.5 bg-muted/50 rounded border border-border text-center">
-      <p className="text-[8px] font-semibold text-muted-foreground uppercase">{label}</p>
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <input
         type="number"
         value={draft}
@@ -251,7 +251,7 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
           <div className="pb-6 mb-8 border-b-2 border-foreground/15">
             <div className="flex items-start justify-between">
               <div className="space-y-2">
-                <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-muted-foreground">Clinical Session Notes</p>
+                <p className="text-xs font-medium text-muted-foreground">Clinical Session Notes</p>
                 <h1 className="text-[22px] font-bold tracking-tight text-foreground leading-tight">
                   {editable ? (
                     <input
@@ -309,7 +309,7 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
             {/* Baseline Vitals */}
             {(hasAnyVitals || editable) && (
               <div className="mb-4 pb-4 border-b border-border/30">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Baseline Vitals</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Baseline Vitals</p>
                 <div className="grid grid-cols-4 gap-2">
                   <EditableNumberField label="BOLT" value={appointment.bolt_score} field="bolt_score" onSave={sb} editable={editable} suffix="s" />
                   <EditableNumberField label="Coherence" value={appointment.coherence_score} field="coherence_score" onSave={sb} editable={editable} />
@@ -322,7 +322,7 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
             {/* COGS */}
             {(hasAnyCogs || editable) && (
               <div className="mb-4 pb-4 border-b border-border/30">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">COGS — Visual Assessment</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">COGS — Visual Assessment</p>
                 <div className="space-y-1.5">
                   <EditableField label="Sagittal" value={appointment.sagittal_plane_notes} field="sagittal_plane_notes" onSave={sb} editable={editable} />
                   <EditableField label="Frontal" value={appointment.frontal_plane_notes} field="frontal_plane_notes" onSave={sb} editable={editable} />
@@ -334,7 +334,7 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
             {/* Neurological Baseline */}
             {(hasAnyNeuro || editable) && (
               <div className="mb-4 pb-4 border-b border-border/30">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Neurological Baseline</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Neurological Baseline</p>
                 <div className="space-y-1.5">
                   <EditableField label="Fukuda Step Test" value={appointment.fakuda_notes} field="fakuda_notes" onSave={sb} editable={editable} />
                   <EditableField label="Sharpened Rhomberg's" value={appointment.sharpened_rhombergs_notes} field="sharpened_rhombergs_notes" onSave={sb} editable={editable} />
@@ -347,7 +347,7 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
             {/* Cranial Nerve Assessment */}
             {(editable || hasPatternCategory('cranialNerves')) && (
               <div className="mb-4 pb-4 border-b border-border/30">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Cranial Nerve Assessment</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Cranial Nerve Assessment</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                   {CRANIAL_NERVES.map(n => {
                     const nerveName = `${n.name}: ${n.latinName}`;
@@ -367,7 +367,7 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
             {/* Primitive Reflex Assessment */}
             {(editable || hasPatternCategory('primitiveReflexes')) && (
               <div className="mb-4 pb-4 border-b border-border/30">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Primitive Reflex Assessment</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Primitive Reflex Assessment</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                   {PRIMITIVE_REFLEXES.map(r => r.isLateralized ? (
                     <Fragment key={r.id}>
@@ -384,7 +384,7 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
             {/* Muscle Assessment — Intrinsic Stabilisation */}
             {(editable || hasPatternCategory('muscles')) && (
               <div className="mb-4 pb-4 border-b border-border/30">
-                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-2">Muscle Assessment — Intrinsic Stabilisation</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Muscle Assessment — Intrinsic Stabilisation</p>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
                   {(MUSCLE_GROUPS['Intrinsic Stabilisation'] || []).map(m => MIDLINE_MUSCLES.includes(m) ? (
                     <Fragment key={m}>
@@ -428,7 +428,7 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
               <>
                 {priorityPathway && (
                   <div className="mb-4 pb-4 border-b border-border/30">
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-1">Priority Pathway</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Priority Pathway</p>
                     <div className="flex items-center gap-2 p-2.5 bg-destructive/10 border border-destructive/20 rounded">
                       <Target size={13} className="text-destructive shrink-0" />
                       <p className="text-[12px] font-semibold text-destructive">{priorityPathway}</p>
@@ -438,14 +438,14 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
 
                 {inhibitedCount > 0 && (
                   <div className="mb-4 pb-4 border-b border-border/30">
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-1">Active Findings ({inhibitedCount})</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Active Findings ({inhibitedCount})</p>
                     <PathwayFindingsList priorityPattern={appointment.priority_pattern} showOnlyInhibited />
                   </div>
                 )}
 
                 {clearedCount > 0 && (
                   <div className="mb-4 pb-4 border-b border-border/30">
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-1">Cleared Findings ({clearedCount})</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Cleared Findings ({clearedCount})</p>
                     <PathwayFindingsList priorityPattern={appointment.priority_pattern} showOnlyInhibited={false} />
                   </div>
                 )}
@@ -470,13 +470,13 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
                     {correctionsHistory.map((c: any, i: number) => (
                       <div key={c.timestamp ? `${c.timestamp}-${i}` : `corr-${i}`} className="p-3 bg-amber-500/10 border border-amber-500/20 rounded transition-all hover:bg-amber-500/15 animate-in fade-in slide-in-from-top-2 duration-300" style={{ animationDelay: `${i * 60}ms` }}>
                         <div className="flex items-center gap-2 mb-1.5">
-                          <span className="text-[8px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Correction #{i + 1}</span>
-                          <span className="text-[8px] text-amber-600/40">·</span>
-                          <span className="text-[8px] font-medium text-amber-600 dark:text-amber-400 truncate">{c.pathway}</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Correction #{i + 1}</span>
+                          <span className="text-[10px] text-amber-600/40">·</span>
+                          <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400 truncate">{c.pathway}</span>
                           {c.timestamp && (
                             <>
-                              <span className="text-[8px] text-amber-600/40">·</span>
-                              <span className="text-[8px] text-amber-600/40">{format(new Date(c.timestamp), "h:mm a")}</span>
+                              <span className="text-[10px] text-amber-600/40">·</span>
+                              <span className="text-[10px] text-amber-600/40">{format(new Date(c.timestamp), "h:mm a")}</span>
                             </>
                           )}
                         </div>
@@ -539,15 +539,15 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
           <div className="pt-6 border-t border-border/40">
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">Findings</p>
+                <p className="text-xs font-medium text-muted-foreground">Findings</p>
                 <p className="text-[13px] font-bold text-foreground mt-0.5">{inhibitedCount} active</p>
               </div>
               <div>
-                <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">Corrections</p>
+                <p className="text-xs font-medium text-muted-foreground">Corrections</p>
                 <p className="text-[13px] font-bold text-foreground mt-0.5">{correctionsHistory.length || (appointment.modes_balances ? 1 : 0)} applied</p>
               </div>
               <div>
-                <p className="text-[8px] font-bold uppercase tracking-wider text-muted-foreground">Status</p>
+                <p className="text-xs font-medium text-muted-foreground">Status</p>
                 <p className="text-[13px] font-bold text-foreground mt-0.5">
                   {appointment.status === "Completed" ? "Complete" : appointment.status}
                 </p>
@@ -557,7 +557,7 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
 
           {/* Document footer */}
           <div className="pt-8 text-center">
-            <p className="text-[7px] font-medium text-muted-foreground/30 uppercase tracking-[0.35em]">
+            <p className="text-[7px] font-medium text-muted-foreground/30 uppercase tracking-wider">
               — End of Session Notes —
             </p>
             <p className="text-[7px] text-muted-foreground/25 mt-2">

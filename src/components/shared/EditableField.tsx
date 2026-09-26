@@ -225,7 +225,7 @@ const EditableField = ({
  )}
  />
  <div className="flex flex-wrap gap-2 pt-4 border-t border-border animate-in fade-in slide-in-from-bottom-2 duration-500 shrink-0 pb-1">
- <div className="flex items-center gap-1.5 mr-3 text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">
+ <div className="flex items-center gap-1.5 mr-3 text-xs font-medium text-muted-foreground/60">
  <Sparkles size={12} className="text-primary/70" /> Quick Tags:
  </div>
  {SMART_CHIPS.map(chip => (
@@ -236,7 +236,7 @@ const EditableField = ({
  e.stopPropagation();
  handleChipClick(chip);
  }}
- className="px-3 py-1 rounded-xl bg-muted hover:bg-primary/80 hover:text-primary-foreground text-[10px] font-semibold uppercase tracking-wider text-muted-foreground transition-all hover:scale-105 active:scale-95"
+ className="px-3 py-1 rounded-xl bg-muted hover:bg-primary/80 hover:text-primary-foreground text-[11px] font-semibold text-muted-foreground transition-all hover:scale-[1.03] active:scale-95"
  >
  {chip}
  </button>

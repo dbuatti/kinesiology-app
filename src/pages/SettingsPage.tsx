@@ -26,9 +26,9 @@ const CardLink = ({ to, icon: Icon, title, desc, badge }: { to: string; icon: an
           <Icon size={20} />
         </div>
         <div className="min-w-0">
-          <p className="text-sm font-black text-foreground flex items-center gap-2">
+          <p className="text-sm font-semibold text-foreground flex items-center gap-2">
             {title}
-            {badge && <Badge className="bg-primary/10 text-primary border-none text-[9px] font-semibold">{badge}</Badge>}
+            {badge && <Badge className="bg-primary/10 text-primary border-none text-[10px] font-semibold">{badge}</Badge>}
           </p>
           <p className="text-[10px] text-muted-foreground font-medium">{desc}</p>
         </div>
@@ -66,10 +66,10 @@ const SettingsPage = () => {
         />
 
         <Tabs defaultValue="account" className="space-y-8">
-          <TabsList className="bg-muted/50 p-1 rounded-2xl border border-border/50 w-full max-w-lg grid grid-cols-3">
-            <TabsTrigger value="account" className="rounded-xl font-bold text-xs py-2.5">Account</TabsTrigger>
-            <TabsTrigger value="integrations" className="rounded-xl font-bold text-xs py-2.5">Integrations</TabsTrigger>
-            <TabsTrigger value="data" className="rounded-xl font-bold text-xs py-2.5">Data & Tools</TabsTrigger>
+          <TabsList className="bg-muted/50 p-1 rounded-xl w-full max-w-lg grid grid-cols-3">
+            <TabsTrigger value="account" className="rounded-lg font-medium text-xs py-2.5">Account</TabsTrigger>
+            <TabsTrigger value="integrations" className="rounded-lg font-medium text-xs py-2.5">Integrations</TabsTrigger>
+            <TabsTrigger value="data" className="rounded-lg font-medium text-xs py-2.5">Data & Tools</TabsTrigger>
           </TabsList>
 
           {/* ════════════════════════════════════════════════
@@ -89,7 +89,7 @@ const SettingsPage = () => {
                     <ClipboardList size={20} />
                   </div>
                   <div>
-                    <h3 className="font-black text-foreground text-sm">Intake Form</h3>
+                    <h3 className="font-semibold text-foreground text-sm">Intake Form</h3>
                     <p className="text-xs text-muted-foreground font-medium">Client-facing Functional Neuro Health intake form. Sent automatically with booking confirmations.</p>
                   </div>
                 </div>
@@ -101,7 +101,7 @@ const SettingsPage = () => {
                         <Eye size={20} />
                       </div>
                       <div>
-                        <p className="text-sm font-black text-foreground">Preview Intake Form</p>
+                        <p className="text-sm font-semibold text-foreground">Preview Intake Form</p>
                         <p className="text-[10px] text-muted-foreground font-medium">See what clients see</p>
                       </div>
                     </div>
@@ -114,7 +114,7 @@ const SettingsPage = () => {
                         <Share2 size={20} />
                       </div>
                       <div>
-                        <p className="text-sm font-black text-foreground">Copy Intake Link Template</p>
+                        <p className="text-sm font-semibold text-foreground">Copy Intake Link Template</p>
                         <p className="text-[10px] text-muted-foreground font-medium">Replace {`{clientId}`} with actual ID</p>
                       </div>
                     </div>
@@ -123,7 +123,7 @@ const SettingsPage = () => {
                 </div>
 
                 <div className="mt-4 p-4 bg-muted/30 rounded-2xl border border-border/50">
-                  <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">How it works</div>
+                  <div className="text-xs font-medium text-muted-foreground mb-2">How it works</div>
                   <ul className="space-y-1.5 text-xs text-muted-foreground">
                     <li className="flex items-start gap-2">
                       <span className="text-primary mt-0.5 shrink-0">1.</span>
@@ -162,7 +162,7 @@ const SettingsPage = () => {
                   <Globe size={20} />
                 </div>
                 <div>
-                  <h3 className="font-black text-foreground text-sm">Integration Status</h3>
+                  <h3 className="font-semibold text-foreground text-sm">Integration Status</h3>
                   <p className="text-xs text-muted-foreground font-medium">Status of your linked clinical and marketing tools.</p>
                 </div>
               </div>
@@ -203,22 +203,22 @@ const SettingsPage = () => {
                     <Workflow size={20} />
                   </div>
                   <div>
-                    <h3 className="font-black text-foreground text-sm">Workflow Debugger</h3>
+                    <h3 className="font-semibold text-foreground text-sm">Workflow Debugger</h3>
                     <p className="text-xs text-muted-foreground font-medium">Every booking workflow, email template, edge function, and client state transition across FNH and Voice.</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                   <div className="p-3 bg-muted/30 rounded-xl border border-border/50 text-center">
-                    <div className="text-lg font-black text-chart-emerald">11</div>
-                    <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Workflows</div>
+                    <div className="text-lg font-semibold text-chart-emerald">11</div>
+                    <div className="text-xs text-muted-foreground font-medium">Workflows</div>
                   </div>
                   <div className="p-3 bg-muted/30 rounded-xl border border-border/50 text-center">
-                    <div className="text-lg font-black text-chart-emerald">12</div>
-                    <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Edge Functions</div>
+                    <div className="text-lg font-semibold text-chart-emerald">12</div>
+                    <div className="text-xs text-muted-foreground font-medium">Edge Functions</div>
                   </div>
                   <div className="p-3 bg-muted/30 rounded-xl border border-border/50 text-center">
-                    <div className="text-lg font-black text-chart-emerald">10</div>
-                    <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">Client States</div>
+                    <div className="text-lg font-semibold text-chart-emerald">10</div>
+                    <div className="text-xs text-muted-foreground font-medium">Client States</div>
                   </div>
                 </div>
                 <button onClick={() => navigate("/settings/workflows")} className="w-full flex items-center justify-between p-4 bg-muted/40 rounded-2xl border border-border group hover:border-chart-emerald/50 transition-all text-left">
@@ -227,7 +227,7 @@ const SettingsPage = () => {
                       <Workflow size={20} />
                     </div>
                     <div>
-                      <p className="text-sm font-black text-foreground">Open Workflow Debugger</p>
+                      <p className="text-sm font-semibold text-foreground">Open Workflow Debugger</p>
                       <p className="text-[10px] text-muted-foreground font-medium">Inspect, filter, and expand all workflows</p>
                     </div>
                   </div>
@@ -244,7 +244,7 @@ const SettingsPage = () => {
                     <Bug size={20} />
                   </div>
                   <div>
-                    <h3 className="font-black text-foreground text-sm">Debug & Demo Tools</h3>
+                    <h3 className="font-semibold text-foreground text-sm">Debug & Demo Tools</h3>
                     <p className="text-xs text-muted-foreground font-medium">Test harnesses, simulation tools, and diagnostic pages.</p>
                   </div>
                 </div>

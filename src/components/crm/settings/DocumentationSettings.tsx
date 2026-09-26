@@ -5,9 +5,9 @@ import { Link } from "react-router-dom";
 
 const DocumentationSettings = () => {
   return (
-    <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+    <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
       <CardHeader className="p-8 pb-4">
-        <CardTitle className="text-primary font-black flex items-center gap-3">
+        <CardTitle className="text-primary font-semibold flex items-center gap-3">
           <FileText size={22} className="text-primary" /> Documentation & Audit
         </CardTitle>
         <CardDescription className="font-medium">Export site structure and content breakdowns.</CardDescription>
@@ -20,7 +20,7 @@ const DocumentationSettings = () => {
                 <LayoutGrid size={20} />
               </div>
               <div>
-                <p className="text-sm font-black text-foreground">Site Audit Tool</p>
+                <p className="text-sm font-semibold text-foreground">Site Audit Tool</p>
                 <p className="text-[10px] text-muted-foreground font-medium">Full text breakdown of all pages</p>
               </div>
             </div>

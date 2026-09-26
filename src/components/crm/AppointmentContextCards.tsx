@@ -118,10 +118,10 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
       <Card className="border-none shadow-sm shadow-slate-900/5 rounded-xl bg-foreground text-primary-foreground overflow-hidden">
         <CardHeader className="p-5 pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground flex items-center gap-3">
+            <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-3">
               <Clock size={16} /> Session Strategy (60m)
             </CardTitle>
-            <Badge variant="outline" className="border-primary-foreground/10 text-muted-foreground font-medium text-[10px] uppercase tracking-wider">
+            <Badge variant="outline" className="border-primary-foreground/10 text-muted-foreground font-medium text-xs">
               {completedStages.length}/{SESSION_STAGES.length} Done
             </Badge>
           </div>
@@ -158,14 +158,14 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                         isActive ? "text-primary-foreground" : isDone ? "text-emerald-400" : "text-muted-foreground/60"
                       )}>{stage.name}</span>
                       {isActive && (
-                        <span className="text-[10px] font-medium uppercase tracking-wider text-primary-foreground/60 animate-pulse">
+                        <span className="text-[11px] font-medium text-primary-foreground/60 animate-pulse">
                           Live: {formatStageTime(elapsed)}
                         </span>
                       )}
                     </div>
                   </div>
                   <Badge variant="outline" className={cn(
-                    "font-medium text-[10px] uppercase tracking-wider px-3 py-1",
+                    "font-medium text-[11px] px-3 py-1",
                     isActive ? "border-primary-foreground/40 text-primary-foreground" : "border-primary-foreground/10 text-muted-foreground"
                   )}>
                     {stage.duration}M
@@ -194,7 +194,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                       <div className="w-10 h-10 rounded-xl bg-card/20 flex items-center justify-center">
                         <Activity size={20} />
                       </div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.3em] opacity-80">Peak Meridian</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider opacity-80">Peak Meridian</p>
                     </div>
                     <Badge className="bg-card/20 text-primary-foreground border-none font-medium text-[10px] uppercase tracking-wider px-3 py-1">TCM</Badge>
                   </div>
@@ -230,7 +230,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                     <Wallet size={20} />
                   </div>
                   <CardTitle className={cn(
-                    "text-[10px] font-semibold uppercase tracking-[0.3em]",
+                    "text-[10px] font-semibold uppercase tracking-wider",
                     appointment.is_paid ? "text-chart-emerald" : "text-muted-foreground"
                   )}>
                     Clinical Billing
@@ -242,7 +242,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
           </CollapsibleTrigger>
           <CollapsibleContent>
             <CardContent className="p-5 pt-0 space-y-5 animate-in fade-in slide-in-from-top-2 duration-500">
-              <div className="flex items-center justify-between p-5 bg-card dark:bg-foreground rounded-xl border border-border dark:border-border shadow-sm">
+              <div className="flex items-center justify-between p-5 bg-card dark:bg-card rounded-xl border border-border dark:border-border shadow-sm">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Label htmlFor="is-paid-toggle" className="text-sm font-semibold text-foreground/80 dark:text-muted-foreground/60 uppercase tracking-wider">Paid Session</Label>
@@ -250,7 +250,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                       Default: {billingDefault}
                     </Badge>
                   </div>
-                  <p className="text-[10px] text-muted-foreground/70 font-medium uppercase tracking-wider">Enable billing for this session</p>
+                  <p className="text-xs text-muted-foreground/70 font-medium">Enable billing for this session</p>
                 </div>
                 <Switch 
                   id="is-paid-toggle"
@@ -268,13 +268,13 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                         <div className="absolute -right-4 -bottom-4 opacity-10">
                           <DollarSign size={80} className="text-muted-foreground" />
                         </div>
-                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.3em] mb-2 relative z-10">Amount Due</p>
+                        <p className="text-xs font-medium text-muted-foreground mb-2 relative z-10">Amount Due</p>
                         <p className="text-4xl font-semibold text-amber-900 dark:text-amber-400 relative z-10">${appointment.price_amount || 50}</p>
                       </div>
                       <Button 
                         onClick={handleGeneratePaymentLink}
                         disabled={generatingLink}
-                        className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-semibold text-xs uppercase tracking-wider shadow-sm shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95"
+                        className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-semibold text-xs shadow-sm shadow-indigo-500/20 transition-all hover:scale-[1.03] active:scale-95"
                       >
                         {generatingLink ? <Loader2 className="animate-spin mr-3" /> : <QrCode size={18} className="mr-3" />}
                         Generate Stripe Link
@@ -282,7 +282,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                       <Button 
                         variant="outline"
                         onClick={() => onSaveField('payment_received', true)}
-                        className="w-full h-14 border-emerald-200 text-chart-emerald hover:bg-emerald-50 rounded-xl font-semibold text-xs uppercase tracking-wider transition-all"
+                        className="w-full h-14 border-emerald-200 text-chart-emerald hover:bg-emerald-50 rounded-xl font-semibold text-xs transition-all"
                       >
                         <CheckCircle2 size={18} className="mr-3" /> Mark as Paid Manually
                       </Button>
@@ -300,7 +300,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                         variant="ghost" 
                         size="sm" 
                         onClick={() => onSaveField('payment_received', false)}
-                        className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70 hover:text-chart-destructive mt-2"
+                        className="text-[11px] font-semibold text-muted-foreground/70 hover:text-chart-destructive mt-2"
                       >
                         Undo Payment
                       </Button>
@@ -308,7 +308,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                   )}
 
                   <div className="space-y-3">
-                    <p className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-wider ml-2">Payment Method</p>
+                    <p className="text-xs font-medium text-muted-foreground/70 ml-2">Payment Method</p>
                     <ToggleGroup 
                       type="single" 
                       value={appointment.payment_method || ""} 
@@ -319,7 +319,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                         <ToggleGroupItem 
                           key={method}
                           value={method} 
-                          className="rounded-xl px-4 h-10 text-[10px] font-semibold uppercase tracking-wider border-border data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary transition-all"
+                          className="rounded-xl px-4 h-10 text-[11px] font-semibold border-border data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary transition-all"
                         >
                           {method}
                         </ToggleGroupItem>
@@ -343,7 +343,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                   <div className="w-10 h-10 rounded-xl bg-card/10 flex items-center justify-center">
                     <Layers size={20} />
                   </div>
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.3em]">Session Context</p>
+                  <p className="text-xs font-medium text-muted-foreground">Session Context</p>
                 </div>
                 <ChevronDown className={cn("h-5 w-5 text-muted-foreground transition-transform duration-500", contextOpen && "rotate-180")} />
               </div>
@@ -355,7 +355,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 px-2">
                     <CreditCard size={16} className="text-emerald-400" />
-                    <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Payment Link</span>
+                    <span className="text-xs font-medium text-muted-foreground">Payment Link</span>
                   </div>
                   <EditableField 
                     key={`payment-link-${appointment.id}`} 
@@ -371,7 +371,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 px-2">
                     <Target size={16} className="text-indigo-400" />
-                    <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Acupoints</span>
+                    <span className="text-xs font-medium text-muted-foreground">Acupoints</span>
                   </div>
                   <EditableField 
                     key={`acupoints-${appointment.id}`} 
@@ -392,9 +392,9 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
                   <div className="flex items-center justify-between px-2">
                     <div className="flex items-center gap-3">
                       <MessageSquare size={16} className="text-amber-400" />
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Practitioner Reflection</span>
+                      <span className="text-xs font-medium text-muted-foreground">Practitioner Reflection</span>
                     </div>
-                    <Button variant="ghost" size="sm" asChild className="h-8 px-3 text-[10px] font-semibold uppercase tracking-wider text-indigo-400 hover:text-primary-foreground hover:bg-card/10 rounded-lg">
+                    <Button variant="ghost" size="sm" asChild className="h-8 px-3 text-[11px] font-semibold text-indigo-400 hover:text-primary-foreground hover:bg-card/10 rounded-lg">
                       <Link to="/practice/journal" state={{ appointmentId: appointment.id }}>
                         Open Journal <ExternalLink size={10} className="ml-2" />
                       </Link>
@@ -420,12 +420,12 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
       {/* Quick Reference */}
       <Card className="border-none shadow-sm shadow-indigo-500/5 rounded-xl bg-muted dark:bg-indigo-900/20 border-2 border-indigo-100 dark:border-indigo-800 overflow-hidden group">
         <CardHeader className="p-5 pb-3">
-          <CardTitle className="text-[10px] font-semibold uppercase tracking-[0.3em] text-chart-primary flex items-center gap-3">
+          <CardTitle className="text-[10px] font-semibold uppercase tracking-wider text-chart-primary flex items-center gap-3">
             <Lightbulb size={16} className="group-hover:scale-110 transition-transform" /> Quick Reference
           </CardTitle>
         </CardHeader>
         <CardContent className="p-5 pt-0">
-          <div className="p-5 bg-card dark:bg-foreground rounded-xl border border-indigo-200 dark:border-indigo-800 shadow-sm">
+          <div className="p-5 bg-card dark:bg-card rounded-xl border border-indigo-200 dark:border-indigo-800 shadow-sm">
             <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider mb-2">Instant Cramp Hack</p>
             <p className="text-xs font-medium text-foreground/80 dark:text-muted-foreground/60 leading-relaxed">
               Chop spindles <span className="text-chart-primary font-semibold">INWARDS</span>, then <span className="text-chart-primary font-semibold">OUTWARDS</span> (x2).

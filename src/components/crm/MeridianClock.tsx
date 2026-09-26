@@ -40,7 +40,7 @@ const MeridianClock = () => {
   const oppositeChannel = displayChannel ? TCM_CHANNELS.find(c => c.id === displayChannel.oppositeId) : null;
 
   return (
-    <Card className="border-none shadow-sm bg-card rounded-[2rem] overflow-hidden">
+    <Card className="border border-border shadow-sm bg-card rounded-2xl overflow-hidden">
       <CardContent className="p-6 space-y-6">
         {/* The Visual Clock */}
         <div className="relative aspect-square max-w-[240px] mx-auto w-full">
@@ -72,7 +72,7 @@ const MeridianClock = () => {
                   )}
                 >
                   <span className={cn(
-                    "text-[7px] font-black",
+                    "text-[7px] font-semibold",
                     isActive || isHovered ? "text-primary-foreground" : "text-muted-foreground"
                   )}>
                     {channel.code}
@@ -88,13 +88,13 @@ const MeridianClock = () => {
 
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="w-24 h-24 bg-card rounded-full shadow-xl border-2 border-muted flex flex-col items-center justify-center text-center p-2">
-              <p className="text-xs font-black text-foreground tabular-nums">
+              <p className="text-xs font-semibold text-foreground tabular-nums">
                 {format(currentTime, "h:mm a")}
               </p>
-              <p className="text-[6px] font-black text-muted-foreground uppercase tracking-widest mt-0.5">
+              <p className="text-[6px] font-semibold text-muted-foreground uppercase tracking-wider mt-0.5">
                 Peak
               </p>
-              <p className="text-[8px] font-bold text-indigo-600 dark:text-indigo-400 truncate max-w-full px-1">
+              <p className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 truncate max-w-full px-1">
                 {TCM_CHANNELS.find(c => c.id === activeId)?.name}
               </p>
             </div>
@@ -110,27 +110,27 @@ const MeridianClock = () => {
                   <Activity size={16} />
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-foreground">{displayChannel.name}</h3>
-                  <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">{displayChannel.peakTime}</p>
+                  <h3 className="text-sm font-semibold text-foreground">{displayChannel.name}</h3>
+                  <p className="text-xs font-medium text-muted-foreground">{displayChannel.peakTime}</p>
                 </div>
               </div>
               {nextChannel && !hoveredId && (
                 <div className="text-right">
-                  <p className="text-[7px] font-black text-muted-foreground uppercase tracking-widest flex items-center justify-end gap-1">
+                  <p className="text-[7px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center justify-end gap-1">
                     Next <ArrowRight size={8} />
                   </p>
-                  <p className="text-[9px] font-bold text-muted-foreground">{nextChannel.name}</p>
+                  <p className="text-[10px] font-bold text-muted-foreground">{nextChannel.name}</p>
                 </div>
               )}
             </div>
 
             <div className="grid grid-cols-1 gap-2">
               <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-900/30 relative overflow-hidden">
-                <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mb-1">Partner</p>
-                <p className="text-xs font-black text-indigo-900 dark:text-indigo-100">{oppositeChannel?.name}</p>
+                <p className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider mb-1">Partner</p>
+                <p className="text-xs font-semibold text-indigo-900 dark:text-indigo-100">{oppositeChannel?.name}</p>
               </div>
               <div className="p-3 bg-rose-50 dark:bg-rose-900/20 rounded-xl border border-rose-100 dark:border-rose-900/30">
-                <p className="text-[8px] font-black text-rose-400 uppercase tracking-widest mb-1">Emotions</p>
+                <p className="text-[10px] font-semibold text-rose-400 uppercase tracking-wider mb-1">Emotions</p>
                 <div className="flex flex-wrap gap-1">
                   {displayChannel.emotions.slice(0, 3).map(e => (
                     <Badge key={e} variant="outline" className="bg-card border-rose-100 dark:border-rose-900/30 text-rose-600 dark:text-rose-400 text-[7px] font-bold px-1.5 py-0">

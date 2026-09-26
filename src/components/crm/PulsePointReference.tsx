@@ -19,14 +19,14 @@ const PulsePointReference = ({ organ }: { organ?: string }) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
         <Hand size={14} className="text-indigo-500" /> Pulse Point Locator
       </div>
       
       <div className="grid grid-cols-2 gap-4">
         {['Left', 'Right'].map(side => (
           <div key={side} className="space-y-2">
-            <p className="text-[9px] font-black text-center uppercase text-muted-foreground">{side} Wrist</p>
+            <p className="text-xs font-medium text-center text-muted-foreground">{side} Wrist</p>
             <div className="space-y-1">
               {points.filter(p => p.side === side).map((p, i) => {
                 const isMatch = p.light === organ || p.deep === organ;
@@ -36,7 +36,7 @@ const PulsePointReference = ({ organ }: { organ?: string }) => {
                   <div 
                     key={i} 
                     className={cn(
-                      "p-2 rounded-lg border text-[8px] font-bold transition-all",
+                      "p-2 rounded-lg border text-[10px] font-bold transition-all",
                       isMatch ? "bg-indigo-600 border-indigo-400 text-primary-foreground shadow-lg scale-105 z-10" : "bg-muted/50 border-border/50 text-muted-foreground"
                     )}
                   >

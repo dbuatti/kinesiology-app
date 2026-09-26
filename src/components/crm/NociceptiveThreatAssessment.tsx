@@ -118,14 +118,14 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
               <div className="p-3 rounded-lg bg-muted border border-border flex items-center gap-3">
                 <AlertTriangle size={14} className="text-chart-primary shrink-0" />
                 <div>
-                  <p className="text-[9px] font-medium text-muted-foreground uppercase tracking-wider">Inhibited finding</p>
+                  <p className="text-xs font-medium text-muted-foreground">Inhibited finding</p>
                   <p className="text-xs font-medium text-foreground">{initialValue}</p>
                 </div>
               </div>
             )}
 
             <div className="space-y-1">
-              <label className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">Known site of suspected nociception</label>
+              <label className="text-xs font-medium text-muted-foreground">Known site of suspected nociception</label>
               <div className="relative">
                 <AlertTriangle className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={14} />
                 <Input 
@@ -138,14 +138,14 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
             </div>
 
             <div className="space-y-2">
-              <p className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">Common sites</p>
+              <p className="text-xs font-medium text-muted-foreground">Common sites</p>
               <div className="flex flex-wrap gap-1.5">
                 {SITE_PRESETS.map(tag => (
                   <button
                     key={tag}
                     onClick={() => setCurrentLayer({ ...currentLayer, site: tag })}
                     className={cn(
-                      "px-2 py-1 rounded-md text-[9px] font-medium transition-all",
+                      "px-2 py-1 rounded-md text-[10px] font-medium transition-all",
                       currentLayer.site === tag 
                         ? "bg-primary/10 text-primary border border-primary/30" 
                         : "bg-muted text-muted-foreground hover:bg-muted/80 border border-transparent"
@@ -160,7 +160,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
             <div className="p-3 rounded-lg bg-muted border border-border space-y-1">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Info size={12} />
-                <span className="font-medium text-[9px] uppercase tracking-wider">Know your scar types</span>
+                <span className="font-medium text-[10px] uppercase tracking-wider">Know your scar types</span>
               </div>
               <p className="text-xs text-muted-foreground">
                 <strong>Stretch</strong> the scar → locks = <strong>mechanoreception</strong> (Golgi distortion).{' '}
@@ -366,7 +366,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
                 </div>
 
                 <div className="border-t border-border pt-3">
-                  <p className="text-[9px] font-medium text-muted-foreground uppercase tracking-wider mb-2">Stack the collateral inputs (all at once):</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-2">Stack the collateral inputs (all at once):</p>
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-2 p-2 rounded-md bg-background/80 border border-border">
                       <Eye size={12} className="text-chart-primary shrink-0" />
@@ -486,7 +486,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
         <div className="flex items-center justify-between mb-3 mt-4">
           <div>
             <h2 className="text-sm font-medium text-foreground">Nociception — Quick Screen</h2>
-            <Badge className="bg-muted text-muted-foreground border-none text-[9px] font-medium mt-0.5">
+            <Badge className="bg-muted text-muted-foreground border-none text-[10px] font-medium mt-0.5">
               Afferent — Spinothalamic
             </Badge>
           </div>
@@ -512,7 +512,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
             <div key={step} className="flex items-center gap-1.5">
               <div className="flex flex-col items-center gap-1">
                 <span className={cn(
-                  "text-[9px] font-medium hidden sm:block",
+                  "text-[10px] font-medium hidden sm:block",
                   currentStep === step ? "text-primary" : "text-muted-foreground"
                 )}>
                   {stepNames[step]}
@@ -542,7 +542,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
               <AlertTriangle size={12} className="text-muted-foreground" />
               <span className="text-xs text-foreground">Site: <strong>{currentLayer.site}</strong></span>
             </div>
-            <Badge className="bg-primary/10 text-primary border-none text-[9px]">
+            <Badge className="bg-primary/10 text-primary border-none text-[10px]">
               Layer {layers.length + 1}
             </Badge>
           </div>

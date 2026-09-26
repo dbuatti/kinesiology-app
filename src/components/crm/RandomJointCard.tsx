@@ -97,7 +97,7 @@ const RandomJointCard = () => {
           <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-xl border border-border/50">
             <div className="flex items-center gap-1.5">
               <Zap size={12} className="text-muted-foreground" />
-              <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider">Sagittal</span>
+              <span className="text-xs font-medium text-muted-foreground">Sagittal</span>
             </div>
             <span className="text-xs font-bold text-foreground/80">
               {joint.actions.Sagittal.map(a => a.label).join(', ')}
@@ -107,7 +107,7 @@ const RandomJointCard = () => {
           <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-xl border border-border/50">
             <div className="flex items-center gap-1.5">
               <Move size={12} className="text-muted-foreground" />
-              <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider">Frontal</span>
+              <span className="text-xs font-medium text-muted-foreground">Frontal</span>
             </div>
             <span className="text-xs font-bold text-foreground/80">
               {joint.actions.Frontal.map(a => a.label).join(', ')}
@@ -117,7 +117,7 @@ const RandomJointCard = () => {
           <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-xl border border-border/50">
             <div className="flex items-center gap-1.5">
               <RefreshCw size={12} className="text-muted-foreground" />
-              <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider">Transverse</span>
+              <span className="text-xs font-medium text-muted-foreground">Transverse</span>
             </div>
             <span className="text-xs font-bold text-foreground/80">
               {joint.actions.Transverse.map(a => a.label).join(', ')}
@@ -126,7 +126,7 @@ const RandomJointCard = () => {
         </div>
 
         <div className="p-3.5 bg-muted/50 rounded-xl border border-border/50 relative overflow-hidden">
-          <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
+          <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
             <Lightbulb size={10} className="text-muted-foreground" /> Clinical Pearl
           </p>
           <p className="text-[11px] text-muted-foreground font-medium leading-relaxed">
@@ -138,7 +138,7 @@ const RandomJointCard = () => {
           variant="ghost" 
           onClick={handleManualRefresh}
           disabled={isRefreshing}
-          className="w-full h-9 rounded-xl text-[9px] font-bold uppercase tracking-wider text-foreground/80 hover:bg-muted"
+          className="w-full h-9 rounded-xl text-[11px] font-bold text-foreground/80 hover:bg-muted"
         >
           {isRefreshing ? <Loader2 className="animate-spin mr-1.5" size={12} /> : <ChevronRight className="mr-1.5" size={12} />}
           Next Joint

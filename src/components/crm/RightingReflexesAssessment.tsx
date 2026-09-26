@@ -178,13 +178,13 @@ const RightingReflexesAssessment = ({
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-muted/50 rounded-2xl border border-border/50">
         <div className="space-y-1">
-          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Assessment Result</p>
+          <p className="text-xs font-medium text-muted-foreground">Assessment Result</p>
           <div className="flex gap-2">
             <Button 
               size="sm" 
               onClick={() => handleSetStatus('Clear')}
               className={cn(
-                "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+                "h-9 px-3.5 rounded-lg font-medium text-[13px] transition-all",
                 currentStatus === 'Clear' ? "bg-emerald-600 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-emerald-50"
               )}
             >
@@ -194,7 +194,7 @@ const RightingReflexesAssessment = ({
               size="sm" 
               onClick={() => handleSetStatus('Inhibited')}
               className={cn(
-                "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+                "h-9 px-3.5 rounded-lg font-medium text-[13px] transition-all",
                 currentStatus === 'Inhibited' ? "bg-rose-600 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-rose-50"
               )}
             >
@@ -204,7 +204,7 @@ const RightingReflexesAssessment = ({
               size="sm" 
               onClick={() => handleSetStatus('Recheck')}
               className={cn(
-                "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+                "h-9 px-3.5 rounded-lg font-medium text-[13px] transition-all",
                 currentStatus === 'Recheck' ? "bg-amber-500 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-amber-50"
               )}
             >
@@ -213,7 +213,7 @@ const RightingReflexesAssessment = ({
           </div>
         </div>
         {currentStatus && (
-          <Badge className="bg-indigo-600 text-primary-foreground border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full">
+          <Badge className="bg-indigo-600 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
             Auto-synced to Align phase
           </Badge>
         )}
@@ -225,21 +225,21 @@ const RightingReflexesAssessment = ({
             <Button 
               variant={activeTest === 'ocular' ? 'default' : 'ghost'}
               onClick={() => setActiveTest('ocular')}
-              className={cn("flex-1 rounded-xl h-10 font-bold text-xs uppercase tracking-widest", activeTest === 'ocular' ? "bg-card text-indigo-600 shadow-sm" : "text-primary-foreground")}
+              className={cn("flex-1 rounded-xl h-10 font-bold text-xs", activeTest === 'ocular' ? "bg-card text-indigo-600 shadow-sm" : "text-primary-foreground")}
             >
               <Eye size={16} className="mr-2" /> Ocular
             </Button>
             <Button 
               variant={activeTest === 'labyrinthine' ? 'default' : 'ghost'}
               onClick={() => setActiveTest('labyrinthine')}
-              className={cn("flex-1 rounded-xl h-10 font-bold text-xs uppercase tracking-widest", activeTest === 'labyrinthine' ? "bg-card text-indigo-600 shadow-sm" : "text-primary-foreground")}
+              className={cn("flex-1 rounded-xl h-10 font-bold text-xs", activeTest === 'labyrinthine' ? "bg-card text-indigo-600 shadow-sm" : "text-primary-foreground")}
             >
               <EyeOff size={16} className="mr-2" /> Labyrinthine
             </Button>
           </div>
 
-          <div className="p-6 bg-card rounded-[2rem] border-2 border-border/50 space-y-4">
-            <h4 className="font-black text-foreground flex items-center gap-2">
+          <div className="p-6 bg-card rounded-2xl border-2 border-border/50 space-y-4">
+            <h4 className="font-semibold text-foreground flex items-center gap-2">
               {activeTest === 'ocular' ? <Eye className="text-primary" /> : <Activity className="text-emerald-500" />}
               {activeTest === 'ocular' ? 'Ocular Righting Reflex' : 'Labyrinthine Righting Reflex'}
             </h4>
@@ -250,7 +250,7 @@ const RightingReflexesAssessment = ({
                   : "Client closes eyes and imagines the target. Tilt their body to the side."}
               </p>
               <div className="p-4 bg-muted/50 rounded-xl border border-border/50">
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">Expected Response</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Expected Response</p>
                 <p className="text-sm font-bold text-foreground">Head should reflexivey tilt back towards the midline/horizon.</p>
               </div>
             </div>
@@ -258,26 +258,26 @@ const RightingReflexesAssessment = ({
 
           {/* Structured Clinical Fields */}
           <div className="p-6 bg-muted/50 rounded-2xl border border-border/50 space-y-4">
-            <h4 className="text-xs font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+            <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
               <ArrowRightLeft size={14} className="text-indigo-500" /> Clinical Metrics
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Ocular Righting</Label>
+                <Label className="text-xs font-medium text-muted-foreground">Ocular Righting</Label>
                 <ToggleGroup type="single" value={ocularStatus} onValueChange={handleOcularChange} className="justify-start gap-1">
                   <ToggleGroupItem value="Pass" className="rounded-lg border border-border text-xs font-bold px-2 py-1.5">Pass</ToggleGroupItem>
                   <ToggleGroupItem value="Fail" className="rounded-lg border border-border text-xs font-bold px-2 py-1.5">Fail</ToggleGroupItem>
                 </ToggleGroup>
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Labyrinthine</Label>
+                <Label className="text-xs font-medium text-muted-foreground">Labyrinthine</Label>
                 <ToggleGroup type="single" value={labyrinthineStatus} onValueChange={handleLabyrinthineChange} className="justify-start gap-1">
                   <ToggleGroupItem value="Pass" className="rounded-lg border border-border text-xs font-bold px-2 py-1.5">Pass</ToggleGroupItem>
                   <ToggleGroupItem value="Fail" className="rounded-lg border border-border text-xs font-bold px-2 py-1.5">Fail</ToggleGroupItem>
                 </ToggleGroup>
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Head Tilt Angle</Label>
+                <Label className="text-xs font-medium text-muted-foreground">Head Tilt Angle</Label>
                 <div className="relative">
                   <Input type="number" placeholder="e.g. 15" value={headTiltAngle} onChange={(e) => handleTiltChange(e.target.value)} className="h-10 rounded-xl pr-8 text-xs font-bold" />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">°</span>

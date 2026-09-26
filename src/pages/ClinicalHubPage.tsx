@@ -137,14 +137,14 @@ const ClinicalHubPage = () => {
                 <Zap size={20} className="text-primary" />
               </div>
               <div>
-                <h1 className="text-xl font-bold tracking-tight">Clinical Hub</h1>
+                <h1 className="font-serif text-[26px] font-medium tracking-[-0.02em]">Clinical Hub</h1>
                 <p className="text-xs text-muted-foreground font-medium">PEACE V2 · DOC V2 · Corrections Manual</p>
               </div>
             </div>
             <button
               onClick={toggleIpadMode}
               className={cn(
-                "flex items-center gap-2 px-3 h-9 rounded-xl text-[10px] font-bold uppercase tracking-wider border transition-colors shrink-0",
+                "flex items-center gap-2 px-3 h-9 rounded-xl text-[11px] font-bold border transition-colors shrink-0",
                 ipadMode
                   ? "bg-primary/10 border-primary/30 text-primary"
                   : "border-border text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -172,20 +172,19 @@ const ClinicalHubPage = () => {
                   }
                 }}
                 className={cn(
-                  "text-left border border-border rounded-xl p-5 transition-all border-l-4",
-                  mode.color
+                  "spotlight group text-left rounded-xl border border-border bg-card p-5 shadow-xs transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:border-foreground/15 hover:shadow-md"
                 )}
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", mode.iconBg)}>
                     <Icon size={16} className={mode.accent} />
                   </div>
-                  <span className={cn("text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border", mode.accent, "border-current/20 bg-current/5")}>
+                  <span className={cn("rounded-full bg-foreground/[0.05] px-2 py-0.5 text-[11px] font-medium", mode.accent)}>
                     {mode.badge}
                   </span>
                 </div>
-                <h3 className="text-sm font-bold mb-1">{mode.label}</h3>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">{mode.description}</p>
+                <h3 className="mb-1 text-[15px] font-semibold tracking-tight">{mode.label}</h3>
+                <p className="text-[13px] text-muted-foreground leading-relaxed">{mode.description}</p>
               </button>
             );
           })}
@@ -195,17 +194,17 @@ const ClinicalHubPage = () => {
         <div className="mb-10">
           <button
             onClick={() => setQuickSessionOpen(true)}
-            className="w-full flex items-center justify-center gap-3 h-16 rounded-xl border-2 border-dashed border-primary/30 hover:border-primary/60 hover:bg-primary/5 transition-all text-muted-foreground hover:text-primary"
+            className="group w-full flex items-center justify-center gap-2.5 h-14 rounded-xl border border-dashed border-foreground/15 bg-card/50 text-[14px] font-medium text-muted-foreground transition-all hover:border-primary/40 hover:bg-primary/[0.04] hover:text-primary"
           >
             <Plus size={20} />
-            <span className="font-bold text-sm uppercase tracking-wider">New Session</span>
+            <span className="font-bold text-sm">New Session</span>
           </button>
         </div>
 
         {/* Up Next — Today & Upcoming */}
         <div className="mb-10">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+            <h2 className="text-xs font-medium text-muted-foreground">
               Up Next — Today & Upcoming
             </h2>
             {upNext.length > 0 && (
@@ -237,7 +236,7 @@ const ClinicalHubPage = () => {
                       {s.tag && <span className="truncate">· {s.tag}</span>}
                     </div>
                   </div>
-                  <span className="text-[10px] font-medium text-muted-foreground group-hover:text-foreground transition-colors uppercase tracking-wider">
+                  <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                     Open →
                   </span>
                 </button>
@@ -248,7 +247,7 @@ const ClinicalHubPage = () => {
 
         {/* Recent Sessions */}
         <div>
-          <h2 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4">Recent Sessions</h2>
+          <h2 className="text-xs font-medium text-muted-foreground mb-4">Recent Sessions</h2>
           {loading ? (
             <div className="flex justify-center py-6"><Loader2 className="animate-spin text-muted-foreground" size={20} /></div>
           ) : recentSessions.length === 0 ? (
@@ -275,7 +274,7 @@ const ClinicalHubPage = () => {
                       <span>{format(new Date(s.date), "h:mm a")}</span>
                     </div>
                   </div>
-                  <span className="text-[10px] font-medium text-muted-foreground group-hover:text-foreground transition-colors uppercase tracking-wider">
+                  <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                     Open →
                   </span>
                 </button>

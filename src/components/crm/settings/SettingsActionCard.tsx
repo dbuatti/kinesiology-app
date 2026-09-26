@@ -45,7 +45,7 @@ const SettingsActionCard = ({
       borderColors[themeColor]
     )}>
       <div className="space-y-1">
-        <h4 className="font-black text-foreground text-sm uppercase tracking-tight">
+        <h4 className="font-semibold text-foreground text-sm uppercase tracking-tight">
           {title}
         </h4>
         <p className="text-xs text-muted-foreground leading-relaxed">
@@ -56,7 +56,7 @@ const SettingsActionCard = ({
         onClick={onClick} 
         disabled={loading}
         className={cn(
-          "w-full text-primary-foreground rounded-xl h-10 font-black text-[10px] uppercase tracking-widest shadow-lg transition-all",
+          "w-full text-primary-foreground rounded-lg h-9 font-medium text-[13px] shadow-lg transition-all",
           buttonColors[themeColor]
         )}
       >

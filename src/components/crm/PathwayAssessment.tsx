@@ -131,20 +131,20 @@ const PathwayAssessment = ({
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 px-4 border-r border-border">
               <Layers size={18} className="text-muted-foreground" />
-              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Session View</span>
+              <span className="text-xs font-medium text-muted-foreground">Session View</span>
             </div>
             
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-3">
                 <Switch id="show-images" checked={showImages} onCheckedChange={setShowImages} />
-                <Label htmlFor="show-images" className="text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer flex items-center gap-2">
+                <Label htmlFor="show-images" className="text-xs font-medium text-muted-foreground cursor-pointer flex items-center gap-2">
                   <ImageIcon size={14} className="text-muted-foreground" />
                   Reference Images
                 </Label>
               </div>
               <div className="flex items-center gap-3">
                 <Switch id="compact-mode" checked={compactMode} onCheckedChange={setCompactMode} />
-                <Label htmlFor="compact-mode" className="text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer flex items-center gap-2">
+                <Label htmlFor="compact-mode" className="text-xs font-medium text-muted-foreground cursor-pointer flex items-center gap-2">
                   <ListChecks size={14} className="text-muted-foreground" />
                   Compact
                 </Label>
@@ -162,7 +162,7 @@ const PathwayAssessment = ({
                   title: "Sync unresolved findings?",
                   description: "This will copy unresolved findings from the previous session."
                 })}
-                className="h-9 text-[10px] font-medium uppercase tracking-wider hover:bg-muted"
+                className="h-9 text-[11px] font-medium hover:bg-muted"
               >
                 <RefreshCw size={14} className="mr-2" /> Sync Unresolved
               </Button>
@@ -204,7 +204,7 @@ const PathwayAssessment = ({
                 style={{ animationDelay: `${i * 60}ms` }}
               >
                 <cat.icon size={18} className={cn("mr-3 transition-transform group-hover:scale-110", cat.color)} />
-                <span className="font-medium text-[10px] uppercase tracking-wider mr-3">{cat.label}</span>
+                <span className="font-medium text-[11px] mr-3">{cat.label}</span>
                 {cat.count > 0 && (
                   <Badge className="bg-chart-destructive text-destructive-foreground border-none font-medium text-[10px] h-5 min-w-[20px] flex items-center justify-center px-1 rounded-full">
                     {cat.count}

@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -222,7 +223,7 @@ export function BusinessDashboardTool() {
                     className="w-full flex items-center justify-between px-5 py-3 border-b last:border-0 hover:bg-muted/20 text-left">
                     <div>
                       <p className="text-sm font-medium">{d.clientMap.get(a.client_id) || 'Client'}</p>
-                      <p className="text-xs text-muted-foreground">{a.date} · FNH</p>
+                      <p className="text-xs text-muted-foreground">{a.date ? format(new Date(a.date), "EEE d MMM · h:mm a") : ""} · FNH</p>
                     </div>
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </button>

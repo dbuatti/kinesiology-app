@@ -53,12 +53,12 @@ const OnboardingLookupPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted p-6">
-      <Card className="max-w-md w-full border-none shadow-2xl rounded-[2.5rem] overflow-hidden">
+      <Card className="max-w-md w-full border border-border shadow-sm rounded-2xl overflow-hidden">
         <div className="bg-gradient-to-br from-amber-400 to-rose-400 p-8 text-center text-white">
           <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl border border-white/20">
             <CheckCircle2 size={32} />
           </div>
-          <CardTitle className="text-2xl font-black tracking-tight">Welcome to FNH</CardTitle>
+          <CardTitle className="text-2xl font-semibold tracking-tight">Welcome to FNH</CardTitle>
           <p className="text-white/90 text-sm font-medium mt-1">Let's find your clinical history form.</p>
         </div>
 
@@ -66,14 +66,14 @@ const OnboardingLookupPage = () => {
           {loading ? (
             <div className="py-12 flex flex-col items-center gap-4">
               <Loader2 className="animate-spin text-chart-primary" size={32} />
-              <p className="text-muted-foreground font-black text-[10px] uppercase tracking-[0.3em]">
+              <p className="text-muted-foreground font-medium text-xs">
                 Searching Database...
               </p>
             </div>
           ) : (
             <form onSubmit={handleManualSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">
+                <label className="text-xs font-medium text-muted-foreground ml-1">
                   Enter your booking email
                 </label>
                 <div className="relative">
@@ -98,7 +98,7 @@ const OnboardingLookupPage = () => {
 
               <Button 
                 type="submit"
-                className="w-full h-14 rounded-2xl bg-chart-primary hover:bg-chart-primary/90 text-lg font-black shadow-xl shadow-chart-primary/20"
+                className="w-full h-14 rounded-2xl bg-chart-primary hover:bg-chart-primary/90 text-lg font-semibold shadow-xl shadow-chart-primary/20"
               >
                 Access My Form <ArrowRight size={20} className="ml-2" />
               </Button>

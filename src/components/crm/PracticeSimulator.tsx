@@ -69,7 +69,7 @@ const PracticeSimulator = ({
             <CardTitle className="text-base font-bold text-foreground">Live Practice Simulator</CardTitle>
           </div>
           <Badge className={cn(
-            "font-black text-[8px] uppercase tracking-widest px-2.5 py-1 rounded-full",
+            "font-semibold text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full",
             simImStatus === 'Normotonic' ? "bg-emerald-500 text-primary-foreground" : "bg-rose-500 text-primary-foreground"
           )}>
             IM: {simImStatus}
@@ -80,7 +80,7 @@ const PracticeSimulator = ({
         {simStep === 'idle' && (
           <div className="text-center py-8 space-y-4">
             <p className="text-sm text-muted-foreground font-medium">Ready to test your clinical skills? Run a simulated walkthrough of this protocol.</p>
-            <Button onClick={onStartSimulation} className="bg-foreground hover:bg-foreground text-primary-foreground rounded-xl h-11 px-8 font-bold text-xs uppercase tracking-wider">
+            <Button onClick={onStartSimulation} className="bg-foreground hover:bg-foreground text-primary-foreground rounded-xl h-11 px-8 font-bold text-xs">
               Start Practice Simulator
             </Button>
           </div>
@@ -90,7 +90,7 @@ const PracticeSimulator = ({
           <div className="space-y-4 animate-in fade-in duration-300">
             <p className="text-sm font-bold text-foreground/80">Step 1: Test the baseline Indicator Muscle (IM) to ensure it is strong (Normotonic).</p>
             <div className="flex justify-center py-4">
-              <Button onClick={onTestBaseline} className="bg-foreground hover:bg-foreground text-primary-foreground rounded-xl h-12 px-8 font-bold text-xs uppercase tracking-wider">
+              <Button onClick={onTestBaseline} className="bg-foreground hover:bg-foreground text-primary-foreground rounded-xl h-12 px-8 font-bold text-xs">
                 Test Indicator Muscle (IM)
               </Button>
             </div>
@@ -106,7 +106,7 @@ const PracticeSimulator = ({
                 : `Action: Place the ${sandboxJoint} into the restricted action (${sandboxAction}) and apply resistance.`}
             </div>
             <div className="flex justify-center py-4">
-              <Button onClick={onApplyChallenge} className="bg-rose-600 hover:bg-rose-700 text-primary-foreground rounded-xl h-12 px-8 font-bold text-xs uppercase tracking-wider">
+              <Button onClick={onApplyChallenge} className="bg-rose-600 hover:bg-rose-700 text-primary-foreground rounded-xl h-12 px-8 font-bold text-xs">
                 {sandboxTissue === 'Ligament' ? 'Apply Ligament Stretch' : 'Apply Muscle Resistance'}
               </Button>
             </div>
@@ -148,11 +148,11 @@ const PracticeSimulator = ({
             </div>
 
             <div className="bg-foreground text-primary-foreground p-6 rounded-2xl flex flex-col items-center justify-center border border-foreground/20">
-              <div className="text-4xl font-black text-indigo-400 mb-4 font-mono">{simTimer}s</div>
+              <div className="text-4xl font-semibold text-indigo-400 mb-4 font-mono">{simTimer}s</div>
               <Button 
                 onClick={onStartCorrectionTimer} 
                 disabled={simTimerActive}
-                className="bg-indigo-600 hover:bg-indigo-700 text-primary-foreground rounded-xl h-11 px-8 font-bold text-xs uppercase tracking-wider"
+                className="bg-indigo-600 hover:bg-indigo-700 text-primary-foreground rounded-xl h-11 px-8 font-bold text-xs"
               >
                 {simTimerActive ? "Calibrating..." : "Apply Correction"}
               </Button>
@@ -164,7 +164,7 @@ const PracticeSimulator = ({
           <div className="space-y-4 animate-in fade-in duration-300">
             <p className="text-sm font-bold text-foreground/80">Step 4: Re-test the Indicator Muscle (IM) to verify the correction.</p>
             <div className="flex justify-center py-4">
-              <Button onClick={onRetest} className="bg-emerald-600 hover:bg-emerald-700 text-primary-foreground rounded-xl h-12 px-8 font-bold text-xs uppercase tracking-wider">
+              <Button onClick={onRetest} className="bg-emerald-600 hover:bg-emerald-700 text-primary-foreground rounded-xl h-12 px-8 font-bold text-xs">
                 Re-Test Indicator Muscle (IM)
               </Button>
             </div>
@@ -180,7 +180,7 @@ const PracticeSimulator = ({
               <h4 className="text-lg font-bold text-foreground">Pathway Integrated!</h4>
               <p className="text-xs text-muted-foreground">Excellent work. You have successfully completed the clinical loop.</p>
             </div>
-            <Button onClick={onStartSimulation} className="bg-foreground hover:bg-foreground text-primary-foreground rounded-xl h-10 px-6 font-bold text-xs uppercase tracking-wider">
+            <Button onClick={onStartSimulation} className="bg-foreground hover:bg-foreground text-primary-foreground rounded-xl h-10 px-6 font-bold text-xs">
               Practice Again
             </Button>
           </div>

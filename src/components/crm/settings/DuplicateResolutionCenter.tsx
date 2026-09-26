@@ -363,11 +363,11 @@ const DuplicateResolutionCenter = () => {
   };
 
   return (
-    <Card className="border-none shadow-xl rounded-[2.5rem] bg-card overflow-hidden border-2 border-amber-100 dark:border-amber-900/30">
+    <Card className="shadow-sm rounded-2xl bg-card overflow-hidden border-2 border-amber-100 dark:border-amber-900/30">
       <CardHeader className="p-8 pb-4 bg-amber-50/50">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <CardTitle className="text-xl font-black flex items-center gap-3 text-amber-900">
+            <CardTitle className="text-xl font-semibold flex items-center gap-3 text-amber-900">
               <Merge size={24} /> Duplicate Resolution Center
             </CardTitle>
             <CardDescription className="text-amber-700 font-medium">Consolidate duplicate client profiles in both the CRM and Notion.</CardDescription>
@@ -377,7 +377,7 @@ const DuplicateResolutionCenter = () => {
               onClick={handlePullFromNotion}
               disabled={pullingNotion || merging}
               variant="outline"
-              className="border-amber-200 text-amber-700 hover:bg-amber-50 rounded-xl h-10 px-4 font-black text-[10px] uppercase tracking-widest"
+              className="border-amber-200 text-amber-700 hover:bg-amber-50 rounded-lg h-9 px-4 font-medium text-[13px]"
             >
               {pullingNotion ? <Loader2 className="mr-2 animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
               Pull from Notion
@@ -390,7 +390,7 @@ const DuplicateResolutionCenter = () => {
                   description: `This will automatically merge ALL ${detectedDuplicates.length} duplicate groups into their primary profiles. This is a bulk operation. Are you sure you want to proceed?`
                 })}
                 disabled={merging}
-                className="bg-amber-600 hover:bg-amber-700 text-primary-foreground rounded-xl h-10 px-4 font-black text-[10px] uppercase tracking-widest shadow-lg"
+                className="bg-amber-600 hover:bg-amber-700 text-primary-foreground rounded-lg h-9 px-4 font-medium text-[13px] shadow-lg"
               >
                 {merging ? <Loader2 className="mr-2 animate-spin" /> : <CheckCircle2 size={14} className="mr-1.5" />}
                 Auto-Merge All ({detectedDuplicates.length})

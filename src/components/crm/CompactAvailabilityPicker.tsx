@@ -111,7 +111,7 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
         </div>
         <div className="space-y-1">
           <p className="text-sm font-bold text-foreground">Syncing Availability</p>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Checking Cal.com...</p>
+          <p className="text-xs font-medium text-muted-foreground">Checking Cal.com...</p>
         </div>
       </div>
     );
@@ -119,7 +119,7 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
 
   if (error) {
     return (
-      <div className="p-8 bg-rose-50 border-2 border-rose-100 rounded-[2rem] text-center space-y-4">
+      <div className="p-8 bg-rose-50 border-2 border-rose-100 rounded-2xl text-center space-y-4">
         <AlertCircle className="mx-auto text-rose-500" size={32} />
         <div className="space-y-1">
           <p className="text-sm font-bold text-rose-900">Connection Error</p>
@@ -137,8 +137,8 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
       {/* Date Scroller */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Available Days</p>
-          <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest">
+          <p className="text-xs font-medium text-muted-foreground">Available Days</p>
+          <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-wider">
             Next 30 Days
           </Badge>
         </div>
@@ -166,13 +166,13 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
                           : "bg-card border-border hover:border-primary/30 text-foreground"
                       )}
                     >
-                      <span className="text-[9px] font-black uppercase tracking-wider opacity-60">
+                      <span className="text-[11px] font-semibold opacity-60">
                         {format(date, "EEE")}
                       </span>
-                      <span className="text-xl font-black leading-tight">
+                      <span className="text-xl font-semibold leading-tight">
                         {format(date, "d")}
                       </span>
-                      <span className="text-[8px] font-bold opacity-40 uppercase">
+                      <span className="text-[11px] font-bold opacity-40">
                         {format(date, "MMM")}
                       </span>
                     </button>
@@ -197,7 +197,7 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
       {selectedDate && (
         <div className="space-y-3 animate-in fade-in duration-300">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
+            <p className="text-xs font-medium text-muted-foreground">
               Pick a start time &mdash; sessions run ~60m
             </p>
             <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
@@ -213,7 +213,7 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
                 <button
                   key={idx}
                   onClick={() => onSlotSelect(dateObj, format(dateObj, "HH:mm"), timeStr)}
-                  className="flex items-center justify-center gap-2 p-3.5 rounded-xl bg-card border border-border text-sm font-black text-foreground hover:bg-indigo-600 hover:border-indigo-600 hover:text-primary-foreground transition-all group shadow-sm"
+                  className="flex items-center justify-center gap-2 p-3.5 rounded-xl bg-card border border-border text-sm font-semibold text-foreground hover:bg-indigo-600 hover:border-indigo-600 hover:text-primary-foreground transition-all group shadow-sm"
                 >
                   <Clock size={13} className="opacity-40 group-hover:opacity-100 transition-opacity shrink-0" />
                   {format(dateObj, "h:mm a")}

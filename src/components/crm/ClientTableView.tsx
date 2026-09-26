@@ -54,19 +54,19 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
   };
 
   return (
-    <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+    <div className="bg-card rounded-xl border border-border shadow-xs overflow-hidden">
       <div className="overflow-x-auto overflow-y-clip">
       <Table>
-        <TableHeader className="bg-muted/50">
+        <TableHeader className="bg-muted/40">
           <TableRow className="hover:bg-transparent border-border">
-            <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12 px-6">Client Name</TableHead>
-            <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12">Age / Sign</TableHead>
-            <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12">Rate</TableHead>
-            <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12">Last Session</TableHead>
-            <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12">Last Contacted</TableHead>
-            <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12 text-center">Total</TableHead>
-            <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12 text-center">Upcoming</TableHead>
-            <TableHead className="font-semibold text-[10px] uppercase tracking-wide text-muted-foreground h-12 text-right px-6">Actions</TableHead>
+            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10 px-6">Client Name</TableHead>
+            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10">Age / Sign</TableHead>
+            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10">Rate</TableHead>
+            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10">Last Session</TableHead>
+            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10">Last Contacted</TableHead>
+            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10 text-center">Total</TableHead>
+            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10 text-center">Upcoming</TableHead>
+            <TableHead className="whitespace-nowrap font-medium text-xs text-muted-foreground h-10 text-right px-6">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -74,10 +74,10 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
             const isVoice = client.kind === "voice";
             const profileHref = isVoice ? `/clients/${client.id}/hub` : `/clients/${client.id}`;
             return (
-            <TableRow key={client.id} className="hover:bg-primary/5 transition-colors group border-border">
-              <TableCell className="px-6 py-4">
+            <TableRow key={client.id} className="hover:bg-foreground/[0.02] transition-colors group border-border">
+              <TableCell className="px-6 py-3">
                 <Link to={profileHref} className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold uppercase shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[13px] font-semibold shrink-0">
                     {client.name.charAt(0)}
                   </div>
                   <div className="flex flex-col">
@@ -90,7 +90,7 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
                       {!isVoice && <IntakeStatusBadge client={client} />}
                       <NewInfoBadge submittedAt={(client as any).onboarding_submitted_at} />
                       {!isVoice && client.stripe_customer_id && (
-                        <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-black uppercase border-primary/20 text-primary bg-primary/5">
+                        <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-semibold border-primary/20 text-primary bg-primary/5">
                           <CreditCard size={8} className="mr-1" /> Synced
                         </Badge>
                       )}
@@ -133,31 +133,28 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
                     )}
                   </div>
                 ) : (
-                  <span className="text-xs text-muted-foreground">No rate set</span>
+                  <span className="whitespace-nowrap text-xs text-muted-foreground/70">No rate</span>
                 )}
               </TableCell>
               <TableCell>
-                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                  <CalendarPlus size={14} className="text-muted-foreground" />
-                  {client.last_session_at ? format(new Date(client.last_session_at), "MMM d, yyyy") : "Never"}
+                <div className="flex items-center gap-2 whitespace-nowrap text-[13px] text-foreground/80 tabular-nums">
+                  {client.last_session_at ? format(new Date(client.last_session_at), "d MMM yyyy") : "Never"}
                 </div>
               </TableCell>
               <TableCell>
-                <span className="text-sm font-medium text-muted-foreground">
-                  {client.last_contacted_at ? format(new Date(client.last_contacted_at), "MMM d, yyyy") : "Never"}
+                <span className="whitespace-nowrap text-[13px] text-muted-foreground tabular-nums">
+                  {client.last_contacted_at ? format(new Date(client.last_contacted_at), "d MMM yyyy") : "Never"}
                 </span>
               </TableCell>
               <TableCell className="text-center">
-                <div className="inline-flex flex-col items-center px-3 py-1 bg-muted rounded-lg">
-                  <span className="font-semibold text-foreground text-sm">{client.session_count}</span>
-                  <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Sessions</span>
-                </div>
+                <span className="text-sm font-medium tabular-nums text-foreground">{client.session_count}</span>
               </TableCell>
               <TableCell className="text-center">
-                <div className="inline-flex flex-col items-center px-3 py-1 rounded-lg bg-chart-primary/5">
-                  <span className="font-semibold text-chart-primary text-sm">{client.upcoming_count ?? 0}</span>
-                  <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">Upcoming</span>
-                </div>
+                {(client.upcoming_count ?? 0) > 0 ? (
+                  <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-primary/10 px-2 text-xs font-medium tabular-nums text-primary">{client.upcoming_count}</span>
+                ) : (
+                  <span className="text-sm text-muted-foreground/50">—</span>
+                )}
               </TableCell>
               <TableCell className="text-right px-6">
                 <div className="flex items-center justify-end gap-1">

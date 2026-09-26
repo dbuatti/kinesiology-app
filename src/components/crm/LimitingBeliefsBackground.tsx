@@ -11,7 +11,7 @@ const LimitingBeliefsBackground = () => {
           Psychology of Suffering
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="bg-secondary/20 border-none shadow-none hover:bg-secondary/30 transition-colors">
+          <Card className="bg-secondary/20 border border-border shadow-none hover:bg-secondary/30 transition-colors">
             <CardHeader>
               <CardTitle className="text-lg font-bold flex items-center gap-2">
                 <Target className="w-5 h-5 text-primary" />
@@ -23,7 +23,7 @@ const LimitingBeliefsBackground = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-secondary/20 border-none shadow-none hover:bg-secondary/30 transition-colors">
+          <Card className="bg-secondary/20 border border-border shadow-none hover:bg-secondary/30 transition-colors">
             <CardHeader>
               <CardTitle className="text-lg font-bold flex items-center gap-2">
                 <ShieldAlert className="w-5 h-5 text-primary" />

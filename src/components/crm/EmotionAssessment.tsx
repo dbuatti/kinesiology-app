@@ -131,7 +131,7 @@ const EmotionAssessment = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="border-none shadow-lg rounded-2xl bg-card overflow-hidden">
+      <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
         <CollapsibleTrigger asChild>
           <CardHeader className="bg-gradient-to-r from-red-50 to-pink-50 border-b border-destructive/20 cursor-pointer hover:from-red-100 hover:to-pink-100 transition-colors">
             <div className="flex items-center justify-between w-full">
@@ -264,11 +264,11 @@ const EmotionAssessment = ({
             <div className="space-y-4 pt-4 border-t border-border/50">
               <Card className="border-2 border-destructive/20 bg-destructive/5 shadow-none rounded-2xl">
                 <CardContent className="pt-4 space-y-2">
-                  <h4 className="text-sm font-bold text-destructive uppercase tracking-widest">Current Emotional Focus</h4>
+                  <h4 className="text-sm font-bold text-destructive uppercase tracking-wider">Current Emotional Focus</h4>
                   <div className="flex flex-wrap gap-2">
                     {secondarySelections.length > 0 ? (
                       secondarySelections.map(emotion => (
-                        <Badge key={emotion} className="bg-destructive hover:bg-destructive text-primary-foreground text-base font-extrabold">
+                        <Badge key={emotion} className="bg-destructive hover:bg-destructive text-primary-foreground text-base font-semibold">
                           {emotion}
                         </Badge>
                       ))

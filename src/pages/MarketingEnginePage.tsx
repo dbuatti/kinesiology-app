@@ -146,12 +146,12 @@ Please provide the final output ready to be reviewed.`;
  // No "Back" button — this is a tab within the Business Hub, reached via
  // the sidebar nav, not a standalone route.
  <div className="flex flex-wrap gap-3 shrink-0">
- <Button asChild className="bg-card text-foreground hover:bg-muted h-12 px-6 rounded-xl font-semibold text-[10px] uppercase tracking-wider shadow-md border border-border">
+ <Button asChild className="bg-card text-foreground hover:bg-muted h-9 px-3.5 rounded-lg font-medium text-[13px] shadow-md border border-border">
  <a href={CLAUDE_MARKETING_CHAT} target="_blank" rel="noopener noreferrer">
  <MessageSquare size={18} className="mr-2 text-chart-emerald" /> Claude
  </a>
  </Button>
- <Button asChild className="bg-card text-foreground hover:bg-muted h-12 px-6 rounded-xl font-semibold text-[10px] uppercase tracking-wider shadow-md border border-border">
+ <Button asChild className="bg-card text-foreground hover:bg-muted h-9 px-3.5 rounded-lg font-medium text-[13px] shadow-md border border-border">
  <a href={GEMINI_BUSINESS_CHAT} target="_blank" rel="noopener noreferrer">
  <Sparkles size={18} className="mr-2 text-chart-primary" /> Gemini
  </a>
@@ -161,14 +161,14 @@ Please provide the final output ready to be reviewed.`;
  />
 
  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
- <TabsList className="grid w-full grid-cols-3 h-14 bg-muted p-1.5 rounded-xl mb-8">
- <TabsTrigger value="guide" className="flex items-center gap-2 rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
+ <TabsList className="grid w-full sm:w-auto sm:inline-grid grid-cols-3 h-10 bg-muted p-1 rounded-xl mb-8">
+ <TabsTrigger value="guide" className="flex items-center gap-2 rounded-lg h-8 font-medium text-[13px]">
  <BookOpen size={14} /> The OS Guide
  </TabsTrigger>
- <TabsTrigger value="studio" className="flex items-center gap-2 rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
+ <TabsTrigger value="studio" className="flex items-center gap-2 rounded-lg h-8 font-medium text-[13px]">
  <Wand2 size={14} /> Prompt Studio
  </TabsTrigger>
- <TabsTrigger value="templates" className="flex items-center gap-2 rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
+ <TabsTrigger value="templates" className="flex items-center gap-2 rounded-lg h-8 font-medium text-[13px]">
  <Code size={14} /> Template Studio
  </TabsTrigger>
  </TabsList>
@@ -191,7 +191,7 @@ Please provide the final output ready to be reviewed.`;
  onChange={(e) => setCustomStory(e.target.value)}
  />
  <div className="flex justify-end">
- <Button onClick={() => setActiveTab('studio')} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-12 px-8 font-semibold text-xs uppercase tracking-wider shadow-sm">
+ <Button onClick={() => setActiveTab('studio')} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-12 px-8 font-semibold text-xs shadow-sm">
  Process with AI <ArrowRight size={18} className="ml-2" />
  </Button>
  </div>
@@ -217,7 +217,7 @@ Please provide the final output ready to be reviewed.`;
  <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-muted/50 group-hover:text-muted-foreground transition-all">
  <Star size={20} className="fill-current" />
  </div>
- <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">{format(new Date(win.date), "MMM d")}</span>
+ <span className="text-xs font-medium text-muted-foreground/60">{format(new Date(win.date), "MMM d")}</span>
  </div>
  <div>
  <p className={cn("text-[10px] font-semibold text-chart-primary uppercase tracking-wider mb-1", isPrivate && "blur-sm")}>{win.clients?.name}</p>
@@ -247,7 +247,7 @@ Please provide the final output ready to be reviewed.`;
  <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-chart-destructive group-hover:bg-muted/50 group-hover:text-muted-foreground transition-all">
  <Quote size={20} className="fill-current" />
  </div>
- <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">{format(new Date(win.created_at), "MMM d")}</span>
+ <span className="text-xs font-medium text-muted-foreground/60">{format(new Date(win.created_at), "MMM d")}</span>
  </div>
  <div>
  <p className="text-[10px] font-semibold text-chart-destructive uppercase tracking-wider mb-1">{win.client_name}</p>
@@ -272,7 +272,7 @@ Please provide the final output ready to be reviewed.`;
  </CardHeader>
  <CardContent className="p-6 space-y-6">
  <div className="space-y-3">
- <label className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">1. Content Source</label>
+ <label className="text-xs font-medium text-muted-foreground/60">1. Content Source</label>
  <Select value={selectedWin} onValueChange={setSelectedWin}>
  <SelectTrigger className="h-12 rounded-xl font-medium bg-muted border-border">
  <SelectValue />
@@ -280,14 +280,14 @@ Please provide the final output ready to be reviewed.`;
  <SelectContent>
  <SelectItem value="custom" className="font-medium text-chart-primary">From Scratch / Custom Story</SelectItem>
  
- <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Testimonials (Nice Words)</div>
+ <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground/60">Testimonials (Nice Words)</div>
  {vaultWins.map(win => (
  <SelectItem key={win.id} value={`vault-${win.id}`}>
  {win.client_name}: {win.content.substring(0,30)}...
  </SelectItem>
  ))}
 
- <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Clinical Wins (Cases)</div>
+ <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground/60">Clinical Wins (Cases)</div>
  {recentWins.map(win => (
  <SelectItem key={win.id} value={win.id}>
  {win.clients?.name} - {win.issue?.substring(0,30)}...
@@ -300,18 +300,18 @@ Please provide the final output ready to be reviewed.`;
  {selectedWin === "custom" && (
  <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
  <div className="space-y-2">
- <label className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Story / Experience</label>
+ <label className="text-xs font-medium text-muted-foreground/60">Story / Experience</label>
  <Textarea placeholder="Briefly describe what happened..." value={customStory} onChange={e => setCustomStory(e.target.value)} className="resize-none h-20 rounded-xl" />
  </div>
  <div className="space-y-2">
- <label className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Core Insight / Lesson</label>
+ <label className="text-xs font-medium text-muted-foreground/60">Core Insight / Lesson</label>
  <Input placeholder="What is the takeaway?" value={customInsight} onChange={e => setCustomInsight(e.target.value)} className="h-10 rounded-xl" />
  </div>
  </div>
  )}
 
  <div className="space-y-3 pt-4 border-t border-border">
- <label className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">2. Output Format</label>
+ <label className="text-xs font-medium text-muted-foreground/60">2. Output Format</label>
  <Select value={outputFormat} onValueChange={setOutputFormat}>
  <SelectTrigger className="h-12 rounded-xl font-medium bg-muted border-border">
  <SelectValue />
@@ -326,7 +326,7 @@ Please provide the final output ready to be reviewed.`;
  </div>
 
  <div className="space-y-3">
- <label className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">3. Call to Action</label>
+ <label className="text-xs font-medium text-muted-foreground/60">3. Call to Action</label>
  <Select value={cta} onValueChange={setCta}>
  <SelectTrigger className="h-12 rounded-xl font-medium bg-muted border-border">
  <SelectValue />
@@ -354,7 +354,7 @@ Please provide the final output ready to be reviewed.`;
  <CardDescription className="text-muted-foreground/60 text-xs">Copy and paste this into Claude/ChatGPT.</CardDescription>
  </div>
  </div>
- <Button onClick={handleCopy} className={cn("h-10 px-4 rounded-xl font-medium text-[10px] uppercase tracking-wider transition-all", copied ? "bg-chart-emerald/10 text-chart-emerald" : "bg-muted text-muted-foreground")}>
+ <Button onClick={handleCopy} className={cn("h-9 px-4 rounded-lg font-medium text-[13px] transition-all", copied ? "bg-chart-emerald/10 text-chart-emerald" : "bg-muted text-muted-foreground")}>
  {copied ? <Check size={16} className="mr-2" /> : <Copy size={16} className="mr-2" />} {copied ? "Copied!" : "Copy Prompt"}
  </Button>
  </CardHeader>
@@ -370,7 +370,7 @@ Please provide the final output ready to be reviewed.`;
 
  <TabsContent value="templates" className="mt-0">
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
- <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+ <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
  <CardHeader className="p-8 bg-muted border-b border-border">
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-4">
@@ -382,7 +382,7 @@ Please provide the final output ready to be reviewed.`;
  <CardDescription className="font-medium">The "Antigravity Clinical Standard" layout.</CardDescription>
  </div>
  </div>
- <Button onClick={handleCopyTemplate} className={cn("h-10 px-6 rounded-xl font-medium text-[10px] uppercase tracking-wider transition-all", templateCopied ? "bg-chart-emerald/10 text-chart-emerald" : "bg-primary text-primary-foreground")}>
+ <Button onClick={handleCopyTemplate} className={cn("h-9 px-3.5 rounded-lg font-medium text-[13px] transition-all", templateCopied ? "bg-chart-emerald/10 text-chart-emerald" : "bg-primary text-primary-foreground")}>
  {templateCopied ? <Check size={16} className="mr-2" /> : <Copy size={16} className="mr-2" />} Copy HTML
  </Button>
  </div>

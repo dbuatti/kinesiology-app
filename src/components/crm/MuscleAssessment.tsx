@@ -53,18 +53,18 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
             <h2 className="text-sm font-bold text-foreground truncate">
               {name}
             </h2>
-            <Badge variant="outline" className="border-border text-muted-foreground font-black text-[7px] uppercase tracking-widest px-1.5 py-0 rounded-none">
+            <Badge variant="outline" className="border-border text-muted-foreground font-semibold text-[7px] uppercase tracking-wider px-1.5 py-0 rounded-none">
               {info.meridian}
             </Badge>
             {isClear && !isInhibited && !isHypertonic && (
-              <Badge className="bg-emerald-100 text-emerald-700 border-none font-black text-[7px] uppercase tracking-widest px-1.5 py-0 rounded-none">
+              <Badge className="bg-emerald-100 text-emerald-700 border-none font-semibold text-[7px] uppercase tracking-wider px-1.5 py-0 rounded-none">
                 <CheckCircle2 size={8} className="mr-0.5" /> Clear
               </Badge>
             )}
           </div>
           
           {!compact && info.testingPosition && (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] leading-tight">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] leading-tight">
               <div className="flex items-center gap-1 text-muted-foreground">
                 <Zap size={10} className="text-chart-primary shrink-0" />
                 <span className="font-medium">{info.testingPosition}</span>
@@ -82,7 +82,7 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
         <div className="flex items-center gap-3 shrink-0 print:hidden">
           {/* Inhibition Controls */}
           <div className="flex items-center gap-2 border-r border-border pr-2">
-            <span className="text-[7px] font-black text-muted-foreground/60 uppercase tracking-widest">Inhib</span>
+            <span className="text-[7px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Inhib</span>
             {isLateralized ? (
               <div className="flex items-center gap-1.5">
                 <Checkbox 
@@ -110,7 +110,7 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
 
           {/* Hypertonic Controls */}
           <div className="flex items-center gap-2 border-r border-border pr-2">
-            <span className="text-[7px] font-black text-muted-foreground/60 uppercase tracking-widest">Hyper</span>
+            <span className="text-[7px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Hyper</span>
             {isLateralized ? (
               <div className="flex items-center gap-1.5">
                 <Checkbox 
@@ -138,7 +138,7 @@ const MuscleTestItem = ({ name, statusL, statusR, statusMidline, isLateralized, 
 
           {/* Normotonic Controls */}
           <div className="flex items-center gap-2 pr-2">
-            <span className="text-[7px] font-black text-muted-foreground/60 uppercase tracking-widest">Norm</span>
+            <span className="text-[7px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Norm</span>
             {isLateralized ? (
               <div className="flex items-center gap-1.5">
                 <Checkbox 
@@ -232,7 +232,7 @@ export function MuscleAssessment({
       <div className="space-y-8">
         {Object.entries(filteredGroups).map(([group, muscles]) => (
           <div key={group} className="space-y-2">
-            <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] px-2 mb-3">{group}</h3>
+            <h3 className="text-xs font-medium text-muted-foreground px-2 mb-3">{group}</h3>
             <div className="grid grid-cols-1 gap-1.5">
               {muscles.map(muscle => (
                 <MuscleTestItem 

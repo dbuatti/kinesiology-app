@@ -411,7 +411,7 @@ const ClientDetailPage = () => {
 
   if (loading) return (
     <div className="flex min-h-screen items-center justify-center">
-      <Loader2 className="animate-spin text-chart-primary" size={48} />
+      <Loader2 className="animate-spin text-muted-foreground" size={22} />
     </div>
   );
 
@@ -445,13 +445,14 @@ const ClientDetailPage = () => {
           title={client.name}
           subtitle="Comprehensive client profile, clinical history, and progress tracking."
           icon={User}
+          
 
           actions={
             <div className="flex flex-wrap gap-2">
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-muted border-border text-foreground rounded-xl font-semibold text-[10px] uppercase tracking-wider h-10 px-4"
+                className="bg-card border-border text-foreground rounded-lg font-medium text-[13px] h-9 px-4"
                 onClick={() => navigate("/clients")}
               >
                 <ArrowLeft size={14} className="mr-2" /> Back
@@ -459,7 +460,7 @@ const ClientDetailPage = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-muted border-border text-chart-primary rounded-xl font-semibold text-[10px] uppercase tracking-wider h-10 px-4"
+                className="bg-card border-border text-chart-primary rounded-lg font-medium text-[13px] h-9 px-4"
                 onClick={() => setAssessmentModal({ open: true, type: 'bolt' })}
               >
                 <FlaskConical size={14} className="mr-2" /> Log BOLT
@@ -467,14 +468,14 @@ const ClientDetailPage = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="bg-muted border-border text-chart-destructive rounded-xl font-semibold text-[10px] uppercase tracking-wider h-10 px-4"
+                className="bg-card border-border text-chart-destructive rounded-lg font-medium text-[13px] h-9 px-4"
                 onClick={() => setAssessmentModal({ open: true, type: 'coherence' })}
               >
                 <Activity size={14} className="mr-2" /> Log COH
               </Button>
               <Dialog open={editOpen} onOpenChange={setEditOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="bg-muted rounded-xl border-border h-10 px-4 font-semibold text-[10px] uppercase tracking-wider">
+                  <Button variant="outline" size="sm" className="bg-card rounded-lg border-border h-9 px-4 font-medium text-[13px]">
                     <Edit3 size={14} className="mr-2" /> Edit Profile
                   </Button>
                 </DialogTrigger>
@@ -538,23 +539,23 @@ const ClientDetailPage = () => {
         />
 
         <Tabs value={activeTab} onValueChange={(v) => setSearchParams({ tab: v })} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 h-14 bg-muted p-1.5 rounded-xl mb-8 border border-border">
-            <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
+          <TabsList className="grid w-full sm:w-auto sm:inline-grid grid-cols-6 h-10 bg-muted p-1 rounded-xl mb-8 ">
+            <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px] hover:text-foreground">
               <LayoutDashboard size={14} /> <span className="hidden sm:inline">Overview</span>
             </TabsTrigger>
-            <TabsTrigger value="appointments" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
+            <TabsTrigger value="appointments" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px] hover:text-foreground">
               <History size={14} /> <span className="hidden sm:inline">Appointments</span>
             </TabsTrigger>
-            <TabsTrigger value="history" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
+            <TabsTrigger value="history" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px] hover:text-foreground">
               <Table2 size={14} /> <span className="hidden sm:inline">History</span>
             </TabsTrigger>
-            <TabsTrigger value="grid" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
+            <TabsTrigger value="grid" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px] hover:text-foreground">
               <LayoutGrid size={14} /> <span className="hidden sm:inline">Grid</span>
             </TabsTrigger>
-            <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
+            <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px] hover:text-foreground">
               <TrendingUp size={14} /> <span className="hidden sm:inline">Progress</span>
             </TabsTrigger>
-            <TabsTrigger value="assistant" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-primary data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px] hover:text-foreground">
+            <TabsTrigger value="assistant" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px] hover:text-foreground">
               <Bot size={14} /> <span className="hidden sm:inline">Assistant</span>
             </TabsTrigger>
           </TabsList>
@@ -565,9 +566,9 @@ const ClientDetailPage = () => {
               <div className="lg:col-span-4 space-y-6">
                 <ClientProfileCard client={client} />
 
-                <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
-                  <CardHeader className="pb-3 bg-muted/50 border-b border-border">
-                    <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
+                  <CardHeader className="pb-3 border-b border-border">
+                    <CardTitle className="text-[15px] font-semibold tracking-tight text-foreground flex items-center gap-2">
                       <Zap size={16} className="text-chart-primary" /> Integrations
                     </CardTitle>
                   </CardHeader>
@@ -584,7 +585,7 @@ const ClientDetailPage = () => {
                         size="sm" 
                         onClick={handleManualKitSync}
                         disabled={syncingKit}
-                        className="h-8 px-2.5 text-[10px] font-semibold uppercase tracking-wider text-chart-primary"
+                        className="h-8 px-2.5 text-[11px] font-semibold text-chart-primary"
                         title="Sync client to Kit"
                       >
                         {syncingKit ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
@@ -607,7 +608,7 @@ const ClientDetailPage = () => {
                           size="sm"
                           onClick={handleSyncToStripe}
                           disabled={syncingStripe}
-                          className="h-8 px-2.5 text-[10px] font-semibold uppercase tracking-wider text-chart-primary"
+                          className="h-8 px-2.5 text-[11px] font-semibold text-chart-primary"
                           title="Sync client to Stripe"
                         >
                           {syncingStripe ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
@@ -642,7 +643,7 @@ const ClientDetailPage = () => {
                           size="sm"
                           onClick={handleSyncToNotion}
                           disabled={syncingNotion}
-                          className="h-8 px-2.5 text-[10px] font-semibold uppercase tracking-wider text-chart-primary"
+                          className="h-8 px-2.5 text-[11px] font-semibold text-chart-primary"
                           title="Sync client to Notion"
                         >
                           {syncingNotion ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} className="mr-1.5" />}
@@ -664,7 +665,7 @@ const ClientDetailPage = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="border-none shadow-sm bg-card rounded-xl">
+                <Card className="border border-border shadow-sm bg-card rounded-xl">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg font-medium text-foreground">Contact & Background</CardTitle>
                   </CardHeader>
@@ -721,14 +722,14 @@ const ClientDetailPage = () => {
               {/* Right Column: Clinical Profile & History */}
               <div className="lg:col-span-8 space-y-8">
                 {nextAppointment && (
-                  <Card className="border-none shadow-sm rounded-xl bg-card border-t-4 border-chart-primary overflow-hidden">
+                  <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
                     <div className="p-6 flex flex-col md:flex-row md:items-center gap-4">
                       <div className="w-11 h-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm shrink-0">
                         <CalendarClock size={22} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Next Session</h3>
+                          <h3 className="text-xs font-medium text-muted-foreground">Next Session</h3>
                           <Badge className="bg-chart-emerald/10 text-chart-emerald border-none font-semibold text-[10px] uppercase tracking-wider">
                             {daysUntil(nextAppointment.date)}
                           </Badge>
@@ -740,7 +741,7 @@ const ClientDetailPage = () => {
                           {nextAppointment.name || `Session ${nextAppointment.display_id || nextAppointment.id.slice(0, 8)}`}
                         </p>
                       </div>
-                      <Button asChild size="sm" className="rounded-xl h-10 px-4 font-semibold text-[10px] uppercase tracking-wider shrink-0">
+                      <Button asChild size="sm" className="rounded-lg h-9 px-4 font-medium text-[13px] shrink-0">
                         <Link to={`/appointments/${nextAppointment.id}`}>
                           Open Session <ArrowRight size={14} className="ml-1.5" />
                         </Link>
@@ -750,19 +751,19 @@ const ClientDetailPage = () => {
                 )}
 
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
-                  <Card className="border-none shadow-sm rounded-xl bg-card border-t-4 border-chart-primary">
+                  <Card className="border border-border shadow-sm rounded-xl bg-card">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2 text-foreground">
                         <Activity size={16} className="text-chart-primary" /> Total Sessions
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-3xl font-extrabold text-foreground">{rollups.totalSessions}</p>
+                      <p className="text-3xl font-semibold text-foreground">{rollups.totalSessions}</p>
                       <p className="text-xs text-muted-foreground/60 mt-1">Last: {rollups.lastAppointment}</p>
                     </CardContent>
                   </Card>
                   
-                  <Card className="border-none shadow-sm rounded-xl bg-card border-t-4 border-chart-emerald">
+                  <Card className="border border-border shadow-sm rounded-xl bg-card">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2 text-foreground">
                         <FlaskConical size={16} className="text-chart-emerald" /> Latest BOLT
@@ -770,7 +771,7 @@ const ClientDetailPage = () => {
                     </CardHeader>
                     <CardContent>
                       <p className={cn(
-                        "text-3xl font-extrabold",
+                        "text-3xl font-semibold",
                         appointments.find(a => a.bolt_score)?.bolt_score ? (appointments.find(a => a.bolt_score)!.bolt_score! >= 25 ? "text-chart-emerald" : "text-chart-destructive") : "text-muted-foreground/60"
                       )}>
                         {appointments.find(a => a.bolt_score)?.bolt_score ? `${appointments.find(a => a.bolt_score)!.bolt_score}s` : "N/A"}
@@ -779,14 +780,14 @@ const ClientDetailPage = () => {
                     </CardContent>
                   </Card>
 
-                  <Card className="border-none shadow-sm rounded-xl bg-card border-t-4 border-chart-destructive">
+                  <Card className="border border-border shadow-sm rounded-xl bg-card">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-sm flex items-center gap-2 text-foreground">
                         <Brain size={16} className="text-chart-destructive" /> Latest Coherence
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-3xl font-extrabold text-chart-destructive">
+                      <p className="text-3xl font-semibold text-chart-destructive">
                         {appointments.find(a => a.coherence_score)?.coherence_score?.toFixed(2) || "N/A"}
                       </p>
                       <p className="text-xs text-muted-foreground/60 mt-1">Autonomic sync ratio</p>
@@ -795,16 +796,16 @@ const ClientDetailPage = () => {
                 </div>
 
                 {/* Clinical Tracking Panel */}
-                <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+                <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
                   <CardHeader className="bg-muted/50 border-b border-border pb-3">
-                    <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                       <Stethoscope size={14} className="text-violet-500" /> Clinical Tracking
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-6">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="space-y-1">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Status</span>
+                        <span className="text-xs font-medium text-muted-foreground">Status</span>
                         <Badge className={cn("text-[10px] font-semibold uppercase tracking-wider border-none w-fit",
                           (client as any).status === 'Active' ? "bg-chart-emerald/10 text-chart-emerald" :
                           (client as any).status === 'On Hold' ? "bg-yellow-500/10 text-yellow-600" :
@@ -816,22 +817,22 @@ const ClientDetailPage = () => {
                         </Badge>
                       </div>
                       <div className="space-y-1">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Programme</span>
+                        <span className="text-xs font-medium text-muted-foreground">Programme</span>
                         <span className="text-sm font-medium text-foreground block">{(client as any).programme || '—'}</span>
                       </div>
                       <div className="space-y-1">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">First Session</span>
+                        <span className="text-xs font-medium text-muted-foreground">First Session</span>
                         <span className="text-sm font-medium text-foreground block">{(client as any).first_session_date ? format(new Date((client as any).first_session_date), "MMM d, yyyy") : '—'}</span>
                       </div>
                       <div className="space-y-1">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Last Session</span>
+                        <span className="text-xs font-medium text-muted-foreground">Last Session</span>
                         <span className="text-sm font-medium text-foreground block">{(client as any).most_recent_session ? format(new Date((client as any).most_recent_session), "MMM d, yyyy") : '—'}</span>
                       </div>
                     </div>
                     {(client as any).corrections_holding && (
                       <div className="mt-4 pt-4 border-t border-border">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Corrections Holding:</span>
+                          <span className="text-xs font-medium text-muted-foreground">Corrections Holding:</span>
                           <Badge className={cn("text-[10px] font-semibold uppercase tracking-wider border-none",
                             (client as any).corrections_holding?.includes('holding well') ? "bg-chart-emerald/10 text-chart-emerald" :
                             (client as any).corrections_holding?.includes('Partially') ? "bg-yellow-500/10 text-yellow-600" :
@@ -844,7 +845,7 @@ const ClientDetailPage = () => {
                     )}
                     {(client as any).priority_pathways && (
                       <div className="mt-3">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Priority Pathways</span>
+                        <span className="text-xs font-medium text-muted-foreground">Priority Pathways</span>
                         <p className="text-sm text-foreground mt-1">{(client as any).priority_pathways}</p>
                       </div>
                     )}
@@ -852,9 +853,9 @@ const ClientDetailPage = () => {
                 </Card>
 
                 {/* Voice Studio — voice lessons matched to this client's email */}
-                <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+                <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
                   <CardHeader className="bg-muted/50 border-b border-border flex items-center justify-between space-y-0 pb-3">
-                    <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                       <Mic size={14} className="text-chart-destructive" /> Voice Studio
                     </CardTitle>
                     {!voiceLoading && voiceHistory.length > 0 && (
@@ -886,7 +887,7 @@ const ClientDetailPage = () => {
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-sm font-medium text-foreground">{format(l.date, "EEE, MMM d, yyyy")}</span>
                                 {l.discipline && (
-                                  <Badge className={cn("text-[9px] font-semibold uppercase tracking-wider border-none px-1.5 py-0",
+                                  <Badge className={cn("text-[10px] font-semibold uppercase tracking-wider border-none px-1.5 py-0",
                                     l.discipline === "piano" ? "bg-chart-primary/10 text-chart-primary" : "bg-chart-destructive/10 text-chart-destructive")}>
                                     {l.discipline}
                                   </Badge>
@@ -898,7 +899,7 @@ const ClientDetailPage = () => {
                               <div className={cn("text-sm font-bold tabular-nums", l.free ? "text-muted-foreground" : l.paid ? "text-chart-emerald" : "text-chart-destructive")}>
                                 {l.free ? "Free" : `$${l.cost ?? ""}`}
                               </div>
-                              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              <div className="text-xs font-medium text-muted-foreground">
                                 {l.free ? "Complimentary" : l.paid ? "Paid" : "Unpaid"}
                               </div>
                             </div>
@@ -926,7 +927,7 @@ const ClientDetailPage = () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+                    <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
                       <CardHeader className="bg-muted/50 border-b border-border">
                         <CardTitle className="text-xs font-semibold uppercase tracking-wider text-chart-destructive flex items-center gap-2">
                           <Activity size={14} /> Medical History & Injuries
@@ -939,9 +940,9 @@ const ClientDetailPage = () => {
                       </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+                    <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
                       <CardHeader className="bg-muted/50 border-b border-border">
-                        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                        <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                           <Zap size={14} /> Medications & Supplements
                         </CardTitle>
                       </CardHeader>
@@ -952,7 +953,7 @@ const ClientDetailPage = () => {
                       </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+                    <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
                       <CardHeader className="bg-muted/50 border-b border-border">
                         <CardTitle className="text-xs font-semibold uppercase tracking-wider text-chart-primary flex items-center gap-2">
                           <ShieldAlert size={14} /> Emergency Contact
@@ -960,17 +961,17 @@ const ClientDetailPage = () => {
                       </CardHeader>
                       <CardContent className="p-6 space-y-3">
                         <div>
-                          <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase">Contact Name</p>
+                          <p className="text-xs font-medium text-muted-foreground/60">Contact Name</p>
                           <p className="text-sm font-medium text-foreground">{client.emergency_contact_name || "Not provided"}</p>
                         </div>
                         <div>
-                          <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase">Contact Phone</p>
+                          <p className="text-xs font-medium text-muted-foreground/60">Contact Phone</p>
                           <p className="text-sm font-medium text-foreground">{client.emergency_contact_phone || "Not provided"}</p>
                         </div>
                       </CardContent>
                     </Card>
 
-                    <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+                    <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
                       <CardHeader className="bg-muted/50 border-b border-border">
                         <CardTitle className="text-xs font-semibold uppercase tracking-wider text-chart-emerald flex items-center gap-2">
                           <TrendingUp size={14} /> Baseline Health Vitals
@@ -978,15 +979,15 @@ const ClientDetailPage = () => {
                       </CardHeader>                      <CardContent className="p-6">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase">Stress Level</p>
+                            <p className="text-xs font-medium text-muted-foreground/60">Stress Level</p>
                             <p className="text-lg font-semibold text-chart-primary">{client.current_stress_level || "—"} / 10</p>
                           </div>
                           <div>
-                            <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase">Sleep Quality</p>
+                            <p className="text-xs font-medium text-muted-foreground/60">Sleep Quality</p>
                             <p className="text-sm font-medium text-foreground">{client.sleep_quality || "Not set"}</p>
                           </div>
                           <div className="col-span-2">
-                            <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase">Digestive Health</p>
+                            <p className="text-xs font-medium text-muted-foreground/60">Digestive Health</p>
                             <p className="text-sm font-medium text-foreground">{client.digestive_health || "Not set"}</p>
                           </div>
                         </div>
@@ -997,7 +998,7 @@ const ClientDetailPage = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Card className="bg-muted border-border shadow-none rounded-xl">
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                        <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                           <Info size={14} /> Referral Source
                         </CardTitle>
                       </CardHeader>
@@ -1008,7 +1009,7 @@ const ClientDetailPage = () => {
 
                     <Card className="bg-muted/50 border-border shadow-none rounded-xl">
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                        <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                           <CalendarClock size={14} /> Availability Notes
                         </CardTitle>
                       </CardHeader>
@@ -1021,7 +1022,7 @@ const ClientDetailPage = () => {
 
                     <Card className="bg-muted/50 border-border shadow-none rounded-xl">
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                        <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                           <History size={14} /> Practitioner Journal
                         </CardTitle>
                       </CardHeader>

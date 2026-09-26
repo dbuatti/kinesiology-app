@@ -186,13 +186,13 @@ const FrontalLobeAssessment = ({
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-muted/50 rounded-2xl border border-border/50">
         <div className="space-y-1">
-          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Assessment Result</p>
+          <p className="text-xs font-medium text-muted-foreground">Assessment Result</p>
           <div className="flex gap-2">
             <Button 
               size="sm" 
               onClick={() => handleSetStatus('Clear')}
               className={cn(
-                "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+                "h-9 px-3.5 rounded-lg font-medium text-[13px] transition-all",
                 currentStatus === 'Clear' ? "bg-emerald-600 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-emerald-50"
               )}
             >
@@ -202,7 +202,7 @@ const FrontalLobeAssessment = ({
               size="sm" 
               onClick={() => handleSetStatus('Inhibited')}
               className={cn(
-                "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+                "h-9 px-3.5 rounded-lg font-medium text-[13px] transition-all",
                 currentStatus === 'Inhibited' ? "bg-rose-600 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-rose-50"
               )}
             >
@@ -212,7 +212,7 @@ const FrontalLobeAssessment = ({
               size="sm" 
               onClick={() => handleSetStatus('Recheck')}
               className={cn(
-                "h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+                "h-9 px-3.5 rounded-lg font-medium text-[13px] transition-all",
                 currentStatus === 'Recheck' ? "bg-amber-500 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-amber-50"
               )}
             >
@@ -221,7 +221,7 @@ const FrontalLobeAssessment = ({
           </div>
         </div>
         {currentStatus && (
-          <Badge className="bg-indigo-600 text-primary-foreground border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full">
+          <Badge className="bg-indigo-600 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
             Auto-synced to Align phase
           </Badge>
         )}
@@ -260,12 +260,12 @@ const FrontalLobeAssessment = ({
 
           {/* Structured Clinical Fields */}
           <div className="p-6 bg-muted/50 rounded-2xl border border-border/50 space-y-4">
-            <h4 className="text-xs font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+            <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
               <ArrowRightLeft size={14} className="text-indigo-500" /> Clinical Metrics
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Left Hand Speed</Label>
+                <Label className="text-xs font-medium text-muted-foreground">Left Hand Speed</Label>
                 <Select value={leftHandSpeed} onValueChange={handleLeftSpeedChange}>
                   <SelectTrigger className="h-10 rounded-xl font-bold text-xs bg-card">
                     <SelectValue placeholder="Rate 1-10" />
@@ -278,7 +278,7 @@ const FrontalLobeAssessment = ({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Right Hand Speed</Label>
+                <Label className="text-xs font-medium text-muted-foreground">Right Hand Speed</Label>
                 <Select value={rightHandSpeed} onValueChange={handleRightSpeedChange}>
                   <SelectTrigger className="h-10 rounded-xl font-bold text-xs bg-card">
                     <SelectValue placeholder="Rate 1-10" />
@@ -291,7 +291,7 @@ const FrontalLobeAssessment = ({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Asymmetry</Label>
+                <Label className="text-xs font-medium text-muted-foreground">Asymmetry</Label>
                 <ToggleGroup type="single" value={asymmetryDetected} onValueChange={handleAsymChange} className="justify-start gap-1">
                   <ToggleGroupItem value="Yes" className="rounded-lg border border-border text-xs font-bold px-3 py-1.5">Yes</ToggleGroupItem>
                   <ToggleGroupItem value="No" className="rounded-lg border border-border text-xs font-bold px-3 py-1.5">No</ToggleGroupItem>

@@ -100,15 +100,15 @@ const AppointmentV2Page = () => {
 
   const MODE_TABS = [
     { id: 'peace' as const, label: 'PEACE', icon: Activity },
-    { id: 'grid' as const, label: 'GRID', icon: LayoutGrid },
-    { id: 'doc' as const, label: 'DOC', icon: FileText },
-    { id: 'manual' as const, label: 'MANUAL', icon: BookMarked },
+    { id: 'grid' as const, label: 'Grid', icon: LayoutGrid },
+    { id: 'doc' as const, label: 'Doc', icon: FileText },
+    { id: 'manual' as const, label: 'Manual', icon: BookMarked },
   ];
 
   return (
     <div className={cn("min-h-screen bg-background", isFullScreen && "fixed inset-0 z-50 overflow-y-auto")}>
       {/* Top Bar */}
-      <header className="sticky top-0 z-40 bg-card/95 backdrop-blur-md border-b border-border">
+      <header className="sticky top-0 z-40 bg-background/85 backdrop-blur-xl border-b border-border">
         <div className="px-4 md:px-8 h-14 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
             <Button
@@ -121,8 +121,8 @@ const AppointmentV2Page = () => {
             </Button>
             <div className="h-6 w-px bg-border" />
             <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <User size={18} className="text-primary" />
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <User size={15} className="text-primary" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
@@ -152,7 +152,7 @@ const AppointmentV2Page = () => {
                     );
                   })()}
                 </div>
-                <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium hidden min-[520px]:flex">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground hidden min-[520px]:flex">
                   <Calendar size={10} />
                   <span>{format(new Date(appointment.date), "EEE, MMM d")}</span>
                   <Clock size={10} className="ml-1" />
@@ -163,7 +163,7 @@ const AppointmentV2Page = () => {
           </div>
 
           <div className="flex items-center gap-1 min-w-0">
-            <div className="flex items-center gap-0.5 mr-2 md:mr-3 border-r border-border pr-2 md:pr-3 overflow-x-auto whitespace-nowrap min-w-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex items-center gap-0.5 mr-2 md:mr-3 rounded-lg bg-foreground/[0.05] p-0.5 overflow-x-auto whitespace-nowrap min-w-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
               {MODE_TABS.map(tab => {
                 const Icon = tab.icon;
                 const isActive = viewMode === tab.id;
@@ -172,28 +172,28 @@ const AppointmentV2Page = () => {
                     key={tab.id}
                     onClick={() => setViewMode(tab.id)}
                     className={cn(
-                      "flex items-center gap-1.5 px-2.5 md:px-3 h-8 text-[10px] font-bold uppercase tracking-wider transition-colors rounded-lg shrink-0 whitespace-nowrap",
+                      "flex items-center gap-1.5 px-2.5 md:px-3 h-7 text-[13px] font-medium rounded-md shrink-0 whitespace-nowrap",
                       isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                        ? "bg-card text-foreground shadow-sm ring-1 ring-border/60"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    <Icon size={13} />
-                    {tab.label}
+                    <Icon size={14} className={cn(isActive && "text-primary")} />
+                    <span className="hidden sm:inline">{tab.label}</span>
                   </button>
                 );
               })}
             </div>
             <button
               onClick={() => setQuickSessionOpen(true)}
-              className="flex items-center gap-1.5 px-2 md:px-3 h-8 text-[10px] font-bold uppercase tracking-wider border border-foreground/20 hover:bg-foreground hover:text-background transition-colors rounded-lg shrink-0 whitespace-nowrap"
+              className="flex items-center gap-1.5 px-2 md:px-2.5 h-8 text-[13px] font-medium border border-border bg-card shadow-xs hover:bg-muted rounded-lg shrink-0 whitespace-nowrap"
               title="FILE > NEW — Create a new session"
             >
               <Plus size={13} /> <span className="hidden md:inline">New</span>
             </button>
             <button
               onClick={() => setNotesOpen(true)}
-              className="flex items-center gap-1.5 px-2 md:px-3 h-8 text-[10px] font-bold uppercase tracking-wider border border-foreground/20 hover:bg-foreground hover:text-background transition-colors rounded-lg shrink-0 whitespace-nowrap"
+              className="flex items-center gap-1.5 px-2 md:px-2.5 h-8 text-[13px] font-medium border border-border bg-card shadow-xs hover:bg-muted rounded-lg shrink-0 whitespace-nowrap"
               title="Quick notes — open a notes box from anywhere (N)"
             >
               <StickyNote size={13} /> <span className="hidden md:inline">Notes</span>

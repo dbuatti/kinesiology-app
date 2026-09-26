@@ -179,13 +179,13 @@ const CoherenceAssessment = ({
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Heart size={14} className={cn("text-rose-500", heartTimerRunning && "animate-pulse")} />
-                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Heart (30s)</span>
+                    <span className="text-xs font-medium text-muted-foreground">Heart (30s)</span>
                   </div>
-                  <span className="text-xl font-black text-foreground tabular-nums">{heartTimer}s</span>
+                  <span className="text-xl font-semibold text-foreground tabular-nums">{heartTimer}s</span>
                 </div>
                 <div className="flex gap-2">
                   <Input type="number" placeholder="Count" value={heartRateRaw} onChange={(e) => setHeartRateRaw(e.target.value)} className="h-9 rounded-xl font-bold text-center bg-card" />
-                  <Button onClick={() => { setHeartTimer(30); setHeartTimerRunning(!heartTimerRunning); }} variant={heartTimerRunning ? "outline" : "default"} className="h-9 rounded-xl px-3 text-[10px] font-black uppercase tracking-widest">
+                  <Button onClick={() => { setHeartTimer(30); setHeartTimerRunning(!heartTimerRunning); }} variant={heartTimerRunning ? "outline" : "default"} className="h-9 rounded-xl px-3 text-[11px] font-semibold">
                     {heartTimerRunning ? "Stop" : "Start"}
                   </Button>
                 </div>
@@ -196,13 +196,13 @@ const CoherenceAssessment = ({
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Brain size={14} className={cn("text-primary", breathTimerRunning && "animate-bounce")} />
-                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Breath (30s)</span>
+                    <span className="text-xs font-medium text-muted-foreground">Breath (30s)</span>
                   </div>
-                  <span className="text-xl font-black text-foreground tabular-nums">{breathTimer}s</span>
+                  <span className="text-xl font-semibold text-foreground tabular-nums">{breathTimer}s</span>
                 </div>
                 <div className="flex gap-2">
                   <Input type="number" placeholder="Count" value={breathRateRaw} onChange={(e) => setBreathRateRaw(e.target.value)} className="h-9 rounded-xl font-bold text-center bg-card" />
-                  <Button onClick={() => { setBreathTimer(30); setBreathTimerRunning(!breathTimerRunning); }} variant={breathTimerRunning ? "outline" : "default"} className="h-9 rounded-xl px-3 text-[10px] font-black uppercase tracking-widest">
+                  <Button onClick={() => { setBreathTimer(30); setBreathTimerRunning(!breathTimerRunning); }} variant={breathTimerRunning ? "outline" : "default"} className="h-9 rounded-xl px-3 text-[11px] font-semibold">
                     {breathTimerRunning ? "Stop" : "Start"}
                   </Button>
                 </div>
@@ -240,20 +240,20 @@ const CoherenceAssessment = ({
 
               {calculatedScore !== null && (
                 <div className="text-center animate-in zoom-in-95 duration-300">
-                  <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mb-1">Ratio</p>
-                  <div className="text-4xl font-black text-foreground">{calculatedScore.toFixed(2)}</div>
-                  <Badge className={cn("mt-2 border-none font-black text-[8px] uppercase tracking-widest", isCoherent ? "bg-emerald-500" : "bg-rose-500")}>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Ratio</p>
+                  <div className="text-4xl font-semibold text-foreground">{calculatedScore.toFixed(2)}</div>
+                  <Badge className={cn("mt-2 border-none font-semibold text-[10px] uppercase tracking-wider", isCoherent ? "bg-emerald-500" : "bg-rose-500")}>
                     {isCoherent ? "Coherent" : "Discordant"}
                   </Badge>
                 </div>
               )}
 
               <div className="flex gap-2 w-full">
-                <Button onClick={calculateCoherence} className="flex-1 bg-primary hover:bg-primary/90 h-10 rounded-xl font-black text-[10px] uppercase tracking-widest">
+                <Button onClick={calculateCoherence} className="flex-1 bg-primary hover:bg-primary/90 h-9 rounded-lg font-medium text-[13px]">
                   Calculate
                 </Button>
                 {calculatedScore !== null && (
-                  <Button onClick={handleSave} disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 h-10 px-6 rounded-xl font-black text-[10px] uppercase tracking-widest">
+                  <Button onClick={handleSave} disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 h-9 px-3.5 rounded-lg font-medium text-[13px]">
                     {loading ? <Loader2 className="animate-spin" /> : "Save"}
                   </Button>
                 )}

@@ -290,7 +290,7 @@ const EmbedSection = ({
       <div className="flex justify-end -mb-4 print:hidden">
         <button
           onClick={printHomework}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider border border-foreground/20 hover:bg-foreground hover:text-primary-foreground transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold border border-foreground/20 hover:bg-foreground hover:text-primary-foreground transition-colors"
         >
           <Printer size={12} /> Print Homework
         </button>
@@ -299,11 +299,11 @@ const EmbedSection = ({
       {/* 1. Clinical Verification */}
       <div className="space-y-4">
         <div className="flex items-center justify-between border-l-4 border-border pl-3">
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          <h3 className="text-xs font-medium text-muted-foreground">
             Clinical Verification
           </h3>
           {totalCount > 0 && (
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <span className="text-xs font-medium text-muted-foreground">
               {clearedCount}/{totalCount} cleared
             </span>
           )}
@@ -346,7 +346,7 @@ const EmbedSection = ({
                           {item.name}
                         </span>
                         {item.side && (
-                          <span className="text-[10px] font-semibold uppercase px-1.5 py-0 border border-border text-muted-foreground">
+                          <span className="text-xs font-medium px-1.5 py-0 border border-border text-muted-foreground">
                             {item.side}
                           </span>
                         )}
@@ -369,7 +369,7 @@ const EmbedSection = ({
                     onClick={() => handleClearItem(item)}
                     disabled={isClearing}
                     className={cn(
-                      "h-8 px-3 rounded-none border text-[10px] font-semibold uppercase tracking-wider transition-all shrink-0",
+                      "h-8 px-3 rounded-none border text-[11px] font-semibold transition-all shrink-0",
                       item.isCleared
                         ? "border-border hover:bg-muted text-muted-foreground"
                         : "border-emerald-500 hover:bg-emerald-600 hover:text-primary-foreground text-emerald-700"
@@ -395,7 +395,7 @@ const EmbedSection = ({
       {/* 2. Pathway Findings Review */}
       {allFindings.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground border-l-4 border-border pl-3">
+          <h3 className="text-xs font-medium text-muted-foreground border-l-4 border-border pl-3">
             Pathway Findings
           </h3>
           <p className="text-xs text-muted-foreground font-medium leading-relaxed">
@@ -428,18 +428,18 @@ const EmbedSection = ({
 
       {/* 3. Corrections & Logic */}
       <div className="space-y-4">
-        <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground border-l-4 border-border pl-3">
+        <h3 className="text-xs font-medium text-muted-foreground border-l-4 border-border pl-3">
           Corrections & Logic
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Balances Applied</label>
+            <label className="text-xs font-medium text-muted-foreground">Balances Applied</label>
             <div className="p-4 bg-muted/50 border border-border min-h-[90px] text-xs font-mono leading-relaxed text-foreground/80 whitespace-pre-wrap">
               {appointment.modes_balances || <span className="italic text-muted-foreground/50">No corrections logged.</span>}
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Acupoints</label>
+            <label className="text-xs font-medium text-muted-foreground">Acupoints</label>
             <div className="p-4 bg-muted/50 border border-border min-h-[90px] text-xs font-medium text-indigo-700">
               {appointment.acupoints || <span className="italic font-normal text-muted-foreground/50">No acupoints recorded.</span>}
             </div>

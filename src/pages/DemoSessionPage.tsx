@@ -184,7 +184,7 @@ const DemoSessionPage = () => {
 
  <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
  <div className={cn(showSidebar ? "xl:col-span-8" : "xl:col-span-12", "space-y-8 transition-all duration-500")}>
- <Card className="border-none shadow-sm rounded-xl bg-background overflow-hidden">
+ <Card className="border border-border shadow-sm rounded-xl bg-background overflow-hidden">
  <div className="p-6 border-b border-border bg-muted/30">
  <div className="flex items-start gap-5">
  <div className="w-16 h-16 rounded-xl bg-primary text-primary-foreground flex items-center justify-center text-2xl font-semibold shadow-sm">A</div>

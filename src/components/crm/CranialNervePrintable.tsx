@@ -50,14 +50,14 @@ const CranialNervePrintable = () => {
       <div className="border border-foreground/20 p-2 flex flex-col h-full break-inside-avoid bg-card">
         <div className="flex items-start justify-between mb-1.5 border-b border-foreground/20/10 pb-1 min-h-[28px]">
           <div className="flex flex-col">
-            <h4 className="font-black text-[10px] uppercase leading-none">{nerve.name}</h4>
+            <h4 className="font-semibold text-[10px] uppercase leading-none">{nerve.name}</h4>
             <p className="text-[7px] font-bold text-muted-foreground uppercase mt-0.5">{nerve.latinName}</p>
           </div>
           <div className="flex flex-col items-end gap-0.5">
-            <span className={cn("text-[6px] font-black px-1 py-0.5 rounded-sm text-primary-foreground leading-none uppercase", nucleiColor)}>
+            <span className={cn("text-[6px] font-semibold px-1 py-0.5 rounded-sm text-primary-foreground leading-none uppercase", nucleiColor)}>
               {nerve.nuclei}
             </span>
-            <span className="text-[6px] font-bold text-muted-foreground uppercase tracking-widest">
+            <span className="text-[6px] font-bold text-muted-foreground uppercase tracking-wider">
               {nerve.toneEffect} Tone
             </span>
           </div>
@@ -91,10 +91,10 @@ const CranialNervePrintable = () => {
       <div className="border-b-2 border-foreground/20 pb-1.5 mb-4 flex justify-between items-end">
         <div className="space-y-0.5">
           <h1 className="text-2xl font-serif font-bold tracking-tight uppercase leading-none">Cranial Nerve Reference</h1>
-          <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.4em]">Functional Neuro Health • Clinical Infrastructure • v2.4</p>
+          <p className="text-xs font-medium text-muted-foreground">Functional Neuro Health • Clinical Infrastructure • v2.4</p>
         </div>
         <div className="text-right">
-          <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">A4 Landscape Edition</p>
+          <p className="text-xs font-medium text-muted-foreground">A4 Landscape Edition</p>
         </div>
       </div>
 
@@ -107,7 +107,7 @@ const CranialNervePrintable = () => {
 
       {/* Footer */}
       <div className="mt-4 pt-2 border-t border-border flex justify-between items-center">
-        <div className="flex gap-6 text-[8px] font-black uppercase tracking-widest text-muted-foreground">
+        <div className="flex gap-6 text-xs font-medium text-muted-foreground">
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-purple-600" /> Cortex
           </div>
@@ -121,7 +121,7 @@ const CranialNervePrintable = () => {
             <div className="w-1.5 h-1.5 rounded-full bg-rose-600" /> Medulla (Flexors)
           </div>
         </div>
-        <p className="text-[7px] font-black text-muted-foreground/60 uppercase tracking-[0.5em]">Confidential Practitioner Resource</p>
+        <p className="text-[7px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Confidential Practitioner Resource</p>
       </div>
 
       <style>{`

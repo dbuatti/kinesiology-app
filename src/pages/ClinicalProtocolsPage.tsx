@@ -76,7 +76,7 @@ export default function ClinicalProtocolsPage() {
         <div className="w-16 h-16 bg-chart-primary rounded-xl flex items-center justify-center text-primary-foreground font-semibold text-2xl shadow-sm animate-bounce">
           A
         </div>
-        <div className="flex items-center gap-2 text-muted-foreground font-semibold text-[10px] uppercase tracking-wider">
+        <div className="flex items-center gap-2 text-muted-foreground font-medium text-xs">
           <Loader2 className="animate-spin" size={14} /> Loading Protocols
         </div>
       </div>
@@ -110,7 +110,7 @@ export default function ClinicalProtocolsPage() {
           variant="ghost" 
           size="icon" 
           onClick={() => navigate(`/appointments/${id}`)}
-          className="h-12 w-12 rounded-xl bg-card/5 text-primary-foreground hover:bg-card/10 mb-4 transition-all hover:scale-110"
+          className="h-12 w-12 rounded-xl bg-card/5 text-primary-foreground hover:bg-card/10 mb-4 transition-all hover:scale-[1.03]"
         >
           <ChevronLeft size={24} />
         </Button>
@@ -133,7 +133,7 @@ export default function ClinicalProtocolsPage() {
                   <div className="absolute left-0 w-1 h-8 bg-card rounded-r-full" />
                 )}
                 <p.icon size={22} className={cn("transition-transform duration-500", isActive ? "scale-110" : "group-hover:scale-110", !isActive && p.color)} />
-                <span className="text-[10px] font-semibold uppercase tracking-wider mt-2 text-center px-1">
+                <span className="text-[11px] font-semibold mt-2 text-center px-1">
                   {p.label}
                 </span>
               </button>
@@ -145,7 +145,7 @@ export default function ClinicalProtocolsPage() {
           <div className="w-10 h-10 rounded-xl bg-card/5 flex items-center justify-center text-muted-foreground hover:text-primary-foreground transition-colors cursor-pointer">
             <Settings2 size={20} />
           </div>
-          <Badge variant="outline" className="border-primary-foreground/10 text-muted-foreground font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-none rotate-90 mb-6">
+          <Badge variant="outline" className="border-primary-foreground/10 text-muted-foreground font-medium text-xs px-2 py-0.5 rounded-none rotate-90 mb-6">
             Clinical Rail
           </Badge>
         </div>
@@ -167,7 +167,7 @@ export default function ClinicalProtocolsPage() {
                 <h2 className="text-2xl font-serif font-medium text-foreground tracking-tight leading-none">
                   {activeProtocol?.label}
                 </h2>
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-1.5">Protocol v2.4 • Clinical Standard</p>
+                <p className="text-xs font-medium text-muted-foreground mt-1.5">Protocol v2.4 • Clinical Standard</p>
               </div>
             </div>
             <div className="h-8 w-px bg-border mx-2" />
@@ -175,7 +175,7 @@ export default function ClinicalProtocolsPage() {
               asChild
               variant="ghost" 
               size="sm" 
-              className="h-10 px-4 rounded-xl text-chart-primary hover:bg-chart-primary/10 font-semibold text-[10px] uppercase tracking-wider"
+              className="h-9 px-4 rounded-lg text-chart-primary hover:bg-chart-primary/10 font-medium text-[13px]"
             >
               <a href="https://fnhrefapp-ggs6ojfk.manus.space/brain-zones" target="_blank" rel="noopener noreferrer">
                 <Globe size={16} className="mr-2" /> Official App <ExternalLink size={12} className="ml-1.5 opacity-50" />
@@ -192,7 +192,7 @@ export default function ClinicalProtocolsPage() {
                   onCheckedChange={setShowImages}
                   className="data-[state=checked]:bg-chart-primary"
                 />
-                <Label htmlFor="show-images-global" className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer flex items-center gap-2">
+                <Label htmlFor="show-images-global" className="text-xs font-medium text-muted-foreground cursor-pointer flex items-center gap-2">
                   {showImages ? <Eye size={16} className="text-chart-primary" /> : <EyeOff size={16} />}
                   Images
                 </Label>
@@ -203,7 +203,7 @@ export default function ClinicalProtocolsPage() {
 
             <div className="flex items-center gap-4">
               <div className="text-right hidden sm:block">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Active Client</p>
+                <p className="text-xs font-medium text-muted-foreground">Active Client</p>
                 <p className="text-sm font-medium text-foreground">{appointment.clients.name}</p>
               </div>
               <div className="w-11 h-11 rounded-xl bg-chart-primary/10 text-chart-primary flex items-center justify-center font-semibold text-lg shadow-inner border border-chart-primary/20">
@@ -275,10 +275,10 @@ export default function ClinicalProtocolsPage() {
                   </div>
                   <div>
                     <h3 className="text-2xl font-serif font-medium text-foreground tracking-tight">Integration Summary</h3>
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-1">Session Notes & Homework</p>
+                    <p className="text-xs font-medium text-muted-foreground mt-1">Session Notes & Homework</p>
                   </div>
                 </div>
-                <Button variant="ghost" size="sm" className="h-11 px-6 rounded-xl text-chart-primary hover:bg-chart-primary/10 font-semibold text-[10px] uppercase tracking-wider border border-chart-primary/20">
+                <Button variant="ghost" size="sm" className="h-9 px-3.5 rounded-lg text-chart-primary hover:bg-chart-primary/10 font-medium text-[13px] border border-chart-primary/20">
                   <Sparkles size={16} className="mr-2" /> AI Clinical Assist
                 </Button>
               </div>
@@ -290,7 +290,7 @@ export default function ClinicalProtocolsPage() {
               />
               <div className="mt-6 flex justify-end">
                 <Button 
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-14 px-12 font-semibold text-xs uppercase tracking-wider shadow-sm"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-14 px-12 font-semibold text-xs shadow-sm"
                   disabled={savingIntegration}
                   onClick={async () => {
                     if (!id) return;

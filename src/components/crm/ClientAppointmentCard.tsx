@@ -60,7 +60,7 @@ export const ClientAppointmentCard = ({
                     {app.status}
                   </span>
                   {app.is_paid && !app.payment_received && (
-                    <Badge className="bg-muted text-muted-foreground border-none font-semibold text-[10px] uppercase tracking-wider">
+                    <Badge className="bg-muted text-muted-foreground border-none font-semibold text-[11px]">
                       Payment Due
                     </Badge>
                   )}
@@ -74,7 +74,7 @@ export const ClientAppointmentCard = ({
                   size="sm"
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); setExpanded(v => !v); }}
                   className={cn(
-                    "h-9 px-3 rounded-xl text-[10px] font-semibold uppercase tracking-wider border-border text-muted-foreground",
+                    "h-9 px-3 rounded-xl text-[11px] font-semibold border-border text-muted-foreground",
                     expanded && "bg-primary text-primary-foreground border-primary"
                   )}
                   title="Show this session's grid summary (reflexes, stims, and nerve inhibitions)"
@@ -87,7 +87,7 @@ export const ClientAppointmentCard = ({
                 {app.is_paid && !app.payment_received && (
                   <Button
                     size="sm"
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-9 px-4 font-semibold text-[10px] uppercase tracking-wider shadow-sm"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-9 px-4 font-semibold text-[11px] shadow-sm"
                     onClick={(e) => onGeneratePaymentLink(e, app)}
                     disabled={generatingLink === app.id}
                   >

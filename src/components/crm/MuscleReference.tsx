@@ -107,7 +107,7 @@ const MuscleReference = () => {
                 variant={meridianFilter === currentPeakMeridian.name ? "default" : "outline"}
                 onClick={() => setMeridianFilter(meridianFilter === currentPeakMeridian.name ? 'All' : currentPeakMeridian.name)}
                 className={cn(
-                  "rounded-xl h-14 px-6 font-black text-[10px] uppercase tracking-widest transition-all",
+                  "rounded-xl h-14 px-6 font-semibold text-[11px] transition-all",
                   meridianFilter === currentPeakMeridian.name ? "bg-amber-500 text-primary-foreground border-none shadow-lg" : "border-border bg-card hover:bg-muted/50 text-amber-600"
                 )}
               >
@@ -127,7 +127,7 @@ const MuscleReference = () => {
         </div>
 
         <div className="space-y-4">
-          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] px-2">Filter by Body Region</p>
+          <p className="text-xs font-medium text-muted-foreground px-2">Filter by Body Region</p>
           <MuscleRegionFilter activeRegion={selectedGroup} onRegionChange={setSelectedGroup} />
         </div>
       </div>
@@ -142,7 +142,7 @@ const MuscleReference = () => {
           return (
             <Card 
               key={muscle.name} 
-              className="border-none shadow-md rounded-[2rem] bg-card hover:shadow-xl transition-all group overflow-hidden cursor-pointer flex flex-col h-full"
+              className="border-none shadow-md rounded-2xl bg-card hover:shadow-xl transition-all group overflow-hidden cursor-pointer flex flex-col h-full"
               onClick={() => handleMuscleClick(muscle.name)}
             >
               <div className="aspect-video bg-muted/50 relative overflow-hidden border-b border-border/50">
@@ -151,24 +151,24 @@ const MuscleReference = () => {
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full text-muted-foreground/60">
                     <ImageIcon size={32} className="mb-2 opacity-20" />
-                    <p className="text-[8px] font-black uppercase tracking-widest">No Main Image</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider">No Main Image</p>
                   </div>
                 )}
                 <div className="absolute top-3 right-3 flex gap-1">
                   {hasImages && (
-                    <Badge className="bg-emerald-500 text-primary-foreground border-none font-black text-[7px] uppercase tracking-widest px-2 py-0.5">
+                    <Badge className="bg-emerald-500 text-primary-foreground border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-0.5">
                       Custom
                     </Badge>
                   )}
-                  <Badge className="bg-card/80 backdrop-blur-sm text-foreground border-none font-black text-[7px] uppercase tracking-widest px-2 py-0.5">
+                  <Badge className="bg-card/80 backdrop-blur-sm text-foreground border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-0.5">
                     {info.meridian}
                   </Badge>
                 </div>
               </div>
               <CardContent className="p-6 space-y-4 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="font-black text-lg text-foreground group-hover:text-indigo-600 transition-colors truncate">{muscle.name}</h3>
-                  <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{muscle.group}</p>
+                  <h3 className="font-semibold text-lg text-foreground group-hover:text-indigo-600 transition-colors truncate">{muscle.name}</h3>
+                  <p className="text-xs font-medium text-muted-foreground">{muscle.group}</p>
                 </div>
                 
                 <div className="space-y-2">
@@ -198,9 +198,9 @@ const MuscleReference = () => {
       </div>
 
       {filteredMuscles.length === 0 && (
-        <div className="text-center py-32 bg-muted/50 rounded-[3rem] border-2 border-dashed border-border">
+        <div className="text-center py-32 bg-muted/50 rounded-2xl border-2 border-dashed border-border">
           <Dumbbell size={48} className="mx-auto text-muted-foreground/60 mb-4" />
-          <h3 className="text-xl font-black text-foreground">No muscles found</h3>
+          <h3 className="text-xl font-semibold text-foreground">No muscles found</h3>
           <p className="text-muted-foreground mt-2">Try adjusting your search or group filter.</p>
           <Button variant="link" onClick={resetFilters} className="mt-4 text-indigo-600 font-bold">Clear All Filters</Button>
         </div>

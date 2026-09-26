@@ -315,7 +315,7 @@ const BrainReflexReference = () => {
               <Button 
                 variant="ghost" 
                 asChild
-                className="text-chart-primary hover:text-primary-foreground hover:bg-card/10 rounded-xl font-medium text-xs uppercase tracking-wider"
+                className="text-chart-primary hover:text-primary-foreground hover:bg-card/10 rounded-xl font-medium text-xs"
               >
                 <Link to="/resources/brain-zones/print">
                   <Printer size={18} className="mr-2" /> Print Reference
@@ -324,7 +324,7 @@ const BrainReflexReference = () => {
               <Button 
                 variant="ghost" 
                 onClick={() => setMapExpanded(!mapExpanded)}
-                className="text-chart-primary hover:text-primary-foreground hover:bg-card/10 rounded-xl font-medium text-xs uppercase tracking-wider"
+                className="text-chart-primary hover:text-primary-foreground hover:bg-card/10 rounded-xl font-medium text-xs"
               >
                 {mapExpanded ? <ChevronUp size={18} className="mr-2" /> : <Maximize2 size={18} className="mr-2" />}
                 {mapExpanded ? "Collapse map" : "Expand map"}
@@ -343,7 +343,7 @@ const BrainReflexReference = () => {
               />
               {!mapExpanded && (
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent flex items-end justify-center pb-8">
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-[0.4em]">FNH Brain Zone Reference Map — all zones labelled with acupoints and hand placements</p>
+                  <p className="text-xs font-medium text-muted-foreground">FNH Brain Zone Reference Map — all zones labelled with acupoints and hand placements</p>
                 </div>
               )}
             </div>
@@ -370,7 +370,7 @@ const BrainReflexReference = () => {
                 variant={selectedCategory === cat ? "default" : "outline"}
                 onClick={() => setSelectedCategory(cat)}
                 className={cn(
-                  "rounded-xl h-14 px-6 font-medium text-[10px] uppercase tracking-wider whitespace-nowrap transition-all",
+                  "rounded-xl h-14 px-6 font-medium text-[11px] whitespace-nowrap transition-all",
                   selectedCategory === cat ? "bg-foreground shadow-sm" : "border-border bg-card hover:bg-muted"
                 )}
               >
@@ -413,7 +413,7 @@ const BrainReflexReference = () => {
                           {point.category}
                         </Badge>
                         {point.acupoint && (
-                          <Badge variant="outline" className="border-border text-muted-foreground font-medium text-[10px] uppercase tracking-wider">
+                          <Badge variant="outline" className="border-border text-muted-foreground font-medium text-xs">
                             {point.acupoint}
                           </Badge>
                         )}
@@ -457,7 +457,7 @@ const BrainReflexReference = () => {
 
                   <div className="space-y-4 flex-1">
                     <div className="p-4 bg-muted rounded-xl border border-border">
-                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
+                      <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
                         <Hand size={10} /> Location
                       </p>
                       <p className="text-xs font-medium text-foreground leading-relaxed">{point.location}</p>
@@ -465,7 +465,7 @@ const BrainReflexReference = () => {
 
                     {point.functions && (
                       <div className="space-y-2">
-                        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Key Functions</p>
+                        <p className="text-xs font-medium text-muted-foreground">Key Functions</p>
                         <div className="space-y-1">
                           {point.functions.map(f => (
                             <div key={f} className="flex items-start gap-2 text-[10px] font-medium text-muted-foreground">

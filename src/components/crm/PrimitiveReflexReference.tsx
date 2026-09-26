@@ -203,7 +203,7 @@ const ReflexImageZone = ({
               <div className="w-10 h-10 rounded-xl bg-card shadow-sm border border-border flex items-center justify-center mx-auto text-muted-foreground group-hover/image:text-chart-primary group-hover/image:scale-110 transition-all">
                 <Plus size={20} />
               </div>
-              <p className="font-medium text-muted-foreground uppercase tracking-wider text-[10px]">
+              <p className="font-medium text-muted-foreground text-xs">
                 {type === 'primary' ? "Add Main Image" : "Add Secondary"}
               </p>
             </>
@@ -290,7 +290,7 @@ const PrimitiveReflexReference = () => {
     <div className="space-y-12">
       {/* Theory & Process Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <Card className="lg:col-span-2 border-none shadow-sm rounded-xl bg-foreground text-primary-foreground overflow-hidden relative">
+        <Card className="lg:col-span-2 border-none shadow-sm rounded-xl bg-[hsl(238_26%_10%)] text-white ring-1 ring-white/[0.06] overflow-hidden relative">
           <div className="absolute top-0 right-0 p-10 opacity-5"><Workflow size={150} /></div>
           <CardHeader className="p-10">
             <div className="flex items-center gap-4 mb-4">
@@ -334,7 +334,7 @@ const PrimitiveReflexReference = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm rounded-xl bg-muted border-2 border-border overflow-hidden">
+        <Card className="border border-border shadow-sm rounded-xl bg-muted border-2 border-border overflow-hidden">
           <CardHeader className="p-8 pb-4">
             <CardTitle className="text-xl font-semibold flex items-center gap-3 text-foreground">
               <ListChecks size={24} className="text-chart-primary" /> Clinical Strategy
@@ -362,15 +362,15 @@ const PrimitiveReflexReference = () => {
               <h4 className="text-[10px] font-medium text-chart-primary uppercase tracking-wider">Fractal Chains</h4>
               <div className="space-y-2">
                 <div className="p-3 bg-card rounded-xl border border-border">
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase mb-1">Master Chain</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Master Chain</p>
                   <p className="text-[10px] font-medium text-foreground">Fear Paralysis → Moro → Startle</p>
                 </div>
                 <div className="p-3 bg-card rounded-xl border border-border">
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase mb-1">Gait Chain</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Gait Chain</p>
                   <p className="text-[10px] font-medium text-foreground">ATNR → Babinski → Palmar</p>
                 </div>
                 <div className="p-3 bg-card rounded-xl border border-border">
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase mb-1">Oral Chain</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Oral Chain</p>
                   <p className="text-[10px] font-medium text-foreground">Rooting → Sucking</p>
                 </div>
               </div>
@@ -398,7 +398,7 @@ const PrimitiveReflexReference = () => {
                 variant={selectedCategory === cat ? "default" : "outline"}
                 onClick={() => setSelectedCategory(cat)}
                 className={cn(
-                  "rounded-xl h-14 px-6 font-medium text-[10px] uppercase tracking-wider whitespace-nowrap transition-all",
+                  "rounded-xl h-14 px-6 font-medium text-[11px] whitespace-nowrap transition-all",
                   selectedCategory === cat ? "bg-foreground shadow-sm" : "border-border bg-card hover:bg-muted"
                 )}
               >
@@ -409,7 +409,7 @@ const PrimitiveReflexReference = () => {
               <Button 
                 variant="outline" 
                 asChild
-                className="rounded-xl h-14 px-6 font-medium text-[10px] uppercase tracking-wider border-border text-chart-destructive hover:bg-muted"
+                className="rounded-xl h-14 px-6 font-medium text-[11px] border-border text-chart-destructive hover:bg-muted"
               >
                 <Link to="/resources/primitive-reflexes/worksheet">
                   <FileText size={18} className="mr-2" /> Worksheet
@@ -485,7 +485,7 @@ const PrimitiveReflexReference = () => {
 
                   <div className="grid grid-cols-1 gap-4">
                     <div className="p-4 bg-muted rounded-xl border border-border">
-                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
+                      <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
                         <PlayCircle size={12} className="text-chart-primary" /> Stimulus
                       </p>
                       <p className="text-sm font-medium text-foreground leading-relaxed line-clamp-2">{reflex.stimulus}</p>
@@ -500,7 +500,7 @@ const PrimitiveReflexReference = () => {
 
                   {reflex.clinicalSigns && reflex.clinicalSigns.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Clinical Signs</p>
+                      <p className="text-xs font-medium text-muted-foreground">Clinical Signs</p>
                       <div className="flex flex-wrap gap-1.5">
                         {reflex.clinicalSigns.map(sign => (
                           <Badge key={sign} variant="secondary" className="bg-muted text-muted-foreground border-none text-[10px] font-medium">

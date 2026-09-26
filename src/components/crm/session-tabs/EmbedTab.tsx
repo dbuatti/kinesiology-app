@@ -195,7 +195,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
             if (!open) setSelectedSlot(null);
           }}>
             <DialogTrigger asChild>
-              <Button className="w-full md:w-auto bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-14 px-12 font-medium text-xs uppercase tracking-wider">
+              <Button className="w-full md:w-auto bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-14 px-12 font-medium text-xs">
                 <Plus size={20} className="mr-2" /> Book Next Session
               </Button>
             </DialogTrigger>
@@ -282,7 +282,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
               <p className="text-xs text-muted-foreground font-medium">A visual breakdown of everything recorded this session.</p>
             </div>
           </div>
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+          <p className="text-xs font-medium text-muted-foreground flex items-center gap-2">
             <RefreshCw size={12} className="animate-spin-slow" /> Auto-populating from session data
           </p>
         </div>
@@ -290,9 +290,9 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Column 1: Intake & Vitals */}
           <div className="space-y-6">
-            <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+            <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
               <CardHeader className="pb-3 bg-muted border-b border-border">
-                <CardTitle className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <Target size={14} /> Intake & Vitals
                 </CardTitle>
               </CardHeader>
@@ -332,9 +332,9 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
             </Card>
 
             {hasSnsResets && (
-<Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+<Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
               <CardHeader className="pb-3 bg-muted border-b border-border">
-                <CardTitle className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <Zap size={14} /> SNS Down-Regulation
                   </CardTitle>
                 </CardHeader>
@@ -366,9 +366,9 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
 
           {/* Column 2: Pathway Findings */}
           <div className="lg:col-span-1">
-              <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden h-full">
+              <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden h-full">
               <CardHeader className="pb-3 bg-muted border-b border-border">
-                <CardTitle className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <GitBranch size={14} /> Pathway Findings
                 </CardTitle>
               </CardHeader>
@@ -384,9 +384,9 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
 
           {/* Column 3: Corrections & Context */}
           <div className="space-y-6">
-            <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+            <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
               <CardHeader className="pb-3 bg-muted border-b border-border">
-                <CardTitle className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <Sparkles size={14} /> Corrections & Logic
                 </CardTitle>
               </CardHeader>
@@ -405,9 +405,9 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
             </Card>
 
             {appointment.emotion_primary_selection && (
-              <Card className="border-none shadow-sm bg-card rounded-xl overflow-hidden">
+              <Card className="border border-border shadow-sm bg-card rounded-xl overflow-hidden">
                 <CardHeader className="pb-3 bg-muted border-b border-border">
-                  <CardTitle className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                     <Heart size={14} /> Emotional Context
                   </CardTitle>
                 </CardHeader>
@@ -478,7 +478,7 @@ const EmbedTab = ({ appointment, onUpdate, saveField, updatePriorityPattern }: E
                     <Button 
                       onClick={() => handleClearItem(item)}
                       disabled={isClearing}
-                      className="bg-muted text-muted-foreground hover:bg-muted/80 rounded-xl h-10 px-4 font-medium text-[10px] transition-all border border-border"
+                      className="bg-card text-muted-foreground hover:bg-muted/80 rounded-lg h-9 px-4 font-medium text-[13px] transition-all border border-border"
                     >
                       {isClearing ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} className="mr-2" />}
                       Mark Clear

@@ -206,7 +206,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
               <MessageCircle size={16} className="text-rose-600" />
             </div>
             <div>
-              <p className="text-sm font-black text-foreground">Contact {firstName}</p>
+              <p className="text-sm font-semibold text-foreground">Contact {firstName}</p>
               <p className="text-[10px] text-muted-foreground font-medium">
                 {student.email || student.phone || "No contact info"}
               </p>
@@ -232,7 +232,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
           {/* SMS Templates */}
           {student.phone && (
             <>
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground px-3 pt-1.5 pb-1">
+              <p className="text-xs font-medium text-muted-foreground px-3 pt-1.5 pb-1">
                 SMS Templates
               </p>
               {SMS_TEMPLATES.map((t) => (
@@ -261,7 +261,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-xs font-black text-foreground">{t.label}</p>
+                      <p className="text-xs font-semibold text-foreground">{t.label}</p>
                       <ChevronRight size={12} className="text-muted-foreground shrink-0" />
                     </div>
                     <p className="text-[10px] font-medium mt-0.5 leading-relaxed text-muted-foreground">
@@ -276,7 +276,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
           {/* Email option */}
           {student.email && (
             <>
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground px-3 pt-3 pb-1">
+              <p className="text-xs font-medium text-muted-foreground px-3 pt-3 pb-1">
                 Email
               </p>
               <button
@@ -291,7 +291,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs font-black text-foreground">Compose Email</p>
+                    <p className="text-xs font-semibold text-foreground">Compose Email</p>
                     <ChevronRight size={12} className="text-muted-foreground shrink-0" />
                   </div>
                   <p className="text-[10px] font-medium mt-0.5 leading-relaxed text-muted-foreground">
@@ -341,7 +341,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs font-black text-foreground">Share Availability</p>
+                    <p className="text-xs font-semibold text-foreground">Share Availability</p>
                     <ChevronRight size={12} className="text-muted-foreground shrink-0" />
                   </div>
                   <p className="text-[10px] font-medium mt-0.5 leading-relaxed text-muted-foreground">
@@ -384,7 +384,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-xs font-black text-foreground">Share 10 Days</p>
+                    <p className="text-xs font-semibold text-foreground">Share 10 Days</p>
                     <ChevronRight size={12} className="text-muted-foreground shrink-0" />
                   </div>
                   <p className="text-[10px] font-medium mt-0.5 leading-relaxed text-muted-foreground">
@@ -401,7 +401,7 @@ const VoiceMessagePopover = ({ student, hasUpcoming, onContactLogged }: VoiceMes
               <a
                 href={`sms:${student.phone}`}
                 onClick={() => logContact("sms")}
-                className="flex items-center justify-center gap-2 w-full h-9 rounded-xl bg-muted text-muted-foreground hover:bg-muted/80 transition-colors text-[10px] font-black uppercase tracking-widest"
+                className="flex items-center justify-center gap-2 w-full h-9 rounded-xl bg-muted text-muted-foreground hover:bg-muted/80 transition-colors text-[11px] font-semibold"
               >
                 <Phone size={12} />
                 Open Messages (blank)

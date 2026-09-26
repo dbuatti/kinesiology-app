@@ -40,7 +40,7 @@ interface PathwayReflexStimGridBoardProps {
 
 const SectionHeader = ({ children }: { children: React.ReactNode }) => (
   <div className="flex items-center gap-2 px-3 py-2.5">
-    <p className="text-xs font-bold uppercase tracking-widest text-foreground">{children}</p>
+    <p className="text-xs font-bold uppercase tracking-wider text-foreground">{children}</p>
   </div>
 );
 
@@ -125,7 +125,7 @@ const SideSplit = ({
           )}
         >
           {marked ? <StimXMark className="w-6 h-6" /> : (
-            <span className="text-sm font-black">{side}</span>
+            <span className="text-sm font-semibold">{side}</span>
           )}
         </button>
       );
@@ -164,7 +164,7 @@ const NerveInhib = ({
               )}
             >
               {marked ? <StimXMark className="w-5 h-5" /> : (
-                <span className="text-xs font-black">{side}</span>
+                <span className="text-xs font-semibold">{side}</span>
               )}
             </button>
           );
@@ -220,12 +220,12 @@ const ReflexRow = ({
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="rounded-xl max-w-[260px] text-[10px] leading-relaxed bg-foreground text-background border-none shadow-xl">
-                  <p className="font-black uppercase tracking-wider text-[9px] mb-1">{reflex.short} — Inhibition</p>
+                  <p className="font-semibold uppercase tracking-wider text-[10px] mb-1">{reflex.short} — Inhibition</p>
                   <p className="font-medium">{reflex.inhibition}</p>
                 </TooltipContent>
               </Tooltip>
             ) : (
-              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+              <span className="text-xs font-medium text-muted-foreground/60">
                 {reflex.short} · {i + 1}
               </span>
             )}
@@ -290,7 +290,7 @@ const NerveBlock = ({
               </Link>
             </TooltipTrigger>
             <TooltipContent side="right" className="rounded-xl max-w-[260px] text-[10px] leading-relaxed bg-foreground text-background border-none shadow-xl">
-              <p className="font-black uppercase tracking-wider text-[9px] mb-1">{nerve.name} — Reflex Point</p>
+              <p className="font-semibold uppercase tracking-wider text-[10px] mb-1">{nerve.name} — Reflex Point</p>
               <p className="font-medium">{nerve.reflexPoint}</p>
             </TooltipContent>
           </Tooltip>
@@ -421,7 +421,7 @@ const MuscleSideSplit = ({
           !state && "text-muted-foreground hover:bg-muted"
         )}
       >
-        {toneIcon(state, "w-5 h-5") || <span className="text-sm font-black">{side}</span>}
+        {toneIcon(state, "w-5 h-5") || <span className="text-sm font-semibold">{side}</span>}
       </button>
     ))}
   </div>
@@ -455,7 +455,7 @@ const MuscleRow = ({
       <div className="flex w-72 shrink-0 items-center border-r border-border/50 bg-muted/30 px-4 py-3">
         <div className="min-w-0">
           <p className="text-sm font-semibold text-foreground truncate">{name}</p>
-          <p className="text-[9px] uppercase tracking-wider text-muted-foreground/60">{info.meridian}</p>
+          <p className="text-xs text-muted-foreground/60">{info.meridian}</p>
         </div>
       </div>
       <div className="flex flex-1 items-center px-4 py-3 text-xs font-medium text-foreground/75">
@@ -503,7 +503,7 @@ export function PathwayReflexStimGridBoard({
             <div key={track.title}>
               <div className="flex items-center gap-2 bg-muted/40 px-4 py-2">
                 <span className={cn("h-2.5 w-2.5 rounded-full", track.color)} />
-                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <p className="text-xs font-medium text-muted-foreground">
                   {track.title}
                 </p>
               </div>
@@ -529,7 +529,7 @@ export function PathwayReflexStimGridBoard({
             <div key={group.label}>
               <div className="flex items-center gap-2 bg-muted/40 px-4 py-2">
                 <span className={cn("h-2.5 w-2.5 rounded-full", NUCLEI_COLORS[group.label])} />
-                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <p className="text-xs font-medium text-muted-foreground">
                   {group.label} Nuclei
                 </p>
               </div>
@@ -566,7 +566,7 @@ export function PathwayReflexStimGridBoard({
             <div key={group}>
               <div className="flex items-center gap-2 bg-muted/40 px-4 py-2">
                 <span className="h-2.5 w-2.5 rounded-full bg-chart-primary" />
-                <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                <p className="text-xs font-medium text-muted-foreground">
                   {group}
                 </p>
               </div>

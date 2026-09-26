@@ -44,21 +44,21 @@ const SpinalSegmentReference = () => {
           const meridian = muscleInfo.meridian;
 
           return (
-            <Card key={assoc.spinalSegment} className="border-none shadow-md rounded-[2rem] bg-card hover:shadow-xl transition-all group overflow-hidden">
+            <Card key={assoc.spinalSegment} className="border-none shadow-md rounded-2xl bg-card hover:shadow-xl transition-all group overflow-hidden">
               <CardHeader className="pb-3 bg-muted/50 border-b border-border/50">
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <div className="flex gap-2 mb-2">
-                      <Badge className="bg-indigo-50 text-indigo-700 border-none font-black text-[10px] uppercase tracking-widest">
+                      <Badge className="bg-indigo-50 text-indigo-700 border-none font-semibold text-[10px] uppercase tracking-wider">
                         Spinal Segment
                       </Badge>
                       {meridian && (
-                        <Badge className="bg-emerald-50 text-emerald-700 border-none font-black text-[10px] uppercase tracking-widest">
+                        <Badge className="bg-emerald-50 text-emerald-700 border-none font-semibold text-[10px] uppercase tracking-wider">
                           {meridian}
                         </Badge>
                       )}
                     </div>
-                    <CardTitle className="text-3xl font-black text-foreground group-hover:text-indigo-600 transition-colors">
+                    <CardTitle className="text-3xl font-semibold text-foreground group-hover:text-indigo-600 transition-colors">
                       {assoc.spinalSegment}
                     </CardTitle>
                   </div>
@@ -74,26 +74,26 @@ const SpinalSegmentReference = () => {
                     className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 text-left hover:bg-indigo-100 transition-colors group/muscle"
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-1">
+                      <p className="text-[11px] font-semibold text-indigo-400 flex items-center gap-1">
                         <Zap size={12} /> Associated Muscle
                       </p>
                       <Info size={12} className="text-indigo-300 group-hover/muscle:text-indigo-600 transition-colors" />
                     </div>
-                    <p className="text-lg font-black text-indigo-900 group-hover/muscle:underline decoration-indigo-300 underline-offset-4">
+                    <p className="text-lg font-semibold text-indigo-900 group-hover/muscle:underline decoration-indigo-300 underline-offset-4">
                       {assoc.muscle}
                     </p>
                     {meridian && (
-                      <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mt-1 flex items-center gap-1">
+                      <p className="text-[11px] font-semibold text-emerald-600 mt-1 flex items-center gap-1">
                         <Layers size={10} /> {meridian} Meridian
                       </p>
                     )}
                   </button>
                   
                   <div className="p-4 bg-muted/50 rounded-2xl border border-border/50">
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1 flex items-center gap-1">
+                    <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1">
                       <Activity size={12} /> Organ / Gland
                     </p>
-                    <p className="text-lg font-black text-foreground">{assoc.organ}</p>
+                    <p className="text-lg font-semibold text-foreground">{assoc.organ}</p>
                   </div>
                 </div>
                 
@@ -101,11 +101,11 @@ const SpinalSegmentReference = () => {
                   <div className="absolute top-0 right-0 p-4 opacity-10">
                     <RefreshCw size={40} className="text-rose-600" />
                   </div>
-                  <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-2 flex items-center gap-1">
+                  <p className="text-[10px] font-semibold text-rose-400 uppercase tracking-wider mb-2 flex items-center gap-1">
                     <RefreshCw size={12} /> Lovett-Brother Partner
                   </p>
                   <div className="flex items-baseline gap-2">
-                    <p className="text-3xl font-black text-rose-600">{assoc.reciprocatingSegment}</p>
+                    <p className="text-3xl font-semibold text-rose-600">{assoc.reciprocatingSegment}</p>
                     <span className="text-xs font-bold text-rose-400">Reciprocating Segment</span>
                   </div>
                 </div>
@@ -116,11 +116,11 @@ const SpinalSegmentReference = () => {
       </div>
 
       {filteredAssociations.length === 0 && (
-        <div className="text-center py-32 bg-muted/50 rounded-[3rem] border-2 border-dashed border-border">
+        <div className="text-center py-32 bg-muted/50 rounded-2xl border-2 border-dashed border-border">
           <div className="mx-auto w-20 h-20 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-xl">
             <Search size={40} className="text-muted-foreground/60" />
           </div>
-          <h3 className="text-xl font-black text-foreground">No associations found</h3>
+          <h3 className="text-xl font-semibold text-foreground">No associations found</h3>
           <p className="text-muted-foreground mt-2">Try searching for a different segment, muscle, or organ.</p>
         </div>
       )}

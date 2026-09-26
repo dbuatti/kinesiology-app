@@ -310,7 +310,7 @@ const AppointmentForm = ({
           name="clientId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs font-black text-foreground uppercase tracking-widest">Client</FormLabel>
+              <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Client</FormLabel>
               <FormControl>
                 <SearchableClientSelect
                   clients={clients}
@@ -330,7 +330,7 @@ const AppointmentForm = ({
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs font-black text-foreground uppercase tracking-widest">Appointment Title (Optional)</FormLabel>
+              <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Appointment Title (Optional)</FormLabel>
               <FormControl>
                 <Input placeholder="e.g. Initial Session" {...field} className="h-12 rounded-xl border-2 border-border/50 focus:border-chart-primary transition-all" />
               </FormControl>
@@ -345,7 +345,7 @@ const AppointmentForm = ({
             name="date"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-black text-foreground uppercase tracking-widest">Date</FormLabel>
+                <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Date</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -377,9 +377,9 @@ const AppointmentForm = ({
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between">
-                  <FormLabel className="text-xs font-black text-foreground uppercase tracking-widest">Time</FormLabel>
+                  <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Time</FormLabel>
                   {isTimeLocked && (
-                    <button type="button" onClick={() => setIsTimeLocked(false)} className="text-[8px] font-black text-chart-primary uppercase tracking-widest flex items-center gap-1 hover:underline">
+                    <button type="button" onClick={() => setIsTimeLocked(false)} className="text-[11px] font-semibold text-chart-primary flex items-center gap-1 hover:underline">
                       <Unlock size={10} /> Override Slot
                     </button>
                   )}
@@ -402,14 +402,14 @@ const AppointmentForm = ({
             name="tag"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-black text-foreground uppercase tracking-widest">Type</FormLabel>
+                <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Type</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger className="h-12 rounded-xl border-2 border-border/50">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent className="rounded-xl border-none shadow-2xl bg-card dark:bg-foreground">
+                  <SelectContent className="rounded-xl border-none shadow-2xl bg-card dark:bg-card">
                     {APPOINTMENT_TAGS.map(tag => (
                       <SelectItem key={tag} value={tag} className="rounded-lg">{tag}</SelectItem>
                     ))}
@@ -425,14 +425,14 @@ const AppointmentForm = ({
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-black text-foreground uppercase tracking-widest">Status</FormLabel>
+                <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Status</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger className="h-12 rounded-xl border-2 border-border/50">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent className="rounded-xl border-none shadow-2xl bg-card dark:bg-foreground">
+                  <SelectContent className="rounded-xl border-none shadow-2xl bg-card dark:bg-card">
                     {APPOINTMENT_STATUSES.map(status => (
                       <SelectItem key={status} value={status} className="rounded-lg">{status}</SelectItem>
                     ))}
@@ -446,7 +446,7 @@ const AppointmentForm = ({
 
         {/* Session Picker */}
         <div className="space-y-3">
-          <FormLabel className="text-xs font-black text-foreground uppercase tracking-widest">Session</FormLabel>
+          <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Session</FormLabel>
           <div className="grid grid-cols-3 gap-2">
             {SESSION_OPTIONS.map((s) => {
               const isSelected = selectedSessionKey === s.key;
@@ -469,7 +469,7 @@ const AppointmentForm = ({
                   )}
                 >
                   {isClientRate && !isSelected && (
-                    <span className="absolute -top-2 right-2 bg-chart-emerald text-primary-foreground text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full z-10">
+                    <span className="absolute -top-2 right-2 bg-chart-emerald text-primary-foreground text-[7px] font-semibold px-1.5 py-0.5 rounded-full z-10">
                       Rate
                     </span>
                   )}
@@ -477,7 +477,7 @@ const AppointmentForm = ({
                     <Sparkles size={12} className="absolute top-2 right-2 opacity-70" />
                   )}
                   <Package size={16} className="mb-1 opacity-60" />
-                  <span className="text-[9px] font-black leading-tight text-center">{s.label}</span>
+                  <span className="text-[10px] font-semibold leading-tight text-center">{s.label}</span>
                   <span className="text-[10px] font-bold mt-0.5">{s.price === 0 ? "Free" : `$${s.price}`}</span>
                 </button>
               );
@@ -486,7 +486,7 @@ const AppointmentForm = ({
         </div>
 
         <div className="space-y-3">
-          <FormLabel className="text-xs font-black text-foreground uppercase tracking-widest">Session Price</FormLabel>
+          <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Session Price</FormLabel>
           <div className="grid grid-cols-3 gap-3">
             {priceOptions.map((opt) => {
               const isCurrentRate = opt.sublabel === "Current rate";
@@ -510,15 +510,15 @@ const AppointmentForm = ({
                   )}
                 >
                   {isCurrentRate && !isSelected && (
-                    <span className="absolute -top-2 right-2 bg-chart-emerald text-primary-foreground text-[7px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full z-10">
+                    <span className="absolute -top-2 right-2 bg-chart-emerald text-primary-foreground text-[7px] font-semibold px-1.5 py-0.5 rounded-full z-10">
                       Rate
                     </span>
                   )}
                   {isCurrentRate && isSelected && (
                     <Sparkles size={12} className="absolute top-2 right-2 opacity-70" />
                   )}
-                  <span className="text-lg font-black">{opt.label}</span>
-                  <span className="text-[8px] font-bold uppercase tracking-widest opacity-70">{opt.sublabel}</span>
+                  <span className="text-lg font-semibold">{opt.label}</span>
+                  <span className="text-[11px] font-bold opacity-70">{opt.sublabel}</span>
                 </button>
               );
             })}
@@ -532,7 +532,7 @@ const AppointmentForm = ({
             render={({ field }) => (
               <FormItem 
                 className={cn(
-                  "flex flex-row items-center justify-between rounded-[1.5rem] border-2 p-5 transition-all cursor-pointer",
+                  "flex flex-row items-center justify-between rounded-2xl border-2 p-5 transition-all cursor-pointer",
                   field.value ? "bg-chart-emerald/10 border-chart-emerald/20" : "bg-card border-border/50 hover:border-chart-emerald/10"
                 )}
                 onClick={() => field.onChange(!field.value)}
@@ -542,8 +542,8 @@ const AppointmentForm = ({
                     <Mail size={20} />
                   </div>
                   <div className="space-y-0.5">
-                    <FormLabel className="text-base font-black text-foreground cursor-pointer">Send Onboarding Email</FormLabel>
-                    <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">Automatically email the intake form</p>
+                    <FormLabel className="text-base font-semibold text-foreground cursor-pointer">Send Onboarding Email</FormLabel>
+                    <p className="text-xs text-muted-foreground font-medium">Automatically email the intake form</p>
                   </div>
                 </div>
                 <div className={cn("w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all", field.value ? "bg-chart-emerald border-chart-emerald" : "border-border")}>
@@ -554,7 +554,7 @@ const AppointmentForm = ({
           />
         )}
 
-        <Button type="submit" className="w-full bg-chart-primary hover:bg-chart-primary/80 h-14 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-chart-primary/20" disabled={submitting}>
+        <Button type="submit" className="w-full bg-chart-primary hover:bg-chart-primary/80 h-14 rounded-2xl font-semibold text-sm shadow-xl shadow-chart-primary/20" disabled={submitting}>
           {submitting ? (
             <>
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />

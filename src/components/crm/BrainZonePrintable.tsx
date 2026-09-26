@@ -70,8 +70,8 @@ const BrainZonePrintable = () => {
         className="relative border border-foreground/20 p-2 flex flex-col h-full break-inside-avoid bg-card cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all print:cursor-default print:hover:border-foreground/20 print:hover:shadow-none group"
       >
         <div className="flex items-center justify-between mb-1.5 border-b border-foreground/10 pb-1">
-          <h4 className="font-black text-[10px] sm:text-[9px] uppercase leading-none truncate pr-1">{point.name}</h4>
-          <span className={cn("text-[8px] sm:text-[7px] font-black px-1.5 py-0.5 rounded-sm text-primary-foreground whitespace-nowrap leading-none shrink-0", color)}>
+          <h4 className="font-semibold text-[10px] sm:text-[10px] uppercase leading-none truncate pr-1">{point.name}</h4>
+          <span className={cn("text-[10px] sm:text-[7px] font-semibold px-1.5 py-0.5 rounded-sm text-primary-foreground whitespace-nowrap leading-none shrink-0", color)}>
             {point.acupoint || point.category[0]}
           </span>
         </div>
@@ -121,7 +121,7 @@ const BrainZonePrintable = () => {
               variant={orientation === 'landscape' ? 'default' : 'ghost'} 
               size="sm" 
               onClick={() => setOrientation('landscape')}
-              className="rounded-lg h-9 px-4 font-bold text-[10px] uppercase tracking-widest"
+              className="rounded-lg h-9 px-4 font-bold text-[11px]"
             >
               <Columns size={14} className="mr-2" /> Landscape
             </Button>
@@ -129,7 +129,7 @@ const BrainZonePrintable = () => {
               variant={orientation === 'portrait' ? 'default' : 'ghost'} 
               size="sm" 
               onClick={() => setOrientation('portrait')}
-              className="rounded-lg h-9 px-4 font-bold text-[10px] uppercase tracking-widest"
+              className="rounded-lg h-9 px-4 font-bold text-[11px]"
             >
               <Rows size={14} className="mr-2" /> Portrait
             </Button>
@@ -141,14 +141,14 @@ const BrainZonePrintable = () => {
             variant="outline" 
             size="sm" 
             onClick={() => setIsCompact(!isCompact)}
-            className="rounded-xl h-9 px-4 font-bold text-[10px] uppercase tracking-widest border-border bg-card"
+            className="rounded-xl h-9 px-4 font-bold text-[11px] border-border bg-card"
           >
             {isCompact ? <Maximize2 size={14} className="mr-2" /> : <Minimize2 size={14} className="mr-2" />}
             {isCompact ? "Normal Text" : "Compact Text"}
           </Button>
         </div>
         
-        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+        <p className="text-xs font-medium text-muted-foreground">
           {orientation.toUpperCase()} • {isCompact ? 'COMPACT' : 'NORMAL'}
         </p>
       </div>
@@ -157,10 +157,10 @@ const BrainZonePrintable = () => {
       <div className="border-b-2 border-foreground/20 pb-2 mb-6 flex justify-between items-end">
         <div className="space-y-0.5">
           <h1 className="text-2xl sm:text-3xl font-serif font-bold tracking-tight uppercase leading-none">Brain Zone Reference</h1>
-          <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em]">Functional Neuro Health • Clinical Infrastructure • v2.4</p>
+          <p className="text-xs font-medium text-muted-foreground">Functional Neuro Health • Clinical Infrastructure • v2.4</p>
         </div>
         <div className="text-right">
-          <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Neurological Correction Map</p>
+          <p className="text-xs font-medium text-muted-foreground">Neurological Correction Map</p>
         </div>
       </div>
 
@@ -169,7 +169,7 @@ const BrainZonePrintable = () => {
         <div className="space-y-3">
           <div className="flex items-center gap-2 border-b-2 border-purple-600 pb-1">
             <Brain size={14} className="text-purple-600" />
-            <h2 className="text-[11px] font-black uppercase text-purple-600 tracking-widest">Cortical Zones (Contralateral)</h2>
+            <h2 className="text-[11px] font-semibold uppercase text-purple-600 tracking-wider">Cortical Zones (Contralateral)</h2>
           </div>
           <div className={cn(
             "grid gap-3 grid-cols-1 sm:grid-cols-2",
@@ -192,7 +192,7 @@ const BrainZonePrintable = () => {
         <div className="space-y-3">
           <div className="flex items-center gap-2 border-b-2 border-indigo-600 pb-1">
             <Layers size={14} className="text-indigo-600" />
-            <h2 className="text-[11px] font-black uppercase text-indigo-600 tracking-widest">Subcortical Zones (Ipsilateral)</h2>
+            <h2 className="text-[11px] font-semibold uppercase text-indigo-600 tracking-wider">Subcortical Zones (Ipsilateral)</h2>
           </div>
           <div className={cn(
             "grid gap-3 grid-cols-1 sm:grid-cols-2",
@@ -214,7 +214,7 @@ const BrainZonePrintable = () => {
 
       {/* Footer */}
       <div className="mt-8 pt-2 border-t border-border flex justify-between items-center">
-        <div className="flex gap-6 text-[8px] font-black uppercase tracking-widest text-muted-foreground">
+        <div className="flex gap-6 text-xs font-medium text-muted-foreground">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-purple-600" /> Cortical (Opposite Side)
           </div>
@@ -222,7 +222,7 @@ const BrainZonePrintable = () => {
             <div className="w-2 h-2 rounded-full bg-indigo-600" /> Subcortical (Same Side)
           </div>
         </div>
-        <p className="text-[8px] font-black text-muted-foreground/60 uppercase tracking-[0.5em]">Confidential Practitioner Resource</p>
+        <p className="text-xs font-medium text-muted-foreground/60">Confidential Practitioner Resource</p>
       </div>
 
       {/* Brain Reflex Modal */}

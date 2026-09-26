@@ -105,7 +105,7 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
           )}
           {testingInstructions && (
             <span className={cn(
-              "text-[9px] text-chart-primary/70 leading-tight flex items-start gap-1",
+              "text-[10px] text-chart-primary/70 leading-tight flex items-start gap-1",
               showFullInstructions ? "mt-1" : "truncate"
             )}>
               <Zap size={8} className="shrink-0 mt-0.5" />{testingInstructions}
@@ -115,7 +115,7 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
       </div>
 
       {isCleared && (
-        <Badge className="bg-chart-emerald text-primary-foreground border-none font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 rounded-sm shrink-0">
+        <Badge className="bg-chart-emerald text-primary-foreground border-none font-semibold text-[7px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm shrink-0">
           Cleared
         </Badge>
       )}

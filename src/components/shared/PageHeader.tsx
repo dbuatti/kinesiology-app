@@ -15,27 +15,29 @@ export function PageHeader({
   subtitle,
   actions,
   className,
+  iconClassName,
 }: {
-  icon?: React.ComponentType<{ size?: number; className?: string }>;
+  icon?: React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }>;
   title: ReactNode;
   subtitle?: ReactNode;
   actions?: ReactNode;
   className?: string;
+  iconClassName?: string;
 }) {
   return (
-    <div className={cn("flex flex-col sm:flex-row sm:items-center justify-between gap-4", className)}>
-      <div className="flex items-center gap-3 min-w-0">
+    <div className={cn("flex flex-col gap-4 md:flex-row md:items-end md:justify-between", className)}>
+      <div className="flex min-w-0 flex-1 items-center gap-3.5">
         {Icon && (
-          <div className="w-10 h-10 rounded-xl bg-chart-primary/10 flex items-center justify-center shrink-0">
-            <Icon size={20} className="text-chart-primary" />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-card shadow-xs">
+            <Icon size={18} strokeWidth={1.85} className={cn("text-primary", iconClassName?.split(/\s+/).filter((c) => /^(dark:)?text-(?!primary-foreground|white)/.test(c)).join(" "))} />
           </div>
         )}
         <div className="min-w-0">
-          <h1 className="text-xl font-serif font-bold text-foreground truncate">{title}</h1>
-          {subtitle && <p className="text-xs text-muted-foreground font-medium">{subtitle}</p>}
+          <h1 className="font-serif sm:truncate text-[26px] font-medium leading-[1.15] tracking-[-0.02em] text-foreground">{title}</h1>
+          {subtitle && <p className="mt-0.5 line-clamp-2 text-[13.5px] text-muted-foreground">{subtitle}</p>}
         </div>
       </div>
-      {actions && <div className="flex items-center gap-2 flex-wrap">{actions}</div>}
+      {actions && <div className="flex flex-wrap items-center gap-2 md:max-w-[60%] md:justify-end">{actions}</div>}
     </div>
   );
 }

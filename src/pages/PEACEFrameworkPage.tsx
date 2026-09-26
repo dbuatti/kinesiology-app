@@ -154,7 +154,7 @@ const PEACEFrameworkPage = () => {
 
  <Card className="border-2 border-border shadow-sm rounded-xl bg-muted overflow-hidden">
  <CardHeader className="p-8 pb-4">
- <Badge className="bg-muted text-muted-foreground w-max mb-3 text-[10px] font-semibold uppercase tracking-wider px-3 py-1">3° Tertiary Tier</Badge>
+ <Badge className="bg-muted text-muted-foreground w-max mb-3 text-xs font-medium px-3 py-1">3° Tertiary Tier</Badge>
  <CardTitle className="text-2xl font-semibold text-foreground">Peripheral & Structural Layer</CardTitle>
  <CardDescription className="text-muted-foreground font-medium">Integration anchors. Finish with these to lock in corrections made above.</CardDescription>
  </CardHeader>

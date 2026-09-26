@@ -14,9 +14,9 @@ const AppearanceSettings = () => {
   const { theme, setTheme } = useTheme();
 
   return (
-    <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+    <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
       <CardHeader className="p-8 pb-4">
-        <CardTitle className="text-xl font-black flex items-center gap-3">
+        <CardTitle className="text-xl font-semibold flex items-center gap-3">
           <Palette size={22} className="text-primary" /> Appearance
         </CardTitle>
       </CardHeader>
@@ -32,7 +32,7 @@ const AppearanceSettings = () => {
                 key={value}
                 onClick={() => setTheme(value)}
                 className={cn(
-                  "flex flex-col items-center gap-3 p-4 rounded-2xl border-2 transition-all font-bold text-xs uppercase tracking-wider",
+                  "flex flex-col items-center gap-3 p-4 rounded-2xl border-2 transition-all font-bold text-xs",
                   isActive
                     ? "border-primary bg-primary/5 text-primary shadow-sm"
                     : "border-border bg-muted/30 text-muted-foreground hover:border-primary/40 hover:text-foreground hover:bg-muted/60"
@@ -58,7 +58,7 @@ const AppearanceSettings = () => {
             <div className="w-6 h-6 rounded-lg bg-muted" />
             <div className="w-6 h-6 rounded-lg bg-primary" />
           </div>
-          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+          <span className="text-xs font-medium text-muted-foreground">
             Current theme preview
           </span>
         </div>

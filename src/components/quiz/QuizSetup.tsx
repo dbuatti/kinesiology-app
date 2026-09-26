@@ -31,10 +31,10 @@ const QuizSetup = ({ onStart }: QuizSetupProps) => {
   return (
     <div className="max-w-4xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="text-center space-y-4">
-        <div className="w-20 h-20 bg-indigo-600 rounded-[2rem] flex items-center justify-center mx-auto shadow-2xl shadow-indigo-200">
+        <div className="w-20 h-20 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-2xl shadow-indigo-200">
           <GraduationCap size={40} className="text-primary-foreground" />
         </div>
-        <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground">Knowledge Oracle</h1>
+        <h1 className="text-4xl md:text-5xl font-semibold tracking-tighter text-foreground">Knowledge Oracle</h1>
         <p className="text-lg text-muted-foreground font-medium max-w-xl mx-auto">
           Sharpen your clinical intuition with infinite practice questions.
         </p>
@@ -44,7 +44,7 @@ const QuizSetup = ({ onStart }: QuizSetupProps) => {
         {CATEGORIES.map((cat) => (
           <Card 
             key={cat.id}
-            className="border-none shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer rounded-[2.5rem] bg-background overflow-hidden"
+            className="border-none shadow-md hover:shadow-xl transition-all duration-300 group cursor-pointer rounded-2xl bg-background overflow-hidden"
             onClick={() => onStart(cat.id)}
           >
             <CardContent className="p-8 space-y-6">
@@ -55,11 +55,11 @@ const QuizSetup = ({ onStart }: QuizSetupProps) => {
                 <cat.icon size={28} />
               </div>
               <div>
-                <h3 className="text-xl font-black text-foreground group-hover:text-indigo-600 transition-colors">{cat.label}</h3>
+                <h3 className="text-xl font-semibold text-foreground group-hover:text-indigo-600 transition-colors">{cat.label}</h3>
                 <p className="text-sm text-muted-foreground font-medium mt-1 leading-relaxed">{cat.desc}</p>
               </div>
               <div className="pt-4 flex items-center justify-between border-t border-border">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-indigo-600 transition-colors">Start Training</span>
+                <span className="text-xs font-medium text-muted-foreground group-hover:text-indigo-600 transition-colors">Start Training</span>
                 <ArrowRight size={18} className="text-muted-foreground group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
               </div>
             </CardContent>

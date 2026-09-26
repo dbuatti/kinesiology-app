@@ -43,26 +43,26 @@ const HeartWallPrintable = () => {
       <div className="border-b-2 border-foreground/20 pb-2 mb-4 flex justify-between items-end">
         <div className="space-y-0.5">
           <h1 className="text-3xl font-serif font-bold tracking-tight uppercase leading-none">Heart Wall Protocol Sheet</h1>
-          <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.4em]">Resonance Clinical Infrastructure • Protocol v3.0</p>
+          <p className="text-xs font-medium text-muted-foreground">Resonance Clinical Infrastructure • Protocol v3.0</p>
         </div>
         <div className="text-right">
-          <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Fractal Resolution OS</p>
+          <p className="text-xs font-medium text-muted-foreground">Fractal Resolution OS</p>
         </div>
       </div>
 
       {/* Screen + Permission + Priority Primary */}
       <div className="grid grid-cols-3 gap-3 mb-4">
         <div className="p-2 border-2 border-foreground/20 bg-muted/50">
-          <h3 className="text-[8px] font-black uppercase tracking-widest border-b border-foreground/20 pb-0.5 mb-1">Screen</h3>
-          <p className="text-[8px] font-bold leading-tight">Qualify IM. Client focuses on RECEIVING. If muscle inhibits → Heart Wall present.</p>
+          <h3 className="text-[10px] font-semibold uppercase tracking-wider border-b border-foreground/20 pb-0.5 mb-1">Screen</h3>
+          <p className="text-[10px] font-bold leading-tight">Qualify IM. Client focuses on RECEIVING. If muscle inhibits → Heart Wall present.</p>
         </div>
         <div className="p-2 border-2 border-foreground/20 bg-muted/50">
-          <h3 className="text-[8px] font-black uppercase tracking-widest border-b border-foreground/20 pb-0.5 mb-1">Assess Priority Primary</h3>
-          <p className="text-[8px] font-bold leading-tight">PP → find emotion/organ → test muscles → find brain zones → CH (inherit?)</p>
+          <h3 className="text-[10px] font-semibold uppercase tracking-wider border-b border-foreground/20 pb-0.5 mb-1">Assess Priority Primary</h3>
+          <p className="text-[10px] font-bold leading-tight">PP → find emotion/organ → test muscles → find brain zones → CH (inherit?)</p>
         </div>
         <div className="p-2 border-2 border-foreground/20 bg-muted/50">
-          <h3 className="text-[8px] font-black uppercase tracking-widest border-b border-foreground/20 pb-0.5 mb-1">Count Layers</h3>
-          <p className="text-[8px] font-bold leading-tight">&gt;5 &gt;10 &gt;15 &gt;20 &gt;25. Narrow to exact number. Track before/after.</p>
+          <h3 className="text-[10px] font-semibold uppercase tracking-wider border-b border-foreground/20 pb-0.5 mb-1">Count Layers</h3>
+          <p className="text-[10px] font-bold leading-tight">&gt;5 &gt;10 &gt;15 &gt;20 &gt;25. Narrow to exact number. Track before/after.</p>
         </div>
       </div>
 
@@ -71,16 +71,16 @@ const HeartWallPrintable = () => {
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-muted border-b-2 border-foreground/20">
-              <th className="p-2 text-left uppercase tracking-widest text-[9px] font-black border-r border-foreground/20 w-[22%]">Organ Group</th>
-              <th className="p-2 text-center uppercase tracking-widest text-[9px] font-black border-r border-foreground/20 w-[40%]">Trapped Emotions</th>
-              <th className="p-2 text-left uppercase tracking-widest text-[9px] font-black w-[38%]">Associated Muscles</th>
+              <th className="p-2 text-left uppercase tracking-wider text-[10px] font-semibold border-r border-foreground/20 w-[22%]">Organ Group</th>
+              <th className="p-2 text-center uppercase tracking-wider text-[10px] font-semibold border-r border-foreground/20 w-[40%]">Trapped Emotions</th>
+              <th className="p-2 text-left uppercase tracking-wider text-[10px] font-semibold w-[38%]">Associated Muscles</th>
             </tr>
           </thead>
           <tbody className="divide-y border-foreground/20">
             {rows.map((row, idx) => (
               <tr key={idx} className="border-b border-foreground/20 last:border-0">
                 <td className="p-2 border-r border-foreground/20 bg-muted/50 align-middle">
-                  <p className="font-black text-[10px] leading-tight text-foreground">
+                  <p className="font-semibold text-[10px] leading-tight text-foreground">
                     {row.organ}
                   </p>
                 </td>
@@ -99,8 +99,8 @@ const HeartWallPrintable = () => {
                     {row.muscles.split('; ').map((group, i) => {
                       const [organ, list] = group.split(': ');
                       return (
-                        <div key={i} className="text-[9px] leading-tight">
-                          <span className="font-black uppercase text-muted-foreground">{organ}:</span>
+                        <div key={i} className="text-[10px] leading-tight">
+                          <span className="font-semibold uppercase text-muted-foreground">{organ}:</span>
                           <p className="mt-0.5 text-foreground font-bold">{list}</p>
                         </div>
                       );
@@ -117,10 +117,10 @@ const HeartWallPrintable = () => {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
         <div className="md:col-span-8">
           <div className="p-3 border-2 border-foreground/20 rounded-none bg-muted/50 h-full">
-            <h3 className="text-[9px] font-black uppercase tracking-widest border-b border-foreground/20 pb-1 mb-2 flex items-center gap-2">
+            <h3 className="text-[10px] font-semibold uppercase tracking-wider border-b border-foreground/20 pb-1 mb-2 flex items-center gap-2">
               Correction Protocol
             </h3>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-[9px] font-medium leading-tight">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-[10px] font-medium leading-tight">
               <p><strong>1.</strong> Permission to correct</p>
               <p><strong>2.</strong> Stim Heart Visceral Referral Zone (chest → ulnar arm)</p>
               <p><strong>3.</strong> Hold organ pulse point (or squeeze associated muscle)</p>
@@ -133,7 +133,7 @@ const HeartWallPrintable = () => {
 
         <div className="md:col-span-4">
           <div className="p-3 border-2 border-foreground/20 rounded-none bg-foreground text-primary-foreground h-full flex flex-col justify-center text-center">
-            <p className="text-[8px] font-black uppercase tracking-[0.2em] mb-1">Clinical Rule</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider mb-1">Clinical Rule</p>
             <p className="text-[10px] font-serif italic leading-tight">
               "Dismantle the wall with respect."
             </p>
@@ -143,7 +143,7 @@ const HeartWallPrintable = () => {
 
       {/* Footer */}
       <div className="mt-6 pt-2 border-t border-border text-center">
-        <p className="text-[7px] font-black text-muted-foreground/60 uppercase tracking-[0.5em]">
+        <p className="text-[7px] font-semibold text-muted-foreground/60 uppercase tracking-wider">
           Confidential Practitioner Resource • Resonance Clinical Infrastructure
         </p>
       </div>

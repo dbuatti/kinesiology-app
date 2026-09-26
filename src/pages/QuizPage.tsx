@@ -139,7 +139,7 @@ export function QuizTool({ embedded = false, onExit }: QuizToolProps = {}) {
       <div className="min-h-screen bg-background p-6 md:p-12">
         <div className="max-w-4xl mx-auto">
         {!embedded && onExit && (
-          <Button variant="ghost" onClick={onExit} className="mb-8 rounded-xl font-bold text-xs uppercase tracking-widest">
+          <Button variant="ghost" onClick={onExit} className="mb-8 rounded-xl font-bold text-xs">
             <ChevronLeft size={16} className="mr-2" /> Back to Library
           </Button>
         )}
@@ -181,19 +181,19 @@ export function QuizTool({ embedded = false, onExit }: QuizToolProps = {}) {
             </Button>
             <div className="h-6 w-px bg-border" />
             <div className="flex flex-col">
-              <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Category</span>
-              <span className="text-xs font-black text-foreground">{category}</span>
+              <span className="text-xs font-medium text-muted-foreground">Category</span>
+              <span className="text-xs font-semibold text-foreground">{category}</span>
             </div>
           </div>
           
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <Trophy size={16} className="text-amber-500" />
-              <span className="font-black text-sm">{score}</span>
+              <span className="font-semibold text-sm">{score}</span>
             </div>
             <div className="flex items-center gap-2">
               <Zap size={16} className="text-primary fill-primary" />
-              <span className="font-black text-sm">{streak}</span>
+              <span className="font-semibold text-sm">{streak}</span>
             </div>
           </div>
         </div>
@@ -204,16 +204,16 @@ export function QuizTool({ embedded = false, onExit }: QuizToolProps = {}) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full border border-primary/20">
             {currentQuestion.id.startsWith('ai') ? <Sparkles size={14} /> : <BrainCircuit size={14} />}
-            <span className="text-[10px] font-black uppercase tracking-widest">{currentQuestion.category}</span>
+            <span className="text-[10px] font-semibold uppercase tracking-wider">{currentQuestion.category}</span>
           </div>
-          <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Question {totalAnswered + 1}</span>
+          <span className="text-xs font-medium text-muted-foreground">Question {totalAnswered + 1}</span>
         </div>
 
-        <div className="bg-card rounded-[2.5rem] p-8 md:p-12 shadow-xl shadow-slate-200/50 dark:shadow-none border border-border relative overflow-hidden">
+        <div className="bg-card rounded-2xl p-8 md:p-12 shadow-xl shadow-slate-200/50 dark:shadow-none border border-border relative overflow-hidden">
           {isLoadingAi && (
             <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center gap-4">
               <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-              <p className="text-xs font-black uppercase tracking-widest text-primary animate-pulse">Consulting AI Oracle...</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary animate-pulse">Consulting AI Oracle...</p>
             </div>
           )}
 
@@ -230,7 +230,7 @@ export function QuizTool({ embedded = false, onExit }: QuizToolProps = {}) {
                 <div className="flex items-start gap-3">
                   {isCorrect ? <CheckCircle2 className="text-emerald-600 mt-1" size={20} /> : <XCircle className="text-rose-600 mt-1" size={20} />}
                   <div>
-                    <AlertTitle className={`font-black text-sm uppercase tracking-widest ${isCorrect ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>
+                    <AlertTitle className={`font-semibold text-sm uppercase tracking-wider ${isCorrect ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>
                       {isCorrect ? "Correct!" : "Not quite..."}
                     </AlertTitle>
                     <AlertDescription className="text-muted-foreground mt-2 leading-relaxed">
@@ -261,18 +261,18 @@ export function QuizTool({ embedded = false, onExit }: QuizToolProps = {}) {
 
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-card p-6 rounded-3xl border border-border text-center">
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Accuracy</p>
-            <p className="text-2xl font-black text-foreground">
+            <p className="text-xs font-medium text-muted-foreground mb-1">Accuracy</p>
+            <p className="text-2xl font-semibold text-foreground">
               {totalAnswered > 0 ? Math.round((score / totalAnswered) * 100) : 0}%
             </p>
           </div>
           <div className="bg-card p-6 rounded-3xl border border-border text-center">
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Streak</p>
-            <p className="text-2xl font-black text-primary">{streak}</p>
+            <p className="text-xs font-medium text-muted-foreground mb-1">Streak</p>
+            <p className="text-2xl font-semibold text-primary">{streak}</p>
           </div>
           <div className="bg-card p-6 rounded-3xl border border-border text-center">
-            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1">Total</p>
-            <p className="text-2xl font-black text-foreground">{totalAnswered}</p>
+            <p className="text-xs font-medium text-muted-foreground mb-1">Total</p>
+            <p className="text-2xl font-semibold text-foreground">{totalAnswered}</p>
           </div>
         </div>
       </main>

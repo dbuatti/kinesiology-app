@@ -18,12 +18,12 @@ const IntegrationStatus = ({ name, icon: Icon, description, status = "Connected"
           <Icon size={20} />
         </div>
         <div>
-          <p className="text-sm font-black text-foreground">{name}</p>
+          <p className="text-sm font-semibold text-foreground">{name}</p>
           <p className="text-[10px] text-muted-foreground font-medium">{description}</p>
         </div>
       </div>
       <Badge className={cn(
-        "border-none font-black text-[8px] uppercase tracking-widest",
+        "border-none font-semibold text-[10px] uppercase tracking-wider",
         status === "Connected"
           ? "bg-emerald-500 text-primary-foreground"
           : "bg-amber-500 text-primary-foreground"

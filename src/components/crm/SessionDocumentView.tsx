@@ -64,7 +64,7 @@ const SectionHeader = ({ id, title, subtitle }: { id: string; title: string; sub
         )}
         <div className="min-w-0">
           <h2 className="text-xl md:text-2xl font-semibold uppercase tracking-tighter leading-tight">{title}</h2>
-          {subtitle && <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-0.5">{subtitle}</p>}
+          {subtitle && <p className="text-xs font-medium text-muted-foreground mt-0.5">{subtitle}</p>}
         </div>
       </div>
       {meta?.focus && (
@@ -191,7 +191,7 @@ const SessionDocumentView = ({
       <div className="sticky top-0 z-50 bg-card/95 backdrop-blur-md print:hidden border-b border-border">
         <div className="px-4 md:px-6 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-4 min-w-0">
-            <Button variant="ghost" size="sm" onClick={onClose} className="rounded-none h-9 px-3 font-medium text-[10px] uppercase tracking-wider border border-foreground/20 hover:bg-foreground hover:text-primary-foreground transition-all shrink-0">
+            <Button variant="ghost" size="sm" onClick={onClose} className="rounded-none h-9 px-3 font-medium text-[11px] border border-foreground/20 hover:bg-foreground hover:text-primary-foreground transition-all shrink-0">
               <ArrowLeft size={14} className="mr-1" /> Exit
             </Button>
             <Popover open={sessionSearchOpen} onOpenChange={setSessionSearchOpen}>
@@ -202,7 +202,7 @@ const SessionDocumentView = ({
               </PopoverTrigger>
               <PopoverContent className="w-[320px] p-0 max-h-[400px] overflow-y-auto" align="start">
                 <div className="p-3 border-b border-border">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Recent Sessions</p>
+                  <p className="text-xs font-medium text-muted-foreground">Recent Sessions</p>
                 </div>
                 <div className="py-1">
                   {loadingSessions ? (
@@ -233,7 +233,7 @@ const SessionDocumentView = ({
                 </div>
               </PopoverContent>
             </Popover>
-            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60 shrink-0">{appointment.status}</span>
+            <span className="text-xs font-medium text-muted-foreground/60 shrink-0">{appointment.status}</span>
             <button
               onClick={async () => {
                 if (!appointment.is_paid) {
@@ -246,7 +246,7 @@ const SessionDocumentView = ({
                 }
               }}
               className={cn(
-                "text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border transition-colors shrink-0",
+                "text-[11px] font-bold px-2 py-0.5 rounded border transition-colors shrink-0",
                 !appointment.is_paid
                   ? "text-muted-foreground border-border hover:bg-muted/50"
                   : appointment.payment_received
@@ -261,7 +261,7 @@ const SessionDocumentView = ({
 
           <div className="flex items-center gap-3 shrink-0">
             <div className="flex items-center gap-2">
-              <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider hidden sm:inline">Last Sync</p>
+              <p className="text-xs font-medium text-muted-foreground/60 hidden sm:inline">Last Sync</p>
               <p className="text-[10px] font-medium tabular-nums">{format(lastSaved, "HH:mm:ss")}</p>
             </div>
             
@@ -270,37 +270,37 @@ const SessionDocumentView = ({
                 <>
                   <Button variant="outline" size="sm"
                     onClick={() => setQuickSessionOpen(true)}
-                    className="rounded-none border-foreground/20 font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
+                    className="rounded-none border-foreground/20 font-medium text-[11px] h-8 px-3 hover:bg-muted">
                     <Plus size={12} className="mr-1" /> New Session
                   </Button>
                   {appointment.clients.phone && (
                     <Button variant="outline" size="sm"
                       onClick={() => window.open(`imessage:${appointment.clients.phone}`, '_blank')}
-                      className="rounded-none border-foreground/20 font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
+                      className="rounded-none border-foreground/20 font-medium text-[11px] h-8 px-3 hover:bg-muted">
                       <MessageCircle size={12} className="mr-1" /> Message
                     </Button>
                   )}
                   {appointment.notion_link && (
-                    <Button asChild variant="outline" size="sm" className="rounded-none border-foreground/20 font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
+                    <Button asChild variant="outline" size="sm" className="rounded-none border-foreground/20 font-medium text-[11px] h-8 px-3 hover:bg-muted">
                       <a href={appointment.notion_link} target="_blank" rel="noopener noreferrer">
                         <ExternalLink size={12} className="mr-1" /> Notion
                       </a>
                     </Button>
                   )}
                   <Link to={`/schedule?view=list&clientId=${appointment.clients.id}`} className="no-underline">
-                    <Button variant="outline" size="sm" className="rounded-none border-foreground/20 font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
+                    <Button variant="outline" size="sm" className="rounded-none border-foreground/20 font-medium text-[11px] h-8 px-3 hover:bg-muted">
                       <CalendarPlus size={12} className="mr-1" /> Book Next
                     </Button>
                   </Link>
                 </>
               )}
-              <Button variant="outline" size="sm" onClick={() => window.print()} className="rounded-none border-foreground/20 font-medium text-[10px] uppercase tracking-wider h-8 px-3 hover:bg-muted">
+              <Button variant="outline" size="sm" onClick={() => window.print()} className="rounded-none border-foreground/20 font-medium text-[11px] h-8 px-3 hover:bg-muted">
                 <Printer size={12} className="mr-1" /> Print
               </Button>
               <button
                 onClick={() => setWeekendMode(v => !v)}
                 className={cn(
-                  "h-8 px-3 text-[10px] font-bold uppercase tracking-wider border transition-colors",
+                  "h-8 px-3 text-[11px] font-bold border transition-colors",
                   weekendMode
                     ? "bg-foreground text-primary-foreground border-foreground/20"
                     : "border-border text-muted-foreground hover:bg-muted/50 hover:text-muted-foreground"
@@ -397,7 +397,7 @@ const SessionDocumentView = ({
               <div className="flex items-center gap-2"><div className="w-2 h-2 bg-foreground" /> Integrated</div>
               <div className="flex items-center gap-2"><div className="w-2 h-2 bg-foreground" /> Encrypted</div>
             </div>
-            <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">Session Complete</p>
+            <p className="text-xs font-medium text-muted-foreground/60">Session Complete</p>
           </div>
         </div>
 

@@ -123,7 +123,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <PlayCircle size={16} className="text-indigo-600" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Interactive Recovery Exercise</span>
+                    <span className="text-xs font-medium text-muted-foreground">Interactive Recovery Exercise</span>
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => setShowExercise(false)} className="h-7 px-2 text-muted-foreground hover:text-rose-600">
                     <X size={14} className="mr-1" /> Close Timer
@@ -139,7 +139,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
                       <AlertCircle size={18} className="text-rose-600 dark:text-rose-400 shrink-0" />
                       <p className="text-[10px] font-bold text-rose-900 dark:text-rose-100 uppercase tracking-tight">Clinical Alert: Low CO2 Tolerance</p>
                     </div>
-                    <Button onClick={() => setShowExercise(true)} variant="ghost" size="sm" className="h-7 text-[9px] font-black uppercase tracking-widest text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 rounded-lg">
+                    <Button onClick={() => setShowExercise(true)} variant="ghost" size="sm" className="h-7 text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 rounded-lg">
                       Run Exercise
                     </Button>
                   </div>
@@ -153,15 +153,15 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 gap-2">
                       <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/50 border border-border">
-                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Below 20s</span>
+                        <span className="text-xs font-medium text-muted-foreground">Below 20s</span>
                         <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400">Compromised</span>
                       </div>
                       <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/50 border border-border">
-                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">25-35s</span>
+                        <span className="text-xs font-medium text-muted-foreground">25-35s</span>
                         <span className="text-[10px] font-bold text-primary dark:text-primary">Functional</span>
                       </div>
                       <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                        <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">40s+</span>
+                        <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">40s+</span>
                         <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-400" />
                       </div>
                     </div>
@@ -170,15 +170,15 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
                       <Button 
                         variant="outline" 
                         onClick={() => setShowExercise(true)} 
-                        className="flex-1 rounded-xl border-indigo-100 text-indigo-600 h-9 font-bold text-[10px] uppercase tracking-widest hover:bg-indigo-50"
+                        className="flex-1 rounded-xl border-indigo-100 text-indigo-600 h-9 font-bold text-[11px] hover:bg-indigo-50"
                       >
                         <PlayCircle size={14} className="mr-2" /> Run Exercise
                       </Button>
-                      <Button variant="outline" onClick={() => setResourcesOpen(true)} className="flex-1 rounded-xl border-border text-muted-foreground h-9 font-bold text-[10px] uppercase tracking-widest">
+                      <Button variant="outline" onClick={() => setResourcesOpen(true)} className="flex-1 rounded-xl border-border text-muted-foreground h-9 font-bold text-[11px]">
                         <BookOpen size={14} className="mr-2" /> Resources
                       </Button>
                       {initialBoltScore !== null && (
-                        <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 h-9 px-3 rounded-xl font-bold text-[10px] uppercase tracking-widest">
+                        <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 h-9 px-3 rounded-xl font-bold text-[11px]">
                           <RotateCcw size={14} />
                         </Button>
                       )}

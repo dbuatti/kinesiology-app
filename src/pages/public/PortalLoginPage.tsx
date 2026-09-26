@@ -36,12 +36,12 @@ export default function PortalLoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted px-6 py-16">
-      <Card className="max-w-md w-full border-none shadow-2xl rounded-[2.5rem] overflow-hidden">
+      <Card className="max-w-md w-full border border-border shadow-sm rounded-2xl overflow-hidden">
         <div className="bg-gradient-to-br from-chart-purple to-chart-destructive p-8 text-center text-white">
           <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl border border-white/20">
             {sent ? <CheckCircle2 size={32} /> : <Mail size={32} />}
           </div>
-          <CardTitle className="text-2xl font-black tracking-tight">Client Portal</CardTitle>
+          <CardTitle className="text-2xl font-semibold tracking-tight">Client Portal</CardTitle>
           {/* Pre-auth, so who's logging in isn't known yet — but which
               DOMAIN they arrived on is, and that's enough to avoid a voice/
               piano student seeing "Resonance Kinesiology" as the very first
@@ -61,7 +61,7 @@ export default function PortalLoginPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest ml-1">
+                <label className="text-xs font-medium text-muted-foreground ml-1">
                   Your email
                 </label>
                 <Input

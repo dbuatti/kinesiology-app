@@ -185,7 +185,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
   return (
     <>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+        <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
           <CollapsibleTrigger asChild>
             <CardHeader className="bg-muted/50 border-b border-border pb-4 cursor-pointer hover:bg-muted transition-colors">
               <div className="flex items-center justify-between">
@@ -196,7 +196,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                   <div>
                     <CardTitle className="text-base font-semibold text-foreground">Vagus Nerve Process</CardTitle>
                     <div className="flex gap-2 mt-1">
-                      <span className="text-[10px] font-medium uppercase tracking-widest px-2 py-0.5 rounded-md bg-primary text-primary-foreground">Screen & Reset</span>
+                      <span className="text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-md bg-primary text-primary-foreground">Screen & Reset</span>
                     </div>
                   </div>
                 </div>
@@ -225,7 +225,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
           <CollapsibleContent>
             <CardContent className="p-4 space-y-8">
               <div className="space-y-3">
-                <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <Zap size={14} className="text-muted-foreground" /> 1. Side
                 </label>
                 <ToggleGroup type="single" value={vagusSide} onValueChange={(v) => v && setVagusSide(v as any)} className="justify-start gap-2">
@@ -235,7 +235,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
               </div>
 
               <div className="space-y-3">
-                <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <Hand size={14} className="text-muted-foreground" /> 2. Reflex Point
                 </label>
                 <div className="space-y-2">
@@ -253,7 +253,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
               </div>
 
               <div className="space-y-3">
-                <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <Brain size={14} className="text-muted-foreground" /> 3. Vagal Function
                 </label>
                 <Select value={selectedFunction} onValueChange={setSelectedFunction}>
@@ -268,12 +268,12 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
 
               <div className="space-y-4 p-6 bg-muted rounded-xl border border-border">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                  <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                     <Heart size={14} className="text-muted-foreground" /> 4. Organ / Gland Challenge
                   </label>
                   <ToggleGroup type="single" value={challengeType} onValueChange={(v) => v && setChallengeType(v as any)} className="bg-background p-1 rounded-xl border border-border">
-                    <ToggleGroupItem value="hand" className="rounded-lg px-4 py-1.5 text-[10px] font-medium uppercase tracking-widest data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">Hand Reflex</ToggleGroupItem>
-                    <ToggleGroupItem value="gland" className="rounded-lg px-4 py-1.5 text-[10px] font-medium uppercase tracking-widest data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">Gland Reflex</ToggleGroupItem>
+                    <ToggleGroupItem value="hand" className="rounded-lg px-4 py-1.5 text-[11px] font-medium data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">Hand Reflex</ToggleGroupItem>
+                    <ToggleGroupItem value="gland" className="rounded-lg px-4 py-1.5 text-[11px] font-medium data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">Gland Reflex</ToggleGroupItem>
                   </ToggleGroup>
                 </div>
 
@@ -307,9 +307,9 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                         >
                           <div className="flex items-center gap-1.5">
                             <span className={cn("w-2 h-2 rounded-full", org.color, selectedOrgan === org.name && "ring-1 ring-white/50")} />
-                            <span className="text-[10px] font-medium uppercase tracking-widest">{org.name}</span>
+                            <span className="text-[11px] font-medium">{org.name}</span>
                           </div>
-                          <span className="text-[7px] font-medium opacity-60 uppercase">{org.position}</span>
+                          <span className="text-[7px] font-medium opacity-60">{org.position}</span>
                         </Button>
                       ))}
                     </div>
@@ -330,8 +330,8 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                             selectedGland === gland.name ? "bg-primary text-primary-foreground" : "bg-background border-border text-muted-foreground"
                           )}
                         >
-                          <span className="text-[10px] font-medium uppercase tracking-widest">{gland.name}</span>
-                          <span className="text-[8px] font-medium opacity-70 text-center leading-tight">{gland.reflex}</span>
+                          <span className="text-[11px] font-medium">{gland.name}</span>
+                          <span className="text-[10px] font-medium opacity-70 text-center leading-tight">{gland.reflex}</span>
                         </Button>
                       ))}
                     </div>
@@ -342,7 +342,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                           <Sparkles size={20} className="text-muted-foreground" />
                         </div>
                         <div>
-                          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest mb-1">Reflex Challenge</p>
+                          <p className="text-xs font-medium text-muted-foreground mb-1">Reflex Challenge</p>
                           <p className="text-sm font-semibold text-foreground leading-tight">
                             {VAGAL_GLANDS.find(g => g.name === selectedGland)?.reflex}
                           </p>
@@ -360,7 +360,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
               </div>
 
               <div className="space-y-3">
-                <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <Zap size={14} className="text-muted-foreground" /> 5. Energy Polarity
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -374,7 +374,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                     aria-label="Set energy polarity to Energy OUT"
                   >
                     <span className="font-semibold text-sm">Energy OUT (−)</span>
-                    <span className="text-[9px] font-medium opacity-80 uppercase tracking-wider">Energy OUT Finger</span>
+                    <span className="text-[11px] font-medium opacity-80">Energy OUT Finger</span>
                     <span className="text-[7px] font-light opacity-60">(practitioner's output hand)</span>
                   </Button>
                   <Button 
@@ -387,14 +387,14 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                     aria-label="Set energy polarity to Energy IN"
                   >
                     <span className="font-semibold text-sm">Energy IN (+)</span>
-                    <span className="text-[9px] font-medium opacity-80 uppercase tracking-wider">Energy IN Finger</span>
+                    <span className="text-[11px] font-medium opacity-80">Energy IN Finger</span>
                     <span className="text-[7px] font-light opacity-60">(practitioner's input hand)</span>
                   </Button>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <Search size={14} className="text-muted-foreground" /> 6. Associated Spinal Segment
                 </label>
                 <Select value={selectedAssociation} onValueChange={setSelectedAssociation}>
@@ -416,7 +416,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                   <div className="p-4 bg-muted rounded-xl border border-border animate-in fade-in slide-in-from-top-2">
                     <div className="grid grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <p className="text-[10px] font-medium text-muted-foreground/70 uppercase tracking-widest mb-1">Muscle to Test</p>
+                        <p className="text-xs font-medium text-muted-foreground/70 mb-1">Muscle to Test</p>
                         <button 
                           onClick={() => handleShowMuscleInfo(partnerInfo.currentMuscle)}
                           className="text-lg font-semibold text-foreground hover:underline decoration-border underline-offset-4 text-left block"
@@ -427,7 +427,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                         <p className="text-[10px] font-medium text-muted-foreground/70">Segment: {selectedAssociation}</p>
                       </div>
                       <div className="text-right space-y-2">
-                        <p className="text-[10px] font-medium text-muted-foreground/70 uppercase tracking-widest mb-1">Lovett-Brother Partner</p>
+                        <p className="text-xs font-medium text-muted-foreground/70 mb-1">Lovett-Brother Partner</p>
                         <button 
                           onClick={() => handleShowMuscleInfo(partnerInfo.partnerMuscle)}
                           className="text-lg font-semibold text-foreground hover:underline decoration-border underline-offset-4 text-right block w-full"
@@ -443,7 +443,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
               </div>
 
               <div className="space-y-4 p-6 bg-muted rounded-xl border border-border">
-                <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <Search size={14} /> 7. Breathing Pattern — Test & Select
                 </label>
                 <div className="p-4 bg-background rounded-xl border border-border space-y-3">
@@ -459,7 +459,7 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
 
               <div className="space-y-4 p-6 bg-muted rounded-xl border border-border">
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                  <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                     <Wind size={14} /> 8. Correction Phase
                   </label>
                   <div className="text-2xl font-semibold text-foreground tabular-nums">{formatTime(correctionTime)}</div>
@@ -519,8 +519,8 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
 
               <div className="space-y-4 pt-4 border-t border-border">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Procedure Notes</label>
-                  <Button variant="ghost" size="sm" onClick={handleAutoPopulate} className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-muted">
+                  <label className="text-xs font-medium text-muted-foreground">Procedure Notes</label>
+                  <Button variant="ghost" size="sm" onClick={handleAutoPopulate} className="text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted">
                     <Zap size={12} className="mr-1" /> Auto-Populate Summary
                   </Button>
                 </div>

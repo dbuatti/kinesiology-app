@@ -66,7 +66,7 @@ const ImportPage = () => {
  </AlertDescription>
  </Alert>
 
- <Card className="border-none shadow-sm rounded-xl bg-card">
+ <Card className="border border-border shadow-sm rounded-xl bg-card">
  <CardHeader>
  <CardTitle className="text-lg">Upload CSV File</CardTitle>
  <CardDescription>Select a CSV file exported from your Notion database</CardDescription>
@@ -112,7 +112,7 @@ const ImportPage = () => {
  </Card>
 
  {results && (
- <Card className="border-none shadow-sm rounded-xl">
+ <Card className="border border-border shadow-sm rounded-xl">
  <CardHeader>
  <CardTitle className="text-lg">Import Results</CardTitle>
  <CardDescription>

@@ -94,7 +94,7 @@ const LigamentImageUploader = ({ userId, category, imageIndex, initialUrl, onUpl
 
   return (
     <div className="space-y-2">
-      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{title}</p>
+      <p className="text-xs font-medium text-muted-foreground">{title}</p>
       <div
         onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }}
         onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }}
@@ -125,7 +125,7 @@ const LigamentImageUploader = ({ userId, category, imageIndex, initialUrl, onUpl
                 <div className="w-12 h-12 rounded-xl bg-card shadow-sm border border-border/50 flex items-center justify-center mx-auto text-muted-foreground group-hover:text-indigo-600 group-hover:scale-110 transition-all">
                   <ImageIcon size={24} />
                 </div>
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Click or Drop Image</p>
+                <p className="text-xs font-medium text-muted-foreground">Click or Drop Image</p>
               </>
             )}
           </div>

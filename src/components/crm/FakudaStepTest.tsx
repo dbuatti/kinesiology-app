@@ -224,7 +224,7 @@ const FakudaStepTest = ({
             size="sm" 
             onClick={() => handleSetStatus('Clear')}
             className={cn(
-              "h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+              "h-9 px-4 rounded-xl font-semibold text-[11px] transition-all",
               currentStatus === 'Clear' ? "bg-emerald-600 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-emerald-50"
             )}
           >
@@ -234,7 +234,7 @@ const FakudaStepTest = ({
             size="sm" 
             onClick={() => handleSetStatus('Inhibited')}
             className={cn(
-              "h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+              "h-9 px-4 rounded-xl font-semibold text-[11px] transition-all",
               currentStatus === 'Inhibited' ? "bg-rose-600 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-rose-50"
             )}
           >
@@ -244,7 +244,7 @@ const FakudaStepTest = ({
             size="sm" 
             onClick={() => handleSetStatus('Recheck')}
             className={cn(
-              "h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all",
+              "h-9 px-4 rounded-xl font-semibold text-[11px] transition-all",
               currentStatus === 'Recheck' ? "bg-amber-500 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-amber-50"
             )}
           >
@@ -252,7 +252,7 @@ const FakudaStepTest = ({
           </Button>
         </div>
         {currentStatus && (
-          <Badge className="bg-indigo-600 text-primary-foreground border-none font-black text-[8px] uppercase tracking-widest px-3 py-1 rounded-full">
+          <Badge className="bg-indigo-600 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
             Auto-synced to Align phase
           </Badge>
         )}
@@ -260,7 +260,7 @@ const FakudaStepTest = ({
 
       <div className="p-5 bg-muted/50 rounded-2xl border border-border/50 space-y-4">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+          <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
             <ArrowRightLeft size={14} className="text-indigo-500" /> Clinical Metrics
           </h4>
           <div className="flex items-center gap-2">
@@ -293,7 +293,7 @@ const FakudaStepTest = ({
         )}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Drift Direction</Label>
+            <Label className="text-xs font-medium text-muted-foreground">Drift Direction</Label>
             <ToggleGroup type="single" value={driftDirection} onValueChange={handleDriftChange} className="justify-start gap-1">
               <ToggleGroupItem value="Left" className="rounded-lg border border-border text-xs font-bold px-3 py-1.5 data-[state=on]:bg-indigo-600 data-[state=on]:text-primary-foreground">L</ToggleGroupItem>
               <ToggleGroupItem value="Right" className="rounded-lg border border-border text-xs font-bold px-3 py-1.5 data-[state=on]:bg-indigo-600 data-[state=on]:text-primary-foreground">R</ToggleGroupItem>
@@ -301,14 +301,14 @@ const FakudaStepTest = ({
             </ToggleGroup>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Angle of Rotation</Label>
+            <Label className="text-xs font-medium text-muted-foreground">Angle of Rotation</Label>
             <div className="relative">
               <Input type="number" placeholder="e.g. 30" value={angleRotation} onChange={(e) => handleAngleChange(e.target.value)} className="h-10 rounded-xl pr-8 text-xs font-bold" />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">°</span>
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Distance Displaced</Label>
+            <Label className="text-xs font-medium text-muted-foreground">Distance Displaced</Label>
             <div className="relative">
               <Input type="number" placeholder="e.g. 50" value={distanceDisplaced} onChange={(e) => handleDistanceChange(e.target.value)} className="h-10 rounded-xl pr-10 text-xs font-bold" />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">cm</span>

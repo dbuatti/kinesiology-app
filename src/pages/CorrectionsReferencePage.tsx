@@ -141,7 +141,7 @@ export function CorrectionsReferenceTool() {
                   For primitive reflexes where the inhibition pattern only appears with the head in a specific position (ATNR, STNR, TLR), you have a 5&ndash;10 second window after positioning the head. You can still state afferent or efferent against the inhibition pattern within that window. Whichever direction locks the inhibited muscle determines the pathway.
                 </p>
                 <div className="p-3 rounded-lg bg-muted/30 border border-border">
-                  <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Nick Moss</p>
+                  <p className="text-xs font-medium text-muted-foreground/60">Nick Moss</p>
                   <p className="text-sm text-muted-foreground font-medium italic mt-1">
                     "Yeah exactly."
                   </p>
@@ -189,7 +189,7 @@ export function CorrectionsReferenceTool() {
                       </p>
                       {pathway.protocols.length > 0 && (
                         <div className="space-y-1">
-                          <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Protocol</p>
+                          <p className="text-xs font-medium text-muted-foreground/60">Protocol</p>
                           {pathway.protocols.map((p, i) => (
                             <p key={i} className="text-xs text-muted-foreground font-medium">— {p}</p>
                           ))}
@@ -230,7 +230,7 @@ export function CorrectionsReferenceTool() {
                       </p>
                       {pathway.protocols.length > 0 && (
                         <div className="space-y-1">
-                          <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Protocol</p>
+                          <p className="text-xs font-medium text-muted-foreground/60">Protocol</p>
                           {pathway.protocols.map((p, i) => (
                             <p key={i} className="text-xs text-muted-foreground font-medium">— {p}</p>
                           ))}
@@ -272,7 +272,7 @@ export function CorrectionsReferenceTool() {
                   One or two brain zones (cortical or subcortical), each lateralized to Left, Right, or Bilateral.
                 </p>
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Lateralization Rules</p>
+                  <p className="text-xs font-medium text-muted-foreground/60">Lateralization Rules</p>
                   <ul className="space-y-1.5">
                     <li className="flex items-start gap-2 text-xs text-muted-foreground font-medium">
                       <CheckCircle2 size={14} className="text-purple-500 shrink-0 mt-0.5" />
@@ -386,7 +386,7 @@ export function CorrectionsReferenceTool() {
                   </li>
                 </ol>
                 <div className="p-3 rounded-lg bg-muted/30 border border-border space-y-1">
-                  <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Nick Moss</p>
+                  <p className="text-xs font-medium text-muted-foreground/60">Nick Moss</p>
                   <p className="text-xs text-muted-foreground font-medium italic">
                     "Yep, that is a valid approach and one I use also. What we are trying to do is have a few ways in so we can verify and cross reference."
                   </p>
@@ -455,7 +455,7 @@ export function CorrectionsReferenceTool() {
                 If you apply a correction to a primitive reflex and it remains inhibited, it does not necessarily mean the correction was wrong. There can be more than one layer to correct.
               </p>
               <div className="p-4 rounded-lg bg-muted/30 border border-border space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Nick Moss</p>
+                <p className="text-xs font-medium text-muted-foreground/60">Nick Moss</p>
                 <p className="text-sm text-muted-foreground font-medium leading-relaxed italic">
                   "It could simply mean there are more than one layer to correct. It is best to do longer corrections for reflexes especially since a client may never have had them on, so one quick correction would not be enough."
                 </p>

@@ -112,7 +112,7 @@ const PathwayFindingsList = ({ priorityPattern, className, showOnlyInhibited = t
             <Badge 
               variant="outline" 
               className={cn(
-                "h-4 px-1.5 text-[7px] font-black uppercase tracking-widest border-none",
+                "h-4 px-1.5 text-[7px] font-semibold uppercase tracking-wider border-none",
                 isCleared ? "bg-emerald-600 text-primary-foreground" : "bg-rose-600 text-primary-foreground"
               )}
             >

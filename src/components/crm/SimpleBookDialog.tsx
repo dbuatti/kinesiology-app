@@ -317,15 +317,15 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[520px] rounded-[2.5rem] p-0 mx-4 w-[calc(100%-2rem)] flex flex-col max-h-[90vh] bg-background">
+      <DialogContent className="sm:max-w-[520px] rounded-2xl p-0 mx-4 w-[calc(100%-2rem)] flex flex-col max-h-[90vh] bg-background">
         <div className="px-8 pt-8 pb-5 border-b border-border shrink-0">
           <DialogHeader>
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-rose-500 text-primary-foreground flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
                 <Music size={22} />
               </div>
               <div>
-                <DialogTitle className="text-2xl font-black">
+                <DialogTitle className="text-2xl font-semibold">
                   {step === "details" ? "Book a Lesson" : "Confirm Booking"}
                 </DialogTitle>
                 <DialogDescription className="text-muted-foreground text-sm font-medium">
@@ -339,7 +339,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
         <div className="overflow-y-auto flex-1 px-8 py-6 space-y-6">
           {/* Student */}
           <div className="space-y-2">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Student</p>
+            <p className="text-xs font-medium text-muted-foreground">Student</p>
             {selectedStudent ? (
               <div className="space-y-2">
                 <div className="flex items-center justify-between bg-muted/40 rounded-xl p-3">
@@ -351,7 +351,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                       )}
                     </div>
                     {selectedStudent._source === "kinesiology" && (
-                      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0 self-start">FNH</span>
+                      <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0 self-start">FNH</span>
                     )}
                   </div>
                   <button
@@ -393,7 +393,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                       <div className="flex items-center gap-2">
                         <p className="font-semibold text-sm">{s.name || "Unnamed"}</p>
                         {s._source === "kinesiology" && (
-                          <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground">FNH</span>
+                          <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">FNH</span>
                         )}
                       </div>
                       {s.email && <p className="text-xs text-muted-foreground">{s.email}</p>}
@@ -405,7 +405,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                         <p className="text-xs text-muted-foreground text-center py-1">No students found</p>
                         <div className="bg-muted/50 rounded-xl p-3 space-y-2 border border-dashed border-border">
                           <p className="text-xs font-semibold">
-                            Create student: <span className="font-black">{studentSearch.trim()}</span>
+                            Create student: <span className="font-semibold">{studentSearch.trim()}</span>
                           </p>
                           <Input
                             placeholder="Email address (required)"
@@ -461,7 +461,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
 
           {/* Discipline */}
           <div className="space-y-2">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Lesson Type</p>
+            <p className="text-xs font-medium text-muted-foreground">Lesson Type</p>
             <select
               value={discipline}
               onChange={(e) => setDiscipline(e.target.value as "voice" | "piano")}
@@ -474,14 +474,14 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
 
           {/* Duration */}
           <div className="space-y-2">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Duration</p>
+            <p className="text-xs font-medium text-muted-foreground">Duration</p>
             <div className="flex gap-2">
               {EVENT_TYPES.map((et) => (
                 <button
                   key={et.key}
                   onClick={() => setDuration(et.key)}
                   className={cn(
-                    "flex-1 py-2.5 rounded-xl text-xs font-black transition-all border-2",
+                    "flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all border-2",
                     duration === et.key
                       ? "bg-rose-600 border-rose-600 text-primary-foreground shadow-lg"
                       : "bg-card border-border text-foreground hover:border-rose-300 dark:hover:border-rose-700"
@@ -496,14 +496,14 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
           {/* Repeat */}
           {selectedStudent && (
             <div className="space-y-2">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Repeat</p>
+              <p className="text-xs font-medium text-muted-foreground">Repeat</p>
               <div className="flex gap-2">
                 {(["none", "weekly", "fortnightly"] as const).map((r) => (
                   <button
                     key={r}
                     onClick={() => setRepeat(r)}
                     className={cn(
-                      "flex-1 py-2.5 rounded-xl text-xs font-black transition-all border-2",
+                      "flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all border-2",
                       repeat === r
                         ? "bg-rose-600 border-rose-600 text-primary-foreground shadow-lg"
                         : "bg-card border-border text-foreground hover:border-rose-300 dark:hover:border-rose-700"
@@ -535,7 +535,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
           {/* Date & Time */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Date</p>
+              <p className="text-xs font-medium text-muted-foreground">Date</p>
               <input
                 type="date"
                 value={date}
@@ -545,7 +545,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
               />
             </div>
             <div className="space-y-2">
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Time</p>
+              <p className="text-xs font-medium text-muted-foreground">Time</p>
               {calSlots === undefined ? (
                 <div className="h-12 flex items-center justify-center rounded-xl border border-border bg-card">
                   <Loader2 size={14} className="animate-spin text-muted-foreground" />
@@ -645,8 +645,8 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                   <Mail size={16} />
                 </div>
                 <div className="space-y-0.5">
-                  <p className="text-xs font-black text-foreground">Send Onboarding Email</p>
-                  <p className="text-[8px] text-muted-foreground font-bold uppercase tracking-widest">Booking confirmation + welcome email</p>
+                  <p className="text-xs font-semibold text-foreground">Send Onboarding Email</p>
+                  <p className="text-xs text-muted-foreground font-medium">Booking confirmation + welcome email</p>
                 </div>
               </div>
               <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all", sendOnboarding ? "bg-emerald-600 border-emerald-600" : "border-muted-foreground/30")}>
@@ -658,7 +658,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
           {/* Confirmation summary */}
           {!bookingDone && selectedStudent && date && time && (
             <div className="bg-muted/50 rounded-xl p-5 space-y-2">
-              <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Summary</p>
+              <p className="text-xs font-medium text-muted-foreground">Summary</p>
               <div className="flex items-center gap-2 text-sm font-bold">
                 <Calendar size={14} className="text-rose-500" />
                 {format(new Date(date + "T" + time), "EEEE, MMMM d, yyyy")}
@@ -679,7 +679,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
 
         {/* Footer */}
         <div className="px-8 py-4 border-t border-border shrink-0 flex justify-between items-center">
-          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{discipline === "piano" ? "Piano Studio" : "Voice Studio"}</p>
+          <p className="text-xs font-medium text-muted-foreground">{discipline === "piano" ? "Piano Studio" : "Voice Studio"}</p>
           <div className="flex gap-2">
             {!bookingDone ? (
               <>
@@ -694,7 +694,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                 <Button
                   onClick={handleConfirm}
                   disabled={bookingPending || creatingNotion || !selectedStudent || !date || !time || (!studentEmail)}
-                  className="bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-primary-foreground border-none rounded-xl font-bold text-xs gap-2"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground border-none rounded-xl font-bold text-xs gap-2"
                 >
                   {bookingPending ? (
                     <Loader2 size={14} className="animate-spin" />

@@ -332,7 +332,7 @@ const WeekByWeekOverview = ({
 
   return (
     <div className="space-y-4">
-      <div className="bg-gradient-to-br from-amber-50/40 to-card dark:from-amber-950/10 rounded-[1.5rem] border border-border/60 shadow-[0_2px_20px_-10px_rgba(120,90,40,0.15)] p-4 flex items-center justify-between">
+      <div className="bg-gradient-to-br from-amber-50/40 to-card dark:from-amber-950/10 rounded-2xl border border-border/60 shadow-[0_2px_20px_-10px_rgba(120,90,40,0.15)] p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" onClick={onToday} className="rounded-lg h-8 text-xs font-medium">
             Today
@@ -363,9 +363,9 @@ const WeekByWeekOverview = ({
       </div>
 
       {slotsLoading ? (
-        <div className="p-24 flex flex-col items-center justify-center gap-6 bg-card rounded-xl border border-border">
+        <div className="py-24 flex flex-col items-center justify-center gap-3 bg-card rounded-xl border border-border">
           <Loader2 className="animate-spin text-primary" size={32} />
-          <p className="text-muted-foreground font-semibold text-xs uppercase tracking-wider">
+          <p className="text-muted-foreground font-medium text-xs">
             Loading availability…
           </p>
         </div>
@@ -391,7 +391,7 @@ const WeekByWeekOverview = ({
               <div
                 key={weekIdx}
                 className={cn(
-                  "bg-card rounded-[1.5rem] border border-border/60 shadow-[0_4px_30px_-14px_rgba(120,90,40,0.16)] overflow-hidden animate-in fade-in duration-300",
+                  "bg-card rounded-2xl border border-border/60 shadow-[0_4px_30px_-14px_rgba(120,90,40,0.16)] overflow-hidden animate-in fade-in duration-300",
                   isCurrentWeek ? "border-destructive/30 ring-1 ring-destructive/20" : "border-border"
                 )}
               >
@@ -417,7 +417,7 @@ const WeekByWeekOverview = ({
                     </span>
                   </div>
                 </div>
-                <div className="px-4 py-1.5 border-b border-border/50 bg-muted/10 flex items-center gap-4 text-[9px] text-muted-foreground">
+                <div className="px-4 py-1.5 border-b border-border/50 bg-muted/10 flex items-center gap-4 text-[10px] text-muted-foreground">
                   <span>Appts: <strong className="text-foreground">{fmtHours(wkSummary.apptHours)}</strong></span>
                   <span>Buffer: <strong className="text-foreground">{fmtHours(wkSummary.bufferHours)}</strong></span>
                   <span>FNH: <strong className="text-chart-primary">{wkSummary.fnhCount}</strong></span>
@@ -432,7 +432,7 @@ const WeekByWeekOverview = ({
                 </div>
                 <div className="px-4 py-2 border-b border-border/50 bg-muted/5">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wider">Workload</span>
+                    <span className="text-xs font-medium text-muted-foreground">Workload</span>
                     <span className={cn("text-[10px] font-bold", overworkColor)}>
                       {fmtHours(wkSummary.totalHours)} / 25h max
                     </span>
@@ -452,7 +452,7 @@ const WeekByWeekOverview = ({
                     </div>
                     <div className="absolute inset-y-0 w-px bg-amber-500/60" style={{ left: `${(20 / 25) * 100}%` }} title="20h high load" />
                   </div>
-                  <div className="flex items-center gap-3 mt-1 text-[8px] text-muted-foreground">
+                  <div className="flex items-center gap-3 mt-1 text-[10px] text-muted-foreground">
                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-chart-primary/60" /> Appts</span>
                     <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-chart-primary/25" /> Buffer</span>
                     <span className="flex items-center gap-1"><span className="w-px h-2 bg-amber-500/60" /> 20h</span>
@@ -479,7 +479,7 @@ const WeekByWeekOverview = ({
                             todayFlag && "bg-chart-destructive/5"
                           )}
                         >
-                          <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          <div className="text-xs font-medium text-muted-foreground">
                             {format(day, "EEE")}
                           </div>
                           <div
@@ -540,14 +540,14 @@ const WeekByWeekOverview = ({
                                         <div className="truncate font-semibold">
                                           {slot.clientName || (isVoice ? "Voice Lesson" : "FNH Session")}
                                         </div>
-                                        <div className="flex items-center gap-1 text-[9px] opacity-70">
+                                        <div className="flex items-center gap-1 text-[10px] opacity-70">
                                           <Clock size={8} />
                                           {slot.timeLabel}
                                         </div>
                                       </div>
                                       {(slot.standardRate != null ? slot.standardRate : slot.priceAmount) != null &&
                                        (slot.standardRate ?? slot.priceAmount!) > 0 && (
-                                        <span className="text-[9px] font-bold opacity-80 shrink-0">
+                                        <span className="text-[10px] font-bold opacity-80 shrink-0">
                                           ${slot.standardRate ?? slot.priceAmount}
                                         </span>
                                       )}
@@ -618,7 +618,7 @@ const WeekByWeekOverview = ({
 
           <div className="px-6 py-5 space-y-4">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+              <p className="text-xs font-medium text-muted-foreground mb-2">
                 Select Client
               </p>
               <div className="max-h-64 overflow-y-auto space-y-1.5">

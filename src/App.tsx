@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from "./components/AuthProvider";
 import { ModeProvider } from "./components/ModeProvider";
 import { ThemeProvider } from "./components/theme-provider";
 import { Loader2 } from "lucide-react";
+import { BrandMark } from "./components/layout/BrandMark";
 import ScrollToTop from "./components/shared/ScrollToTop";
 
 // Layouts (kept eager — needed on every authenticated route)
@@ -93,11 +94,9 @@ const AppointmentV2Redirect = () => {
 };
 
 const FullScreenLoader = ({ label }: { label: string }) => (
-  <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-    <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-primary-foreground font-black text-2xl shadow-2xl animate-bounce">
-      A
-    </div>
-    <div className="flex items-center gap-2 text-muted-foreground font-black text-[10px] uppercase tracking-[0.3em]">
+  <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-5 bg-background">
+    <BrandMark className="h-11 w-11 animate-pulse-soft" />
+    <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
       <Loader2 className="animate-spin" size={14} /> {label}
     </div>
   </div>
@@ -107,11 +106,11 @@ const AppRoutes = () => {
   const { session } = useAuth();
 
   if (session === undefined) {
-    return <FullScreenLoader label="Initialising Practice" />;
+    return <FullScreenLoader label="Opening your practice…" />;
   }
 
   return (
-    <Suspense fallback={<FullScreenLoader label="Loading" />}>
+    <Suspense fallback={<FullScreenLoader label="Loading…" />}>
       <Routes>
         {/* Public Routes */}
         <Route element={<AuthLayout />}>

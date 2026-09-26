@@ -311,7 +311,7 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
 
  {/* Templates */}
  <div className="p-2 bg-card">
- <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 px-3 pt-1.5 pb-1">Templates</p>
+ <p className="text-xs font-medium text-muted-foreground/60 px-3 pt-1.5 pb-1">Templates</p>
  {TEMPLATES.map((t) => (
  <button
  key={t.id}
@@ -348,7 +348,7 @@ const SmsTemplateButton = ({ client, journalData, nextApp, onRefresh }: SmsTempl
 
  {/* Availability actions */}
  <div className="px-2 pb-2 bg-card border-t border-border">
- <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 px-3 pt-3 pb-1">Send Availability</p>
+ <p className="text-xs font-medium text-muted-foreground/60 px-3 pt-3 pb-1">Send Availability</p>
 
  <button
  onClick={() => setAvailabilityType("share")}
@@ -473,19 +473,19 @@ function AvailabilityPopover({
  return (
  <div className="p-3 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
  <div className="flex items-center justify-between">
- <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Send via</p>
+ <p className="text-xs font-medium text-muted-foreground/60">Send via</p>
  <button onClick={onClose} className="text-muted-foreground/60 hover:text-muted-foreground">
  <X size={13} />
  </button>
  </div>
  <div className="flex gap-2">
  {client.email && (
- <Button onClick={openEmail} variant="outline" size="sm" className="flex-1 rounded-xl h-9 text-[10px] font-semibold uppercase tracking-wider">
+ <Button onClick={openEmail} variant="outline" size="sm" className="flex-1 rounded-xl h-9 text-[11px] font-semibold">
  <Mail size={11} className="mr-1.5" /> Email
  </Button>
  )}
  {client.phone && (
- <Button onClick={openSms} variant="outline" size="sm" className="flex-1 rounded-xl h-9 text-[10px] font-semibold uppercase tracking-wider">
+ <Button onClick={openSms} variant="outline" size="sm" className="flex-1 rounded-xl h-9 text-[11px] font-semibold">
  <MessageSquare size={11} className="mr-1.5" /> SMS
  </Button>
  )}
@@ -975,7 +975,7 @@ Daniele`;
  onSetRateUpdatedDate(client.id, new Date().toISOString());
  showSuccess("Rate marked as reviewed today.");
  }}
- className="h-4 px-1 text-[10px] font-semibold uppercase tracking-wider text-chart-primary hover:bg-muted rounded"
+ className="h-4 px-1 text-[11px] font-semibold text-chart-primary hover:bg-muted rounded"
  >
  Dismiss
  </button>
@@ -993,7 +993,7 @@ Daniele`;
  <div className="flex items-center gap-3">
  {/* Priority Score */}
  <div className="space-y-0.5">
- <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">Priority Score</span>
+ <span className="text-xs font-medium text-muted-foreground block">Priority Score</span>
  <div className="flex items-center gap-2">
  <Badge className={cn(
  "font-semibold text-xs px-2.5 py-1 rounded-xl border-none",
@@ -1009,7 +1009,7 @@ Daniele`;
 
   {/* Re-engagement Tag */}
   <div className="space-y-0.5">
-  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">Status</span>
+  <span className="text-xs font-medium text-muted-foreground block">Status</span>
   <Select
   value={reengagementTag || "neutral"}
   onValueChange={(val: any) => onSetReengagementTag(client.id, val === "neutral" ? null : val)}
@@ -1034,7 +1034,7 @@ Daniele`;
 
   {/* Re-engagement Nudge Tracking */}
   <div className="space-y-0.5">
-  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">Nudge</span>
+  <span className="text-xs font-medium text-muted-foreground block">Nudge</span>
   <div className="flex items-center gap-1">
   {(['sent', 'booked', 'no_reply'] as const).map(status => {
   const isActive = journalData.reengagement_status === status;
@@ -1048,7 +1048,7 @@ Daniele`;
   onRefresh();
   }}
   className={cn(
-  "text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-lg border border-border transition-all",
+  "text-[11px] font-semibold px-2 py-1 rounded-lg border border-border transition-all",
   isActive ? `${colorMap[status]} bg-muted border-transparent` : "text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted"
   )}
   >
@@ -1076,7 +1076,7 @@ Daniele`;
  {client.preferredTimeAnalyzed.text}
  </span>
  {client.preferredTimeAnalyzed.isLowData && !client.preferred_time && (
- <Badge className="bg-muted text-muted-foreground border-none font-medium text-[10px] uppercase tracking-wider px-1.5 py-0">
+ <Badge className="bg-muted text-muted-foreground border-none font-medium text-xs px-1.5 py-0">
  Low Data
  </Badge>
  )}
@@ -1162,7 +1162,7 @@ Daniele`;
   variant="outline"
   size="sm"
   onClick={() => setIsEmailModalOpen(true)}
-  className="h-8 rounded-xl border-border text-chart-primary hover:bg-muted font-semibold text-[10px] uppercase tracking-wider flex items-center gap-1"
+  className="h-8 rounded-xl border-border text-chart-primary hover:bg-muted font-semibold text-[11px] flex items-center gap-1"
   >
   <MessageSquare size={12} />
   Contact
@@ -1187,7 +1187,7 @@ Daniele`;
  size="sm"
  onClick={() => { setConfirmUpgrade(false); handleConfirmUpgrade(); }}
  disabled={updatingStatus}
- className="h-8 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-[10px] uppercase tracking-wider px-3"
+ className="h-8 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-[11px] px-3"
  >
  {updatingStatus ? <Loader2 className="animate-spin" size={10} /> : <Check size={10} className="mr-1" />}
  Confirm ${targetRate}?
@@ -1200,7 +1200,7 @@ Daniele`;
  variant="outline"
  size="sm"
  onClick={() => setConfirmUpgrade(true)}
- className="h-8 rounded-xl border-border text-chart-emerald hover:bg-muted font-semibold text-[10px] uppercase tracking-wider flex items-center gap-1"
+ className="h-8 rounded-xl border-border text-chart-emerald hover:bg-muted font-semibold text-[11px] flex items-center gap-1"
  >
  <ArrowUpRight size={12} />
  Upgrade
@@ -1220,7 +1220,7 @@ Daniele`;
   variant="outline"
   size="sm"
   onClick={() => setIsReengagementEmailModalOpen(true)}
-  className="h-8 rounded-xl border-border text-chart-destructive hover:bg-muted font-semibold text-[10px] uppercase tracking-wider flex items-center gap-1"
+  className="h-8 rounded-xl border-border text-chart-destructive hover:bg-muted font-semibold text-[11px] flex items-center gap-1"
   >
   <Mail size={12} />
   Re-engage
@@ -1282,22 +1282,22 @@ Daniele`;
  {client.email && (
  <DropdownMenuItem onClick={handleSendOnboarding} disabled={sendingOnboarding} className="rounded-xl py-2 px-4 cursor-pointer flex items-center gap-3">
  {sendingOnboarding ? <Loader2 className="animate-spin" size={14} /> : <Send size={14} className="text-chart-emerald" />}
- <span className="font-medium text-xs uppercase tracking-wider">Send Onboarding</span>
+ <span className="font-medium text-xs">Send Onboarding</span>
  </DropdownMenuItem>
  )}
  <DropdownMenuItem onClick={handleSyncToNotion} disabled={syncingNotion} className="rounded-xl py-2 px-4 cursor-pointer flex items-center gap-3">
  {syncingNotion ? <Loader2 className="animate-spin" size={14} /> : <RefreshCw size={14} className="text-muted-foreground" />}
- <span className="font-medium text-xs uppercase tracking-wider">Sync to Notion</span>
+ <span className="font-medium text-xs">Sync to Notion</span>
  </DropdownMenuItem>
  <DropdownMenuItem onClick={handleSyncToStripe} disabled={syncingStripe} className="rounded-xl py-2 px-4 cursor-pointer flex items-center gap-3">
  {syncingStripe ? <Loader2 className="animate-spin" size={14} /> : <CreditCard size={14} className="text-chart-primary" />}
- <span className="font-medium text-xs uppercase tracking-wider">Sync to Stripe</span>
+ <span className="font-medium text-xs">Sync to Stripe</span>
  </DropdownMenuItem>
  <DropdownMenuSeparator className="my-1" />
  <DropdownMenuItem asChild className="rounded-xl py-2 px-4 cursor-pointer flex items-center gap-3">
  <Link to={`/clients/${client.id}`}>
  <Users size={14} className="text-muted-foreground" />
- <span className="font-medium text-xs uppercase tracking-wider">View Profile</span>
+ <span className="font-medium text-xs">View Profile</span>
  </Link>
  </DropdownMenuItem>
  </DropdownMenuContent>
@@ -1342,7 +1342,7 @@ Daniele`;
  <Button
  onClick={handleCopyReengagementEmail}
  className={cn(
- "absolute bottom-4 right-4 h-10 px-4 rounded-xl font-semibold text-[10px] uppercase tracking-wider transition-all shadow-md",
+ "absolute bottom-4 right-4 h-9 px-4 rounded-lg font-medium text-[13px] transition-all shadow-md",
  copiedReengagementEmail ? "bg-primary text-primary-foreground" : "bg-card text-card-foreground border border-border hover:bg-muted"
  )}
  >
@@ -1359,7 +1359,7 @@ Daniele`;
  <Button
  onClick={handleMarkReengagementContacted}
  disabled={updatingStatus}
- className="rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground font-semibold text-xs uppercase tracking-wider px-6"
+ className="rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground font-semibold text-xs px-6"
  >
  {updatingStatus ? <Loader2 className="animate-spin mr-2" /> : <CheckCircle2 size={16} className="mr-2" />}
  Mark as Contacted
@@ -1405,7 +1405,7 @@ Daniele`;
  <Button
  onClick={handleCopyEmail}
  className={cn(
- "absolute bottom-4 right-4 h-10 px-4 rounded-xl font-semibold text-[10px] uppercase tracking-wider transition-all shadow-md",
+ "absolute bottom-4 right-4 h-9 px-4 rounded-lg font-medium text-[13px] transition-all shadow-md",
  copiedEmail ? "bg-primary text-primary-foreground" : "bg-card text-card-foreground border border-border hover:bg-muted"
  )}
  >
@@ -1422,7 +1422,7 @@ Daniele`;
   <Button 
     onClick={handleSendEmail} 
     disabled={sendingEmail || !client.email}
-    className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs uppercase tracking-wider px-6"
+    className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs px-6"
   >
     {sendingEmail ? <Loader2 className="animate-spin mr-2" size={14} /> : <Send size={14} className="mr-2" />}
     Send Email
@@ -1430,7 +1430,7 @@ Daniele`;
   <Button 
   onClick={handleMarkContacted} 
   disabled={updatingStatus}
-  className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs uppercase tracking-wider px-6"
+  className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs px-6"
   >
   {updatingStatus ? <Loader2 className="animate-spin mr-2" /> : <CheckCircle2 size={16} className="mr-2" />}
   Mark as Contacted

@@ -35,7 +35,7 @@ export function QuickCalibrateTool() {
           <div className="absolute top-0 right-0 p-8 opacity-10">
             <ShieldCheck size={100} />
           </div>
-          <h4 className="text-lg font-black flex items-center gap-2 mb-2">
+          <h4 className="text-lg font-semibold flex items-center gap-2 mb-2">
             <ShieldCheck size={20} className="text-emerald-400" /> Clinical Safety
           </h4>
           <p className="text-sm text-muted-foreground leading-relaxed relative z-10">

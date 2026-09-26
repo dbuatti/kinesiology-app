@@ -512,7 +512,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  </div>
  )}
  {isEmpty && !isDragging && (
- <span className="block text-center text-[10px] font-medium text-muted-foreground/30 uppercase tracking-wider pt-2">Open</span>
+ <span className="block text-center text-xs font-medium text-muted-foreground/30 pt-2">Open</span>
  )}
  </div>
  )}
@@ -581,7 +581,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  <td colSpan={6} className="py-2 px-5 bg-muted/30">
  <div className="flex items-center gap-3">
  <div className="flex-1 h-px bg-border" />
- <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 shrink-0">
+ <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5 shrink-0">
  <Coffee size={11} /> Lunch Break · 12:00 – 2:00 PM
  </span>
  <div className="flex-1 h-px bg-border" />
@@ -668,7 +668,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  {!isLocked && scheduledData.conflictsList.length > 0 && (
  <Button onClick={() => setIsOptimized(!isOptimized)} size="sm"
   className={cn(
-  "rounded-xl h-9 px-5 font-semibold text-[10px] uppercase tracking-wider",
+  "rounded-xl h-9 px-5 font-semibold text-[11px]",
   isOptimized
   ? "bg-chart-emerald hover:bg-chart-emerald/90 text-primary-foreground "
   : "bg-muted hover:bg-muted/80 text-foreground "
@@ -690,7 +690,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  <Card key={label} className="border-none shadow-md rounded-xl bg-card overflow-hidden col-span-1">
  <CardContent className="p-5 space-y-2">
  <div className="flex items-center justify-between">
- <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</span>
+ <span className="text-xs font-medium text-muted-foreground">{label}</span>
  <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
  <DollarSign size={14} />
  </div>
@@ -742,7 +742,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
 
  {/* Auto-resolve proposed moves */}
  {isOptimized && optimizedData.proposedMoves.length > 0 && (
- <Card className="border-none shadow-sm rounded-xl bg-card border border-border overflow-hidden animate-in slide-in-from-top-4 duration-500">
+ <Card className="border border-border shadow-sm rounded-xl bg-card border border-border overflow-hidden animate-in slide-in-from-top-4 duration-500">
  <CardHeader className="p-6 pb-4 bg-chart-emerald/10/50 border-b border-border ">
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div className="space-y-1">
@@ -754,7 +754,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  </CardDescription>
  </div>
   <Button onClick={() => setShowApplyConfirm(true)} disabled={applyingMoves}
- className="bg-chart-emerald hover:bg-chart-emerald/90 text-primary-foreground rounded-xl h-9 px-6 font-semibold text-[10px] uppercase tracking-wider shrink-0">
+ className="bg-chart-emerald hover:bg-chart-emerald/90 text-primary-foreground rounded-xl h-9 px-6 font-semibold text-[11px] shrink-0">
  {applyingMoves ? <Loader2 className="mr-2 animate-spin" size={13} /> : <CheckCircle2 size={13} className="mr-2" />}
  Apply Schedule
  </Button>
@@ -781,7 +781,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  {/* Bottom info panels */}
  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
  {/* Insights */}
- <Card className="border-none shadow-sm rounded-xl bg-card text-primary-foreground overflow-hidden relative">
+ <Card className="border border-border shadow-sm rounded-xl bg-card text-primary-foreground overflow-hidden relative">
  <div className="absolute top-0 right-0 p-6 opacity-[0.06] pointer-events-none"><Sparkles size={96} /></div>
  <CardHeader className="pb-2">
  <CardTitle className="text-sm font-semibold uppercase tracking-wider text-primary/70 flex items-center gap-2">
@@ -814,7 +814,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  onDrop={handleDropUnscheduled}
  >
  <CardHeader className="pb-2 border-b border-border bg-muted/30">
- <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+ <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
  <User size={13} className="text-primary" />
  Unscheduled ({scheduledData.unscheduled.length})
  {dragOverKey === "unscheduled" && (
@@ -870,9 +870,9 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
 
  {/* Pending changes log */}
  {Object.keys(manualPlacements).length > 0 ? (
- <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden border border-violet-200 ">
+ <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden border border-violet-200 ">
  <CardHeader className="pb-2 border-b border-border bg-muted/30">
- <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center justify-between gap-2">
+ <CardTitle className="text-xs font-medium text-muted-foreground flex items-center justify-between gap-2">
  <span className="flex items-center gap-2">
  <ListChecks size={13} className="text-primary" />
  Pending Changes ({Object.keys(manualPlacements).length})
@@ -914,7 +914,7 @@ const TimetableVisualizer = ({ clients }: TimetableVisualizerProps) => {
  </CardContent>
  </Card>
  ) : (
- <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden border border-border">
+ <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden border border-border">
  <CardContent className="p-5 flex flex-col items-center justify-center h-full text-center space-y-2 py-10">
  <ListChecks size={24} className="text-muted-foreground/30" />
  <p className="text-xs font-medium text-muted-foreground">No manual changes yet.</p>

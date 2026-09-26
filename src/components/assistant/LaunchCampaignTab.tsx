@@ -193,7 +193,7 @@ export default function LaunchCampaignTab() {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center py-16 text-sm text-muted-foreground gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Loading campaign...</div>;
+    return <div className="flex items-center justify-center py-16 text-sm text-muted-foreground gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Loading campaign…</div>;
   }
 
   const bySegment = (seg: CampaignSegment) => entries.filter((e) => e.segment === seg && !e.excluded);
@@ -205,7 +205,7 @@ export default function LaunchCampaignTab() {
         <h3 className="text-sm font-bold text-foreground">Campaign config</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Bridge window</p>
+            <p className="text-xs font-medium text-muted-foreground">Bridge window</p>
             <DayPicker value={config.bridgeDays} onChange={(v) => saveConfig({ ...config, bridgeDays: v })} />
             <div className="flex gap-2">
               <Input type="date" value={config.bridgeStart} onChange={(e) => saveConfig({ ...config, bridgeStart: e.target.value })} className="h-8 text-xs" />
@@ -213,13 +213,13 @@ export default function LaunchCampaignTab() {
             </div>
           </div>
           <div className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Regular days + start</p>
+            <p className="text-xs font-medium text-muted-foreground">Regular days + start</p>
             <DayPicker value={config.regularDays} onChange={(v) => saveConfig({ ...config, regularDays: v })} />
             <Input type="date" value={config.regularStart} onChange={(e) => saveConfig({ ...config, regularStart: e.target.value })} className="h-8 text-xs w-40" />
           </div>
         </div>
         <div className="space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Blackout ranges</p>
+          <p className="text-xs font-medium text-muted-foreground">Blackout ranges</p>
           {config.blackoutRanges.map((r, i) => (
             <div key={i} className="flex items-center gap-2">
               <Input type="date" value={r.start} onChange={(e) => updateBlackout(i, { start: e.target.value })} className="h-8 text-xs" />
@@ -269,15 +269,15 @@ export default function LaunchCampaignTab() {
                       padding" — real complaint: two paddings deep AND
                       split in half on top of that). */}
                   <div>
-                    <label className="text-[10px] uppercase tracking-wide text-muted-foreground">Proposed slot</label>
+                    <label className="text-xs text-muted-foreground">Proposed slot</label>
                     <Input value={e.proposed_slot || ""} onChange={(ev) => updateEntry(e.id, { proposed_slot: ev.target.value })} className="h-8 text-xs mt-1" />
                   </div>
                   <div>
-                    <label className="text-[10px] uppercase tracking-wide text-muted-foreground">First regular date</label>
+                    <label className="text-xs text-muted-foreground">First regular date</label>
                     <Input type="date" value={e.first_regular_date || ""} onChange={(ev) => updateEntry(e.id, { first_regular_date: ev.target.value })} className="h-8 text-xs mt-1" />
                   </div>
                   <div>
-                    <label className="text-[10px] uppercase tracking-wide text-muted-foreground">Status</label>
+                    <label className="text-xs text-muted-foreground">Status</label>
                     <Select value={e.status} onValueChange={(v) => updateEntry(e.id, { status: v as EntryStatus })}>
                       <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -286,7 +286,7 @@ export default function LaunchCampaignTab() {
                     </Select>
                   </div>
                   <div>
-                    <label className="text-[10px] uppercase tracking-wide text-muted-foreground">Notes</label>
+                    <label className="text-xs text-muted-foreground">Notes</label>
                     <Textarea value={e.notes || ""} onChange={(ev) => updateEntry(e.id, { notes: ev.target.value })} rows={1} className="text-xs mt-1" />
                   </div>
                   <Button size="sm" variant="outline" className="h-8 text-xs gap-1 w-full" onClick={() => draftMessage(e)} disabled={draftingFor === e.id}>
@@ -306,7 +306,7 @@ export default function LaunchCampaignTab() {
             <div className="hidden md:block rounded-xl border border-border overflow-hidden">
               <table className="w-full text-xs">
                 <thead className="bg-muted/50">
-                  <tr className="text-left text-[10px] uppercase tracking-wide text-muted-foreground">
+                  <tr className="text-left text-xs text-muted-foreground">
                     <th className="p-2 font-semibold">Client</th>
                     <th className="p-2 font-semibold">Proposed slot</th>
                     <th className="p-2 font-semibold">First regular date</th>

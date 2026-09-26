@@ -22,7 +22,7 @@ const StarRating = ({ rating, onRatingChange, disabled, size = 16 }: StarRatingP
             onRatingChange(star === rating ? 0 : star);
           }}
           className={cn(
-            "transition-all duration-200 hover:scale-110",
+            "transition-all duration-200 hover:scale-[1.03]",
             disabled ? "cursor-default" : "cursor-pointer",
             star <= rating ? "text-amber-400 fill-amber-400" : "text-muted-foreground/60 dark:text-foreground fill-transparent"
           )}

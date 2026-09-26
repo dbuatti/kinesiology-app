@@ -40,7 +40,7 @@ const DocInput = ({ label, value, field, placeholder, multiline = false, type = 
 
   return (
     <div className="space-y-1.5 group">
-      <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground group-focus-within:text-foreground transition-colors">{label}</label>
+      <label className="text-xs font-medium text-muted-foreground group-focus-within:text-foreground transition-colors">{label}</label>
       {multiline ? (
         <textarea
           value={localValue}

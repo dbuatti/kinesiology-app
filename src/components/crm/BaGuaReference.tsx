@@ -31,30 +31,30 @@ const BaGuaReference = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {filtered.map((profile) => (
-          <Card key={profile.number} className="border-none shadow-lg rounded-[2.5rem] bg-card hover:shadow-2xl transition-all group overflow-hidden flex flex-col">
+          <Card key={profile.number} className="border-none shadow-lg rounded-2xl bg-card hover:shadow-2xl transition-all group overflow-hidden flex flex-col">
             <CardHeader className={cn("pb-6 border-b transition-colors relative", profile.bgColor)}>
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <div className="flex gap-2 mb-2">
-                    <Badge className="bg-card/80 text-foreground border-none font-black text-[10px] uppercase tracking-widest">
+                    <Badge className="bg-card/80 text-foreground border-none font-semibold text-[10px] uppercase tracking-wider">
                       Number {profile.number}
                     </Badge>
-                    <Badge className="bg-card/40 text-foreground/80 border-none font-black text-[10px] uppercase tracking-widest">
+                    <Badge className="bg-card/40 text-foreground/80 border-none font-semibold text-[10px] uppercase tracking-wider">
                       {profile.element}
                     </Badge>
                   </div>
-                  <CardTitle className="text-3xl font-black text-foreground group-hover:text-indigo-600 transition-colors">
+                  <CardTitle className="text-3xl font-semibold text-foreground group-hover:text-indigo-600 transition-colors">
                     {profile.name}
                   </CardTitle>
                 </div>
                 <div className="w-14 h-14 rounded-2xl bg-card/50 backdrop-blur-md flex items-center justify-center shadow-sm border border-primary-foreground/20">
-                  <span className={cn("text-2xl font-black", profile.color)}>{profile.number}</span>
+                  <span className={cn("text-2xl font-semibold", profile.color)}>{profile.number}</span>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="p-8 space-y-6 flex-1 flex flex-col">
               <div className="space-y-3">
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                <p className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <Activity size={14} className="text-indigo-500" /> Associated Meridians
                 </p>
                 <div className="flex flex-wrap gap-1.5">
@@ -67,7 +67,7 @@ const BaGuaReference = () => {
               </div>
 
               <div className="space-y-3">
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                <p className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                   <Heart size={14} className="text-rose-500" /> Emotional Themes
                 </p>
                 <div className="flex flex-wrap gap-1.5">
@@ -80,7 +80,7 @@ const BaGuaReference = () => {
               </div>
 
               <div className="p-5 bg-muted/50 rounded-3xl border border-border/50 mt-auto">
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
+                <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-2">
                   <Info size={14} /> Clinical Insight
                 </p>
                 <p className="text-sm text-muted-foreground font-medium leading-relaxed italic">
@@ -92,14 +92,14 @@ const BaGuaReference = () => {
         ))}
       </div>
 
-      <div className="p-8 bg-indigo-900 text-primary-foreground rounded-[3rem] shadow-2xl relative overflow-hidden">
+      <div className="p-8 bg-indigo-900 text-primary-foreground rounded-2xl shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-12 opacity-10"><Sparkles size={150} /></div>
         <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
-          <div className="w-24 h-24 rounded-[2rem] bg-indigo-600 flex items-center justify-center shrink-0 shadow-2xl shadow-indigo-500/40">
+          <div className="w-24 h-24 rounded-2xl bg-indigo-600 flex items-center justify-center shrink-0 shadow-2xl shadow-indigo-500/40">
             <Zap size={48} className="text-primary-foreground" />
           </div>
           <div className="space-y-4">
-            <h4 className="text-2xl font-black">The Ba Gua in Practice</h4>
+            <h4 className="text-2xl font-semibold">The Ba Gua in Practice</h4>
             <p className="text-indigo-200 font-medium text-lg leading-relaxed">
               "The date of birth model is strangely accurate in uncovering the driving motivational constitution. Each constitution relates to a different aspect of the one key issue all people face: **whether they can connect inwardly and express this outwardly.**"
             </p>

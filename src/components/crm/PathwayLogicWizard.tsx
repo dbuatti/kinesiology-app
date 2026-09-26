@@ -315,7 +315,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                 variant="ghost" 
                 size="sm"
                 onClick={() => setSelectedFinding('CUSTOM')}
-                className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground"
+                className="text-[11px] font-medium text-muted-foreground hover:text-foreground"
               >
                 + Manual Entry
               </Button>
@@ -326,7 +326,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
         return (
           <div className="space-y-5 animate-in fade-in duration-300">
             <div className="space-y-2">
-              <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Finding to Correct</label>
+              <label className="text-xs font-medium text-muted-foreground">Finding to Correct</label>
               <Select value={selectedFinding} onValueChange={(v) => setSelectedFinding(v)}>
                 <SelectTrigger className="h-10 rounded-lg border-border bg-card text-sm font-medium">
                   <SelectValue placeholder={loadingMuscles ? "Loading..." : "Select finding..."} />
@@ -355,7 +355,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Correction Direction</label>
+              <label className="text-xs font-medium text-muted-foreground">Correction Direction</label>
               <div className="grid grid-cols-2 gap-2">
                 <button 
                   onClick={() => goToStep('AFFERENT_SELECT')} 
@@ -363,7 +363,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <GitBranch size={14} className="text-chart-primary" />
-                    <span className="text-[9px] font-medium uppercase tracking-wider text-chart-primary">Bottom-Up</span>
+                    <span className="text-[11px] font-medium text-chart-primary">Bottom-Up</span>
                   </div>
                   <p className="text-sm font-medium text-foreground">Afferent</p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">Sensory input</p>
@@ -375,7 +375,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <Sparkles size={14} className="text-muted-foreground" />
-                    <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">Top-Down</span>
+                    <span className="text-[11px] font-medium text-muted-foreground">Top-Down</span>
                   </div>
                   <p className="text-sm font-medium text-foreground">Efferent</p>
                   <p className="text-[10px] text-muted-foreground mt-0.5">Processing</p>
@@ -387,7 +387,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
               <div className="border-t border-border pt-3">
                 <button
                   onClick={() => setShowClinicalTip(!showClinicalTip)}
-                  className="flex items-center gap-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors w-full"
+                  className="flex items-center gap-2 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors w-full"
                 >
                   <clinicalTip.icon size={12} />
                   <span>Clinical Insight: {clinicalTip.title}</span>
@@ -396,22 +396,22 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                 {showClinicalTip && (
                   <div className="mt-2 p-3 bg-muted/50 rounded-lg border border-border space-y-2 animate-in fade-in duration-200">
                     <div className="flex gap-2">
-                      <Badge variant="outline" className="border-border text-muted-foreground font-medium text-[8px] uppercase tracking-wider px-1.5 py-0 rounded-full">
+                      <Badge variant="outline" className="border-border text-muted-foreground font-medium text-xs px-1.5 py-0 rounded-full">
                         {clinicalTip.type}
                       </Badge>
-                      <Badge className="bg-primary/10 text-primary border-none font-medium text-[8px] uppercase tracking-wider px-1.5 py-0 rounded-full">
+                      <Badge className="bg-primary/10 text-primary border-none font-medium text-[10px] uppercase tracking-wider px-1.5 py-0 rounded-full">
                         {clinicalTip.logic}
                       </Badge>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="p-2 bg-card rounded-md border border-border">
-                        <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5">
+                        <p className="text-xs font-medium text-muted-foreground mb-0.5">
                           {clinicalTip.type === 'Primitive Reflex' ? 'Inhibition' : 'Reflex Point'}
                         </p>
                         <p className="text-[10px] font-medium text-foreground leading-tight">{clinicalTip.location}</p>
                       </div>
                       <div className="p-2 bg-card rounded-md border border-border">
-                        <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5">Stimulus</p>
+                        <p className="text-xs font-medium text-muted-foreground mb-0.5">Stimulus</p>
                         <p className="text-[10px] font-medium text-foreground leading-tight">{clinicalTip.stimulus}</p>
                       </div>
                     </div>
@@ -419,7 +419,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                       "{clinicalTip.content}"
                     </p>
                     {clinicalTip.extra && (
-                      <p className="text-[9px] font-medium text-muted-foreground flex items-center gap-1">
+                      <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
                         <ShieldAlert size={10} /> {clinicalTip.extra}
                       </p>
                     )}
@@ -435,10 +435,10 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
           <div className="space-y-3 animate-in fade-in duration-200">
             <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-lg border border-border">
               <div>
-                <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-wider">Correcting</p>
+                <p className="text-xs font-medium text-muted-foreground">Correcting</p>
                 <p className="text-sm font-medium text-foreground">{effectiveItem || "General"}</p>
               </div>
-              <Badge className="bg-chart-primary/10 text-chart-primary border-none font-medium text-[8px] uppercase tracking-wider px-1.5 py-0 rounded-full">Afferent</Badge>
+              <Badge className="bg-chart-primary/10 text-chart-primary border-none font-medium text-[10px] uppercase tracking-wider px-1.5 py-0 rounded-full">Afferent</Badge>
             </div>
             {[
               { type: 'Mechanoreceptive', icon: Activity, step: 'MECHANO_PROCESS', desc: 'Joint and muscle receptor calibration' },
@@ -465,10 +465,10 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
           <div className="space-y-3 animate-in fade-in duration-200">
             <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-lg border border-border">
               <div>
-                <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-wider">Correcting</p>
+                <p className="text-xs font-medium text-muted-foreground">Correcting</p>
                 <p className="text-sm font-medium text-foreground">{effectiveItem || "General"}</p>
               </div>
-              <Badge className="bg-foreground/10 text-foreground border-none font-medium text-[8px] uppercase tracking-wider px-1.5 py-0 rounded-full">Efferent</Badge>
+              <Badge className="bg-foreground/10 text-foreground border-none font-medium text-[10px] uppercase tracking-wider px-1.5 py-0 rounded-full">Efferent</Badge>
             </div>
             {[
               { type: 'Brain Integration', icon: Brain, step: 'EFFERENT_PROCESS', desc: 'Cortical and subcortical zone pairing' },
@@ -532,7 +532,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
 
             {correctionSummary && (
               <div className="bg-muted/50 border border-border rounded-lg p-3 space-y-1.5 text-left">
-                <p className="text-[8px] font-medium text-muted-foreground uppercase tracking-wider">Details</p>
+                <p className="text-xs font-medium text-muted-foreground">Details</p>
                 <div className="space-y-1">
                   {correctionSummary.split(" | ").map((part, i) => {
                     const [key, ...rest] = part.split(": ");

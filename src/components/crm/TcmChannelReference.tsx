@@ -57,7 +57,7 @@ const TcmChannelReference = () => {
               variant={selectedElement === el ? "default" : "outline"}
               onClick={() => setSelectedElement(el)}
               className={cn(
-                "rounded-xl h-14 px-6 font-black text-[10px] uppercase tracking-widest whitespace-nowrap transition-all",
+                "rounded-xl h-14 px-6 font-semibold text-[11px] whitespace-nowrap transition-all",
                 selectedElement === el ? "bg-foreground shadow-lg" : "border-border bg-card hover:bg-muted/50"
               )}
             >
@@ -78,11 +78,11 @@ const TcmChannelReference = () => {
           );
 
           return (
-            <Card key={channel.id} className="border-none shadow-lg rounded-[2.5rem] bg-card hover:shadow-2xl transition-all group overflow-hidden">
+            <Card key={channel.id} className="border-none shadow-lg rounded-2xl bg-card hover:shadow-2xl transition-all group overflow-hidden">
               <CardHeader className={cn("pb-6 border-b transition-colors relative", channel.color)}>
                 {isPeak && (
                   <div className="absolute top-4 right-4 animate-pulse">
-                    <Badge className="bg-card text-foreground border-none font-black text-[8px] uppercase tracking-widest px-2 py-0.5">
+                    <Badge className="bg-card text-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-2 py-0.5">
                       <Zap size={10} className="mr-1 fill-amber-400 text-amber-400" /> Peak Now
                     </Badge>
                   </div>
@@ -90,17 +90,17 @@ const TcmChannelReference = () => {
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <div className="flex gap-2 mb-2">
-                      <Badge className="bg-card/20 text-primary-foreground border-none font-black text-[9px] uppercase tracking-widest">
+                      <Badge className="bg-card/20 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider">
                         {channel.element}
                       </Badge>
-                      <Badge className="bg-card/20 text-primary-foreground border-none font-black text-[9px] uppercase tracking-widest">
+                      <Badge className="bg-card/20 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider">
                         {channel.yinYang}
                       </Badge>
                     </div>
-                    <CardTitle className="text-3xl font-black tracking-tight">
+                    <CardTitle className="text-3xl font-semibold tracking-tight">
                       {channel.name}
                     </CardTitle>
-                    <p className="text-xs font-bold opacity-80 uppercase tracking-[0.2em]">{channel.code} Meridian</p>
+                    <p className="text-xs font-bold opacity-80 uppercase tracking-wider">{channel.code} Meridian</p>
                   </div>
                   <div className="w-14 h-14 rounded-2xl bg-card/20 backdrop-blur-md flex items-center justify-center shadow-inner">
                     <Activity size={28} />
@@ -115,7 +115,7 @@ const TcmChannelReference = () => {
                   )}>
                     <Clock size={18} className={isPeak ? "text-amber-600" : "text-indigo-500"} />
                     <div>
-                      <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Peak Time</p>
+                      <p className="text-xs font-medium text-muted-foreground">Peak Time</p>
                       <p className={cn("text-sm font-bold", isPeak ? "text-amber-900" : "text-foreground")}>{channel.peakTime}</p>
                     </div>
                   </div>
@@ -125,7 +125,7 @@ const TcmChannelReference = () => {
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
+                  <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                     <Heart size={14} className="text-rose-500" /> Core Emotions
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -141,12 +141,12 @@ const TcmChannelReference = () => {
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
+                  <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                     <Target size={14} className="text-emerald-500" /> Primary Acupoints
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {associatedPoints.map(point => (
-                      <Badge key={point.code} className="bg-emerald-50 text-emerald-700 border-emerald-100 text-[10px] font-black px-3 py-1 rounded-lg">
+                      <Badge key={point.code} className="bg-emerald-50 text-emerald-700 border-emerald-100 text-[10px] font-semibold px-3 py-1 rounded-lg">
                         {point.code}
                       </Badge>
                     ))}
@@ -158,10 +158,10 @@ const TcmChannelReference = () => {
 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
+                    <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                       <Dumbbell size={14} className="text-indigo-500" /> Associated Muscles
                     </h4>
-                    <span className="text-[8px] font-black text-muted-foreground/60 uppercase tracking-widest flex items-center gap-1">
+                    <span className="text-xs font-medium text-muted-foreground/60 flex items-center gap-1">
                       <MousePointer2 size={8} /> Click for info
                     </span>
                   </div>
@@ -184,11 +184,11 @@ const TcmChannelReference = () => {
       </div>
 
       {filteredChannels.length === 0 && (
-        <div className="text-center py-32 bg-muted/50 rounded-[3rem] border-2 border-dashed border-border">
+        <div className="text-center py-32 bg-muted/50 rounded-2xl border-2 border-dashed border-border">
           <div className="mx-auto w-20 h-20 bg-card rounded-3xl flex items-center justify-center mb-6 shadow-xl">
             <Search size={40} className="text-muted-foreground/60" />
           </div>
-          <h3 className="text-xl font-black text-foreground">No channels found</h3>
+          <h3 className="text-xl font-semibold text-foreground">No channels found</h3>
           <p className="text-muted-foreground mt-2">Try adjusting your search or element filter.</p>
         </div>
       )}

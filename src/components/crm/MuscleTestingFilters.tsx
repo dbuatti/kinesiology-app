@@ -112,7 +112,7 @@ const MuscleTestingFilters = ({
               setSearchTerm("");
               setMeridianFilter("all");
             }}
-            className="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 h-7 px-3 rounded-lg"
+            className="text-[11px] font-semibold text-indigo-600 hover:bg-indigo-50 h-7 px-3 rounded-lg"
           >
             Clear Filters
           </Button>

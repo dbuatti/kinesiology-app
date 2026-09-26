@@ -194,16 +194,16 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
     if (!data || data.stims.length === 0) return null;
     return (
       <div className="mt-2 space-y-1.5">
-        <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+        <p className="text-xs font-medium text-muted-foreground">
           Marked Stims ({data.stims.length})
         </p>
         <div className="flex flex-wrap gap-1.5">
           {data.stims.map((s) => (
             <span
               key={s.key}
-              className="inline-flex items-center gap-1 pl-1.5 pr-0.5 py-0.5 rounded-md text-[9px] font-medium bg-chart-destructive/10 text-chart-destructive border border-chart-destructive/20"
+              className="inline-flex items-center gap-1 pl-1.5 pr-0.5 py-0.5 rounded-md text-[10px] font-medium bg-chart-destructive/10 text-chart-destructive border border-chart-destructive/20"
             >
-              {s.side && <span className="font-black">{s.side}</span>}
+              {s.side && <span className="font-semibold">{s.side}</span>}
               <span className="max-w-[200px] truncate leading-snug">{s.label}</span>
               <button
                 onClick={() => clearStim(item, s.key)}
@@ -394,7 +394,7 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
                   <Button
                     onClick={() => handleClearItem(item)}
                     disabled={isClearing}
-                    className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 rounded-xl h-10 px-4 font-medium text-[10px] border border-emerald-500/20"
+                    className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 rounded-lg h-9 px-4 font-medium text-[13px] border border-emerald-500/20"
                   >
                     {isClearing ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} className="mr-2" />}
                     Mark Clear
@@ -447,19 +447,19 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
                         <div className="flex items-center gap-2">
                           <p className="text-xs font-medium text-foreground truncate">{item.name}</p>
                           {item.side && (
-                            <Badge variant="outline" className="text-[8px] font-medium px-1 py-0 border-emerald-500/20 text-emerald-600 bg-emerald-500/10">
+                            <Badge variant="outline" className="text-[10px] font-medium px-1 py-0 border-emerald-500/20 text-emerald-600 bg-emerald-500/10">
                               {item.side}
                             </Badge>
                           )}
                         </div>
-                        <p className="text-[9px] font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1"><CheckCircle2 size={8} /> Cleared</p>
+                        <p className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1"><CheckCircle2 size={8} /> Cleared</p>
                       </div>
                     </div>
                     <Button
                       onClick={() => handleUndoClear(item)}
                       disabled={isClearing}
                       variant="ghost"
-                      className="h-7 px-2 text-[9px] text-muted-foreground hover:text-foreground rounded-lg"
+                      className="h-7 px-2 text-[10px] text-muted-foreground hover:text-foreground rounded-lg"
                     >
                       {isClearing ? <Loader2 size={10} className="animate-spin" /> : 'Undo'}
                     </Button>
@@ -561,7 +561,7 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
                 <p className="text-xs font-bold uppercase tracking-wider text-primary-foreground/60">Next Session</p>
                 <p className="text-sm font-semibold">{format(new Date(nextSession.date), "EEE, MMM d · h:mm a")}</p>
               </div>
-              <Button asChild className="bg-background/20 backdrop-blur-md text-primary-foreground hover:bg-background/30 border-none rounded-xl h-12 px-6 font-medium text-xs uppercase tracking-wider">
+              <Button asChild className="bg-background/20 backdrop-blur-md text-primary-foreground hover:bg-background/30 border-none rounded-xl h-12 px-6 font-medium text-xs">
                 <Link to={`/appointments/${nextSession.id}`}>
                   <ExternalLink size={16} className="mr-2" /> View Session
                 </Link>
@@ -570,7 +570,7 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
           ) : (
             <Dialog open={bookNextOpen} onOpenChange={(open) => { setBookNextOpen(open); if (!open) setSelectedSlot(null); }}>
               <DialogTrigger asChild>
-                <Button className="bg-background/20 backdrop-blur-md text-primary-foreground hover:bg-background/30 border-none rounded-xl h-12 px-8 font-medium text-xs uppercase tracking-wider">
+                <Button className="bg-background/20 backdrop-blur-md text-primary-foreground hover:bg-background/30 border-none rounded-xl h-12 px-8 font-medium text-xs">
                   <Plus size={18} className="mr-2" /> Book Next Session
                 </Button>
               </DialogTrigger>

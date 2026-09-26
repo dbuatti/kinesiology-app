@@ -1,3 +1,4 @@
+import { BrandMark } from "@/components/layout/BrandMark";
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
@@ -67,19 +68,15 @@ const Login = () => {
       <div className="absolute bottom-0 right-0 w-full h-full bg-[radial-gradient(circle_at_bottom_left,rgba(212,106,155,0.05),transparent_50%)]" />
       
       <div className="w-full max-w-md relative z-10 space-y-8">
-        <div className="text-center space-y-4">
-          <div className="w-20 h-20 bg-primary rounded-[2rem] flex items-center justify-center text-primary-foreground font-black text-3xl shadow-3xl mx-auto mb-6 transition-transform hover:scale-105 duration-500">
-            ✦
-          </div>
-          <Badge className="bg-muted text-primary border-none font-black text-[10px] uppercase tracking-[0.4em] px-6 py-2 rounded-full">
-            Practitioner Portal
-          </Badge>
-          <h1 className="text-4xl font-serif font-bold tracking-tighter text-primary">Resonance</h1>
+        <div className="flex flex-col items-center text-center">
+          <BrandMark className="h-12 w-12 shadow-lg shadow-primary/20 rounded-[14px]" />
+          <h1 className="mt-5 font-serif text-[34px] font-medium leading-none tracking-[-0.025em] text-foreground">Resonance</h1>
+          <p className="mt-2 text-[13px] text-muted-foreground">Practitioner portal</p>
         </div>
 
-        <Card className="border-none shadow-3xl rounded-[3rem] bg-card overflow-hidden">
+        <Card className="rounded-2xl border border-border bg-card shadow-xl overflow-hidden">
           <CardHeader className="space-y-2 text-center pb-8 pt-10">
-            <CardTitle className="text-2xl font-serif font-bold tracking-tight">Welcome Back</CardTitle>
+            <CardTitle className="text-xl font-semibold tracking-tight">Welcome back</CardTitle>
             <CardDescription className="text-muted-foreground font-medium">
               {isSignUp ? "Create your practitioner account" : "Sign in to manage your clinical practice"}
             </CardDescription>
@@ -87,7 +84,7 @@ const Login = () => {
           <CardContent className="space-y-6 px-10">
             <Button 
               variant="outline" 
-              className="w-full h-14 border-secondary/30 hover:bg-muted flex items-center justify-center gap-3 rounded-2xl font-bold text-sm transition-all"
+              className="w-full h-11 border-border hover:bg-muted flex items-center justify-center gap-3 rounded-xl font-medium text-sm transition-all"
               onClick={handleGoogleLogin}
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -115,21 +112,21 @@ const Login = () => {
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-border" />
               </div>
-              <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
+              <div className="relative flex justify-center text-[10px] font-semibold uppercase tracking-wider">
                 <span className="bg-background px-4 text-muted-foreground">Or use email</span>
               </div>
             </div>
 
             <form onSubmit={handleAuth} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Email Address</Label>
+                <Label htmlFor="email" className="text-xs font-medium ml-1 text-muted-foreground">Email Address</Label>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/50" size={18} />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={16} />
                   <Input
                     id="email"
                     type="email"
                     placeholder="name@example.com"
-                    className="pl-12 h-14 rounded-2xl border-secondary/20 focus:ring-primary bg-muted/30 font-medium"
+                    className="pl-11 h-11 rounded-xl border-border bg-background"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -137,14 +134,14 @@ const Login = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest ml-1 text-muted-foreground">Password</Label>
+                <Label htmlFor="password" className="text-xs font-medium ml-1 text-muted-foreground">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/50" size={18} />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60" size={16} />
                   <Input
                     id="password"
                     type="password"
                     placeholder="••••••••"
-                    className="pl-12 h-14 rounded-2xl border-secondary/20 focus:ring-primary bg-muted/30 font-medium"
+                    className="pl-11 h-11 rounded-xl border-border bg-background"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -153,7 +150,7 @@ const Login = () => {
               </div>
               <Button 
                 type="submit" 
-                className="w-full bg-primary hover:bg-primary/90 h-14 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/20 transition-all" 
+                className="w-full bg-primary hover:bg-primary/90 h-11 rounded-xl font-medium text-sm shadow-sm" 
                 disabled={loading}
               >
                 {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
@@ -174,10 +171,10 @@ const Login = () => {
         </Card>
 
         <div className="flex flex-col items-center gap-4 opacity-40">
-          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary">
+          <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-primary">
             <ShieldCheck size={14} /> Secure Clinical Infrastructure
           </div>
-          <div className="text-[8px] font-medium tracking-wider text-muted-foreground/60">v1.0.0</div>
+          <div className="text-[10px] font-medium tracking-wider text-muted-foreground/60">v1.0.0</div>
         </div>
       </div>
     </div>

@@ -134,12 +134,12 @@ const IdentityHistoryList = () => {
                      <ShieldAlert size={24} />}
                   </div>
                   <div className="min-w-0">
-                    <h4 className="font-black text-base text-foreground truncate">"{session.title}"</h4>
+                    <h4 className="font-semibold text-base text-foreground truncate">"{session.title}"</h4>
                     <div className="flex items-center gap-3 mt-1">
-                      <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest border-none bg-muted px-2 py-0.5">
+                      <Badge variant="outline" className="text-[10px] font-semibold uppercase tracking-wider border-none bg-muted px-2 py-0.5">
                         {session.label}
                       </Badge>
-                      <span className="text-[9px] font-bold text-muted-foreground uppercase flex items-center gap-1">
+                      <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                         <Calendar size={12} /> {format(new Date(session.created_at), "MMM d, yyyy")}
                       </span>
                     </div>
@@ -164,11 +164,11 @@ const IdentityHistoryList = () => {
           ))}
         </div>
       ) : (
-        <div className="text-center py-20 bg-muted/30 rounded-[3rem] border-2 border-dashed border-border">
+        <div className="text-center py-20 bg-muted/30 rounded-2xl border-2 border-dashed border-border">
           <div className="w-16 h-16 bg-card rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
             <History className="text-muted-foreground" size={32} />
           </div>
-          <p className="text-foreground font-black text-xl">No history found</p>
+          <p className="text-foreground font-semibold text-xl">No history found</p>
           <p className="text-muted-foreground mt-1 font-medium">Complete a session in Identity Map to see it here.</p>
         </div>
       )}

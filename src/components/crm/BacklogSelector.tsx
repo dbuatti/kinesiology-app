@@ -70,7 +70,7 @@ const BacklogSelector = ({ type, onSelect, currentValue }: BacklogSelectorProps)
       <DropdownMenuTrigger asChild>
         <Button 
           variant="outline" 
-          className="h-10 rounded-xl border-indigo-100 bg-indigo-50/30 text-indigo-600 hover:bg-indigo-50 font-bold text-[10px] uppercase tracking-widest gap-2"
+          className="h-9 rounded-lg border-indigo-100 bg-indigo-50/30 text-indigo-600 hover:bg-indigo-50 font-medium text-[13px] gap-2"
         >
           {getIcon()}
           Select from Map
@@ -79,7 +79,7 @@ const BacklogSelector = ({ type, onSelect, currentValue }: BacklogSelectorProps)
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-72 p-2 rounded-2xl border-none shadow-3xl bg-card">
         <div className="px-3 py-2 mb-1">
-          <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Pending {type === 'alignment' ? 'Goals' : type === 'belief' ? 'Beliefs' : 'Identities'}</p>
+          <p className="text-xs font-medium text-muted-foreground">Pending {type === 'alignment' ? 'Goals' : type === 'belief' ? 'Beliefs' : 'Identities'}</p>
         </div>
         {items.map((item) => (
           <DropdownMenuItem 

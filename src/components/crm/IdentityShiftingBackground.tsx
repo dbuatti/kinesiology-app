@@ -11,7 +11,7 @@ const IdentityShiftingBackground = () => {
           Philosophical Foundations
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-secondary/20 border-none shadow-none hover:bg-secondary/30 transition-colors">
+          <Card className="bg-secondary/20 border border-border shadow-none hover:bg-secondary/30 transition-colors">
             <CardHeader>
               <CardTitle className="text-lg font-bold">Carl Jung</CardTitle>
               <CardDescription className="italic">"Until you make the unconscious conscious, it will direct your life and you will call it fate."</CardDescription>
@@ -21,7 +21,7 @@ const IdentityShiftingBackground = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-secondary/20 border-none shadow-none hover:bg-secondary/30 transition-colors">
+          <Card className="bg-secondary/20 border border-border shadow-none hover:bg-secondary/30 transition-colors">
             <CardHeader>
               <CardTitle className="text-lg font-bold">Terence McKenna</CardTitle>
               <CardDescription className="italic">"The cost of sanity in this society is a certain level of alienation."</CardDescription>
@@ -31,7 +31,7 @@ const IdentityShiftingBackground = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-secondary/20 border-none shadow-none hover:bg-secondary/30 transition-colors">
+          <Card className="bg-secondary/20 border border-border shadow-none hover:bg-secondary/30 transition-colors">
             <CardHeader>
               <CardTitle className="text-lg font-bold">Tao Te Ching</CardTitle>
               <CardDescription className="italic">"When I let go of what I am, I become what I might be."</CardDescription>
@@ -50,7 +50,7 @@ const IdentityShiftingBackground = () => {
           Core Concepts
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex gap-4 p-6 bg-card dark:bg-foreground rounded-2xl border border-secondary/30 shadow-sm">
+          <div className="flex gap-4 p-6 bg-card dark:bg-card rounded-2xl border border-secondary/30 shadow-sm">
             <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center shrink-0">
               <Sparkles className="text-indigo-600 dark:text-indigo-400" />
             </div>
@@ -60,7 +60,7 @@ const IdentityShiftingBackground = () => {
             </div>
           </div>
 
-          <div className="flex gap-4 p-6 bg-card dark:bg-foreground rounded-2xl border border-secondary/30 shadow-sm">
+          <div className="flex gap-4 p-6 bg-card dark:bg-card rounded-2xl border border-secondary/30 shadow-sm">
             <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 rounded-xl flex items-center justify-center shrink-0">
               <Layers className="text-rose-600 dark:text-rose-400" />
             </div>
@@ -70,7 +70,7 @@ const IdentityShiftingBackground = () => {
             </div>
           </div>
 
-          <div className="flex gap-4 p-6 bg-card dark:bg-foreground rounded-2xl border border-secondary/30 shadow-sm">
+          <div className="flex gap-4 p-6 bg-card dark:bg-card rounded-2xl border border-secondary/30 shadow-sm">
             <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center shrink-0">
               <Zap className="text-amber-600 dark:text-amber-400" />
             </div>
@@ -80,7 +80,7 @@ const IdentityShiftingBackground = () => {
             </div>
           </div>
 
-          <div className="flex gap-4 p-6 bg-card dark:bg-foreground rounded-2xl border border-secondary/30 shadow-sm">
+          <div className="flex gap-4 p-6 bg-card dark:bg-card rounded-2xl border border-secondary/30 shadow-sm">
             <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center shrink-0">
               <Shield className="text-emerald-600 dark:text-emerald-400" />
             </div>

@@ -178,17 +178,17 @@ const InteractiveIntentionWorksheet = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 print:space-y-4 print:max-w-none">
       {/* Header - Hidden on Print */}
-      <div className="relative rounded-[3.5rem] overflow-hidden bg-foreground text-primary-foreground p-12 shadow-2xl group border border-border print:hidden">
+      <div className="relative rounded-2xl overflow-hidden bg-foreground text-primary-foreground p-12 shadow-2xl group border border-border print:hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-foreground to-purple-900/40" />
         <div className="relative z-10 flex flex-col items-center text-center space-y-6">
           <div className="w-16 h-16 rounded-2xl bg-primary-foreground/10 backdrop-blur-md flex items-center justify-center border border-primary-foreground/20 shadow-2xl">
             <Compass size={32} className="text-indigo-400" />
           </div>
           <div className="space-y-2">
-            <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30 font-black text-[10px] uppercase tracking-[0.3em] px-4 py-1">
+            <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30 font-semibold text-[10px] uppercase tracking-wider px-4 py-1">
               Practitioner Development
             </Badge>
-            <h1 className="text-4xl font-black tracking-tighter">Setting Your North Star</h1>
+            <h1 className="text-4xl font-semibold tracking-tighter">Setting Your North Star</h1>
             <p className="text-lg text-muted-foreground font-medium max-w-xl mx-auto italic">
               "Clarity of intention is the foundation of transformation."
             </p>
@@ -224,7 +224,7 @@ const InteractiveIntentionWorksheet = () => {
           >
             <div className="flex items-center justify-between mb-1">
               <span className={cn(
-                "text-[8px] font-black uppercase tracking-widest",
+                "text-[11px] font-semibold",
                 currentStep === i ? "text-indigo-600" : "text-muted-foreground"
               )}>Part {i + 1}</span>
               {s.questions.every(q => formData[q.id]?.length > 10) && (
@@ -245,10 +245,10 @@ const InteractiveIntentionWorksheet = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 print:block">
         {/* Left Side: Context & Tips - Hidden on Print */}
         <div className="lg:col-span-1 space-y-6 print:hidden">
-          <Card className={cn("border-none shadow-lg rounded-[2.5rem] text-primary-foreground overflow-hidden relative h-full", stepData.color)}>
+          <Card className={cn("border-none shadow-lg rounded-2xl text-primary-foreground overflow-hidden relative h-full", stepData.color)}>
              <div className="absolute top-0 right-0 p-6 opacity-10"><stepData.icon size={100} /></div>
              <CardHeader className="relative z-10">
-               <CardTitle className="text-xl font-black">{stepData.title}</CardTitle>
+               <CardTitle className="text-xl font-semibold">{stepData.title}</CardTitle>
                <CardDescription className="text-primary-foreground/80 font-medium">{stepData.description}</CardDescription>
              </CardHeader>
              <CardContent className="relative z-10 space-y-6">
@@ -259,7 +259,7 @@ const InteractiveIntentionWorksheet = () => {
                </div>
                
                <div className="space-y-4">
-                 <p className="text-[9px] font-black uppercase tracking-widest opacity-60">Practitioner Tips</p>
+                 <p className="text-[10px] font-semibold uppercase tracking-wider opacity-60">Practitioner Tips</p>
                  <div className="flex gap-3">
                    <div className="w-8 h-8 rounded-lg bg-primary-foreground/20 flex items-center justify-center shrink-0">
                      <Target size={14} />
@@ -278,7 +278,7 @@ const InteractiveIntentionWorksheet = () => {
             {stepData.questions.map((question) => (
               <div key={question.id} className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
                 <div className="space-y-1">
-                  <label className="text-lg font-black text-foreground">{question.label}</label>
+                  <label className="text-lg font-semibold text-foreground">{question.label}</label>
                   <p className="text-sm text-muted-foreground font-medium">{question.sub}</p>
                 </div>
                 <Textarea
@@ -339,7 +339,7 @@ const InteractiveIntentionWorksheet = () => {
               {currentStep < STEPS.length - 1 ? (
                 <Button
                   onClick={() => setCurrentStep(prev => prev + 1)}
-                  className="bg-indigo-600 hover:bg-indigo-700 h-12 px-10 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100"
+                  className="bg-indigo-600 hover:bg-indigo-700 h-12 px-10 rounded-2xl font-semibold text-xs shadow-xl shadow-indigo-100"
                 >
                   Next Step <ChevronRight size={20} className="ml-2" />
                 </Button>
@@ -349,7 +349,7 @@ const InteractiveIntentionWorksheet = () => {
                     showSuccess("Worksheet complete! Remember this is your North Star.");
                     window.print();
                   }}
-                  className="bg-emerald-600 hover:bg-emerald-700 h-12 px-10 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-100"
+                  className="bg-emerald-600 hover:bg-emerald-700 h-12 px-10 rounded-2xl font-semibold text-xs shadow-xl shadow-emerald-100"
                 >
                   <Printer size={18} className="mr-2" /> Finish & Print
                 </Button>
@@ -362,7 +362,7 @@ const InteractiveIntentionWorksheet = () => {
       {/* Examples & Guidance Section - Hidden on Print */}
       {currentStep === 4 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in zoom-in-95 duration-700 print:hidden">
-          <Card className="border-none shadow-lg rounded-[2.5rem] bg-indigo-50 border-2 border-indigo-100">
+          <Card className="border-none shadow-lg rounded-2xl bg-indigo-50 border-2 border-indigo-100">
             <CardHeader>
               <CardTitle className="text-indigo-900 flex items-center gap-2">
                 <Sparkles size={20} /> Example Intentions
@@ -383,9 +383,9 @@ const InteractiveIntentionWorksheet = () => {
             </CardContent>
           </Card>
 
-          <Card className="border-none shadow-lg rounded-[2.5rem] bg-foreground text-primary-foreground overflow-hidden">
+          <Card className="border-none shadow-lg rounded-2xl bg-foreground text-primary-foreground overflow-hidden">
             <CardHeader>
-              <CardTitle className="text-xl font-black flex items-center gap-2">
+              <CardTitle className="text-xl font-semibold flex items-center gap-2">
                 <Compass size={20} className="text-amber-400" /> How to Use Your Intention
               </CardTitle>
             </CardHeader>
@@ -411,7 +411,7 @@ const InteractiveIntentionWorksheet = () => {
               <div className="pt-4 border-t border-primary-foreground/10">
                 <div className="flex items-center gap-2 text-amber-400 mb-2">
                   <Share2 size={16} />
-                  <span className="text-xs font-black uppercase tracking-widest">Sharing (Optional)</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider">Sharing (Optional)</span>
                 </div>
                 <p className="text-[10px] text-muted-foreground leading-relaxed">
                   Sharing creates accountability and gives others permission to be vulnerable. However, some intentions are sacred and personal—honor what feels right for you.

@@ -90,7 +90,7 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
             key={tab.id}
             onClick={() => setSubTab(tab.id)}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all",
+              "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all",
               subTab === tab.id
                 ? "bg-card text-primary shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
@@ -124,7 +124,7 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
               )}>
                 <div className="flex items-center gap-3 mb-4">
                   <Compass size={18} className="text-muted-foreground" />
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Session Goal</h3>
+                  <h3 className="text-xs font-medium text-muted-foreground">Session Goal</h3>
                 </div>
                 <EditableField
                   key={`goal-${appointment.id}`}
@@ -144,7 +144,7 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
               )}>
                 <div className="flex items-center gap-3 mb-4">
                   <ClipboardList size={18} className="text-muted-foreground" />
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Primary Concern</h3>
+                  <h3 className="text-xs font-medium text-muted-foreground">Primary Concern</h3>
                 </div>
                 <EditableField
                   key={`issue-${appointment.id}`}

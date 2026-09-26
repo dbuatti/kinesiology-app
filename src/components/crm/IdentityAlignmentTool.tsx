@@ -412,7 +412,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
             )}
             
             {backlogItem.polarity_insight && (
-              <div className="flex items-start gap-2 p-3 bg-card/50 dark:bg-foreground/50 rounded-xl border border-border dark:border-emerald-900/30">
+              <div className="flex items-start gap-2 p-3 bg-card/50 dark:bg-muted/50 rounded-xl border border-border dark:border-emerald-900/30">
                 <ArrowRightLeft size={14} className="text-chart-emerald shrink-0 mt-0.5" />
                 <div>
                   <p className="text-[10px] font-semibold text-chart-emerald uppercase tracking-wider mb-0.5">Polarity Insight</p>
@@ -426,7 +426,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
 
       <div className="space-y-3">
         <div className="space-y-3">
-          <Label className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground ml-1">1. The Goal</Label>
+          <Label className="text-xs font-medium text-muted-foreground ml-1">1. The Goal</Label>
           <Textarea 
             placeholder="Define a specific outcome..." 
             value={formData.goal}
@@ -436,10 +436,10 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
         </div>
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">2. Target Identity</Label>
+            <Label className="text-xs font-medium text-muted-foreground">2. Target Identity</Label>
             <div className="flex items-center gap-2">
               <BacklogSelector type="alignment" onSelect={handleBacklogSelect} currentValue={formData.targetIdentity} />
-              <Button variant="ghost" size="sm" onClick={handleGenerateTargetIdentity} disabled={isGenerating || !formData.goal} className="h-8 text-chart-primary hover:bg-muted gap-1 font-semibold text-[9px] uppercase tracking-wider rounded-lg border border-border">
+              <Button variant="ghost" size="sm" onClick={handleGenerateTargetIdentity} disabled={isGenerating || !formData.goal} className="h-8 text-chart-primary hover:bg-muted gap-1 font-semibold text-[11px] rounded-lg border border-border">
                 {isGenerating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
                 Suggest
               </Button>
@@ -464,10 +464,10 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
       </div>
       {!singlePage && (
       <div className="pt-3 flex gap-3">
-        <Button variant="outline" onClick={() => saveProgress(false)} disabled={isSaving || !formData.goal} className="flex-1 rounded-lg h-8 font-semibold text-[10px] uppercase tracking-wider border-border">
+        <Button variant="outline" onClick={() => saveProgress(false)} disabled={isSaving || !formData.goal} className="flex-1 rounded-lg h-8 font-semibold text-[11px] border-border">
           <Save className="mr-1.5" size={14} /> Save Draft
         </Button>
-        <Button onClick={handleNext} disabled={!formData.goal || !formData.targetIdentity} className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-8 font-semibold text-[10px] uppercase tracking-wider">
+        <Button onClick={handleNext} disabled={!formData.goal || !formData.targetIdentity} className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-8 font-semibold text-[11px]">
           Move to Somatic <ArrowRight className="ml-1.5" size={14} />
         </Button>
       </div>
@@ -479,7 +479,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
     <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div className="space-y-3">
-          <Label className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground ml-1">3. Physical Sensation</Label>
+          <Label className="text-xs font-medium text-muted-foreground ml-1">3. Physical Sensation</Label>
           <Textarea 
             placeholder="What does being this identity feel like in your body?" 
             value={formData.physicalSensation}
@@ -488,7 +488,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
           />
         </div>
         <div className="space-y-3">
-          <Label className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground ml-1">4. Emotional State</Label>
+          <Label className="text-xs font-medium text-muted-foreground ml-1">4. Emotional State</Label>
           <Textarea 
             placeholder="What is the core emotion of this identity?" 
             value={formData.emotionalState}
@@ -499,10 +499,10 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
       </div>
       {!singlePage && (
       <div className="pt-3 flex gap-3">
-        <Button variant="outline" onClick={handleBack} className="flex-1 rounded-lg h-8 font-semibold text-[10px] uppercase tracking-wider border-border">
+        <Button variant="outline" onClick={handleBack} className="flex-1 rounded-lg h-8 font-semibold text-[11px] border-border">
           <ArrowLeft className="mr-1.5" size={14} /> Back
         </Button>
-        <Button onClick={handleNext} disabled={!formData.physicalSensation || !formData.emotionalState} className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-8 font-semibold text-[10px] uppercase tracking-wider">
+        <Button onClick={handleNext} disabled={!formData.physicalSensation || !formData.emotionalState} className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-8 font-semibold text-[11px]">
           Begin Reconsolidation <ArrowRight className="ml-1.5" size={14} />
         </Button>
       </div>
@@ -541,7 +541,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
     return (
       <div className="flex flex-col items-center text-center space-y-3 py-2 animate-in fade-in zoom-in-95 duration-500">
         <div className="w-full max-w-md space-y-2">
-          <div className="flex justify-between text-[9px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">
+          <div className="flex justify-between text-xs font-medium text-muted-foreground">
             <span>Reconsolidation Loop</span>
             <span>Waypoint {loopStep} of 4</span>
           </div>
@@ -568,7 +568,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
 
         <div className="flex gap-3 items-center">
           {!singlePage && (
-          <Button variant="ghost" onClick={() => loopStep > 1 ? setLoopStep((loopStep - 1) as any) : handleBack()} className="text-muted-foreground uppercase tracking-wider text-[9px] font-semibold hover:text-chart-primary hover:bg-transparent">
+          <Button variant="ghost" onClick={() => loopStep > 1 ? setLoopStep((loopStep - 1) as any) : handleBack()} className="text-muted-foreground text-[11px] font-semibold hover:text-chart-primary hover:bg-transparent">
             <ArrowLeft className="mr-1" size={12} /> Back
           </Button>
           )}
@@ -576,12 +576,12 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
             <Button 
               onClick={handleLoopNext} 
               disabled={!value.trim()}
-              className="bg-muted hover:bg-muted/80 text-muted-foreground rounded-full px-6 h-8 font-semibold uppercase tracking-wider text-[10px] transition-all hover:scale-105"
+              className="bg-muted hover:bg-muted/80 text-muted-foreground rounded-full px-6 h-8 font-semibold text-[11px] transition-all hover:scale-[1.03]"
             >
               {loopStep === 4 ? "Metabolize & Add" : "Continue"} <ArrowRight className="ml-1.5" size={14} />
             </Button>
             {!singlePage && formData.reconsolidationData.length > 0 && loopStep === 1 && (
-              <Button onClick={handleNext} variant="outline" className="rounded-full px-6 h-8 border-primary text-chart-primary font-semibold uppercase tracking-wider text-[10px]">
+              <Button onClick={handleNext} variant="outline" className="rounded-full px-6 h-8 border-primary text-chart-primary font-semibold text-[11px]">
                 Move to Testing
               </Button>
             )}
@@ -600,7 +600,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
             variant="outline"
             onClick={() => onChange(true)}
             className={cn(
-              "flex-1 h-7 rounded-lg border-destructive bg-destructive/10 text-destructive font-semibold text-[10px] uppercase tracking-wider",
+              "flex-1 h-7 rounded-lg border-destructive bg-destructive/10 text-destructive font-semibold text-[11px]",
               value === true && "bg-destructive/30"
             )}
           >YES</Button>
@@ -608,7 +608,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
             variant="outline"
             onClick={() => onChange(false)}
             className={cn(
-              "flex-1 h-7 rounded-lg border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-[10px] uppercase tracking-wider",
+              "flex-1 h-7 rounded-lg border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-[11px]",
               value === false && "bg-chart-emerald/30"
             )}
           >NO</Button>
@@ -633,7 +633,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
 
         {!singlePage && (
         <div className="flex justify-center pt-3">
-          <Button onClick={handleNext} disabled={formData.presentCheck !== true || formData.futureCheck !== true} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-8 px-10 font-semibold text-[10px] uppercase tracking-wider">
+          <Button onClick={handleNext} disabled={formData.presentCheck !== true || formData.futureCheck !== true} className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-8 px-10 font-semibold text-[11px]">
             Move to Anchoring <ArrowRight className="ml-1.5" size={14} />
           </Button>
         </div>
@@ -660,7 +660,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
               variant="outline"
               onClick={() => { setFormData({...formData, goalInevitable: true}); saveProgress(false, { goalInevitable: true }); }}
               className={cn(
-                "flex-1 h-7 rounded-lg border-destructive bg-destructive/10 text-destructive font-semibold text-[10px] uppercase tracking-wider",
+                "flex-1 h-7 rounded-lg border-destructive bg-destructive/10 text-destructive font-semibold text-[11px]",
                 formData.goalInevitable === true && "bg-destructive/30"
               )}
             >YES</Button>
@@ -668,7 +668,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
               variant="outline"
               onClick={() => { setFormData({...formData, goalInevitable: false}); saveProgress(false, { goalInevitable: false }); }}
               className={cn(
-                "flex-1 h-7 rounded-lg border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-[10px] uppercase tracking-wider",
+                "flex-1 h-7 rounded-lg border-chart-emerald bg-chart-emerald/10 text-chart-emerald font-semibold text-[11px]",
                 formData.goalInevitable === false && "bg-chart-emerald/30"
               )}
             >NO</Button>
@@ -676,7 +676,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
         </div>
 
         <div className="space-y-3">
-          <Label className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground ml-1">Somatic Anchor of Inevitability</Label>
+          <Label className="text-xs font-medium text-muted-foreground ml-1">Somatic Anchor of Inevitability</Label>
           <Input 
             placeholder="e.g. A deep breath and a slight smile..." 
             value={formData.finalAnchor}
@@ -691,11 +691,11 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
           onClick={handleDeepScan} 
           disabled={isAnalyzing || formData.goalInevitable !== true}
           variant="outline"
-          className="flex-1 h-8 rounded-lg border-border text-chart-primary font-semibold text-[10px] uppercase tracking-wider hover:bg-muted"
+          className="flex-1 h-8 rounded-lg border-border text-chart-primary font-semibold text-[11px] hover:bg-muted"
         >
           {isAnalyzing ? <Loader2 className="mr-1.5 animate-spin" size={12} /> : <Wand2 className="mr-1.5" size={12} />} Scan for Deeper Patterns
         </Button>
-        <Button onClick={() => saveProgress(true)} disabled={isSaving || formData.goalInevitable !== true || !formData.finalAnchor} className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-8 font-semibold text-[10px] uppercase tracking-wider">
+        <Button onClick={() => saveProgress(true)} disabled={isSaving || formData.goalInevitable !== true || !formData.finalAnchor} className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg h-8 font-semibold text-[11px]">
           {isSaving ? <Loader2 className="mr-1.5 animate-spin" size={12} /> : <CheckCircle2 className="mr-1.5" size={12} />} Complete & Save Session
         </Button>
         <Button onClick={reset} variant="ghost" className="flex-1 text-muted-foreground rounded-lg h-8 font-medium hover:bg-muted">
@@ -713,12 +713,12 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
       <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-serif font-medium">Session History</h3>
-          <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)} className="rounded-lg font-medium text-[10px] uppercase tracking-wider">Close</Button>
+          <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)} className="rounded-lg font-medium text-[11px]">Close</Button>
         </div>
         
         {activeDrafts.length > 0 && (
           <div className="space-y-3">
-            <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-[0.3em] flex items-center gap-1.5">
+            <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               <Clock size={12} /> Active Drafts
             </p>
             <div className="grid grid-cols-1 gap-3">
@@ -730,7 +730,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
                     </div>
                     <div className="min-w-0">
                       <h4 className="font-semibold text-sm text-foreground truncate">{session.goal}</h4>
-                      <p className="text-[9px] font-medium text-muted-foreground uppercase tracking-wider mt-0.5">Phase {session.current_phase} • {new Date(session.created_at).toLocaleDateString()}</p>
+                      <p className="text-xs font-medium text-muted-foreground mt-0.5">Phase {session.current_phase} • {new Date(session.created_at).toLocaleDateString()}</p>
                     </div>
                   </div>
                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-chart-destructive" onClick={(e) => { e.stopPropagation(); setDeleteTargetId(session.id); setShowDeleteConfirm(true); }}><Trash2 size={14} /></Button>
@@ -741,7 +741,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
         )}
 
         <div className="space-y-3">
-          <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-[0.3em]">Completed Sessions</p>
+          <p className="text-xs font-medium text-muted-foreground">Completed Sessions</p>
           {completedSessions.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground bg-muted rounded-xl border border-dashed border-border">
               <History className="mx-auto mb-3 opacity-20" size={40} />
@@ -758,8 +758,8 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
                     <div className="min-w-0">
                       <h4 className="font-semibold text-sm text-foreground truncate">{session.goal}</h4>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <Badge variant="secondary" className="text-[9px] font-semibold uppercase tracking-wider bg-muted text-muted-foreground border-none px-1.5 py-0">{session.target_identity}</Badge>
-                        <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-wider">{new Date(session.created_at).toLocaleDateString()}</span>
+                        <Badge variant="secondary" className="text-xs font-medium bg-muted text-muted-foreground border-none px-1.5 py-0">{session.target_identity}</Badge>
+                        <span className="text-xs text-muted-foreground font-medium">{new Date(session.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </div>
@@ -787,7 +787,7 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
         <div className="mb-6 space-y-3">
           <div className="flex justify-between items-end">
             <div className="space-y-0.5">
-              <h2 className="text-[9px] font-semibold uppercase tracking-[0.3em] text-chart-primary">Phase {phase} of 5</h2>
+              <h2 className="text-[10px] font-semibold uppercase tracking-wider text-chart-primary">Phase {phase} of 5</h2>
               <p className="text-sm font-semibold text-foreground">
                 {phase === 1 && "Setup & Extraction"}
                 {phase === 2 && "Somatic Embodiment"}
@@ -798,14 +798,14 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
             </div>
             <div className="flex items-center gap-2">
               {reflectionId && <JournalRefresher reflectionId={reflectionId} />}
-              <Button variant="ghost" size="sm" onClick={handleLeave} className="rounded-lg h-8 px-3 text-[9px] font-semibold uppercase tracking-wider gap-1 text-muted-foreground hover:bg-muted">
+              <Button variant="ghost" size="sm" onClick={handleLeave} className="rounded-lg h-8 px-3 text-[11px] font-semibold gap-1 text-muted-foreground hover:bg-muted">
                 <ArrowLeft size={12} /> Leave
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => setShowHistory(!showHistory)} className="rounded-lg h-8 px-3 text-[9px] font-semibold uppercase tracking-wider gap-1 text-muted-foreground hover:bg-muted">
+              <Button variant="ghost" size="sm" onClick={() => setShowHistory(!showHistory)} className="rounded-lg h-8 px-3 text-[11px] font-semibold gap-1 text-muted-foreground hover:bg-muted">
                 <History size={12} /> {showHistory ? "Tool" : "History"}
               </Button>
               {formData.id && !showHistory && (
-                <Button variant="ghost" size="sm" onClick={() => saveProgress(false)} disabled={isSaving} className="rounded-lg h-8 px-3 text-[9px] font-semibold uppercase tracking-wider gap-1 text-chart-primary hover:bg-muted">
+                <Button variant="ghost" size="sm" onClick={() => saveProgress(false)} disabled={isSaving} className="rounded-lg h-8 px-3 text-[11px] font-semibold gap-1 text-chart-primary hover:bg-muted">
                   {isSaving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />} Save
                 </Button>
               )}
@@ -821,35 +821,35 @@ const IdentityAlignmentTool = ({ singlePage = false, clientId, appointmentId }: 
             <div className="space-y-4">
               <section id="align-phase-1">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="w-3.5 h-3.5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[8px] font-semibold">1</span>
+                  <span className="w-3.5 h-3.5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">1</span>
                   <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-wider">Setup &amp; Extraction</h3>
                 </div>
                 {renderPhase1()}
               </section>
               <section id="align-phase-2">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="w-3.5 h-3.5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[8px] font-semibold">2</span>
+                  <span className="w-3.5 h-3.5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">2</span>
                   <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-wider">Somatic Embodiment</h3>
                 </div>
                 {renderPhase2()}
               </section>
               <section id="align-phase-3">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="w-3.5 h-3.5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[8px] font-semibold">3</span>
+                  <span className="w-3.5 h-3.5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">3</span>
                   <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-wider">Reconsolidation Loop</h3>
                 </div>
                 {renderPhase3()}
               </section>
               <section id="align-phase-4">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="w-3.5 h-3.5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[8px] font-semibold">4</span>
+                  <span className="w-3.5 h-3.5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">4</span>
                   <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-wider">Time-Space Testing</h3>
                 </div>
                 {renderPhase4()}
               </section>
               <section id="align-phase-5">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span className="w-3.5 h-3.5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[8px] font-semibold">5</span>
+                  <span className="w-3.5 h-3.5 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[10px] font-semibold">5</span>
                   <h3 className="text-[10px] font-semibold text-foreground uppercase tracking-wider">Final Anchoring</h3>
                 </div>
                 {renderPhase5()}

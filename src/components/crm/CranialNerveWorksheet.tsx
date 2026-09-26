@@ -48,12 +48,12 @@ const CranialNerveWorksheet = () => {
       {/* Header Section */}
       <div className="border-b-2 border-border pb-1 mb-2 flex justify-between items-end">
         <div>
-          <h1 className="text-2xl font-black tracking-tighter uppercase leading-none">Cranial Nerve Worksheet</h1>
-          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.3em]">Clinical Assessment Log • Landscape Edition</p>
+          <h1 className="text-2xl font-semibold tracking-tighter uppercase leading-none">Cranial Nerve Worksheet</h1>
+          <p className="text-xs font-medium text-muted-foreground">Clinical Assessment Log • Landscape Edition</p>
         </div>
         <div className="text-right flex gap-8">
-          <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Client: ________________________</p>
-          <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground">Date: ___/___/___</p>
+          <p className="text-xs font-medium text-muted-foreground">Client: ________________________</p>
+          <p className="text-xs font-medium text-muted-foreground">Date: ___/___/___</p>
         </div>
       </div>
 
@@ -61,10 +61,10 @@ const CranialNerveWorksheet = () => {
         <table className="w-full border-collapse text-[10px] leading-tight">
           <thead>
             <tr className="bg-muted border-b border-foreground/20">
-              <th className="p-1 text-left font-black uppercase border-r border-foreground/20 w-[10%]">Nerve</th>
-              <th className="p-1 text-center font-black uppercase border-r border-foreground/20 w-[6%]">Inhib</th>
-              <th className="p-1 text-left font-black uppercase border-r border-foreground/20 w-[44%]">Stimulus Checks (L / R)</th>
-              <th className="p-1 text-left font-black uppercase w-[40%]">Clinical Notes</th>
+              <th className="p-1 text-left font-semibold uppercase border-r border-foreground/20 w-[10%]">Nerve</th>
+              <th className="p-1 text-center font-semibold uppercase border-r border-foreground/20 w-[6%]">Inhib</th>
+              <th className="p-1 text-left font-semibold uppercase border-r border-foreground/20 w-[44%]">Stimulus Checks (L / R)</th>
+              <th className="p-1 text-left font-semibold uppercase w-[40%]">Clinical Notes</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-black">
@@ -75,8 +75,8 @@ const CranialNerveWorksheet = () => {
               return (
                 <tr key={nerve.id} className="break-inside-avoid">
                   <td className="p-1 border-r border-foreground/20 bg-muted/30">
-                    <p className="font-black text-[11px] leading-none">{nerve.name}</p>
-                    <p className="font-bold text-[8px] text-muted-foreground uppercase mt-0.5">{nerve.latinName}</p>
+                    <p className="font-semibold text-[11px] leading-none">{nerve.name}</p>
+                    <p className="font-medium text-xs text-muted-foreground mt-0.5">{nerve.latinName}</p>
                   </td>
                   
                   <td className="p-0.5 border-r border-foreground/20">
@@ -85,17 +85,17 @@ const CranialNerveWorksheet = () => {
                         <>
                           <div className="flex flex-col items-center gap-0.5">
                             <div className="w-3.5 h-3.5 border border-foreground/20 rounded-none" />
-                            <span className="font-black text-[7px]">L</span>
+                            <span className="font-semibold text-[7px]">L</span>
                           </div>
                           <div className="flex flex-col items-center gap-0.5">
                             <div className="w-3.5 h-3.5 border border-foreground/20 rounded-none" />
-                            <span className="font-black text-[7px]">R</span>
+                            <span className="font-semibold text-[7px]">R</span>
                           </div>
                         </>
                       ) : (
                         <div className="flex flex-col items-center gap-0.5">
                           <div className="w-3.5 h-3.5 border border-foreground/20 rounded-none" />
-                          <span className="font-black text-[7px]">Inhib</span>
+                          <span className="font-semibold text-[7px]">Inhib</span>
                         </div>
                       )}
                     </div>
@@ -111,7 +111,7 @@ const CranialNerveWorksheet = () => {
                               {checks.left?.map((check) => (
                                 <div key={check} className="flex items-center gap-1.5">
                                   <div className="w-3 h-3 border border-foreground/20 rounded-none shrink-0" />
-                                  <span className="text-[9px] font-bold text-foreground/80 truncate">L: {check}</span>
+                                  <span className="text-[10px] font-bold text-foreground/80 truncate">L: {check}</span>
                                 </div>
                               ))}
                             </div>
@@ -122,7 +122,7 @@ const CranialNerveWorksheet = () => {
                               {checks.right?.map((check) => (
                                 <div key={check} className="flex items-center gap-1.5">
                                   <div className="w-3 h-3 border border-foreground/20 rounded-none shrink-0" />
-                                  <span className="text-[9px] font-bold text-foreground/80 truncate">R: {check}</span>
+                                  <span className="text-[10px] font-bold text-foreground/80 truncate">R: {check}</span>
                                 </div>
                               ))}
                             </div>
@@ -134,7 +134,7 @@ const CranialNerveWorksheet = () => {
                             {checks?.midline?.map((check) => (
                               <div key={check} className="flex items-center gap-1.5">
                                 <div className="w-3 h-3 border border-foreground/20 rounded-none shrink-0" />
-                                <span className="text-[9px] font-bold text-foreground/80 truncate">{check}</span>
+                                <span className="text-[10px] font-bold text-foreground/80 truncate">{check}</span>
                               </div>
                             ))}
                           </div>
@@ -159,27 +159,27 @@ const CranialNerveWorksheet = () => {
       {/* Footer Section */}
       <div className="mt-2 p-2 border border-foreground/20 bg-muted/50 flex justify-between items-start gap-8">
         <div className="space-y-1 flex-1">
-          <h4 className="font-black text-[10px] uppercase tracking-widest border-b border-foreground/10 pb-0.5">Priority Logic</h4>
+          <h4 className="font-semibold text-[10px] uppercase tracking-wider border-b border-foreground/10 pb-0.5">Priority Logic</h4>
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 border border-foreground/20" />
-              <p className="text-[9px] font-bold uppercase">Afferent (Bottom-Up)</p>
+              <p className="text-[10px] font-bold uppercase">Afferent (Bottom-Up)</p>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 border border-foreground/20" />
-              <p className="text-[9px] font-bold uppercase">Efferent (Top-Down)</p>
+              <p className="text-[10px] font-bold uppercase">Efferent (Top-Down)</p>
             </div>
           </div>
         </div>
         <div className="space-y-1 flex-[2]">
-          <p className="text-[9px] font-black text-muted-foreground uppercase">Primary Correction Applied:</p>
+          <p className="text-xs font-medium text-muted-foreground">Primary Correction Applied:</p>
           <div className="h-px w-full bg-muted mt-2" />
           <div className="h-px w-full bg-muted mt-2" />
         </div>
       </div>
 
       <div className="mt-2 pt-0.5 border-t border-border text-center">
-        <p className="text-[8px] font-black text-muted-foreground/60 uppercase tracking-[0.5em]">Resonance Clinical Infrastructure • Worksheet v1.9</p>
+        <p className="text-xs font-medium text-muted-foreground/60">Resonance Clinical Infrastructure • Worksheet v1.9</p>
       </div>
 
       <style>{`

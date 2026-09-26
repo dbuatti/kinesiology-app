@@ -29,7 +29,7 @@ const StimResultsSummary = ({ kind, nerve, reflexId, reflexName, stimResults, fi
     <div className={cn("space-y-1.5", className)}>
       <div className="flex items-center gap-1.5">
         <span className="w-1.5 h-1.5 rounded-full bg-chart-destructive shrink-0" />
-        <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+        <p className="text-xs font-medium text-muted-foreground">
           Marked Stims ({visible.length})
         </p>
       </div>
@@ -37,10 +37,10 @@ const StimResultsSummary = ({ kind, nerve, reflexId, reflexName, stimResults, fi
         {visible.map((entry, i) => (
           <span
             key={i}
-            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-medium bg-chart-destructive/10 text-chart-destructive border border-chart-destructive/20"
+            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-chart-destructive/10 text-chart-destructive border border-chart-destructive/20"
           >
             {entry.side && (
-              <span className="font-black">{entry.side}</span>
+              <span className="font-semibold">{entry.side}</span>
             )}
             <span className="max-w-[240px] truncate leading-snug">{entry.label}</span>
           </span>

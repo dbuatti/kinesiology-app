@@ -26,7 +26,7 @@ const NotFound = () => {
         </div>
 
         <div className="space-y-3">
-          <p className="text-[10px] font-black uppercase tracking-[0.5em] text-muted-foreground">Error 404</p>
+          <p className="text-xs font-medium text-muted-foreground">Error 404</p>
           <h1 className="text-5xl md:text-7xl font-serif font-bold text-foreground tracking-tighter">
             Lost in space.
           </h1>
@@ -35,7 +35,7 @@ const NotFound = () => {
           </p>
         </div>
 
-        <Button asChild className="rounded-2xl h-12 px-8 bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xs uppercase tracking-widest gap-2 transition-all">
+        <Button asChild className="rounded-2xl h-12 px-8 bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xs gap-2 transition-all">
           <Link to="/">
             <ArrowLeft size={16} />
             Back to Dashboard

@@ -12,12 +12,12 @@ const DocumentHeader = ({ clientName, date, displayId, id }: DocumentHeaderProps
   return (
     <div className="flex justify-between items-end border-b-4 border-foreground/20 pb-10">
       <div className="space-y-1">
-        <h1 className="text-5xl font-black tracking-tighter uppercase leading-none">Session Notes</h1>
+        <h1 className="text-5xl font-semibold tracking-tighter uppercase leading-none">Session Notes</h1>
       </div>
       <div className="text-right space-y-1">
-        <p className="text-xl font-black">{clientName}</p>
-        <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">{format(date, "EEEE, MMMM d, yyyy")}</p>
-        <p className="text-[9px] font-mono text-muted-foreground uppercase">{displayId || id}</p>
+        <p className="text-xl font-semibold">{clientName}</p>
+        <p className="text-xs font-medium text-muted-foreground">{format(date, "EEEE, MMMM d, yyyy")}</p>
+        <p className="text-xs font-mono text-muted-foreground">{displayId || id}</p>
       </div>
     </div>
   );

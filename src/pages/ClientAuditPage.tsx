@@ -1232,7 +1232,7 @@ export function ClientAuditTool() {
               <div key={label} className={`relative bg-card rounded-xl border border-border px-5 py-4 space-y-1.5 overflow-hidden bg-gradient-to-br ${gradient} transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 group`}>
                 <div className="absolute inset-0 bg-grid-white/[0.02] pointer-events-none" />
                 <div className="flex items-center justify-between relative z-10">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+                  <p className="text-xs font-medium text-muted-foreground">{label}</p>
                   <Icon size={18} className="text-muted-foreground/20 group-hover:text-muted-foreground/40 transition-colors" />
                 </div>
                 <p className={`text-2xl font-bold relative z-10 ${colour}`}>{value}</p>
@@ -1276,7 +1276,7 @@ export function ClientAuditTool() {
             {/* TAB 1: RATES & RECENCY */}
             <TabsContent value="rates" className="space-y-6">
               {/* WEEKLY BOOKING SIMULATOR CARD */}
-              <Card className="border-none shadow-sm rounded-xl bg-card border border-border text-foreground overflow-hidden relative group">
+              <Card className="border border-border shadow-sm rounded-xl bg-card border border-border text-foreground overflow-hidden relative group">
                 <div className="absolute inset-0 bg-grid-white/[0.02] pointer-events-none" />
                 <CardContent className="p-8 space-y-6 relative z-10">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1307,7 +1307,7 @@ export function ClientAuditTool() {
 
                   {/* Quick Select Buttons */}
                   <div className="flex flex-wrap gap-2 p-3 bg-muted rounded-xl border border-border">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 self-center px-2">
+                    <span className="text-xs font-medium text-muted-foreground/60 self-center px-2">
                       Quick Select:
                     </span>
                     <Button
@@ -1347,7 +1347,7 @@ export function ClientAuditTool() {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
                       {/* Selected Badges */}
                       <div className="lg:col-span-6 space-y-3">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 block">
+                        <span className="text-xs font-medium text-muted-foreground/60 block">
                           This Week's Schedule ({weeklySimulatorMetrics.count})
                         </span>
                         <ScrollArea className="h-[100px] pr-2">
@@ -1374,7 +1374,7 @@ export function ClientAuditTool() {
                       {/* Projections */}
                       <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-3 gap-4 bg-muted p-5 rounded-xl border border-border">
                         <div className="space-y-1">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 block">Current Earnings</span>
+                          <span className="text-xs font-medium text-muted-foreground/60 block">Current Earnings</span>
                           <h4 className="text-2xl font-semibold text-foreground">${weeklySimulatorMetrics.currentTotal}</h4>
                           <span className="text-[10px] text-muted-foreground font-medium block">at current rates</span>
                         </div>
@@ -1399,7 +1399,7 @@ export function ClientAuditTool() {
               </Card>
 
               {/* Controls Card — Sticky */}
-              <Card className="border-none shadow-sm rounded-xl bg-card/80 backdrop-blur-md sticky top-0 z-20 border-b border-primary/10">
+              <Card className="shadow-sm rounded-xl bg-card/80 backdrop-blur-md sticky top-0 z-20 border-b border-primary/10">
                 <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent pointer-events-none" />
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -1421,7 +1421,7 @@ export function ClientAuditTool() {
                             variant="ghost"
                             size="sm"
                             onClick={handleResetFilters}
-                            className="h-7 px-2 text-chart-primary hover:bg-muted rounded-lg text-[10px] font-semibold uppercase tracking-wider"
+                            className="h-7 px-2 text-chart-primary hover:bg-muted rounded-lg text-[11px] font-semibold"
                           >
                             Reset
                           </Button>
@@ -1511,7 +1511,7 @@ export function ClientAuditTool() {
               {/* Grouped Collapsible Sections */}
               <div className="space-y-4">
                 {/* Section 1: Last Month */}
-                <Card className="border-none shadow-sm rounded-xl overflow-hidden bg-card">
+                <Card className="border border-border shadow-sm rounded-xl overflow-hidden bg-card">
                   <div className="w-full p-6 flex flex-col sm:flex-row sm:items-center justify-between bg-muted/20 hover:bg-muted/30 transition-colors text-left gap-4">
                     <button
                       onClick={() => toggleSection("lastMonth")}
@@ -1556,7 +1556,7 @@ export function ClientAuditTool() {
                         <div className="overflow-x-auto">
                           <table className="w-full text-left border-collapse">
                             <thead>
-                              <tr className="border-b border-border/40 bg-muted/10 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              <tr className="border-b border-border/40 bg-muted/10 text-xs font-medium text-muted-foreground">
                                 <th className="p-4 pl-6 w-12">Sim</th>
                                 <th className="p-4">Client</th>
                                 <th className="p-4">Last Seen / Next Booked</th>
@@ -1595,7 +1595,7 @@ export function ClientAuditTool() {
                 </Card>
 
                 {/* Section 2: 1-3 Months */}
-                <Card className="border-none shadow-sm rounded-xl overflow-hidden bg-card">
+                <Card className="border border-border shadow-sm rounded-xl overflow-hidden bg-card">
                   <div className="w-full p-6 flex flex-col sm:flex-row sm:items-center justify-between bg-muted/20 hover:bg-muted/30 transition-colors text-left gap-4">
                     <button
                       onClick={() => toggleSection("oneToThreeMonths")}
@@ -1643,7 +1643,7 @@ export function ClientAuditTool() {
                         <div className="overflow-x-auto">
                           <table className="w-full text-left border-collapse">
                             <thead>
-                              <tr className="border-b border-border/40 bg-muted/10 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              <tr className="border-b border-border/40 bg-muted/10 text-xs font-medium text-muted-foreground">
                                 <th className="p-4 pl-6 w-12">Sim</th>
                                 <th className="p-4">Client</th>
                                 <th className="p-4">Last Seen / Next Booked</th>
@@ -1682,7 +1682,7 @@ export function ClientAuditTool() {
                 </Card>
 
                 {/* Section 3: 3+ Months (Lapsed Clients with Re-engagement Priority) */}
-                <Card className="border-none shadow-sm rounded-xl overflow-hidden bg-card">
+                <Card className="border border-border shadow-sm rounded-xl overflow-hidden bg-card">
                   <div className="w-full p-6 flex flex-col sm:flex-row sm:items-center justify-between bg-muted/20 hover:bg-muted/30 transition-colors text-left gap-4">
                     <button
                       onClick={() => toggleSection("threePlusMonths")}
@@ -1730,7 +1730,7 @@ export function ClientAuditTool() {
                         <div className="overflow-x-auto">
                           <table className="w-full text-left border-collapse">
                             <thead>
-                              <tr className="border-b border-border/40 bg-muted/10 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                              <tr className="border-b border-border/40 bg-muted/10 text-xs font-medium text-muted-foreground">
                                 <th className="p-4 pl-6 w-12">Sim</th>
                                 <th className="p-4">Client</th>
                                 <th className="p-4">Last Seen</th>
@@ -1789,7 +1789,7 @@ export function ClientAuditTool() {
                 const pct = Math.min(100, weeklyTarget > 0 ? Math.round((thisWeekRevenue / weeklyTarget) * 100) : 0);
                 const onTarget = thisWeekRevenue >= weeklyTarget;
                 return (
-                  <Card className="border-none shadow-sm rounded-xl bg-card border border-border text-foreground overflow-hidden relative">
+                  <Card className="border border-border shadow-sm rounded-xl bg-card border border-border text-foreground overflow-hidden relative">
                     <div className="absolute top-0 right-0 p-10 opacity-[0.06] pointer-events-none"><Zap size={160} /></div>
                     <CardContent className="p-8 relative z-10 space-y-6">
 
@@ -1805,7 +1805,7 @@ export function ClientAuditTool() {
                         </div>
                         {/* Editable weekly target */}
                         <div className="flex items-center gap-2 bg-muted/50 rounded-xl px-4 py-3 border border-border self-start shrink-0">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Target</span>
+                          <span className="text-xs font-medium text-muted-foreground/60">Target</span>
                           {editingWeeklyTarget ? (
                             <input autoFocus
                               className="w-20 bg-transparent text-foreground font-semibold text-sm text-right outline-none border-b border-primary pb-0.5"
@@ -1835,7 +1835,7 @@ export function ClientAuditTool() {
                           <p className="text-[10px] text-muted-foreground/60">{thisWeekSessions} session{thisWeekSessions !== 1 ? 's' : ''} · {pct}% of target</p>
                         </div>
                         <div className="p-4 bg-muted/50 rounded-xl border border-border space-y-1">
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">This month</p>
+                          <p className="text-xs font-medium text-muted-foreground">This month</p>
                           <p className="text-2xl font-semibold text-foreground">${thisMonthRevenue.toLocaleString()}</p>
                           <p className="text-[10px] text-muted-foreground/60">{thisMonthSessions} session{thisMonthSessions !== 1 ? 's' : ''} total</p>
                         </div>
@@ -1867,7 +1867,7 @@ export function ClientAuditTool() {
                               <p className="text-[10px] text-muted-foreground/60">at ${fhnRate} avg</p>
                             </div>
                             <div className="p-3.5 bg-muted/50 border border-border rounded-xl space-y-0.5">
-                              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Corporate gig</p>
+                              <p className="text-xs font-medium text-muted-foreground">Corporate gig</p>
                               <p className="text-xl font-semibold text-foreground">{corpGigsNeeded}</p>
                               <p className="text-[10px] text-muted-foreground/60">at ${corpRate}/gig</p>
                             </div>
@@ -1880,7 +1880,7 @@ export function ClientAuditTool() {
               })()}
 
               {/* ── INCOME STREAMS ── */}
-              <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+              <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
                 <CardHeader className="p-8 pb-4 border-b border-border bg-muted/20">
                   <div className="flex items-center justify-between gap-4">
                     <div className="space-y-1">
@@ -1890,7 +1890,7 @@ export function ClientAuditTool() {
                       <CardDescription className="font-medium">All five streams combined — adjust rates and frequency per stream.</CardDescription>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Combined Monthly</p>
+                      <p className="text-xs font-medium text-muted-foreground">Combined Monthly</p>
                       <p className="text-2xl font-semibold text-foreground">
                         ${Math.round(salaryMetrics.current.monthly + extraStreamsMonthly).toLocaleString()}
                       </p>
@@ -1998,7 +1998,7 @@ export function ClientAuditTool() {
               </Card>
 
               {/* How-to guide */}
-              <Card className="border-none shadow-sm rounded-xl bg-muted/30 border border-border">
+              <Card className="border border-border shadow-sm rounded-xl bg-muted/30 border border-border">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     <div className="w-9 h-9 rounded-xl bg-muted text-chart-primary flex items-center justify-center shrink-0 mt-0.5">
@@ -2028,10 +2028,10 @@ export function ClientAuditTool() {
               {/* Top Row: Progress to $150/session & Active Client Base */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Progress to $150/session */}
-                <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
+                <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden relative group">
                   <CardContent className="p-8 space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Progress to $150/Session</span>
+                      <span className="text-xs font-medium text-muted-foreground">Progress to $150/Session</span>
                       <div className="w-8 h-8 rounded-lg bg-muted text-chart-primary flex items-center justify-center">
                         <Target size={16} />
                       </div>
@@ -2055,10 +2055,10 @@ export function ClientAuditTool() {
                 </Card>
 
                 {/* Active Client Base */}
-                <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
+                <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden relative group">
                   <CardContent className="p-8 space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Active Client Base</span>
+                      <span className="text-xs font-medium text-muted-foreground">Active Client Base</span>
                       <div className="w-8 h-8 rounded-lg bg-muted text-chart-emerald flex items-center justify-center">
                         <Users size={16} />
                       </div>
@@ -2077,7 +2077,7 @@ export function ClientAuditTool() {
               </div>
 
               {/* Sandbox Presets Card */}
-              <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+              <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-center gap-2">
                     <Sliders className="text-chart-primary" size={18} />
@@ -2123,7 +2123,7 @@ export function ClientAuditTool() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Left Column: Projections */}
                 <div className="lg:col-span-7 space-y-6">
-                  <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+                  <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
                     <CardHeader className="p-8 pb-4 border-b border-border bg-muted/30">
                       <div className="flex items-center justify-between">
                         <div className="space-y-1">
@@ -2139,7 +2139,7 @@ export function ClientAuditTool() {
                             onCheckedChange={setIsSandboxActive}
                             className="data-[state=checked]:bg-primary"
                           />
-                          <Label htmlFor="sandbox-mode-toggle" className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer">
+                          <Label htmlFor="sandbox-mode-toggle" className="text-xs font-medium text-muted-foreground cursor-pointer">
                             Preview Mode
                           </Label>
                         </div>
@@ -2148,7 +2148,7 @@ export function ClientAuditTool() {
                     <CardContent className="p-8 space-y-8">
                       {/* Projections Table */}
                       <div className="border border-border rounded-xl overflow-hidden">
-                        <div className="grid grid-cols-3 bg-muted/40 border-b border-border text-[10px] font-semibold uppercase tracking-wider text-muted-foreground p-4">
+                        <div className="grid grid-cols-3 bg-muted/40 border-b border-border text-xs font-medium text-muted-foreground p-4">
                           <div>Frequency</div>
                           <div>Current</div>
                           <div className="text-chart-primary">Preview</div>
@@ -2177,7 +2177,7 @@ export function ClientAuditTool() {
                       {/* Global Sandbox Controls */}
                       {isSandboxActive && (
                         <div className="space-y-6 p-6 bg-muted/30 rounded-xl border border-border animate-in slide-in-from-top-2 duration-300">
-                          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                          <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                             <Sparkles size={14} className="text-chart-primary" /> Global Preview Controls
                           </h4>
 
@@ -2222,7 +2222,7 @@ export function ClientAuditTool() {
 
                 {/* Right Column: Client-by-Client Sandbox */}
                 <div className="lg:col-span-5 space-y-6">
-                  <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+                  <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
                     <CardHeader className="p-8 pb-4 border-b border-border bg-muted/30">
                       <CardTitle className="text-lg font-medium flex items-center gap-2">
                         <Users size={20} className="text-chart-primary" /> Client Preview
@@ -2311,10 +2311,10 @@ export function ClientAuditTool() {
               {/* Key Metrics Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                 {/* Metric 1: Total Active Clients */}
-                <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
+                <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden relative group">
                   <CardContent className="p-6 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Active Clients</span>
+                      <span className="text-xs font-medium text-muted-foreground">Active Clients</span>
                       <div className="w-8 h-8 rounded-lg bg-muted text-chart-primary flex items-center justify-center">
                         <Users size={16} />
                       </div>
@@ -2327,10 +2327,10 @@ export function ClientAuditTool() {
                 </Card>
 
                 {/* Metric 2: Average Session Rate */}
-                <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
+                <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden relative group">
                   <CardContent className="p-6 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Avg Session Rate</span>
+                      <span className="text-xs font-medium text-muted-foreground">Avg Session Rate</span>
                       <div className="w-8 h-8 rounded-lg bg-muted text-chart-emerald flex items-center justify-center">
                         <DollarSign size={16} />
                       </div>
@@ -2343,10 +2343,10 @@ export function ClientAuditTool() {
                 </Card>
 
                 {/* Metric 3: Total Revenue */}
-                <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
+                <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden relative group">
                   <CardContent className="p-6 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total Revenue</span>
+                      <span className="text-xs font-medium text-muted-foreground">Total Revenue</span>
                       <div className="w-8 h-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center">
                         <TrendingUp size={16} />
                       </div>
@@ -2359,10 +2359,10 @@ export function ClientAuditTool() {
                 </Card>
 
                 {/* Metric 4: Free Session Ratio */}
-                <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden relative group">
+                <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden relative group">
                   <CardContent className="p-6 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Free Session Ratio</span>
+                      <span className="text-xs font-medium text-muted-foreground">Free Session Ratio</span>
                       <div className="w-8 h-8 rounded-lg bg-muted text-chart-destructive flex items-center justify-center">
                         <Percent size={16} />
                       </div>
@@ -2380,7 +2380,7 @@ export function ClientAuditTool() {
                 <Card className="border-none shadow-sm rounded-xl bg-primary text-primary-foreground overflow-hidden relative group">
                   <CardContent className="p-6 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">Projected Monthly</span>
+                      <span className="text-xs font-medium text-muted-foreground/60">Projected Monthly</span>
                       <div className="w-8 h-8 rounded-lg bg-muted text-foreground flex items-center justify-center">
                         <Sparkles size={16} />
                       </div>
@@ -2394,7 +2394,7 @@ export function ClientAuditTool() {
               </div>
 
               {/* Revenue Over Time Chart */}
-              <Card className="border-none shadow-sm rounded-xl bg-card overflow-hidden">
+              <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
                 <CardHeader className="p-8 pb-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -2408,11 +2408,11 @@ export function ClientAuditTool() {
                     </div>
                     <div className="flex items-center gap-4 text-right">
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Total (6mo)</p>
+                        <p className="text-xs font-medium text-muted-foreground">Total (6mo)</p>
                         <p className="text-lg font-semibold text-foreground">${monthlyRevenueData.reduce((s, m) => s + m.revenue, 0).toLocaleString()}</p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Avg / Month</p>
+                        <p className="text-xs font-medium text-muted-foreground">Avg / Month</p>
                         <p className="text-lg font-semibold text-chart-primary">${Math.round(monthlyRevenueData.reduce((s, m) => s + m.revenue, 0) / Math.max(monthlyRevenueData.length, 1)).toLocaleString()}</p>
                       </div>
                     </div>
@@ -2440,7 +2440,7 @@ export function ClientAuditTool() {
               </Card>
 
               {/* Rate Distribution Chart */}
-              <Card className="border-none shadow-sm rounded-xl bg-card">
+              <Card className="border border-border shadow-sm rounded-xl bg-card">
                 <CardHeader className="p-8 pb-4">
                   <CardTitle className="text-xl font-semibold text-foreground">Rate Distribution</CardTitle>
                   <CardDescription className="text-sm text-muted-foreground font-medium">
@@ -2501,12 +2501,12 @@ export function ClientAuditTool() {
             {/* TAB 4: AI SUGGESTIONS */}
             <TabsContent value="suggestions" className="space-y-8">
               {/* Goal Banner */}
-              <Card className="border-none shadow-sm rounded-xl bg-card border border-border text-foreground">
+              <Card className="border border-border shadow-sm rounded-xl bg-card border border-border text-foreground">
                 <div className="absolute inset-0 bg-gradient-to-br from-muted/30 via-background to-muted/30" />
                 <CardContent className="p-8 md:p-10 relative z-10">
                   <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                     <div className="space-y-3 max-w-2xl">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Rate Increase Roadmap</p>
+                      <p className="text-xs font-medium text-muted-foreground">Rate Increase Roadmap</p>
                       <h2 className="text-3xl font-semibold tracking-tight leading-tight text-foreground">
                         $150/session by end of 2027
                       </h2>
@@ -2523,7 +2523,7 @@ export function ClientAuditTool() {
                     <Button
                       onClick={handleGenerateSuggestions}
                       disabled={isAnalyzing}
-                      className="bg-muted hover:bg-muted/80 text-foreground font-semibold text-[10px] uppercase tracking-wider h-10 px-6 rounded-xl shadow-sm shrink-0 self-start"
+                      className="bg-card hover:bg-muted/80 text-foreground font-medium text-[13px] h-9 px-3.5 rounded-lg shadow-sm shrink-0 self-start"
                     >
                       {isAnalyzing ? (
                         <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Analysing...</>
@@ -2541,7 +2541,7 @@ export function ClientAuditTool() {
               {/* Transition Roadmap & Value-Add Strategies */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Transition Roadmap */}
-                <Card className="border-none shadow-sm rounded-xl bg-card">
+                <Card className="border border-border shadow-sm rounded-xl bg-card">
                   <CardHeader className="p-8 pb-4">
                     <CardTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
                       <TrendingUp className="text-chart-primary" size={22} />
@@ -2574,7 +2574,7 @@ export function ClientAuditTool() {
                 </Card>
 
                 {/* Value-Add Strategies */}
-                <Card className="border-none shadow-sm rounded-xl bg-card">
+                <Card className="border border-border shadow-sm rounded-xl bg-card">
                   <CardHeader className="p-8 pb-4">
                     <CardTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
                       <Sparkles className="text-muted-foreground" size={22} />
@@ -2603,7 +2603,7 @@ export function ClientAuditTool() {
               </div>
 
               {/* Revenue Projection Simulator */}
-              <Card className="border-none shadow-sm rounded-xl bg-card">
+              <Card className="border border-border shadow-sm rounded-xl bg-card">
                 <CardHeader className="p-8 pb-4">
                   <CardTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
                     <TrendingUp className="text-chart-emerald" size={22} />
@@ -2620,7 +2620,7 @@ export function ClientAuditTool() {
                       {/* Slider 1: Target Average Session Rate */}
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          <label className="text-xs font-medium text-muted-foreground">
                             Target Average Session Rate
                           </label>
                           <span className="text-sm font-semibold text-chart-primary">${targetRate}</span>
@@ -2643,7 +2643,7 @@ export function ClientAuditTool() {
                       {/* Slider 2: Active Client Count */}
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          <label className="text-xs font-medium text-muted-foreground">
                             Active Client Count
                           </label>
                           <span className="text-sm font-semibold text-chart-primary">{simulatorClients} clients</span>
@@ -2666,7 +2666,7 @@ export function ClientAuditTool() {
                       {/* Slider 3: Average Sessions per Client per Month */}
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                          <label className="text-xs font-medium text-muted-foreground">
                             Avg Sessions per Client / Month
                           </label>
                           <span className="text-sm font-semibold text-chart-primary">{simulatorFrequency} sessions</span>
@@ -2841,15 +2841,15 @@ export function ClientAuditTool() {
                 {selectedWeeklyClients.length}
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60">Bulk Actions</p>
-                <p className="text-[10px] text-muted-foreground font-medium uppercase">Apply changes to selected clients</p>
+                <p className="text-xs font-medium text-muted-foreground/60">Bulk Actions</p>
+                <p className="text-xs text-muted-foreground font-medium">Apply changes to selected clients</p>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
               {/* Bulk Target Rate */}
               <Select onValueChange={(val) => handleBulkSetTargetRate(parseInt(val))} disabled={bulkActionLoading}>
-                <SelectTrigger className="w-[120px] h-9 rounded-xl bg-muted border-border text-[10px] font-semibold uppercase tracking-wider text-chart-primary">
+                <SelectTrigger className="w-[120px] h-9 rounded-xl bg-muted border-border text-[11px] font-semibold text-chart-primary">
                   <SelectValue placeholder="Set Target" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl bg-card text-foreground border-border">
@@ -2863,7 +2863,7 @@ export function ClientAuditTool() {
 
               {/* Bulk Re-engagement Tag */}
               <Select onValueChange={(val: any) => handleBulkSetReengagementTag(val === "neutral" ? null : val)} disabled={bulkActionLoading}>
-                <SelectTrigger className="w-[120px] h-9 rounded-xl bg-muted border-border text-[10px] font-semibold uppercase tracking-wider text-chart-destructive">
+                <SelectTrigger className="w-[120px] h-9 rounded-xl bg-muted border-border text-[11px] font-semibold text-chart-destructive">
                   <SelectValue placeholder="Set Status" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl bg-card text-foreground border-border">
@@ -2879,7 +2879,7 @@ export function ClientAuditTool() {
                 size="sm"
                 onClick={handleBulkSendOnboardingClick}
                 disabled={bulkActionLoading}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-9 px-4 font-semibold text-[10px] uppercase tracking-wider"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl h-9 px-4 font-semibold text-[11px]"
               >
                 {bulkActionLoading ? <Loader2 className="animate-spin" size={12} /> : <Send size={12} className="mr-1.5" />}
                 Onboard
@@ -2889,7 +2889,7 @@ export function ClientAuditTool() {
                 variant="ghost"
                 size="sm"
                 onClick={handleClearWeeklyClients}
-                className="text-muted-foreground/60 hover:text-foreground rounded-xl h-9 px-3 font-semibold text-[10px] uppercase tracking-wider"
+                className="text-muted-foreground/60 hover:text-foreground rounded-xl h-9 px-3 font-semibold text-[11px]"
               >
                 Clear
               </Button>

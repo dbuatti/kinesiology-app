@@ -140,7 +140,7 @@ function Tile({ icon: Icon, label, children, onClick }: { icon: any; label: stri
         onClick && "hover:border-primary/40 transition-colors cursor-pointer"
       )}
     >
-      <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+      <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
         <Icon className="h-3 w-3" /> {label}
       </div>
       {children}
@@ -164,7 +164,7 @@ export default function KeyMetricsBar({ onOpenFollowUp }: Props) {
   if (!metrics) {
     return (
       <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 mb-4">
-        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading metrics...
+        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading metrics…
       </div>
     );
   }
@@ -175,7 +175,7 @@ export default function KeyMetricsBar({ onOpenFollowUp }: Props) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
       <Tile icon={DollarSign} label="Revenue this month">
-        <div className="text-xl font-black text-foreground">{formatCurrency(metrics.revenue.thisMonth)}</div>
+        <div className="text-xl font-semibold text-foreground">{formatCurrency(metrics.revenue.thisMonth)}</div>
         <div className={cn("flex items-center gap-1 text-[11px]", revenueDelta >= 0 ? "text-chart-emerald" : "text-chart-destructive")}>
           {revenueDelta >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
           {formatCurrency(Math.abs(revenueDelta))} vs last month
@@ -184,7 +184,7 @@ export default function KeyMetricsBar({ onOpenFollowUp }: Props) {
       </Tile>
 
       <Tile icon={Users} label="Pipeline">
-        <div className="flex items-end gap-2">
+        <div className="flex items-end gap-3.5">
           {(["lead", "active", "at_risk", "lapsed"] as LifecycleStatus[]).map((s) => (
             <button
               key={s}
@@ -192,15 +192,15 @@ export default function KeyMetricsBar({ onOpenFollowUp }: Props) {
               className="flex flex-col items-center hover:opacity-70 transition-opacity"
               title={s === "at_risk" ? "At Risk" : s.charAt(0).toUpperCase() + s.slice(1)}
             >
-              <span className="text-lg font-black text-foreground">{metrics.pipeline[s]}</span>
-              <span className="text-[9px] font-bold uppercase text-muted-foreground">{s === "at_risk" ? "Risk" : s.slice(0, 4)}</span>
+              <span className="text-lg font-semibold tabular-nums text-foreground">{metrics.pipeline[s]}</span>
+              <span className="text-[11px] font-medium text-muted-foreground">{s === "at_risk" ? "At risk" : s.charAt(0).toUpperCase() + s.slice(1)}</span>
             </button>
           ))}
         </div>
       </Tile>
 
       <Tile icon={CalendarDays} label="Booking load this week">
-        <div className="text-xl font-black text-foreground">{metrics.booking.thisWeek} sessions</div>
+        <div className="text-xl font-semibold text-foreground">{metrics.booking.thisWeek} sessions</div>
         <div className={cn("flex items-center gap-1 text-[11px]", bookingDelta >= 0 ? "text-chart-emerald" : "text-muted-foreground")}>
           {bookingDelta >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
           {Math.abs(bookingDelta)} vs last week ({metrics.booking.lastWeek})
@@ -208,7 +208,7 @@ export default function KeyMetricsBar({ onOpenFollowUp }: Props) {
       </Tile>
 
       <Tile icon={AlertCircle} label="Follow-up urgency" onClick={onOpenFollowUp}>
-        <div className="text-xl font-black text-foreground">{metrics.urgency.atRisk}</div>
+        <div className="text-xl font-semibold text-foreground">{metrics.urgency.atRisk}</div>
         <div className="text-[11px] text-muted-foreground">at risk · {metrics.urgency.lapsed} lapsed</div>
       </Tile>
     </div>

@@ -76,7 +76,7 @@ const DailyMechanoChallenge = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700">
-      <Card className="border-none shadow-sm rounded-xl bg-card text-card-foreground overflow-hidden relative">
+      <Card className="border border-border shadow-sm rounded-xl bg-card text-card-foreground overflow-hidden relative">
         <div className="absolute top-0 right-0 p-8 opacity-10"><Target size={120} /></div>
         <CardHeader className="p-8 pb-4">
           <div className="flex items-center justify-between">
@@ -104,7 +104,7 @@ const DailyMechanoChallenge = () => {
             </div>
 
             <div className="p-6 bg-muted rounded-xl border border-border">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-2">
+              <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-2">
                 <ShieldAlert size={14} /> Diagnostic Clue
               </p>
               <p className="text-sm font-medium text-foreground leading-relaxed">
@@ -116,7 +116,7 @@ const DailyMechanoChallenge = () => {
           {!showResult ? (
             <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
               <div className="space-y-2">
-                <div className="flex justify-between text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <div className="flex justify-between text-xs font-medium text-muted-foreground">
                   <span>Clinical Reasoning Flow</span>
                   <span>Step {challengeStep} of 6</span>
                 </div>
@@ -131,14 +131,14 @@ const DailyMechanoChallenge = () => {
                     <Button 
                       variant="outline" 
                       onClick={() => handleSelectAnswer('skeleton', 'Axial')}
-                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs uppercase tracking-wider"
+                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs"
                     >
                       Axial (Spine/Skull)
                     </Button>
                     <Button 
                       variant="outline" 
                       onClick={() => handleSelectAnswer('skeleton', 'Appendicular')}
-                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs uppercase tracking-wider"
+                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs"
                     >
                       Appendicular (Limbs)
                     </Button>
@@ -154,14 +154,14 @@ const DailyMechanoChallenge = () => {
                     <Button 
                       variant="outline" 
                       onClick={() => handleSelectAnswer('region', 'Upper')}
-                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs uppercase tracking-wider"
+                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs"
                     >
                       Upper Body (Above T12)
                     </Button>
                     <Button 
                       variant="outline" 
                       onClick={() => handleSelectAnswer('region', 'Lower')}
-                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs uppercase tracking-wider"
+                      className="h-20 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs"
                     >
                       Lower Body (Below T12)
                     </Button>
@@ -179,7 +179,7 @@ const DailyMechanoChallenge = () => {
                         key={joint}
                         variant="outline"
                         onClick={() => handleSelectAnswer('joint', joint)}
-                        className="h-12 rounded-xl border border-border bg-muted hover:bg-muted/80 text-muted-foreground text-[10px] font-medium"
+                        className="h-9 rounded-lg border border-border bg-card hover:bg-muted/80 text-muted-foreground text-[13px] font-medium"
                       >
                         {joint}
                       </Button>
@@ -198,7 +198,7 @@ const DailyMechanoChallenge = () => {
                         key={plane}
                         variant="outline"
                         onClick={() => handleSelectAnswer('plane', plane)}
-                        className="h-16 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs uppercase tracking-wider"
+                        className="h-16 rounded-xl border-2 border-border bg-muted hover:bg-muted/80 text-muted-foreground font-semibold text-xs"
                       >
                         {plane}
                       </Button>
@@ -213,19 +213,19 @@ const DailyMechanoChallenge = () => {
                   <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">5. Review Your Clinical Logic</p>
                   <div className="grid grid-cols-2 gap-4 text-xs">
                     <div className="p-4 bg-muted rounded-xl border border-border">
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">Skeleton</span>
+                      <span className="text-xs font-medium text-muted-foreground">Skeleton</span>
                       <p className="font-medium text-sm mt-1">{userAnswers.skeleton}</p>
                     </div>
                     <div className="p-4 bg-muted rounded-xl border border-border">
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">Region</span>
+                      <span className="text-xs font-medium text-muted-foreground">Region</span>
                       <p className="font-medium text-sm mt-1">{userAnswers.region}</p>
                     </div>
                     <div className="p-4 bg-muted rounded-xl border border-border">
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">Joint</span>
+                      <span className="text-xs font-medium text-muted-foreground">Joint</span>
                       <p className="font-medium text-sm mt-1">{userAnswers.joint}</p>
                     </div>
                     <div className="p-4 bg-muted rounded-xl border border-border col-span-2">
-                      <span className="text-[10px] font-semibold text-muted-foreground uppercase">Plane of Motion</span>
+                      <span className="text-xs font-medium text-muted-foreground">Plane of Motion</span>
                       <p className="font-medium text-sm mt-1">{userAnswers.plane}</p>
                     </div>
                   </div>
@@ -240,7 +240,7 @@ const DailyMechanoChallenge = () => {
                     </Button>
                     <Button 
                       onClick={checkAnswer}
-                      className="flex-[2] h-14 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs uppercase tracking-wider shadow-sm"
+                      className="flex-[2] h-14 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs shadow-sm"
                     >
                       Submit Clinical Logic
                     </Button>
@@ -265,18 +265,18 @@ const DailyMechanoChallenge = () => {
 
               <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 text-xs">
                 <div className="p-4 bg-muted rounded-xl border border-border">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Correct Joint</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Correct Joint</p>
                   <p className="text-sm font-medium">{currentCase.localization.joint}</p>
                 </div>
                 <div className="p-4 bg-muted rounded-xl border border-border col-span-2 sm:col-span-1">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Correct Plane</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Correct Plane</p>
                   <p className="text-sm font-medium">{currentCase.localization.plane}</p>
                 </div>
               </div>
 
               <Button 
                 onClick={generateNewCase}
-                className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 font-semibold text-[10px] uppercase tracking-wider text-primary-foreground"
+                className="w-full h-9 rounded-lg bg-primary hover:bg-primary/90 font-medium text-[13px] text-primary-foreground"
               >
                 <RefreshCw size={16} className="mr-2" /> Next Case Study
               </Button>

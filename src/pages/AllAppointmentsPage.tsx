@@ -238,7 +238,7 @@ const AllAppointmentsPage = () => {
         ) : loading ? (
           <div className="flex items-center justify-center py-20 text-muted-foreground gap-2">
             <Loader2 className="h-5 w-5 animate-spin" />
-            Loading appointments...
+            Loading appointments…
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
@@ -317,7 +317,7 @@ const AllAppointmentsPage = () => {
                         </span>
                       )}
                       {a.priceAmount === 0 && (
-                        <span className="block text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Free</span>
+                        <span className="block text-xs font-medium text-muted-foreground">Free</span>
                       )}
                     </TableCell>
                     <TableCell>

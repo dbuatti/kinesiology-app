@@ -1168,32 +1168,32 @@ const WorkflowDebuggerPage = () => {
         {/* Stats bar */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
           <div className="bg-card rounded-xl border border-border p-3 text-center">
-            <div className="text-lg font-black text-amber-600">{WORKFLOWS.length}</div>
-            <div className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">Workflows</div>
+            <div className="text-lg font-semibold text-amber-600">{WORKFLOWS.length}</div>
+            <div className="text-xs text-muted-foreground font-medium">Workflows</div>
           </div>
           <div className="bg-card rounded-xl border border-border p-3 text-center">
-            <div className="text-lg font-black text-amber-600">{EDGE_FUNCTIONS.length}</div>
-            <div className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">Edge Functions</div>
+            <div className="text-lg font-semibold text-amber-600">{EDGE_FUNCTIONS.length}</div>
+            <div className="text-xs text-muted-foreground font-medium">Edge Functions</div>
           </div>
           <div className="bg-card rounded-xl border border-border p-3 text-center">
-            <div className="text-lg font-black text-amber-600">{EMAIL_TEMPLATES.length}</div>
-            <div className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">Email Templates</div>
+            <div className="text-lg font-semibold text-amber-600">{EMAIL_TEMPLATES.length}</div>
+            <div className="text-xs text-muted-foreground font-medium">Email Templates</div>
           </div>
           <div className="bg-card rounded-xl border border-border p-3 text-center">
-            <div className="text-lg font-black text-amber-600">{FNH_STATES.length}</div>
-            <div className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">Client States</div>
+            <div className="text-lg font-semibold text-amber-600">{FNH_STATES.length}</div>
+            <div className="text-xs text-muted-foreground font-medium">Client States</div>
           </div>
           <div className="bg-card rounded-xl border border-border p-3 text-center">
-            <div className="text-lg font-black text-amber-600">{DB_TABLES.length}</div>
-            <div className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">DB Tables</div>
+            <div className="text-lg font-semibold text-amber-600">{DB_TABLES.length}</div>
+            <div className="text-xs text-muted-foreground font-medium">DB Tables</div>
           </div>
           <div className="bg-card rounded-xl border border-border p-3 text-center">
-            <div className="text-lg font-black text-amber-600">{ENV_VARS.length}</div>
-            <div className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">Env Vars</div>
+            <div className="text-lg font-semibold text-amber-600">{ENV_VARS.length}</div>
+            <div className="text-xs text-muted-foreground font-medium">Env Vars</div>
           </div>
           <div className="bg-card rounded-xl border border-border p-3 text-center">
-            <div className="text-lg font-black text-amber-600">{EXTERNAL_APIS.length}</div>
-            <div className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">External APIs</div>
+            <div className="text-lg font-semibold text-amber-600">{EXTERNAL_APIS.length}</div>
+            <div className="text-xs text-muted-foreground font-medium">External APIs</div>
           </div>
         </div>
 
@@ -1223,7 +1223,7 @@ const WorkflowDebuggerPage = () => {
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 flex items-center justify-center"><Activity size={16} /></div>
               <div>
-                <h3 className="font-black text-foreground text-sm">Live Debug</h3>
+                <h3 className="font-semibold text-foreground text-sm">Live Debug</h3>
                 <p className="text-xs text-muted-foreground font-medium">Health checks, edge function test runner, and invocation log</p>
               </div>
             </div>
@@ -1247,8 +1247,8 @@ const WorkflowDebuggerPage = () => {
                   <div className="flex items-center gap-2 mb-1">
                     {health.supabase === "ok" ? <CheckCircle2 size={14} className="text-emerald-500" /> : health.supabase === "error" ? <XCircle size={14} className="text-rose-500" /> : <Database size={14} className="text-muted-foreground" />}
                     <span className="font-semibold text-xs">Supabase</span>
-                    {health.supabase === "ok" && <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-none text-[9px] ml-auto">Connected</Badge>}
-                    {health.supabase === "error" && <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-none text-[9px] ml-auto">Error</Badge>}
+                    {health.supabase === "ok" && <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-none text-[10px] ml-auto">Connected</Badge>}
+                    {health.supabase === "error" && <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-none text-[10px] ml-auto">Error</Badge>}
                   </div>
                   <p className="text-[10px] text-muted-foreground">{health.supabaseDetail ?? "Click 'Run health check' to test connectivity"}</p>
                 </div>
@@ -1256,7 +1256,7 @@ const WorkflowDebuggerPage = () => {
                   <div className="flex items-center gap-2 mb-1">
                     <Activity size={14} className="text-muted-foreground" />
                     <span className="font-semibold text-xs">Tests Run</span>
-                    <Badge className="bg-muted text-muted-foreground border-none text-[9px] ml-auto">{Object.keys(testResults).length}</Badge>
+                    <Badge className="bg-muted text-muted-foreground border-none text-[10px] ml-auto">{Object.keys(testResults).length}</Badge>
                   </div>
                   <p className="text-[10px] text-muted-foreground">{allResults.length > 0 ? `Last: ${allResults[0].functionName} (${allResults[0].duration}ms)` : "No tests run yet"}</p>
                 </div>
@@ -1264,7 +1264,7 @@ const WorkflowDebuggerPage = () => {
                   <div className="flex items-center gap-2 mb-1">
                     <Clock size={14} className="text-muted-foreground" />
                     <span className="font-semibold text-xs">Edge Functions</span>
-                    <Badge className="bg-muted text-muted-foreground border-none text-[9px] ml-auto">{EDGE_FUNCTIONS.length}</Badge>
+                    <Badge className="bg-muted text-muted-foreground border-none text-[10px] ml-auto">{EDGE_FUNCTIONS.length}</Badge>
                   </div>
                   <p className="text-[10px] text-muted-foreground">{EDGE_FUNCTIONS.filter(f => testResults[f.name]?.status === "success").length} passed / {EDGE_FUNCTIONS.filter(f => testResults[f.name]?.status === "error").length} failed</p>
                 </div>
@@ -1281,11 +1281,11 @@ const WorkflowDebuggerPage = () => {
                       </button>
                       <div className="flex gap-1">
                         {["all", "success", "error"].map(f => (
-                          <button key={f} onClick={() => setLogFilter(f)} className={cn("px-2 py-0.5 rounded-md text-[9px] font-semibold transition-all", logFilter === f ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground")}>{f === "all" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}</button>
+                          <button key={f} onClick={() => setLogFilter(f)} className={cn("px-2 py-0.5 rounded-md text-[10px] font-semibold transition-all", logFilter === f ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground")}>{f === "all" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}</button>
                         ))}
                       </div>
                     </div>
-                    <button onClick={clearResults} className="text-[9px] font-semibold text-muted-foreground hover:text-foreground px-2 py-0.5 rounded-lg border border-border hover:bg-muted/50 transition-all">Clear log</button>
+                    <button onClick={clearResults} className="text-[10px] font-semibold text-muted-foreground hover:text-foreground px-2 py-0.5 rounded-lg border border-border hover:bg-muted/50 transition-all">Clear log</button>
                   </div>
                   {showTestLog && (
                     <div className="space-y-1 max-h-60 overflow-y-auto">
@@ -1295,11 +1295,11 @@ const WorkflowDebuggerPage = () => {
                             <div className="flex items-center gap-1.5">
                               {r.status === "success" ? <CheckCircle2 size={10} className="text-emerald-500" /> : <XCircle size={10} className="text-rose-500" />}
                               <span className="font-semibold text-[10px]">{r.functionName}</span>
-                              <span className={cn("px-1 py-0.5 rounded text-[8px] font-semibold", r.status === "success" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300")}>{r.duration}ms</span>
+                              <span className={cn("px-1 py-0.5 rounded text-[10px] font-semibold", r.status === "success" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300")}>{r.duration}ms</span>
                             </div>
-                            <span className="text-[8px] text-muted-foreground">{new Date(r.timestamp).toLocaleTimeString()}</span>
+                            <span className="text-[10px] text-muted-foreground">{new Date(r.timestamp).toLocaleTimeString()}</span>
                           </div>
-                          <pre className="text-[8px] text-muted-foreground font-mono whitespace-pre-wrap break-all max-h-20 overflow-y-auto">{r.response}</pre>
+                          <pre className="text-[10px] text-muted-foreground font-mono whitespace-pre-wrap break-all max-h-20 overflow-y-auto">{r.response}</pre>
                         </div>
                       ))}
                     </div>
@@ -1318,7 +1318,7 @@ const WorkflowDebuggerPage = () => {
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 flex items-center justify-center"><Workflow size={16} /></div>
               <div>
-                <h3 className="font-black text-foreground text-sm">Workflows ({filteredWorkflows.length})</h3>
+                <h3 className="font-semibold text-foreground text-sm">Workflows ({filteredWorkflows.length})</h3>
                 <p className="text-xs text-muted-foreground font-medium">Every booking path, email trigger, intake flow, cancellation, reschedule, and sync</p>
               </div>
             </div>
@@ -1340,8 +1340,8 @@ const WorkflowDebuggerPage = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {wf.emailSubject && <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-none text-[9px] font-semibold">Email</Badge>}
-                      {wf.errorStates && <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-none text-[9px] font-semibold">{wf.errorStates.length} errors</Badge>}
+                      {wf.emailSubject && <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-none text-[10px] font-semibold">Email</Badge>}
+                      {wf.errorStates && <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-none text-[10px] font-semibold">{wf.errorStates.length} errors</Badge>}
                       {expandedWorkflows.has(wf.id) ? <ChevronDown size={14} className="text-muted-foreground" /> : <ChevronRight size={14} className="text-muted-foreground" />}
                     </div>
                   </button>
@@ -1355,7 +1355,7 @@ const WorkflowDebuggerPage = () => {
                         <div className="pb-2 flex-1">
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-bold text-foreground">Trigger</span>
-                            <Badge className="bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border-none text-[9px] font-semibold">Trigger</Badge>
+                            <Badge className="bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border-none text-[10px] font-semibold">Trigger</Badge>
                           </div>
                           <p className="text-xs text-muted-foreground mt-0.5">{wf.triggerDetail}</p>
                         </div>
@@ -1370,13 +1370,13 @@ const WorkflowDebuggerPage = () => {
                           <div className={cn("pb-4 flex-1", si === wf.steps.length - 1 && "pb-0")}>
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-xs font-bold text-foreground">{step.label}</span>
-                              {step.badge && <Badge className={cn("border-none text-[9px] font-semibold", stepBadge(step.type, step.badgeColor))}>{step.badge}</Badge>}
+                              {step.badge && <Badge className={cn("border-none text-[10px] font-semibold", stepBadge(step.type, step.badgeColor))}>{step.badge}</Badge>}
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5">{step.desc}</p>
                             {step.fileRef && (
                               <div className="flex items-center gap-1 mt-1">
                                 <FileText size={10} className="text-muted-foreground/60" />
-                                <span className="text-[9px] font-mono text-muted-foreground/60">{step.fileRef}</span>
+                                <span className="text-[10px] font-mono text-muted-foreground/60">{step.fileRef}</span>
                               </div>
                             )}
                           </div>
@@ -1422,7 +1422,7 @@ const WorkflowDebuggerPage = () => {
           <button onClick={() => toggleSection("edge-functions")} className="w-full flex items-center justify-between p-5 hover:bg-muted/30 transition-colors">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 flex items-center justify-center"><Zap size={16} /></div>
-              <div><h3 className="font-black text-foreground text-sm">Edge Functions ({EDGE_FUNCTIONS.length})</h3><p className="text-xs text-muted-foreground font-medium">Supabase edge functions — triggers, call chains, env vars, DB tables, error handling</p></div>
+              <div><h3 className="font-semibold text-foreground text-sm">Edge Functions ({EDGE_FUNCTIONS.length})</h3><p className="text-xs text-muted-foreground font-medium">Supabase edge functions — triggers, call chains, env vars, DB tables, error handling</p></div>
             </div>
             <div className="flex items-center gap-2">
               <button onClick={(e) => { e.stopPropagation(); copySection("edge-functions"); }} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all" title="Copy section"><Copy size={14} /></button>
@@ -1437,9 +1437,9 @@ const WorkflowDebuggerPage = () => {
                     <div className="flex items-center gap-2">
                       <Zap size={14} className={ef.name.startsWith("voice") ? "text-rose-500" : "text-amber-500"} />
                       <span className="font-semibold text-xs text-foreground">{ef.name}</span>
-                      {ef.emailSubject && <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-none text-[9px] font-semibold">Email</Badge>}
-                      {ef.authGuard.includes("webhook") && <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-none text-[9px] font-semibold">Webhook</Badge>}
-                      {ef.authGuard.includes("requireUser") && <Badge className="bg-muted text-muted-foreground dark:bg-card dark:text-foreground border-none text-[9px] font-semibold">Auth</Badge>}
+                      {ef.emailSubject && <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border-none text-[10px] font-semibold">Email</Badge>}
+                      {ef.authGuard.includes("webhook") && <Badge className="bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border-none text-[10px] font-semibold">Webhook</Badge>}
+                      {ef.authGuard.includes("requireUser") && <Badge className="bg-muted text-muted-foreground dark:bg-card dark:text-foreground border-none text-[10px] font-semibold">Auth</Badge>}
                     </div>
                     {expandedFunctions.has(ef.name) ? <ChevronDown size={14} className="text-muted-foreground" /> : <ChevronRight size={14} className="text-muted-foreground" />}
                   </button>
@@ -1453,7 +1453,7 @@ const WorkflowDebuggerPage = () => {
                           <div className="font-semibold text-foreground flex items-center gap-1.5"><Play size={12} /> Test Invocation</div>
                           <div className="flex items-center gap-2">
                             {testResults[ef.name] && (
-                              <span className={cn("text-[9px] font-semibold", testResults[ef.name].status === "success" ? "text-emerald-500" : "text-rose-500")}>
+                              <span className={cn("text-[10px] font-semibold", testResults[ef.name].status === "success" ? "text-emerald-500" : "text-rose-500")}>
                                 {testResults[ef.name].status === "success" ? "✓" : "✗"} {testResults[ef.name].duration}ms
                               </span>
                             )}
@@ -1461,7 +1461,7 @@ const WorkflowDebuggerPage = () => {
                               onClick={() => invokeFunction(ef.name)}
                               disabled={runningTests.has(ef.name)}
                               className={cn(
-                                "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[9px] font-semibold transition-all",
+                                "inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold transition-all",
                                 runningTests.has(ef.name)
                                   ? "bg-muted text-muted-foreground cursor-not-allowed"
                                   : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-950/60"
@@ -1475,18 +1475,18 @@ const WorkflowDebuggerPage = () => {
                         <textarea
                           value={testPayloads[ef.name] ?? payloadFor(ef.name)}
                           onChange={(e) => setTestPayloads(prev => ({ ...prev, [ef.name]: e.target.value }))}
-                          className="w-full bg-background border border-border rounded-lg p-2 text-[9px] font-mono text-muted-foreground resize-y min-h-[48px] max-h-[120px]"
+                          className="w-full bg-background border border-border rounded-lg p-2 text-[10px] font-mono text-muted-foreground resize-y min-h-[48px] max-h-[120px]"
                           rows={3}
                         />
                         {testResults[ef.name] && (
                           <div className={cn("mt-2 rounded-lg p-2", testResults[ef.name].status === "success" ? "bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-900/50" : "bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200/50 dark:border-rose-900/50")}>
-                            <div className="flex items-center gap-1 text-[8px] font-semibold mb-1">
+                            <div className="flex items-center gap-1 text-[10px] font-semibold mb-1">
                               {testResults[ef.name].status === "success" ? <CheckCircle2 size={8} className="text-emerald-500" /> : <XCircle size={8} className="text-rose-500" />}
                               <span className={testResults[ef.name].status === "success" ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>
                                 {testResults[ef.name].status === "success" ? "Response" : "Error"} ({testResults[ef.name].duration}ms)
                               </span>
                             </div>
-                            <pre className="text-[8px] text-muted-foreground font-mono whitespace-pre-wrap break-all max-h-[80px] overflow-y-auto">{testResults[ef.name].response}</pre>
+                            <pre className="text-[10px] text-muted-foreground font-mono whitespace-pre-wrap break-all max-h-[80px] overflow-y-auto">{testResults[ef.name].response}</pre>
                           </div>
                         )}
                       </div>
@@ -1510,13 +1510,13 @@ const WorkflowDebuggerPage = () => {
                         <div className="p-3 bg-muted/30 rounded-xl border border-border/50">
                           <div className="font-semibold text-foreground mb-1 flex items-center gap-1.5"><Hash size={12} /> Env Vars ({ef.envVars.length})</div>
                           <div className="flex flex-wrap gap-1">
-                            {ef.envVars.map((v) => <Badge key={v} className="bg-cyan-100 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-300 border-none text-[9px] font-mono">{v}</Badge>)}
+                            {ef.envVars.map((v) => <Badge key={v} className="bg-cyan-100 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-300 border-none text-[10px] font-mono">{v}</Badge>)}
                           </div>
                         </div>
                         <div className="p-3 bg-muted/30 rounded-xl border border-border/50">
                           <div className="font-semibold text-foreground mb-1 flex items-center gap-1.5"><Database size={12} /> DB Tables ({ef.dbTables.length})</div>
                           <div className="flex flex-wrap gap-1">
-                            {ef.dbTables.map((t) => <Badge key={t} className="bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 border-none text-[9px] font-mono">{t}</Badge>)}
+                            {ef.dbTables.map((t) => <Badge key={t} className="bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 border-none text-[10px] font-mono">{t}</Badge>)}
                           </div>
                         </div>
                       </div>
@@ -1568,7 +1568,7 @@ const WorkflowDebuggerPage = () => {
           <button onClick={() => toggleSection("email-templates")} className="w-full flex items-center justify-between p-5 hover:bg-muted/30 transition-colors">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 flex items-center justify-center"><Mail size={16} /></div>
-              <div><h3 className="font-black text-foreground text-sm">Email Templates ({EMAIL_TEMPLATES.length})</h3><p className="text-xs text-muted-foreground font-medium">Full email templates with HTML structure and section breakdowns</p></div>
+              <div><h3 className="font-semibold text-foreground text-sm">Email Templates ({EMAIL_TEMPLATES.length})</h3><p className="text-xs text-muted-foreground font-medium">Full email templates with HTML structure and section breakdowns</p></div>
             </div>
             <div className="flex items-center gap-2">
               <button onClick={(e) => { e.stopPropagation(); copySection("email-templates"); }} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all" title="Copy section"><Copy size={14} /></button>
@@ -1583,7 +1583,7 @@ const WorkflowDebuggerPage = () => {
                     <div className="flex items-center gap-2">
                       <Mail size={14} className="text-emerald-500" />
                       <span className="font-bold text-sm text-foreground">{tmpl.name}</span>
-                      <Badge className="bg-muted text-muted-foreground border-none text-[9px] font-semibold">{tmpl.source}</Badge>
+                      <Badge className="bg-muted text-muted-foreground border-none text-[10px] font-semibold">{tmpl.source}</Badge>
                     </div>
                     {expandedTemplates.has(tmpl.name) ? <ChevronDown size={14} className="text-muted-foreground" /> : <ChevronRight size={14} className="text-muted-foreground" />}
                   </button>
@@ -1613,7 +1613,7 @@ const WorkflowDebuggerPage = () => {
 
                       <div className="p-3 bg-muted dark:bg-card/30 rounded-xl border border-border/50 overflow-x-auto">
                         <div className="font-semibold text-foreground mb-2 flex items-center gap-1.5"><Code size={12} /> HTML Skeleton</div>
-                        <pre className="text-[9px] text-muted-foreground font-mono leading-relaxed whitespace-pre-wrap break-all">{tmpl.htmlSkeleton}</pre>
+                        <pre className="text-[10px] text-muted-foreground font-mono leading-relaxed whitespace-pre-wrap break-all">{tmpl.htmlSkeleton}</pre>
                       </div>
                     </div>
                   )}
@@ -1630,7 +1630,7 @@ const WorkflowDebuggerPage = () => {
           <button onClick={() => toggleSection("state-machine")} className="w-full flex items-center justify-between p-5 hover:bg-muted/30 transition-colors">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 flex items-center justify-center"><Brain size={16} /></div>
-              <div><h3 className="font-black text-foreground text-sm">Client State Machine ({FNH_STATES.length} states)</h3><p className="text-xs text-muted-foreground font-medium">All possible FNH client states, transitions, and triggers — from New Client through Active, Re-engagement, and Cancelled</p></div>
+              <div><h3 className="font-semibold text-foreground text-sm">Client State Machine ({FNH_STATES.length} states)</h3><p className="text-xs text-muted-foreground font-medium">All possible FNH client states, transitions, and triggers — from New Client through Active, Re-engagement, and Cancelled</p></div>
             </div>
             <div className="flex items-center gap-2">
               <button onClick={(e) => { e.stopPropagation(); copySection("state-machine"); }} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all" title="Copy section"><Copy size={14} /></button>
@@ -1645,15 +1645,15 @@ const WorkflowDebuggerPage = () => {
                   <div key={node.state} className="flex items-start gap-1">
                     <div className="border border-border rounded-xl p-3 w-56 bg-card">
                       <div className="font-bold text-xs text-foreground">{node.state}</div>
-                      <p className="text-[9px] text-muted-foreground mt-1 leading-relaxed">{node.description}</p>
-                      <p className="text-[8px] text-muted-foreground/60 mt-1 italic">{node.details}</p>
+                      <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">{node.description}</p>
+                      <p className="text-[10px] text-muted-foreground/60 mt-1 italic">{node.details}</p>
                       {node.transitions.length > 0 && (
                         <div className="mt-2 pt-2 border-t border-border/50">
                           {node.transitions.map((t) => (
-                            <div key={t.to} className="flex items-start gap-1 text-[8px] text-muted-foreground mt-1">
+                            <div key={t.to} className="flex items-start gap-1 text-[10px] text-muted-foreground mt-1">
                               <ArrowRight size={7} className="shrink-0 mt-0.5 text-primary" />
                               <div>
-                                <span className="font-semibold text-foreground text-[9px]">{t.to}</span>
+                                <span className="font-semibold text-foreground text-[10px]">{t.to}</span>
                                 <span className="block text-muted-foreground/70">{t.via}</span>
                               </div>
                             </div>
@@ -1680,7 +1680,7 @@ const WorkflowDebuggerPage = () => {
           <button onClick={() => toggleSection("database")} className="w-full flex items-center justify-between p-5 hover:bg-muted/30 transition-colors">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 flex items-center justify-center"><Database size={16} /></div>
-              <div><h3 className="font-black text-foreground text-sm">Database Tables ({DB_TABLES.length})</h3><p className="text-xs text-muted-foreground font-medium">Supabase tables used across all workflows and edge functions</p></div>
+              <div><h3 className="font-semibold text-foreground text-sm">Database Tables ({DB_TABLES.length})</h3><p className="text-xs text-muted-foreground font-medium">Supabase tables used across all workflows and edge functions</p></div>
             </div>
             <div className="flex items-center gap-2">
               <button onClick={(e) => { e.stopPropagation(); copySection("database"); }} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all" title="Copy section"><Copy size={14} /></button>
@@ -1696,8 +1696,8 @@ const WorkflowDebuggerPage = () => {
                   {NOTION_DB_IDS.map((ndb) => (
                     <div key={ndb.id} className="p-2 bg-background rounded-lg border border-border/50">
                       <div className="font-medium text-[10px] text-foreground">{ndb.name}</div>
-                      <div className="text-[8px] font-mono text-muted-foreground mt-0.5">{ndb.id}</div>
-                      <div className="text-[8px] text-muted-foreground/60">Used by: {ndb.usedBy}</div>
+                      <div className="text-[10px] font-mono text-muted-foreground mt-0.5">{ndb.id}</div>
+                      <div className="text-[10px] text-muted-foreground/60">Used by: {ndb.usedBy}</div>
                     </div>
                   ))}
                 </div>
@@ -1709,8 +1709,8 @@ const WorkflowDebuggerPage = () => {
                   {EVENT_TYPE_IDS.map((et) => (
                     <div key={et.id} className="p-2 bg-background rounded-lg border border-border/50">
                       <div className="font-medium text-[10px] text-foreground">{et.name}</div>
-                      <div className="text-[8px] font-mono text-muted-foreground">ID: {et.id}</div>
-                      <div className="text-[8px] text-muted-foreground">{et.price} · {et.system}</div>
+                      <div className="text-[10px] font-mono text-muted-foreground">ID: {et.id}</div>
+                      <div className="text-[10px] text-muted-foreground">{et.price} · {et.system}</div>
                     </div>
                   ))}
                 </div>
@@ -1721,7 +1721,7 @@ const WorkflowDebuggerPage = () => {
                   <div className="flex items-center gap-2 mb-2">
                     <Database size={14} className="text-purple-500" />
                     <span className="font-bold text-sm text-foreground">{tbl.name}</span>
-                    <Badge className="bg-muted text-muted-foreground border-none text-[9px] font-semibold">{tbl.usedBy.length} functions</Badge>
+                    <Badge className="bg-muted text-muted-foreground border-none text-[10px] font-semibold">{tbl.usedBy.length} functions</Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mb-2">{tbl.description}</p>
                   <div className="space-y-1 text-[10px]">
@@ -1741,7 +1741,7 @@ const WorkflowDebuggerPage = () => {
           <button onClick={() => toggleSection("env-vars")} className="w-full flex items-center justify-between p-5 hover:bg-muted/30 transition-colors">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-cyan-100 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-300 flex items-center justify-center"><Hash size={16} /></div>
-              <div><h3 className="font-black text-foreground text-sm">Environment Variables ({ENV_VARS.length})</h3><p className="text-xs text-muted-foreground font-medium">All Supabase Edge Function secrets — API keys, OAuth credentials, and configuration</p></div>
+              <div><h3 className="font-semibold text-foreground text-sm">Environment Variables ({ENV_VARS.length})</h3><p className="text-xs text-muted-foreground font-medium">All Supabase Edge Function secrets — API keys, OAuth credentials, and configuration</p></div>
             </div>
             <div className="flex items-center gap-2">
               <button onClick={(e) => { e.stopPropagation(); copySection("env-vars"); }} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all" title="Copy section"><Copy size={14} /></button>
@@ -1754,7 +1754,7 @@ const WorkflowDebuggerPage = () => {
                 {ENV_VARS.map((ev) => (
                   <div key={ev.name} className="border border-border rounded-xl p-3">
                     <div className="font-bold text-[10px] font-mono text-foreground break-all">{ev.name}</div>
-                    <p className="text-[9px] text-muted-foreground mt-1">{ev.description}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">{ev.description}</p>
                     <div className="flex flex-wrap gap-1 mt-2">
                       {ev.usedBy.map((u) => <Badge key={u} className="bg-muted text-muted-foreground border-none text-[7px]">{u}</Badge>)}
                     </div>
@@ -1772,7 +1772,7 @@ const WorkflowDebuggerPage = () => {
           <button onClick={() => toggleSection("external-apis")} className="w-full flex items-center justify-between p-5 hover:bg-muted/30 transition-colors">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 flex items-center justify-center"><Cloud size={16} /></div>
-              <div><h3 className="font-black text-foreground text-sm">External APIs ({EXTERNAL_APIS.length})</h3><p className="text-xs text-muted-foreground font-medium">All third-party APIs integrated with the system</p></div>
+              <div><h3 className="font-semibold text-foreground text-sm">External APIs ({EXTERNAL_APIS.length})</h3><p className="text-xs text-muted-foreground font-medium">All third-party APIs integrated with the system</p></div>
             </div>
             <div className="flex items-center gap-2">
               <button onClick={(e) => { e.stopPropagation(); copySection("external-apis"); }} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all" title="Copy section"><Copy size={14} /></button>
@@ -1786,7 +1786,7 @@ const WorkflowDebuggerPage = () => {
                   <div className="flex items-center gap-2 mb-2">
                     <Cloud size={14} className="text-rose-500" />
                     <span className="font-bold text-sm text-foreground">{api.name}</span>
-                    <Badge className="bg-muted text-muted-foreground border-none text-[9px] font-semibold">{api.usedBy.length} callers</Badge>
+                    <Badge className="bg-muted text-muted-foreground border-none text-[10px] font-semibold">{api.usedBy.length} callers</Badge>
                   </div>
                   <div className="space-y-1 text-xs">
                     <div className="font-semibold text-foreground">Endpoints:</div>

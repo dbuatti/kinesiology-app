@@ -3,7 +3,8 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, User, Calendar, Loader2, EyeOff, ArrowRight } from "lucide-react";
+import { Clock, User, Calendar, Loader2, EyeOff, ArrowRight, History } from "lucide-react";
+import SectionCard from "@/components/shared/SectionCard";
 import { Link } from "react-router-dom";
 import { format, formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -104,81 +105,77 @@ const RecentActivity = () => {
 
   if (loading) {
     return (
-      <div className="p-5 bg-card dark:bg-foreground rounded-xl border border-border/50 dark:border-foreground flex items-center justify-center">
-        <Loader2 className="animate-spin text-indigo-600" size={24} />
-      </div>
+      <SectionCard title="Recent activity" icon={History}>
+        <div className="space-y-1 px-3 pb-3">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center gap-3 py-2">
+              <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
+              <div className="flex-1 space-y-1.5">
+                <div className="h-3 w-1/3 animate-pulse rounded bg-muted" />
+                <div className="h-2.5 w-1/4 animate-pulse rounded bg-muted/70" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </SectionCard>
     );
   }
 
   return (
-    <div className="p-5 bg-card dark:bg-foreground rounded-xl border border-border/50 dark:border-foreground shadow-sm">
-      <div className="flex items-center justify-between mb-5">
-        <h3 className="text-xl font-serif font-bold flex items-center gap-4 text-foreground dark:text-primary-foreground">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm">
-            <Clock size={20} />
-          </div>
-          Recent Activity
-        </h3>
-        {isPrivate && (
-          <Badge variant="outline" className="h-5 px-2 text-[8px] font-black uppercase border-rose-200 text-rose-400 rounded-full">
-            <EyeOff size={10} className="mr-1" /> Private
-          </Badge>
-        )}
-      </div>
-      
-      <div className="space-y-2">
-        {activities.map((activity) => (
-          <Link
-            key={activity.id}
-            to={activity.link}
-            className="flex items-center gap-5 p-4 rounded-2xl hover:bg-muted/50 dark:hover:bg-foreground/50 transition-all duration-500 group"
-          >
-            <div
-              className={cn(
-                "w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 shadow-inner group-hover:scale-110 transition-transform",
-                activity.type === "client"
-                  ? "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400"
-                  : "bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400"
-              )}
-            >
-              {activity.type === "client" ? (
-                <User size={20} />
-              ) : (
-                <Calendar size={20} />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className={cn(
-                "font-black text-sm text-foreground dark:text-primary-foreground group-hover:text-indigo-600 transition-colors truncate",
-                isPrivate && "blur-sm select-none"
-              )}>
-                {activity.title}
-              </p>
-              <p className={cn(
-                "text-[10px] text-muted-foreground font-black uppercase tracking-widest truncate mt-1",
-                isPrivate && "blur-[2px] select-none"
-              )}>{activity.subtitle}</p>
-            </div>
-            <div className="text-[9px] text-muted-foreground font-black uppercase tracking-widest flex-shrink-0">
-              {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
-            </div>
+    <SectionCard
+      title="Recent activity"
+      icon={History}
+      action={
+        <>
+          {isPrivate && (
+            <span className="inline-flex h-6 items-center gap-1 rounded-full border border-border px-2 text-[11px] text-muted-foreground">
+              <EyeOff size={11} /> Private
+            </span>
+          )}
+          <Link to="/appointments" className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-[13px] text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground">
+            View all <ArrowRight size={13} />
           </Link>
-        ))}
+        </>
+      }
+    >
+      <ul className="space-y-px">
+        {activities.map((activity) => {
+          const name = activity.title || "";
+          const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((p: string) => p[0]?.toUpperCase()).join("");
+          return (
+            <li key={activity.id}>
+              <Link to={activity.link} className="group flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-foreground/[0.03]">
+                <div
+                  className={cn(
+                    "relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold",
+                    activity.type === "client" ? "bg-primary/10 text-primary" : "bg-muted text-foreground/70",
+                    isPrivate && "blur-[3px]"
+                  )}
+                >
+                  {initials || (activity.type === "client" ? <User size={14} /> : <Calendar size={14} />)}
+                  <span
+                    className={cn(
+                      "absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-card",
+                      activity.type === "client" ? "bg-primary" : "bg-chart-destructive"
+                    )}
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className={cn("truncate text-sm font-medium text-foreground", isPrivate && "blur-sm select-none")}>{activity.title}</p>
+                  <p className={cn("truncate text-xs text-muted-foreground", isPrivate && "blur-[2px] select-none")}>{activity.subtitle}</p>
+                </div>
+                <div className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                  {formatDistanceToNow(activity.timestamp, { addSuffix: true }).replace("about ", "")}
+                </div>
+              </Link>
+            </li>
+          );
+        })}
         {activities.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-muted-foreground text-sm font-medium">
-              No recent activity to show.
-            </p>
-          </div>
+          <li className="px-3 pb-8 pt-4 text-center text-[13px] text-muted-foreground">No recent activity yet.</li>
         )}
-      </div>
-      
-      <Link to="/appointments" className="mt-5 block">
-        <Button variant="ghost" className="w-full rounded-xl h-12 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-indigo-600 hover:bg-indigo-50 group transition-all">
-          View All Activity <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
-        </Button>
-      </Link>
-    </div>
+      </ul>
+    </SectionCard>
   );
 };
 

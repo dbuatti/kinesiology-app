@@ -383,7 +383,7 @@ export function PathwayReflexStimGrid({
               <button
                 type="button"
                 onClick={jumpToFirstMatch}
-                className="inline-flex items-center gap-1.5 px-3 h-11 rounded-lg text-xs font-semibold uppercase tracking-wider bg-background border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 h-11 rounded-lg text-xs font-semibold bg-background border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
                 title="Jump to first match"
               >
                 {matchCount} {matchCount === 1 ? "match" : "matches"}
@@ -397,7 +397,7 @@ export function PathwayReflexStimGrid({
                 type="button"
                 onClick={() => setView('board')}
                 className={cn(
-                  "inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-md text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer",
+                  "inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-md text-xs font-semibold transition-colors cursor-pointer",
                   view === 'board' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
                 title="Show the interactive reflex and nerve grid"
@@ -408,7 +408,7 @@ export function PathwayReflexStimGrid({
                 type="button"
                 onClick={() => setView('summary')}
                 className={cn(
-                  "inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-md text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer",
+                  "inline-flex items-center justify-center gap-1.5 h-9 px-4 rounded-md text-xs font-semibold transition-colors cursor-pointer",
                   view === 'summary' ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
                 title="Show a clean summary of everything marked"
@@ -435,7 +435,7 @@ export function PathwayReflexStimGrid({
               variant="outline"
               size="sm"
               onClick={() => window.open(`/appointments/${appointmentId}/grid-sheet`, "_blank")}
-              className="h-11 px-3 text-xs font-medium uppercase tracking-wider rounded-lg"
+              className="h-11 px-3 text-xs font-medium rounded-lg"
               title="Open a printable sheet of this appointment's marks in a new tab"
             >
               <Printer size={15} className="mr-1.5" /> Print
@@ -461,7 +461,7 @@ export function PathwayReflexStimGrid({
             <span
               key={track.title}
               title={track.title}
-              className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground"
             >
               <span className={`w-2 h-2 rounded-full ${track.color}`} />
               T{ti + 1} <span className="text-foreground tabular-nums">{trackCounts[ti]}</span>
@@ -472,14 +472,14 @@ export function PathwayReflexStimGrid({
             <span
               key={group.label}
               title={`${group.label} nuclei`}
-              className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground"
             >
               <span className={`w-2 h-2 rounded-full ${NUCLEI_COLORS[group.label]}`} />
               {group.label} <span className="text-foreground tabular-nums">{nucleiCounts[gi]}</span>
             </span>
           ))}
           <span className="flex-1" />
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
             <span className="w-2 h-2 rounded-full bg-sky-500" />
             Muscles <span className="text-foreground tabular-nums">{muscleCount}</span>
           </span>
@@ -501,7 +501,7 @@ export function PathwayReflexStimGrid({
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16 gap-4">
           <Loader2 className="animate-spin text-chart-primary" size={28} />
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Loading Grid...</p>
+          <p className="text-xs font-medium text-muted-foreground">Loading Grid...</p>
         </div>
       ) : (
         <>
@@ -517,7 +517,7 @@ export function PathwayReflexStimGrid({
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      "flex items-center gap-2 px-4 h-10 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer",
+                      "flex items-center gap-2 px-4 h-10 rounded-xl text-xs font-bold transition-all cursor-pointer",
                       active
                         ? "bg-primary text-primary-foreground shadow-md ring-2 ring-chart-primary/30"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -528,7 +528,7 @@ export function PathwayReflexStimGrid({
                     {tab.label}
                     <span
                       className={cn(
-                        "tabular-nums rounded-full px-1.5 py-0.5 text-[10px] font-black transition-colors",
+                        "tabular-nums rounded-full px-1.5 py-0.5 text-[10px] font-semibold transition-colors",
                         active ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-foreground/70"
                       )}
                     >

@@ -314,7 +314,7 @@ const CorrectionsManualContent = () => {
                       </div>
                     ))}
                   </div>
-                  <p className="text-[9px] text-muted-foreground mt-3 italic leading-relaxed">
+                  <p className="text-[10px] text-muted-foreground mt-3 italic leading-relaxed">
                     Light pressure = Yang (superficial pulse). Deep pressure = Yin (deep pulse). Hold until therapeutic shift.
                   </p>
                 </div>
@@ -367,7 +367,7 @@ const CorrectionsManualContent = () => {
                 <div className="w-full border-t border-dashed border-border" />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-card px-3 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Then Check</span>
+                <span className="bg-card px-3 text-xs font-medium text-muted-foreground">Then Check</span>
               </div>
             </div>
 
@@ -386,7 +386,7 @@ const CorrectionsManualContent = () => {
                         <div className="grid grid-cols-2 gap-3">
                           <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800">
                             <div className="flex items-center gap-1.5 mb-1">
-                              <span className="text-[9px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">YES</span>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">YES</span>
                               <ArrowRightCircle size={12} className="text-rose-500" />
                             </div>
                             <p className="text-[10px] text-rose-800 dark:text-rose-200 leading-relaxed">
@@ -395,7 +395,7 @@ const CorrectionsManualContent = () => {
                           </div>
                           <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
                             <div className="flex items-center gap-1.5 mb-1">
-                              <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">NO</span>
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">NO</span>
                               <ArrowRightCircle size={12} className="text-emerald-500" />
                             </div>
                             <p className="text-[10px] text-emerald-800 dark:text-emerald-200 leading-relaxed">{cp.noAdvance}</p>
@@ -462,16 +462,16 @@ const CorrectionsManualContent = () => {
         <div className="px-4 py-2 flex items-center justify-between gap-4">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="h-8 bg-muted/60">
-              <TabsTrigger value="afferent" className="text-[10px] h-7 px-3 data-[state=active]:bg-primary/5 data-[state=active]:text-primary data-[state=active]:shadow-sm">
+              <TabsTrigger value="afferent" className="text-[13px] h-7 px-3 data-[state=active]:bg-primary/5 data-[state=active]:text-primary data-[state=active]:shadow-sm">
                 <ArrowDownCircle size={12} className="mr-1.5" /> Afferent
               </TabsTrigger>
-              <TabsTrigger value="efferent" className="text-[10px] h-7 px-3 data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700 data-[state=active]:shadow-sm">
+              <TabsTrigger value="efferent" className="text-[13px] h-7 px-3 data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700 data-[state=active]:shadow-sm">
                 <ArrowUpCircle size={12} className="mr-1.5" /> Efferent
               </TabsTrigger>
-              <TabsTrigger value="heart-wall" className="text-[10px] h-7 px-3 data-[state=active]:bg-rose-50 data-[state=active]:text-rose-700 data-[state=active]:shadow-sm">
+              <TabsTrigger value="heart-wall" className="text-[13px] h-7 px-3 data-[state=active]:bg-rose-50 data-[state=active]:text-rose-700 data-[state=active]:shadow-sm">
                 <Shield size={12} className="mr-1.5" /> Heart Wall
               </TabsTrigger>
-              <TabsTrigger value="limiting-beliefs" className="text-[10px] h-7 px-3 data-[state=active]:bg-destructive/10 data-[state=active]:text-destructive data-[state=active]:shadow-sm">
+              <TabsTrigger value="limiting-beliefs" className="text-[13px] h-7 px-3 data-[state=active]:bg-destructive/10 data-[state=active]:text-destructive data-[state=active]:shadow-sm">
                 <ShieldAlert size={12} className="mr-1.5" /> Limiting Beliefs
               </TabsTrigger>
             </TabsList>

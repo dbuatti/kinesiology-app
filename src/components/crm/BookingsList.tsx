@@ -461,7 +461,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
   return (
     <div className="animate-in fade-in duration-300">
       {/* Consolidated filter bar: search, time-state pills, source toggle, new booking */}
-      <div className="bg-gradient-to-br from-amber-50/40 to-card dark:from-amber-950/10 border border-border/60 rounded-[1.5rem] p-3.5 mb-4 space-y-3 shadow-[0_2px_20px_-10px_rgba(120,90,40,0.15)]">
+      <div className="bg-gradient-to-br from-amber-50/40 to-card dark:from-amber-950/10 border border-border/60 rounded-2xl p-3.5 mb-4 space-y-3 shadow-[0_2px_20px_-10px_rgba(120,90,40,0.15)]">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative flex-1 min-w-[140px] max-w-xs">
             <Input
@@ -509,7 +509,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
           {onNewBooking && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button className="rounded-lg font-semibold text-xs h-8 px-3 bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-primary-foreground border-none active:scale-95 transition-transform">
+                <Button className="rounded-lg font-semibold text-xs h-8 px-3 bg-primary hover:bg-primary/90 text-primary-foreground border-none active:scale-95 transition-transform">
                   <Plus size={14} className="mr-1" /> New
                 </Button>
               </DropdownMenuTrigger>
@@ -520,7 +520,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                   return (
                     <div key={s.key}>
                       {(!prev || prev.group !== s.group) && (
-                        <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{s.group}</div>
+                        <div className="px-2 py-1 text-xs font-medium text-muted-foreground">{s.group}</div>
                       )}
                       <DropdownMenuItem onClick={() => onNewBooking(s.key)}>
                         {isVoice ? <Mic size={14} className="mr-2 text-chart-destructive" /> : <User size={14} className="mr-2 text-chart-primary" />}
@@ -620,7 +620,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
       )}
 
       {/* Date-grouped list with sticky headers */}
-      <div className="bg-card rounded-[1.75rem] border border-border/60 shadow-[0_4px_30px_-12px_rgba(120,90,40,0.18)] overflow-hidden">
+      <div className="bg-card rounded-2xl border border-border/60 shadow-[0_4px_30px_-12px_rgba(120,90,40,0.18)] overflow-hidden">
         {grouped.length === 0 && (
           <div className="px-6 py-20 text-center">
             <div className="inline-flex flex-col items-center gap-3 text-muted-foreground">
@@ -754,7 +754,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                 <div className="flex items-center gap-1.5">
                   {discipline && (
                     <Badge className={cn(
-                      "text-[9px] font-semibold uppercase tracking-wider border-none px-1.5 py-0",
+                      "text-[10px] font-semibold uppercase tracking-wider border-none px-1.5 py-0",
                       discipline === "piano"
                         ? "bg-chart-primary/10 text-chart-primary"
                         : "bg-chart-destructive/10 text-chart-destructive"
@@ -905,7 +905,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
             </DialogDescription>
           </DialogHeader>
           <div className="py-2 text-center">
-            <div className="text-5xl font-serif font-bold tabular-nums bg-gradient-to-br from-amber-500 to-rose-500 bg-clip-text text-transparent">${payTarget?.amount ?? "—"}</div>
+            <div className="text-5xl font-serif font-bold tabular-nums text-foreground">${payTarget?.amount ?? "—"}</div>
             <div className="text-xs text-muted-foreground mt-1">
               {payTarget?.source === "voice"
                 ? "Generates a Stripe checkout link and copies it to your clipboard."
@@ -917,7 +917,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
             <Button
               onClick={() => { const t = payTarget; setPayTarget(null); if (t) sendPaymentLink(t); }}
               disabled={!!busyId}
-              className="rounded-xl bg-gradient-to-br from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-primary-foreground border-none"
+              className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground border-none"
             >
               <CreditCard size={15} className="mr-2" /> Send for ${payTarget?.amount ?? ""}
             </Button>
@@ -984,7 +984,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
               <p className="text-xs text-muted-foreground">No open times found in the next 3 weeks — use a custom time below.</p>
             )}
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Custom time</p>
+              <p className="text-xs font-medium text-muted-foreground mb-1">Custom time</p>
               <Input
                 type="datetime-local"
                 value={rescheduleAt && rescheduleAt.includes("T") && !rescheduleAt.endsWith("Z") ? rescheduleAt : ""}

@@ -11,18 +11,18 @@ interface ClientProfileCardProps {
 
 const ClientProfileCard = ({ client }: ClientProfileCardProps) => {
   return (
-    <Card className="overflow-hidden border-none shadow-lg bg-card rounded-2xl">
-      <div className="h-24 bg-gradient-to-r from-chart-primary to-chart-primary/70 relative">
-          <div className="absolute bottom-0 left-6 translate-y-1/2 p-1 bg-card rounded-full shadow-md">
-              <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-rose-400 text-white rounded-full flex items-center justify-center text-3xl font-bold border-2 border-white dark:border-card shadow-lg shadow-rose-500/20">
+    <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-xs">
+      <div className="relative h-20 bg-[radial-gradient(120%_140%_at_0%_0%,hsl(var(--primary)/0.16),transparent_60%),radial-gradient(100%_120%_at_100%_0%,hsl(var(--chart-purple)/0.10),transparent_60%)]">
+          <div className="absolute -bottom-8 left-6 rounded-full bg-card p-1 shadow-sm ring-1 ring-border/60">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-indigo-700 text-2xl font-semibold text-white">
                 {client.name.charAt(0)}
               </div>
           </div>
       </div>
-      <CardContent className="pt-14 px-6 pb-6 space-y-4">
+      <CardContent className="pt-12 px-6 pb-6 space-y-4">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">{client.name}</h2>
-          <p className="text-muted-foreground font-medium">{client.pronouns || 'No pronouns set'}</p>
+          <h2 className="font-serif text-2xl font-medium tracking-[-0.02em] text-foreground">{client.name}</h2>
+          <p className="text-sm text-muted-foreground">{client.pronouns || 'No pronouns set'}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {client.born && (

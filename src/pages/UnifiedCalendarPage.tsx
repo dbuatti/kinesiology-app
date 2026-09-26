@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, ExternalLink, Mic, User, RotateCcw, Plus, BookOpen, Search, CheckCircle2, CreditCard, Circle, Gift
+  ArrowLeft, Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, ExternalLink, Mic, User, RotateCcw, Plus, BookOpen, Search, CheckCircle2, CreditCard, Circle, Gift, Bell
 } from "lucide-react";
 import {
   format, addMonths, subMonths, addWeeks, subWeeks, startOfMonth, endOfMonth,
@@ -24,6 +24,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import AppLayout from "@/components/crm/AppLayout";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import PageHeader from "@/components/shared/PageHeader";
 import WeeklyTimeGrid, {
   CalendarEvent,
@@ -772,7 +773,7 @@ const UnifiedCalendarPage = () => {
  subtitle="Kinesiology appointments and voice lessons at a glance."
             icon={CalendarIcon}
             />
- <div className="p-24 flex flex-col items-center justify-center gap-6 bg-destructive/10 rounded-xl">
+ <div className="py-24 flex flex-col items-center justify-center gap-3 bg-destructive/10 rounded-xl">
  <div className="w-16 h-16 rounded-full bg-destructive/20 flex items-center justify-center">
  <span className="text-2xl font-semibold text-destructive">!</span>
  </div>
@@ -796,15 +797,25 @@ const UnifiedCalendarPage = () => {
  title="Calendar"
  subtitle="Kinesiology appointments and voice lessons at a glance."
   icon={CalendarIcon}
+  iconClassName="bg-primary/10 text-primary"
   actions={
 <div className="flex gap-2 items-center">
-  <CalendarReminderPanel />
+  <Popover>
+    <PopoverTrigger asChild>
+      <Button variant="outline" size="sm" className="h-9 gap-2 rounded-lg px-3 text-[13px] font-medium">
+        <Bell size={14} /> Reminders
+      </Button>
+    </PopoverTrigger>
+    <PopoverContent align="end" sideOffset={8} className="w-[min(420px,calc(100vw-24px))] rounded-2xl border-none bg-transparent p-0">
+      <CalendarReminderPanel />
+    </PopoverContent>
+  </Popover>
   <ShareAvailabilityButton />
   <Button
     variant="outline"
     size="sm"
     onClick={() => navigate(-1)}
-    className="h-10 px-4 rounded-xl border-border font-medium text-[10px] uppercase tracking-wider gap-2"
+    className="h-9 gap-2 rounded-lg px-3 text-[13px] font-medium"
   >
             <ArrowLeft size={14} />
             Back
@@ -814,10 +825,10 @@ const UnifiedCalendarPage = () => {
  />
 
  {isLoading ? (
- <div className="p-24 flex flex-col items-center justify-center gap-6">
- <Loader2 className="animate-spin text-primary" size={48} />
- <p className="text-muted-foreground font-semibold text-xs uppercase tracking-wider">
- Loading calendar...
+ <div className="py-24 flex flex-col items-center justify-center gap-3">
+ <Loader2 className="animate-spin text-muted-foreground" size={22} />
+ <p className="text-muted-foreground text-sm">
+ Loading calendar…
  </p>
  </div>
  ) : (
@@ -887,7 +898,7 @@ const UnifiedCalendarPage = () => {
 
    ) : viewMode === "month" ? (
 
-   <div className="bg-card rounded-[1.75rem] border border-border/60 shadow-[0_4px_30px_-12px_rgba(120,90,40,0.18)] overflow-hidden animate-in fade-in duration-500">
+   <div className="bg-card rounded-2xl border border-border/60 shadow-[0_4px_30px_-12px_rgba(120,90,40,0.18)] overflow-hidden animate-in fade-in duration-500">
    {/* Legend */}
    <div className="px-8 pt-6 pb-0 flex flex-wrap items-center gap-x-6 gap-y-2">
    <div className="flex items-center gap-2">
@@ -966,7 +977,7 @@ const UnifiedCalendarPage = () => {
    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
    <div
    key={day}
-   className="py-4 text-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+   className="py-4 text-center text-xs font-medium text-muted-foreground"
    >
    {day}
    </div>
@@ -1007,7 +1018,7 @@ const UnifiedCalendarPage = () => {
    className={cn(
    "w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold",
    isCurrentDay
-   ? "bg-gradient-to-br from-amber-500 to-rose-500 text-primary-foreground shadow-sm "
+   ? "bg-primary/10 text-primary "
    : "text-muted-foreground"
    )}
    >
@@ -1030,7 +1041,7 @@ const UnifiedCalendarPage = () => {
    </div>
 
    {dayItems.length > 0 && (
-   <div className="text-[9px] font-bold text-chart-emerald mb-1">
+   <div className="text-[10px] font-bold text-chart-emerald mb-1">
      ${dayIncome}
    </div>
    )}
@@ -1073,7 +1084,7 @@ const UnifiedCalendarPage = () => {
      ) : (
      <span className="truncate">{item.title}</span>
      )}
-     {item.time && <span className="text-[9px] opacity-60 shrink-0 ml-0.5">{item.time}</span>}
+     {item.time && <span className="text-[10px] opacity-60 shrink-0 ml-0.5">{item.time}</span>}
      </div>
      </a>
      ) : (
@@ -1097,7 +1108,7 @@ const UnifiedCalendarPage = () => {
       <User size={9} className="shrink-0 opacity-60" />
       )}
       <span className="truncate">{item.title}</span>
-     {item.time && <span className="text-[9px] opacity-60 shrink-0 ml-0.5">{item.time}</span>}
+     {item.time && <span className="text-[10px] opacity-60 shrink-0 ml-0.5">{item.time}</span>}
      </div>
      </div>
      )}
@@ -1267,7 +1278,7 @@ const UnifiedCalendarPage = () => {
     <DialogContent className="sm:max-w-[440px] rounded-2xl p-0 mx-4 w-[calc(100%-2rem)] flex flex-col bg-background">
       <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-rose-500 text-primary-foreground flex items-center justify-center shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
             <User size={20} />
           </div>
           <div>
@@ -1328,7 +1339,7 @@ const UnifiedCalendarPage = () => {
       <DialogContent className="sm:max-w-[480px] rounded-2xl p-0 mx-4 w-[calc(100%-2rem)] flex flex-col bg-background">
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-rose-500 text-primary-foreground flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
               <Plus size={20} />
             </div>
             <div>
@@ -1345,7 +1356,7 @@ const UnifiedCalendarPage = () => {
         {/* Step 1 — choose what to book */}
         {!bookSvc ? (
           <div className="px-6 py-5 space-y-2">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Choose appointment</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2">Choose appointment</p>
             {SLOT_SERVICES.map((s) => {
               const isVoice = s.kind === "voice";
               return (
@@ -1378,7 +1389,7 @@ const UnifiedCalendarPage = () => {
           <>
 <div className="px-6 py-5 space-y-4">
                <div>
-                 <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">Select Client</p>
+                 <p className="text-xs font-medium text-muted-foreground mb-2">Select Client</p>
                  <div className="relative mb-2">
                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                    <input

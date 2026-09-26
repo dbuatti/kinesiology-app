@@ -204,7 +204,7 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
 
  return (
  <>
- <div className="space-y-6">
+ <div className={cn("space-y-6", nested && "p-5 sm:p-6 lg:p-8")}>
 
 
  <PageHeader
@@ -214,7 +214,7 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  actions={
  <>
  <div className="hidden sm:flex flex-col items-end mr-2">
- <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Practice Streak</p>
+ <p className="text-xs font-medium text-muted-foreground">Practice Streak</p>
  <p className="text-xl font-semibold text-orange-500 flex items-center gap-1">
  <Zap size={18} className="fill-current" /> {streak} Days
  </p>
@@ -222,28 +222,28 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  <Button
  onClick={() => handleNewSelfSession()}
  disabled={creating}
- className="bg-destructive hover:bg-destructive/90 shadow-sm h-11 px-6 rounded-xl font-medium"
+ className="h-10 gap-1.5 rounded-xl px-4 font-medium shadow-sm"
  >
  {creating ? <Loader2 className="mr-2 animate-spin" /> : <Plus size={20} className="mr-2" />}
- Start Self-Session
+ Start self-session
  </Button>
  </>
  }
  />
 
  <Tabs value={activeTab} onValueChange={(v) => (nested ? setInternalTab(v) : setSearchParams({ tab: v }))} className="w-full">
- <TabsList className="grid w-full grid-cols-2 h-14 bg-muted p-1.5 rounded-xl mb-8">
- <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-destructive data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
+ <TabsList className="grid w-full sm:w-auto sm:inline-grid grid-cols-2 h-10 bg-muted p-1 rounded-xl mb-8">
+ <TabsTrigger value="overview" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-destructive data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px]">
  <LayoutDashboard size={14} /> Practice Dashboard
  </TabsTrigger>
- <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-destructive data-[state=active]:shadow-sm rounded-xl h-11 font-semibold uppercase tracking-wider text-[10px]">
+ <TabsTrigger value="progress" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-chart-destructive data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px]">
  <TrendingUp size={14} /> Progress & Protocols
  </TabsTrigger>
  </TabsList>
 
  <TabsContent value="overview" className="space-y-8">
  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
- <Card className="lg:col-span-2 border-none shadow-sm bg-card rounded-3xl overflow-hidden">
+ <Card className="lg:col-span-2 border border-border shadow-sm bg-card rounded-3xl overflow-hidden">
  <CardHeader className="bg-muted/30 border-b border-border">
  <div className="flex items-center justify-between">
  <div>
@@ -254,13 +254,13 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  </div>
  <div className="flex gap-3">
  <div className="text-right">
- <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Latest BOLT</p>
+ <p className="text-xs font-medium text-muted-foreground">Latest BOLT</p>
  <p className={cn("text-2xl font-semibold", lastBolt && lastBolt >= 25 ? "text-chart-emerald" : "text-muted-foreground")}>
  {lastBolt ? `${lastBolt}s` : 'N/A'}
  </p>
  </div>
  <div className="text-right border-l border-border pl-3">
- <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Latest Coh</p>
+ <p className="text-xs font-medium text-muted-foreground">Latest Coh</p>
  <p className="text-2xl font-semibold text-chart-primary ">
  {lastCoh ? lastCoh.toFixed(2) : 'N/A'}
  </p>
@@ -298,7 +298,7 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  </Card>
 
  <div className="space-y-6">
- <Card className="border-none shadow-sm bg-foreground text-primary-foreground rounded-3xl overflow-hidden relative">
+ <Card className="border-none shadow-lg bg-[hsl(238_26%_10%)] text-white ring-1 ring-white/[0.06] rounded-2xl overflow-hidden relative">
  <div className="absolute top-0 right-0 p-8 opacity-10">
  <Sparkles size={120} />
  </div>
@@ -306,31 +306,31 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  <CardTitle className="text-xl font-medium flex items-center gap-2">
  <Target size={20} className="text-amber-400" /> Protocol Mastery
  </CardTitle>
- <CardDescription className="text-muted-foreground/60">Quick start specific practice goals</CardDescription>
+ <CardDescription className="text-white/50">Quick start specific practice goals</CardDescription>
  </CardHeader>
  <CardContent className="space-y-3 relative z-10">
   {protocols.map((p) => (
   <button
   key={p.name}
   onClick={() => (p as any).isHeartWall ? setHeartWallOpen(true) : handleNewSelfSession(p.goal)}
- className="w-full flex items-center justify-between p-3 bg-card/5 hover:bg-card/10 border border-primary-foreground/10 rounded-xl transition-all group"
+ className="w-full flex items-center justify-between p-3 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-xl transition-all group"
  >
  <div className="flex items-center gap-3">
- <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-primary-foreground shadow-sm", p.color)}>
+ <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-sm", p.color)}>
  <p.icon size={20} />
  </div>
  <div className="text-left">
  <p className="text-sm font-medium">{p.name}</p>
- <p className="text-[10px] text-muted-foreground/60">Practice Drill</p>
+ <p className="text-[10px] text-white/50">Practice Drill</p>
  </div>
  </div>
- <ArrowRight size={16} className="text-muted-foreground group-hover:text-primary-foreground group-hover:translate-x-1 transition-all" />
+ <ArrowRight size={16} className="text-white/55 group-hover:text-white group-hover:translate-x-1 transition-all" />
  </button>
  ))}
  </CardContent>
  </Card>
 
- <Card className="border-none shadow-sm bg-card rounded-3xl">
+ <Card className="border border-border shadow-sm bg-card rounded-3xl">
  <CardHeader>
  <CardTitle className="text-lg font-medium flex items-center gap-2">
  <Info size={18} className="text-primary" /> Practice Tips
@@ -375,7 +375,7 @@ export function SelfPracticeTool({ nested = false }: { nested?: boolean } = {}) 
  <CardContent className="p-6 space-y-4">
  <div className="flex items-start justify-between">
  <div className="space-y-1">
- <p className="text-[10px] font-semibold text-destructive uppercase tracking-wider">
+ <p className="text-[11px] font-semibold text-destructive">
  {isToday(new Date(session.date)) ? "TODAY" : format(new Date(session.date), "EEEE, MMM d")}
  </p>
  <h3 className="font-medium text-lg text-foreground group-hover:text-chart-destructive transition-colors">

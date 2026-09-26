@@ -187,15 +187,15 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
   const pending = Math.max(0, stats.total - stats.sent);
 
   return (
-    <Card className="w-full max-w-md rounded-[1.75rem] border-border/60 shadow-[0_10px_34px_-14px_rgba(120,80,40,0.22)] overflow-hidden">
+    <Card className="w-full max-w-md rounded-2xl border-border/60 shadow-none overflow-hidden">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-gradient-to-br from-amber-400 to-rose-400 shadow-sm">
-              <Bell className="h-4 w-4 text-white" />
+            <div className="p-2 rounded-lg border border-border bg-background">
+              <Bell className="h-4 w-4 text-chart-amber" />
             </div>
             <div>
-              <CardTitle className="text-lg font-serif tracking-tight">Session Reminders</CardTitle>
+              <CardTitle className="text-[15px] font-semibold tracking-tight">Session reminders</CardTitle>
               <CardDescription>A gentle nudge before the week ahead</CardDescription>
             </div>
           </div>
@@ -212,15 +212,15 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
         <div className="grid grid-cols-3 gap-2.5">
           <div className="text-center p-3 rounded-2xl bg-muted/40 border border-border/40">
             <div className="text-xl font-bold text-foreground font-serif">{stats.total}</div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-0.5">This week</div>
+            <div className="text-xs text-muted-foreground mt-0.5">This week</div>
           </div>
           <div className="text-center p-3 rounded-2xl bg-chart-emerald/10 border border-chart-emerald/20">
             <div className="text-xl font-bold text-chart-emerald font-serif">{stats.sent}</div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-0.5">Reminded</div>
+            <div className="text-xs text-muted-foreground mt-0.5">Reminded</div>
           </div>
           <div className="text-center p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20">
             <div className="text-xl font-bold text-amber-600 dark:text-amber-500 font-serif">{pending}</div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-0.5">Pending</div>
+            <div className="text-xs text-muted-foreground mt-0.5">Pending</div>
           </div>
         </div>
 
@@ -245,7 +245,7 @@ export default function CalendarReminderPanel({ onReminderSent }: CalendarRemind
           <Button
             onClick={sendReminders}
             disabled={isSending || isTestSending || stats.total === 0}
-            className="flex-1 rounded-full bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-500 hover:to-rose-600 text-white border-none shadow-sm active:scale-95 transition-transform"
+            className="flex-1 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
             size="sm"
           >
             {isSending ? (

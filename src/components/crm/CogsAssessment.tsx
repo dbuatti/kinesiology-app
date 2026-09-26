@@ -232,33 +232,33 @@ const CogsAssessment = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-3">
                         <div className="space-y-1">
-                          <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">What to prompt</Label>
+                          <Label className="text-xs font-medium text-muted-foreground">What to prompt</Label>
                           <p className="text-sm text-foreground">{plane.prompt}</p>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">What to look for</Label>
+                          <Label className="text-xs font-medium text-muted-foreground">What to look for</Label>
                           <p className="text-sm text-muted-foreground">{plane.lookFor}</p>
                         </div>
                       </div>
                       <div className="space-y-3">
                         <div className="space-y-1">
-                          <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">How to perform</Label>
+                          <Label className="text-xs font-medium text-muted-foreground">How to perform</Label>
                           <p className="text-sm text-muted-foreground">{plane.movement}</p>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Normal pattern</Label>
+                          <Label className="text-xs font-medium text-muted-foreground">Normal pattern</Label>
                           <p className="text-xs text-muted-foreground/70">{plane.reference}</p>
                         </div>
                       </div>
                     </div>
 
                     <div className="p-3 rounded-lg bg-card border border-border">
-                      <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 block">Example</Label>
+                      <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Example</Label>
                       <p className="text-sm text-muted-foreground italic">{plane.example}</p>
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Quick tags</Label>
+                      <Label className="text-xs font-medium text-muted-foreground">Quick tags</Label>
                       <div className="flex flex-wrap gap-1.5">
                         {plane.tags.map(tag => (
                           <button

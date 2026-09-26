@@ -84,7 +84,7 @@ const SnsItem = ({ title, subtitle, icon: Icon, iconColor, notes, notesField, ha
             </button>
           )}
           {hasNotes ? (
-            <Badge variant="outline" className="text-[9px] font-medium uppercase tracking-wider bg-chart-emerald/10 text-chart-emerald border-chart-emerald/20">
+            <Badge variant="outline" className="text-[10px] font-medium uppercase tracking-wider bg-chart-emerald/10 text-chart-emerald border-chart-emerald/20">
               Recorded
             </Badge>
           ) : (
@@ -111,7 +111,7 @@ const SnsItem = ({ title, subtitle, icon: Icon, iconColor, notes, notesField, ha
 
           {protocol && protocol.length > 0 && (
             <div className="pl-7">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Protocol</p>
+              <p className="text-xs font-medium text-muted-foreground mb-2">Protocol</p>
               <ol className="space-y-1.5 text-xs text-muted-foreground list-decimal list-inside">
                 {protocol.map((step, i) => (
                   <li key={i} className="leading-relaxed">{step}</li>

@@ -28,7 +28,7 @@ import { useNavigate } from "react-router-dom";
 import HelpModal from "./HelpModal";
 import { cn } from "@/lib/utils";
 
-const QuickActions = () => {
+const QuickActions = ({ compact = false }: { compact?: boolean }) => {
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appointmentDialogOpen, setAppointmentDialogOpen] = useState(false);
   const [quickSessionOpen, setQuickSessionOpen] = useState(false);
@@ -107,146 +107,65 @@ const QuickActions = () => {
 
   return (
     <>
-      <div className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-50 print:hidden flex items-center gap-3 md:gap-5">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-              <DropdownMenuTrigger asChild>
-                <div className="flex items-center gap-3 md:gap-4 group cursor-pointer">
-                  <Button
-                    size="lg"
-                    className={cn(
-                      "h-10 w-10 md:h-12 md:w-12 rounded-xl shadow-3xl bg-primary hover:bg-primary/90 transition-all duration-700",
-                      isOpen ? "rotate-45 scale-110 shadow-primary/30" : "hover:scale-110 hover:rotate-90 hover:shadow-primary/20"
-                    )}
-                  >
-                    <Plus size={20} className="md:w-6 md:h-6" strokeWidth={3} />
-                  </Button>
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-72 md:w-80 p-3 md:p-4 rounded-xl shadow-3xl border mb-4 md:mb-8 animate-in slide-in-from-bottom-4 duration-500 bg-background dark:bg-card">
-                <DropdownMenuItem 
-                  onClick={() => { navigate("/practice/calibrate"); setIsOpen(false); }} 
-                  className="rounded-xl py-4 px-5 md:py-5 md:px-6 cursor-pointer group transition-all hover:bg-muted"
-                >
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-muted flex items-center justify-center mr-4 md:mr-5 group-hover:bg-muted/80 transition-colors shadow-inner">
-                    <Zap size={20} className="text-muted-foreground md:w-6 md:h-6" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="font-semibold text-sm md:text-base block text-foreground truncate">Quick Calibrate</span>
-                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider truncate block">Instant Pathway Logic</span>
-                  </div>
-                  <kbd className="hidden md:inline-flex ml-auto pointer-events-none h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-semibold text-muted-foreground">
-                    ⌘Q
-                  </kbd>
-                </DropdownMenuItem>
-
-                <DropdownMenuSeparator className="my-2 md:my-3 bg-muted" />
-
-                <DropdownMenuItem 
-                  onClick={() => { setQuickSessionOpen(true); setIsOpen(false); }} 
-                  className="rounded-xl py-4 px-5 md:py-5 md:px-6 cursor-pointer group transition-all hover:bg-muted"
-                >
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary/10 flex items-center justify-center mr-4 md:mr-5 group-hover:bg-primary/15 transition-colors">
-                    <Bolt size={20} className="text-primary md:w-6 md:h-6" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="font-semibold text-sm md:text-base block text-foreground truncate">Quick Session</span>
-                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider truncate block">Instant — no booking needed</span>
-                  </div>
-                  <kbd className="hidden md:inline-flex ml-auto pointer-events-none h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-semibold text-muted-foreground">
-                    ⌘⇧S
-                  </kbd>
-                </DropdownMenuItem>
-
-                <DropdownMenuItem 
-                  onClick={() => { setClientDialogOpen(true); setIsOpen(false); }} 
-                  className="rounded-xl py-4 px-5 md:py-5 md:px-6 cursor-pointer group transition-all hover:bg-muted"
-                >
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-muted flex items-center justify-center mr-4 md:mr-5 group-hover:bg-muted/80 transition-colors shadow-inner">
-                    <UserPlus size={20} className="text-chart-primary md:w-6 md:h-6" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="font-semibold text-sm md:text-base block text-foreground truncate">New Client</span>
-                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider truncate block">Add to database</span>
-                  </div>
-                  <kbd className="hidden md:inline-flex ml-auto pointer-events-none h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-semibold text-muted-foreground">
-                    ⌘N
-                  </kbd>
-                </DropdownMenuItem>
-
-                <DropdownMenuItem 
-                  onClick={() => { setAppointmentDialogOpen(true); setIsOpen(false); }} 
-                  className="rounded-xl py-4 px-5 md:py-5 md:px-6 cursor-pointer group transition-all hover:bg-muted"
-                >
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-muted flex items-center justify-center mr-4 md:mr-5 group-hover:bg-muted/80 transition-colors shadow-inner">
-                    <CalendarPlus size={20} className="text-chart-destructive md:w-6 md:h-6" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="font-semibold text-sm md:text-base block text-foreground truncate">Book Session</span>
-                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider truncate block">Schedule appointment</span>
-                  </div>
-                  <kbd className="hidden md:inline-flex ml-auto pointer-events-none h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-semibold text-muted-foreground">
-                    ⌘B
-                  </kbd>
-                </DropdownMenuItem>
-
-                <DropdownMenuSeparator className="my-2 md:my-3 bg-muted" />
-
-                <DropdownMenuItem 
-                  onClick={() => { navigate("/practice/procedures"); setIsOpen(false); }} 
-                  className="rounded-xl py-4 px-5 md:py-5 md:px-6 cursor-pointer group transition-all hover:bg-muted"
-                >
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-muted flex items-center justify-center mr-4 md:mr-5 group-hover:bg-muted/80 transition-colors shadow-inner">
-                    <Target size={20} className="text-chart-emerald md:w-6 md:h-6" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="font-semibold text-sm md:text-base block text-foreground truncate">Procedures</span>
-                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider truncate block">Track progress</span>
-                  </div>
-                  <kbd className="hidden md:inline-flex ml-auto pointer-events-none h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-semibold text-muted-foreground">
-                    ⌘P
-                  </kbd>
-                </DropdownMenuItem>
-
-                <DropdownMenuSeparator className="my-2 md:my-3 bg-muted" />
-
-                <DropdownMenuItem 
-                  onClick={() => { setHelpOpen(true); setIsOpen(false); }} 
-                  className="rounded-xl py-4 px-5 md:py-5 md:px-6 cursor-pointer group transition-all hover:bg-muted"
-                >
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-muted flex items-center justify-center mr-4 md:mr-5 group-hover:bg-muted/80 transition-colors shadow-inner">
-                    <HelpCircle size={20} className="text-muted-foreground md:w-6 md:h-6" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="font-semibold text-sm md:text-base block text-foreground truncate">Help & Shortcuts</span>
-                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider truncate block">View all commands</span>
-                  </div>
-                  <kbd className="hidden md:inline-flex ml-auto pointer-events-none h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-semibold text-muted-foreground">
-                    ⌘/
-                  </kbd>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </TooltipTrigger>
-          <TooltipContent side="left" className="rounded-xl font-medium text-xs p-3 shadow-sm border bg-card text-foreground">
-            <p>Quick Actions Menu</p>
-            <p className="text-[10px] text-muted-foreground mt-1 font-medium">Click to open</p>
-          </TooltipContent>
-        </Tooltip>
-      </div>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            size="sm"
+            className={cn(
+              "h-8 gap-1.5 rounded-lg px-2.5 text-[13px] font-medium shadow-sm print:hidden",
+              "bg-primary text-primary-foreground hover:bg-primary/90",
+              "shadow-[inset_0_1px_0_hsl(0_0%_100%/0.16),0_1px_2px_hsl(var(--shadow-color)/0.2)]",
+              compact && "w-8 px-0"
+            )}
+            aria-label="New…"
+          >
+            <Plus size={15} strokeWidth={2.25} className={cn("transition-transform duration-300 ease-out-expo", isOpen && "rotate-45")} />
+            {!compact && <span>New</span>}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" sideOffset={8} className="w-72">
+          {[
+            { label: "Quick session", hint: "Start now — no booking", icon: Bolt, tone: "text-primary", kbd: "⌘⇧S", run: () => setQuickSessionOpen(true) },
+            { label: "Book session", hint: "Schedule an appointment", icon: CalendarPlus, tone: "text-chart-destructive", kbd: "⌘B", run: () => setAppointmentDialogOpen(true) },
+            { label: "New client", hint: "Add to the database", icon: UserPlus, tone: "text-chart-primary", kbd: "⌘N", run: () => setClientDialogOpen(true) },
+          ].map((a) => (
+            <DropdownMenuItem key={a.label} onSelect={a.run} className="gap-3 py-2">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-background">
+                <a.icon size={15} className={a.tone} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13px] font-medium text-foreground">{a.label}</span>
+                <span className="block truncate text-xs text-muted-foreground">{a.hint}</span>
+              </span>
+              <kbd className="kbd hidden md:inline-flex">{a.kbd}</kbd>
+            </DropdownMenuItem>
+          ))}
+          <DropdownMenuSeparator className="my-1" />
+          {[
+            { label: "Quick calibrate", icon: Zap, kbd: "⌘Q", run: () => navigate("/practice/calibrate") },
+            { label: "Procedures", icon: Target, kbd: "⌘P", run: () => navigate("/practice/procedures") },
+            { label: "Help & shortcuts", icon: HelpCircle, kbd: "⌘/", run: () => setHelpOpen(true) },
+          ].map((a) => (
+            <DropdownMenuItem key={a.label} onSelect={a.run} className="gap-3">
+              <a.icon size={15} className="ml-2 mr-1 text-muted-foreground" />
+              <span className="flex-1 text-[13px]">{a.label}</span>
+              <kbd className="kbd hidden md:inline-flex">{a.kbd}</kbd>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-[550px] max-h-[90vh] overflow-y-auto rounded-xl p-0 border-none shadow-3xl">
-          <div className="p-10">
-            <DialogHeader className="mb-8">
+        <DialogContent className="w-[95vw] max-w-[550px] max-h-[90vh] overflow-y-auto rounded-2xl p-0">
+          <div className="p-6 sm:p-8">
+            <DialogHeader className="mb-6 text-left">
               <div className="flex items-center gap-4 mb-2">
-                <div className="w-14 h-14 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
-                  <UserPlus size={28} />
+                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                  <UserPlus size={19} />
                 </div>
                 <div>
-                  <DialogTitle className="text-3xl font-serif font-medium tracking-tight">Add New Client</DialogTitle>
-                  <DialogDescription className="text-base font-medium">Create a new client profile in your clinical database.</DialogDescription>
+                  <DialogTitle className="text-xl font-semibold tracking-tight">Add New Client</DialogTitle>
+                  <DialogDescription className="text-sm">Create a new client profile in your clinical database.</DialogDescription>
                 </div>
               </div>
             </DialogHeader>
@@ -256,16 +175,16 @@ const QuickActions = () => {
       </Dialog>
 
       <Dialog open={appointmentDialogOpen} onOpenChange={(open) => { setAppointmentDialogOpen(open); if (!open) setPrefilledClientId(undefined); }}>
-        <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh] overflow-y-auto rounded-xl p-0 border-none shadow-3xl">
-          <div className="p-10">
-            <DialogHeader className="mb-8">
+        <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh] overflow-y-auto rounded-2xl p-0">
+          <div className="p-6 sm:p-8">
+            <DialogHeader className="mb-6 text-left">
               <div className="flex items-center gap-4 mb-2">
-                <div className="w-14 h-14 rounded-2xl bg-destructive text-destructive-foreground flex items-center justify-center shadow-sm">
-                  <CalendarPlus size={28} />
+                <div className="w-10 h-10 rounded-xl bg-chart-destructive/10 text-chart-destructive flex items-center justify-center">
+                  <CalendarPlus size={19} />
                 </div>
                 <div>
-                  <DialogTitle className="text-3xl font-serif font-medium tracking-tight">Schedule Session</DialogTitle>
-                  <DialogDescription className="text-base font-medium">Select a client and set the appointment details.</DialogDescription>
+                  <DialogTitle className="text-xl font-semibold tracking-tight">Schedule Session</DialogTitle>
+                  <DialogDescription className="text-sm">Select a client and set the appointment details.</DialogDescription>
                 </div>
               </div>
             </DialogHeader>

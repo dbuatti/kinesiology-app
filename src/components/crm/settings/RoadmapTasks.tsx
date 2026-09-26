@@ -171,11 +171,11 @@ const RoadmapTasks = ({ rateDistribution, averageSessionRate }: RoadmapTasksProp
   };
 
   return (
-    <Card className="border-none shadow-lg rounded-[2.5rem] bg-card overflow-hidden">
+    <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
       <CardHeader className="p-8 pb-4 border-b border-border bg-muted/20">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <CardTitle className="text-xl font-black flex items-center gap-3">
+            <CardTitle className="text-xl font-semibold flex items-center gap-3">
               <Target size={22} className="text-primary" />
               Action Plan
             </CardTitle>
@@ -188,7 +188,7 @@ const RoadmapTasks = ({ rateDistribution, averageSessionRate }: RoadmapTasksProp
             {tasks.length > 0 && (
               <div className="flex items-center gap-2 min-w-[120px]">
                 <Progress value={progress} className="h-1.5 flex-1" />
-                <span className="text-[10px] font-black text-muted-foreground shrink-0">{progress}%</span>
+                <span className="text-[10px] font-semibold text-muted-foreground shrink-0">{progress}%</span>
               </div>
             )}
             <Button
@@ -196,7 +196,7 @@ const RoadmapTasks = ({ rateDistribution, averageSessionRate }: RoadmapTasksProp
               variant="outline"
               onClick={handleGenerate}
               disabled={generating}
-              className="rounded-xl font-black text-[10px] uppercase tracking-widest h-9 px-4 border-primary/30 text-primary hover:bg-primary/5"
+              className="rounded-xl font-semibold text-[11px] h-9 px-4 border-primary/30 text-primary hover:bg-primary/5"
             >
               {generating
                 ? <><Loader2 size={12} className="mr-1.5 animate-spin" />Generating…</>
@@ -223,17 +223,17 @@ const RoadmapTasks = ({ rateDistribution, averageSessionRate }: RoadmapTasksProp
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <div className={cn("w-2 h-2 rounded-full", colour)} />
-                      <span className="text-xs font-black text-foreground">{label}</span>
+                      <span className="text-xs font-semibold text-foreground">{label}</span>
                       <span className="text-[10px] text-muted-foreground font-medium">{sub}</span>
                       {phaseTasks.length > 0 && (
-                        <Badge variant="outline" className={cn("text-[8px] font-black px-2 border", light, text)}>
+                        <Badge variant="outline" className={cn("text-[10px] font-semibold px-2 border", light, text)}>
                           {done}/{phaseTasks.length}
                         </Badge>
                       )}
                     </div>
                     <button
                       onClick={() => { setAddingPhase(phase); setNewTitle(""); }}
-                      className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+                      className="text-[11px] font-semibold text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
                     >
                       <Plus size={11} /> Add
                     </button>
@@ -298,7 +298,7 @@ const RoadmapTasks = ({ rateDistribution, averageSessionRate }: RoadmapTasksProp
                         <Button
                           size="sm"
                           onClick={() => handleAdd(phase)}
-                          className="h-8 px-3 rounded-xl text-[10px] font-black uppercase tracking-widest"
+                          className="h-8 px-3 rounded-xl text-[11px] font-semibold"
                         >
                           Save
                         </Button>

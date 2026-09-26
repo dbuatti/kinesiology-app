@@ -35,6 +35,7 @@ export interface InboundMessage {
   snippet: string;
   date_iso: string;
   needs_reply: boolean;
+  via_portal?: boolean; // sent through the client portal (no real subject/thread of their own)
 }
 
 export interface SentMessage {
@@ -67,6 +68,7 @@ export type PersonStatus = "needs_reply" | "follow_up" | "waiting" | "done";
 
 export interface ConversationEvent {
   direction: "inbound" | "outbound";
+  viaPortal?: boolean;
   thread_id: string;
   subject: string;
   snippet: string;
@@ -132,7 +134,7 @@ export function buildInboxPeople(args: {
   };
   const info = new Map<string, ContactInfo>(Object.entries(contacts));
   for (const m of inbound) {
-    push(m.email, { direction: "inbound", thread_id: m.thread_id, subject: m.subject, snippet: m.snippet, date: new Date(m.date_iso) });
+    push(m.email, { direction: "inbound", viaPortal: m.via_portal, thread_id: m.thread_id, subject: m.subject, snippet: m.snippet, date: new Date(m.date_iso) });
     if (!info.has(m.email)) info.set(m.email, { name: m.name, kind: m.kind, client_id: m.client_id });
   }
   for (const m of sent) {
@@ -172,7 +174,12 @@ export function buildInboxPeople(args: {
     const lastInbound = Math.max(...events.filter((e) => e.direction === "inbound").map((e) => e.date.getTime()), -Infinity);
     const booked = upcoming[email] ?? null;
 
-    const openReplies = conversations.filter((c) => c.needsReply && c.last.date.getTime() > markedAt);
+    // Portal messages have no subject of the client's own, so a reply to one
+    // naturally goes out under a different subject — any later email to them
+    // counts as the answer.
+    const lastOutbound = Math.max(...events.filter((e) => e.direction === "outbound").map((e) => e.date.getTime()), -Infinity);
+    const openReplies = conversations.filter((c) =>
+      c.needsReply && c.last.date.getTime() > markedAt && !(c.last.viaPortal && lastOutbound > c.last.date.getTime()));
     const chases = conversations.filter(
       (c) => c.chaseable && c.last.date.getTime() > lastInbound && c.last.date.getTime() > markedAt,
     );

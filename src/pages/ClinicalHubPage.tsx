@@ -96,27 +96,27 @@ const ClinicalHubPage = () => {
   const MODES = [
     {
       id: 'peace',
-      label: 'PEACE V2',
-      description: 'Full session wizard — Preliminary → Ease → Align → Correct → Embed',
+      label: 'Practise a session',
+      description: 'Walk the PEACE wizard — Preliminary → Ease → Align → Correct → Embed — with a practice client',
       icon: Activity,
       color: 'border-l-primary hover:bg-primary/30 dark:hover:bg-primary/30',
       accent: 'text-primary dark:text-primary',
       iconBg: 'bg-primary/10 dark:bg-primary/50',
-      badge: 'Interactive',
+      badge: 'Sandbox',
     },
     {
       id: 'doc',
-      label: 'DOC V2',
-      description: 'Printable session notes — findings, corrections, homework summary',
+      label: 'Practise session notes',
+      description: 'The printable notes view — findings, corrections, homework — on the practice client',
       icon: FileText,
       color: 'border-l-emerald-500 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/30',
       accent: 'text-emerald-600 dark:text-emerald-400',
       iconBg: 'bg-emerald-100 dark:bg-emerald-950/50',
-      badge: 'Print',
+      badge: 'Sandbox',
     },
     {
       id: 'manual',
-      label: 'Corrections Manual',
+      label: 'Corrections manual',
       description: 'Reference — afferent, efferent, heart wall & limiting beliefs protocols',
       icon: BookMarked,
       color: 'border-l-amber-500 hover:bg-amber-50/30 dark:hover:bg-amber-950/30',
@@ -137,8 +137,8 @@ const ClinicalHubPage = () => {
                 <Zap size={20} className="text-primary" />
               </div>
               <div>
-                <h1 className="font-serif text-[26px] font-medium tracking-[-0.02em]">Clinical Hub</h1>
-                <p className="text-xs text-muted-foreground font-medium">PEACE V2 · DOC V2 · Corrections Manual</p>
+                <h1 className="font-serif text-[26px] font-medium tracking-[-0.02em]">Sessions</h1>
+                <p className="text-xs text-muted-foreground font-medium">Start, continue or review client sessions.</p>
               </div>
             </div>
             <button
@@ -157,39 +157,6 @@ const ClinicalHubPage = () => {
           </div>
         </div>
 
-        {/* Mode Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-          {MODES.map((mode) => {
-            const Icon = mode.icon;
-            return (
-              <button
-                key={mode.id}
-                onClick={() => {
-                  if (mode.id === 'manual') {
-                    navigate('/practice/corrections-manual');
-                  } else {
-                    navigate(`/practice/trial/${mode.id}`);
-                  }
-                }}
-                className={cn(
-                  "spotlight group text-left rounded-xl border border-border bg-card p-5 shadow-xs transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:border-foreground/15 hover:shadow-md"
-                )}
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", mode.iconBg)}>
-                    <Icon size={16} className={mode.accent} />
-                  </div>
-                  <span className={cn("rounded-full bg-foreground/[0.05] px-2 py-0.5 text-[11px] font-medium", mode.accent)}>
-                    {mode.badge}
-                  </span>
-                </div>
-                <h3 className="mb-1 text-[15px] font-semibold tracking-tight">{mode.label}</h3>
-                <p className="text-[13px] text-muted-foreground leading-relaxed">{mode.description}</p>
-              </button>
-            );
-          })}
-        </div>
-
         {/* New Session CTA */}
         <div className="mb-10">
           <button
@@ -197,7 +164,7 @@ const ClinicalHubPage = () => {
             className="group w-full flex items-center justify-center gap-2.5 h-14 rounded-xl border border-dashed border-foreground/15 bg-card/50 text-[14px] font-medium text-muted-foreground transition-all hover:border-primary/40 hover:bg-primary/[0.04] hover:text-primary"
           >
             <Plus size={20} />
-            <span className="font-bold text-sm">New Session</span>
+            <span className="font-semibold text-sm">New session</span>
           </button>
         </div>
 
@@ -205,10 +172,10 @@ const ClinicalHubPage = () => {
         <div className="mb-10">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xs font-medium text-muted-foreground">
-              Up Next — Today & Upcoming
+              Up next — today & upcoming
             </h2>
             {upNext.length > 0 && (
-              <span className="text-[10px] font-bold uppercase tracking-wider text-chart-destructive">
+              <span className="text-[11px] font-medium text-muted-foreground">
                 {upNext.length} scheduled
               </span>
             )}
@@ -247,12 +214,12 @@ const ClinicalHubPage = () => {
 
         {/* Recent Sessions */}
         <div>
-          <h2 className="text-xs font-medium text-muted-foreground mb-4">Recent Sessions</h2>
+          <h2 className="text-xs font-medium text-muted-foreground mb-4">Recent sessions</h2>
           {loading ? (
             <div className="flex justify-center py-6"><Loader2 className="animate-spin text-muted-foreground" size={20} /></div>
           ) : recentSessions.length === 0 ? (
             <div className="text-center py-8 border border-dashed border-border rounded-xl">
-              <p className="text-xs text-muted-foreground font-medium">No sessions yet — create one above.</p>
+              <p className="text-xs text-muted-foreground font-medium">No sessions yet — start one above.</p>
             </div>
           ) : (
             <div className="space-y-1">
@@ -282,6 +249,44 @@ const ClinicalHubPage = () => {
             </div>
           )}
         </div>
+
+        {/* Practice & reference — sandbox tools, kept below the real work so
+            they're never mistaken for a client's session. */}
+        <div className="mt-12">
+          <h2 className="text-xs font-medium text-muted-foreground mb-1">Practice & reference</h2>
+          <p className="text-[12px] text-muted-foreground/80 mb-4">The sandbox uses a practice client — nothing is saved to anyone's record.</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {MODES.map((mode) => {
+            const Icon = mode.icon;
+            return (
+              <button
+                key={mode.id}
+                onClick={() => {
+                  if (mode.id === 'manual') {
+                    navigate('/practice/corrections-manual');
+                  } else {
+                    navigate(`/practice/trial/${mode.id}`);
+                  }
+                }}
+                className={cn(
+                  "spotlight group text-left rounded-xl border border-border bg-card p-5 shadow-xs transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:border-foreground/15 hover:shadow-md"
+                )}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center", mode.iconBg)}>
+                    <Icon size={16} className={mode.accent} />
+                  </div>
+                  <span className={cn("rounded-full bg-foreground/[0.05] px-2 py-0.5 text-[11px] font-medium", mode.accent)}>
+                    {mode.badge}
+                  </span>
+                </div>
+                <h3 className="mb-1 text-[15px] font-semibold tracking-tight">{mode.label}</h3>
+                <p className="text-[13px] text-muted-foreground leading-relaxed">{mode.description}</p>
+              </button>
+            );
+          })}
+        </div>
+        </div>
       </div>
 
       {/* Session Modal */}
@@ -301,14 +306,14 @@ const ClinicalHubPage = () => {
               onClick={() => { setSelectedSession(null); navigate(`/appointments/${selectedSession?.id}`); }}
               className="w-full rounded-xl h-11 gap-2"
             >
-              <Activity size={16} /> Open in PEACE
+              <Activity size={16} /> Run session (PEACE)
             </Button>
             <Button
               variant="outline"
               onClick={() => { setSelectedSession(null); navigate(`/appointments/${selectedSession?.id}?view=doc`); }}
               className="w-full rounded-xl h-11 gap-2"
             >
-              <FileText size={16} /> Open in DOC
+              <FileText size={16} /> Session notes
             </Button>
           </div>
         </DialogContent>

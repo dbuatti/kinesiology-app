@@ -182,7 +182,11 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
       setSubject(isComposeFresh
         ? `Hi ${firstName}`
         : threadData.last_subject && threadData.last_subject !== "(no subject)"
-          ? (/^re:/i.test(threadData.last_subject) ? threadData.last_subject : `Re: ${threadData.last_subject}`)
+          // Portal messages carry an internal subject ("Message from X (Client
+          // Portal)") that reads oddly echoed back to the client.
+          ? /\(Client Portal\)/.test(threadData.last_subject)
+            ? "Re: Your message"
+            : (/^re:/i.test(threadData.last_subject) ? threadData.last_subject : `Re: ${threadData.last_subject}`)
           : `Hi ${firstName}`);
     } catch (err: any) {
       showError(err.message || "Couldn't load the email thread.");

@@ -325,8 +325,8 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                 <Music size={22} />
               </div>
               <div>
-                <DialogTitle className="text-2xl font-semibold">
-                  {step === "details" ? "Book a Lesson" : "Confirm Booking"}
+                <DialogTitle className="text-xl font-serif font-medium tracking-tight">
+                  {step === "details" ? "Book a lesson" : "Confirm booking"}
                 </DialogTitle>
                 <DialogDescription className="text-muted-foreground text-sm font-medium">
                   {step === "details" ? "Pick a student, date, and time" : "Review and confirm"}

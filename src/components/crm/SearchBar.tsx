@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react"; import type { MouseEvent } from 'react';
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 import { useAppMode } from "@/components/ModeProvider";
@@ -17,7 +17,7 @@ import {
   Search, User, Calendar, Target, Zap, Clock, Trash2, 
   UserPlus, CalendarPlus, Upload, Settings, Layers, 
   ShieldCheck, Mic, Sparkles, Activity, BookOpen,
-  Fingerprint, Heart, Brain, LayoutDashboard, CalendarDays, Users
+  Fingerprint, Heart, Brain, LayoutDashboard, CalendarDays, Users, Mail
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -31,15 +31,20 @@ interface SearchResult {
   path: string;
   icon?: any;
   color?: string;
+  // Opens a create dialog (handled by QuickActions) instead of navigating.
+  create?: "client" | "session" | "quick" | "lesson";
 }
 
 const RECENT_SEARCHES_KEY = "rk_recent_searches";
 
 const NAV_DESTINATIONS: { title: string; path: string; icon: any; section: string; keywords?: string }[] = [
   { title: "Home", path: "/", icon: LayoutDashboard, section: "Clinical", keywords: "dashboard today" },
-  { title: "Assistant", path: "/assistant", icon: Sparkles, section: "Clinical", keywords: "chat ai follow-up inbox" },
+  { title: "Assistant", path: "/assistant", icon: Sparkles, section: "Clinical", keywords: "chat ai" },
+  { title: "Inbox", path: "/assistant?view=inbox", icon: Mail, section: "Business", keywords: "email reply messages portal" },
+  { title: "Follow-up", path: "/assistant?view=followup", icon: Users, section: "Business", keywords: "drifting lapsed rebook" },
   { title: "Calendar", path: "/calendar", icon: CalendarDays, section: "Clinical", keywords: "bookings appointments" },
-  { title: "Timetable", path: "/timetable", icon: Clock, section: "Clinical", keywords: "fortnight availability" },
+  { title: "Timetable", path: "/timetable", icon: Clock, section: "Clinical", keywords: "fortnight draft pencil" },
+  { title: "Availability", path: "/availability", icon: CalendarDays, section: "Clinical", keywords: "open hours cal.com schedule working hours" },
   { title: "Clients", path: "/clients", icon: Users, section: "Clinical", keywords: "database" },
   { title: "Sessions", path: "/sessions", icon: Activity, section: "Clinical", keywords: "clinical hub peace" },
   { title: "Morning Program", path: "/morning-program", icon: Zap, section: "Growth" },
@@ -48,9 +53,13 @@ const NAV_DESTINATIONS: { title: string; path: string; icon: any; section: strin
   { title: "Identity Work", path: "/identity", icon: Brain, section: "Growth", keywords: "beliefs fractals" },
   { title: "Worksheets", path: "/worksheets", icon: Layers, section: "Reference" },
   { title: "Library", path: "/library", icon: BookOpen, section: "Reference", keywords: "muscles reflexes cranial nerves tcm" },
+  { title: "PEACE framework", path: "/peace-framework", icon: Activity, section: "Reference", keywords: "preliminary ease align correct embed" },
+  { title: "Print hub", path: "/resources/print", icon: Layers, section: "Reference", keywords: "print sheets pdf" },
+  { title: "Practice session (sandbox)", path: "/practice/trial/peace", icon: Activity, section: "Growth", keywords: "sandbox trial practise peace" },
   { title: "Voice Studio", path: "/voice", icon: Mic, section: "Voice" },
   { title: "Voice students", path: "/voice/clients", icon: Users, section: "Voice" },
-  { title: "Business Hub", path: "/business", icon: Target, section: "Business", keywords: "revenue audit marketing" },
+  { title: "Business Hub", path: "/business", icon: Target, section: "Business", keywords: "revenue marketing" },
+  { title: "Client audit", path: "/business?tool=client-audit", icon: Target, section: "Business", keywords: "rates reengagement triage" },
   { title: "Settings", path: "/settings", icon: Settings, section: "System" },
 ];
 
@@ -59,10 +68,8 @@ const SearchBar = ({ compact = false, responsive = false }: { compact?: boolean;
   const [results, setResults] = useState<SearchResult[]>([]);
   const [recentSearches, setRecentSearches] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
-  const { mode, setMode } = useAppMode();
+  const { setMode } = useAppMode();
   const navigate = useNavigate();
-  const location = useLocation();
-  const isVoiceMode = location.pathname.startsWith('/voice');
 
   useEffect(() => {
     const stored = localStorage.getItem(RECENT_SEARCHES_KEY);
@@ -229,6 +236,11 @@ const SearchBar = ({ compact = false, responsive = false }: { compact?: boolean;
       }
       return;
     }
+    if (result.create) {
+      setOpen(false);
+      window.dispatchEvent(new CustomEvent("rk:create", { detail: result.create }));
+      return;
+    }
     saveRecentSearch(result);
     setOpen(false);
     navigate(result.path);
@@ -240,24 +252,16 @@ const SearchBar = ({ compact = false, responsive = false }: { compact?: boolean;
       { type: "action", id: "settings", title: "System Settings", subtitle: "Account & preferences", path: "/settings", icon: Settings, color: "text-muted-foreground" },
     ];
 
-    if (isVoiceMode) {
-      return [
-        { type: "action", id: "voice-clients", title: "Voice Clients", subtitle: "Student directory", path: "/voice/clients", icon: Users, color: "text-rose-500" },
-        { type: "action", id: "book-lesson", title: "Book a Lesson", subtitle: "Schedule voice lesson", path: "/voice/book", icon: CalendarPlus, color: "text-rose-500" },
-        { type: "action", id: "studio-calendar", title: "Studio Calendar", subtitle: "Lesson schedule", path: "/voice/calendar", icon: CalendarDays, color: "text-rose-500" },
-        ...baseActions
-      ];
-    }
-
-    if (mode === 'clinical') {
-      return [
-        { type: "action", id: "new-client", title: "Add New Client", subtitle: "Create profile", path: "/clients", icon: UserPlus, color: "text-chart-primary" },
-        { type: "action", id: "book-session", title: "Book New Session", subtitle: "Schedule appointment", path: "/appointments", icon: CalendarPlus, color: "text-chart-primary" },
-        ...baseActions
-      ];
-    }
-
-    return [...baseActions];
+    // Same create actions in every workspace — the practice is one practice.
+    return [
+      { type: "action", id: "quick-session", title: "Start quick session", subtitle: "No booking needed", path: "", create: "quick", icon: Zap, color: "text-chart-primary" },
+      { type: "action", id: "book-session", title: "Book a session", subtitle: "Kinesiology", path: "", create: "session", icon: CalendarPlus, color: "text-chart-primary" },
+      { type: "action", id: "book-lesson", title: "Book a lesson", subtitle: "Voice or piano", path: "", create: "lesson", icon: Mic, color: "text-chart-destructive" },
+      { type: "action", id: "new-client", title: "New client", subtitle: "Kinesiology profile", path: "", create: "client", icon: UserPlus, color: "text-chart-primary" },
+      { type: "action", id: "new-student", title: "New student", subtitle: "Voice or piano", path: "/voice/clients/new", icon: UserPlus, color: "text-chart-destructive" },
+      { type: "action", id: "compose", title: "Write an email", subtitle: "Client inbox", path: "/assistant?view=inbox", icon: Mail, color: "text-muted-foreground" },
+      ...baseActions
+    ];
   };
 
   return (
@@ -330,7 +334,9 @@ const SearchBar = ({ compact = false, responsive = false }: { compact?: boolean;
             </CommandGroup>
           )}
 
-          {results.length === 0 && (
+          {/* Always present (cmdk filters it by what's typed) — hiding it whenever
+              a person or session matched made pages unfindable by name. */}
+          {(
             <CommandGroup heading="Go to">
               {NAV_DESTINATIONS.map((d) => (
                 <CommandItem

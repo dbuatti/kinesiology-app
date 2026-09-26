@@ -264,6 +264,7 @@ export default function CommsInbox({ clients, voiceStudents }: Props) {
             </p>
             <p className="truncate text-xs text-muted-foreground mt-0.5">
               {lastIsYou && <span className="font-medium text-foreground/70">You: </span>}
+              {!lastIsYou && last.viaPortal && <span className="font-medium text-foreground/70">Via portal: </span>}
               {last.snippet || "(no preview)"}
             </p>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">

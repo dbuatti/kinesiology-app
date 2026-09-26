@@ -8,7 +8,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Plus, UserPlus, Calendar, CalendarPlus, Target, Upload, HelpCircle, Zap, StickyNote, Bolt } from "lucide-react";
+import { Plus, UserPlus, Calendar, CalendarPlus, Target, Upload, HelpCircle, Zap, StickyNote, Bolt, Mic } from "lucide-react";
+import SimpleBookDialog from "@/components/crm/SimpleBookDialog";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,7 @@ const QuickActions = ({ compact = false }: { compact?: boolean }) => {
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [appointmentDialogOpen, setAppointmentDialogOpen] = useState(false);
   const [quickSessionOpen, setQuickSessionOpen] = useState(false);
+  const [lessonDialogOpen, setLessonDialogOpen] = useState(false);
   const [prefilledClientId, setPrefilledClientId] = useState<string | undefined>();
   const [helpOpen, setHelpOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -44,6 +46,20 @@ const QuickActions = ({ compact = false }: { compact?: boolean }) => {
       setAppointmentDialogOpen(true);
     }
   };
+
+  // ⌘K search (and anything else) can open the create dialogs without
+  // owning them: window.dispatchEvent(new CustomEvent("rk:create", { detail: "client" | "session" | "quick" })).
+  useEffect(() => {
+    const onCreate = (e: Event) => {
+      const kind = (e as CustomEvent<string>).detail;
+      if (kind === "client") setClientDialogOpen(true);
+      else if (kind === "session") setAppointmentDialogOpen(true);
+      else if (kind === "quick") setQuickSessionOpen(true);
+      else if (kind === "lesson") setLessonDialogOpen(true);
+    };
+    window.addEventListener("rk:create", onCreate);
+    return () => window.removeEventListener("rk:create", onCreate);
+  }, []);
 
   // Global keyboard shortcuts (advertised in HelpModal)
   useEffect(() => {
@@ -82,7 +98,7 @@ const QuickActions = ({ compact = false }: { compact?: boolean }) => {
         case "2":
           if (isTyping) return;
           e.preventDefault();
-          navigate("/schedule");
+          navigate("/calendar");
           break;
         case "p":
           if (isTyping) return;
@@ -126,7 +142,8 @@ const QuickActions = ({ compact = false }: { compact?: boolean }) => {
         <DropdownMenuContent align="end" sideOffset={8} className="w-72">
           {[
             { label: "Quick session", hint: "Start now — no booking", icon: Bolt, tone: "text-primary", kbd: "⌘⇧S", run: () => setQuickSessionOpen(true) },
-            { label: "Book session", hint: "Schedule an appointment", icon: CalendarPlus, tone: "text-chart-destructive", kbd: "⌘B", run: () => setAppointmentDialogOpen(true) },
+            { label: "Book session", hint: "Kinesiology appointment", icon: CalendarPlus, tone: "text-chart-primary", kbd: "⌘B", run: () => setAppointmentDialogOpen(true) },
+            { label: "Book lesson", hint: "Voice or piano", icon: Mic, tone: "text-chart-destructive", kbd: "", run: () => setLessonDialogOpen(true) },
             { label: "New client", hint: "Add to the database", icon: UserPlus, tone: "text-chart-primary", kbd: "⌘N", run: () => setClientDialogOpen(true) },
           ].map((a) => (
             <DropdownMenuItem key={a.label} onSelect={a.run} className="gap-3 py-2">
@@ -137,7 +154,7 @@ const QuickActions = ({ compact = false }: { compact?: boolean }) => {
                 <span className="block text-[13px] font-medium text-foreground">{a.label}</span>
                 <span className="block truncate text-xs text-muted-foreground">{a.hint}</span>
               </span>
-              <kbd className="kbd hidden md:inline-flex">{a.kbd}</kbd>
+              {a.kbd && <kbd className="kbd hidden md:inline-flex">{a.kbd}</kbd>}
             </DropdownMenuItem>
           ))}
           <DropdownMenuSeparator className="my-1" />
@@ -199,6 +216,7 @@ const QuickActions = ({ compact = false }: { compact?: boolean }) => {
         </DialogContent>
       </Dialog>
 
+      <SimpleBookDialog open={lessonDialogOpen} onOpenChange={setLessonDialogOpen} />
       <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} />
 
       <HelpModal open={helpOpen} onOpenChange={setHelpOpen} />

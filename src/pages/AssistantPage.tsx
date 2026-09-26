@@ -39,7 +39,7 @@ export default function AssistantPage() {
   const viewParam = searchParams.get("view");
   const initialView = viewParam === "email" ? "email" : "chat";
 
-  const [activeTab, setActiveTab] = useState<AssistantTab>(viewParam === "inbox" ? "inbox" : "chat");
+  const [activeTab, setActiveTab] = useState<AssistantTab>(viewParam === "inbox" || viewParam === "followup" ? viewParam : "chat");
   const [clients, setClients] = useState<ClientOption[]>([]);
   const [voiceStudents, setVoiceStudents] = useState<VoiceStudentOption[]>([]);
   const [focusedClientId, setFocusedClientId] = useState<string | null>(initialClientId);

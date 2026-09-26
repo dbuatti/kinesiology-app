@@ -64,6 +64,13 @@ function extractEmail(fromHeader: string): string {
   return (match ? match[1] : fromHeader).toLowerCase().trim();
 }
 
+// Client-portal messages: From is the practice, Reply-To is the client.
+function portalSender(headers: { name: string; value: string }[]): string | null {
+  if (!/\(Client Portal\)/.test(headerValue(headers, "Subject"))) return null;
+  const replyTo = headerValue(headers, "Reply-To");
+  return replyTo ? extractEmail(replyTo) : null;
+}
+
 function extractDisplayName(fromHeader: string): string {
   const match = fromHeader.match(/^"?([^"<]+?)"?\s*</);
   return match ? match[1].trim() : "";
@@ -137,7 +144,16 @@ serve(async (req) => {
     const listData = await listRes.json();
     if (!listRes.ok) throw new Error(listData?.error?.message || "Gmail search failed.");
 
-    const ids: string[] = (listData.messages || []).map((m: any) => m.id);
+    // Client-portal messages ("Message from X (Client Portal)") are sent from
+    // the practice address to itself with Reply-To: the client, so the from:
+    // search above never finds them. Pick them up separately and attribute
+    // them via Reply-To.
+    const portalUrl = new URL("https://gmail.googleapis.com/gmail/v1/users/me/messages");
+    portalUrl.searchParams.set("q", `in:inbox newer_than:90d subject:"Client Portal"`);
+    portalUrl.searchParams.set("maxResults", "30");
+    const portalRes = await fetch(portalUrl.toString(), { headers: authHeaders });
+    const portalData = portalRes.ok ? await portalRes.json() : {};
+    const ids: string[] = [...new Set([...(listData.messages || []), ...(portalData.messages || [])].map((m: any) => m.id))];
     const messages = await Promise.all(
       ids.map(async (id) => {
         const url = new URL(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}`);
@@ -145,12 +161,14 @@ serve(async (req) => {
         url.searchParams.append("metadataHeaders", "Subject");
         url.searchParams.append("metadataHeaders", "Date");
         url.searchParams.append("metadataHeaders", "From");
+        url.searchParams.append("metadataHeaders", "Reply-To");
         const res = await fetch(url.toString(), { headers: authHeaders });
         if (!res.ok) return null;
         const data = await res.json();
         const headers = data.payload?.headers || [];
         const fromHeader = headerValue(headers, "From");
-        const email = extractEmail(fromHeader);
+        const portalEmail = portalSender(headers);
+        const email = portalEmail || extractEmail(fromHeader);
         const known = byEmail.get(email);
         if (!known) return null; // defensive — the search already scoped to known senders
         return {
@@ -159,7 +177,8 @@ serve(async (req) => {
           client_id: known.kind === "kinesiology" ? known.id : null,
           voice_student_email: known.kind === "voice" ? email : null,
           name: known.name,
-          from_display_name: extractDisplayName(fromHeader) || known.name,
+          from_display_name: portalEmail ? known.name : extractDisplayName(fromHeader) || known.name,
+          via_portal: !!portalEmail,
           email,
           kind: known.kind,
           subject: decodeHtmlEntities(headerValue(headers, "Subject")) || "(no subject)",
@@ -191,14 +210,19 @@ serve(async (req) => {
           url.searchParams.set("format", "metadata");
           url.searchParams.append("metadataHeaders", "From");
           url.searchParams.append("metadataHeaders", "Date");
+          url.searchParams.append("metadataHeaders", "Subject");
+          url.searchParams.append("metadataHeaders", "Reply-To");
           const res = await fetch(url.toString(), { headers: authHeaders });
           if (!res.ok) { needsReplyByThread.set(threadId, true); return; }
           const data = await res.json();
           const msgs = data.messages || [];
           if (msgs.length === 0) { needsReplyByThread.set(threadId, true); return; }
           const last = msgs[msgs.length - 1];
-          const lastFrom = extractEmail(headerValue(last.payload?.headers || [], "From"));
+          const lastHeaders = last.payload?.headers || [];
           const clientEmail = threadClientEmail.get(threadId) || "";
+          // A portal message is the client speaking even though From is the practice.
+          if (portalSender(lastHeaders) === clientEmail) { needsReplyByThread.set(threadId, true); return; }
+          const lastFrom = extractEmail(headerValue(lastHeaders, "From"));
           // Needs a reply only if the LAST message is from the client, not the
           // practice (any of its sending addresses — not just GMAIL_USER_EMAIL,
           // since replies can be sent from the info@ alias or a mail app).

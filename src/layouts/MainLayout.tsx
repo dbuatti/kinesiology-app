@@ -83,8 +83,10 @@ const MainLayout = () => {
       setMode('voice');
     } else if (location.pathname.startsWith('/business')) {
       setMode('business');
-    } else if (location.pathname.startsWith('/assistant') || location.pathname.startsWith('/clients')) {
-      // no-op — stays in whichever mode was already active
+    } else if (['/assistant', '/clients', '/calendar', '/settings'].some((p) => location.pathname.startsWith(p))) {
+      // no-op — shared across workspaces, stays in whichever mode was active
+      // (Calendar is in the Voice nav too; forcing Clinical here flipped the
+      // sidebar out from under anyone who tapped it from Voice).
     } else {
       setMode('clinical');
     }

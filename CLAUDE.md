@@ -44,9 +44,11 @@ All routes are defined in `src/App.tsx` — do not split them into separate rout
 
 Supabase auth. `session === undefined` = loading, `session === null` = logged out, `session = Session` = authenticated. Protected routes use `session ? <Page/> : <Navigate to="/login"/>` inline.
 
-### App modes (`src/components/ModeProvider.tsx`)
+### App modes / workspaces (`src/components/ModeProvider.tsx`)
 
-`AppMode = 'clinical' | 'lab' | 'library'` — persisted in `localStorage` under key `antigravity_app_mode`. The mode changes header background orb colours and can gate UI sections. Access via `useAppMode()`.
+`AppMode = 'clinical' | 'voice' | 'business'` — persisted in `localStorage` under `rk_app_mode`, shown as the Clinical / Voice / Business switcher in the sidebar. Each workspace shows its own sidebar group and mobile tab set, and tints the page aura. `MainLayout` syncs the mode from the URL: `/voice*` → voice, `/business*` → business, shared routes (`/assistant`, `/clients`, `/calendar`, `/settings`) keep the current mode, everything else → clinical. Business is a deliberate focus zone for admin/relationship work (inbox, follow-up, audit, money) across all practices; the practitioner thinks of kinesiology, voice and piano as one practice, so shared views should show all of them by default. Access via `useAppMode()`.
+
+Create dialogs (quick session, book, new client) live in `QuickActions` (top bar "+ New"); open them from anywhere with `window.dispatchEvent(new CustomEvent("rk:create", { detail: "quick" | "session" | "client" }))`.
 
 ### Layouts
 

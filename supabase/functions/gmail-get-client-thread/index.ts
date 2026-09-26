@@ -102,7 +102,10 @@ function messageFromApi(data: any, clientEmail: string) {
   // practitioner can reply from more than one address (e.g. his iPad's Mail
   // app), and any of them is unambiguously "outbound" as long as it isn't
   // from the client themselves.
-  const direction = from.toLowerCase().includes(clientEmail.toLowerCase()) ? "inbound" : "outbound";
+  // Client-portal messages arrive From the practice with Reply-To: the client.
+  const viaPortal = /\(Client Portal\)/.test(headerValue(headers, "Subject")) &&
+    headerValue(headers, "Reply-To").toLowerCase().includes(clientEmail.toLowerCase());
+  const direction = viaPortal || from.toLowerCase().includes(clientEmail.toLowerCase()) ? "inbound" : "outbound";
   return {
     id: data.id,
     threadId: data.threadId,
@@ -142,7 +145,8 @@ serve(async (req) => {
     // 1. Find every distinct thread with this client (cheap — thread list only,
     // no bodies) so the frontend can offer a "reply to a different thread" picker.
     const listUrl = new URL("https://gmail.googleapis.com/gmail/v1/users/me/threads");
-    listUrl.searchParams.set("q", `(from:${client_email} OR to:${client_email})`);
+    // Portal messages are addressed practice→practice, so match them by subject too.
+    listUrl.searchParams.set("q", `(from:${client_email} OR to:${client_email} OR (subject:"Client Portal" ${client_email}))`);
     listUrl.searchParams.set("maxResults", "15");
     const listRes = await fetch(listUrl.toString(), { headers: authHeaders });
     const listData = await listRes.json();
@@ -166,6 +170,7 @@ serve(async (req) => {
         url.searchParams.append("metadataHeaders", "Subject");
         url.searchParams.append("metadataHeaders", "Date");
         url.searchParams.append("metadataHeaders", "From");
+        url.searchParams.append("metadataHeaders", "Reply-To");
         const res = await fetch(url.toString(), { headers: authHeaders });
         const data = await res.json();
         if (!res.ok || !data.messages?.length) return null;

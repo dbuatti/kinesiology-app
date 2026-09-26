@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { fetchContactMarks, saveContactMark } from "@/lib/inbox-marks";
 import { supabase } from "@/integrations/supabase/client";
 import { showError, showSuccess } from "@/utils/toast";
 import { Button } from "@/components/ui/button";
@@ -55,12 +56,16 @@ interface Props {
   initialGoal?: string;
 }
 
-type Status = "needs_reply" | "awaiting_client" | "resolved";
+// One conversation status for everyone (Phase 5): needs reply / waiting on
+// them come from the thread itself; Done and Booked are the Inbox's marks
+// (inbox_contact_state, keyed by email), which reopen when the person writes again.
+type Status = "needs_reply" | "awaiting_client" | "done" | "booked";
 
 const STATUS_META: Record<Status, { label: string; dotClass: string }> = {
-  needs_reply: { label: "Needs Reply", dotClass: "bg-chart-destructive" },
-  awaiting_client: { label: "Waiting on Them", dotClass: "bg-chart-amber" },
-  resolved: { label: "Resolved", dotClass: "bg-chart-emerald" },
+  needs_reply: { label: "Needs reply", dotClass: "bg-chart-destructive" },
+  awaiting_client: { label: "Waiting on them", dotClass: "bg-chart-amber" },
+  done: { label: "Done", dotClass: "bg-chart-emerald" },
+  booked: { label: "Booked in", dotClass: "bg-chart-primary" },
 };
 
 const NEW_EMAIL_VALUE = "__new__";
@@ -74,10 +79,7 @@ function fmtDate(dateStr: string) {
 
 export default function ClientEmailThread({ clientId, clientEmail, clientName, composeMode = false, threadIds, hideStatus = false, initialGoal = "" }: Props) {
   const firstName = clientName.split(" ")[0];
-  // Voice students use a "voice:<email>" pseudo-id (see ClientPicker) — they have no
-  // row in `clients`, so client_email_status (FK'd to clients) can't be read/written
-  // for them. Thread reading/sending below is keyed by clientEmail instead, which
-  // works for both arms — only the persisted status badge degrades gracefully.
+  // Voice-only students are still addressed by a "voice:<email>" pseudo-id here.
   const hasClientRecord = !clientId.startsWith("voice:");
   const [messages, setMessages] = useState<ThreadMessage[]>([]);
   const [threads, setThreads] = useState<ThreadSummary[]>([]);
@@ -151,11 +153,9 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
             thread_ids: !explicitThreadId && threadIdsKey ? threadIdsKey.split(",") : undefined,
           },
         }),
-        hasClientRecord
-          ? supabase.from("client_email_status").select("status").eq("client_id", clientId).maybeSingle()
-          : Promise.resolve({ data: null }),
+        fetchContactMarks(),
       ]);
-      const statusRow = statusResult.data;
+      const mark = clientEmail ? statusResult.marks[clientEmail.toLowerCase()] : undefined;
       if (threadErr) throw threadErr;
       if (threadData?.error) throw new Error(threadData.error);
 
@@ -177,8 +177,13 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
           lastSubject: threadData.last_subject,
           practitionerFrom: threadData.practitioner_from || null,
         });
-      const resolvedStatus = statusRow?.status || threadData.suggested_status || null;
-      setStatus(resolvedStatus);
+      // A Done / Booked mark holds until they write again, same as the Inbox.
+      const lastInbound = ((threadData.messages || []) as ThreadMessage[])
+        .filter((m) => m.direction === "inbound")
+        .reduce((t, m) => Math.max(t, new Date(m.date).getTime() || 0), 0);
+      const markHolds = mark && lastInbound <= new Date(mark.resolved_at).getTime();
+      const suggested = threadData.suggested_status === "needs_reply" || threadData.suggested_status === "awaiting_client" ? threadData.suggested_status : null;
+      setStatus(markHolds ? mark.state : suggested);
       setSubject(isComposeFresh
         ? `Hi ${firstName}`
         : threadData.last_subject && threadData.last_subject !== "(no subject)"
@@ -212,13 +217,9 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
 
   const handleStatusChange = async (next: Status) => {
     setStatus(next);
-    if (!hasClientRecord) return; // Voice students have no clients row for client_email_status to key off.
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    await supabase.from("client_email_status").upsert(
-      { client_id: clientId, user_id: user.id, status: next, updated_at: new Date().toISOString() },
-      { onConflict: "client_id" },
-    );
+    if (!clientEmail) return;
+    // Needs reply / waiting are read from the thread; choosing one just clears a mark.
+    await saveContactMark(clientEmail, next === "done" || next === "booked" ? next : null);
   };
 
   const handleSend = async () => {

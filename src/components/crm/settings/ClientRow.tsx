@@ -67,7 +67,8 @@ interface ClientRowProps {
  onToggleWeeklyClient: (clientId: string) => void;
  onSetTargetRate: (clientId: string, rate: number) => void;
  onSetRateUpdatedDate: (clientId: string, dateStr: string) => void;
- onSetReengagementTag: (clientId: string, tag: 'warm' | 'cold' | 'lost' | null) => void;
+ /** Close ("don't follow up") or reopen — the stage replaced warm/cold/lost. */
+ onSetClosed: (clientId: string, closed: boolean) => void;
   isLapsedSection: boolean;
   onQuickBook: (clientId: string) => void;
   onRefresh: () => void;
@@ -510,7 +511,7 @@ export const ClientRow = ({
   onToggleWeeklyClient,
   onSetTargetRate,
   onSetRateUpdatedDate,
-  onSetReengagementTag,
+  onSetClosed,
   isLapsedSection,
   onQuickBook,
   onRefresh,
@@ -548,7 +549,7 @@ export const ClientRow = ({
  const journalData = useMemo(() => parseClientJournal(client.journal), [client.journal]);
 
  // Re-engagement Priority Calculations
- const reengagementTag = client.reengagement_tag;
+ const isClosed = client.lifecycle_status === 'closed' && !!client.lifecycle_status_manual;
  const [syncingStripe, setSyncingStripe] = useState(false);
  const [syncingNotion, setSyncingNotion] = useState(false);
  const [sendingOnboarding, setSendingOnboarding] = useState(false);
@@ -568,14 +569,11 @@ export const ClientRow = ({
  score += textScore;
  }
  
- // 3. Manual Tag (max 30 points)
- if (reengagementTag === 'warm') score += 30;
- else if (reengagementTag === 'cold') score += 10;
- else if (reengagementTag === 'lost') score += 0;
- else score += 15; // default neutral
+ // 3. Closed ("don't follow up") drops the manual share
+ if (!isClosed) score += 15;
  
  return Math.min(score, 100);
- }, [client, reengagementTag]);
+ }, [client, isClosed]);
 
  const isSelectedInSimulator = selectedWeeklyClients.includes(client.id);
 
@@ -1007,27 +1005,22 @@ Daniele`;
  </div>
  </div>
 
-  {/* Re-engagement Tag */}
+  {/* Follow-up: open, or closed ("don't follow up") */}
   <div className="space-y-0.5">
-  <span className="text-xs font-medium text-muted-foreground block">Status</span>
+  <span className="text-xs font-medium text-muted-foreground block">Follow-up</span>
   <Select
-  value={reengagementTag || "neutral"}
-  onValueChange={(val: any) => onSetReengagementTag(client.id, val === "neutral" ? null : val)}
+  value={isClosed ? "closed" : "open"}
+  onValueChange={(val) => onSetClosed(client.id, val === "closed")}
   >
   <SelectTrigger className={cn(
-  "w-[90px] h-8 rounded-xl text-xs font-medium border-none",
-  reengagementTag === 'warm' ? "bg-muted text-chart-emerald" :
-  reengagementTag === 'cold' ? "bg-muted text-muted-foreground" :
-  reengagementTag === 'lost' ? "bg-muted text-muted-foreground" :
-  "bg-muted/40 text-muted-foreground"
+  "w-[110px] h-8 rounded-xl text-xs font-medium border-none",
+  isClosed ? "bg-muted text-muted-foreground" : "bg-muted/40 text-foreground"
   )}>
-  <SelectValue placeholder="Select" />
+  <SelectValue />
   </SelectTrigger>
   <SelectContent className="rounded-xl bg-card border border-border shadow-sm">
-  <SelectItem value="neutral" className="text-xs font-medium">Neutral</SelectItem>
-  <SelectItem value="warm" className="text-xs font-medium text-chart-emerald">Warm</SelectItem>
-  <SelectItem value="cold" className="text-xs font-medium text-chart-primary">Cold</SelectItem>
-  <SelectItem value="lost" className="text-xs font-medium text-muted-foreground">Lost</SelectItem>
+  <SelectItem value="open" className="text-xs font-medium">Open</SelectItem>
+  <SelectItem value="closed" className="text-xs font-medium text-muted-foreground">Closed — don't follow up</SelectItem>
   </SelectContent>
   </Select>
   </div>

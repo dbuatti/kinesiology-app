@@ -15,8 +15,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Mail, MessageCircle, Mic, Zap, MoreHorizontal, BellOff, Bell, ArrowUpRight, CalendarPlus, PartyPopper } from "lucide-react";
-import { showSuccess } from "@/utils/toast";
+import { Mail, MessageCircle, Mic, Zap, MoreHorizontal, BellOff, Bell, ArrowUpRight, CalendarPlus, PartyPopper, CircleSlash } from "lucide-react";
+import { showError, showSuccess } from "@/utils/toast";
+import { setPersonClosed } from "@/lib/people";
 
 type Filter = LifecycleStatus | "all" | "quick_win";
 
@@ -61,6 +62,13 @@ export default function FollowUpTab() {
   const snooze = (c: AttentionClient, days: number) => {
     persist({ ...snoozed, [c.id]: Date.now() + days * 86_400_000 });
     showSuccess(`${c.name.split(" ")[0]} snoozed for ${days === 1 ? "a day" : `${days} days`}`);
+  };
+  // Close: they drop out of Follow-up for good (stage "closed"); reopen from People.
+  const close = async (c: AttentionClient) => {
+    const ok = await setPersonClosed({ id: c.id, email: c.email }, true);
+    if (!ok) { showError(`Couldn't close ${c.name.split(" ")[0]} — they have no client record yet.`); return; }
+    setClients((prev) => prev.filter((x) => x.id !== c.id));
+    showSuccess(`${c.name.split(" ")[0]} closed — won't show in Follow-up again. Reopen from People.`);
   };
   const unsnooze = (c: AttentionClient) => {
     const next = { ...snoozed };
@@ -213,7 +221,7 @@ export default function FollowUpTab() {
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuContent align="end" className="w-60">
                         {isSnoozed ? (
                           <DropdownMenuItem onSelect={() => unsnooze(c)}><Bell className="mr-2 h-4 w-4" /> Unsnooze</DropdownMenuItem>
                         ) : (
@@ -230,6 +238,10 @@ export default function FollowUpTab() {
                             </DropdownMenuItem>
                           </>
                         )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onSelect={() => close(c)} className="text-muted-foreground">
+                          <CircleSlash className="mr-2 h-4 w-4" /> Close — don't follow up
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>

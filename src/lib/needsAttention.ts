@@ -1,3 +1,4 @@
+import { fetchClosedPeople } from "@/lib/people";
 import { supabase } from "@/integrations/supabase/client";
 import { voiceStudentIdFor } from "@/lib/voice-student-id";
 import { computeClientLifecycleStatus, LifecycleStatus } from "@/lib/clientStatus";
@@ -21,7 +22,7 @@ export interface AttentionClient {
 // Quick wins (a recent cancellation from an otherwise real client) sort
 // ahead of everything else, including "active" — this is precisely the
 // "secure this person, don't agonize" case the whole tool is built around.
-const STATUS_RANK: Record<LifecycleStatus, number> = { active: 1, at_risk: 2, lapsed: 3, lead: 4 };
+const STATUS_RANK: Record<LifecycleStatus, number> = { active: 1, at_risk: 2, lapsed: 3, lead: 4, closed: 5 };
 
 type History = { date: string; status: string }[];
 interface PersonHistory { kind: "kinesiology" | "voice"; id: string; name: string; email: string | null; past: History; hasFuture: boolean }
@@ -67,7 +68,7 @@ async function voiceHistories(): Promise<PersonHistory[]> {
 const latestMs = (h: History) => h.reduce((m, a) => Math.max(m, new Date(a.date).getTime()), 0);
 
 export async function fetchNeedsAttention(): Promise<AttentionClient[]> {
-  const [kinesiology, voice] = await Promise.all([kinesiologyHistories(), voiceHistories()]);
+  const [kinesiology, voice, closed] = await Promise.all([kinesiologyHistories(), voiceHistories(), fetchClosedPeople()]);
 
   // Someone who does kinesiology and voice/piano is one person (Phase 5):
   // their sessions and lessons are one history, with one status. The entry
@@ -86,6 +87,8 @@ export async function fetchNeedsAttention(): Promise<AttentionClient[]> {
   const results: AttentionClient[] = [];
   for (const p of people) {
     if (p.hasFuture || p.past.length === 0) continue;
+    // Closed by hand: don't follow up.
+    if ((p.kind === "kinesiology" && closed.ids.has(p.id)) || (p.email && closed.emails.has(p.email.toLowerCase()))) continue;
     const { status, reason, daysSinceLast, isQuickWin } = computeClientLifecycleStatus({ appointments: p.past, hasFutureBooking: false });
     if (status === "lead") continue;
     results.push({ id: p.id, kind: p.kind, name: p.name, email: p.email, status, reason, daysSinceLast, isQuickWin });

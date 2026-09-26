@@ -6,7 +6,9 @@
 // assistant-chat/index.ts) into the Deno edge function for get_anchor_candidates
 // and get_clients_needing_attention — if you change the logic here, change it there too.
 
-export type LifecycleStatus = "lead" | "active" | "at_risk" | "lapsed";
+// "closed" is only ever set by hand (Close — don't follow up); it replaces the
+// old warm/cold/lost tag from Client audit ("lost" became closed).
+export type LifecycleStatus = "lead" | "active" | "at_risk" | "lapsed" | "closed";
 
 export interface LifecycleAppointment {
   date: string;
@@ -47,7 +49,7 @@ export function computeClientLifecycleStatus(input: LifecycleStatusInput): Lifec
   const { appointments, hasFutureBooking, manualOverride } = input;
 
   if (manualOverride) {
-    return { status: manualOverride, reason: "Manually set", daysSinceLast: null, isQuickWin: false };
+    return { status: manualOverride, reason: manualOverride === "closed" ? "Closed — don't follow up" : "Manually set", daysSinceLast: null, isQuickWin: false };
   }
 
   if (!appointments || appointments.length === 0) {

@@ -28,9 +28,11 @@ interface ClientTableViewProps {
   clients: any[];
   isPrivate: boolean;
   onQuickBook: (id: string) => void;
+  /** Reopen someone who was closed ("don't follow up"). */
+  onReopen?: (client: any) => void;
 }
 
-const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewProps) => {
+const ClientTableView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientTableViewProps) => {
   const [sendingId, setSendingId] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -104,6 +106,10 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
                           </TooltipTrigger>
                           <TooltipContent>{client.lifecycle_status_reason}</TooltipContent>
                         </Tooltip>
+                      )}
+                      {client.lifecycle_status === "closed" && onReopen && (
+                        <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onReopen(client); }}
+                          className="text-[11px] font-medium text-primary hover:underline">Reopen</button>
                       )}
                     </div>
                     <span className={cn("text-xs text-muted-foreground font-medium", isPrivate && "blur-[2px] select-none")}>{client.email || 'No email recorded'}</span>

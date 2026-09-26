@@ -2,6 +2,7 @@
 import { appointmentRowIsPaid } from "@/lib/calendarItems";
 import { useState, useEffect, useMemo, type ElementType } from "react";
 import { Link } from "react-router-dom";
+import { setPersonClosed } from "@/lib/people";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import AppLayout from "@/components/crm/AppLayout";
@@ -586,23 +587,11 @@ export function ClientAuditTool({
     }
   };
 
-  const handleSetReengagementTag = async (clientId: string, tag: 'warm' | 'cold' | 'lost' | null) => {
-    // Optimistic UI update
-    setClients(prev => prev.map(c => c.id === clientId ? { ...c, reengagement_tag: tag } : c));
-
-    try {
-      const { error } = await supabase
-        .from("clients")
-        .update({ reengagement_tag: tag })
-        .eq("id", clientId);
-
-      if (error) throw error;
-      showSuccess(tag ? `Re-engagement status set to ${tag.toUpperCase()}.` : "Re-engagement status cleared.");
-    } catch (error: any) {
-      console.error("Error updating re-engagement status:", error);
-      showError("Failed to update re-engagement status.");
-      fetchData();
-    }
+  const handleSetClosed = async (clientId: string, closed: boolean) => {
+    const ok = await setPersonClosed({ id: clientId }, closed);
+    if (!ok) { showError("Couldn't update follow-up status."); return; }
+    setClients(prev => prev.map(c => c.id === clientId ? { ...c, lifecycle_status: closed ? "closed" : null, lifecycle_status_manual: closed } : c));
+    showSuccess(closed ? "Closed — won't show in Follow-up." : "Reopened.");
   };
 
   const handleToggleWeeklyClient = (clientId: string) => {
@@ -645,21 +634,14 @@ export function ClientAuditTool({
     }
   };
 
-  const handleBulkSetReengagementTag = async (tag: 'warm' | 'cold' | 'lost' | null) => {
+  const handleBulkSetClosed = async (closed: boolean) => {
     if (selectedWeeklyClients.length === 0) return;
     setBulkActionLoading(true);
     try {
-      const { error } = await supabase
-        .from("clients")
-        .update({ reengagement_tag: tag })
-        .in("id", selectedWeeklyClients);
-
-      if (error) throw error;
-      
-      setClients(prev => prev.map(c => selectedWeeklyClients.includes(c.id) ? { ...c, reengagement_tag: tag } : c));
-      showSuccess(`Successfully set re-engagement status to ${tag ? tag.toUpperCase() : 'NONE'} for ${selectedWeeklyClients.length} clients.`);
-    } catch (err: any) {
-      showError("Failed to apply bulk re-engagement status.");
+      const results = await Promise.all(selectedWeeklyClients.map((id) => setPersonClosed({ id }, closed)));
+      const ids = selectedWeeklyClients.filter((_, k) => results[k]);
+      setClients(prev => prev.map(c => ids.includes(c.id) ? { ...c, lifecycle_status: closed ? "closed" : null, lifecycle_status_manual: closed } : c));
+      showSuccess(`${closed ? "Closed" : "Reopened"} ${ids.length} ${ids.length === 1 ? "client" : "clients"}.`);
     } finally {
       setBulkActionLoading(false);
     }
@@ -1555,7 +1537,7 @@ export function ClientAuditTool({
                                   onToggleWeeklyClient={handleToggleWeeklyClient}
                                   onSetTargetRate={handleSetTargetRate}
                                   onSetRateUpdatedDate={handleSetRateUpdatedDate}
-                                  onSetReengagementTag={handleSetReengagementTag}
+                                  onSetClosed={handleSetClosed}
                                   isLapsedSection={false}
                                   onQuickBook={(id) => { setBookingClientId(id); setIsBookingModalOpen(true); }}
                                   onRefresh={fetchData}
@@ -1642,7 +1624,7 @@ export function ClientAuditTool({
                                   onToggleWeeklyClient={handleToggleWeeklyClient}
                                   onSetTargetRate={handleSetTargetRate}
                                   onSetRateUpdatedDate={handleSetRateUpdatedDate}
-                                  onSetReengagementTag={handleSetReengagementTag}
+                                  onSetClosed={handleSetClosed}
                                   isLapsedSection={false}
                                   onQuickBook={(id) => { setBookingClientId(id); setIsBookingModalOpen(true); }}
                                   onRefresh={fetchData}
@@ -1729,7 +1711,7 @@ export function ClientAuditTool({
                                   onToggleWeeklyClient={handleToggleWeeklyClient}
                                   onSetTargetRate={handleSetTargetRate}
                                   onSetRateUpdatedDate={handleSetRateUpdatedDate}
-                                  onSetReengagementTag={handleSetReengagementTag}
+                                  onSetClosed={handleSetClosed}
                                   isLapsedSection={true}
                                   onQuickBook={(id) => { setBookingClientId(id); setIsBookingModalOpen(true); }}
                                   onRefresh={fetchData}
@@ -2428,15 +2410,13 @@ export function ClientAuditTool({
               </Select>
 
               {/* Bulk Re-engagement Tag */}
-              <Select onValueChange={(val: any) => handleBulkSetReengagementTag(val === "neutral" ? null : val)} disabled={bulkActionLoading}>
-                <SelectTrigger className="w-[120px] h-9 rounded-xl bg-muted border-border text-[11px] font-semibold text-chart-destructive">
-                  <SelectValue placeholder="Set Status" />
+              <Select onValueChange={(val) => handleBulkSetClosed(val === "closed")} disabled={bulkActionLoading}>
+                <SelectTrigger className="w-[130px] h-9 rounded-xl bg-muted border-border text-[11px] font-semibold">
+                  <SelectValue placeholder="Follow-up" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl bg-card text-foreground border-border">
-                  <SelectItem value="neutral" className="text-xs font-medium">Neutral</SelectItem>
-                  <SelectItem value="warm" className="text-xs font-medium text-chart-emerald">Warm</SelectItem>
-                  <SelectItem value="cold" className="text-xs font-medium text-chart-primary">Cold</SelectItem>
-                  <SelectItem value="lost" className="text-xs font-medium text-muted-foreground">Lost</SelectItem>
+                  <SelectItem value="open" className="text-xs font-medium">Open</SelectItem>
+                  <SelectItem value="closed" className="text-xs font-medium text-muted-foreground">Closed — don't follow up</SelectItem>
                 </SelectContent>
               </Select>
 

@@ -145,7 +145,7 @@ export interface Client {
   reengagement_tag?: 'warm' | 'cold' | 'lost' | null;
   contact_log?: { timestamp: string; note: string }[];
   availability_notes?: string | null;
-  lifecycle_status?: 'lead' | 'active' | 'at_risk' | 'lapsed' | null;
+  lifecycle_status?: 'lead' | 'active' | 'at_risk' | 'lapsed' | 'closed' | null;
   lifecycle_status_reason?: string | null;
   lifecycle_status_manual?: boolean;
   lifecycle_status_updated_at?: string | null;

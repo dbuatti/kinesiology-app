@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { fetchClosedPeople } from "@/lib/people";
 import { supabase } from "@/integrations/supabase/client";
 import { computeClientLifecycleStatus, LifecycleStatus } from "@/lib/clientStatus";
 import { fetchNormalizedVoiceBookings } from "@/lib/voiceBookings";
@@ -53,13 +54,14 @@ async function computeRevenuePulse(): Promise<Metrics["revenue"]> {
 }
 
 async function computePipeline(): Promise<Record<LifecycleStatus, number>> {
-  const counts: Record<LifecycleStatus, number> = { lead: 0, active: 0, at_risk: 0, lapsed: 0 };
+  const counts: Record<LifecycleStatus, number> = { lead: 0, active: 0, at_risk: 0, lapsed: 0, closed: 0 };
   const now = new Date();
 
-  const [{ data: clients }, { data: appts }, voiceRows] = await Promise.all([
+  const [{ data: clients }, { data: appts }, voiceRows, closed] = await Promise.all([
     supabase.from("clients").select("id").contains("practices", ["kinesiology"]).or("is_practitioner.eq.false,is_practitioner.is.null"),
     supabase.from("appointments").select("client_id, date, status"),
     fetchNormalizedVoiceBookings(),
+    fetchClosedPeople(),
   ]);
 
   const apptsByClient = new Map<string, { date: string; status: string }[]>();
@@ -72,6 +74,7 @@ async function computePipeline(): Promise<Record<LifecycleStatus, number>> {
     (apptsByClient.get(a.client_id) || apptsByClient.set(a.client_id, []).get(a.client_id)!).push({ date: a.date, status: a.status });
   }
   for (const c of (clients || []) as any[]) {
+    if (closed.ids.has(c.id)) { counts.closed += 1; continue; }
     const { status } = computeClientLifecycleStatus({ appointments: apptsByClient.get(c.id) || [], hasFutureBooking: futureByClient.has(c.id) });
     counts[status] += 1;
   }
@@ -88,6 +91,7 @@ async function computePipeline(): Promise<Record<LifecycleStatus, number>> {
     (voiceByEmail.get(email) || voiceByEmail.set(email, []).get(email)!).push({ date: b.lessonDate, status: isCancelled ? "Cancelled" : "Completed" });
   }
   for (const [email, appointments] of voiceByEmail.entries()) {
+    if (closed.emails.has(email.toLowerCase())) { counts.closed += 1; continue; }
     const { status } = computeClientLifecycleStatus({ appointments, hasFutureBooking: voiceFuture.has(email) });
     counts[status] += 1;
   }

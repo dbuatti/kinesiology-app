@@ -17,7 +17,7 @@ import {
   type InboxPerson, type PersonStatus,
 } from "@/lib/inbox-conversations";
 import { VoiceStudentOption } from "@/types/assistant";
-import { fetchContactMarks, writeLocalMarks } from "@/lib/inbox-marks";
+import { fetchContactMarks, saveContactMark } from "@/lib/inbox-marks";
 import {
   Loader2, RefreshCw, Mic, Brain, PenSquare, X, Search, Check, CalendarCheck, ChevronDown, RotateCcw, Reply, Send,
 } from "lucide-react";
@@ -71,19 +71,8 @@ function useContactMarks() {
     if (state) next[email] = { state, resolved_at: new Date().toISOString() };
     else delete next[email];
     setMarks(next);
-    if (useLocal) { writeLocalMarks(next); return; }
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { error } = state
-      ? await supabase.from("inbox_contact_state").upsert(
-        { user_id: user.id, contact_email: email, state, resolved_at: next[email].resolved_at },
-        { onConflict: "user_id,contact_email" },
-      )
-      : await supabase.from("inbox_contact_state").delete().eq("contact_email", email);
-    if (error) {
-      setUseLocal(true);
-      writeLocalMarks(next);
-    }
+    const { local } = await saveContactMark(email, state, useLocal);
+    if (local && !useLocal) setUseLocal(true);
   }, [marks, useLocal]);
 
   return { marks, setMark };

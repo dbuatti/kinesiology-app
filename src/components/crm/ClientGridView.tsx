@@ -30,9 +30,11 @@ interface ClientGridViewProps {
   clients: any[];
   isPrivate: boolean;
   onQuickBook: (id: string) => void;
+  /** Reopen someone who was closed ("don't follow up"). */
+  onReopen?: (client: any) => void;
 }
 
-const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps) => {
+const ClientGridView = ({ clients, isPrivate, onQuickBook, onReopen }: ClientGridViewProps) => {
   const navigate = useNavigate();
   const [sendingId, setSendingId] = useState<string | null>(null);
   const { toast } = useToast();
@@ -90,6 +92,10 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
                     </TooltipTrigger>
                     <TooltipContent>{client.lifecycle_status_reason}</TooltipContent>
                   </Tooltip>
+                )}
+                {client.lifecycle_status === "closed" && onReopen && (
+                  <button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); onReopen(client); }}
+                    className="text-[11px] font-medium text-primary hover:underline">Reopen</button>
                 )}
                 <div className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground">
                   <Clock size={11} /> {client.last_session_at ? format(new Date(client.last_session_at), "MMM d") : "Never"}

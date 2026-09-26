@@ -1784,13 +1784,17 @@ async function fetchRecentlyContactedMap(supabase: any, emails: string[]): Promi
 async function runGetClientsNeedingAttention(supabase: any, supabaseUrl: string, serviceKey: string, userId: string) {
   const now = new Date();
 
-  const [{ data: appts }, voiceRows] = await Promise.all([
+  const [{ data: appts }, voiceRows, { data: closedRows }] = await Promise.all([
     supabase.from("appointments")
       .select("client_id, date, status, clients(id, name, email)")
       .eq("user_id", userId)
       .order("date", { ascending: false }),
     fetchNormalizedVoiceBookings(supabase, supabaseUrl, serviceKey),
+    // People closed by hand ("don't follow up") never come back here.
+    supabase.from("clients").select("id, email").eq("lifecycle_status_manual", true).eq("lifecycle_status", "closed"),
   ]);
+  const closedIds = new Set((closedRows || []).map((r: any) => r.id));
+  const closedEmails = new Set((closedRows || []).map((r: any) => String(r.email || "").toLowerCase()).filter(Boolean));
 
   const hasFuture = new Set<string>();
   const agg = new Map<string, { kind: string; name: string; email: string | null; appointments: { date: string; status: string }[] }>();
@@ -1821,6 +1825,7 @@ async function runGetClientsNeedingAttention(supabase: any, supabaseUrl: string,
   const rows: any[] = [];
   for (const [id, { kind, name, email, appointments }] of agg.entries()) {
     if (hasFuture.has(id)) continue;
+    if (closedIds.has(id) || (email && closedEmails.has(String(email).toLowerCase()))) continue;
     const { status, reason, daysSinceLast, isQuickWin } = computeClientLifecycleStatus(appointments, false);
     if (status === "lead" || status === "active") continue; // only genuinely at-risk/lapsed here
     rows.push({

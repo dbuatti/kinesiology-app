@@ -5,8 +5,9 @@ import { LifecycleStatus } from "@/lib/clientStatus";
 const META: Record<LifecycleStatus, { label: string; className: string }> = {
   lead: { label: "Lead", className: "bg-muted text-muted-foreground border-border" },
   active: { label: "Active", className: "bg-chart-emerald/10 text-chart-emerald border-chart-emerald/30" },
-  at_risk: { label: "At Risk", className: "bg-chart-amber/10 text-chart-amber border-chart-amber/30" },
+  at_risk: { label: "At risk", className: "bg-chart-amber/10 text-chart-amber border-chart-amber/30" },
   lapsed: { label: "Lapsed", className: "bg-muted/70 text-muted-foreground border-border" },
+  closed: { label: "Closed", className: "bg-muted/70 text-muted-foreground border-border" },
 };
 
 interface Props {

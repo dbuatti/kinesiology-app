@@ -150,13 +150,6 @@ serve(async (req) => {
 
     await supabase.from("email_log").insert({ ...logRow, status: "sent" });
 
-    // A reply naturally means "waiting on the client" now — keep status tracking
-    // honest. Only updates an existing row (no-op if none yet); the frontend
-    // creates the initial row via upsert, which has the authenticated user_id RLS needs.
-    if (client_id) {
-      await supabase.from("client_email_status").update({ status: "awaiting_client", updated_at: new Date().toISOString() }).eq("client_id", client_id);
-    }
-
     return new Response(JSON.stringify({
       success: true,
       threaded: !threadedFallback && !!(thread_id || in_reply_to),

@@ -34,6 +34,8 @@ import ClientGridView from "@/components/crm/ClientGridView";
 import { ClinicalOversightTool } from "@/pages/ClinicalOversightPage";
 import { computeClientLifecycleStatus, LifecycleStatus } from "@/lib/clientStatus";
 import { fetchNormalizedVoiceBookings } from "@/lib/voiceBookings";
+import { setPersonClosed } from "@/lib/people";
+import { showError, showSuccess } from "@/utils/toast";
 import { voiceStudentIdFor } from "@/lib/voice-student-id";
 
 interface ClientWithStats extends Client {
@@ -59,7 +61,7 @@ interface ClientWithStats extends Client {
 type Practice = "kinesiology" | "voice" | "piano";
 const PRACTICE_LABEL: Record<Practice | "all", string> = { all: "Everyone", kinesiology: "Kinesiology", voice: "Voice", piano: "Piano" };
 
-const STATUS_RANK: Record<LifecycleStatus, number> = { at_risk: 0, active: 1, lapsed: 2, lead: 3 };
+const STATUS_RANK: Record<LifecycleStatus, number> = { at_risk: 0, active: 1, lapsed: 2, lead: 3, closed: 4 };
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -109,7 +111,7 @@ export function ClientsTool() {
   // pre-select a filter without this page's own state fighting a live param.
   const [statusFilter, setStatusFilter] = useState<LifecycleStatus | 'all'>(() => {
     const s = new URLSearchParams(window.location.search).get('status');
-    return (s === 'lead' || s === 'active' || s === 'at_risk' || s === 'lapsed') ? s : 'all';
+    return (s === 'lead' || s === 'active' || s === 'at_risk' || s === 'lapsed' || s === 'closed') ? s : 'all';
   });
   const [practiceFilter, setPracticeFilter] = useState<Practice | 'all'>(() => {
     const p = new URLSearchParams(window.location.search).get('practice');
@@ -233,6 +235,12 @@ export function ClientsTool() {
     loadAllClients();
   }, []);
 
+  const handleReopen = async (client: ClientWithStats) => {
+    if (!(await setPersonClosed({ id: client.id, email: client.email }, false))) { showError(`Couldn't reopen ${client.name}.`); return; }
+    showSuccess(`${client.name.split(" ")[0]} reopened.`);
+    loadAllClients();
+  };
+
   const handleQuickBook = (clientId: string) => {
     setSelectedClientId(clientId);
     setBookOpen(true);
@@ -299,7 +307,7 @@ export function ClientsTool() {
           </div>
 
           <div className="no-scrollbar -mx-1 flex items-center gap-1 overflow-x-auto px-1">
-            {(['all', 'lead', 'active', 'at_risk', 'lapsed'] as const).map((s) => {
+            {(['all', 'lead', 'active', 'at_risk', 'lapsed', 'closed'] as const).map((s) => {
               const count = s === 'all' ? clients.length : clients.filter(c => c.lifecycle_status === s).length;
               const label = s === 'all' ? 'All' : s === 'at_risk' ? 'At risk' : s.charAt(0).toUpperCase() + s.slice(1);
               const on = statusFilter === s;
@@ -389,13 +397,13 @@ export function ClientsTool() {
           </div>
         ) : filteredClients.length > 0 ? (
           view === 'table' ? (
-            <ClientTableView 
+            <ClientTableView onReopen={handleReopen} 
               clients={filteredClients} 
               isPrivate={isPrivate} 
               onQuickBook={handleQuickBook} 
             />
           ) : (
-            <ClientGridView 
+            <ClientGridView onReopen={handleReopen} 
               clients={filteredClients} 
               isPrivate={isPrivate} 
               onQuickBook={handleQuickBook} 

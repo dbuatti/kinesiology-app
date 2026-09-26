@@ -63,7 +63,9 @@ serve(async (req) => {
             studentIds: (props["Client CRM"]?.relation || []).map((r) => r.id),
             paymentStatus: props.Payment?.select?.name || null,
             cost: props.Cost?.number ?? null,
-            discipline: props.Discipline?.select?.name?.toLowerCase() || null,
+            // Discipline is sometimes left empty; fall back to the title ("Piano Lesson — …").
+            discipline: props.Discipline?.select?.name?.toLowerCase()
+              || (/piano/i.test(props.Name?.title?.map((t) => t.plain_text).join("") || "") ? "piano" : null),
             studentName: null,
             studentEmail: null,
           });

@@ -82,7 +82,9 @@ async function lessonPractices(key: string) {
     const data = await res.json();
     for (const page of data.results || []) {
       const p = page.properties || {};
-      const practice = practiceFrom(p.Discipline?.select?.name);
+      // Discipline is sometimes left empty; the title ("Piano Lesson — …") still says which.
+      const title = (p.Name?.title || []).map((t) => t.plain_text).join("");
+      const practice = practiceFrom(p.Discipline?.select?.name || (/piano/i.test(title) ? "piano" : "voice"));
       for (const r of p["Client CRM"]?.relation || []) {
         byStudent.set(r.id, new Set([...(byStudent.get(r.id) || []), practice]));
       }

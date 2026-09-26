@@ -16,6 +16,7 @@ const corsHeaders = {
 // more distinct client emails than this would need pagination, not a bigger cap.
 const MAX_ADDRESSES = 200;
 const MAX_MESSAGES = 60;
+const MAX_SENT = 80;
 
 async function getAccessToken(clientId: string, clientSecret: string, refreshToken: string) {
   const res = await fetch("https://oauth2.googleapis.com/token", {
@@ -46,6 +47,15 @@ function decodeHtmlEntities(text: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#39;|&apos;/g, "'")
     .replace(/&nbsp;/g, " ");
+}
+
+// Snippets of replies carry the quoted history ("…great! > On 24 Sep 2026, at
+// 12:23, Daniele Buatti wrote: > > Hi Lizzy…"), which crowds out what the
+// client actually said. Cut at the first quote marker.
+function stripQuotedTail(text: string): string {
+  if (!text) return text;
+  const cut = text.search(/(\s>\s|\s*On (?:(?!\. )[^\n]){6,160}?(wrote|a écrit):|\s*-{2,}\s*Original Message|\s*From:\s.+?Sent:)/i);
+  return (cut > 0 ? text.slice(0, cut) : text).trim();
 }
 
 // Pulls the bare address out of a "Name" <email@x.com> or plain email@x.com header.
@@ -153,7 +163,7 @@ serve(async (req) => {
           email,
           kind: known.kind,
           subject: decodeHtmlEntities(headerValue(headers, "Subject")) || "(no subject)",
-          snippet: decodeHtmlEntities(data.snippet || ""),
+          snippet: stripQuotedTail(decodeHtmlEntities(data.snippet || "")),
           date: headerValue(headers, "Date"),
           date_iso: new Date(headerValue(headers, "Date")).toISOString(),
         };
@@ -202,7 +212,106 @@ serve(async (req) => {
 
     const withStatus = clean.map((m: any) => ({ ...m, needs_reply: needsReplyByThread.get(m.thread_id) ?? true }));
 
-    return new Response(JSON.stringify({ messages: withStatus }), {
+    // Outbound side of the conversation. The inbox list above is inbound-only,
+    // so on its own it can't tell "Daniele replied in a DIFFERENT thread" (the
+    // client's mail app split the conversation, or the reply went out as a new
+    // email) from "nobody replied", and it can't see people Daniele emailed who
+    // never wrote back — which is what the Follow up queue is for. The frontend
+    // groups inbound + outbound by person and normalised subject.
+    const sent = await (async () => {
+      try {
+        const toClause = addresses.map((e) => `to:${e}`).join(" OR ");
+        const fromPractice = Array.from(practiceEmails).map((e) => `from:${e}`).join(" OR ");
+        const url = new URL("https://gmail.googleapis.com/gmail/v1/users/me/messages");
+        url.searchParams.set("q", `(in:sent OR ${fromPractice}) newer_than:90d (${toClause})`);
+        url.searchParams.set("maxResults", String(MAX_SENT));
+        const res = await fetch(url.toString(), { headers: authHeaders });
+        const data = await res.json();
+        if (!res.ok) return [];
+        const sentIds: string[] = (data.messages || []).map((m: any) => m.id);
+        const rows = await Promise.all(sentIds.map(async (id) => {
+          const u = new URL(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}`);
+          u.searchParams.set("format", "metadata");
+          for (const h of ["Subject", "Date", "To", "From"]) u.searchParams.append("metadataHeaders", h);
+          const r = await fetch(u.toString(), { headers: authHeaders });
+          if (!r.ok) return null;
+          const d = await r.json();
+          const headers = d.payload?.headers || [];
+          if (!practiceEmails.has(extractEmail(headerValue(headers, "From")))) return null;
+          // A message can be addressed to several people — attribute it to
+          // every known client on the To line.
+          const toEmails = headerValue(headers, "To").split(",").map((t) => extractEmail(t)).filter((e) => byEmail.has(e));
+          if (toEmails.length === 0) return null;
+          const dateHeader = headerValue(headers, "Date");
+          const date = new Date(dateHeader || Number(d.internalDate));
+          return toEmails.map((to) => ({
+            id: d.id,
+            thread_id: d.threadId,
+            to_email: to,
+            subject: decodeHtmlEntities(headerValue(headers, "Subject")) || "(no subject)",
+            snippet: stripQuotedTail(decodeHtmlEntities(d.snippet || "")),
+            date_iso: isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString(),
+          }));
+        }));
+        return rows.filter(Boolean).flat();
+      } catch {
+        return [];
+      }
+    })();
+
+    // Emails Daniele wrote himself through the app (as opposed to automated
+    // reminders/receipts, which also come from the practice address). Lets the
+    // frontend put a no-reply-yet email into Follow up without flooding it
+    // with every reminder the system ever sent.
+    const since = new Date(Date.now() - 90 * 86400000).toISOString();
+    const { data: manualSends } = await supabase
+      .from("email_log")
+      .select("recipient, subject, created_at")
+      .in("function_name", ["gmail-send-threaded-reply", "assistant-chat", "send-rate-increase-email"])
+      .eq("status", "sent")
+      .gte("created_at", since)
+      .order("created_at", { ascending: false })
+      .limit(300);
+
+    // Next upcoming session per person — shown as a "Booked" chip so a thread
+    // that's really been settled by a booking is obvious at a glance.
+    const todayIso = new Date().toISOString().slice(0, 10);
+    const kinesiologyIds = Array.from(byEmail.values()).filter((c) => c.kind === "kinesiology").map((c) => c.id);
+    const [{ data: upcomingAppts }, { data: upcomingLessons }] = await Promise.all([
+      kinesiologyIds.length
+        ? supabase.from("appointments").select("client_id, date, status").in("client_id", kinesiologyIds).gte("date", todayIso).order("date", { ascending: true })
+        : Promise.resolve({ data: [] }),
+      supabase.from("voice_bookings").select("student_email, lesson_date, status").gte("lesson_date", todayIso).order("lesson_date", { ascending: true }),
+    ]);
+    const emailByClientId = new Map<string, string>();
+    for (const [email, c] of byEmail) if (c.kind === "kinesiology") emailByClientId.set(c.id, email);
+    const upcoming: Record<string, string> = {};
+    for (const a of (upcomingAppts || []) as any[]) {
+      if (String(a.status || "").toLowerCase() === "cancelled") continue;
+      const email = emailByClientId.get(a.client_id);
+      if (email && !upcoming[email]) upcoming[email] = a.date;
+    }
+    for (const v of (upcomingLessons || []) as any[]) {
+      if (String(v.status || "").toLowerCase() === "cancelled") continue;
+      const email = String(v.student_email || "").toLowerCase().trim();
+      if (byEmail.has(email) && !upcoming[email]) upcoming[email] = v.lesson_date;
+    }
+
+    // Name/kind for everyone who appears on either side, so outbound-only
+    // conversations (no reply yet) can still be labelled.
+    const contacts: Record<string, { name: string; kind: string; client_id: string | null }> = {};
+    for (const email of new Set([...clean.map((m: any) => m.email), ...sent.map((m: any) => m.to_email)])) {
+      const c = byEmail.get(email);
+      if (c) contacts[email] = { name: c.name, kind: c.kind, client_id: c.kind === "kinesiology" ? c.id : null };
+    }
+
+    return new Response(JSON.stringify({
+      messages: withStatus,
+      sent,
+      manual_sends: (manualSends || []).map((m: any) => ({ recipient: String(m.recipient || "").toLowerCase().trim(), subject: m.subject || "", created_at: m.created_at })),
+      upcoming,
+      contacts,
+    }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

@@ -64,6 +64,15 @@ serve(async (req) => {
     const esc = (s: string) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const utf8Subject = `=?utf-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=`;
     const firstName = (client_name || "").trim().split(" ")[0];
+    // AI drafts and templates often already open with "Hey Reuben," and close
+    // with "Chat soon, Daniele" — wrapping those in the automatic greeting and
+    // sign-off produced a doubled "Hi Reuben, / Hey Reuben," and two
+    // signatures. Only add each piece when the body doesn't already have one.
+    const bodyLines = String(body).trim().split(/\n/).map((l) => l.trim()).filter(Boolean);
+    const hasGreeting = /^(hi|hey|hello|hiya|dear|g'?day|good (morning|afternoon|evening))\b/i.test(bodyLines[0] || "");
+    const tail = bodyLines.slice(-3).join(" ");
+    const hasSignOff = /\bdaniele\b\s*$/i.test(tail) ||
+      /^(chat soon|speak soon|talk soon|see you( soon| then)?|all the best|best( wishes| regards)?|kind regards|warm(est)? regards|warmly|cheers|thanks|thank you|take care|love|x+)[,!.]?$/i.test(bodyLines[bodyLines.length - 1] || "");
     // The practitioner types just the message body — greeting and sign-off are
     // added automatically, matching the branded template used by every other
     // client-facing email in this app (send-proposed-times etc.).
@@ -80,12 +89,12 @@ serve(async (req) => {
                   <div style="color:#1E3261;font-size:22px;font-weight:700;">✦ Resonance Kinesiology</div>
                 </div>
                 <div style="text-align:left;margin-top:36px;line-height:1.8;font-size:17px;color:#334155;">
-                  ${firstName ? `<p style="margin:0 0 18px;">Hi ${esc(firstName)},</p>` : ""}
+                  ${firstName && !hasGreeting ? `<p style="margin:0 0 18px;">Hi ${esc(firstName)},</p>` : ""}
                   ${esc(body).split(/\n+/).map((p) => `<p style="margin:0 0 14px;">${p}</p>`).join("")}
-                  <div style="margin-top:32px;">
+                  ${hasSignOff ? "" : `<div style="margin-top:32px;">
                     <p style="margin:0;">All the best,</p>
                     <div style="font-weight:700;color:#1E3261;font-size:18px;margin-top:6px;">Daniele</div>
-                  </div>
+                  </div>`}
                 </div>
               </td>
             </tr>

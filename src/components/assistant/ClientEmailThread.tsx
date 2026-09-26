@@ -10,6 +10,7 @@ import BookingProposalCard from "@/components/assistant/BookingProposalCard";
 import { PendingBooking } from "@/types/assistant";
 import { Mail, Loader2, Send, RefreshCw, CalendarClock, Sparkles, PenSquare, LayoutDashboard, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { splitQuotedReply } from "@/lib/inbox-conversations";
 
 // A simple, deliberately conservative confirmation hint — never auto-books,
 // just draws the eye to a reply that LOOKS like a yes so the practitioner can
@@ -43,6 +44,15 @@ interface Props {
   // are still listed in the dropdown to dip into, and picking one switches to
   // a normal threaded view.
   composeMode?: boolean;
+  // Inbox rows: open on exactly this conversation — possibly several Gmail
+  // threads merged — rather than whatever thread with the client is newest
+  // (which could be an unrelated booking confirmation, so replies landed in
+  // the wrong thread and the original stayed "Needs reply").
+  threadIds?: string[];
+  // The inbox shows its own status; hide the per-client status picker there.
+  hideStatus?: boolean;
+  // Pre-fills the "Suggest reply" steer, e.g. for a follow-up.
+  initialGoal?: string;
 }
 
 type Status = "needs_reply" | "awaiting_client" | "resolved";
@@ -62,7 +72,7 @@ function fmtDate(dateStr: string) {
     " · " + d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Australia/Melbourne" });
 }
 
-export default function ClientEmailThread({ clientId, clientEmail, clientName, composeMode = false }: Props) {
+export default function ClientEmailThread({ clientId, clientEmail, clientName, composeMode = false, threadIds, hideStatus = false, initialGoal = "" }: Props) {
   const firstName = clientName.split(" ")[0];
   // Voice students use a "voice:<email>" pseudo-id (see ClientPicker) — they have no
   // row in `clients`, so client_email_status (FK'd to clients) can't be read/written
@@ -85,7 +95,10 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
   // then Mon/Tue next week, pencil him in for 10am if he goes for that".
   // The backend already supported a `goal` param for this; nothing in the
   // UI ever sent one until now.
-  const [suggestGoal, setSuggestGoal] = useState("");
+  const [suggestGoal, setSuggestGoal] = useState(initialGoal);
+  const [expandedQuotes, setExpandedQuotes] = useState<Set<string>>(new Set());
+  // Stable across renders so `load` doesn't re-run on every parent render.
+  const threadIdsKey = (threadIds || []).join(",");
   const [pendingProposal, setPendingProposal] = useState<PendingBooking | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -124,12 +137,20 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
 
   useEffect(() => { loadPendingProposal(); }, [loadPendingProposal]);
 
+  // `explicitThreadId` (the dropdown) wins; otherwise the inbox's merged
+  // conversation; otherwise the client's most recent thread.
   const load = useCallback(async (explicitThreadId?: string) => {
     if (!clientEmail) { setLoading(false); return; }
     setLoading(true);
     try {
       const [{ data: threadData, error: threadErr }, statusResult] = await Promise.all([
-        supabase.functions.invoke("gmail-get-client-thread", { body: { client_email: clientEmail, thread_id: explicitThreadId || undefined } }),
+        supabase.functions.invoke("gmail-get-client-thread", {
+          body: {
+            client_email: clientEmail,
+            thread_id: explicitThreadId || undefined,
+            thread_ids: !explicitThreadId && threadIdsKey ? threadIdsKey.split(",") : undefined,
+          },
+        }),
         hasClientRecord
           ? supabase.from("client_email_status").select("status").eq("client_id", clientId).maybeSingle()
           : Promise.resolve({ data: null }),
@@ -168,7 +189,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
     } finally {
       setLoading(false);
     }
-  }, [clientEmail, clientId, hasClientRecord, firstName, composeMode]);
+  }, [clientEmail, clientId, hasClientRecord, firstName, composeMode, threadIdsKey]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -331,7 +352,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
           <span className="text-xs text-muted-foreground">{clientEmail}</span>
         </div>
         <div className="flex items-center gap-2">
-          <Select value={status || undefined} onValueChange={(v) => handleStatusChange(v as Status)}>
+          {!hideStatus && <Select value={status || undefined} onValueChange={(v) => handleStatusChange(v as Status)}>
             <SelectTrigger className="w-[170px] h-8 text-xs"><SelectValue placeholder="Set status" /></SelectTrigger>
             <SelectContent>
               {(Object.keys(STATUS_META) as Status[]).map((s) => (
@@ -343,7 +364,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
                 </SelectItem>
               ))}
             </SelectContent>
-          </Select>
+          </Select>}
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { load(selectedThreadId || undefined); loadPendingProposal(); }} disabled={loading}>
             <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
           </Button>
@@ -384,8 +405,34 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
                 "rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap leading-relaxed",
                 m.direction === "outbound" ? "bg-primary text-primary-foreground rounded-tr-sm" : "bg-muted text-foreground rounded-tl-sm",
               )}>
-                <div className="text-[10px] opacity-70 mb-1 uppercase tracking-wide font-semibold">{m.direction === "outbound" ? "You" : firstName} · {fmtDate(m.date)}</div>
-                {m.body || <span className="italic opacity-60">(no readable body)</span>}
+                <div className="text-[10px] opacity-70 mb-1 font-semibold">{m.direction === "outbound" ? "You" : firstName} · {fmtDate(m.date)}</div>
+                {(() => {
+                  if (!m.body) return <span className="italic opacity-60">(no readable body)</span>;
+                  const { main, quoted } = splitQuotedReply(m.body);
+                  const open = expandedQuotes.has(m.id);
+                  return (
+                    <>
+                      {main || quoted}
+                      {main && quoted && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => setExpandedQuotes((prev) => {
+                              const next = new Set(prev);
+                              if (next.has(m.id)) next.delete(m.id); else next.add(m.id);
+                              return next;
+                            })}
+                            className="block mt-1.5 text-[11px] font-medium opacity-60 hover:opacity-100"
+                            title={open ? "Hide earlier messages" : "Show earlier messages"}
+                          >
+                            {open ? "Hide quoted text" : "•••"}
+                          </button>
+                          {open && <div className="mt-1.5 text-xs opacity-70">{quoted}</div>}
+                        </>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </div>
           ))
@@ -476,7 +523,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
           </Button>
         </div>
         <p className="text-[10px] text-muted-foreground">
-          This sends a real email to {clientEmail} (cc: info@danielebuatti.com) — {selectedThreadId && threadMeta.threadId ? "threaded into your existing conversation." : "as a new email."}
+          This sends a real email to {clientEmail} — {selectedThreadId && threadMeta.threadId ? "threaded into your existing conversation." : "as a new email."} "Hi {firstName}," and "All the best, Daniele" are added unless your message already has its own greeting or sign-off.
         </p>
       </div>
     </div>

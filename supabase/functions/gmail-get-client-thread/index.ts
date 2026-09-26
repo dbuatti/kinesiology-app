@@ -124,7 +124,11 @@ serve(async (req) => {
   if (authErr) return authErr;
 
   try {
-    const { client_email, thread_id } = await req.json();
+    // `thread_ids` merges several Gmail threads into one conversation view —
+    // clients' mail apps (Apple Mail especially) regularly split a single
+    // back-and-forth into two Gmail threads with the same subject.
+    const { client_email, thread_id, thread_ids } = await req.json();
+    const mergeIds: string[] = Array.isArray(thread_ids) ? thread_ids.filter((t: unknown) => typeof t === "string" && t) : [];
     if (!client_email) throw new Error("Missing client_email.");
 
     const CLIENT_ID = Deno.env.get("GMAIL_CLIENT_ID");
@@ -180,19 +184,26 @@ serve(async (req) => {
 
     // 3. Fetch the FULL (bodies included) messages for the active thread only —
     // either the one explicitly requested, or the most recently active one.
-    const activeThreadId = thread_id || threads[0]?.id || null;
-    let messages: any[] = [];
-    if (activeThreadId) {
-      const url = `https://gmail.googleapis.com/gmail/v1/users/me/threads/${activeThreadId}?format=full`;
-      const res = await fetch(url, { headers: authHeaders });
+    const loadIds = mergeIds.length ? mergeIds : [thread_id || threads[0]?.id].filter(Boolean);
+    const fetched = await Promise.all(loadIds.map(async (id: string) => {
+      const res = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/threads/${id}?format=full`, { headers: authHeaders });
       const data = await res.json();
-      if (res.ok && data.messages) {
-        messages = data.messages
-          .map((m: any) => messageFromApi(m, client_email))
-          .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      }
-    }
+      return res.ok && data.messages ? data.messages.map((m: any) => messageFromApi(m, client_email)) : [];
+    }));
+    // The same email can exist twice (the sent copy and a self-Bcc/forwarded
+    // copy) — keep one per Message-ID.
+    const seen = new Set<string>();
+    const messages: any[] = fetched.flat()
+      .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .filter((m: any) => {
+        const key = m.messageIdHeader || m.id;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
     const last = messages[messages.length - 1] || null;
+    // Replies thread onto whichever Gmail thread holds the latest message.
+    const activeThreadId = last?.threadId || loadIds[0] || null;
 
     // The address the practitioner's own most recent message used in this
     // thread. A reply MUST reuse it — see extractEmail() comment above. Falls
@@ -203,7 +214,7 @@ serve(async (req) => {
     // RFC-compliant References for a reply: the full Message-ID chain of the
     // whole thread (root → last), de-duplicated, so the recipient's mail client
     // can resolve the entire ancestry even if it never saw some middle hops.
-    const fullChain = [...new Set(messages.map((m: any) => m.messageIdHeader).filter(Boolean))].join(" ");
+    const fullChain = [...new Set(messages.filter((m: any) => m.threadId === activeThreadId).map((m: any) => m.messageIdHeader).filter(Boolean))].join(" ");
 
     return new Response(JSON.stringify({
       threads,

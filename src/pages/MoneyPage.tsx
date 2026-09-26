@@ -10,7 +10,7 @@ import HubTabs from "@/components/shared/HubTabs";
 import PageHeader from "@/components/shared/PageHeader";
 import { Wallet, LineChart, AlertCircle, RefreshCw, ArrowUpRight, Table2, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ClientAuditTool } from "@/pages/ClientAuditPage";
+import { PlanningTool } from "@/components/money/PlanningTool";
 import { loadCalendarItems, unpaidItems, sumAmount, itemStart, type CalendarItem } from "@/lib/calendarItems";
 import { practiceOf, itemName, PRACTICE_LABEL, type Practice } from "@/lib/today";
 
@@ -228,7 +228,8 @@ const TABS = [
 /**
  * Money — one place for what's earned, owed and coming, across kinesiology,
  * voice and piano (shared money rules in src/lib/calendarItems.ts), plus
- * Planning: the salary simulator and rate projections from Client audit.
+ * Planning: the weekly floor, steady and bigger work, and the next 12 weeks
+ * (src/lib/planning.ts).
  */
 const MoneyPage = () => {
   const [tab, setTab] = useState(() => (new URLSearchParams(window.location.search).get("tool") === "planning" ? "planning" : "overview"));
@@ -242,8 +243,8 @@ const MoneyPage = () => {
         </div>
       </TabsContent>
       <TabsContent value="planning" className="m-0">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <ClientAuditTool tabs={["salary"]} title="Planning" subtitle="Weekly target, income streams and rate projections." showSummary={false} />
+        <div className="w-full px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <PlanningTool />
         </div>
       </TabsContent>
     </Tabs>

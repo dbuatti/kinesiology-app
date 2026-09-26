@@ -71,8 +71,8 @@ Several top-level nav items are multi-pane or tabbed hubs that wrap previously s
 - `/library` — `LibraryPage.tsx` (UnifiedEditor two-pane tree): every reference lives here — foundations (PEACE, FN theory, COGS…), worksheets, practice tools, corrections (manual + reference) and print & documents (Print Hub, Practice Notes). Old routes (`/peace-framework`, `/resources/cogs`, `/resources/print`, `/practice/corrections*`, worksheet routes) redirect to `/library?tab=<id>`.
 - `/practice` — `PracticeHubPage.tsx` (UnifiedEditor two-pane: Self Practice, Procedures, Quiz, Quick Calibrate, Corrections). Old `/practice/*` routes redirect to `/practice?tool=<id>`.
 - `/identity` — `IdentityWorkspacePage.tsx` (UnifiedEditor two-pane: Map, Shifting, Alignment, Limiting Beliefs, Fractals). Old `/lab`, `/identity-map`, etc. redirect to `/identity?tool=<id>`.
-- `/money` — `MoneyPage.tsx`: Overview (earned vs last month, unpaid, still to come, average session, 12-month paid revenue chart by practice, recent payments, top people — all from `loadCalendarItems` and the money rules below) and Planning (`?tool=planning`, the salary simulator via `ClientAuditTool tabs={["salary"]}`).
-- `/audit`, `/marketing` — `BusinessPage.tsx` with a `tools` prop narrowing its tabs. `ClientAuditTool` takes `tabs`/`title`/`subtitle`/`showSummary` props (rates, timetable, salary, suggestions). `/business`, `/business?tool=<id>` and old `/business/*` routes redirect to these (`salary`/`planning` → `/money?tool=planning`).
+- `/money` — `MoneyPage.tsx`: Overview (earned vs last month, unpaid, still to come, average session, 12-month paid revenue chart by practice, recent payments, top people — all from `loadCalendarItems` and the money rules below) and Planning (`?tool=planning`, `components/money/PlanningTool.tsx` + `src/lib/planning.ts` — see "Planning" below).
+- `/audit`, `/marketing` — `BusinessPage.tsx` with a `tools` prop narrowing its tabs. `ClientAuditTool` takes `tabs`/`title`/`subtitle`/`showSummary` props (rates, timetable, salary = per-client rate simulator, suggestions). `/business`, `/business?tool=<id>` and old `/business/*` routes redirect to these (`salary`/`planning` → `/money?tool=planning`).
 - `/inbox`, `/follow-up` — `AssistantPage` with `initialTab`, rendered as focused pages (just that tool, no Assistant header/metrics/tabs). `/assistant` is the full Assistant (chat, follow-up, inbox, launch).
 - `/clients` — `ClientsPage.tsx`, labelled **People** (internal Tabs: People, Clinical oversight). One list of kinesiology clients and voice/piano students, with a practice filter (`?practice=kinesiology|voice|piano`). `/oversight` redirects to `/clients?tool=oversight`.
 - `/sessions` — `ClinicalHubPage.tsx`: real sessions first (new, up next, recent), then a "Practice & reference" section with the sandbox (`/practice/trial/*`, a practice client — nothing saved to a real record) and the corrections manual.
@@ -154,6 +154,10 @@ The day across kinesiology, voice and piano: stats (today, booked this week, ear
 - Kinesiology statuses are capitalised (`"Cancelled"`) — compare case-insensitively.
 
 Calendar deep links (read once, then internal state): `/calendar?show=unpaid` (Past, Unpaid filter), `/calendar?show=lessons` (voice & piano only).
+
+## Planning (`src/lib/planning.ts`, Money → Planning)
+
+Income has two shapes and the plan keeps them apart: **steady work** (kinesiology/FNH, voice 45/60, piano lessons from `loadCalendarItems`, last 90 days; backing tracks from The Plan) and **bigger work** (gigs, institutions, musical theatre, corporate — rows in Notion "The Plan", averaged over 12 months). The `plan-income` edge function reads The Plan read-only; `planKind` skips projects the CRM already counts (Kinesiology, FNH, Coaching, Teaching) and non-income ones so nothing is doubled. The weekly floor is living costs plus income tax (`grossForNet`, 2026–27 resident rates). Settings live in `planning_settings` (`supabase_planning_settings.sql`), falling back to localStorage until applied. The Plan must be shared with the Notion integration behind `NOTION_API_KEY`, or the page says so.
 
 ## Voice Calendar Fallback (`src/lib/calendarItems.ts`, used by `UnifiedCalendarPage.tsx`)
 

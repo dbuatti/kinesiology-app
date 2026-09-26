@@ -82,20 +82,6 @@ import { ClientRow } from "@/components/crm/settings/ClientRow";
 import TimetableVisualizer from "@/components/crm/settings/TimetableVisualizer";
 import RoadmapTasks from "@/components/crm/settings/RoadmapTasks";
 
-// ── Income stream types & defaults (outside component to avoid re-creation) ──
-interface IncomeStream {
-  id: string; name: string; unitLabel: string;
-  ratePerUnit: number; unitsPerMonth: number; enabled: boolean;
-}
-const DEFAULT_EXTRA_STREAMS: IncomeStream[] = [
-  { id: 'voice',     name: 'Voice Coaching',  unitLabel: 'sessions', ratePerUnit: 80,  unitsPerMonth: 3, enabled: true },
-  { id: 'corporate', name: 'Corporate Gigs',   unitLabel: 'gigs',     ratePerUnit: 350, unitsPerMonth: 1, enabled: true },
-  { id: 'theatre',   name: 'Musical Theatre',  unitLabel: 'shows',    ratePerUnit: 200, unitsPerMonth: 1, enabled: true },
-  { id: 'piano',     name: 'Piano Backings',   unitLabel: 'sessions', ratePerUnit: 80,  unitsPerMonth: 4, enabled: true },
-];
-const STREAM_ICONS: Record<string, ElementType> = {
-  fnh: Brain, voice: Mic2, corporate: Building2, theatre: Theater, piano: Music2,
-};
 
 interface ClientWithAppointments extends Client {
   appointments: Appointment[];
@@ -162,7 +148,7 @@ const STATIC_STRATEGIES = [
 const AUDIT_TABS = [
   { id: "rates", label: "Rates" },
   { id: "timetable", label: "Timetable" },
-  { id: "salary", label: "Salary Sim" },
+  { id: "salary", label: "Rate simulator" },
   { id: "suggestions", label: "AI Roadmap" },
 ];
 
@@ -170,7 +156,7 @@ const AUDIT_TABS = [
 // work (rates & recency, preferred times, AI roadmap); Money → Planning shows
 // just the salary simulator. (Its old Financials tab is now the Money overview.)
 export function ClientAuditTool({
-  tabs = ["rates", "timetable", "suggestions"],
+  tabs = ["rates", "timetable", "salary", "suggestions"],
   title = "Client audit",
   subtitle = "Rates and recency per client, preferred times, and AI pricing suggestions.",
   showSummary = true,
@@ -229,23 +215,6 @@ export function ClientAuditTool({
   // NEW FEATURES STATE
   const [selectedWeeklyClients, setSelectedWeeklyClients] = useState<string[]>([]);
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
-
-  // Income streams & weekly calculator
-  const [extraStreams, setExtraStreams] = useState<IncomeStream[]>(() => {
-    try { const s = localStorage.getItem('income_streams_v1'); return s ? JSON.parse(s) : DEFAULT_EXTRA_STREAMS; }
-    catch { return DEFAULT_EXTRA_STREAMS; }
-  });
-  const [weeklyTarget, setWeeklyTarget] = useState<number>(() => parseInt(localStorage.getItem('weekly_target') || '700'));
-  const [editingWeeklyTarget, setEditingWeeklyTarget] = useState(false);
-  const [weeklyTargetInput, setWeeklyTargetInput] = useState(() => localStorage.getItem('weekly_target') || '700');
-
-  const updateStream = (id: string, field: keyof IncomeStream, value: any) => {
-    setExtraStreams(prev => {
-      const next = prev.map(s => s.id === id ? { ...s, [field]: value } : s);
-      localStorage.setItem('income_streams_v1', JSON.stringify(next));
-      return next;
-    });
-  };
 
   useEffect(() => {
     fetchData();
@@ -1057,10 +1026,6 @@ export function ClientAuditTool({
     return { thisWeekRevenue: weekRev, thisWeekSessions: weekCount, thisMonthRevenue: monthRev, thisMonthSessions: monthCount, daysLeftInWeek: daysLeft };
   }, [clients]);
 
-  const extraStreamsMonthly = useMemo(() =>
-    extraStreams.filter(s => s.enabled).reduce((sum, s) => sum + s.ratePerUnit * s.unitsPerMonth, 0),
-  [extraStreams]);
-
   const handleClientOverrideChange = (clientId: string, field: 'rate' | 'frequency' | 'active', value: any) => {
     setClientOverrides(prev => {
       const current = prev[clientId] || {};
@@ -1243,7 +1208,7 @@ export function ClientAuditTool({
             {[
               { label: "Active Clients", value: totalActiveClients.toString(), sub: "seen last 90 days", colour: "text-chart-primary", icon: Users, gradient: "from-chart-primary/5 to-transparent" },
               { label: "Avg Session Rate", value: `$${averageSessionRate.toFixed(0)}`, sub: `target $150`, colour: "text-foreground", icon: DollarSign, gradient: "from-muted to-transparent" },
-              { label: "This Week", value: `$${thisWeekRevenue.toLocaleString()}`, sub: `${thisWeekSessions} sessions · $${weeklyTarget} target`, colour: thisWeekRevenue >= weeklyTarget ? "text-chart-emerald" : "text-chart-destructive", icon: Calendar, gradient: thisWeekRevenue >= weeklyTarget ? "from-chart-emerald/5 to-transparent" : "from-chart-destructive/5 to-transparent" },
+              { label: "This Week", value: `$${thisWeekRevenue.toLocaleString()}`, sub: `${thisWeekSessions} sessions`, colour: "text-foreground", icon: Calendar, gradient: "from-chart-primary/5 to-transparent" },
               { label: "Proj. Monthly", value: `$${Math.round(projectedMonthlyRevenue).toLocaleString()}`, sub: "FNH only · current rates", colour: "text-primary", icon: TrendingUp, gradient: "from-primary/5 to-transparent" },
             ].map(({ label, value, sub, colour, gradient, icon: Icon }) => (
               <div key={label} className={`relative bg-card rounded-xl border border-border px-5 py-4 space-y-1.5 overflow-hidden bg-gradient-to-br ${gradient} transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 group`}>
@@ -1788,225 +1753,6 @@ export function ClientAuditTool({
 
             {/* TAB 3: SALARY SIMULATOR */}
             <TabsContent value="salary" className="space-y-8">
-
-              {/* ── WEEKLY CALCULATOR ── */}
-              {(() => {
-                const gap = Math.max(0, weeklyTarget - thisWeekRevenue);
-                const fhnRate = Math.round(averageSessionRate) || 70;
-                const sessionsNeeded = fhnRate > 0 ? Math.ceil(gap / fhnRate) : 0;
-                const corpStream = extraStreams.find(s => s.id === 'corporate');
-                const corpRate = corpStream?.ratePerUnit ?? 350;
-                const corpGigsNeeded = corpRate > 0 ? Math.ceil(gap / corpRate) : 0;
-                const pct = Math.min(100, weeklyTarget > 0 ? Math.round((thisWeekRevenue / weeklyTarget) * 100) : 0);
-                const onTarget = thisWeekRevenue >= weeklyTarget;
-                return (
-                  <Card className="border border-border shadow-sm rounded-xl bg-card border border-border text-foreground overflow-hidden relative">
-                    <div className="absolute top-0 right-0 p-10 opacity-[0.06] pointer-events-none"><Zap size={160} /></div>
-                    <CardContent className="p-8 relative z-10 space-y-6">
-
-                      {/* Header + target */}
-                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                        <div className="space-y-1">
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-chart-primary">Weekly Calculator</p>
-                          <h3 className="text-2xl font-semibold">What do I need this week?</h3>
-                          <p className="text-xs text-muted-foreground/60 font-medium">
-                            Mon–Sun · {thisWeekSessions} session{thisWeekSessions !== 1 ? 's' : ''} so far
-                            {daysLeftInWeek > 0 ? ` · ${daysLeftInWeek} day${daysLeftInWeek !== 1 ? 's' : ''} remaining` : ' · Last day of working week'}
-                          </p>
-                        </div>
-                        {/* Editable weekly target */}
-                        <div className="flex items-center gap-2 bg-muted/50 rounded-xl px-4 py-3 border border-border self-start shrink-0">
-                          <span className="text-xs font-medium text-muted-foreground/60">Target</span>
-                          {editingWeeklyTarget ? (
-                            <input autoFocus
-                              className="w-20 bg-transparent text-foreground font-semibold text-sm text-right outline-none border-b border-primary pb-0.5"
-                              value={weeklyTargetInput}
-                              onChange={e => setWeeklyTargetInput(e.target.value)}
-                              onBlur={() => {
-                                const n = parseInt(weeklyTargetInput);
-                                if (!isNaN(n) && n > 0) { setWeeklyTarget(n); localStorage.setItem('weekly_target', String(n)); }
-                                setEditingWeeklyTarget(false);
-                              }}
-                              onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
-                            />
-                          ) : (
-                            <button onClick={() => { setWeeklyTargetInput(String(weeklyTarget)); setEditingWeeklyTarget(true); }}
-                              className="flex items-center gap-1.5 font-semibold text-sm text-foreground hover:text-chart-primary transition-colors">
-                              ${weeklyTarget.toLocaleString()}<Edit3 size={11} className="opacity-40" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* This week vs this month side by side */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="p-4 bg-muted/50 rounded-xl border border-border space-y-1">
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-chart-primary">This week</p>
-                          <p className="text-2xl font-semibold text-foreground">${thisWeekRevenue.toLocaleString()}</p>
-                          <p className="text-[10px] text-muted-foreground/60">{thisWeekSessions} session{thisWeekSessions !== 1 ? 's' : ''} · {pct}% of target</p>
-                        </div>
-                        <div className="p-4 bg-muted/50 rounded-xl border border-border space-y-1">
-                          <p className="text-xs font-medium text-muted-foreground">This month</p>
-                          <p className="text-2xl font-semibold text-foreground">${thisMonthRevenue.toLocaleString()}</p>
-                          <p className="text-[10px] text-muted-foreground/60">{thisMonthSessions} session{thisMonthSessions !== 1 ? 's' : ''} total</p>
-                        </div>
-                      </div>
-
-                      {/* Progress bar */}
-                      <div className="space-y-1.5">
-                        <div className="h-2.5 bg-muted rounded-full overflow-hidden">
-                          <div className={cn("h-full rounded-full transition-all duration-700", onTarget ? "bg-chart-emerald" : "bg-primary")}
-                            style={{ width: `${pct}%` }} />
-                        </div>
-                      </div>
-
-                      {onTarget ? (
-                        <div className="flex items-center gap-3 p-4 bg-chart-emerald/10 border border-chart-emerald/20 rounded-xl">
-                          <CheckCircle2 size={20} className="text-chart-emerald shrink-0" />
-                          <p className="text-sm font-medium text-chart-emerald">Weekly target hit — great work!</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          <p className="text-xs text-muted-foreground/60 font-medium">
-                            Still needed: <span className="text-foreground font-semibold text-base">${gap.toLocaleString()}</span>
-                            {daysLeftInWeek > 0 && <span className="text-muted-foreground"> · ~${Math.ceil(gap / daysLeftInWeek).toLocaleString()}/day</span>}
-                          </p>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div className="p-3.5 bg-muted/50 border border-border rounded-xl space-y-0.5">
-                              <p className="text-[10px] font-semibold uppercase tracking-wider text-chart-primary">FNH sessions</p>
-                              <p className="text-xl font-semibold text-foreground">{sessionsNeeded}</p>
-                              <p className="text-[10px] text-muted-foreground/60">at ${fhnRate} avg</p>
-                            </div>
-                            <div className="p-3.5 bg-muted/50 border border-border rounded-xl space-y-0.5">
-                              <p className="text-xs font-medium text-muted-foreground">Corporate gig</p>
-                              <p className="text-xl font-semibold text-foreground">{corpGigsNeeded}</p>
-                              <p className="text-[10px] text-muted-foreground/60">at ${corpRate}/gig</p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                );
-              })()}
-
-              {/* ── INCOME STREAMS ── */}
-              <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
-                <CardHeader className="p-8 pb-4 border-b border-border bg-muted/20">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="space-y-1">
-                      <CardTitle className="text-xl font-semibold flex items-center gap-3">
-                        <DollarSign size={22} className="text-chart-emerald" /> Income Streams
-                      </CardTitle>
-                      <CardDescription className="font-medium">All five streams combined — adjust rates and frequency per stream.</CardDescription>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-xs font-medium text-muted-foreground">Combined Monthly</p>
-                      <p className="text-2xl font-semibold text-foreground">
-                        ${Math.round(salaryMetrics.current.monthly + extraStreamsMonthly).toLocaleString()}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground font-medium">
-                        ${Math.round((salaryMetrics.current.monthly + extraStreamsMonthly) * 12).toLocaleString()}/yr
-                      </p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <div className="divide-y divide-border/50">
-                    {/* FNH row — read from real salary data */}
-                    {(() => {
-                      const src = isSandboxActive ? salaryMetrics.simulated : salaryMetrics.current;
-                      const fnh_monthly = Math.round(src.monthly);
-                      const fnh_annual  = fnh_monthly * 12;
-                      const fnh_rate    = Math.round(src.avgRate) || Math.round(averageSessionRate) || 70;
-                      const fnh_sessions = fnh_rate > 0 ? Math.round(fnh_monthly / fnh_rate) : 0;
-                      return (
-                        <div className="flex items-center gap-4 px-8 py-4 bg-muted">
-                          <div className="w-8 h-8 rounded-lg bg-muted text-chart-primary flex items-center justify-center shrink-0">
-                            <Brain size={16} />
-                          </div>
-                          <div className="flex-1 min-w-0 space-y-1">
-                            <p className="text-sm font-semibold text-foreground">FNH Sessions</p>
-                            <p className="text-[10px] text-muted-foreground font-medium">
-                              ~{fnh_sessions} sessions/mo · ${fnh_rate}/session avg
-                              {isSandboxActive ? ' · Preview' : ' · Live'}
-                            </p>
-                          </div>
-                          <div className="text-right shrink-0">
-                            <p className="text-sm font-semibold text-foreground">${fnh_monthly.toLocaleString()}<span className="text-[10px] text-muted-foreground font-medium">/mo</span></p>
-                            <p className="text-[10px] text-muted-foreground">${fnh_annual.toLocaleString()}/yr</p>
-                          </div>
-                        </div>
-                      );
-                    })()}
-
-                    {/* Extra streams — editable */}
-                    {extraStreams.map(stream => {
-                      const Icon = STREAM_ICONS[stream.id] ?? DollarSign;
-                      const monthly = stream.enabled ? Math.round(stream.ratePerUnit * stream.unitsPerMonth) : 0;
-                      const annual  = monthly * 12;
-                      return (
-                        <div key={stream.id} className={cn("flex items-center gap-4 px-8 py-4 transition-opacity", !stream.enabled && "opacity-40")}>
-                          <div className="w-8 h-8 rounded-lg bg-muted/60 text-muted-foreground flex items-center justify-center shrink-0">
-                            <Icon size={16} />
-                          </div>
-                          <div className="flex-1 min-w-0 space-y-2">
-                            <div className="flex items-center gap-2">
-                              <Switch
-                                checked={stream.enabled}
-                                onCheckedChange={v => updateStream(stream.id, 'enabled', v)}
-                                className="scale-75 data-[state=checked]:bg-chart-emerald"
-                              />
-                              <p className="text-sm font-semibold text-foreground">{stream.name}</p>
-                            </div>
-                            {stream.enabled && (
-                              <div className="grid grid-cols-2 gap-4 pr-4 animate-in fade-in duration-200">
-                                <div className="space-y-1">
-                                  <div className="flex justify-between text-[10px] font-medium text-muted-foreground">
-                                    <span>Rate / {(stream as any).unitLabel ?? 'unit'}</span>
-                                    <span className="text-foreground font-semibold">${stream.ratePerUnit}</span>
-                                  </div>
-                                  <Slider value={[stream.ratePerUnit]} onValueChange={([v]) => updateStream(stream.id, 'ratePerUnit', v)}
-                                    min={20} max={600} step={5} className="py-1" />
-                                </div>
-                                <div className="space-y-1">
-                                  <div className="flex justify-between text-[10px] font-medium text-muted-foreground">
-                                    <span>{(stream as any).unitLabel ?? 'units'} / month</span>
-                                    <span className="text-foreground font-semibold">{stream.unitsPerMonth}</span>
-                                  </div>
-                                  <Slider value={[stream.unitsPerMonth]} onValueChange={([v]) => updateStream(stream.id, 'unitsPerMonth', v)}
-                                    min={0} max={20} step={0.5} className="py-1" />
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                          <div className="text-right shrink-0 min-w-[80px]">
-                            <p className="text-sm font-semibold text-foreground">${monthly.toLocaleString()}<span className="text-[10px] text-muted-foreground font-medium">/mo</span></p>
-                            <p className="text-[10px] text-muted-foreground">${annual.toLocaleString()}/yr</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {/* Total row */}
-                    <div className="flex items-center gap-4 px-8 py-5 bg-muted">
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-foreground uppercase tracking-wider">Total Combined</p>
-                        <p className="text-[10px] text-muted-foreground font-medium">All enabled streams · {isSandboxActive ? 'Preview' : 'Current'} FNH</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xl font-semibold text-chart-emerald">
-                          ${Math.round(salaryMetrics.current.monthly + extraStreamsMonthly).toLocaleString()}
-                          <span className="text-sm text-muted-foreground font-medium">/mo</span>
-                        </p>
-                        <p className="text-sm font-semibold text-chart-emerald">
-                          ${Math.round((salaryMetrics.current.monthly + extraStreamsMonthly) * 12).toLocaleString()}/yr
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
 
               {/* How-to guide */}
               <Card className="border border-border shadow-sm rounded-xl bg-muted/30 border border-border">

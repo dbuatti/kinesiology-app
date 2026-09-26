@@ -99,3 +99,6 @@ verify_jwt = false
 # all-Gemini-keys-exhausted free-tier window, plus up to MAX_TOOL_ROUNDS of
 # fallback-model time — the 60s default can be tight for that slow path.
 timeout_sec = 150
+
+[functions.plan-income]
+verify_jwt = false

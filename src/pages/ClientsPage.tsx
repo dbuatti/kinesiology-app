@@ -43,8 +43,9 @@ interface ClientWithStats extends Client {
   // reported: one unified list, distinguished per-row, same convention
   // already used in Follow-up/Launch Campaign (Mic vs Brain icon).
   kind: "kinesiology" | "voice";
-  // Which practice: voice rows split into voice / piano by their latest lesson.
+  // Main practice (for the row icon) and every practice this person does.
   practice: Practice;
+  practices: Practice[];
   session_count: number;
   last_session_at: string | null;
   last_contacted_at: string | null;
@@ -59,6 +60,39 @@ type Practice = "kinesiology" | "voice" | "piano";
 const PRACTICE_LABEL: Record<Practice | "all", string> = { all: "Everyone", kinesiology: "Kinesiology", voice: "Voice", piano: "Piano" };
 
 const STATUS_RANK: Record<LifecycleStatus, number> = { at_risk: 0, active: 1, lapsed: 2, lead: 3 };
+
+const DAY = 24 * 60 * 60 * 1000;
+
+/** Session counts, activity score and lifecycle status from one person's whole history. */
+function historyStats(history: { date: string; status: string }[], manualOverride: LifecycleStatus | null) {
+  const now = Date.now();
+  const at = (a: { date: string }) => (a.date ? new Date(a.date).getTime() : NaN);
+  const active = history.filter((a) => a.status !== "Cancelled" && !isNaN(at(a)));
+  const past = active.filter((a) => at(a) < now).sort((a, b) => at(b) - at(a));
+  const upcoming = active.filter((a) => at(a) >= now);
+  const lastMs = past[0] ? at(past[0]) : null;
+  // Recency points: within 30d = 50, 60d = 40, 90d = 28, 180d = 16, else 0.
+  let recencyPts = 0;
+  if (lastMs != null) {
+    const days = (now - lastMs) / DAY;
+    recencyPts = days <= 30 ? 50 : days <= 60 ? 40 : days <= 90 ? 28 : days <= 180 ? 16 : 0;
+  }
+  // Frequency points: 12+ sessions in the last 180 days = 50.
+  const freqPts = Math.min(50, past.filter((a) => at(a) >= now - 180 * DAY).length * 5);
+  const { status, reason } = computeClientLifecycleStatus({
+    appointments: history.filter((a) => !isNaN(at(a)) && at(a) < now),
+    hasFutureBooking: upcoming.length > 0,
+    manualOverride,
+  });
+  return {
+    session_count: past.length,
+    last_session_at: past[0]?.date || null,
+    upcoming_count: upcoming.length,
+    activity_score: recencyPts + freqPts,
+    lifecycle_status: status,
+    lifecycle_status_reason: reason,
+  };
+}
 
 export function ClientsTool() {
   const [search, setSearch] = useState("");
@@ -84,139 +118,78 @@ export function ClientsTool() {
   const navigate = useNavigate();
   const { isPrivate } = usePrivacyMode();
   
-  const fetchKinesiologyClients = async (): Promise<ClientWithStats[]> => {
-      const { data, error } = await supabase
+  // One row per person (Phase 5): every non-practitioner `clients` row, whatever
+  // they do, with kinesiology sessions and voice/piano lessons (matched by
+  // email) combined into one history and one status. Students who booked but
+  // have no row yet (a sign-up since the backfill) still appear, by email.
+  const fetchPeople = async (): Promise<ClientWithStats[]> => {
+    const [{ data, error }, bookings] = await Promise.all([
+      supabase
         .from('clients')
         .select('*, appointments(date, bolt_score, status)')
-        .contains("practices", ["kinesiology"])
         .or('is_practitioner.eq.false,is_practitioner.is.null')
-        .order('name', { ascending: true });
+        .order('name', { ascending: true }),
+      fetchNormalizedVoiceBookings(),
+    ]);
+    if (error) throw error;
 
-      if (error) throw error;
-      
-      const mapped = (data || []).map(c => {
-        const activeApps = (c.appointments || []).filter((a: any) => a.status !== 'Cancelled');
-        const sortedApps = [...activeApps]
-          .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        
-        const latestBoltApp = (c.appointments || [])
-          .filter((a: any) => a.bolt_score !== null)
-          .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
-
-        const now = Date.now();
-        const pastApps = activeApps.filter((a: any) => {
-          const t = a.date ? new Date(a.date).getTime() : NaN;
-          return !isNaN(t) && t < now;
-        });
-        const upcomingApps = activeApps.filter((a: any) => {
-          const t = a.date ? new Date(a.date).getTime() : NaN;
-          return !isNaN(t) && t >= now;
-        });
-
-        const lastMs = sortedApps.length > 0 && sortedApps[0].date
-          ? new Date(sortedApps[0].date).getTime()
-          : null;
-
-        // Active-window frequency (last 180 days).
-        const recentCount = pastApps.filter((a: any) => {
-          const t = a.date ? new Date(a.date).getTime() : NaN;
-          return !isNaN(t) && t >= now - 180 * 24 * 60 * 60 * 1000;
-        }).length;
-
-        // Recency points: within 30d = 50, 60d = 40, 90d = 28, 180d = 16, else 0.
-        let recencyPts = 0;
-        if (lastMs != null) {
-          const days = (now - lastMs) / (24 * 60 * 60 * 1000);
-          if (days <= 30) recencyPts = 50;
-          else if (days <= 60) recencyPts = 40;
-          else if (days <= 90) recencyPts = 28;
-          else if (days <= 180) recencyPts = 16;
-        }
-        // Frequency points: cap at 12+ sessions in the window = 50.
-        const freqPts = Math.min(50, recentCount * 5);
-        const upcomingCount = upcomingApps.length;
-
-        const { status: lifecycle_status, reason: lifecycle_status_reason } = computeClientLifecycleStatus({
-          appointments: (c.appointments || []).map((a: any) => ({ date: a.date, status: a.status })),
-          hasFutureBooking: upcomingCount > 0,
-          manualOverride: (c as any).lifecycle_status_manual ? (c as any).lifecycle_status : null,
-        });
-
-        return {
-          ...c,
-          kind: "kinesiology",
-          practice: "kinesiology",
-          born: c.born ? new Date(c.born) : null,
-          suburbs: c.suburbs || [],
-          session_count: pastApps.length,
-          last_session_at: sortedApps.length > 0 ? sortedApps[0].date : null,
-          latest_bolt: latestBoltApp ? latestBoltApp.bolt_score : null,
-          upcoming_count: upcomingCount,
-          activity_score: recencyPts + freqPts,
-          lifecycle_status,
-          lifecycle_status_reason,
-        };
-      }) as unknown as ClientWithStats[];
-
-      return mapped;
-  };
-
-  // Same "kept in sync" scoring convention as the kinesiology branch above —
-  // deliberately reuses fetchNormalizedVoiceBookings (already merges
-  // Cal.com + Notion-only lessons, see src/lib/voiceBookings.ts) so a voice
-  // student's real history shows up here exactly as it does everywhere else
-  // in the app, not a second, divergent computation.
-  const fetchVoiceClients = async (): Promise<ClientWithStats[]> => {
-    const bookings = await fetchNormalizedVoiceBookings();
-    const now = Date.now();
-    const agg = new Map<string, { name: string; email: string; practice: Practice; appointments: { date: string; status: string }[] }>();
-    // Bookings arrive newest first, so the first one seen sets the student's practice.
+    type Lesson = { date: string; status: string };
+    const lessonsByEmail = new Map<string, { name: string; practices: Set<Practice>; lessons: Lesson[] }>();
     for (const b of bookings) {
-      const existing = agg.get(b.studentEmail) || { name: b.studentName, email: b.studentEmail, practice: b.discipline, appointments: [] };
-      existing.appointments.push({ date: b.lessonDate, status: b.status === "cancelled" ? "Cancelled" : "Completed" });
-      agg.set(b.studentEmail, existing);
+      const key = b.studentEmail.toLowerCase();
+      const e = lessonsByEmail.get(key) || { name: b.studentName, practices: new Set<Practice>(), lessons: [] };
+      e.practices.add(b.discipline);
+      e.lessons.push({ date: b.lessonDate, status: b.status === "cancelled" ? "Cancelled" : "Completed" });
+      lessonsByEmail.set(key, e);
     }
 
-    const results: ClientWithStats[] = [];
-    for (const [email, { name, practice, appointments }] of agg.entries()) {
-      const activeApps = appointments.filter((a) => a.status !== "Cancelled");
-      const pastApps = activeApps.filter((a) => new Date(a.date).getTime() < now);
-      const upcomingApps = activeApps.filter((a) => new Date(a.date).getTime() >= now);
-      const sortedPast = [...pastApps].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      const lastMs = sortedPast[0] ? new Date(sortedPast[0].date).getTime() : null;
-      const recentCount = pastApps.filter((a) => new Date(a.date).getTime() >= now - 180 * 24 * 60 * 60 * 1000).length;
-      let recencyPts = 0;
-      if (lastMs != null) {
-        const days = (now - lastMs) / (24 * 60 * 60 * 1000);
-        if (days <= 30) recencyPts = 50;
-        else if (days <= 60) recencyPts = 40;
-        else if (days <= 90) recencyPts = 28;
-        else if (days <= 180) recencyPts = 16;
-      }
-      const freqPts = Math.min(50, recentCount * 5);
-
-      const { status: lifecycle_status, reason: lifecycle_status_reason } = computeClientLifecycleStatus({
-        appointments: pastApps,
-        hasFutureBooking: upcomingApps.length > 0,
-      });
-
-      results.push({
-        id: voiceStudentIdFor(email),
-        kind: "voice",
-        practice,
-        name, email, phone: null, born: null, suburbs: [],
-        standard_rate: null, target_rate: null,
-        onboarding_submitted_at: null, stripe_customer_id: null,
-        session_count: pastApps.length,
-        last_session_at: sortedPast[0]?.date || null,
-        latest_bolt: null,
-        upcoming_count: upcomingApps.length,
-        activity_score: recencyPts + freqPts,
-        lifecycle_status,
-        lifecycle_status_reason,
+    type Appt = { date: string; bolt_score: number | null; status: string };
+    type Row = Client & { practices: Practice[] | null; appointments: Appt[] | null; lifecycle_status_manual?: boolean; lifecycle_status?: LifecycleStatus };
+    const people: ClientWithStats[] = [];
+    const seen = new Set<string>();
+    for (const c of (data || []) as unknown as Row[]) {
+      const key = (c.email || "").toLowerCase();
+      const voice = key ? lessonsByEmail.get(key) : undefined;
+      if (voice) seen.add(key);
+      const practices = [...new Set<Practice>([...(c.practices || ["kinesiology"]), ...(voice?.practices || [])])];
+      const kin = practices.includes("kinesiology");
+      const latestBoltApp = (c.appointments || [])
+        .filter((a) => a.bolt_score !== null)
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
+      people.push({
+        ...c,
+        // Voice-only people open the voice hub (keyed by email) until the
+        // Assistant moves to client ids; anyone doing kinesiology opens their record.
+        id: !kin && key ? voiceStudentIdFor(key) : c.id,
+        kind: kin ? "kinesiology" : "voice",
+        practice: kin ? "kinesiology" : practices.includes("voice") ? "voice" : "piano",
+        practices,
+        born: c.born ? new Date(c.born) : null,
+        suburbs: c.suburbs || [],
+        latest_bolt: latestBoltApp ? latestBoltApp.bolt_score : null,
+        ...historyStats(
+          [...(c.appointments || []).map((a) => ({ date: a.date, status: a.status })), ...(voice?.lessons || [])],
+          c.lifecycle_status_manual ? c.lifecycle_status ?? null : null,
+        ),
       } as unknown as ClientWithStats);
     }
-    return results;
+
+    for (const [email, v] of lessonsByEmail) {
+      if (seen.has(email)) continue;
+      const practices = [...v.practices];
+      people.push({
+        id: voiceStudentIdFor(email),
+        kind: "voice",
+        practice: practices.includes("voice") ? "voice" : "piano",
+        practices,
+        name: v.name, email, phone: null, born: null, suburbs: [],
+        standard_rate: null, target_rate: null,
+        onboarding_submitted_at: null, stripe_customer_id: null,
+        latest_bolt: null,
+        ...historyStats(v.lessons, null),
+      } as unknown as ClientWithStats);
+    }
+    return people;
   };
 
   // Session recency ("Last Session") only tells half the story — a client
@@ -245,8 +218,7 @@ export function ClientsTool() {
   const loadAllClients = async () => {
     setLoading(true);
     try {
-      const [kinesiology, voice] = await Promise.all([fetchKinesiologyClients(), fetchVoiceClients()]);
-      const all = [...kinesiology, ...voice];
+      const all = await fetchPeople();
       const contactedMap = await fetchLastContactedMap();
       setClients(all.map((c) => ({ ...c, last_contacted_at: c.email ? contactedMap.get(c.email.toLowerCase()) || null : null })));
     } catch (err) {
@@ -273,7 +245,7 @@ export function ClientsTool() {
       c.suburbs.some(s => s.toLowerCase().includes(search.toLowerCase()))
     )
     .filter(c => statusFilter === 'all' || c.lifecycle_status === statusFilter)
-    .filter(c => practiceFilter === 'all' || c.practice === practiceFilter)
+    .filter(c => practiceFilter === 'all' || c.practices.includes(practiceFilter))
     .sort((a, b) => {
       if (sortBy === 'attention') return STATUS_RANK[a.lifecycle_status] - STATUS_RANK[b.lifecycle_status];
       if (sortBy === 'active') return b.activity_score - a.activity_score;
@@ -355,7 +327,7 @@ export function ClientsTool() {
               <SelectContent align="end">
                 {(['all', 'kinesiology', 'voice', 'piano'] as const).map((p) => (
                   <SelectItem key={p} value={p}>
-                    {PRACTICE_LABEL[p]} <span className="ml-1 text-muted-foreground tabular-nums">{p === 'all' ? clients.length : clients.filter(c => c.practice === p).length}</span>
+                    {PRACTICE_LABEL[p]} <span className="ml-1 text-muted-foreground tabular-nums">{p === 'all' ? clients.length : clients.filter(c => c.practices.includes(p)).length}</span>
                   </SelectItem>
                 ))}
               </SelectContent>

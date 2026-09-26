@@ -100,6 +100,9 @@ const ClientGridView = ({ clients, isPrivate, onQuickBook }: ClientGridViewProps
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 {isVoice ? <Mic className="h-3.5 w-3.5 text-chart-destructive shrink-0" /> : <Brain className="h-3.5 w-3.5 text-chart-purple shrink-0" />}
+                      {!isVoice && (client.practices || []).some((x: string) => x !== "kinesiology") && (
+                        <span title={`Also ${(client.practices || []).filter((x: string) => x !== "kinesiology").join(" and ")}`}><Mic className="h-3.5 w-3.5 text-chart-destructive shrink-0" /></span>
+                      )}
                 <h3 className={cn(
                   "text-lg font-semibold text-foreground group-hover:text-primary transition-colors truncate",
                   isPrivate && "blur-sm select-none"

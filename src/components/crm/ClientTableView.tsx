@@ -83,6 +83,9 @@ const ClientTableView = ({ clients, isPrivate, onQuickBook }: ClientTableViewPro
                   <div className="flex flex-col">
                     <div className="flex items-center gap-2">
                       {isVoice ? <Mic className="h-3.5 w-3.5 text-chart-destructive shrink-0" /> : <Brain className="h-3.5 w-3.5 text-chart-purple shrink-0" />}
+                      {!isVoice && (client.practices || []).some((x: string) => x !== "kinesiology") && (
+                        <span title={`Also ${(client.practices || []).filter((x: string) => x !== "kinesiology").join(" and ")}`}><Mic className="h-3.5 w-3.5 text-chart-destructive shrink-0" /></span>
+                      )}
                       <span className={cn(
                         "font-semibold text-foreground text-sm group-hover:text-primary transition-colors",
                         isPrivate && "blur-sm select-none"

@@ -23,7 +23,10 @@ export interface AttentionClient {
 // "secure this person, don't agonize" case the whole tool is built around.
 const STATUS_RANK: Record<LifecycleStatus, number> = { active: 1, at_risk: 2, lapsed: 3, lead: 4 };
 
-async function fetchKinesiologyAttention(): Promise<AttentionClient[]> {
+type History = { date: string; status: string }[];
+interface PersonHistory { kind: "kinesiology" | "voice"; id: string; name: string; email: string | null; past: History; hasFuture: boolean }
+
+async function kinesiologyHistories(): Promise<PersonHistory[]> {
   const { data, error } = await supabase
     .from("appointments")
     .select("client_id, date, status, clients(id, name, email)")
@@ -31,68 +34,63 @@ async function fetchKinesiologyAttention(): Promise<AttentionClient[]> {
   if (error || !data) return [];
 
   const now = new Date();
-  const hasFuture = new Set<string>();
-  const agg = new Map<string, { client: { name: string | null; email: string | null }; appointments: { date: string; status: string }[] }>();
-
+  const people = new Map<string, PersonHistory>();
   type AppointmentRow = { client_id: string | null; date: string; status: string; clients: { name: string | null; email: string | null } | null };
   for (const a of data as unknown as AppointmentRow[]) {
     if (!a.client_id || !a.clients) continue;
+    const p = people.get(a.client_id) || { kind: "kinesiology", id: a.client_id, name: a.clients.name || "Unknown", email: a.clients.email || null, past: [], hasFuture: false };
     const d = new Date(a.date);
-    if (a.status === "Scheduled" && d > now) {
-      hasFuture.add(a.client_id);
-      continue;
-    }
-    if (d > now) continue;
-    const existing = agg.get(a.client_id) || { client: a.clients, appointments: [] };
-    existing.appointments.push({ date: a.date, status: a.status });
-    agg.set(a.client_id, existing);
+    if (a.status === "Scheduled" && d > now) p.hasFuture = true;
+    else if (d <= now) p.past.push({ date: a.date, status: a.status });
+    people.set(a.client_id, p);
   }
-
-  const results: AttentionClient[] = [];
-  for (const [clientId, { client, appointments }] of agg.entries()) {
-    if (hasFuture.has(clientId)) continue;
-    const { status, reason, daysSinceLast, isQuickWin } = computeClientLifecycleStatus({ appointments, hasFutureBooking: false });
-    if (status === "lead") continue;
-    results.push({ id: clientId, kind: "kinesiology", name: client.name || "Unknown", email: client.email || null, status, reason, daysSinceLast, isQuickWin });
-  }
-  return results;
+  return [...people.values()];
 }
 
-async function fetchVoiceAttention(): Promise<AttentionClient[]> {
+async function voiceHistories(): Promise<PersonHistory[]> {
   const bookings = await fetchNormalizedVoiceBookings();
-
   const now = new Date();
-  const hasFuture = new Set<string>();
-  const agg = new Map<string, { name: string; email: string; appointments: { date: string; status: string }[] }>();
-
+  const people = new Map<string, PersonHistory>();
   for (const b of bookings) {
-    const email = b.studentEmail;
     const d = new Date(b.lessonDate);
     if (isNaN(d.getTime())) continue;
+    const email = b.studentEmail;
+    const p = people.get(email) || { kind: "voice", id: voiceStudentIdFor(email), name: b.studentName, email, past: [], hasFuture: false };
     const isCancelled = b.status === "cancelled";
-    if (!isCancelled && d > now) {
-      hasFuture.add(email);
-      continue;
-    }
-    if (d > now) continue;
-    const existing = agg.get(email) || { name: b.studentName, email, appointments: [] };
-    existing.appointments.push({ date: b.lessonDate, status: isCancelled ? "Cancelled" : "Completed" });
-    agg.set(email, existing);
+    if (!isCancelled && d > now) p.hasFuture = true;
+    else if (d <= now) p.past.push({ date: b.lessonDate, status: isCancelled ? "Cancelled" : "Completed" });
+    people.set(email, p);
   }
-
-  const results: AttentionClient[] = [];
-  for (const [email, { name, appointments }] of agg.entries()) {
-    if (hasFuture.has(email)) continue;
-    const { status, reason, daysSinceLast, isQuickWin } = computeClientLifecycleStatus({ appointments, hasFutureBooking: false });
-    if (status === "lead") continue;
-    results.push({ id: voiceStudentIdFor(email), kind: "voice", name, email, status, reason, daysSinceLast, isQuickWin });
-  }
-  return results;
+  return [...people.values()];
 }
 
+const latestMs = (h: History) => h.reduce((m, a) => Math.max(m, new Date(a.date).getTime()), 0);
+
 export async function fetchNeedsAttention(): Promise<AttentionClient[]> {
-  const [kinesiology, voice] = await Promise.all([fetchKinesiologyAttention(), fetchVoiceAttention()]);
-  return [...kinesiology, ...voice].sort((a, b) => {
+  const [kinesiology, voice] = await Promise.all([kinesiologyHistories(), voiceHistories()]);
+
+  // Someone who does kinesiology and voice/piano is one person (Phase 5):
+  // their sessions and lessons are one history, with one status. The entry
+  // opens in whichever practice they saw you for most recently.
+  const voiceByEmail = new Map(voice.map((v) => [(v.email || "").toLowerCase(), v]));
+  const people: PersonHistory[] = [];
+  for (const k of kinesiology) {
+    const v = k.email ? voiceByEmail.get(k.email.toLowerCase()) : undefined;
+    if (!v) { people.push(k); continue; }
+    voiceByEmail.delete(k.email!.toLowerCase());
+    const lead = latestMs(v.past) > latestMs(k.past) ? v : k;
+    people.push({ ...lead, name: k.name, past: [...k.past, ...v.past], hasFuture: k.hasFuture || v.hasFuture });
+  }
+  people.push(...voiceByEmail.values());
+
+  const results: AttentionClient[] = [];
+  for (const p of people) {
+    if (p.hasFuture || p.past.length === 0) continue;
+    const { status, reason, daysSinceLast, isQuickWin } = computeClientLifecycleStatus({ appointments: p.past, hasFutureBooking: false });
+    if (status === "lead") continue;
+    results.push({ id: p.id, kind: p.kind, name: p.name, email: p.email, status, reason, daysSinceLast, isQuickWin });
+  }
+  return results.sort((a, b) => {
     if (a.isQuickWin !== b.isQuickWin) return a.isQuickWin ? -1 : 1;
     const rankDiff = STATUS_RANK[a.status] - STATUS_RANK[b.status];
     if (rankDiff !== 0) return rankDiff;

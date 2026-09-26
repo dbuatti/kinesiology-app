@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { ensurePerson } from '../_shared/people.ts'
 import { requirePractitioner } from "../_shared/auth.ts";
 
 const corsHeaders = {
@@ -136,6 +137,8 @@ serve(async (req) => {
           console.error(`[${functionName}] voice_bookings upsert error:`, upsertError.message);
         }
         console.log(`[${functionName}] voice_bookings record saved for ${calcomBookingUid}`);
+        // New students join the one People list (Phase 5).
+        await ensurePerson(supabase, { email: studentEmail, name: studentName, practice: discipline || "voice", notionVoiceClientId: studentId || null });
       } catch (dbErr) {
         console.error(`[${functionName}] voice_bookings upsert error (non-fatal):`, dbErr.message);
       }

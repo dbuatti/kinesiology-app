@@ -3,13 +3,13 @@ import { Loader2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
-type Person = { name: string; email: string; practices?: string[]; from?: string[]; to?: string[] };
+type Person = { name: string; email: string | null; practices?: string[]; from?: string[]; to?: string[]; how?: "email" | "name" | "notion" };
 interface Report {
   action: "dry_run" | "apply" | "undo";
   toInsert?: Person[];
   toTag?: Person[];
   duplicates?: { email: string; names: string[] }[];
-  noEmail?: { name: string; from: string }[];
+  skipped?: { name: string; from: string; reason: string }[];
   unchangedCount?: number;
   inserted?: number;
   tagged?: number;
@@ -92,10 +92,10 @@ export default function PeopleBackfill() {
             <div>
               <p className="font-medium text-foreground">{dry ? "Will add" : "Added"} {plural(r.toInsert.length, "student", "students")}</p>
               <ul className="mt-1 divide-y divide-border/60">
-                {r.toInsert.map((p) => (
-                  <li key={p.email} className="flex gap-3 py-1.5">
+                {r.toInsert.map((p, i) => (
+                  <li key={p.email || `${p.name}-${i}`} className="flex gap-3 py-1.5">
                     <span className="min-w-0 flex-1 truncate text-foreground blur-sensitive">{p.name}</span>
-                    <span className="hidden truncate text-muted-foreground sm:inline blur-sensitive">{p.email}</span>
+                    <span className="hidden truncate text-muted-foreground sm:inline blur-sensitive">{p.email || "no email — from Notion"}</span>
                     <span className="shrink-0 text-xs text-muted-foreground">{list(p.practices || [])}</span>
                   </li>
                 ))}
@@ -104,11 +104,14 @@ export default function PeopleBackfill() {
           )}
           {!!r.toTag?.length && (
             <div>
-              <p className="font-medium text-foreground">{dry ? "Will update" : "Updated"} {plural(r.toTag.length, "existing client", "existing clients")} (same email)</p>
+              <p className="font-medium text-foreground">{dry ? "Will update" : "Updated"} {plural(r.toTag.length, "existing client", "existing clients")}</p>
               <ul className="mt-1 divide-y divide-border/60">
-                {r.toTag.map((p) => (
-                  <li key={p.email} className="flex gap-3 py-1.5">
-                    <span className="min-w-0 flex-1 truncate text-foreground blur-sensitive">{p.name}</span>
+                {r.toTag.map((p, i) => (
+                  <li key={p.email || `${p.name}-${i}`} className="flex gap-3 py-1.5">
+                    <span className="min-w-0 flex-1 truncate text-foreground blur-sensitive">
+                      {p.name}
+                      {p.how === "name" && <span className="ml-2 text-xs text-chart-amber">same name only — check it's the same person</span>}
+                    </span>
                     <span className="shrink-0 text-xs text-muted-foreground">{list(p.from || [])} → {list(p.to || [])}</span>
                   </li>
                 ))}
@@ -121,10 +124,10 @@ export default function PeopleBackfill() {
               <p className="text-muted-foreground">Merge these in Duplicate resolution below, then preview again: {list(r.duplicates.map((d) => `${list(d.names)} (${d.email})`))}.</p>
             </div>
           )}
-          {!!r.noEmail?.length && (
+          {!!r.skipped?.length && (
             <div>
-              <p className="font-medium text-foreground">Skipped — no email in Notion</p>
-              <p className="text-muted-foreground blur-sensitive">{list(r.noEmail.map((n) => n.name))}</p>
+              <p className="font-medium text-foreground">Skipped</p>
+              <p className="text-muted-foreground blur-sensitive">{list(r.skipped.map((n) => `${n.name} (${n.reason})`))}</p>
             </div>
           )}
           {!!r.unchangedCount && <p className="text-muted-foreground">{r.unchangedCount} already up to date.</p>}

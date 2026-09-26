@@ -219,6 +219,7 @@ const TimetablePage = () => {
   const [working, setWorking] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [appointmentFor, setAppointmentFor] = useState<EnrichedBooking | null>(null);
+  const [eventFor, setEventFor] = useState<IcloudCalendarEvent | null>(null);
   const [cancellingAppt, setCancellingAppt] = useState(false);
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const [emailOnCancel, setEmailOnCancel] = useState(true);
@@ -1391,6 +1392,7 @@ const TimetablePage = () => {
             onOpenDay={openDay}
             onOpenProposal={openProposal}
             onOpenBooking={setAppointmentFor}
+            onOpenEvent={setEventFor}
           />
         </TabsContent>
 
@@ -1469,6 +1471,7 @@ const TimetablePage = () => {
                       onOpenDay={openDay}
                       onOpenProposal={(p) => { setWorkflowFor(p); setWorkflowEmailOpen(false); }}
                       onOpenBooking={setAppointmentFor}
+                      onOpenEvent={setEventFor}
                     />
                   );
                 })}
@@ -1616,6 +1619,90 @@ const TimetablePage = () => {
                 Confirm booking
               </Button>
             </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Calendar event detail modal (clickable iCloud event chip) */}
+      <Dialog open={eventFor !== null} onOpenChange={(o) => { if (!o) setEventFor(null); }}>
+        <DialogContent>
+          {eventFor && (() => {
+            const start = eventFor.start ? new Date(eventFor.start) : null;
+            const end = eventFor.end ? new Date(eventFor.end) : null;
+            const minutes = start && end ? differenceInMinutes(end, start) : null;
+            const summary = (eventFor.summary || "").toLowerCase();
+            // Link the event to a person when their full name appears in it
+            // (e.g. "Voice and Piano Coaching … between Daniele Buatti and Nicole Rotenstein").
+            const person =
+              fnhClients.find((c) => c.name && summary.includes(c.name.toLowerCase())) ||
+              voiceStudents.find((v) => v.name && summary.includes(v.name.toLowerCase())) ||
+              null;
+            const isFnh = !!person && fnhClients.some((c) => c.id === person.id);
+            return (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="leading-snug">{eventFor.summary || "Busy"}</DialogTitle>
+                  <DialogDescription>From your calendar</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-2.5">
+                  <div className="flex gap-2.5">
+                    <div className="flex-1 rounded-lg bg-muted/40 px-3 py-2.5">
+                      <div className="text-xs font-medium text-muted-foreground">Date</div>
+                      <div className="mt-0.5 text-sm font-semibold text-foreground">
+                        {start ? practiceFormat(start, "EEE d MMM yyyy") : "—"}
+                        {start && end && eventFor.allDay && !practiceSameDay(start, practiceAddDays(end, -1)) && end > start
+                          ? ` – ${practiceFormat(practiceAddDays(end, -1), "EEE d MMM")}`
+                          : ""}
+                      </div>
+                    </div>
+                    <div className="flex-1 rounded-lg bg-muted/40 px-3 py-2.5">
+                      <div className="text-xs font-medium text-muted-foreground">Time</div>
+                      <div className="mt-0.5 text-sm font-semibold text-foreground">
+                        {eventFor.allDay
+                          ? "All day"
+                          : start
+                            ? `${practiceFormat(start, "h:mm a")}${end ? ` – ${practiceFormat(end, "h:mm a")}` : ""}`
+                            : "—"}
+                      </div>
+                      {!eventFor.allDay && minutes !== null && minutes > 0 && (
+                        <div className="text-xs text-muted-foreground">
+                          {minutes >= 60 ? `${Math.floor(minutes / 60)}h${minutes % 60 ? ` ${minutes % 60}m` : ""}` : `${minutes} min`}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {eventFor.location && (
+                    <div className="rounded-lg bg-muted/40 px-3 py-2.5">
+                      <div className="text-xs font-medium text-muted-foreground">Location</div>
+                      <div className="mt-0.5 text-sm font-medium text-foreground break-words">{eventFor.location}</div>
+                    </div>
+                  )}
+                  {person && (
+                    <div className="rounded-lg bg-muted/40 px-3 py-2.5">
+                      <div className="text-xs font-medium text-muted-foreground">{isFnh ? "Client" : "Student"}</div>
+                      <div className="mt-0.5 text-[15px] font-bold text-foreground">{person.name}</div>
+                      {person.email && <div className="text-sm text-muted-foreground">{person.email}</div>}
+                    </div>
+                  )}
+                  {person && isFnh && (
+                    <a
+                      href={`/clients/${person.id}`}
+                      className="block w-full text-center rounded-lg bg-primary px-3 py-2.5 text-sm font-bold text-primary-foreground hover:opacity-90"
+                    >
+                      Open client record
+                    </a>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    This isn't a Cal.com booking the timetable manages — change or cancel it in your calendar.
+                  </p>
+                </div>
+              </>
+            );
+          })()}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setEventFor(null)}>
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -2268,6 +2355,7 @@ function FortnightMockup({
   onOpenDay,
   onOpenProposal,
   onOpenBooking,
+  onOpenEvent,
   hideNav = false,
   title,
   hiddenWeeks,
@@ -2293,6 +2381,7 @@ function FortnightMockup({
   onOpenDay: (d: Date) => void;
   onOpenProposal: (p: BookingProposal) => void;
   onOpenBooking: (b: EnrichedBooking) => void;
+  onOpenEvent: (ev: IcloudCalendarEvent) => void;
 }) {
   if (loading) {
     return (
@@ -2404,6 +2493,7 @@ function FortnightMockup({
                 onOpenDay={onOpenDay}
                 onOpenProposal={onOpenProposal}
                 onOpenBooking={onOpenBooking}
+                onOpenEvent={onOpenEvent}
               />
             ))}
           </div>
@@ -2427,6 +2517,7 @@ function DayCell({
   onOpenDay,
   onOpenProposal,
   onOpenBooking,
+  onOpenEvent,
 }: {
   date: Date;
   state: DayState;
@@ -2439,7 +2530,9 @@ function DayCell({
   onOpenDay: (d: Date) => void;
   onOpenProposal: (p: BookingProposal) => void;
   onOpenBooking: (b: EnrichedBooking) => void;
+  onOpenEvent: (ev: IcloudCalendarEvent) => void;
 }) {
+  const [showAllEvents, setShowAllEvents] = useState(false);
   const isPast = differenceInMinutes(date, new Date()) < -1;
   const isOpen = state === DayState.OPEN;
 
@@ -2530,19 +2623,26 @@ function DayCell({
           return <>{items.map((x) => x.node)}</>;
         })()}
 
-        {icloudEvents.slice(0, 2).map((ev) => (
-          <div
+        {(showAllEvents ? icloudEvents : icloudEvents.slice(0, 2)).map((ev) => (
+          <button
             key={ev.id}
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onOpenEvent(ev); }}
             title={ev.summary || "Busy"}
-            className="text-[10px] font-medium bg-violet-500/10 text-violet-700 border border-violet-200/60 rounded-md px-1.5 py-0.5 truncate"
+            className="block w-full text-left text-[10px] font-medium bg-violet-500/10 text-violet-700 border border-violet-200/60 rounded-md px-1.5 py-0.5 truncate hover:bg-violet-500/20 transition-colors cursor-pointer"
           >
+            {!ev.allDay && ev.start ? practiceFormat(new Date(ev.start), "h:mma").toLowerCase() + " · " : ""}
             {ev.summary || "Busy"}
-          </div>
+          </button>
         ))}
         {icloudEvents.length > 2 && (
-          <div className="text-[10px] font-bold text-violet-600 pl-0.5">
-            +{icloudEvents.length - 2} more
-          </div>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setShowAllEvents((v) => !v); }}
+            className="text-[10px] font-bold text-violet-600 pl-0.5 hover:underline"
+          >
+            {showAllEvents ? "Show less" : `+${icloudEvents.length - 2} more`}
+          </button>
         )}
 
         {!blocked && isOpen && (

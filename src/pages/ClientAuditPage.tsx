@@ -243,6 +243,7 @@ export function ClientAuditTool({
       const { data: clientsData, error: clientsError } = await supabase
         .from("clients")
         .select("*")
+        .contains("practices", ["kinesiology"])
         .or('is_practitioner.eq.false,is_practitioner.is.null')
         .order("name", { ascending: true });
 

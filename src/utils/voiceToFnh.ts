@@ -29,11 +29,15 @@ export async function convertVoiceToAppointment(
 
   const { data: existing } = await supabase
     .from("clients")
-    .select("id")
+    .select("id, practices")
     .eq("email", email)
     .maybeSingle();
 
   let clientId = existing?.id ?? null;
+  // Same person, now doing kinesiology too (supabase_people_practices.sql).
+  if (existing && !(existing.practices || []).includes("kinesiology")) {
+    await supabase.from("clients").update({ practices: [...(existing.practices || []), "kinesiology"] }).eq("id", existing.id);
+  }
   if (!clientId) {
     const { data: created, error: createErr } = await supabase
       .from("clients")

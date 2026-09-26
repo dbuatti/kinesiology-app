@@ -149,6 +149,10 @@ export interface Client {
   lifecycle_status_reason?: string | null;
   lifecycle_status_manual?: boolean;
   lifecycle_status_updated_at?: string | null;
+  /** Which work this person does with you (supabase_people_practices.sql). */
+  practices?: ('kinesiology' | 'voice' | 'piano')[];
+  notion_voice_client_id?: string | null;
+  source?: string | null;
 }
 
 export interface AppointmentWithClient extends Appointment {

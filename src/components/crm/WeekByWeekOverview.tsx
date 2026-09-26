@@ -131,6 +131,7 @@ const WeekByWeekOverview = ({
       const { data } = await supabase
         .from("clients")
         .select("id, name, is_practitioner")
+        .contains("practices", ["kinesiology"])
         .eq("is_practitioner", false)
         .order("name", { ascending: true });
       return data || [];

@@ -129,7 +129,7 @@ export default function AssistantPage({ initialTab }: { initialTab?: AssistantTa
   });
 
   const loadClients = useCallback(async () => {
-    const { data, error } = await supabase.from("clients").select("id, name, email").order("name");
+    const { data, error } = await supabase.from("clients").select("id, name, email").contains("practices", ["kinesiology"]).order("name");
     if (!error) setClients(data || []);
   }, []);
 

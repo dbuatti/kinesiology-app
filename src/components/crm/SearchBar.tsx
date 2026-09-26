@@ -124,6 +124,7 @@ const SearchBar = ({ compact = false, responsive = false }: { compact?: boolean;
         supabase
           .from("clients")
           .select("id, name, email")
+          .contains("practices", ["kinesiology"])
           .ilike("name", `%${query}%`)
           .limit(5),
         supabase

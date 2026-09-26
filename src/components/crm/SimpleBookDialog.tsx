@@ -77,6 +77,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
       const { data, error } = await supabase
         .from("clients")
         .select("id, name, email, phone")
+        .contains("practices", ["kinesiology"])
         .eq("user_id", (await supabase.auth.getUser()).data.user?.id)
         .not("is_practitioner", "eq", true);
       if (error) throw error;

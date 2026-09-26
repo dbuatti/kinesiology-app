@@ -142,9 +142,11 @@ serve(async (req) => {
     const startTime = payload.startTime || payload.start;
 
     // Find existing client by email to avoid unique constraint issues
+    // A voice/piano student booking kinesiology is the same person: keep one
+    // row and add the practice (supabase_people_practices.sql).
     const { data: existingClient } = await supabase
       .from('clients')
-      .select('id')
+      .select('id, practices')
       .eq('email', email)
       .maybeSingle();
 
@@ -152,7 +154,7 @@ serve(async (req) => {
     if (existingClient) {
       const { data: updatedClient, error: clientError } = await supabase
         .from('clients')
-        .update({ name })
+        .update({ name, practices: Array.from(new Set([...(existingClient.practices || []), 'kinesiology'])) })
         .eq('id', existingClient.id)
         .select('*')
         .single();

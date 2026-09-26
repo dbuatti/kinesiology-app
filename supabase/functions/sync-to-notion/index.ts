@@ -487,6 +487,7 @@ serve(async (req) => {
       const { data: clients, error: fetchError } = await supabase
         .from('clients')
         .select('*')
+        .contains('practices', ['kinesiology'])
         .or('is_practitioner.eq.false,is_practitioner.is.null');
 
       if (fetchError) throw fetchError;

@@ -57,7 +57,7 @@ async function computePipeline(): Promise<Record<LifecycleStatus, number>> {
   const now = new Date();
 
   const [{ data: clients }, { data: appts }, voiceRows] = await Promise.all([
-    supabase.from("clients").select("id").or("is_practitioner.eq.false,is_practitioner.is.null"),
+    supabase.from("clients").select("id").contains("practices", ["kinesiology"]).or("is_practitioner.eq.false,is_practitioner.is.null"),
     supabase.from("appointments").select("client_id, date, status"),
     fetchNormalizedVoiceBookings(),
   ]);

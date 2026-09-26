@@ -13,6 +13,7 @@ import UnmatchedPayments from "../components/crm/settings/UnmatchedPayments";
 import NotionSettings from "../components/crm/settings/NotionSettings";
 import CalcomSettings from "../components/crm/settings/CalcomSettings";
 import DuplicateResolutionCenter from "../components/crm/settings/DuplicateResolutionCenter";
+import PeopleBackfill from "../components/crm/settings/PeopleBackfill";
 import AccountSettings from "../components/crm/settings/AccountSettings";
 import DocumentationSettings from "../components/crm/settings/DocumentationSettings";
 import AppearanceSettings from "../components/crm/settings/AppearanceSettings";
@@ -65,7 +66,7 @@ const SettingsPage = () => {
           }
         />
 
-        <Tabs defaultValue="account" className="space-y-8">
+        <Tabs defaultValue={["account", "integrations", "data"].includes(new URLSearchParams(window.location.search).get("tab") || "") ? new URLSearchParams(window.location.search).get("tab")! : "account"} className="space-y-8">
           <TabsList className="bg-muted/50 p-1 rounded-xl w-full max-w-lg grid grid-cols-3">
             <TabsTrigger value="account" className="rounded-lg font-medium text-xs py-2.5">Account</TabsTrigger>
             <TabsTrigger value="integrations" className="rounded-lg font-medium text-xs py-2.5">Integrations</TabsTrigger>
@@ -192,6 +193,7 @@ const SettingsPage = () => {
              DATA & TOOLS TAB
              ════════════════════════════════════════════════ */}
           <TabsContent value="data" className="space-y-6">
+            <PeopleBackfill />
             <DuplicateResolutionCenter />
             <DocumentationSettings />
 

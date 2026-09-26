@@ -251,6 +251,7 @@ const TimetablePage = () => {
       const { data, error } = await supabase
         .from("clients")
         .select("id, name, email, availability_notes")
+        .contains("practices", ["kinesiology"])
         .not("is_practitioner", "eq", true)
         .order("name");
       if (error) throw error;

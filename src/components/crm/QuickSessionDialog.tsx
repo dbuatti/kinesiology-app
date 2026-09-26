@@ -108,6 +108,7 @@ export function QuickSessionDialog({ open, onOpenChange }: QuickSessionDialogPro
       supabase
         .from("clients")
         .select("id, name")
+        .contains("practices", ["kinesiology"])
         .or('is_practitioner.eq.false,is_practitioner.is.null')
         .order("name")
         .then(({ data, error }) => {

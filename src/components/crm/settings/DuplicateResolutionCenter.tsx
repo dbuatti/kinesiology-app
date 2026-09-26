@@ -58,6 +58,7 @@ const DuplicateResolutionCenter = () => {
           current_stress_level, sleep_quality, digestive_health, medical_history,
           referral_source, stripe_customer_id, notion_page_id, notion_link, created_at
         `)
+        .contains("practices", ["kinesiology"])
         .or('is_practitioner.eq.false,is_practitioner.is.null')
         .order('name');
       

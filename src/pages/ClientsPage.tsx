@@ -88,6 +88,7 @@ export function ClientsTool() {
       const { data, error } = await supabase
         .from('clients')
         .select('*, appointments(date, bolt_score, status)')
+        .contains("practices", ["kinesiology"])
         .or('is_practitioner.eq.false,is_practitioner.is.null')
         .order('name', { ascending: true });
 

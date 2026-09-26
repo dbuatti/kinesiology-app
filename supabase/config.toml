@@ -102,3 +102,6 @@ timeout_sec = 150
 
 [functions.plan-income]
 verify_jwt = false
+
+[functions.people-backfill]
+verify_jwt = false

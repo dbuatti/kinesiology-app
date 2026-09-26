@@ -46,6 +46,7 @@ export function ClinicalOversightTool() {
  date
  )
  `)
+ .contains("practices", ["kinesiology"])
  .or('is_practitioner.eq.false,is_practitioner.is.null')
  .order('name');
 

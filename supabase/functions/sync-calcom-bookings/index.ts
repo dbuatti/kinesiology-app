@@ -74,7 +74,7 @@ serve(async (req) => {
       // Find existing client by email to avoid unique constraint issues
       const { data: existingClient } = await supabase
         .from('clients')
-        .select('id')
+        .select('id, practices')
         .eq('email', email)
         .maybeSingle();
 
@@ -82,7 +82,7 @@ serve(async (req) => {
       if (existingClient) {
         const { data: updatedClient, error: clientError } = await supabase
           .from('clients')
-          .update({ name })
+          .update({ name, practices: Array.from(new Set([...(existingClient.practices || []), 'kinesiology'])) })
           .eq('id', existingClient.id)
           .select('id')
           .single();

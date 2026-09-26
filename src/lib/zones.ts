@@ -11,7 +11,7 @@
 // sync in MainLayout, breadcrumbs, and ⌘K zone switching. Edit here, not in
 // those components.
 import {
-  LayoutDashboard, CalendarDays, Activity, Users, Mic, Mail, UserRoundCheck, Bot,
+  LayoutDashboard, CalendarDays, Activity, Users, Mail, UserRoundCheck, Bot,
   Wallet, ClipboardList, CalendarRange, Megaphone, Sunrise, MessageSquare, Heart,
   Brain, BookOpen, FileText, type LucideIcon,
 } from "lucide-react";
@@ -35,8 +35,6 @@ const TODAY: NavItem = { label: "Today", icon: LayoutDashboard, path: "/" };
 const CALENDAR: NavItem = { label: "Calendar", icon: CalendarDays, path: "/calendar" };
 const PEOPLE: NavItem = { label: "People", icon: Users, path: "/clients" };
 const SESSIONS: NavItem = { label: "Sessions", icon: Activity, path: "/sessions" };
-// Voice/piano lesson dashboard — folds into Today in Phase 3.
-const LESSONS: NavItem = { label: "Lessons", icon: Mic, path: "/voice" };
 const INBOX: NavItem = { label: "Inbox", icon: Mail, path: "/inbox" };
 const FOLLOW_UP: NavItem = { label: "Follow-up", icon: UserRoundCheck, path: "/follow-up" };
 const ASSISTANT: NavItem = { label: "Assistant", icon: Bot, path: "/assistant" };
@@ -58,7 +56,7 @@ export const ZONES: Record<Zone, ZoneDef> = {
     home: "/",
     dot: "bg-chart-primary",
     aura: ["hsl(236 80% 62% / 0.11)", "hsl(266 70% 60% / 0.07)"],
-    groups: [{ label: "Practice", items: [TODAY, CALENDAR, SESSIONS, LESSONS, PEOPLE] }],
+    groups: [{ label: "Practice", items: [TODAY, CALENDAR, SESSIONS, PEOPLE] }],
     tabs: [TODAY, CALENDAR, SESSIONS, PEOPLE],
   },
   business: {
@@ -129,7 +127,7 @@ export const BREADCRUMBS: Record<string, [string, string, string]> = {
   sessions: ["Sessions", "Practice", "/"],
   appointments: ["Session", "Sessions", "/sessions"],
   clients: ["People", "Practice", "/"],
-  voice: ["Lessons", "Practice", "/"],
+  voice: ["Students", "People", "/clients"],
   availability: ["Availability", "Calendar", "/calendar"],
   inbox: ["Inbox", "Business", "/inbox"],
   "follow-up": ["Follow-up", "Business", "/inbox"],

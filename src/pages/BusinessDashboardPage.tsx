@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { appointmentRowIsPaid } from "@/lib/calendarItems";
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -80,7 +81,7 @@ export function BusinessDashboardTool() {
       (!practitionerEmail || v.student_email.toLowerCase() !== practitionerEmail);
 
     // Today's sessions
-    const todayAppts = appointments.filter(a => a.date === todayStr);
+    const todayAppts = appointments.filter(a => a.date === todayStr && (a.status || '').toLowerCase() !== 'cancelled');
     const todayVoice = voiceData.filter(v => v.lesson_date === todayStr && v.status !== 'cancelled' && filterSelf(v));
     const todayTotal = todayAppts.length + todayVoice.length;
     const todayRevenue = [...todayAppts, ...todayVoice].reduce((s, i) => s + (('price_amount' in i ? (i as KineAppt).price_amount : (i as VoiceBooking).cost) || 0), 0);
@@ -88,13 +89,13 @@ export function BusinessDashboardTool() {
     // Upcoming (next 7 days)
     const weekEnd = new Date(now); weekEnd.setDate(weekEnd.getDate() + 7);
     const weekEndStr = weekEnd.toISOString().slice(0, 10);
-    const upcomingAppts = appointments.filter(a => a.date > todayStr && a.date <= weekEndStr && a.status !== 'cancelled');
+    const upcomingAppts = appointments.filter(a => a.date > todayStr && a.date <= weekEndStr && (a.status || '').toLowerCase() !== 'cancelled');
     const upcomingVoice = voiceData.filter(v => v.lesson_date > todayStr && v.lesson_date <= weekEndStr && v.status === 'scheduled' && filterSelf(v));
 
     // Recent payments (last 30 paid)
     const paid: { date: string; name: string; amount: number; type: 'fnh' | 'voice'; id: string }[] = [];
     for (const a of appointments) {
-      if (a.is_paid || a.payment_received) {
+      if (appointmentRowIsPaid(a)) {
         paid.push({ date: a.date, name: clientMap.get(a.client_id) || 'Unknown', amount: a.price_amount || 0, type: 'fnh', id: a.id });
       }
     }
@@ -109,7 +110,7 @@ export function BusinessDashboardTool() {
     const monthStart = now.toISOString().slice(0, 7);
     let monthKine = 0, monthVoice = 0;
     for (const a of appointments) {
-      if ((a.is_paid || a.payment_received) && a.date >= monthStart) monthKine += a.price_amount || 0;
+      if (appointmentRowIsPaid(a) && a.date >= monthStart) monthKine += a.price_amount || 0;
     }
     for (const v of voiceData) {
       if ((v.status === 'paid') && v.lesson_date >= monthStart && filterSelf(v)) monthVoice += v.cost || 0;

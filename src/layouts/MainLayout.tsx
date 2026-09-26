@@ -26,7 +26,7 @@ const MainLayout = () => {
   let [currentTitle, section, sectionTo] = BREADCRUMBS[routeSegment] ?? [fallbackTitle, "", "/"];
   // Deeper pages read as children of their hub: People › Client, Lessons › Students
   if (routeSegment === "clients" && segments[1]) [currentTitle, section, sectionTo] = ["Client", "People", "/clients"];
-  if (routeSegment === "voice" && segments[1] === "clients") [currentTitle, section, sectionTo] = [segments[2] === "new" ? "New student" : "Students", "Lessons", "/voice"];
+  if (routeSegment === "voice" && segments[1] === "clients") [currentTitle, section, sectionTo] = [segments[2] === "new" ? "New student" : "Students", "People", "/clients"];
   if (routeSegment === "settings" && segments[1]) [currentTitle, section, sectionTo] = [fallbackTitleFor(segments[1]), "Settings", "/settings"];
 
   // Per-route browser tab title, so tabs, history and bookmarks are distinguishable.

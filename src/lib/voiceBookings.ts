@@ -38,18 +38,29 @@ const toDiscipline = (d: string | null | undefined): "voice" | "piano" => (d || 
 // voice_bookings rows) never appeared anywhere despite being a real,
 // consistent student. Fixed by merging both sources here, once, so every
 // caller benefits without having to know two sources even exist.
+const BASE_COLUMNS = "student_name, student_email, lesson_date, lesson_time, status, cost, notion_lesson_id_1, notion_lesson_id_2";
+
+// `discipline` (voice/piano) comes from a later migration. If a database ever
+// lacks it, PostgREST rejects the whole query — retry without it rather than
+// losing every voice booking.
+async function selectVoiceBookings() {
+  const withDiscipline = await supabase
+    .from("voice_bookings")
+    .select(`${BASE_COLUMNS}, discipline`)
+    .order("lesson_date", { ascending: false });
+  if (!withDiscipline.error) return withDiscipline;
+  return supabase.from("voice_bookings").select(BASE_COLUMNS).order("lesson_date", { ascending: false });
+}
+
 export async function fetchNormalizedVoiceBookings(): Promise<NormalizedVoiceBooking[]> {
   const [bookingsResult, notionResult] = await Promise.all([
-    supabase
-      .from("voice_bookings")
-      .select("student_name, student_email, lesson_date, lesson_time, status, cost, discipline, notion_lesson_id_1, notion_lesson_id_2")
-      .order("lesson_date", { ascending: false }),
+    selectVoiceBookings(),
     supabase.functions.invoke("voice-lessons"),
   ]);
 
   type Row = {
     student_name: string | null; student_email: string | null; lesson_date: string; lesson_time: string | null;
-    status: string | null; cost: number | null; discipline: string | null; notion_lesson_id_1: string | null; notion_lesson_id_2: string | null;
+    status: string | null; cost: number | null; discipline?: string | null; notion_lesson_id_1: string | null; notion_lesson_id_2: string | null;
   };
   const rows = (bookingsResult.data || []) as Row[];
   type NotionLesson = { id: string; date: string | null; studentName: string | null; studentEmail: string | null; cost: number | null; discipline?: string | null };

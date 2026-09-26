@@ -68,7 +68,6 @@ const PathwayReflexStimPage = lazy(() => import("./pages/PathwayReflexStimPage")
 const GridSheetPage = lazy(() => import("./pages/GridSheetPage"));
 
 // --- Voice Studio ---
-const VoiceDashboardPage = lazy(() => import("./pages/VoiceDashboardPage"));
 const VoiceNewClientPage = lazy(() => import("./pages/VoiceNewClientPage"));
 const VoiceClientsPage = lazy(() => import("./pages/VoiceClientsPage"));
 // VoiceBookLessonPage / VoiceCalendarPage retired — consolidated into /calendar.
@@ -238,7 +237,8 @@ const AppRoutes = () => {
           <Route path="/resources/worksheets/business-strategy-diagnostic" element={<Navigate to="/worksheets?w=business-strategy-diagnostic" replace />} />
 
           {/* Voice Studio */}
-          <Route path="/voice" element={<VoiceDashboardPage />} />
+          {/* The Lessons page folded into Today (the day) and Calendar (the list, filtered to lessons). */}
+          <Route path="/voice" element={<Navigate to="/calendar?show=lessons" replace />} />
           <Route path="/voice/clients" element={<VoiceClientsPage />} />
           <Route path="/voice/clients/new" element={<VoiceNewClientPage />} />
           {/* Consolidated into the unified Calendar (book + view voice there) */}

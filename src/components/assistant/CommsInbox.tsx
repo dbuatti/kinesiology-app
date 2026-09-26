@@ -17,6 +17,7 @@ import {
   type InboxPerson, type PersonStatus,
 } from "@/lib/inbox-conversations";
 import { VoiceStudentOption } from "@/types/assistant";
+import { fetchContactMarks, writeLocalMarks } from "@/lib/inbox-marks";
 import {
   Loader2, RefreshCw, Mic, Brain, PenSquare, X, Search, Check, CalendarCheck, ChevronDown, RotateCcw, Reply, Send,
 } from "lucide-react";
@@ -52,32 +53,15 @@ const FILTER_LABELS: Record<Filter, string> = {
   done: "Done",
 };
 
-// ── Done / Booked marks ──────────────────────────────────────────────────────
-// Stored in inbox_contact_state (supabase_inbox_contact_state.sql). Until that
-// migration is applied the table doesn't exist, so fall back to this browser.
-const LOCAL_MARKS_KEY = "inbox_contact_marks";
-
-function readLocalMarks(): Record<string, ContactMark> {
-  try { return JSON.parse(localStorage.getItem(LOCAL_MARKS_KEY) || "{}"); } catch { return {}; }
-}
-function writeLocalMarks(marks: Record<string, ContactMark>) {
-  try { localStorage.setItem(LOCAL_MARKS_KEY, JSON.stringify(marks)); } catch { /* private mode */ }
-}
-
+// ── Done / Booked marks (storage rules in src/lib/inbox-marks.ts) ──────────
 function useContactMarks() {
   const [marks, setMarks] = useState<Record<string, ContactMark>>({});
   const [useLocal, setUseLocal] = useState(false);
 
   const loadMarks = useCallback(async () => {
-    const { data, error } = await supabase.from("inbox_contact_state").select("contact_email, state, resolved_at");
-    if (error) {
-      setUseLocal(true);
-      setMarks(readLocalMarks());
-      return;
-    }
-    const next: Record<string, ContactMark> = {};
-    for (const row of data || []) next[row.contact_email] = { state: row.state, resolved_at: row.resolved_at };
-    setMarks(next);
+    const { marks: loaded, local } = await fetchContactMarks();
+    setUseLocal(local);
+    setMarks(loaded);
   }, []);
 
   useEffect(() => { loadMarks(); }, [loadMarks]);

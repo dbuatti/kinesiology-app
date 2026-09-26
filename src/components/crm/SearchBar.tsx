@@ -43,7 +43,7 @@ const NAV_DESTINATIONS: { title: string; path: string; icon: any; section: strin
   { title: "Today", path: "/", icon: LayoutDashboard, section: "Practice", keywords: "home dashboard" },
   { title: "Calendar", path: "/calendar", icon: CalendarDays, section: "Practice", keywords: "bookings appointments lessons" },
   { title: "Sessions", path: "/sessions", icon: Activity, section: "Practice", keywords: "clinical hub peace" },
-  { title: "Lessons", path: "/voice", icon: Mic, section: "Practice", keywords: "voice piano studio" },
+  { title: "Lessons", path: "/calendar?show=lessons", icon: Mic, section: "Practice", keywords: "voice piano studio lessons" },
   { title: "People", path: "/clients", icon: Users, section: "Practice", keywords: "clients students database" },
   { title: "Students", path: "/voice/clients", icon: Users, section: "Practice", keywords: "voice piano students outstanding" },
   { title: "Availability", path: "/availability", icon: CalendarDays, section: "Practice", keywords: "open hours cal.com schedule working hours" },

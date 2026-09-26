@@ -48,7 +48,7 @@ Supabase auth. `session === undefined` = loading, `session === null` = logged ou
 
 The app has three **zones** — kinds of work, not practices (kinesiology, voice and piano are one practice to the practitioner, so every zone shows all of them):
 
-- **Practice** — Today (`/`), Calendar, Sessions, Lessons (`/voice`), People (`/clients`)
+- **Practice** — Today (`/`), Calendar, Sessions, People (`/clients`). The old Lessons page is gone: `/voice` redirects to `/calendar?show=lessons`; students stay at `/voice/clients`.
 - **Business** — a focus zone for admin and client relationships: Inbox (`/inbox`), Follow-up (`/follow-up`), People, Assistant, Money (`/money`), Client audit (`/audit`), Calendar, Timetable, Marketing (`/marketing`)
 - **Growth** — Morning Program, Journal, Practice Hub, Identity Work, Library, Worksheets
 
@@ -139,9 +139,23 @@ Default to how most modern web apps feel (Linear, Notion, Superhuman), not a das
 - **Borders and card chrome (`.panel`, `rounded-xl border`) are for separating genuinely distinct regions, not the default wrapper for every section.** A sidebar-vs-content split earns a border; a settings section sitting in normal page flow usually doesn't need its own boxed card — spacing (`space-y-6`) and a heading are often enough.
 - This is a standing preference, not a one-off fix — apply it by default in new work, and flatten what you touch in old screens, without waiting to be asked each time.
 
-## Voice Calendar Fallback (`UnifiedCalendarPage.tsx`)
+## Today (`src/pages/app/DashboardPage.tsx`, `src/lib/today.ts`)
 
-Notion voice lessons and Cal.com voice_bookings are merged into `calendarItems` at `src/pages/UnifiedCalendarPage.tsx:405`. The logic:
+The day across kinesiology, voice and piano: stats (today, booked this week, earned this week, unpaid), timeline + list of today's sessions and lessons, **Needs you** (replies waiting, unpaid, pencilled bookings, follow-ups, low-BOLT clinical alerts), Coming up (7 days), and a compact Your practice row (Morning Program, grounding, scratchpad). Every figure reuses the logic of the page it links to — never add a Today-only calculation. Each source is its own React Query so one failure never blanks the page.
+
+## Sessions & lessons, and money (`src/lib/calendarItems.ts`)
+
+`buildCalendarItems` is the one merged list of kinesiology appointments and voice/piano lessons, used by the Calendar, Today and the Assistant's metrics (fetchers `fetchVoiceLessons` / `fetchKinesiologyAppts` / `fetchVoiceBookings`, or `loadCalendarItems(from, to)` outside React). Money rules live beside it and are the only definition to use:
+
+- **Paid**: kinesiology = `payment_received` (NOT `is_paid`, which only means "chargeable" and is set at booking); voice = Notion Payment or a `voice_bookings` row marked paid. Raw appointment rows: `appointmentRowIsPaid`.
+- **Unpaid** (`isUnpaid` / `unpaidItems`): already happened, not cancelled, not free, has a price, not paid; Today and the metrics look back `UNPAID_LOOKBACK_DAYS` (60).
+- Kinesiology statuses are capitalised (`"Cancelled"`) — compare case-insensitively.
+
+Calendar deep links (read once, then internal state): `/calendar?show=unpaid` (Past, Unpaid filter), `/calendar?show=lessons` (voice & piano only).
+
+## Voice Calendar Fallback (`src/lib/calendarItems.ts`, used by `UnifiedCalendarPage.tsx`)
+
+Notion voice lessons and Cal.com voice_bookings are merged in `buildCalendarItems` (`src/lib/calendarItems.ts`). The logic:
 
 1. **Primary** — Notion lessons (`voiceLessons`) are fetched via Supabase edge function. Each becomes a `CalendarItem` with local time (converted via `formatVoiceTime`/`voiceDateISO`).
 2. **Fallback** — `voice_bookings` rows that lack a Notion lesson appear as fallback items. Dedup uses two layers:

@@ -97,9 +97,14 @@ const NEW_BOOKING_SERVICES = [
 const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsListProps) => {
   const navigate = useNavigate();
   const { session } = useAuth();
-  const [tab, setTab] = useState<Tab>("upcoming");
-  const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  // Deep link from Today's "unpaid" line: /calendar?show=unpaid opens Past with
+  // the Unpaid filter on. Read once, not a live subscription (see CLAUDE.md).
+  // /calendar?show=lessons (the old Lessons page) opens on voice & piano only.
+  const showParam = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("show") : null;
+  const showUnpaid = showParam === "unpaid";
+  const [tab, setTab] = useState<Tab>(showUnpaid ? "past" : "upcoming");
+  const [sourceFilter, setSourceFilter] = useState<SourceFilter>(showParam === "lessons" ? "voice" : "all");
+  const [statusFilter, setStatusFilter] = useState<string>(showUnpaid ? "unpaid" : "all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -724,7 +729,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                     tabIndex={0}
                     title={person}
                     aria-label={`View ${person} profile`}
-                    className="font-semibold text-sm text-foreground truncate cursor-pointer hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+                    className="min-w-0 font-semibold text-sm text-foreground truncate cursor-pointer hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
                     onClick={(e) => {
                       e.stopPropagation();
                       if (item.source === "kinesiology" && item.clientId) {
@@ -748,7 +753,7 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                   ) : item.isFree ? (
                     <Badge className="bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground border-none text-[10px] font-semibold rounded-full px-2.5 py-0.5">Free</Badge>
                   ) : !item.paid ? (
-                    <Badge className="bg-chart-destructive/10 text-chart-destructive border-none text-[10px] font-semibold rounded-full px-2.5 py-0.5">Unpaid</Badge>
+                    <Badge className="hidden sm:inline-flex bg-chart-destructive/10 text-chart-destructive border-none text-[10px] font-semibold rounded-full px-2.5 py-0.5">Unpaid</Badge>
                   ) : null}
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -786,10 +791,13 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-7 rounded-lg text-[10px] font-semibold shrink-0 px-2.5"
+                  className="h-7 rounded-lg text-[10px] font-semibold shrink-0 px-2 sm:px-2.5"
                   onClick={(e) => { e.stopPropagation(); onRebook(item); }}
+                  aria-label="Book again"
+                  title="Book again"
                 >
-                  <Plus size={11} className="mr-1" /> Book again
+                  {/* Icon-only on phones — the label left the name no room at all. */}
+                  <Plus size={11} className="sm:mr-1" /> <span className="hidden sm:inline">Book again</span>
                 </Button>
               )}
 

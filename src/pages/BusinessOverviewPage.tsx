@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { appointmentRowIsPaid } from "@/lib/calendarItems";
 import { useQuery } from '@tanstack/react-query';
 import {
   TrendingUp, Users, DollarSign, Mic, Layers,
@@ -105,7 +106,7 @@ export function BusinessOverviewTool() {
 
     if (showKine) {
       for (const a of appointments) {
-        const paid = a.is_paid || a.payment_received;
+        const paid = appointmentRowIsPaid(a);
         if (paid) {
           const amt = a.price_amount || 0;
           kineRevenue += amt;
@@ -163,7 +164,7 @@ export function BusinessOverviewTool() {
     const byMonth: Record<string, { kine: number; voice: number }> = {};
     if (showKine) {
       for (const a of appointments) {
-        if (a.is_paid || a.payment_received) {
+        if (appointmentRowIsPaid(a)) {
           const m = a.date.slice(0, 7);
           if (!byMonth[m]) byMonth[m] = { kine: 0, voice: 0 };
           byMonth[m].kine += a.price_amount || 0;
@@ -190,7 +191,7 @@ export function BusinessOverviewTool() {
     const recent: { date: string; name: string; amount: number; type: 'fnh' | 'voice'; id: string }[] = [];
     if (showKine) {
       for (const a of appointments) {
-        if (a.is_paid || a.payment_received) {
+        if (appointmentRowIsPaid(a)) {
           recent.push({ date: a.date, name: `Kine session`, amount: a.price_amount || 0, type: 'fnh', id: a.id });
         }
       }
@@ -209,7 +210,7 @@ export function BusinessOverviewTool() {
       for (const a of appointments) {
         const existing = lastApptMap.get(a.client_id);
         if (!existing || a.date > existing) lastApptMap.set(a.client_id, a.date);
-        if (a.is_paid || a.payment_received) {
+        if (appointmentRowIsPaid(a)) {
           totalPaidMap.set(a.client_id, (totalPaidMap.get(a.client_id) || 0) + (a.price_amount || 0));
         }
       }

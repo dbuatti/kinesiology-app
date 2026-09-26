@@ -43,91 +43,11 @@ import { CALCOM_CONFIG } from "@/config/integrations";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { useAuth } from "@/components/AuthProvider";
-import { formatVoiceTime, voiceTimeDuration, voiceDateISO } from "@/utils/availability";
 import { convertVoiceToAppointment } from "@/utils/voiceToFnh";
-
-interface VoiceLesson {
-  id: string;
-  notionUrl: string | null;
-  name: string | null;
-  date: string | null;
-  time: string | null;
-  studentName: string | null;
-  studentEmail: string | null;
-  paymentStatus: string | null;
-  cost: number | null;
-  priceAmount: number | null;
-  discipline?: string | null;
-}
-
-interface VoiceBookingRow {
-  calcom_booking_id: string;
-  student_email: string;
-  student_name: string | null;
-  lesson_date: string;
-  lesson_time: string | null;
-  cost: number | null;
-  status: string;
-  discipline?: string | null;
-  notion_lesson_id_1: string | null;
-  notion_lesson_id_2: string | null;
-  series_id?: string | null;
-  series_frequency?: string | null;
-  series_occurrence?: number | null;
-  series_total?: number | null;
-}
-
-interface KinesiologyAppt {
-  id: string;
-  date: string;
-  clientName: string | null;
-  clientId: string | null;
-  status: string | null;
-  tag: string | null;
-  time: string | null;
-  priceAmount: number | null;
-  standardRate: number | null;
-  paymentReceived: boolean;
-  isPaid: boolean;
-  calcomUid: string | null;
-  calcomEventTypeId: number | null;
-  notionLink: string | null;
-}
-
-interface CalendarItem {
-  id: string;
-  source: "kinesiology" | "voice";
-  date: string;
-  time: string | null;
-  title: string;
-  subtitle: string | null;
-  url: string | null;
-  tag: string | null;
-  discipline?: string | null;
- priceAmount?: number | null;
- standardRate?: number | null;
- // payment + action payload (used by the compact Bookings list)
- datetime?: string;
- status?: string | null;
- cancelled?: boolean;
- paid?: boolean;
- isFree?: boolean;
- amount?: number | null;
- calcomUid?: string | null;
- notionLessonId1?: string | null;
- notionLessonId2?: string | null;
- lessonId?: string | null;
- studentEmail?: string | null;
- studentName?: string | null;
-  clientId?: string | null;
-  appointmentId?: string | null;
-  eventTypeId?: string | null;
-  notionLink?: string | null;
-  seriesId?: string | null;
-  seriesFrequency?: string | null;
-  seriesOccurrence?: number | null;
-  seriesTotal?: number | null;
-}
+import {
+  buildCalendarItems, parseStartTime, fetchVoiceLessons, fetchKinesiologyAppts, fetchVoiceBookings,
+  type CalendarItem,
+} from "@/lib/calendarItems";
 
 function parseTimeToEvent(item: CalendarItem): CalendarEvent | null {
   const timeStr = item.time || "";
@@ -249,54 +169,20 @@ const UnifiedCalendarPage = () => {
 
  const { data: voiceLessons, isLoading: voiceLoading, isError: voiceError, refetch: refetchVoice } = useQuery({
  queryKey: ["unified-voice-lessons", currentMonth.toISOString()],
- queryFn: async () => {
- const res = await supabase.functions.invoke("voice-lessons");
- if (res.error) throw res.error;
- return (res.data?.lessons || []) as VoiceLesson[];
- },
+ queryFn: fetchVoiceLessons,
  staleTime: 60_000,
  });
 
  const { data: kinesiologyAppts, isLoading: kinesiologyLoading, isError: kinesiologyError, refetch: refetchKinesiology } = useQuery({
  queryKey: ["unified-kinesiology-appts", currentMonth.toISOString()],
- queryFn: async () => {
- const { data } = await supabase
- .from("appointments")
-  .select("id, date, status, tag, price_amount, is_paid, payment_received, calcom_booking_id, calcom_event_type_id, client_id, clients (name, is_practitioner, standard_rate, notion_link)")
- .gte("date", fetchStart)
- .lte("date", fetchEnd)
- .order("date", { ascending: true });
- return (data || [])
-   .filter((a: any) => !(a.clients?.is_practitioner))
-   .map((a: any) => ({
- id: a.id,
- date: a.date,
- clientName: a.clients?.name || "Unknown",
- clientId: a.client_id ?? null,
- status: a.status,
- tag: a.tag,
- time: null,
- priceAmount: a.price_amount ?? null,
- standardRate: a.clients?.standard_rate ?? null,
- paymentReceived: a.payment_received === true,
- isPaid: a.is_paid === true,
-  calcomUid: a.calcom_booking_id ?? null,
-  calcomEventTypeId: a.calcom_event_type_id ?? null,
-  notionLink: a.clients?.notion_link ?? null,
-})) as KinesiologyAppt[];
- },
+ queryFn: () => fetchKinesiologyAppts(fetchStart, fetchEnd),
   staleTime: 60_000,
   });
 
   // Voice bookings carry the Cal.com uid + Notion ids needed for cancel/reschedule.
   const { data: voiceBookings, refetch: refetchVoiceBookings } = useQuery({
     queryKey: ["unified-voice-bookings"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("voice_bookings")
-        .select("calcom_booking_id, student_email, student_name, lesson_date, lesson_time, cost, status, notion_lesson_id_1, notion_lesson_id_2");
-      return (data || []) as VoiceBookingRow[];
-    },
+    queryFn: fetchVoiceBookings,
     staleTime: 60_000,
   });
 
@@ -473,207 +359,12 @@ const UnifiedCalendarPage = () => {
     }
   };
 
-  const calendarItems: CalendarItem[] = useMemo(() => {
- const items: CalendarItem[] = [];
-
-    // Only dedup against lessons that actually RENDER (have a date). A lesson that
-    // was fetched but skipped below for a missing date must NOT suppress its
-    // voice_bookings fallback, or the booking vanishes from the calendar entirely.
-    const notionLessonIds = new Set((voiceLessons || []).filter((l) => l.date).map((l) => l.id));
-    // Dedup keys include the start time so a same-day second lesson (series
-    // occurrence or double booking) is never suppressed by the first.
-    const startKey = (date: string | null, time: string | null | undefined) => {
-      const m = (time || "").match(/^(\d+):(\d+)\s*(AM|PM)/i);
-      let hm = "00:00";
-      if (m) {
-        let h = parseInt(m[1]);
-        if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
-        if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
-        hm = `${String(h).padStart(2, "0")}:${m[2]}`;
-      }
-      return `${date}|${hm}`;
-    };
-    // Matches recorded by email OR by name (covers students who changed email).
-    const matchedEmail = new Set<string>();
-    const matchedName = new Set<string>();
-
-    (voiceLessons || []).forEach((l) => {
-    if (!l.date) return;
-    const booking = (voiceBookings || []).find(
-      (b) => b.lesson_date === l.date && startKey(b.lesson_date, b.lesson_time) === startKey(l.date, l.time) &&
-        (b.student_email === l.studentEmail ||
-         (b.student_name && l.studentName &&
-          b.student_name.trim().toLowerCase() === l.studentName.trim().toLowerCase()))
-    );
-    if (booking) {
-    matchedEmail.add(`${startKey(booking.lesson_date, booking.lesson_time)}|${booking.student_email}`);
-    if (booking.student_name) matchedName.add(`${startKey(booking.lesson_date, booking.lesson_time)}|${booking.student_name.trim().toLowerCase()}`);
-    }
-    const is30 = /30/.test((l.name || "").toLowerCase());
-    const is45 = /45/.test((l.name || "").toLowerCase());
-    // Price priority: Notion Cost property > voice_bookings.cost > event_pricing table > defaults
-    const notionCost = l.cost ?? null;
-    const bookingCost = booking?.cost ?? null;
-    const resolvedCost = notionCost ?? bookingCost;
-    const resolvedIs30 = resolvedCost != null ? resolvedCost <= 50 : is30;
-    const resolvedIs45 = !resolvedIs30 && (resolvedCost != null ? resolvedCost <= 75 : is45);
-    const resolvedEventTypeId = resolvedIs30 ? "6488157" : resolvedIs45 ? "5925021" : "1945081";
-    // Voice paid signal comes from Notion's Payment property OR a voice_bookings row
-    // marked paid (covers Stripe + manually-recorded external payments).
-    // NB: must exclude "Unpaid" — a naive /paid/ test matches it.
-    const ps = (l.paymentStatus || "").toLowerCase();
-    const voicePaid = (ps.includes("paid") && !ps.includes("unpaid")) || booking?.status === "paid";
-    items.push({
-    id: `v-${l.id}`,
-    source: "voice",
-    date: l.date,
-    datetime: l.date && l.time ? voiceDateISO(l.date, l.time) : l.date,
-    time: l.date && l.time ? formatVoiceTime(l.date, l.time) : null,
-    title: l.name || "Voice Lesson",
-    subtitle: l.studentName || null,
-    url: l.notionUrl || null,
-    tag: l.discipline || "voice",
-    discipline: l.discipline || "voice",
-    status: booking?.status ?? null,
-    cancelled: booking?.status === "cancelled",
-    paid: voicePaid,
-    isFree: false,
-    // Read voice price: Notion Cost > voice_bookings.cost > event_pricing table > defaults
-    amount: resolvedCost ?? priceFor(resolvedEventTypeId) ?? (resolvedIs30 ? 50 : resolvedIs45 ? 75 : 95),
-    calcomUid: booking?.calcom_booking_id ?? null,
-    notionLessonId1: booking?.notion_lesson_id_1 ?? null,
-    notionLessonId2: booking?.notion_lesson_id_2 ?? null,
-    eventTypeId: resolvedEventTypeId,
-    lessonId: l.id,
-    studentEmail: l.studentEmail,
-    studentName: l.studentName,
-    notionLink: l.notionUrl,
-    });
-    });
-
-    // Fallback: include voice_bookings that don't have a matching Notion lesson
-    const practitionerEmail = session?.user?.email || "";
-    const notionNamesOnDate = new Set<string>();
-    (voiceLessons || []).forEach((l) => {
-      if (l.date && l.studentName) {
-        notionNamesOnDate.add(`${startKey(l.date, l.time)}|${l.studentName.trim().toLowerCase()}`);
-      }
-    });
-    (voiceBookings || []).forEach((vb) => {
-    if (!vb.lesson_date) return;
-    // Skip practitioner self-bookings
-    if (vb.student_email === practitionerEmail) return;
-    // Skip entries without a real student name (system/test records)
-    if (!vb.student_name || vb.student_name.trim() === "" || vb.student_name === "—") return;
-    // Skip if already linked to a Notion lesson that exists
-    if (vb.notion_lesson_id_1 && notionLessonIds.has(vb.notion_lesson_id_1)) return;
-    if (vb.notion_lesson_id_2 && notionLessonIds.has(vb.notion_lesson_id_2)) return;
-    // Skip if already matched by email+time or name+time
-    const vKey = startKey(vb.lesson_date, vb.lesson_time);
-    if (matchedEmail.has(`${vKey}|${vb.student_email}`)) return;
-    if (matchedName.has(`${vKey}|${vb.student_name.trim().toLowerCase()}`)) return;
-    // Skip if a Notion lesson already exists for this student at this time
-    if (notionNamesOnDate.has(`${vKey}|${vb.student_name.trim().toLowerCase()}`)) return;
-    // Skip cancelled
-    if (vb.status === "cancelled") return;
-    const dur = vb.lesson_time ? voiceTimeDuration(vb.lesson_time) : null;
-    const is30 = dur === 30;
-    const is45 = dur === 45;
-    const eventTypeId = is30 ? "6488157" : is45 ? "5925021" : "1945081";
-    items.push({
-    id: `vb-${vb.calcom_booking_id}`,
-    source: "voice",
-    date: vb.lesson_date,
-    datetime: vb.lesson_time ? voiceDateISO(vb.lesson_date, vb.lesson_time) : vb.lesson_date,
-    time: vb.lesson_time ? formatVoiceTime(vb.lesson_date, vb.lesson_time) : null,
-    title: vb.student_name,
-    subtitle: null,
-    url: null,
-    tag: vb.discipline || "voice",
-    discipline: vb.discipline || "voice",
-    status: vb.status ?? null,
-    cancelled: false,
-    paid: vb.status === "paid",
-    isFree: vb.cost === 0,
-    amount: priceFor(eventTypeId) ?? (vb.cost ?? null),
-    calcomUid: vb.calcom_booking_id ?? null,
-    notionLessonId1: vb.notion_lesson_id_1 ?? null,
-    notionLessonId2: vb.notion_lesson_id_2 ?? null,
-    eventTypeId,
-    seriesId: vb.series_id || null,
-    seriesFrequency: vb.series_frequency || null,
-    seriesOccurrence: vb.series_occurrence ?? null,
-    seriesTotal: vb.series_total ?? null,
-    lessonId: null,
-    studentEmail: vb.student_email,
-    studentName: vb.student_name,
-    notionLink: null,
-    });
-    });
-
-   (kinesiologyAppts || []).forEach((a) => {
-  const appDate = new Date(a.date);
-  // An explicit price_amount of 0 is the persisted "free" state (set from the
-  // Bookings list / session doc) and always wins. Otherwise charge the client's
-  // CURRENT rate (from Client Audit / standard_rate) — this is what "Send payment
-  // link" bills — falling back to any per-appointment price.
-  const isFree = a.priceAmount === 0;
-  const currentRate = isFree ? 0 : ((a.standardRate && a.standardRate > 0) ? a.standardRate : (a.priceAmount && a.priceAmount > 0 ? a.priceAmount : 0));
-  items.push({
-  id: `k-${a.id}`,
-  source: "kinesiology",
-  date: format(appDate, 'yyyy-MM-dd'),
-  datetime: a.date,
-  time: `${format(appDate, 'h:mm a')} – ${format(new Date(appDate.getTime() + 60 * 60 * 1000), 'h:mm a')}`,
-  title: a.clientName || "Appointment",
- subtitle: null,
- url: `/appointments/${a.id}`,
- tag: a.tag || a.status || "Kinesiology",
- priceAmount: a.priceAmount,
- standardRate: a.standardRate,
- status: a.status,
- cancelled: (a.status || "").toLowerCase() === "cancelled",
- paid: a.paymentReceived,
- isFree,
- amount: isFree ? null : (currentRate || null),
- calcomUid: a.calcomUid,
-  clientId: a.clientId,
-  appointmentId: a.id,
-  eventTypeId: CALCOM_CONFIG.DEFAULT_EVENT_TYPE_ID,
-  notionLink: a.notionLink,
-  });
- });
-
-   // Final dedup: same student+date+similar start time = keep the one with richer time
-   const seen = new Map<string, CalendarItem>();
-   for (const item of items) {
-     const name = item.subtitle || item.title;
-     const startMin = parseStartTime(item.time || "");
-     const dedupKey = `${item.date}|${name?.toLowerCase().trim()}|${startMin}`;
-     if (seen.has(dedupKey)) {
-       const existing = seen.get(dedupKey)!;
-       const existingHasEnd = (existing.time || "").includes("–");
-       const itemHasEnd = (item.time || "").includes("–");
-       const itemHasId = !!item.lessonId || !!item.appointmentId;
-       const existingHasId = !!existing.lessonId || !!existing.appointmentId;
-       if (itemHasEnd && !existingHasEnd) {
-         seen.set(dedupKey, item);
-       } else if (itemHasId && !existingHasId) {
-         seen.set(dedupKey, item);
-       }
-     } else {
-       seen.set(dedupKey, item);
-     }
-   }
-   const deduped = Array.from(seen.values());
-
-   deduped.sort((a, b) => {
-   const dateCmp = a.date.localeCompare(b.date);
-   if (dateCmp !== 0) return dateCmp;
-   return parseStartTime(a.time || "") - parseStartTime(b.time || "");
-   });
-    return deduped;
-    }, [voiceLessons, kinesiologyAppts, voiceBookings, pricing, session]);
+  // The canonical merge lives in src/lib/calendarItems.ts (shared with Today).
+  const calendarItems: CalendarItem[] = useMemo(
+    () => buildCalendarItems({ voiceLessons, voiceBookings, kinesiologyAppts, priceFor, practitionerEmail: session?.user?.email }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [voiceLessons, kinesiologyAppts, voiceBookings, pricing, session],
+  );
 
     // Voice lessons for the Week Overview, derived from the canonical merge so
     // fallback voice_bookings (no matching Notion page, e.g. Anah) appear too —
@@ -725,15 +416,6 @@ const UnifiedCalendarPage = () => {
       return count;
     }, [calendarItems, monthStart, monthEnd]);
 
-   function parseStartTime(t: string): number {
-     const m = t.match(/^(\d+):(\d+)\s*(AM|PM)/i);
-     if (!m) return 0;
-     let h = parseInt(m[1]);
-     const min = parseInt(m[2]);
-     if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
-     if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
-     return h * 60 + min;
-   }
 
   const weeklyEvents: CalendarEvent[] = useMemo(() => {
   const ws = startOfWeek(weekStart);
@@ -799,7 +481,7 @@ const UnifiedCalendarPage = () => {
   icon={CalendarIcon}
   iconClassName="bg-primary/10 text-primary"
   actions={
-<div className="flex gap-2 items-center">
+<div className="flex flex-wrap gap-2 items-center">
   <Popover>
     <PopoverTrigger asChild>
       <Button variant="outline" size="sm" className="h-9 gap-2 rounded-lg px-3 text-[13px] font-medium">

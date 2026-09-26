@@ -3,12 +3,22 @@ import { Link } from "react-router-dom";
 import { format, differenceInMinutes } from "date-fns";
 import { cn } from "@/lib/utils";
 
-interface TimelineSession {
+export interface TimelineEntry {
   id: string;
-  date: Date | string;
-  clients?: { name?: string | null } | null;
-  duration_minutes?: number | null;
+  start: Date;
+  end: Date;
+  name: string;
+  href: string;
+  external?: boolean; // e.g. a Notion lesson page
+  practice: "kinesiology" | "voice" | "piano";
 }
+
+// Upcoming blocks are tinted by practice; the live one is always solid.
+const NEXT_TONE: Record<TimelineEntry["practice"], string> = {
+  kinesiology: "bg-primary/[0.09] text-primary ring-primary/25 hover:bg-primary/[0.14]",
+  voice: "bg-chart-destructive/[0.09] text-chart-destructive ring-chart-destructive/25 hover:bg-chart-destructive/[0.14]",
+  piano: "bg-chart-amber/[0.12] text-chart-amber ring-chart-amber/30 hover:bg-chart-amber/[0.18]",
+};
 
 const START_HOUR = 7;
 const END_HOUR = 21;
@@ -16,10 +26,11 @@ const SPAN_MIN = (END_HOUR - START_HOUR) * 60;
 
 /**
  * Today at a glance — a single ribbon from 7am to 9pm with each session as a
- * block and a live "now" line that moves through the day. Past sessions fade,
- * the current one glows, upcoming ones sit ready. Click a block to open it.
+ * block (sessions and lessons, tinted by practice) and a live "now" line that
+ * moves through the day. Past blocks fade, the current one glows, upcoming ones
+ * sit ready. Click a block to open it.
  */
-export function TodayTimeline({ sessions }: { sessions: TimelineSession[] }) {
+export function TodayTimeline({ entries }: { entries: TimelineEntry[] }) {
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 30_000);
@@ -36,13 +47,10 @@ export function TodayTimeline({ sessions }: { sessions: TimelineSession[] }) {
   const nowPct = pct(now);
   const nowVisible = now.getHours() >= START_HOUR && now.getHours() < END_HOUR;
 
-  const blocks = sessions
-    .map((s) => {
-      const start = new Date(s.date);
-      const mins = s.duration_minutes && s.duration_minutes > 0 ? s.duration_minutes : 60;
-      const end = new Date(start.getTime() + mins * 60_000);
-      const state = now >= end ? "past" : now >= start ? "live" : "next";
-      return { id: s.id, name: s.clients?.name ?? "Session", start, end, left: pct(start), width: Math.max(pct(end) - pct(start), 3.2), state };
+  const blocks = entries
+    .map((e) => {
+      const state = now >= e.end ? "past" : now >= e.start ? "live" : "next";
+      return { ...e, left: pct(e.start), width: Math.max(pct(e.end) - pct(e.start), 3.2), state };
     })
     .filter((b) => b.left < 100);
 
@@ -71,22 +79,22 @@ export function TodayTimeline({ sessions }: { sessions: TimelineSession[] }) {
         <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-border" />
 
         {/* sessions */}
-        {blocks.map((b) => (
-          <Link
-            key={b.id}
-            to={`/appointments/${b.id}`}
-            title={`${b.name} · ${format(b.start, "h:mm a")}`}
-            className={cn(
+        {blocks.map((b) => {
+          const className = cn(
               "group absolute top-1/2 flex h-8 -translate-y-1/2 items-center overflow-hidden rounded-md px-2 text-[11.5px] font-medium ring-1 transition-[transform,box-shadow] duration-200 hover:z-10 hover:-translate-y-[calc(50%+1px)] hover:shadow-md",
               b.state === "past" && "bg-muted text-muted-foreground ring-border",
               b.state === "live" && "bg-primary text-primary-foreground shadow-button ring-primary",
-              b.state === "next" && "bg-primary/[0.09] text-primary ring-primary/25 hover:bg-primary/[0.14]"
-            )}
-            style={{ left: `${b.left}%`, width: `${b.width}%`, minWidth: 28 }}
-          >
-            <span className="truncate blur-sensitive">{b.name.split(" ")[0]}</span>
-          </Link>
-        ))}
+              b.state === "next" && NEXT_TONE[b.practice]
+            );
+          const style = { left: `${b.left}%`, width: `${b.width}%`, minWidth: 28 };
+          const title = `${b.name} · ${format(b.start, "h:mm a")}`;
+          const label = <span className="truncate blur-sensitive">{b.name.split(" ")[0]}</span>;
+          return b.external ? (
+            <a key={b.id} href={b.href} target="_blank" rel="noreferrer" title={title} className={className} style={style}>{label}</a>
+          ) : (
+            <Link key={b.id} to={b.href} title={title} className={className} style={style}>{label}</Link>
+          );
+        })}
 
         {/* now */}
         {nowVisible && (

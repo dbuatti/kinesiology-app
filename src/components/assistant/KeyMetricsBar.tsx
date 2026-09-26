@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { computeClientLifecycleStatus, LifecycleStatus } from "@/lib/clientStatus";
 import { fetchNormalizedVoiceBookings } from "@/lib/voiceBookings";
+import { loadCalendarItems, unpaidItems, sumAmount, itemStart, UNPAID_LOOKBACK_DAYS } from "@/lib/calendarItems";
 import { cn } from "@/lib/utils";
 import { TrendingUp, TrendingDown, DollarSign, Users, CalendarDays, AlertCircle, Loader2 } from "lucide-react";
 
@@ -35,36 +36,20 @@ function weekRange(offset: number) {
   return { start, end };
 }
 
-// Revenue paid-check mirrors the exact idiom already used in BusinessOverviewPage/
-// BusinessDashboardPage (kinesiology) and UnifiedCalendarPage's voice_bookings-only
-// fallback path (voice) — deliberately NOT a fifth divergent definition. This is a
-// dashboard-level pulse, not an accounting ledger: voice revenue recorded only in
-// Notion (not yet synced to voice_bookings.status) won't be reflected here.
+// Revenue and outstanding use the shared merged session/lesson list and money
+// rules (src/lib/calendarItems.ts) — the same ones Today and the Calendar use.
+// Previously this counted is_paid ("chargeable", set at booking) as paid, so
+// every booked session read as revenue, cancelled items counted as owed, and
+// Notion-only lessons were invisible.
 async function computeRevenuePulse(): Promise<Metrics["revenue"]> {
   const thisMonth = monthRange(0);
   const lastMonth = monthRange(-1);
   const now = new Date();
-
-  const [apptsThis, apptsLast, voiceThis, voiceLast] = await Promise.all([
-    supabase.from("appointments").select("price_amount, is_paid, payment_received, date").gte("date", thisMonth.start.toISOString()).lt("date", thisMonth.end.toISOString()),
-    supabase.from("appointments").select("price_amount, is_paid, payment_received, date").gte("date", lastMonth.start.toISOString()).lt("date", lastMonth.end.toISOString()),
-    supabase.from("voice_bookings").select("cost, status, lesson_date").gte("lesson_date", thisMonth.start.toISOString()).lt("lesson_date", thisMonth.end.toISOString()),
-    supabase.from("voice_bookings").select("cost, status, lesson_date").gte("lesson_date", lastMonth.start.toISOString()).lt("lesson_date", lastMonth.end.toISOString()),
-  ]);
-
-  const isPaidAppt = (a: any) => a.is_paid || a.payment_received;
-  const sumPaid = (rows: any[] | null, amountKey: string, isPaid: (r: any) => boolean) =>
-    (rows || []).filter(isPaid).reduce((sum, r) => sum + (Number(r[amountKey]) || 0), 0);
-  const sumOutstanding = (rows: any[] | null, amountKey: string, isPaid: (r: any) => boolean, dateKey: string) =>
-    (rows || []).filter((r) => !isPaid(r) && new Date(r[dateKey]) <= now).reduce((sum, r) => sum + (Number(r[amountKey]) || 0), 0);
-
-  const isPaidVoice = (v: any) => v.status === "paid";
-
-  const thisMonthRevenue = sumPaid(apptsThis.data, "price_amount", isPaidAppt) + sumPaid(voiceThis.data, "cost", isPaidVoice);
-  const lastMonthRevenue = sumPaid(apptsLast.data, "price_amount", isPaidAppt) + sumPaid(voiceLast.data, "cost", isPaidVoice);
-  const outstanding = sumOutstanding(apptsThis.data, "price_amount", isPaidAppt, "date") + sumOutstanding(voiceThis.data, "cost", isPaidVoice, "lesson_date");
-
-  return { thisMonth: thisMonthRevenue, lastMonth: lastMonthRevenue, outstanding };
+  const from = new Date(Math.min(lastMonth.start.getTime(), now.getTime() - UNPAID_LOOKBACK_DAYS * 86400000));
+  const items = await loadCalendarItems(from.toISOString(), thisMonth.end.toISOString());
+  const paidIn = (r: { start: Date; end: Date }) =>
+    sumAmount(items.filter((i) => i.paid && !i.cancelled && itemStart(i) >= r.start && itemStart(i) < r.end));
+  return { thisMonth: paidIn(thisMonth), lastMonth: paidIn(lastMonth), outstanding: sumAmount(unpaidItems(items, now)) };
 }
 
 async function computePipeline(): Promise<Record<LifecycleStatus, number>> {

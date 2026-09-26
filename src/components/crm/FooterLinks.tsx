@@ -12,7 +12,7 @@ const FooterLinks = () => {
             <ul className="space-y-2">
               <li>
                 <Link to="/" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1.5">
-                  <Home size={11} /> Home
+                  <Home size={11} /> Today
                 </Link>
               </li>
             </ul>

@@ -3,16 +3,17 @@ import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { addWeeks, format, startOfWeek, subDays } from "date-fns";
 import { Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { AlertCircle, BarChart3, ExternalLink, LineChart, RefreshCw, Table2 } from "lucide-react";
+import { AlertCircle, BarChart3, CalendarRange, ExternalLink, LineChart, Loader2, Plus, RefreshCw, Table2, UserRoundCheck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import PageHeader from "@/components/shared/PageHeader";
 import { cn } from "@/lib/utils";
 import { loadCalendarItems } from "@/lib/calendarItems";
 import {
-  DEFAULT_PLANNING, FORWARD_WEEKS, STREAMS, fetchPlanRows, fetchPlanningSettings, savePlanningSettings,
+  DEFAULT_PLANNING, FORWARD_WEEKS, PLAN_PROJECTS, STREAMS, createPlanRow, fetchPlanRows, fetchPlanningSettings, savePlanningSettings,
   summarisePlanning, type PlanningSettings, type RateKey,
 } from "@/lib/planning";
 
@@ -31,10 +32,75 @@ async function loadPlanningData() {
   return { items, plan };
 }
 
+/** Add a row of upcoming work to The Plan, so forward income is recorded in one place. */
+function AddWorkDialog({ date, onClose, onAdded }: { date: string | null; onClose: () => void; onAdded: () => void }) {
+  const [title, setTitle] = useState("");
+  const [when, setWhen] = useState(date || format(new Date(), "yyyy-MM-dd"));
+  const [amount, setAmount] = useState("");
+  const [project, setProject] = useState("Freelance");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => { if (date) { setWhen(date); setError(null); } }, [date]);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true); setError(null);
+    const { error: err } = await createPlanRow({ title: title.trim(), date: when, dollars: Number(amount), project });
+    setSaving(false);
+    if (err) { setError(err); return; }
+    setTitle(""); setAmount("");
+    onAdded();
+  };
+  const ready = title.trim() && when && Number(amount) > 0;
+
+  return (
+    <Dialog open={date !== null} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <form onSubmit={submit} className="space-y-5">
+          <DialogHeader>
+            <DialogTitle>Add upcoming work</DialogTitle>
+            <DialogDescription>Adds a row to The Plan in Notion, so it counts here and stays in your records.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <label className="block space-y-1.5">
+              <span className="text-sm text-foreground">What is it</span>
+              <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Carey — term 4 concert" autoFocus />
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block space-y-1.5">
+                <span className="text-sm text-foreground">Date</span>
+                <Input type="date" value={when} onChange={(e) => setWhen(e.target.value)} />
+              </label>
+              <label className="block space-y-1.5">
+                <span className="text-sm text-foreground">Amount</span>
+                <Input type="number" inputMode="decimal" min={0} step={10} value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="1,200" className="tabular-nums" />
+              </label>
+            </div>
+            <label className="block space-y-1.5">
+              <span className="text-sm text-foreground">Project</span>
+              <select value={project} onChange={(e) => setProject(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                {PLAN_PROJECTS.map((p) => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </label>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
+            <Button type="submit" disabled={!ready || saving} className="gap-2">{saving && <Loader2 size={14} className="animate-spin" />}Add to The Plan</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 /**
- * Planning (Money → Planning): a weekly floor from living costs and tax, the
- * two shapes of income — steady work measured from the app, bigger work from
- * Notion "The Plan" — and the next 12 weeks already booked against the floor.
+ * Planning (Money → Planning), in two views:
+ *   Booked   — only what's actually booked (sessions, lessons, work in The
+ *              Plan) against the weekly floor, and the weeks that need filling
+ *   Forecast — the typical week from the last 90 days / 12 months: steady
+ *              work measured from the app, bigger work from The Plan
  */
 export function PlanningTool() {
   const queryClient = useQueryClient();
@@ -43,6 +109,8 @@ export function PlanningTool() {
   const [settings, setSettings] = useState<PlanningSettings>(DEFAULT_PLANNING);
   const [savedLocal, setSavedLocal] = useState<boolean | null>(null);
   const [asTable, setAsTable] = useState(false);
+  const [mode, setMode] = useState<"booked" | "forecast">(() => (new URLSearchParams(window.location.search).get("view") === "forecast" ? "forecast" : "booked"));
+  const [addDate, setAddDate] = useState<string | null>(null);
   const loaded = useRef(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -92,7 +160,17 @@ export function PlanningTool() {
   const floor = view.floor.weekly;
   const gap = view.typicalWeekly - floor;
   const bookedWeeks = view.weeks.filter((w) => w.total >= floor).length;
-  const tiles = [
+  const next4 = view.weeks.slice(0, 4);
+  const toFind4 = next4.reduce((a, w) => a + Math.max(0, floor - w.total), 0);
+  const kinPrice = view.steady.find((st) => st.key === "fnh")?.avgPrice || settings.rates.fnh;
+  const shortWeeks = view.weeks.slice(0, 8).filter((w) => w.total < floor);
+  const bookedTiles = [
+    { label: "Booked, next 4 weeks", value: money(next4.reduce((a, w) => a + w.total, 0)), sub: `against ${money(floor * 4)} of floor` },
+    { label: "Still to find, next 4 weeks", value: money(toFind4), sub: toFind4 > 0 ? `${next4.filter((w) => w.total < floor).length} of 4 weeks below your floor` : "Every week covered", tone: toFind4 > 0 ? "alert" : "good" },
+    { label: "Weeks covered", value: `${bookedWeeks} of ${FORWARD_WEEKS}`, sub: "next 12 weeks at or above your floor" },
+    { label: "Your weekly floor", value: money(floor), sub: settings.addTax ? `${money(settings.livingCosts)}/month + ${money(view.floor.tax / 12)} tax` : `${money(settings.livingCosts)}/month living costs` },
+  ];
+  const forecastTiles = [
     { label: "Your weekly floor", value: money(floor), sub: settings.addTax ? `${money(settings.livingCosts)}/month living costs + ${money(view.floor.tax / 12)} tax` : `${money(settings.livingCosts)}/month living costs` },
     { label: "Typical week", value: money(view.typicalWeekly), sub: gap >= 0 ? `${money(gap)} above your floor` : `${money(-gap)} short of your floor`, tone: gap >= 0 ? "good" : "alert" },
     { label: "Steady work", value: money(view.steadyWeekly), sub: "a week, last 90 days" },
@@ -103,8 +181,23 @@ export function PlanningTool() {
     <div className="space-y-10">
       {header}
 
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div role="tablist" aria-label="Planning view" className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5">
+          {([["booked", "Booked"], ["forecast", "Forecast"]] as const).map(([id, label]) => (
+            <button key={id} role="tab" aria-selected={mode === id} onClick={() => setMode(id)}
+              className={cn("rounded-md px-3 py-1.5 text-sm transition-colors", mode === id ? "bg-card font-medium text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground")}>
+              {label}
+            </button>
+          ))}
+        </div>
+        <p className="order-3 w-full text-xs text-muted-foreground sm:order-none sm:w-auto sm:flex-1">
+          {mode === "booked" ? "Only what's actually booked — sessions, lessons and work in The Plan. No averages." : "What a typical week looks like, from the last 90 days and 12 months."}
+        </p>
+        <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setAddDate(format(new Date(), "yyyy-MM-dd"))}><Plus size={14} /> Add upcoming work</Button>
+      </div>
+
       <div className="grid grid-cols-2 overflow-hidden rounded-xl border border-border bg-card shadow-xs lg:grid-cols-4">
-        {tiles.map((t, i) => (
+        {(mode === "booked" ? bookedTiles : forecastTiles).map((t, i) => (
           <div key={t.label} className={cn("flex flex-col gap-3 p-4 sm:p-5", i % 2 === 1 && "border-l border-border", i >= 2 && "border-t border-border lg:border-t-0", i === 2 && "lg:border-l")}>
             <span className="truncate text-[13px] text-muted-foreground">{t.label}</span>
             <span className={cn("text-[28px] font-semibold leading-none tracking-[-0.03em] tabular-nums", t.tone === "alert" ? "text-chart-amber" : "text-foreground")}>{t.value}</span>
@@ -127,6 +220,7 @@ export function PlanningTool() {
         </div>
       )}
 
+      {mode === "booked" && <>
       {/* Next 12 weeks */}
       <section>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-border pb-2">
@@ -202,6 +296,67 @@ export function PlanningTool() {
       </section>
 
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
+        {/* Weeks to fill */}
+        <section>
+          <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2 border-b border-border pb-2">
+            <h2 className="text-sm font-semibold text-foreground">Weeks to fill</h2>
+            <div className="flex gap-3 text-xs">
+              <Link to="/follow-up" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"><UserRoundCheck size={12} /> People to follow up</Link>
+              <Link to="/timetable" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"><CalendarRange size={12} /> Open times</Link>
+            </div>
+          </div>
+          {shortWeeks.length === 0 ? (
+            <p className="py-4 text-sm text-muted-foreground">The next 8 weeks all reach your floor with what's booked.</p>
+          ) : (
+            <ul className="divide-y divide-border/60">
+              {shortWeeks.map((w) => {
+                const short = floor - w.total;
+                return (
+                  <li key={w.key} className="flex items-center gap-3 py-2.5 text-sm">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-foreground">Week of {format(w.start, "d MMM")} <span className="text-muted-foreground">· {money(w.total)} booked</span></p>
+                      <p className="text-xs text-muted-foreground">
+                        {money(short)} to go — about {Math.ceil(short / settings.rates.lesson60)} hour lessons or {Math.ceil(short / kinPrice)} kinesiology sessions
+                      </p>
+                    </div>
+                    <Button size="sm" variant="ghost" className="h-7 shrink-0 gap-1 px-2 text-xs" onClick={() => setAddDate(format(w.start, "yyyy-MM-dd"))}><Plus size={12} /> Add work</Button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+
+        {/* Booked work in The Plan */}
+        <section>
+          <div className="mb-1 flex items-baseline justify-between border-b border-border pb-2">
+            <h2 className="text-sm font-semibold text-foreground">Booked work in The Plan</h2>
+            <span className="text-xs text-muted-foreground">Gigs, institutions, theatre, backings</span>
+          </div>
+          {view.upcoming.length === 0 ? (
+            <p className="py-4 text-sm text-muted-foreground">{plan.error ? "Connect The Plan to see booked work here." : "Nothing booked in The Plan yet. Add upcoming work above."}</p>
+          ) : (
+            <>
+              <ul className="divide-y divide-border/60">
+                {view.upcoming.slice(0, 10).map((r) => (
+                  <li key={r.id} className="flex items-center gap-3 py-2.5 text-sm">
+                    <span className="w-16 shrink-0 text-[13px] tabular-nums text-muted-foreground">{r.date ? format(new Date(r.date), "d MMM") : "—"}</span>
+                    <a href={r.url} target="_blank" rel="noreferrer" className="group min-w-0 flex-1 truncate text-foreground hover:underline blur-sensitive">
+                      {r.title || r.project || "Untitled"} <ExternalLink size={11} className="inline opacity-0 group-hover:opacity-60" />
+                    </a>
+                    <span className="shrink-0 text-xs text-muted-foreground">{r.project}</span>
+                    <span className="w-16 shrink-0 text-right tabular-nums text-foreground">{money(r.dollars)}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </section>
+      </div>
+      </>}
+
+      {mode === "forecast" && (
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
         {/* Steady work */}
         <section>
           <div className="mb-1 flex items-baseline justify-between border-b border-border pb-2">
@@ -260,25 +415,9 @@ export function PlanningTool() {
               </li>
             </ul>
           )}
-          {view.upcoming.length > 0 && (
-            <>
-              <h3 className="mb-1 mt-6 border-b border-border pb-2 text-xs font-semibold text-muted-foreground">Coming up in The Plan</h3>
-              <ul className="divide-y divide-border/60">
-                {view.upcoming.slice(0, 8).map((r) => (
-                  <li key={r.id} className="flex items-center gap-3 py-2.5 text-sm">
-                    <span className="w-16 shrink-0 text-[13px] tabular-nums text-muted-foreground">{r.date ? format(new Date(r.date), "d MMM") : "—"}</span>
-                    <a href={r.url} target="_blank" rel="noreferrer" className="group min-w-0 flex-1 truncate text-foreground hover:underline blur-sensitive">
-                      {r.title || r.project || "Untitled"} <ExternalLink size={11} className="inline opacity-0 group-hover:opacity-60" />
-                    </a>
-                    <span className="shrink-0 text-xs text-muted-foreground">{r.project}</span>
-                    <span className="w-16 shrink-0 text-right tabular-nums text-foreground">{money(r.dollars)}</span>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
         </section>
       </div>
+      )}
 
       {/* Settings */}
       <section className="space-y-5">
@@ -321,6 +460,8 @@ export function PlanningTool() {
           </div>
         </div>
       </section>
+      <AddWorkDialog date={addDate} onClose={() => setAddDate(null)}
+        onAdded={() => { setAddDate(null); queryClient.invalidateQueries({ queryKey: ["planning-data"] }); }} />
     </div>
   );
 }

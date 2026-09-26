@@ -105,6 +105,18 @@ export async function fetchPlanRows(from: string, to: string): Promise<{ rows: P
   return { rows: data.rows || [], error: null, needsShare: false };
 }
 
+/** Projects offered when adding upcoming work (The Plan's own options that count as income here). */
+export const PLAN_PROJECTS = ["Freelance", "Corporate", "Auditions", "AMEB", "High School", "Choir", "VCASS", "IT", "Piano Backings", "Gabby's Dollhouse"];
+
+/** Add a row of upcoming work to The Plan. */
+export async function createPlanRow(input: { title: string; date: string; dollars: number; project: string | null }): Promise<{ row?: PlanRow; error?: string }> {
+  const { data, error } = await supabase.functions.invoke("plan-income", { body: { action: "create", ...input } });
+  if (error || !data?.success) {
+    return { error: data?.needsShare ? "The app can't see The Plan in Notion yet — share it with the app's connection first." : data?.error || error?.message || "Couldn't add it to The Plan" };
+  }
+  return { row: data.row };
+}
+
 // Tracked elsewhere in the CRM (kinesiology appointments, the voice/piano
 // Lessons database) or not paid work at all — never counted from The Plan.
 const PLAN_SKIP = new Set(["Kinesiology", "FNH", "Coaching", "Teaching", "Wellness", "Self Practice", "Budget", "dates"]);

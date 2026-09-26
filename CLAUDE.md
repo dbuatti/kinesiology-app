@@ -159,6 +159,8 @@ Calendar deep links (read once, then internal state): `/calendar?show=unpaid` (P
 
 Income has two shapes and the plan keeps them apart: **steady work** (kinesiology/FNH priced from the session or client record; voice & piano lessons priced by length — $50/30, $75/45, $95/60 — from `loadCalendarItems`, last 90 days; backing tracks at their own price from The Plan) and **bigger work** (gigs, institutions, musical theatre, corporate — rows in Notion "The Plan", averaged over 12 months). The `plan-income` edge function reads The Plan read-only; `planKind` skips projects the CRM already counts (Kinesiology, FNH, Coaching, Teaching) and non-income ones so nothing is doubled. The weekly floor is living costs plus income tax (`grossForNet`, 2026–27 resident rates). Settings live in `planning_settings` (`supabase_planning_settings.sql`), falling back to localStorage until applied. The Plan must be shared with the Notion integration behind `NOTION_API_KEY`, or the page says so.
 
+Two views: **Booked** (default) counts only what is actually booked — sessions, lessons and work in The Plan — against the floor, with "Weeks to fill" for the next 8 weeks; **Forecast** (`?view=forecast`) shows the typical-week averages. "Add upcoming work" writes a row into The Plan (`plan-income` with `action: "create"`), so forward income is recorded once, in Notion.
+
 ## Voice Calendar Fallback (`src/lib/calendarItems.ts`, used by `UnifiedCalendarPage.tsx`)
 
 Notion voice lessons and Cal.com voice_bookings are merged in `buildCalendarItems` (`src/lib/calendarItems.ts`). The logic:

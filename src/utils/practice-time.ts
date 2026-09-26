@@ -70,8 +70,10 @@ function wallToInstant(y: number, mo: number, d: number, h: number, mi: number, 
   for (let i = 0; i < 3; i++) {
     const p = practiceParts(guess);
     const shownEpoch = Date.UTC(p.y, p.mo - 1, p.d, p.h, p.mi, p.s);
-    const offset = guess.getTime() - shownEpoch; // +east
-    guess = new Date(wantEpoch - offset);
+    // Nudge by however far the shown wall time is from the wanted one. (This
+    // used to subtract the zone offset the wrong way round, landing every
+    // "midnight" ~20h late — which made the timetable's weeks start on Tuesday.)
+    guess = new Date(guess.getTime() + (wantEpoch - shownEpoch));
   }
   return guess;
 }

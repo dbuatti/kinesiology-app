@@ -25,7 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2, Mail, Clock, CheckCircle2, AlertCircle, Unlock, Save, Sparkles, Package } from "lucide-react";
+import { CalendarIcon, Loader2, Mail, CheckCircle2, AlertCircle, Unlock, Save, Sparkles, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
 import { APPOINTMENT_TAGS, APPOINTMENT_STATUSES } from "@/data/appointment-data";
@@ -310,7 +310,7 @@ const AppointmentForm = ({
           name="clientId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Client</FormLabel>
+              <FormLabel className="text-[13px] font-medium text-foreground">Client</FormLabel>
               <FormControl>
                 <SearchableClientSelect
                   clients={clients}
@@ -330,7 +330,7 @@ const AppointmentForm = ({
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Appointment Title (Optional)</FormLabel>
+              <FormLabel className="text-[13px] font-medium text-foreground">Title (optional)</FormLabel>
               <FormControl>
                 <Input placeholder="e.g. Initial Session" {...field} className="h-12 rounded-xl border-2 border-border/50 focus:border-chart-primary transition-all" />
               </FormControl>
@@ -345,19 +345,19 @@ const AppointmentForm = ({
             name="date"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Date</FormLabel>
+                <FormLabel className="text-[13px] font-medium text-foreground">Date</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full pl-3 text-left font-normal h-12 rounded-xl border-2 border-border/50",
+                          "w-full min-w-0 pl-3 text-left font-normal h-12 rounded-xl border-2 border-border/50",
                           !field.value && "text-muted-foreground"
                         )}
                         disabled={isTimeLocked}
                       >
-                        {field.value ? format(field.value, "MMMM do, yyyy") : <span>Pick a date</span>}
+                        {field.value ? format(field.value, "EEE d MMM yyyy") : <span>Pick a date</span>}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </FormControl>
@@ -377,7 +377,7 @@ const AppointmentForm = ({
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between">
-                  <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Time</FormLabel>
+                  <FormLabel className="text-[13px] font-medium text-foreground">Time</FormLabel>
                   {isTimeLocked && (
                     <button type="button" onClick={() => setIsTimeLocked(false)} className="text-[11px] font-semibold text-chart-primary flex items-center gap-1 hover:underline">
                       <Unlock size={10} /> Override Slot
@@ -386,8 +386,7 @@ const AppointmentForm = ({
                 </div>
                 <FormControl>
                   <div className="relative">
-                    <Input type="time" {...field} className="h-12 rounded-xl border-2 border-border/50 pr-10" disabled={isTimeLocked} />
-                    <Clock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <Input type="time" {...field} className="h-12 rounded-xl border-2 border-border/50" disabled={isTimeLocked} />
                   </div>
                 </FormControl>
                 <FormMessage />
@@ -402,7 +401,7 @@ const AppointmentForm = ({
             name="tag"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Type</FormLabel>
+                <FormLabel className="text-[13px] font-medium text-foreground">Type</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger className="h-12 rounded-xl border-2 border-border/50">
@@ -425,7 +424,7 @@ const AppointmentForm = ({
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Status</FormLabel>
+                <FormLabel className="text-[13px] font-medium text-foreground">Status</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger className="h-12 rounded-xl border-2 border-border/50">
@@ -446,7 +445,7 @@ const AppointmentForm = ({
 
         {/* Session Picker */}
         <div className="space-y-3">
-          <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Session</FormLabel>
+          <FormLabel className="text-[13px] font-medium text-foreground">Session</FormLabel>
           <div className="grid grid-cols-3 gap-2">
             {SESSION_OPTIONS.map((s) => {
               const isSelected = selectedSessionKey === s.key;
@@ -486,7 +485,7 @@ const AppointmentForm = ({
         </div>
 
         <div className="space-y-3">
-          <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Session Price</FormLabel>
+          <FormLabel className="text-[13px] font-medium text-foreground">Session price</FormLabel>
           <div className="grid grid-cols-3 gap-3">
             {priceOptions.map((opt) => {
               const isCurrentRate = opt.sublabel === "Current rate";

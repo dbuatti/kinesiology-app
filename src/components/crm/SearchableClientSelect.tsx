@@ -88,7 +88,7 @@ const SearchableClientSelect = ({
                   className="flex items-center justify-between py-3 px-4 cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-rose-400 text-white flex items-center justify-center text-[11px] font-bold">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-700 text-white flex items-center justify-center text-[11px] font-semibold">
                       {client.name.charAt(0)}
                     </div>
                     <span className="font-medium">{client.name}</span>

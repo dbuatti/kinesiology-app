@@ -168,7 +168,7 @@ const PathwayReflexStimSheet = ({
   };
 
   return (
-    <div className="bg-white text-black p-4 max-w-[210mm] mx-auto font-sans print:p-0 print:m-0">
+    <div className="keep-light bg-white text-black p-4 max-w-[210mm] mx-auto font-sans print:p-0 print:m-0">
       <div className="border-2 border-black mb-2 flex justify-between items-end px-3 py-2">
         <div>
           <h1 className="text-xl font-semibold uppercase tracking-tight leading-none">Pathway / Reflex / Stim</h1>

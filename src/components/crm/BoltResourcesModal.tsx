@@ -102,7 +102,7 @@ const BoltResourcesModal = ({ open, onOpenChange, currentScore, onStartBolt }: B
                   </div>
                 </div>
                 <div className="mt-4">
-                  <div className="h-2 bg-white/60 rounded-full overflow-hidden">
+                  <div className="h-2 bg-background/60 rounded-full overflow-hidden">
                     <div
                       className={`h-full ${scoreBanner.bar} rounded-full transition-all duration-700 ease-out`}
                       style={{ width: `${progress}%` }}

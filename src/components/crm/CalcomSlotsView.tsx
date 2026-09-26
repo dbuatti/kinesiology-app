@@ -852,10 +852,10 @@ const CalcomSlotsView = () => {
                         <div className="flex items-start justify-between">
                           <div className="flex items-center gap-4">
                             <div className={cn(
-                              "w-12 h-12 rounded-2xl flex items-center justify-center shadow-xl transition-all duration-500",
-                              isBlocked ? "bg-muted scale-95" : "bg-gradient-to-br from-amber-500 to-rose-500"
+                              "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500",
+                              isBlocked ? "bg-muted scale-95" : "bg-primary/10"
                             )}>
-                              {isBlocked ? <Ban size={24} className="text-primary-foreground" /> : <Calendar size={24} className="text-primary-foreground" />}
+                              {isBlocked ? <Ban size={22} className="text-muted-foreground" /> : <Calendar size={22} className="text-primary" />}
                             </div>
                             <div>
                               <CardTitle className={cn(
@@ -984,7 +984,7 @@ const CalcomSlotsView = () => {
                                       <button 
                                         key={idx} 
                                         onClick={() => handleSlotClick(date, timeStr)}
-                                        className="flex items-center justify-center p-2.5 rounded-xl bg-muted/50 border border-border text-[10px] font-semibold text-foreground hover:bg-gradient-to-br hover:from-amber-500 hover:to-rose-500 hover:border-amber-500 hover:text-primary-foreground transition-all group/slot shadow-sm"
+                                        className="flex items-center justify-center p-2.5 rounded-xl bg-muted/50 border border-border text-[10px] font-semibold text-foreground hover:bg-primary hover:border-primary hover:text-primary-foreground transition-all group/slot shadow-sm"
                                       >
                                         <Clock size={12} className="mr-1.5 opacity-40 group-hover/slot:opacity-100 transition-opacity" />
                                         {format(new Date(timeStr), "h:mm a")}

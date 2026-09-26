@@ -171,7 +171,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
   const SectionHeader = ({ icon: Icon, title, color }: { icon: any, title: string, color: string }) => (
     <div className="flex items-center gap-2 mb-4 pt-6 border-t border-border/50 first:border-t-0 first:pt-0">
       <Icon size={16} className={color} />
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">{title}</h3>
+      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
     </div>
   );
 
@@ -214,7 +214,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 pb-6">
         {/* Personal Section */}
         <div className="space-y-4">
-          <SectionHeader icon={User} title="Personal Details" color="text-primary" />
+          <SectionHeader icon={User} title="Personal details" color="text-primary" />
           <FormField
             control={form.control}
             name="name"
@@ -304,7 +304,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
 
         {/* Clinical Section */}
         <div className="space-y-4">
-          <SectionHeader icon={Activity} title="Clinical Context" color="text-destructive" />
+          <SectionHeader icon={Activity} title="Clinical context" color="text-destructive" />
           <FormField
             control={form.control}
             name="medical_history"
@@ -393,7 +393,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
 
         {/* Clinical Tracking Section */}
         <div className="space-y-4">
-          <SectionHeader icon={Stethoscope} title="Clinical Tracking" color="text-violet-500" />
+          <SectionHeader icon={Stethoscope} title="Clinical tracking" color="text-violet-500" />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField
               control={form.control}
@@ -509,7 +509,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
 
         {/* Safety & Admin Section */}
         <div className="space-y-4">
-          <SectionHeader icon={ShieldAlert} title="Safety & Admin" color="text-amber-500" />
+          <SectionHeader icon={ShieldAlert} title="Safety & admin" color="text-amber-500" />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField
               control={form.control}
@@ -612,7 +612,7 @@ const ClientForm = ({ onSuccess, initialData }: ClientFormProps) => {
                 Saving...
               </>
             ) : (
-              initialData?.id ? "Update Client Profile" : "Add Client"
+              initialData?.id ? "Save changes" : "Add client"
             )}
           </Button>
         </div>

@@ -385,7 +385,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                   value={layerCountInput}
                   onChange={(e) => setLayerCountInput(e.target.value.replace(/[^0-9]/g, ""))}
                   placeholder="Pre-fill layer count (optional)"
-                  className="w-full h-11 rounded-xl bg-white border-rose-200 text-center text-lg font-semibold"
+                  className="w-full h-11 rounded-xl bg-background border-rose-200 text-center text-lg font-semibold"
                   type="number"
                   min={1}
                 />
@@ -667,7 +667,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                                           "px-4 py-2.5 rounded-xl text-sm font-semibold transition-all border-2",
                                           isSelected
                                             ? "bg-rose-600 text-white border-rose-600 shadow-md"
-                                            : "bg-white text-foreground border-border hover:border-rose-300 hover:bg-rose-50",
+                                            : "bg-background text-foreground border-border hover:border-rose-300 hover:bg-rose-50",
                                         )}
                                       >
                                         {emotion}
@@ -816,7 +816,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                               value={pendingLayer.contextParent || ""}
                               onChange={(e) => setPendingLayer({ ...pendingLayer, contextParent: e.target.value })}
                               placeholder="From Mom / Dad"
-                              className="h-9 rounded-xl bg-white text-sm w-40"
+                              className="h-9 rounded-xl bg-background text-sm w-40"
                             />
                           )}
                         </div>
@@ -903,7 +903,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                           Lightly rub along the Heart Visceral Referral Zone. This is a parasympathetic stimulus — the brain perceives the heart is being stimulated.
                           <strong> Always do this first</strong> so the brain knows we're working on the Heart Wall.
                         </p>
-                        <div className="p-3 bg-white/60 rounded-lg text-[11px] text-rose-900 space-y-1 font-medium">
+                        <div className="p-3 bg-background/60 rounded-lg text-[11px] text-rose-900 space-y-1 font-medium">
                           <p>1. Left Chest / Precordium</p>
                           <p className="font-bold">2. → Left Shoulder & Upper Back</p>
                           <p className="font-bold">3. → All the way down the ulnar (pinky) side of the Left Arm</p>
@@ -964,7 +964,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                           This collapses the whole circuit — the emotion, organ, muscles, and brain zones all at once.
                         </p>
                         {pendingLayer.brainZones && (
-                          <div className="p-3 bg-white/60 rounded-lg space-y-2">
+                          <div className="p-3 bg-background/60 rounded-lg space-y-2">
                             <p className="text-[10px] font-bold text-indigo-700 uppercase">Identified zones — tap each simultaneously</p>
                             <div className="flex flex-wrap gap-1.5">
                               {pendingLayer.brainZones.split(", ").map((zone, i) => {
@@ -990,7 +990,7 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                           </div>
                         )}
                         <div className="grid grid-cols-2 gap-3 mt-2">
-                          <div className="p-3 bg-white/60 rounded-lg">
+                          <div className="p-3 bg-background/60 rounded-lg">
                             <p className="text-[10px] font-bold text-indigo-700 uppercase">Standard (3 min)</p>
                             <p className="text-xs text-indigo-800 font-medium">Hold points and state the intention for 3 minutes. Keep repeating: "Heart wall, organ, emotion, inherited from…"</p>
                           </div>
@@ -1089,15 +1089,15 @@ export default function HeartWallTool({ open, onOpenChange, clientId, appointmen
                   </p>
                 </div>
                 <div className="grid grid-cols-3 gap-3 text-center">
-                  <div className="p-3 bg-white/60 rounded-lg">
+                  <div className="p-3 bg-background/60 rounded-lg">
                     <p className="text-lg font-bold text-foreground">{session?.initialLayerCount ?? "—"}</p>
                     <p className="text-xs text-muted-foreground">Initial</p>
                   </div>
-                  <div className="p-3 bg-white/60 rounded-lg">
+                  <div className="p-3 bg-background/60 rounded-lg">
                     <p className="text-lg font-bold text-emerald-600">{clearedCount}</p>
                     <p className="text-xs text-muted-foreground">Cleared</p>
                   </div>
-                  <div className="p-3 bg-white/60 rounded-lg">
+                  <div className="p-3 bg-background/60 rounded-lg">
                     <p className="text-lg font-bold text-foreground">{layersRemaining ?? "—"}</p>
                     <p className="text-xs text-muted-foreground">Remaining</p>
                   </div>

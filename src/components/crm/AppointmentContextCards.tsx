@@ -183,7 +183,7 @@ const AppointmentContextCards = ({ appointment, currentPeakMeridian, onSaveField
             <TooltipTrigger asChild>
               <Card className={cn(
                 "border-none shadow-sm shadow-indigo-500/10 rounded-xl text-primary-foreground overflow-hidden relative group cursor-help",
-                "bg-gradient-to-br from-rose-600 to-rose-800"
+                "bg-gradient-to-br from-indigo-500 to-indigo-800"
               )}>
                 <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-125 group-hover:rotate-12 transition-all duration-1000">
                   <Zap size={120} />

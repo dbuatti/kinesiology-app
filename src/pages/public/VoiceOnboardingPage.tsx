@@ -111,14 +111,14 @@ const VoiceOnboardingPage = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-foreground">Email</Label>
+              <Label className="text-[13px] font-medium text-foreground">Email</Label>
               <div className="h-12 rounded-2xl bg-rose-50 border border-rose-200 flex items-center px-4 text-sm font-bold text-foreground">
                 {decodedEmail}
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-foreground">
+              <Label className="text-[13px] font-medium text-foreground">
                 Full Name <span className="text-rose-500">*</span>
               </Label>
               <Input
@@ -131,7 +131,7 @@ const VoiceOnboardingPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-foreground">
+              <Label className="text-[13px] font-medium text-foreground">
                 Mobile Number <span className="text-muted-foreground font-normal normal-case tracking-normal">(optional)</span>
               </Label>
               <Input
@@ -144,7 +144,7 @@ const VoiceOnboardingPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-foreground">
+              <Label className="text-[13px] font-medium text-foreground">
                 Goals <span className="text-muted-foreground font-normal normal-case tracking-normal">(what do you want to work on?)</span>
               </Label>
               <Textarea
@@ -156,7 +156,7 @@ const VoiceOnboardingPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-foreground">Experience Level</Label>
+              <Label className="text-[13px] font-medium text-foreground">Experience Level</Label>
               <select
                 value={experienceLevel}
                 onChange={(e) => setExperienceLevel(e.target.value)}
@@ -171,7 +171,7 @@ const VoiceOnboardingPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-foreground">
+              <Label className="text-[13px] font-medium text-foreground">
                 Additional Notes <span className="text-muted-foreground font-normal normal-case tracking-normal">(optional)</span>
               </Label>
               <Textarea

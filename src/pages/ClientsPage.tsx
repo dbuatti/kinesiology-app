@@ -284,7 +284,7 @@ export function ClientsTool() {
               <DialogContent className="sm:max-w-[550px] rounded-2xl p-0 overflow-hidden">
                 <div className="p-8">
                   <DialogHeader className="mb-6">
-                    <DialogTitle className="text-xl font-semibold">Add New Client</DialogTitle>
+                    <DialogTitle className="text-xl font-serif font-medium tracking-tight">New client</DialogTitle>
                     <DialogDescription className="font-medium">Create a new client profile in your clinical database.</DialogDescription>
                   </DialogHeader>
                   <ClientForm onSuccess={() => { setOpen(false); loadAllClients(); }} />

@@ -59,7 +59,7 @@ const UpcomingMarquee = ({ className }: { className?: string }) => {
         {next.soon && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-chart-emerald opacity-60" />}
         <span className="relative inline-flex h-2 w-2 rounded-full bg-chart-emerald" />
       </span>
-      <span className="text-muted-foreground">Up next</span>
+      <span className="shrink-0 whitespace-nowrap text-muted-foreground">Up next</span>
       <span className="truncate font-medium text-foreground blur-sensitive">{next.name}</span>
       <span className="shrink-0 tabular-nums text-muted-foreground">{next.when}</span>
       <ArrowUpRight size={13} className="shrink-0 text-muted-foreground transition-transform duration-200 group-hover:-translate-y-px group-hover:translate-x-px group-hover:text-foreground" />

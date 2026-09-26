@@ -89,7 +89,7 @@ const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="space-y-2">
-        <Label htmlFor="name" className="text-xs font-semibold uppercase tracking-wider text-foreground/80">
+        <Label htmlFor="name" className="text-[13px] font-medium text-foreground/80">
           Full Name <span className="text-rose-500">*</span>
         </Label>
         <Input
@@ -103,7 +103,7 @@ const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-foreground/80">
+        <Label htmlFor="email" className="text-[13px] font-medium text-foreground/80">
           Email
         </Label>
         <Input
@@ -117,7 +117,7 @@ const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="phone" className="text-xs font-semibold uppercase tracking-wider text-foreground/80">
+        <Label htmlFor="phone" className="text-[13px] font-medium text-foreground/80">
           Phone Number
         </Label>
         <Input
@@ -131,7 +131,7 @@ const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="notes" className="text-xs font-semibold uppercase tracking-wider text-foreground/80">
+        <Label htmlFor="notes" className="text-[13px] font-medium text-foreground/80">
           Onboarding Notes <span className="text-muted-foreground font-normal normal-case tracking-normal">(optional)</span>
         </Label>
         <Textarea

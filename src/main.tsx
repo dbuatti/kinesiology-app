@@ -1,6 +1,8 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./globals.css";
+// After globals.css on purpose: dark-mode remaps must come after the utilities they override.
+import "./styles/dark-palette.css";
 import ErrorBoundary from "./components/shared/ErrorBoundary";
 
 // One passive listener powers every .spotlight surface in the app.

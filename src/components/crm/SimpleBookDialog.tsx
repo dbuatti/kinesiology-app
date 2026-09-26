@@ -415,7 +415,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
                           />
                           <Button
                             size="sm"
-                            className="w-full h-8 rounded-lg font-semibold text-xs bg-gradient-to-br from-rose-500 to-rose-600"
+                            className="w-full h-8 rounded-lg font-semibold text-xs"
                             disabled={!manualEmail.trim() || savingNewStudent}
                             onClick={async () => {
                               if (!manualEmail.trim()) return;

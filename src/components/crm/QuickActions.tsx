@@ -164,7 +164,7 @@ const QuickActions = ({ compact = false }: { compact?: boolean }) => {
                   <UserPlus size={19} />
                 </div>
                 <div>
-                  <DialogTitle className="text-xl font-semibold tracking-tight">Add New Client</DialogTitle>
+                  <DialogTitle className="text-xl font-serif font-medium tracking-tight">New client</DialogTitle>
                   <DialogDescription className="text-sm">Create a new client profile in your clinical database.</DialogDescription>
                 </div>
               </div>
@@ -179,11 +179,11 @@ const QuickActions = ({ compact = false }: { compact?: boolean }) => {
           <div className="p-6 sm:p-8">
             <DialogHeader className="mb-6 text-left">
               <div className="flex items-center gap-4 mb-2">
-                <div className="w-10 h-10 rounded-xl bg-chart-destructive/10 text-chart-destructive flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                   <CalendarPlus size={19} />
                 </div>
                 <div>
-                  <DialogTitle className="text-xl font-semibold tracking-tight">Schedule Session</DialogTitle>
+                  <DialogTitle className="text-xl font-serif font-medium tracking-tight">Book a session</DialogTitle>
                   <DialogDescription className="text-sm">Select a client and set the appointment details.</DialogDescription>
                 </div>
               </div>

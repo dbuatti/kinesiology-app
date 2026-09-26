@@ -42,7 +42,7 @@ import {
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
 import {
-  CalendarIcon, Clock, Loader2, Search, Plus, Zap, Check, ChevronsUpDown, ChevronDown
+  CalendarIcon, Loader2, Search, Plus, Zap, Check, ChevronsUpDown, ChevronDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
@@ -220,15 +220,15 @@ export function QuickSessionDialog({ open, onOpenChange }: QuickSessionDialogPro
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] max-w-[520px] max-h-[90vh] overflow-y-auto rounded-xl p-0 border-none shadow-3xl">
-        <div className="p-8 md:p-10">
-          <DialogHeader className="mb-6">
+        <div className="p-6 sm:p-8">
+          <DialogHeader className="mb-6 text-left">
             <div className="flex items-center gap-4 mb-2">
-              <div className="w-14 h-14 rounded-2xl bg-amber-500 text-primary-foreground flex items-center justify-center shadow-sm">
-                <Zap size={28} />
+              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                <Zap size={19} />
               </div>
               <div>
-                <DialogTitle className="text-3xl font-serif font-medium tracking-tight">Quick Session</DialogTitle>
-                <DialogDescription className="text-base font-medium">Start a session instantly — no booking or slot needed.</DialogDescription>
+                <DialogTitle className="text-xl font-serif font-medium tracking-tight">Quick session</DialogTitle>
+                <DialogDescription className="text-sm">Start a session instantly — no booking or slot needed.</DialogDescription>
               </div>
             </div>
           </DialogHeader>
@@ -236,7 +236,7 @@ export function QuickSessionDialog({ open, onOpenChange }: QuickSessionDialogPro
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <div>
-                <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">
+                <FormLabel className="text-[13px] font-medium text-foreground">
                   Client
                 </FormLabel>
                 <Popover open={clientSearchOpen} onOpenChange={setClientSearchOpen}>
@@ -279,7 +279,7 @@ export function QuickSessionDialog({ open, onOpenChange }: QuickSessionDialogPro
                               className="flex items-center justify-between py-3 px-4 cursor-pointer"
                             >
                               <div className="flex items-center gap-2">
-                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-rose-400 text-white flex items-center justify-center text-[11px] font-bold">
+                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-400 to-indigo-700 text-white flex items-center justify-center text-[11px] font-semibold">
                                   {client.name.charAt(0)}
                                 </div>
                                 <span className="font-medium">{client.name}</span>
@@ -300,9 +300,9 @@ export function QuickSessionDialog({ open, onOpenChange }: QuickSessionDialogPro
                               <CommandItem
                                 value={searchValue}
                                 onSelect={() => handleCreateNew(searchValue.trim())}
-                                className="flex items-center gap-3 py-3 px-4 cursor-pointer text-amber-600"
+                                className="flex items-center gap-3 py-3 px-4 cursor-pointer text-primary"
                               >
-                                <div className="w-7 h-7 rounded-full bg-amber-50 flex items-center justify-center">
+                                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
                                   <Plus size={14} />
                                 </div>
                                 <div>
@@ -324,13 +324,13 @@ export function QuickSessionDialog({ open, onOpenChange }: QuickSessionDialogPro
               </div>
 
               {isCreatingNew && (
-                <div className="grid grid-cols-2 gap-4 p-4 rounded-2xl bg-amber-50 border border-amber-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-muted/40 border border-border">
                   <FormField
                     control={form.control}
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Email</FormLabel>
+                        <FormLabel className="text-xs font-medium text-muted-foreground">Email</FormLabel>
                         <FormControl>
                           <Input {...field} placeholder="Email (optional)" className="h-10 rounded-xl border-2 border-border text-sm" />
                         </FormControl>
@@ -342,7 +342,7 @@ export function QuickSessionDialog({ open, onOpenChange }: QuickSessionDialogPro
                     name="phone"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Phone</FormLabel>
+                        <FormLabel className="text-xs font-medium text-muted-foreground">Phone</FormLabel>
                         <FormControl>
                           <Input {...field} placeholder="Phone (optional)" className="h-10 rounded-xl border-2 border-border text-sm" />
                         </FormControl>
@@ -358,7 +358,7 @@ export function QuickSessionDialog({ open, onOpenChange }: QuickSessionDialogPro
                   name="date"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Date</FormLabel>
+                      <FormLabel className="text-[13px] font-medium text-foreground">Date</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -385,11 +385,10 @@ export function QuickSessionDialog({ open, onOpenChange }: QuickSessionDialogPro
                   name="time"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Time</FormLabel>
+                      <FormLabel className="text-[13px] font-medium text-foreground">Time</FormLabel>
                       <FormControl>
                         <div className="relative mt-2">
-                          <Input type="time" {...field} className="h-12 rounded-xl border-2 border-border pr-10" />
-                          <Clock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                          <Input type="time" {...field} className="h-12 rounded-xl border-2 border-border" />
                         </div>
                       </FormControl>
                       <FormMessage />
@@ -403,7 +402,7 @@ export function QuickSessionDialog({ open, onOpenChange }: QuickSessionDialogPro
                 name="tag"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Session Type</FormLabel>
+                    <FormLabel className="text-[13px] font-medium text-foreground">Session type</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="h-12 rounded-xl border-2 border-border mt-2">
@@ -432,7 +431,7 @@ export function QuickSessionDialog({ open, onOpenChange }: QuickSessionDialogPro
                     name="goal"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Goal</FormLabel>
+                        <FormLabel className="text-[13px] font-medium text-foreground">Goal</FormLabel>
                         <FormControl>
                           <Input {...field} placeholder="What did you want to achieve?" className="h-12 rounded-xl border-2 border-border mt-2" />
                         </FormControl>
@@ -444,7 +443,7 @@ export function QuickSessionDialog({ open, onOpenChange }: QuickSessionDialogPro
                     name="issue"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">Issue</FormLabel>
+                        <FormLabel className="text-[13px] font-medium text-foreground">Issue</FormLabel>
                         <FormControl>
                           <Input {...field} placeholder="What was the presenting concern?" className="h-12 rounded-xl border-2 border-border mt-2" />
                         </FormControl>
@@ -456,13 +455,13 @@ export function QuickSessionDialog({ open, onOpenChange }: QuickSessionDialogPro
 
               <Button
                 type="submit"
-                className="w-full bg-amber-500 hover:bg-amber-600 h-14 rounded-2xl font-semibold text-sm shadow-xl shadow-amber-100 mt-6"
+                className="w-full h-12 rounded-xl font-medium text-sm mt-6"
                 disabled={submitting}
               >
                 {submitting ? (
-                  <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Creating Session...</>
+                  <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Starting…</>
                 ) : (
-                  <><Zap size={18} className="mr-2" /> Start Session</>
+                  <><Zap size={18} className="mr-2" /> Start session</>
                 )}
               </Button>
             </form>

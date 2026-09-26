@@ -872,7 +872,7 @@ export default function AutoDraftPanel({
             )}
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 p-3 max-h-[26rem] overflow-y-auto">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] gap-2 p-3 max-h-[26rem] overflow-y-auto">
           {visibleClients.map((c) => {
             const p = computePreferredTime(c.pastSessions);
             const timeText = prefTimeText(c.pastSessions, c.timeKnown);

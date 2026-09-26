@@ -26,7 +26,7 @@ const PathwayReflexStimPage = () => {
         </Button>
       </div>
 
-      <div className="bg-white shadow-2xl print:shadow-none min-h-[0] w-full">
+      <div className="keep-light bg-white shadow-2xl print:shadow-none min-h-[0] w-full">
         <PathwayReflexStimSheet />
       </div>
     </div>

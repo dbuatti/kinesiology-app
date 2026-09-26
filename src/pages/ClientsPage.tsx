@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,8 @@ interface ClientWithStats extends Client {
   // reported: one unified list, distinguished per-row, same convention
   // already used in Follow-up/Launch Campaign (Mic vs Brain icon).
   kind: "kinesiology" | "voice";
+  // Which practice: voice rows split into voice / piano by their latest lesson.
+  practice: Practice;
   session_count: number;
   last_session_at: string | null;
   last_contacted_at: string | null;
@@ -51,6 +54,9 @@ interface ClientWithStats extends Client {
   lifecycle_status: LifecycleStatus;
   lifecycle_status_reason: string;
 }
+
+type Practice = "kinesiology" | "voice" | "piano";
+const PRACTICE_LABEL: Record<Practice | "all", string> = { all: "Everyone", kinesiology: "Kinesiology", voice: "Voice", piano: "Piano" };
 
 const STATUS_RANK: Record<LifecycleStatus, number> = { at_risk: 0, active: 1, lapsed: 2, lead: 3 };
 
@@ -71,6 +77,11 @@ export function ClientsTool() {
     const s = new URLSearchParams(window.location.search).get('status');
     return (s === 'lead' || s === 'active' || s === 'at_risk' || s === 'lapsed') ? s : 'all';
   });
+  const [practiceFilter, setPracticeFilter] = useState<Practice | 'all'>(() => {
+    const p = new URLSearchParams(window.location.search).get('practice');
+    return (p === 'kinesiology' || p === 'voice' || p === 'piano') ? p : 'all';
+  });
+  const navigate = useNavigate();
   const { isPrivate } = usePrivacyMode();
   
   const fetchKinesiologyClients = async (): Promise<ClientWithStats[]> => {
@@ -133,6 +144,7 @@ export function ClientsTool() {
         return {
           ...c,
           kind: "kinesiology",
+          practice: "kinesiology",
           born: c.born ? new Date(c.born) : null,
           suburbs: c.suburbs || [],
           session_count: pastApps.length,
@@ -156,15 +168,16 @@ export function ClientsTool() {
   const fetchVoiceClients = async (): Promise<ClientWithStats[]> => {
     const bookings = await fetchNormalizedVoiceBookings();
     const now = Date.now();
-    const agg = new Map<string, { name: string; email: string; appointments: { date: string; status: string }[] }>();
+    const agg = new Map<string, { name: string; email: string; practice: Practice; appointments: { date: string; status: string }[] }>();
+    // Bookings arrive newest first, so the first one seen sets the student's practice.
     for (const b of bookings) {
-      const existing = agg.get(b.studentEmail) || { name: b.studentName, email: b.studentEmail, appointments: [] };
+      const existing = agg.get(b.studentEmail) || { name: b.studentName, email: b.studentEmail, practice: b.discipline, appointments: [] };
       existing.appointments.push({ date: b.lessonDate, status: b.status === "cancelled" ? "Cancelled" : "Completed" });
       agg.set(b.studentEmail, existing);
     }
 
     const results: ClientWithStats[] = [];
-    for (const [email, { name, appointments }] of agg.entries()) {
+    for (const [email, { name, practice, appointments }] of agg.entries()) {
       const activeApps = appointments.filter((a) => a.status !== "Cancelled");
       const pastApps = activeApps.filter((a) => new Date(a.date).getTime() < now);
       const upcomingApps = activeApps.filter((a) => new Date(a.date).getTime() >= now);
@@ -189,6 +202,7 @@ export function ClientsTool() {
       results.push({
         id: voiceStudentIdFor(email),
         kind: "voice",
+        practice,
         name, email, phone: null, born: null, suburbs: [],
         standard_rate: null, target_rate: null,
         onboarding_submitted_at: null, stripe_customer_id: null,
@@ -258,6 +272,7 @@ export function ClientsTool() {
       c.suburbs.some(s => s.toLowerCase().includes(search.toLowerCase()))
     )
     .filter(c => statusFilter === 'all' || c.lifecycle_status === statusFilter)
+    .filter(c => practiceFilter === 'all' || c.practice === practiceFilter)
     .sort((a, b) => {
       if (sortBy === 'attention') return STATUS_RANK[a.lifecycle_status] - STATUS_RANK[b.lifecycle_status];
       if (sortBy === 'active') return b.activity_score - a.activity_score;
@@ -270,11 +285,14 @@ export function ClientsTool() {
     <>
       <div className="flex flex-col gap-8">
         <PageHeader 
-          title="Client Database"
-          subtitle="Manage your kinesiology client profiles, history, and clinical data."
+          title="People"
+          subtitle="Clients and students across kinesiology, voice and piano."
           icon={Users}
           actions={
             <div className="flex items-center gap-2">
+            <Button variant="outline" className="h-9 gap-1.5 rounded-lg px-3.5 text-[13px] font-medium" onClick={() => navigate('/voice/clients/new')}>
+              <Plus size={15} /> New student
+            </Button>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button className="h-9 gap-1.5 rounded-lg px-3.5 text-[13px] font-medium shadow-sm">
@@ -296,8 +314,8 @@ export function ClientsTool() {
         />
 
         {/* One toolbar: search · lifecycle filter · sort · view */}
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <div className="relative w-full lg:max-w-xs">
+        <div className="flex flex-col gap-3 2xl:flex-row 2xl:items-center">
+          <div className="relative w-full 2xl:max-w-xs">
             <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={15} />
             <Input
               placeholder="Search name, email or suburb…"
@@ -328,9 +346,21 @@ export function ClientsTool() {
             })}
           </div>
 
-          <div className="flex items-center gap-2 lg:ml-auto">
+          <div className="flex flex-wrap items-center gap-2 2xl:ml-auto">
+            <Select value={practiceFilter} onValueChange={(v) => setPracticeFilter(v as typeof practiceFilter)}>
+              <SelectTrigger className="h-8 w-auto shrink-0 gap-1.5 rounded-lg border-border bg-card px-2.5 text-[13px] font-medium shadow-xs" aria-label="Filter by practice">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="end">
+                {(['all', 'kinesiology', 'voice', 'piano'] as const).map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {PRACTICE_LABEL[p]} <span className="ml-1 text-muted-foreground tabular-nums">{p === 'all' ? clients.length : clients.filter(c => c.practice === p).length}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-              <SelectTrigger className="h-8 w-auto gap-1.5 rounded-lg border-border bg-card px-2.5 text-[13px] font-medium shadow-xs">
+              <SelectTrigger className="h-8 w-auto shrink-0 gap-1.5 rounded-lg border-border bg-card px-2.5 text-[13px] font-medium shadow-xs">
                 <ArrowUpDown size={13} className="text-muted-foreground" />
                 <SelectValue />
               </SelectTrigger>
@@ -448,7 +478,7 @@ const ClientsPage = () => {
         value={tab}
         onChange={setTab}
         tabs={[
-          { id: "database", label: "Client database", icon: Users },
+          { id: "database", label: "People", icon: Users },
           { id: "oversight", label: "Clinical oversight", icon: TrendingUp },
         ]}
       />

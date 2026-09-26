@@ -44,11 +44,17 @@ All routes are defined in `src/App.tsx` — do not split them into separate rout
 
 Supabase auth. `session === undefined` = loading, `session === null` = logged out, `session = Session` = authenticated. Protected routes use `session ? <Page/> : <Navigate to="/login"/>` inline.
 
-### App modes / workspaces (`src/components/ModeProvider.tsx`)
+### Zones (`src/lib/zones.ts`, `src/components/ModeProvider.tsx`)
 
-`AppMode = 'clinical' | 'voice' | 'business'` — persisted in `localStorage` under `rk_app_mode`, shown as the Clinical / Voice / Business switcher in the sidebar. Each workspace shows its own sidebar group and mobile tab set, and tints the page aura. `MainLayout` syncs the mode from the URL: `/voice*` → voice, `/business*` → business, shared routes (`/assistant`, `/clients`, `/calendar`, `/settings`) keep the current mode, everything else → clinical. Business is a deliberate focus zone for admin/relationship work (inbox, follow-up, audit, money) across all practices; the practitioner thinks of kinesiology, voice and piano as one practice, so shared views should show all of them by default. Access via `useAppMode()`.
+The app has three **zones** — kinds of work, not practices (kinesiology, voice and piano are one practice to the practitioner, so every zone shows all of them):
 
-Create dialogs (quick session, book, new client) live in `QuickActions` (top bar "+ New"); open them from anywhere with `window.dispatchEvent(new CustomEvent("rk:create", { detail: "quick" | "session" | "client" }))`.
+- **Practice** — Today (`/`), Calendar, Sessions, Lessons (`/voice`), People (`/clients`)
+- **Business** — a focus zone for admin and client relationships: Inbox (`/inbox`), Follow-up (`/follow-up`), People, Assistant, Money (`/money`), Client audit (`/audit`), Calendar, Timetable, Marketing (`/marketing`)
+- **Growth** — Morning Program, Journal, Practice Hub, Identity Work, Library, Worksheets
+
+`src/lib/zones.ts` is the single source of truth for sidebar groups, the phone tab bar, the switcher, aura tints, breadcrumbs and the URL→zone rule (`zoneForPath`). Shared pages (`/assistant`, `/clients`, `/calendar`, `/settings`, `/availability`) keep whichever zone you were in. Edit zones there, never in Sidebar/MobileTabBar/MainLayout/SearchBar. The zone is stored as `AppMode` under `rk_app_mode` (old `clinical`/`voice` values normalise to `practice`); read it with `useAppMode()`.
+
+Create dialogs (quick session, book session, book lesson, new client) live in `QuickActions` (top bar "+ New"); open them from anywhere with `window.dispatchEvent(new CustomEvent("rk:create", { detail: "quick" | "session" | "lesson" | "client" }))`. "Open the app on" (Today / Inbox / Calendar) is a per-device setting in `src/lib/start-page.ts`, applied once per browser session.
 
 ### Layouts
 
@@ -65,9 +71,10 @@ Several top-level nav items are multi-pane or tabbed hubs that wrap previously s
 - `/library` — `LibraryPage.tsx` (UnifiedEditor two-pane tree: references, worksheets, practice tools). Old worksheet routes redirect to `/library?tab=<id>`.
 - `/practice` — `PracticeHubPage.tsx` (UnifiedEditor two-pane: Self Practice, Procedures, Quiz, Quick Calibrate, Corrections). Old `/practice/*` routes redirect to `/practice?tool=<id>`.
 - `/identity` — `IdentityWorkspacePage.tsx` (UnifiedEditor two-pane: Map, Shifting, Alignment, Limiting Beliefs, Fractals). Old `/lab`, `/identity-map`, etc. redirect to `/identity?tool=<id>`.
-- `/business` — `BusinessPage.tsx` (internal Tabs: Dashboard, Overview, Client Audit, Marketing, Follow-Up). Old `/business/*` routes redirect to `/business?tool=<id>`.
-- `/clients` — `ClientsPage.tsx` (internal Tabs: Client Database, Clinical Oversight). `/oversight` redirects to `/clients?tool=oversight`; `/oversight/follow-up` redirects to `/business?tool=follow-up`.
-- `/sessions` — `ClinicalHubPage.tsx` (bridge; previously `/practice/clinical-hub`).
+- `/money`, `/audit`, `/marketing` — `BusinessPage.tsx` with a `tools` prop narrowing its tabs (Money = Summary + Revenue). `/business`, `/business?tool=<id>` and old `/business/*` routes redirect to these.
+- `/inbox`, `/follow-up` — `AssistantPage` with `initialTab`, rendered as focused pages (just that tool, no Assistant header/metrics/tabs). `/assistant` is the full Assistant (chat, follow-up, inbox, launch).
+- `/clients` — `ClientsPage.tsx`, labelled **People** (internal Tabs: People, Clinical oversight). One list of kinesiology clients and voice/piano students, with a practice filter (`?practice=kinesiology|voice|piano`). `/oversight` redirects to `/clients?tool=oversight`.
+- `/sessions` — `ClinicalHubPage.tsx`: real sessions first (new, up next, recent), then a "Practice & reference" section with the sandbox (`/practice/trial/*`, a practice client — nothing saved to a real record) and the corrections manual.
 
 The unified editor primitive is `src/components/crm/UnifiedEditor.tsx` (`sections` with id/label/icon/group/render, `selectedId`/`onSelect`, left tree + right pane, mobile collapse).
 

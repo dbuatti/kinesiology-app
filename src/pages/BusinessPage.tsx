@@ -11,16 +11,19 @@ import { MarketingEngineTool } from "@/pages/MarketingEnginePage";
 // Follow-up ("who needs attention") lives entirely on /assistant now
 // (NeedsAttentionWidget) — there is no separate Follow-Up tab/tool anymore.
 const TABS = [
-  { id: "dashboard", label: "Dashboard", icon: TrendingUp },
-  { id: "overview", label: "Overview", icon: PieChart },
+  { id: "dashboard", label: "Summary", icon: TrendingUp },
+  { id: "overview", label: "Revenue", icon: PieChart },
   { id: "client-audit", label: "Audit", icon: Users },
   { id: "marketing", label: "Marketing", icon: Megaphone },
 ];
 
-const BusinessPage = () => {
+// `tools` narrows the tab set: /money shows only the money views; Client audit
+// and Marketing are their own Business-zone destinations (/audit, /marketing).
+const BusinessPage = ({ tools }: { tools?: string[] } = {}) => {
+  const tabs = tools ? TABS.filter((t) => tools.includes(t.id)) : TABS;
   const [tab, setTab] = useState(() => {
     const tool = new URLSearchParams(window.location.search).get("tool");
-    return tool && TABS.some((t) => t.id === tool) ? tool : "dashboard";
+    return tool && tabs.some((t) => t.id === tool) ? tool : tabs[0].id;
   });
 
   return (
@@ -30,7 +33,7 @@ const BusinessPage = () => {
           empty space on a wide screen ("tacky"). This drives the same
           controlled Tabs value/onValueChange from outside TabsTrigger, so
           Radix's show/hide logic below is untouched. */}
-      <HubTabs value={tab} onChange={setTab} tabs={TABS} />
+      {tabs.length > 1 && <HubTabs value={tab} onChange={setTab} tabs={tabs} />}
       {/* No px/py here — every Tool below already brings its own p-6, and
           stacking this wrapper's padding on top of that was pure double
           padding (full-width is the only thing actually needed at this

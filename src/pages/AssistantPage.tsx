@@ -31,7 +31,9 @@ interface ClientOption {
   email: string | null;
 }
 
-export default function AssistantPage() {
+// `initialTab` lets /inbox and /follow-up open this page on those tabs (the
+// Business zone lists them as their own destinations).
+export default function AssistantPage({ initialTab }: { initialTab?: AssistantTab } = {}) {
   // Deep-link entry point, e.g. from the Needs Attention widget: /assistant?client=<id>&prompt=<text>
   const [searchParams] = useSearchParams();
   const initialClientId = searchParams.get("client");
@@ -39,7 +41,7 @@ export default function AssistantPage() {
   const viewParam = searchParams.get("view");
   const initialView = viewParam === "email" ? "email" : "chat";
 
-  const [activeTab, setActiveTab] = useState<AssistantTab>(viewParam === "inbox" || viewParam === "followup" ? viewParam : "chat");
+  const [activeTab, setActiveTab] = useState<AssistantTab>(initialTab ?? (viewParam === "inbox" || viewParam === "followup" ? viewParam : "chat"));
   const [clients, setClients] = useState<ClientOption[]>([]);
   const [voiceStudents, setVoiceStudents] = useState<VoiceStudentOption[]>([]);
   const [focusedClientId, setFocusedClientId] = useState<string | null>(initialClientId);
@@ -189,6 +191,29 @@ export default function AssistantPage() {
   // before then would go out as an unfocused general message instead of
   // against the intended person. See AssistantInput's own autoSend effect.
   const autoSendReady = !!initialClientId && !!initialPrompt && !!focusedClient;
+
+  // Business-zone destinations (/inbox, /follow-up): just that tool under its
+  // own title — the Assistant's header, metrics and tab strip belong to the
+  // Assistant page itself, and stacking them above the inbox pushed it
+  // screens down on a phone.
+  if (initialTab === "inbox" || initialTab === "followup") {
+    return (
+      <AppLayout variant="wide" className="min-h-0">
+        {initialTab === "inbox" ? (
+          <CommsInbox clients={clients} voiceStudents={voiceStudents} asPage />
+        ) : (
+          <>
+            <PageHeader
+              icon={AlertCircle}
+              title="Follow-up"
+              subtitle="Who's drifting, quick wins first — book or reach out in one tap."
+            />
+            <div className="mt-6"><FollowUpTab /></div>
+          </>
+        )}
+      </AppLayout>
+    );
+  }
 
   return (
     // min-h-0 overrides AppLayout's default min-h-screen (twMerge resolves the

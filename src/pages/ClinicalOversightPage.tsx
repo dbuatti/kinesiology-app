@@ -118,7 +118,7 @@ export function ClinicalOversightTool() {
   />
   </div>
    <Button asChild variant="outline" size="sm" className="rounded-xl h-10 px-4 gap-2 shrink-0">
-     <Link to="/business?tool=follow-up" className="no-underline">
+     <Link to="/follow-up" className="no-underline">
        <MessageSquare size={14} /> Follow Up
      </Link>
    </Button>

@@ -24,6 +24,9 @@ import {
 interface Props {
   clients: { id: string; name: string; email: string | null }[];
   voiceStudents: VoiceStudentOption[];
+  // Rendered as its own page (/inbox) rather than a tab inside Assistant:
+  // page-level title, and no extra padding on top of the layout's own.
+  asPage?: boolean;
 }
 
 interface ComposeTarget {
@@ -123,7 +126,7 @@ function statusLine(p: InboxPerson): { text: string; className: string } {
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
-export default function CommsInbox({ clients, voiceStudents }: Props) {
+export default function CommsInbox({ clients, voiceStudents, asPage = false }: Props) {
   const [inbound, setInbound] = useState<InboundMessage[]>([]);
   const [sent, setSent] = useState<SentMessage[]>([]);
   const [manualSends, setManualSends] = useState<ManualSend[]>([]);
@@ -335,10 +338,12 @@ export default function CommsInbox({ clients, voiceStudents }: Props) {
   const sectionsToShow = filter === "all" ? SECTIONS : SECTIONS.filter((s) => s.id === filter);
 
   return (
-    <div className="p-4 space-y-4">
+    <div className={asPage ? "space-y-5" : "p-4 space-y-4"}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-base font-semibold text-foreground">Client inbox</h2>
+          {asPage
+            ? <h1 className="font-serif text-[26px] font-medium tracking-[-0.02em] text-foreground">Inbox</h1>
+            : <h2 className="text-base font-semibold text-foreground">Client inbox</h2>}
           <p className="text-xs text-muted-foreground mt-0.5">
             {loading && people.length === 0 ? "Loading…" : summary || "You're all caught up."}
             <span className="opacity-70"> · last 90 days</span>

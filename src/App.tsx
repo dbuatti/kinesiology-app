@@ -79,6 +79,13 @@ const UnifiedCalendarPage = lazy(() => import("./pages/UnifiedCalendarPage"));
 
 // --- Business & System ---
 const BusinessPage = lazy(() => import("./pages/BusinessPage"));
+
+// Old /business?tool=<id> links → the Business zone's own destinations.
+const BusinessRedirect = () => {
+  const tool = new URLSearchParams(window.location.search).get("tool");
+  const to = tool === "client-audit" ? "/audit" : tool === "marketing" ? "/marketing" : tool === "overview" ? "/money?tool=overview" : "/money";
+  return <Navigate to={to} replace />;
+};
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const ImportPage = lazy(() => import("./pages/ImportPage"));
 const DebugAppointmentPage = lazy(() => import("./pages/DebugAppointmentPage"));
@@ -172,6 +179,8 @@ const AppRoutes = () => {
           {/* Clinic */}
           <Route path="/clients" element={<ClientsPage />} />
           <Route path="/assistant" element={<AssistantPage />} />
+          <Route path="/inbox" element={<AssistantPage initialTab="inbox" />} />
+          <Route path="/follow-up" element={<AssistantPage initialTab="followup" />} />
           <Route path="/clients/:id" element={<ClientDetailPage />} />
           <Route path="/clients/:id/hub" element={<ClientHubPage />} />
           <Route path="/availability" element={<SchedulePage />} />
@@ -237,12 +246,16 @@ const AppRoutes = () => {
           <Route path="/voice/calendar" element={<Navigate to="/calendar" replace />} />
 
           {/* Business — consolidated hub */}
-          <Route path="/business" element={<BusinessPage />} />
-          <Route path="/business/dashboard" element={<Navigate to="/business" replace />} />
-          <Route path="/business/overview" element={<Navigate to="/business?tool=overview" replace />} />
-          <Route path="/business/marketing-engine" element={<Navigate to="/business?tool=marketing" replace />} />
-          <Route path="/business/client-audit" element={<Navigate to="/business?tool=client-audit" replace />} />
-          <Route path="/business/follow-up" element={<Navigate to="/assistant" replace />} />
+          {/* Business zone. /business and its old ?tool= deep links redirect to the split destinations. */}
+          <Route path="/money" element={<BusinessPage tools={["dashboard", "overview"]} />} />
+          <Route path="/audit" element={<BusinessPage tools={["client-audit"]} />} />
+          <Route path="/marketing" element={<BusinessPage tools={["marketing"]} />} />
+          <Route path="/business" element={<BusinessRedirect />} />
+          <Route path="/business/dashboard" element={<Navigate to="/money" replace />} />
+          <Route path="/business/overview" element={<Navigate to="/money?tool=overview" replace />} />
+          <Route path="/business/marketing-engine" element={<Navigate to="/marketing" replace />} />
+          <Route path="/business/client-audit" element={<Navigate to="/audit" replace />} />
+          <Route path="/business/follow-up" element={<Navigate to="/follow-up" replace />} />
 
           {/* System */}
           <Route path="/settings" element={<SettingsPage />} />

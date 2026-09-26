@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { BREADCRUMBS, ZONES, ZONE_ORDER, zoneForPath } from "@/lib/zones";
+import { takeStartRedirect } from "@/lib/start-page";
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from '@/components/crm/Sidebar';
 import BackToTop from '@/components/shared/BackToTop';
@@ -11,29 +13,6 @@ import { cn } from '@/lib/utils';
 import { showSuccess } from '@/utils/toast';
 import { Tablet } from 'lucide-react';
 
-// Route → [page title, breadcrumb section, section link]
-const ROUTES: Record<string, [string, string, string]> = {
-  "": ["Home", "Clinical", "/"],
-  assistant: ["Assistant", "Clinical", "/"],
-  timetable: ["Timetable", "Clinical", "/"],
-  calendar: ["Calendar", "Clinical", "/"],
-  clients: ["Clients", "Clinical", "/"],
-  sessions: ["Sessions", "Clinical", "/"],
-  appointments: ["Session", "Sessions", "/sessions"],
-  availability: ["Availability", "Clinical", "/"],
-  "morning-program": ["Morning Program", "Practitioner Growth", "/"],
-  journal: ["Journal", "Practitioner Growth", "/"],
-  practice: ["Practice Hub", "Practitioner Growth", "/"],
-  identity: ["Identity Work", "Practitioner Growth", "/"],
-  worksheets: ["Worksheets", "Reference", "/library"],
-  library: ["Library", "Reference", "/library"],
-  resources: ["Resources", "Reference", "/library"],
-  "peace-framework": ["PEACE Framework", "Reference", "/library"],
-  voice: ["Voice Studio", "Voice", "/voice"],
-  business: ["Business Hub", "Business", "/business"],
-  settings: ["Settings", "System", "/settings"],
-};
-
 const MainLayout = () => {
   const { mode, setMode } = useAppMode();
   const [scrolled, setScrolled] = useState(false);
@@ -44,10 +23,10 @@ const MainLayout = () => {
   const segments = location.pathname.split("/").filter(Boolean);
   const routeSegment = segments[0] ?? "";
   const fallbackTitle = routeSegment.replace(/-/g, " ").replace(/\b\w/g, (m) => m.toUpperCase()) || "Home";
-  let [currentTitle, section, sectionTo] = ROUTES[routeSegment] ?? [fallbackTitle, "", "/"];
-  // Deeper pages read as children of their hub: Clients › Client, Voice › Students
-  if (routeSegment === "clients" && segments[1]) [currentTitle, section, sectionTo] = ["Client", "Clients", "/clients"];
-  if (routeSegment === "voice" && segments[1] === "clients") [currentTitle, section, sectionTo] = [segments[2] === "new" ? "New student" : "Students", "Voice Studio", "/voice"];
+  let [currentTitle, section, sectionTo] = BREADCRUMBS[routeSegment] ?? [fallbackTitle, "", "/"];
+  // Deeper pages read as children of their hub: People › Client, Lessons › Students
+  if (routeSegment === "clients" && segments[1]) [currentTitle, section, sectionTo] = ["Client", "People", "/clients"];
+  if (routeSegment === "voice" && segments[1] === "clients") [currentTitle, section, sectionTo] = [segments[2] === "new" ? "New student" : "Students", "Lessons", "/voice"];
   if (routeSegment === "settings" && segments[1]) [currentTitle, section, sectionTo] = [fallbackTitleFor(segments[1]), "Settings", "/settings"];
 
   // Per-route browser tab title, so tabs, history and bookmarks are distinguishable.
@@ -72,24 +51,20 @@ const MainLayout = () => {
     };
   }, []);
 
-  // Auto-set mode based on current page context. /assistant and /clients are
-  // deliberately excluded — they're genuinely dual-purpose (used from both
-  // Clinical and Business contexts), so forcing a mode switch just by
-  // visiting them would flip the whole sidebar out from under the
-  // practitioner mid-task. Whichever mode they were already in carries
-  // through unchanged; only the unambiguous route prefixes below switch it.
+  // "Open the app on" (Settings): applied once per browser session, on first load at "/".
   useEffect(() => {
-    if (location.pathname.startsWith('/voice')) {
-      setMode('voice');
-    } else if (location.pathname.startsWith('/business')) {
-      setMode('business');
-    } else if (['/assistant', '/clients', '/calendar', '/settings'].some((p) => location.pathname.startsWith(p))) {
-      // no-op — shared across workspaces, stays in whichever mode was active
-      // (Calendar is in the Voice nav too; forcing Clinical here flipped the
-      // sidebar out from under anyone who tapped it from Voice).
-    } else {
-      setMode('clinical');
-    }
+    const to = takeStartRedirect(location.pathname);
+    if (to) navigate(to, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Keep the zone in step with the page (rules in src/lib/zones.ts). Shared
+  // pages (Calendar, People, Assistant, Settings…) return null and keep
+  // whichever zone you were already in, so the sidebar never flips mid-task.
+  useEffect(() => {
+    const zone = zoneForPath(location.pathname);
+    if (zone && zone !== mode) setMode(zone);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
   // Session-page keyboard shortcuts (macOS & Windows)
@@ -157,15 +132,11 @@ const MainLayout = () => {
       {/* Main column */}
       <div className="relative isolate flex h-full min-w-0 flex-1 flex-col">
         {/* Workspace aura — a soft light at the top of the canvas, tinted by
-            workspace (Clinical indigo · Voice rose · Business emerald). It
+            zone (Practice indigo · Business emerald · Growth amber). It
             crossfades when you switch workspace, so each one has its own
             atmosphere without any extra chrome. */}
         <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[460px] overflow-hidden print:hidden">
-          {([
-            ["clinical", "hsl(236 80% 62% / 0.11)", "hsl(266 70% 60% / 0.07)"],
-            ["voice", "hsl(346 80% 58% / 0.10)", "hsl(20 90% 60% / 0.06)"],
-            ["business", "hsl(160 60% 42% / 0.10)", "hsl(190 70% 45% / 0.06)"],
-          ] as const).map(([m, a, b]) => (
+          {ZONE_ORDER.map((m) => [m, ...ZONES[m].aura] as const).map(([m, a, b]) => (
             <div
               key={m}
               className="absolute inset-0 transition-opacity duration-1000 ease-out-expo"

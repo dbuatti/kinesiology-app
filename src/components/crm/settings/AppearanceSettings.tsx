@@ -1,5 +1,7 @@
 
+import { useState } from "react";
 import { useTheme } from "next-themes";
+import { START_PAGES, getStartPage, setStartPage, type StartPage } from "@/lib/start-page";
 import { Sun, Moon, Monitor, Palette } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -12,6 +14,11 @@ const THEMES = [
 
 const AppearanceSettings = () => {
   const { theme, setTheme } = useTheme();
+  const [startPage, setStartPageState] = useState<StartPage>(getStartPage);
+  const chooseStartPage = (path: StartPage) => {
+    setStartPage(path);
+    setStartPageState(path);
+  };
 
   return (
     <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden">
@@ -48,6 +55,27 @@ const AppearanceSettings = () => {
               </button>
             );
           })}
+        </div>
+
+        {/* Where the app opens */}
+        <div className="pt-4 space-y-2">
+          <p className="text-sm font-medium text-foreground">Open the app on</p>
+          <p className="text-xs text-muted-foreground">The page you land on when you first open the app on this device.</p>
+          <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5">
+            {START_PAGES.map((p) => (
+              <button
+                key={p.path}
+                onClick={() => chooseStartPage(p.path)}
+                className={cn(
+                  "h-8 rounded-md px-3 text-[13px] font-medium transition-colors",
+                  startPage === p.path ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                )}
+                aria-pressed={startPage === p.path}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Preview swatch */}

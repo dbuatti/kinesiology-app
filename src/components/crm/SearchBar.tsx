@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"; import type { MouseEvent } from 're
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
+import { ZONES, ZONE_ORDER, normaliseZone } from "@/lib/zones";
 import { useAppMode } from "@/components/ModeProvider";
 import {
   CommandDialog,
@@ -37,29 +38,31 @@ interface SearchResult {
 
 const RECENT_SEARCHES_KEY = "rk_recent_searches";
 
+// "Go to" list — section is the zone each page lives in (src/lib/zones.ts).
 const NAV_DESTINATIONS: { title: string; path: string; icon: any; section: string; keywords?: string }[] = [
-  { title: "Home", path: "/", icon: LayoutDashboard, section: "Clinical", keywords: "dashboard today" },
-  { title: "Assistant", path: "/assistant", icon: Sparkles, section: "Clinical", keywords: "chat ai" },
-  { title: "Inbox", path: "/assistant?view=inbox", icon: Mail, section: "Business", keywords: "email reply messages portal" },
-  { title: "Follow-up", path: "/assistant?view=followup", icon: Users, section: "Business", keywords: "drifting lapsed rebook" },
-  { title: "Calendar", path: "/calendar", icon: CalendarDays, section: "Clinical", keywords: "bookings appointments" },
-  { title: "Timetable", path: "/timetable", icon: Clock, section: "Clinical", keywords: "fortnight draft pencil" },
-  { title: "Availability", path: "/availability", icon: CalendarDays, section: "Clinical", keywords: "open hours cal.com schedule working hours" },
-  { title: "Clients", path: "/clients", icon: Users, section: "Clinical", keywords: "database" },
-  { title: "Sessions", path: "/sessions", icon: Activity, section: "Clinical", keywords: "clinical hub peace" },
+  { title: "Today", path: "/", icon: LayoutDashboard, section: "Practice", keywords: "home dashboard" },
+  { title: "Calendar", path: "/calendar", icon: CalendarDays, section: "Practice", keywords: "bookings appointments lessons" },
+  { title: "Sessions", path: "/sessions", icon: Activity, section: "Practice", keywords: "clinical hub peace" },
+  { title: "Lessons", path: "/voice", icon: Mic, section: "Practice", keywords: "voice piano studio" },
+  { title: "People", path: "/clients", icon: Users, section: "Practice", keywords: "clients students database" },
+  { title: "Students", path: "/voice/clients", icon: Users, section: "Practice", keywords: "voice piano students outstanding" },
+  { title: "Availability", path: "/availability", icon: CalendarDays, section: "Practice", keywords: "open hours cal.com schedule working hours" },
+  { title: "Inbox", path: "/inbox", icon: Mail, section: "Business", keywords: "email reply messages portal" },
+  { title: "Follow-up", path: "/follow-up", icon: Users, section: "Business", keywords: "drifting lapsed rebook" },
+  { title: "Assistant", path: "/assistant", icon: Sparkles, section: "Business", keywords: "chat ai" },
+  { title: "Money", path: "/money", icon: Target, section: "Business", keywords: "revenue payments unpaid outstanding earnings" },
+  { title: "Client audit", path: "/audit", icon: Target, section: "Business", keywords: "rates reengagement triage" },
+  { title: "Timetable", path: "/timetable", icon: Clock, section: "Business", keywords: "fortnight draft pencil" },
+  { title: "Marketing", path: "/marketing", icon: Target, section: "Business", keywords: "kit newsletter content" },
   { title: "Morning Program", path: "/morning-program", icon: Zap, section: "Growth" },
   { title: "Journal", path: "/journal", icon: BookOpen, section: "Growth", keywords: "reflections" },
   { title: "Practice Hub", path: "/practice", icon: Heart, section: "Growth", keywords: "self practice quiz calibrate" },
-  { title: "Identity Work", path: "/identity", icon: Brain, section: "Growth", keywords: "beliefs fractals" },
-  { title: "Worksheets", path: "/worksheets", icon: Layers, section: "Reference" },
-  { title: "Library", path: "/library", icon: BookOpen, section: "Reference", keywords: "muscles reflexes cranial nerves tcm" },
-  { title: "PEACE framework", path: "/peace-framework", icon: Activity, section: "Reference", keywords: "preliminary ease align correct embed" },
-  { title: "Print hub", path: "/resources/print", icon: Layers, section: "Reference", keywords: "print sheets pdf" },
   { title: "Practice session (sandbox)", path: "/practice/trial/peace", icon: Activity, section: "Growth", keywords: "sandbox trial practise peace" },
-  { title: "Voice Studio", path: "/voice", icon: Mic, section: "Voice" },
-  { title: "Voice students", path: "/voice/clients", icon: Users, section: "Voice" },
-  { title: "Business Hub", path: "/business", icon: Target, section: "Business", keywords: "revenue marketing" },
-  { title: "Client audit", path: "/business?tool=client-audit", icon: Target, section: "Business", keywords: "rates reengagement triage" },
+  { title: "Identity Work", path: "/identity", icon: Brain, section: "Growth", keywords: "beliefs fractals" },
+  { title: "Library", path: "/library", icon: BookOpen, section: "Growth", keywords: "muscles reflexes cranial nerves tcm reference" },
+  { title: "Worksheets", path: "/worksheets", icon: Layers, section: "Growth" },
+  { title: "PEACE framework", path: "/peace-framework", icon: Activity, section: "Growth", keywords: "preliminary ease align correct embed" },
+  { title: "Print hub", path: "/resources/print", icon: Layers, section: "Growth", keywords: "print sheets pdf" },
   { title: "Settings", path: "/settings", icon: Settings, section: "System" },
 ];
 
@@ -155,12 +158,11 @@ const SearchBar = ({ compact = false, responsive = false }: { compact?: boolean;
 
       const searchResults: SearchResult[] = [];
 
-      // Mode Switching
-      if ("clinical hub".includes(query.toLowerCase())) {
-        searchResults.push({ type: "mode", id: "clinical", title: "Switch to Clinical Hub", subtitle: "Practice management", path: "/", icon: Activity, color: "text-chart-primary" });
-      }
-      if ("voice studio".includes(query.toLowerCase())) {
-        searchResults.push({ type: "mode", id: "voice", title: "Switch to Voice Studio", subtitle: "Voice & piano lessons", path: "/voice", icon: Mic, color: "text-rose-500" });
+      // Zone switching ("business", "growth", "practice")
+      for (const z of ZONE_ORDER) {
+        if (ZONES[z].label.toLowerCase().includes(query.toLowerCase())) {
+          searchResults.push({ type: "mode", id: z, title: `Switch to ${ZONES[z].label}`, subtitle: "Zone", path: ZONES[z].home, icon: Layers, color: "text-muted-foreground" });
+        }
       }
 
       // Pages
@@ -226,14 +228,9 @@ const SearchBar = ({ compact = false, responsive = false }: { compact?: boolean;
 
   const handleSelect = (result: SearchResult) => {
     if (result.type === 'mode') {
-      if (result.id === 'voice') {
-        setOpen(false);
-        navigate('/voice');
-      } else {
-        setMode(result.id as any);
-        setOpen(false);
-        navigate('/');
-      }
+      setMode(normaliseZone(result.id));
+      setOpen(false);
+      navigate(result.path);
       return;
     }
     if (result.create) {
@@ -248,7 +245,7 @@ const SearchBar = ({ compact = false, responsive = false }: { compact?: boolean;
 
   const getQuickActions = (): SearchResult[] => {
     const baseActions: SearchResult[] = [
-      { type: "action", id: "dashboard", title: "Go to Dashboard", subtitle: "Main overview", path: "/", icon: LayoutDashboard, color: "text-muted-foreground" },
+      { type: "action", id: "dashboard", title: "Go to Today", subtitle: "Your day at a glance", path: "/", icon: LayoutDashboard, color: "text-muted-foreground" },
       { type: "action", id: "settings", title: "System Settings", subtitle: "Account & preferences", path: "/settings", icon: Settings, color: "text-muted-foreground" },
     ];
 

@@ -91,12 +91,12 @@ const FooterLinks = () => {
             <ul className="space-y-2">
               <li>
                 <Link to="/clients" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">
-                  Client Database
+                  People
                 </Link>
               </li>
               <li>
-                <Link to="/assistant" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">
-                  Assistant &amp; Follow-Up
+                <Link to="/inbox" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">
+                  Inbox
                 </Link>
               </li>
               <li>
@@ -111,17 +111,17 @@ const FooterLinks = () => {
             <h4 className="mb-3 text-xs font-medium text-foreground/80">Business</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="/business" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">
-                  Business Hub
+                <Link to="/money" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">
+                  Money
                 </Link>
               </li>
               <li>
-                <Link to="/business?tool=client-audit" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">
-                  Client Audit
+                <Link to="/audit" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">
+                  Client audit
                 </Link>
               </li>
               <li>
-                <Link to="/business?tool=marketing" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/marketing" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">
                   Marketing
                 </Link>
               </li>

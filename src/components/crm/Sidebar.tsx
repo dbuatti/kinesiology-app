@@ -4,6 +4,7 @@ import { motion, LayoutGroup } from "framer-motion";
 import { useTheme } from "next-themes";
 import { usePrivacyMode } from "@/hooks/use-privacy-mode";
 import { setIpadMode } from "@/hooks/use-ipad-mode";
+import { ZONES, ZONE_ORDER, activeNavPath } from "@/lib/zones";
 import { useAppMode } from "@/components/ModeProvider";
 import { useAuth } from "@/components/AuthProvider";
 import { cn } from "@/lib/utils";
@@ -18,97 +19,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  LayoutDashboard,
-  Users,
   Sun,
   Moon,
   Monitor,
-  MessageSquare,
-  Heart,
-  BookOpen,
-  Brain,
-  Activity,
   Settings,
   LogOut,
   Eye,
   EyeOff,
-  CalendarDays,
-  Briefcase,
   Tablet,
-  FileText,
-  CalendarRange,
-  Bot,
   PanelLeftClose,
   PanelLeftOpen,
   ChevronsUpDown,
-  Sunrise,
   X,
-  type LucideIcon,
 } from "lucide-react";
 import { BrandMark } from "@/components/layout/BrandMark";
 
-interface NavItem {
-  label: string;
-  icon: LucideIcon;
-  path: string;
-}
-
-interface NavGroup {
-  label: string;
-  items: NavItem[];
-}
-
-const NAV_GROUPS: NavGroup[] = [
-  {
-    label: "Clinical",
-    items: [
-      { label: "Home", icon: LayoutDashboard, path: "/" },
-      { label: "Assistant", icon: Bot, path: "/assistant" },
-      { label: "Calendar", icon: CalendarDays, path: "/calendar" },
-      { label: "Timetable", icon: CalendarRange, path: "/timetable" },
-      { label: "Clients", icon: Users, path: "/clients" },
-      { label: "Sessions", icon: Activity, path: "/sessions" },
-    ],
-  },
-  {
-    label: "Practitioner Growth",
-    items: [
-      { label: "Morning Program", icon: Sunrise, path: "/morning-program" },
-      { label: "Journal", icon: MessageSquare, path: "/journal" },
-      { label: "Practice Hub", icon: Heart, path: "/practice" },
-      { label: "Identity Work", icon: Brain, path: "/identity" },
-    ],
-  },
-  {
-    label: "Reference",
-    items: [
-      { label: "Worksheets", icon: FileText, path: "/worksheets" },
-      { label: "Library", icon: BookOpen, path: "/library" },
-    ],
-  },
-  {
-    label: "Business",
-    items: [
-      { label: "Assistant", icon: Bot, path: "/assistant" },
-      { label: "Clients", icon: Users, path: "/clients" },
-      { label: "Business Hub", icon: Briefcase, path: "/business" },
-    ],
-  },
-  {
-    label: "Voice Studio",
-    items: [
-      { label: "Dashboard", icon: LayoutDashboard, path: "/voice" },
-      { label: "Students", icon: Users, path: "/voice/clients" },
-      { label: "Calendar", icon: CalendarDays, path: "/calendar" },
-    ],
-  },
-];
-
-const WORKSPACES = [
-  { id: "clinical", label: "Clinical", to: "/", dot: "bg-chart-primary" },
-  { id: "voice", label: "Voice", to: "/voice", dot: "bg-chart-destructive" },
-  { id: "business", label: "Business", to: "/business", dot: "bg-chart-emerald" },
-] as const;
+// Zones, nav groups and the switcher all come from src/lib/zones.ts.
+const WORKSPACES = ZONE_ORDER.map((id) => ZONES[id]);
 
 const COLLAPSE_KEY = "rk_sidebar_collapsed";
 
@@ -161,22 +88,12 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Mode is kept in sync with the route by MainLayout. Business and Voice
-  // show only their own nav, deliberately not blended with Clinical's.
-  const isVoice = mode === "voice";
-  const isBusiness = mode === "business";
-  const activeWorkspace = isVoice ? "voice" : isBusiness ? "business" : "clinical";
-  const groups = isVoice
-    ? NAV_GROUPS.filter((g) => g.label === "Voice Studio")
-    : isBusiness
-    ? NAV_GROUPS.filter((g) => g.label === "Business")
-    : NAV_GROUPS.filter((g) => g.label !== "Business" && g.label !== "Voice Studio");
+  // Mode is kept in sync with the route by MainLayout; each zone shows only its own nav.
+  const activeWorkspace = mode;
+  const groups = ZONES[mode].groups;
 
-  // Most specific match wins, so "/voice/clients" doesn't also light up "/voice".
-  const allPaths = groups.flatMap((g) => g.items.map((i) => i.path));
-  const matches = (path: string) =>
-    location.pathname === path || (path !== "/" && location.pathname.startsWith(path + "/"));
-  const activePath = allPaths.filter(matches).sort((a, b) => b.length - a.length)[0];
+  // Most specific match wins, so "/clients/x" lights up People rather than Today.
+  const activePath = activeNavPath(groups.flatMap((g) => g.items.map((i) => i.path)), location.pathname);
 
   const email = session?.user?.email ?? "";
   const displayName =
@@ -249,7 +166,7 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
             {WORKSPACES.map((w) => (
               <RailTip key={w.id} show label={w.label}>
                 <Link
-                  to={w.to}
+                  to={w.home}
                   onClick={close}
                   className={cn(
                     "flex h-8 w-8 items-center justify-center rounded-md",
@@ -269,7 +186,7 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
                 return (
                   <Link
                     key={w.id}
-                    to={w.to}
+                    to={w.home}
                     onClick={close}
                     className={cn(
                       "relative z-10 flex min-w-0 items-center justify-center gap-1.5 rounded-[7px] font-medium",

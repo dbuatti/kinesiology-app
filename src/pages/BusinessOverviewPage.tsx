@@ -259,7 +259,7 @@ export function BusinessOverviewTool() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
             <PageHeader
-              title={`Business Overview · ${d.titleLabel}`}
+              title={`Revenue · ${d.titleLabel}`}
               subtitle="Revenue, clients, and performance metrics"
               icon={TrendingUp}
               className="mb-0"

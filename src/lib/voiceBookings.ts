@@ -7,7 +7,10 @@ export interface NormalizedVoiceBooking {
   lessonTime: string | null;
   status: string | null;
   cost: number | null;
+  discipline: "voice" | "piano"; // voice_bookings.discipline / Notion "Discipline"; voice when unset
 }
+
+const toDiscipline = (d: string | null | undefined): "voice" | "piano" => (d || "").toLowerCase() === "piano" ? "piano" : "voice";
 
 // Single canonical, normalized voice_bookings fetch — every frontend surface
 // that aggregates voice history (Follow-up, Launch Campaign, Key Metrics)
@@ -39,17 +42,17 @@ export async function fetchNormalizedVoiceBookings(): Promise<NormalizedVoiceBoo
   const [bookingsResult, notionResult] = await Promise.all([
     supabase
       .from("voice_bookings")
-      .select("student_name, student_email, lesson_date, lesson_time, status, cost, notion_lesson_id_1, notion_lesson_id_2")
+      .select("student_name, student_email, lesson_date, lesson_time, status, cost, discipline, notion_lesson_id_1, notion_lesson_id_2")
       .order("lesson_date", { ascending: false }),
     supabase.functions.invoke("voice-lessons"),
   ]);
 
   type Row = {
     student_name: string | null; student_email: string | null; lesson_date: string; lesson_time: string | null;
-    status: string | null; cost: number | null; notion_lesson_id_1: string | null; notion_lesson_id_2: string | null;
+    status: string | null; cost: number | null; discipline: string | null; notion_lesson_id_1: string | null; notion_lesson_id_2: string | null;
   };
   const rows = (bookingsResult.data || []) as Row[];
-  type NotionLesson = { id: string; date: string | null; studentName: string | null; studentEmail: string | null; cost: number | null };
+  type NotionLesson = { id: string; date: string | null; studentName: string | null; studentEmail: string | null; cost: number | null; discipline?: string | null };
   const notionLessons = ((notionResult.data?.lessons || []) as NotionLesson[]).filter((l) => l.date);
 
   const nameToEmail = new Map<string, string>();
@@ -70,7 +73,7 @@ export async function fetchNormalizedVoiceBookings(): Promise<NormalizedVoiceBoo
     const nameKey = name.toLowerCase();
     const email = (row.student_email || "").trim().toLowerCase() || nameToEmail.get(nameKey) || "";
     if (!email) continue; // no way to identify this student at all — genuinely unresolvable
-    normalized.push({ studentName: name || email, studentEmail: email, lessonDate: row.lesson_date, lessonTime: row.lesson_time, status: row.status, cost: row.cost });
+    normalized.push({ studentName: name || email, studentEmail: email, lessonDate: row.lesson_date, lessonTime: row.lesson_time, status: row.status, cost: row.cost, discipline: toDiscipline(row.discipline) });
   }
 
   // A voice_booking row already linked to a Notion lesson (notion_lesson_id_1/2)
@@ -88,7 +91,7 @@ export async function fetchNormalizedVoiceBookings(): Promise<NormalizedVoiceBoo
     if (!email) continue;
     // Notion's Lessons DB only ever logs a lesson that actually happened —
     // there's no cancelled/scheduled state to read, so "completed" is correct.
-    normalized.push({ studentName: name || email, studentEmail: email, lessonDate: l.date!, lessonTime: null, status: "completed", cost: l.cost });
+    normalized.push({ studentName: name || email, studentEmail: email, lessonDate: l.date!, lessonTime: null, status: "completed", cost: l.cost, discipline: toDiscipline(l.discipline) });
   }
 
   return normalized.sort((a, b) => new Date(b.lessonDate).getTime() - new Date(a.lessonDate).getTime());

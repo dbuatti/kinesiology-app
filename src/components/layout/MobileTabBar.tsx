@@ -1,29 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
 import { motion, LayoutGroup } from "framer-motion";
-import { LayoutDashboard, CalendarDays, Users, Activity, Menu, Bot, Briefcase, type LucideIcon } from "lucide-react";
+import { Menu } from "lucide-react";
+import { ZONES, activeNavPath } from "@/lib/zones";
 import { useAppMode } from "@/components/ModeProvider";
 import { cn } from "@/lib/utils";
-
-type Tab = { label: string; icon: LucideIcon; to: string };
-
-const TABS: Record<string, Tab[]> = {
-  clinical: [
-    { label: "Home", icon: LayoutDashboard, to: "/" },
-    { label: "Calendar", icon: CalendarDays, to: "/calendar" },
-    { label: "Clients", icon: Users, to: "/clients" },
-    { label: "Sessions", icon: Activity, to: "/sessions" },
-  ],
-  voice: [
-    { label: "Studio", icon: LayoutDashboard, to: "/voice" },
-    { label: "Students", icon: Users, to: "/voice/clients" },
-    { label: "Calendar", icon: CalendarDays, to: "/calendar" },
-  ],
-  business: [
-    { label: "Assistant", icon: Bot, to: "/assistant" },
-    { label: "Clients", icon: Users, to: "/clients" },
-    { label: "Business", icon: Briefcase, to: "/business" },
-  ],
-};
 
 /**
  * Phone/tablet navigation: a frosted bottom bar with the workspace's key
@@ -33,10 +13,8 @@ const TABS: Record<string, Tab[]> = {
 export function MobileTabBar({ onMore }: { onMore: () => void }) {
   const { mode } = useAppMode();
   const { pathname } = useLocation();
-  const tabs = TABS[mode] ?? TABS.clinical;
-  const active = tabs
-    .filter((t) => pathname === t.to || (t.to !== "/" && pathname.startsWith(t.to + "/")))
-    .sort((a, b) => b.to.length - a.to.length)[0]?.to;
+  const tabs = ZONES[mode].tabs.map((t) => ({ label: t.label, icon: t.icon, to: t.path }));
+  const active = activeNavPath(tabs.map((t) => t.to), pathname);
 
   return (
     <nav

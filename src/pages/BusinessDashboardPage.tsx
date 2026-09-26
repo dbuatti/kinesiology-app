@@ -162,7 +162,7 @@ export function BusinessDashboardTool() {
             via the sidebar nav (always visible), not a standalone route.
             navigate(-1) here was a leftover from before these tools were
             consolidated into tabs, and didn't mean "previous tab" anyway. */}
-        <PageHeader title="Business Dashboard" subtitle="Today's overview and quick actions" icon={TrendingUp} />
+        <PageHeader title="Money" subtitle="Today, this month, and what's coming up" icon={TrendingUp} />
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -280,7 +280,7 @@ export function BusinessDashboardTool() {
           <Button onClick={() => navigate('/calendar')} variant="default">
             <Calendar className="h-4 w-4 mr-2" /> Book Session
           </Button>
-          <Button onClick={() => navigate('/business/overview')} variant="outline">
+          <Button onClick={() => navigate('/money?tool=overview')} variant="outline">
             <TrendingUp className="h-4 w-4 mr-2" /> Full Overview
           </Button>
         </div>

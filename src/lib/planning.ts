@@ -15,24 +15,27 @@ import { itemStart, type CalendarItem } from "@/lib/calendarItems";
 import { itemEnd, practiceOf } from "@/lib/today";
 
 // ── Settings ──────────────────────────────────────────────────────────────────
-export type StreamKey = "fnh" | "voice45" | "voice60" | "piano" | "backing";
+// Voice and piano lessons are priced by length, not instrument.
+export type RateKey = "fnh" | "lesson30" | "lesson45" | "lesson60";
+export type StreamKey = RateKey | "backing";
 
 export interface PlanningSettings {
   /** Living costs per month, before tax (rent, bills, food, everything else). */
   livingCosts: number;
   /** Earn enough to also cover income tax and Medicare (sole trader: nobody withholds it). */
   addTax: boolean;
-  /** Price used when a session or lesson has no amount of its own. */
-  rates: Record<StreamKey, number>;
+  /** Price used only when a session or lesson has no amount of its own. Kinesiology
+   *  normally uses the client record; backing tracks always use The Plan's own price. */
+  rates: Record<RateKey, number>;
 }
 
 // Starting figures from the practitioner's runway budget (Sept 2026): about
 // $3,370 of living costs a month, which with the tax set-aside is the $3,700
-// target; rates are the ones the runway models.
+// target. Lessons: $50 / 30 min, $75 / 45 min, $95 / 60 min, voice or piano.
 export const DEFAULT_PLANNING: PlanningSettings = {
   livingCosts: 3370,
   addTax: true,
-  rates: { fnh: 70, voice45: 75, voice60: 95, piano: 75, backing: 30 },
+  rates: { fnh: 70, lesson30: 50, lesson45: 75, lesson60: 95 },
 };
 
 const LOCAL_KEY = "rk_planning_settings";
@@ -114,20 +117,18 @@ export function planKind(r: PlanRow): "backing" | "big" | null {
 // ── Streams ───────────────────────────────────────────────────────────────────
 export const STREAMS: { key: StreamKey; label: string; source: string }[] = [
   { key: "fnh", label: "Kinesiology / FNH", source: "Sessions in the app" },
-  { key: "voice45", label: "Voice, 45 min", source: "Lessons in the app" },
-  { key: "voice60", label: "Voice, 60 min", source: "Lessons in the app" },
-  { key: "piano", label: "Piano lessons", source: "Lessons in the app" },
+  { key: "lesson30", label: "Voice & piano, 30 min", source: "Lessons in the app" },
+  { key: "lesson45", label: "Voice & piano, 45 min", source: "Lessons in the app" },
+  { key: "lesson60", label: "Voice & piano, 60 min", source: "Lessons in the app" },
   { key: "backing", label: "Backing tracks", source: "Orders in The Plan" },
 ];
 
-export function streamOf(i: CalendarItem): StreamKey {
-  const p = practiceOf(i);
-  if (p === "kinesiology") return "fnh";
-  if (p === "piano") return "piano";
-  if (i.eventTypeId === "5925021") return "voice45";
-  if (i.eventTypeId === "1945081") return "voice60";
+export function streamOf(i: CalendarItem): RateKey {
+  if (practiceOf(i) === "kinesiology") return "fnh";
+  if (i.eventTypeId === "5925021") return "lesson45";
+  if (i.eventTypeId === "1945081") return "lesson60";
   const minutes = (itemEnd(i).getTime() - itemStart(i).getTime()) / 60000;
-  return minutes <= 50 ? "voice45" : "voice60";
+  return minutes <= 35 ? "lesson30" : minutes <= 50 ? "lesson45" : "lesson60";
 }
 
 export const itemValue = (i: CalendarItem, s: PlanningSettings) =>
@@ -170,12 +171,12 @@ export function summarisePlanning(items: CalendarItem[], planRows: PlanRow[], s:
     const at = planDate(r);
     if (planKind(r) !== "backing" || !at || at < since || at > now) continue;
     const t = tally.get("backing") || { count: 0, total: 0 };
-    t.count += 1; t.total += r.dollars || s.rates.backing;
+    t.count += 1; t.total += r.dollars;
     tally.set("backing", t);
   }
   const steady = STREAMS.map((st) => {
     const t = tally.get(st.key) || { count: 0, total: 0 };
-    return { ...st, perWeek: t.count / WINDOW_WEEKS, avgPrice: t.count ? t.total / t.count : s.rates[st.key], weekly: t.total / WINDOW_WEEKS };
+    return { ...st, perWeek: t.count / WINDOW_WEEKS, avgPrice: t.count ? t.total / t.count : st.key === "backing" ? 0 : s.rates[st.key], weekly: t.total / WINDOW_WEEKS };
   });
   const steadyWeekly = steady.reduce((a, b) => a + b.weekly, 0);
 

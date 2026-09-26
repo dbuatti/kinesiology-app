@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { loadCalendarItems } from "@/lib/calendarItems";
 import {
   DEFAULT_PLANNING, FORWARD_WEEKS, STREAMS, fetchPlanRows, fetchPlanningSettings, savePlanningSettings,
-  summarisePlanning, type PlanningSettings, type StreamKey,
+  summarisePlanning, type PlanningSettings, type RateKey,
 } from "@/lib/planning";
 
 const money = (n: number) => `$${Math.round(n).toLocaleString("en-AU")}`;
@@ -63,7 +63,7 @@ export function PlanningTool() {
       queryClient.setQueryData(["planning-settings"], { settings: next, local });
     }, 600);
   };
-  const setRate = (key: StreamKey, value: number) => update({ ...settings, rates: { ...settings.rates, [key]: value } });
+  const setRate = (key: RateKey, value: number) => update({ ...settings, rates: { ...settings.rates, [key]: value } });
 
   const view = useMemo(
     () => summarisePlanning(dataQ.data?.items || [], dataQ.data?.plan.rows || [], settings),
@@ -307,9 +307,9 @@ export function PlanningTool() {
             </label>
           </div>
           <div className="space-y-2">
-            <span className="text-sm text-foreground">Prices used when a session has none</span>
+            <span className="text-sm text-foreground">Prices used when a session or lesson has none</span>
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
-              {STREAMS.map((st) => (
+              {STREAMS.filter((st): st is typeof st & { key: RateKey } => st.key !== "backing").map((st) => (
                 <label key={st.key} className="block space-y-1">
                   <span className="text-xs text-muted-foreground">{st.label}</span>
                   <Input type="number" inputMode="numeric" min={0} step={5} value={settings.rates[st.key]}
@@ -317,7 +317,7 @@ export function PlanningTool() {
                 </label>
               ))}
             </div>
-            <p className="text-xs text-muted-foreground">Kinesiology uses each client's own rate where it's set. <Link to="/audit" className="underline underline-offset-2 hover:text-foreground">Per-client rates are in Client audit</Link>.</p>
+            <p className="text-xs text-muted-foreground">Kinesiology uses the price on the session, or the client's own rate. Backing tracks use the price recorded in The Plan. <Link to="/audit" className="underline underline-offset-2 hover:text-foreground">Per-client rates are in Client audit</Link>.</p>
           </div>
         </div>
       </section>

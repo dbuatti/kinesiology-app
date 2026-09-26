@@ -3,9 +3,10 @@ import { BookOpen, Move, ArrowUpDown, RotateCw, Brain, Eye, Link as LinkIcon } f
 import AppLayout from '@/components/crm/AppLayout';
 
 
-const CogsLearningPage = () => {
+// Content only (no AppLayout) — also rendered as a Library pane.
+export function CogsLearningTool() {
   return (
-    <AppLayout>
+    <>
       <div className="container mx-auto p-4 lg:p-8 max-w-4xl space-y-10">
         <div>
 
@@ -191,8 +192,14 @@ const CogsLearningPage = () => {
           <p className="text-xs text-muted-foreground">Based on Anatomy in Motion by Gary Ward · COGS assessment is a preliminary tool, not a diagnostic</p>
         </div>
       </div>
-    </AppLayout>
+    </>
   );
-};
+}
+
+const CogsLearningPage = () => (
+  <AppLayout>
+    <CogsLearningTool />
+  </AppLayout>
+);
 
 export default CogsLearningPage;

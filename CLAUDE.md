@@ -68,10 +68,11 @@ Create dialogs (quick session, book session, book lesson, new client) live in `Q
 
 Several top-level nav items are multi-pane or tabbed hubs that wrap previously separate pages:
 
-- `/library` — `LibraryPage.tsx` (UnifiedEditor two-pane tree: references, worksheets, practice tools). Old worksheet routes redirect to `/library?tab=<id>`.
+- `/library` — `LibraryPage.tsx` (UnifiedEditor two-pane tree): every reference lives here — foundations (PEACE, FN theory, COGS…), worksheets, practice tools, corrections (manual + reference) and print & documents (Print Hub, Practice Notes). Old routes (`/peace-framework`, `/resources/cogs`, `/resources/print`, `/practice/corrections*`, worksheet routes) redirect to `/library?tab=<id>`.
 - `/practice` — `PracticeHubPage.tsx` (UnifiedEditor two-pane: Self Practice, Procedures, Quiz, Quick Calibrate, Corrections). Old `/practice/*` routes redirect to `/practice?tool=<id>`.
 - `/identity` — `IdentityWorkspacePage.tsx` (UnifiedEditor two-pane: Map, Shifting, Alignment, Limiting Beliefs, Fractals). Old `/lab`, `/identity-map`, etc. redirect to `/identity?tool=<id>`.
-- `/money`, `/audit`, `/marketing` — `BusinessPage.tsx` with a `tools` prop narrowing its tabs (Money = Summary + Revenue). `/business`, `/business?tool=<id>` and old `/business/*` routes redirect to these.
+- `/money` — `MoneyPage.tsx`: Overview (earned vs last month, unpaid, still to come, average session, 12-month paid revenue chart by practice, recent payments, top people — all from `loadCalendarItems` and the money rules below) and Planning (`?tool=planning`, the salary simulator via `ClientAuditTool tabs={["salary"]}`).
+- `/audit`, `/marketing` — `BusinessPage.tsx` with a `tools` prop narrowing its tabs. `ClientAuditTool` takes `tabs`/`title`/`subtitle`/`showSummary` props (rates, timetable, salary, suggestions). `/business`, `/business?tool=<id>` and old `/business/*` routes redirect to these (`salary`/`planning` → `/money?tool=planning`).
 - `/inbox`, `/follow-up` — `AssistantPage` with `initialTab`, rendered as focused pages (just that tool, no Assistant header/metrics/tabs). `/assistant` is the full Assistant (chat, follow-up, inbox, launch).
 - `/clients` — `ClientsPage.tsx`, labelled **People** (internal Tabs: People, Clinical oversight). One list of kinesiology clients and voice/piano students, with a practice filter (`?practice=kinesiology|voice|piano`). `/oversight` redirects to `/clients?tool=oversight`.
 - `/sessions` — `ClinicalHubPage.tsx`: real sessions first (new, up next, recent), then a "Practice & reference" section with the sandbox (`/practice/trial/*`, a practice client — nothing saved to a real record) and the corrections manual.
@@ -123,6 +124,7 @@ CSS variables are defined in `src/globals.css` and wired in `tailwind.config.ts`
 | Chart indigo accent | `hsl(var(--chart-primary))` — use in Recharts `stroke`/`stopColor` |
 | Chart rose accent | `hsl(var(--chart-destructive))` — use in Recharts `stroke`/`stopColor` |
 | Chart emerald accent | `hsl(var(--chart-emerald))` |
+| Chart piano (amber) accent | `hsl(var(--chart-piano))` — validated for both modes; kinesiology = chart-primary, voice = chart-destructive |
 | Google Docs-style page bg | `hsl(var(--docs-surface))` |
 | Google Docs-style toolbar | `hsl(var(--docs-toolbar))` |
 

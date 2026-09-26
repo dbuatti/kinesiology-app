@@ -181,7 +181,7 @@ const CogsAssessment = ({
                   <span className="text-sm font-semibold text-foreground">COGS Principle</span>
                 </div>
                 <Button variant="ghost" size="sm" asChild className="h-7 text-xs rounded-lg">
-                  <Link to="/resources/cogs" target="_blank">
+                  <Link to="/library?tab=cogs" target="_blank">
                     <BookOpen size={13} className="mr-1" /> Learn COGS
                   </Link>
                 </Button>

@@ -18,9 +18,10 @@ import AppLayout from "@/components/crm/AppLayout";
 
 import { cn } from "@/lib/utils";
 
-const PEACEFrameworkPage = () => {
+// Content only (no AppLayout) — also rendered as a Library pane.
+export function PEACEFrameworkTool() {
  return (
- <AppLayout>
+ <>
   <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
 
 
@@ -183,8 +184,14 @@ const PEACEFrameworkPage = () => {
  </div>
  </div>
  </div>
- </AppLayout>
+ </>
  );
-};
+}
+
+const PEACEFrameworkPage = () => (
+  <AppLayout>
+    <PEACEFrameworkTool />
+  </AppLayout>
+);
 
 export default PEACEFrameworkPage;

@@ -49,15 +49,11 @@ const MorningProgramPage = lazy(() => import("./pages/MorningProgramPage"));
 // --- Reference Pages ---
 const LibraryPage = lazy(() => import("./pages/LibraryPage"));
 const WorksheetsPage = lazy(() => import("./pages/WorksheetsPage"));
-const PEACEFrameworkPage = lazy(() => import("./pages/PEACEFrameworkPage"));
-const CogsLearningPage = lazy(() => import("./pages/CogsLearningPage"));
-const CorrectionsManualPage = lazy(() => import("./pages/CorrectionsManualPage"));
 const ClinicalHubPage = lazy(() => import("./pages/ClinicalHubPage"));
 const SandboxV2Page = lazy(() => import("./pages/SandboxV2Page"));
 const PracticeNotes = lazy(() => import("./pages/PracticeNotes"));
 
 // --- Print & Reference Sheets ---
-const PrintHubPage = lazy(() => import("./pages/PrintHubPage"));
 const CranialNervePrintPage = lazy(() => import("./pages/CranialNervePrintPage"));
 const CranialNerveWorksheetPage = lazy(() => import("./pages/CranialNerveWorksheetPage"));
 const PrimitiveReflexWorksheetPage = lazy(() => import("./pages/PrimitiveReflexWorksheetPage"));
@@ -78,11 +74,12 @@ const UnifiedCalendarPage = lazy(() => import("./pages/UnifiedCalendarPage"));
 
 // --- Business & System ---
 const BusinessPage = lazy(() => import("./pages/BusinessPage"));
+const MoneyPage = lazy(() => import("./pages/MoneyPage"));
 
 // Old /business?tool=<id> links → the Business zone's own destinations.
 const BusinessRedirect = () => {
   const tool = new URLSearchParams(window.location.search).get("tool");
-  const to = tool === "client-audit" ? "/audit" : tool === "marketing" ? "/marketing" : tool === "overview" ? "/money?tool=overview" : "/money";
+  const to = tool === "client-audit" ? "/audit" : tool === "marketing" ? "/marketing" : tool === "salary" || tool === "planning" ? "/money?tool=planning" : "/money";
   return <Navigate to={to} replace />;
 };
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
@@ -164,8 +161,9 @@ const AppRoutes = () => {
         <Route path="/resources/heart-wall/print" element={session ? <HeartWallPrintPage /> : <Navigate to="/login" replace />} />
         <Route path="/resources/brain-zones/print" element={session ? <BrainZonePrintPage /> : <Navigate to="/login" replace />} />
         <Route path="/resources/joint-actions/print" element={session ? <JointActionPrintPage /> : <Navigate to="/login" replace />} />
-        <Route path="/resources/print" element={session ? <PrintHubPage /> : <Navigate to="/login" replace />} />
-        <Route path="/practice/corrections-manual" element={session ? <CorrectionsManualPage /> : <Navigate to="/login" replace />} />
+        {/* Reference pages now live in the Library (Phase 4). */}
+        <Route path="/resources/print" element={<Navigate to="/library?tab=print" replace />} />
+        <Route path="/practice/corrections-manual" element={<Navigate to="/library?tab=corrections-manual" replace />} />
         <Route path="/practice/clinical-hub" element={session ? <ClinicalHubPage /> : <Navigate to="/login" replace />} />
         <Route path="/practice/trial/peace" element={session ? <SandboxV2Page /> : <Navigate to="/login" replace />} />
         <Route path="/practice/trial/doc" element={session ? <SandboxV2Page /> : <Navigate to="/login" replace />} />
@@ -215,13 +213,13 @@ const AppRoutes = () => {
           {/* Library — consolidated reference hub */}
           <Route path="/library" element={<LibraryPage />} />
           <Route path="/resources" element={<Navigate to="/library" replace />} />
-          <Route path="/resources/cogs" element={<CogsLearningPage />} />
-          <Route path="/peace-framework" element={<PEACEFrameworkPage />} />
+          <Route path="/resources/cogs" element={<Navigate to="/library?tab=cogs" replace />} />
+          <Route path="/peace-framework" element={<Navigate to="/library?tab=peace" replace />} />
           {/* Practice tools — consolidated into Practice Hub */}
           <Route path="/practice/procedures" element={<Navigate to="/practice?tool=procedures" replace />} />
           <Route path="/practice/quiz" element={<Navigate to="/practice?tool=quiz" replace />} />
           <Route path="/practice/calibrate" element={<Navigate to="/practice?tool=calibrate" replace />} />
-          <Route path="/practice/corrections" element={<Navigate to="/practice?tool=corrections" replace />} />
+          <Route path="/practice/corrections" element={<Navigate to="/library?tab=corrections-reference" replace />} />
 
           {/* Worksheets — consolidated into Library panes */}
           {/* Worksheets — dedicated hub */}
@@ -247,12 +245,12 @@ const AppRoutes = () => {
 
           {/* Business — consolidated hub */}
           {/* Business zone. /business and its old ?tool= deep links redirect to the split destinations. */}
-          <Route path="/money" element={<BusinessPage tools={["dashboard", "overview"]} />} />
+          <Route path="/money" element={<MoneyPage />} />
           <Route path="/audit" element={<BusinessPage tools={["client-audit"]} />} />
           <Route path="/marketing" element={<BusinessPage tools={["marketing"]} />} />
           <Route path="/business" element={<BusinessRedirect />} />
           <Route path="/business/dashboard" element={<Navigate to="/money" replace />} />
-          <Route path="/business/overview" element={<Navigate to="/money?tool=overview" replace />} />
+          <Route path="/business/overview" element={<Navigate to="/money" replace />} />
           <Route path="/business/marketing-engine" element={<Navigate to="/marketing" replace />} />
           <Route path="/business/client-audit" element={<Navigate to="/audit" replace />} />
           <Route path="/business/follow-up" element={<Navigate to="/follow-up" replace />} />

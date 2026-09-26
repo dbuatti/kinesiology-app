@@ -67,6 +67,7 @@
     --chart-emerald: 160 56% 36%;     /* emerald (earnings) */
     --chart-purple: 266 48% 54%;      /* purple (FNH on the public landing page) */
     --chart-amber: 36 86% 52%;        /* amber (at-risk / warning status) */
+    --chart-piano: 36 86% 52%;        /* piano series (validated with indigo/rose, light) */
 
     /* Docs editor surface (Google Docs-style UI) */
     --docs-surface: 240 14% 97.5%;
@@ -110,6 +111,7 @@
     --shadow-color: 240 30% 2%;
 
     --chart-primary: 236 80% 70%;
+    --chart-piano: 34 88% 44%;        /* deeper in dark: validated lightness band vs #18181b */
     --docs-surface: 240 6% 9%;
     --docs-toolbar: 240 5% 13%;
   }

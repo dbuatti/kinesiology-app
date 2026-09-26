@@ -1,11 +1,10 @@
 import { useMemo, useState } from "react";
-import { User, Trophy, Brain, Zap, ShieldCheck } from "lucide-react";
+import { User, Trophy, Brain, Zap } from "lucide-react";
 import UnifiedEditor, { type UnifiedEditorSection } from "@/components/crm/UnifiedEditor";
 import { SelfPracticeTool } from "@/pages/SelfPracticePage";
 import { ProceduresTool } from "@/pages/ProceduresPage";
 import { QuizTool } from "@/pages/QuizPage";
 import { QuickCalibrateTool } from "@/pages/QuickCalibratePage";
-import { CorrectionsReferenceTool } from "@/pages/CorrectionsReferencePage";
 
 interface RawItem { id: string; label: string; icon: React.ElementType; group: string }
 
@@ -14,7 +13,6 @@ const TREE: RawItem[] = [
   { id: "procedures", label: "Procedures & Mastery", icon: Trophy, group: "Mastery" },
   { id: "quiz", label: "Knowledge Quiz", icon: Brain, group: "Mastery" },
   { id: "calibrate", label: "Quick Calibrate", icon: Zap, group: "Mastery" },
-  { id: "corrections", label: "Corrections Reference", icon: ShieldCheck, group: "Reference" },
 ];
 
 const VALID_IDS = new Set(TREE.map((t) => t.id));
@@ -31,7 +29,6 @@ const PracticeHubPage = () => {
       { id: "procedures", label: "Procedures & Mastery", icon: Trophy, group: "Mastery", render: () => <div className="p-5 sm:p-6 lg:p-8"><ProceduresTool /></div> },
       { id: "quiz", label: "Knowledge Quiz", icon: Brain, group: "Mastery", render: () => <QuizTool embedded onExit={() => setSelectedId("self-practice")} /> },
       { id: "calibrate", label: "Quick Calibrate", icon: Zap, group: "Mastery", render: () => <div className="p-5 sm:p-6 lg:p-8"><QuickCalibrateTool /></div> },
-      { id: "corrections", label: "Corrections Reference", icon: ShieldCheck, group: "Reference", render: () => <div className="p-5 sm:p-6 lg:p-8"><CorrectionsReferenceTool /></div> },
     ],
     []
   );

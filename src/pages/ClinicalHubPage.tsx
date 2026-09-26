@@ -263,7 +263,7 @@ const ClinicalHubPage = () => {
                 key={mode.id}
                 onClick={() => {
                   if (mode.id === 'manual') {
-                    navigate('/practice/corrections-manual');
+                    navigate('/library?tab=corrections-manual');
                   } else {
                     navigate(`/practice/trial/${mode.id}`);
                   }

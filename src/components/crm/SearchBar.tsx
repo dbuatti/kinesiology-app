@@ -61,8 +61,8 @@ const NAV_DESTINATIONS: { title: string; path: string; icon: any; section: strin
   { title: "Identity Work", path: "/identity", icon: Brain, section: "Growth", keywords: "beliefs fractals" },
   { title: "Library", path: "/library", icon: BookOpen, section: "Growth", keywords: "muscles reflexes cranial nerves tcm reference" },
   { title: "Worksheets", path: "/worksheets", icon: Layers, section: "Growth" },
-  { title: "PEACE framework", path: "/peace-framework", icon: Activity, section: "Growth", keywords: "preliminary ease align correct embed" },
-  { title: "Print hub", path: "/resources/print", icon: Layers, section: "Growth", keywords: "print sheets pdf" },
+  { title: "PEACE framework", path: "/library?tab=peace", icon: Activity, section: "Growth", keywords: "preliminary ease align correct embed" },
+  { title: "Print hub", path: "/library?tab=print", icon: Layers, section: "Growth", keywords: "print sheets pdf" },
   { title: "Settings", path: "/settings", icon: Settings, section: "System" },
 ];
 
@@ -167,7 +167,7 @@ const SearchBar = ({ compact = false, responsive = false }: { compact?: boolean;
 
       // Pages
       if ("peace framework".includes(query.toLowerCase())) {
-        searchResults.push({ type: "page", id: "peace-framework", title: "The PEACE Framework", subtitle: "Clinical Methodology Guide", path: "/peace-framework", icon: ShieldCheck, color: "text-chart-primary" });
+        searchResults.push({ type: "page", id: "peace-framework", title: "The PEACE Framework", subtitle: "Clinical Methodology Guide", path: "/library?tab=peace", icon: ShieldCheck, color: "text-chart-primary" });
       }
       if ("marketing engine".includes(query.toLowerCase())) {
         searchResults.push({ type: "page", id: "marketing-engine", title: "AI Marketing Engine", subtitle: "Voice to Notion Workflow", path: "/business/marketing-engine", icon: Mic, color: "text-emerald-500" });

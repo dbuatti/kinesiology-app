@@ -87,7 +87,7 @@ const TraumaClearingProtocol = () => {
           <p className="text-lg text-muted-foreground">Identity Shifting Trauma Clearing Process</p>
         </div>
         <Button asChild variant="outline" className="rounded-xl h-12 px-6 font-medium">
-          <Link to="/resources/print">
+          <Link to="/library?tab=print">
             <Printer size={18} className="mr-2" /> Print
           </Link>
         </Button>

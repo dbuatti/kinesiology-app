@@ -22,7 +22,7 @@ const FooterLinks = () => {
             <h4 className="mb-3 text-xs font-medium text-foreground/80">Clinical Assets</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="/resources/print" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/library?tab=print" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">
                   The Print Hub
                 </Link>
               </li>
@@ -43,12 +43,12 @@ const FooterLinks = () => {
                 </a>
               </li>
               <li>
-                <Link to="/peace-framework" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/library?tab=peace" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">
                   The PEACE Method
                 </Link>
               </li>
               <li>
-                <Link to="/practice/corrections" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">
+                <Link to="/library?tab=corrections-reference" className="text-[13px] text-muted-foreground hover:text-foreground transition-colors">
                   Corrections Reference
                 </Link>
               </li>

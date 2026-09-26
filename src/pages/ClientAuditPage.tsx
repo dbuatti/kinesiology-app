@@ -1,4 +1,5 @@
 
+import { appointmentRowIsPaid } from "@/lib/calendarItems";
 import { useState, useEffect, useMemo, type ElementType } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -158,7 +159,22 @@ const STATIC_STRATEGIES = [
   }
 ];
 
-export function ClientAuditTool() {
+const AUDIT_TABS = [
+  { id: "rates", label: "Rates" },
+  { id: "timetable", label: "Timetable" },
+  { id: "salary", label: "Salary Sim" },
+  { id: "suggestions", label: "AI Roadmap" },
+];
+
+// `tabs` picks which sections to show: Client audit (/audit) is the per-client
+// work (rates & recency, preferred times, AI roadmap); Money → Planning shows
+// just the salary simulator. (Its old Financials tab is now the Money overview.)
+export function ClientAuditTool({
+  tabs = ["rates", "timetable", "suggestions"],
+  title = "Client audit",
+  subtitle = "Rates and recency per client, preferred times, and AI pricing suggestions.",
+  showSummary = true,
+}: { tabs?: string[]; title?: string; subtitle?: string; showSummary?: boolean } = {}) {
   const [clients, setClients] = useState<ClientWithAppointments[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -167,7 +183,8 @@ export function ClientAuditTool() {
   const [filterRate, setFilterRate] = useState<string>("all");
   const [filterFollowUp, setFilterFollowUp] = useState<string>("all");
   const [compactRows, setCompactRows] = useState(false);
-  const [auditTab, setAuditTab] = useState("rates");
+  const visibleTabs = AUDIT_TABS.filter((t) => tabs.includes(t.id));
+  const [auditTab, setAuditTab] = useState(visibleTabs[0]?.id ?? "rates");
 
   // Collapsible sections state
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({
@@ -809,7 +826,7 @@ export function ClientAuditTool() {
 
   // Total Revenue from paid appointments
   const totalRevenue = clients.reduce((acc, c) => {
-    const paidApps = c.appointments.filter(app => app.is_paid || app.payment_received);
+    const paidApps = c.appointments.filter(app => appointmentRowIsPaid(app));
     const clientPaidSum = paidApps.reduce((sum, app) => sum + (Number(app.price_amount) || 0), 0);
     return acc + clientPaidSum;
   }, 0);
@@ -880,7 +897,7 @@ export function ClientAuditTool() {
     }
     clients.forEach(c => {
       c.appointments.forEach(app => {
-        if (!app.is_paid && !app.payment_received) return;
+        if (!appointmentRowIsPaid(app)) return;
         const appDate = new Date(app.date);
         const key = `${appDate.getFullYear()}-${String(appDate.getMonth() + 1).padStart(2, '0')}`;
         if (months[key]) {
@@ -1209,8 +1226,8 @@ export function ClientAuditTool() {
         {/* No "Back" button — this is a tab within the Business Hub, reached
             via the sidebar nav, not a standalone route. */}
         <PageHeader
-          title="Client Payment & Audit"
-          subtitle="Review client rates, track appointment recency, identify follow-up needs, and perform financial audits with AI-driven pricing suggestions."
+          title={title}
+          subtitle={subtitle}
           icon={FileText}
         />
 
@@ -1222,7 +1239,7 @@ export function ClientAuditTool() {
         ) : (
           <div className="space-y-8">
           {/* ── Persistent summary strip ── */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {showSummary && <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { label: "Active Clients", value: totalActiveClients.toString(), sub: "seen last 90 days", colour: "text-chart-primary", icon: Users, gradient: "from-chart-primary/5 to-transparent" },
               { label: "Avg Session Rate", value: `$${averageSessionRate.toFixed(0)}`, sub: `target $150`, colour: "text-foreground", icon: DollarSign, gradient: "from-muted to-transparent" },
@@ -1244,20 +1261,14 @@ export function ClientAuditTool() {
                 )}
               </div>
             ))}
-          </div>
+          </div>}
 
           <Tabs value={auditTab} onValueChange={setAuditTab} className="space-y-8">
             {/* Plain underline tabs, not the filled-pill grid — same "tacky"
                 pattern already fixed on the Business Hub's own tab row. */}
-            <div className="w-full max-w-3xl border-b border-border">
+            {visibleTabs.length > 1 && <div className="w-full max-w-3xl border-b border-border">
               <div className="flex gap-6">
-                {[
-                  { id: "rates", label: "Rates" },
-                  { id: "timetable", label: "Timetable" },
-                  { id: "salary", label: "Salary Sim" },
-                  { id: "audit", label: "Financials" },
-                  { id: "suggestions", label: "AI Roadmap" },
-                ].map((t) => (
+                {visibleTabs.map((t) => (
                   <button
                     key={t.id}
                     type="button"
@@ -1271,7 +1282,7 @@ export function ClientAuditTool() {
                   </button>
                 ))}
               </div>
-            </div>
+            </div>}
 
             {/* TAB 1: RATES & RECENCY */}
             <TabsContent value="rates" className="space-y-6">
@@ -2304,198 +2315,6 @@ export function ClientAuditTool() {
                   </Card>
                 </div>
               </div>
-            </TabsContent>
-
-            {/* TAB 4: FULL AUDIT & FINANCIALS */}
-            <TabsContent value="audit" className="space-y-8">
-              {/* Key Metrics Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                {/* Metric 1: Total Active Clients */}
-                <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden relative group">
-                  <CardContent className="p-6 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-muted-foreground">Active Clients</span>
-                      <div className="w-8 h-8 rounded-lg bg-muted text-chart-primary flex items-center justify-center">
-                        <Users size={16} />
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className="text-3xl font-semibold text-foreground">{totalActiveClients}</h3>
-                      <p className="text-xs text-muted-foreground font-medium">Seen in the last 90 days</p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Metric 2: Average Session Rate */}
-                <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden relative group">
-                  <CardContent className="p-6 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-muted-foreground">Avg Session Rate</span>
-                      <div className="w-8 h-8 rounded-lg bg-muted text-chart-emerald flex items-center justify-center">
-                        <DollarSign size={16} />
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className="text-3xl font-semibold text-foreground">${averageSessionRate.toFixed(0)}</h3>
-                      <p className="text-xs text-muted-foreground font-medium">Across all clients</p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Metric 3: Total Revenue */}
-                <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden relative group">
-                  <CardContent className="p-6 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-muted-foreground">Total Revenue</span>
-                      <div className="w-8 h-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center">
-                        <TrendingUp size={16} />
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className="text-3xl font-semibold text-foreground">${totalRevenue.toLocaleString()}</h3>
-                      <p className="text-xs text-muted-foreground font-medium">Sum of paid appointments</p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Metric 4: Free Session Ratio */}
-                <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden relative group">
-                  <CardContent className="p-6 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-muted-foreground">Free Session Ratio</span>
-                      <div className="w-8 h-8 rounded-lg bg-muted text-chart-destructive flex items-center justify-center">
-                        <Percent size={16} />
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className={cn("text-3xl font-semibold", freeSessionRatio > 30 ? "text-chart-destructive" : "text-foreground")}>
-                        {freeSessionRatio.toFixed(1)}%
-                      </h3>
-                      <p className="text-xs text-muted-foreground font-medium">{freeSessions} of {totalSessions} sessions unpaid</p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Metric 5: Projected Monthly Revenue */}
-                <Card className="border-none shadow-sm rounded-xl bg-primary text-primary-foreground overflow-hidden relative group">
-                  <CardContent className="p-6 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-muted-foreground/60">Projected Monthly</span>
-                      <div className="w-8 h-8 rounded-lg bg-muted text-foreground flex items-center justify-center">
-                        <Sparkles size={16} />
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className="text-3xl font-semibold">${Math.round(projectedMonthlyRevenue).toLocaleString()}</h3>
-                      <p className="text-xs text-muted-foreground/60 font-medium">Based on standard rates</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Revenue Over Time Chart */}
-              <Card className="border border-border shadow-sm rounded-xl bg-card overflow-hidden">
-                <CardHeader className="p-8 pb-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
-                        <TrendingUp className="text-chart-primary" size={20} />
-                        Revenue Over Time
-                      </CardTitle>
-                      <CardDescription className="text-sm text-muted-foreground font-medium mt-1">
-                        Paid appointment revenue for the last 6 months.
-                      </CardDescription>
-                    </div>
-                    <div className="flex items-center gap-4 text-right">
-                      <div>
-                        <p className="text-xs font-medium text-muted-foreground">Total (6mo)</p>
-                        <p className="text-lg font-semibold text-foreground">${monthlyRevenueData.reduce((s, m) => s + m.revenue, 0).toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-medium text-muted-foreground">Avg / Month</p>
-                        <p className="text-lg font-semibold text-chart-primary">${Math.round(monthlyRevenueData.reduce((s, m) => s + m.revenue, 0) / Math.max(monthlyRevenueData.length, 1)).toLocaleString()}</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-8 pt-0">
-                  <div className="flex items-end justify-between gap-4 pt-6" style={{ height: 200 }}>
-                    {monthlyRevenueData.map((month) => {
-                      const pct = month.revenue / maxMonthlyRevenue;
-                      return (
-                        <div key={month.label} className="flex-1 flex flex-col items-center justify-end h-full space-y-2 group relative">
-                          <div className="absolute bottom-full mb-2 bg-card text-foreground text-[10px] font-medium px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap border border-border shadow-sm">
-                            ${month.revenue.toLocaleString()} · {month.sessions} session{month.sessions !== 1 ? 's' : ''}
-                          </div>
-                          <div
-                            className="w-full max-w-[48px] rounded-lg bg-gradient-to-t from-chart-primary/80 to-chart-primary/30 transition-all duration-500 group-hover:brightness-110"
-                            style={{ height: `${Math.max(pct * 160, 6)}px` }}
-                          />
-                          <span className="text-[10px] font-medium text-muted-foreground">{month.label}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Rate Distribution Chart */}
-              <Card className="border border-border shadow-sm rounded-xl bg-card">
-                <CardHeader className="p-8 pb-4">
-                  <CardTitle className="text-xl font-semibold text-foreground">Rate Distribution</CardTitle>
-                  <CardDescription className="text-sm text-muted-foreground font-medium">
-                    Visual breakdown of clients across standard payment tiers.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-8 pt-0">
-                  <div className="space-y-6">
-                    {/* Custom Bar Chart */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 pt-6">
-                      {[
-                        { label: "Free", count: rateDistribution.free, color: "bg-rose-500" },
-                        { label: "$30", count: rateDistribution.r30, color: "bg-amber-500" },
-                        { label: "$50", count: rateDistribution.r50, color: "bg-yellow-500" },
-                        { label: "$70", count: rateDistribution.r70, color: "bg-orange-500" },
-                        { label: "$80", count: rateDistribution.r80, color: "bg-emerald-500" },
-                        { label: "$90", count: rateDistribution.r90, color: "bg-teal-500" },
-                        { label: "$100", count: rateDistribution.r100, color: "bg-primary" },
-                        { label: "$120", count: rateDistribution.r120, color: "bg-indigo-500" },
-                        { label: "$150", count: rateDistribution.r150, color: "bg-purple-500" },
-                        { label: "Custom", count: rateDistribution.custom, color: "bg-pink-500" },
-                      ].map((tier) => {
-                        const percentage = clients.length > 0 ? (tier.count / clients.length) * 100 : 0;
-                        const barHeight = (tier.count / maxDistributionCount) * 150; // max height 150px
-
-                        return (
-                          <div key={tier.label} className="flex flex-col items-center justify-end space-y-3 group">
-                            {/* Bar Container */}
-                            <div className="w-full bg-muted/30 rounded-xl h-[180px] flex items-end p-2 relative overflow-hidden">
-                              {/* Tooltip */}
-                              <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-card text-foreground text-[10px] font-medium px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 whitespace-nowrap">
-                                {tier.count} {tier.count === 1 ? "client" : "clients"} ({percentage.toFixed(1)}%)
-                              </div>
-                              
-                              {/* Actual Bar */}
-                              <div
-                                className={`w-full rounded-xl transition-all duration-500 group-hover:brightness-110 ${tier.color}`}
-                                style={{ height: `${Math.max(barHeight, 8)}px` }}
-                              />
-                            </div>
-                            
-                            {/* Labels */}
-                            <div className="text-center space-y-0.5">
-                              <span className="text-xs font-semibold text-foreground block">{tier.label}</span>
-                              <span className="text-[10px] font-medium text-muted-foreground block">
-                                {tier.count} {tier.count === 1 ? "client" : "clients"}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </TabsContent>
 
             {/* TAB 4: AI SUGGESTIONS */}

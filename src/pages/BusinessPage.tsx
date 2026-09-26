@@ -1,24 +1,20 @@
 import HubTabs from "@/components/shared/HubTabs";
 import { useState } from "react";
-import { TrendingUp, PieChart, Users, Megaphone } from "lucide-react";
+import { Users, Megaphone } from "lucide-react";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { BusinessDashboardTool } from "@/pages/BusinessDashboardPage";
-import { BusinessOverviewTool } from "@/pages/BusinessOverviewPage";
 import { ClientAuditTool } from "@/pages/ClientAuditPage";
 import { MarketingEngineTool } from "@/pages/MarketingEnginePage";
 
 // Follow-up ("who needs attention") lives entirely on /assistant now
 // (NeedsAttentionWidget) — there is no separate Follow-Up tab/tool anymore.
 const TABS = [
-  { id: "dashboard", label: "Summary", icon: TrendingUp },
-  { id: "overview", label: "Revenue", icon: PieChart },
   { id: "client-audit", label: "Audit", icon: Users },
   { id: "marketing", label: "Marketing", icon: Megaphone },
 ];
 
-// `tools` narrows the tab set: /money shows only the money views; Client audit
-// and Marketing are their own Business-zone destinations (/audit, /marketing).
+// Hosts Client audit (/audit) and Marketing (/marketing); `tools` narrows the
+// tab set to one. Money has its own page (src/pages/MoneyPage.tsx).
 const BusinessPage = ({ tools }: { tools?: string[] } = {}) => {
   const tabs = tools ? TABS.filter((t) => tools.includes(t.id)) : TABS;
   const [tab, setTab] = useState(() => {
@@ -38,13 +34,7 @@ const BusinessPage = ({ tools }: { tools?: string[] } = {}) => {
           stacking this wrapper's padding on top of that was pure double
           padding (full-width is the only thing actually needed at this
           level). */}
-      <TabsContent value="dashboard" className="m-0">
-          <div className="w-full"><BusinessDashboardTool /></div>
-        </TabsContent>
-        <TabsContent value="overview" className="m-0">
-          <div className="w-full"><BusinessOverviewTool /></div>
-        </TabsContent>
-        <TabsContent value="client-audit" className="m-0">
+      <TabsContent value="client-audit" className="m-0">
           <div className="w-full"><ClientAuditTool /></div>
         </TabsContent>
         <TabsContent value="marketing" className="m-0">

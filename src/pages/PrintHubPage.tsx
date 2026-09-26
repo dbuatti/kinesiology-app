@@ -1,5 +1,5 @@
 
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { 
  Printer, 
  FileText, 
@@ -14,7 +14,6 @@ import {
  Activity,
  Sparkles,
  CheckCircle2,
- ArrowLeft
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +22,6 @@ import AppLayout from "@/components/crm/AppLayout";
 
 import PageHeader from "@/components/shared/PageHeader";
 import { cn } from "@/lib/utils";
-import FooterLinks from "@/components/crm/FooterLinks";
 
 const PRINTABLES = [
  {
@@ -103,10 +101,10 @@ const PRINTABLES = [
  }
 ];
 
-const PrintHubPage = () => {
- const navigate = useNavigate();
+// Content only (no AppLayout) — also rendered as a Library pane.
+export function PrintHubTool() {
  return (
- <AppLayout>
+ <>
  <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
 
 
@@ -114,11 +112,6 @@ const PrintHubPage = () => {
  title="Clinical Print Hub"
  subtitle="A central repository for all landscape-optimized reference sheets and worksheets."
  icon={Printer}
- actions={
-   <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
-     <ArrowLeft size={14} /> Back
-   </Button>
- }
  />
 
  <div className="space-y-16">
@@ -192,10 +185,15 @@ const PrintHubPage = () => {
  </div>
  </CardContent>
  </Card>
-    <FooterLinks />
   </div>
- </AppLayout>
+ </>
  );
-};
+}
+
+const PrintHubPage = () => (
+  <AppLayout>
+    <PrintHubTool />
+  </AppLayout>
+);
 
 export default PrintHubPage;

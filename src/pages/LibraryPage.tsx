@@ -2,8 +2,8 @@ import { useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import {
   GraduationCap, Trophy, BookOpen, Shield, Wind, Workflow, Dumbbell, Baby, Zap,
-  Brain, ImageIcon, Youtube, Clock, RefreshCw, Layers, Target, Lightbulb,
-  Heart, Calculator, Move, Printer,
+  Brain, ImageIcon, Youtube, Clock, RefreshCw, Layers, Target,
+  Heart, Calculator, Move, Printer, Activity, Eye, BookMarked, ShieldCheck, FileText,
   ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,8 +30,33 @@ import EmotionsProtocolReference from "@/components/crm/EmotionsProtocolReferenc
 import CranialNerveHomeworkTool from "@/components/crm/CranialNerveHomeworkTool";
 import BrainstemBreathingReference from "@/components/crm/BrainstemBreathingReference";
 import SpinalSegmentReference from "@/components/crm/SpinalSegmentReference";
+import CorrectionsManualContent from "@/components/crm/CorrectionsManualContent";
+import { CorrectionsReferenceTool } from "@/pages/CorrectionsReferencePage";
+import { PEACEFrameworkTool } from "@/pages/PEACEFrameworkPage";
+import { CogsLearningTool } from "@/pages/CogsLearningPage";
+import { PrintHubTool } from "@/pages/PrintHubPage";
 
+// The Practice notes document has its own Google-Docs-style full-screen view.
+const PracticeNotesPane = () => (
+  <div className="max-w-xl space-y-4">
+    <p className="text-sm text-muted-foreground">
+      Your long-form clinical practice notes — the PEACE process, clinical hierarchy and more — in a document view with its own outline.
+    </p>
+    <Button asChild className="gap-2">
+      <Link to="/notes-doc"><FileText size={15} /> Open practice notes</Link>
+    </Button>
+  </div>
+);
+
+// Every reference in the app lives here — earlier pages (/peace-framework,
+// /resources/cogs, /resources/print, /practice/corrections-manual) redirect in.
 const REF_COMPONENTS: Record<string, () => ReactNode> = {
+  peace: () => <PEACEFrameworkTool />,
+  cogs: () => <CogsLearningTool />,
+  "corrections-manual": () => <CorrectionsManualContent />,
+  "corrections-reference": () => <CorrectionsReferenceTool />,
+  print: () => <PrintHubTool />,
+  "practice-notes": () => <PracticeNotesPane />,
   "mechano-academy": () => <MechanoMasteryModule />,
   bible: () => <MechanoBible />,
   "heart-wall-bible": () => <HeartWallBible />,
@@ -52,19 +77,21 @@ const REF_COMPONENTS: Record<string, () => ReactNode> = {
   "emotional-theory": () => <EmotionsProtocolReference />,
   "rehab-calc": () => <CranialNerveHomeworkTool />,
   "brainstem-breath": () => <BrainstemBreathingReference />,
-  logic: () => <FnTheory />,
   spinal: () => <SpinalSegmentReference />,
-  postural: () => <FnTheory />,
 };
 
 interface RawItem { id: string; label: string; icon: React.ElementType; group: string }
 
 const TREE: RawItem[] = [
+  { id: "peace", label: "PEACE Framework", icon: Activity, group: "Foundations" },
   { id: "mechano-academy", label: "Mechano Academy", icon: GraduationCap, group: "Foundations" },
   { id: "bible", label: "Mechano Bible", icon: Trophy, group: "Foundations" },
   { id: "heart-wall-bible", label: "Heart Wall Bible", icon: Shield, group: "Foundations" },
   { id: "trauma-clearing", label: "Trauma Clearing", icon: Wind, group: "Foundations" },
   { id: "theory", label: "FN Theory", icon: Workflow, group: "Foundations" },
+  { id: "cogs", label: "COGS", icon: Eye, group: "Foundations" },
+  { id: "corrections-manual", label: "Corrections Manual", icon: BookMarked, group: "Corrections" },
+  { id: "corrections-reference", label: "Corrections Reference", icon: ShieldCheck, group: "Corrections" },
   { id: "muscles", label: "Muscle Reference", icon: Dumbbell, group: "Clinical Reference" },
   { id: "primitive", label: "Primitive Reflexes", icon: Baby, group: "Clinical Reference" },
   { id: "cranial", label: "Cranial Nerves", icon: Zap, group: "Clinical Reference" },
@@ -80,10 +107,14 @@ const TREE: RawItem[] = [
   { id: "emotional-theory", label: "Emotional Theory", icon: Heart, group: "Practice Tools" },
   { id: "rehab-calc", label: "Rehab Calc", icon: Calculator, group: "Practice Tools" },
   { id: "brainstem-breath", label: "Brainstem Breath", icon: Wind, group: "Practice Tools" },
-  { id: "logic", label: "Clinical Logic", icon: Lightbulb, group: "Practice Tools" },
   { id: "spinal", label: "Spinal", icon: Move, group: "Practice Tools" },
-  { id: "postural", label: "Postural Reflexes", icon: RefreshCw, group: "Practice Tools" },
+  { id: "print", label: "Print Hub", icon: Printer, group: "Print & documents" },
+  { id: "practice-notes", label: "Practice Notes", icon: FileText, group: "Print & documents" },
 ];
+
+// Retired item ids → where that content lives now. "Clinical Logic" and
+// "Postural Reflexes" only ever re-rendered FN Theory (which covers both).
+const ALIASES: Record<string, string> = { logic: "theory", postural: "theory" };
 
 const VALID_IDS = new Set(TREE.map((t) => t.id));
 
@@ -91,7 +122,8 @@ const LibraryPage = () => {
   const [selectedId, setSelectedId] = useState<string | null>(() => {
     const tab = new URLSearchParams(window.location.search).get("tab");
     if (tab === "worksheets") return "where-your-value-begins";
-    return tab && VALID_IDS.has(tab) ? tab : null;
+    const id = tab ? ALIASES[tab] ?? tab : null;
+    return id && VALID_IDS.has(id) ? id : null;
   });
 
   const sections = useMemo<UnifiedEditorSection[]>(
@@ -128,12 +160,10 @@ const LibraryPage = () => {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h1 className="font-serif text-[28px] font-medium leading-tight tracking-[-0.02em] text-foreground">Library</h1>
-              <p className="mt-1 text-sm text-muted-foreground">Clinical references, worksheets and practice tools — pick one to open it.</p>
+              <p className="mt-1 text-sm text-muted-foreground">Every clinical reference, protocol and printable in one place — pick one to open it.</p>
             </div>
-            <Button asChild variant="outline" size="sm" className="h-9 gap-2 rounded-lg text-[13px]">
-              <Link to="/resources/print">
-                <Printer size={14} /> Print hub
-              </Link>
+            <Button variant="outline" size="sm" className="h-9 gap-2 rounded-lg text-[13px]" onClick={() => setSelectedId("print")}>
+              <Printer size={14} /> Print hub
             </Button>
           </div>
           {Array.from(new Set(sections.map((x) => x.group ?? ""))).map((group) => (

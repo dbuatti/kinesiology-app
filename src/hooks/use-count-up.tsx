@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
 export function useCountUp(target: number, duration = 900): number {
   const [value, setValue] = useState(target);
   const from = useRef(0);
-  const raf = useRef<number>();
+  const raf = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     if (!Number.isFinite(target)) return;

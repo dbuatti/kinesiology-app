@@ -57,7 +57,7 @@ const InnerAwarenessWorksheet = ({ submissionId, onComplete, onBack }) => {
       } else {
         const { data: created } = await supabase
           .from('inner_awareness_submissions')
-          .insert({ user_id: userId, form_data })
+          .insert({ user_id: userId, form_data: formData })
           .select('id')
           .single();
         if (created) setLocalId(created.id);

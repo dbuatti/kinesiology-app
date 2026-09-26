@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { safeParse } from "@/utils/safe-json";
 import { showSuccess } from "@/utils/toast";
 import { PRIMITIVE_REFLEXES, PrimitiveReflex } from "@/data/primitive-reflex-data";
-import { MUSCLE_INFO_DETAILS } from "@/data/muscle-info-data";
-import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
+import { MUSCLE_INFO_DETAILS, type MuscleInfo } from "@/data/muscle-info-data";
+import { BRAIN_REFLEX_POINTS, type BrainReflexPoint } from "@/data/brain-reflex-data";
 import { AppointmentWithClient } from "@/types/crm";
 import { CATEGORY_LABELS } from "@/components/crm/v2/categoryConstants";
 import { getInhibitedFindings } from "@/components/crm/v2/v2-utils";
@@ -24,8 +24,8 @@ interface RecheckItemData {
   isLateralized: boolean;
   wasPriority: boolean;
   reflex?: PrimitiveReflex;
-  muscleInfo?: { description?: string };
-  brainPoint?: { description?: string };
+  muscleInfo?: MuscleInfo;
+  brainPoint?: BrainReflexPoint;
 }
 
 interface RecheckTabV2Props {
@@ -126,7 +126,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
       } else if (action === 'unsure') {
         await updatePriorityPattern(item.rawCategory, item.name, 'Unsure', item.side);
       }
-      const existingMeta = safeParse(appointment.metadata, {});
+      const existingMeta = safeParse<Record<string, any>>(appointment.metadata, {});
       await saveField('metadata', {
         ...existingMeta,
         recheck_actions: { ...(existingMeta?.recheck_actions || {}), [key]: action },
@@ -252,8 +252,8 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
               {!item.reflex && item.muscleInfo?.description && (
                 <p className="text-xs text-muted-foreground leading-relaxed mb-4">{item.muscleInfo.description}</p>
               )}
-              {!item.reflex && item.brainPoint?.description && (
-                <p className="text-xs text-muted-foreground leading-relaxed mb-4">{item.brainPoint.description}</p>
+              {!item.reflex && item.brainPoint?.clinicalNote && (
+                <p className="text-xs text-muted-foreground leading-relaxed mb-4">{item.brainPoint.clinicalNote}</p>
               )}
 
               {/* Category */}

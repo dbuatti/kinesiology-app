@@ -34,7 +34,7 @@ interface PeaceWizardProps {
   history: any[];
   onUpdate: () => void;
   saveField: (field: string, value: any) => Promise<void>;
-  updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | 'Hypertonic' | 'Unsure' | null, side?: 'L' | 'R') => Promise<void>;
+  updatePriorityPattern: (category: string, itemName: string, status: string | null, side?: 'L' | 'R') => Promise<void>;
   onJumpToPhase?: (index: number) => void;
   onFinalise?: () => void;
 }

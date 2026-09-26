@@ -339,7 +339,6 @@ const VoiceClientsPage = () => {
  title="Voice Clients"
  subtitle="Student engagement audit — grouped by recency and booking status."
  icon={Mic}
-   iconClassName="bg-destructive text-primary-foreground "
   actions={
  <div className="flex gap-2">
  <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
@@ -514,16 +513,14 @@ const VoiceClientsPage = () => {
  Booked
  </Badge>
  )}
-                  {(student.discipline || "voice") && (
-                    <Badge className={cn(
-                      "text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border-none shrink-0",
-                      (student.discipline || "voice") === "piano"
-                        ? "bg-chart-primary/10 text-chart-primary"
-                        : "bg-chart-destructive/10 text-chart-destructive"
-                    )}>
-                      {(student.discipline || "voice") === "piano" ? "Piano" : "Voice"}
-                    </Badge>
-                  )}
+                  <Badge className={cn(
+                    "text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border-none shrink-0",
+                    (student.discipline || "voice") === "piano"
+                      ? "bg-chart-primary/10 text-chart-primary"
+                      : "bg-chart-destructive/10 text-chart-destructive"
+                  )}>
+                    {(student.discipline || "voice") === "piano" ? "Piano" : "Voice"}
+                  </Badge>
                   {student.tags.length > 0 && student.tags.slice(0, 2).map((tag) => (
                       <Badge key={tag} className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-chart-destructive/10 text-chart-destructive border-none shrink-0">
                         {tag}

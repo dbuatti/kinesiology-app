@@ -331,7 +331,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
           </div>
         );
 
-      case 'CORRECT':
+      case 'CORRECT': {
         const stimulusType = STIMULUS_TYPES.find(s => s.id === currentLayer.stimulus);
         return (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -424,6 +424,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
             </div>
           </div>
         );
+      }
 
       case 'REASSESS':
         return (

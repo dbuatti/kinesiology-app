@@ -40,8 +40,15 @@ export default function ClinicalProtocolsPage() {
   const navigate = useNavigate();
   const { appointment, loading, updatePriorityPattern, saveField } = useAppointment(id);
   const [activeTab, setActiveTab] = useState("cranial-nerves");
-  const [integrationNote, setIntegrationNote] = useState(appointment?.integration_note || "");
+  // integration_note isn't on the Appointment type; read it defensively.
+  const savedIntegrationNote = (appointment as { integration_note?: string | null } | null)?.integration_note ?? "";
+  const [integrationNote, setIntegrationNote] = useState(savedIntegrationNote);
   const [savingIntegration, setSavingIntegration] = useState(false);
+
+  // The appointment loads after first render — sync the saved note in once it arrives.
+  useEffect(() => {
+    setIntegrationNote(savedIntegrationNote);
+  }, [appointment?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Global UI Settings
   const [showImages, setShowImages] = useState(() => {

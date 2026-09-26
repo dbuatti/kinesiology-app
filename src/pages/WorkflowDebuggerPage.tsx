@@ -1158,7 +1158,6 @@ const WorkflowDebuggerPage = () => {
           title="Workflow Debugger"
           subtitle="Every booking workflow, email template, edge function, API integration, and client state across FNH and Voice."
           icon={Settings}
-          iconClassName="bg-amber-600"
           actions={
             <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
               <ArrowLeft size={14} /> Back

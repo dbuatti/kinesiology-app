@@ -59,7 +59,7 @@ const BusinessModelWorksheet = ({ submissionId, onComplete }) => {
       } else {
         const { data: created } = await supabase
           .from('business_model_worksheets')
-          .insert({ user_id: userId, form_data })
+          .insert({ user_id: userId, form_data: formData })
           .select('id')
           .single();
         if (created) setLocalId(created.id);

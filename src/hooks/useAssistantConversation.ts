@@ -56,7 +56,9 @@ async function streamedAssistantChat(
 ) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error("Not signed in.");
-  const res = await fetch(`${supabase.supabaseUrl}/functions/v1/assistant-chat`, {
+  // supabaseUrl is `protected` on SupabaseClient; the generated client module doesn't export it.
+  const { supabaseUrl } = supabase as unknown as { supabaseUrl: string };
+  const res = await fetch(`${supabaseUrl}/functions/v1/assistant-chat`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${session.access_token}`,
@@ -89,8 +91,8 @@ async function streamedAssistantChat(
     event = null;
     let data: Record<string, unknown> = {};
     try { data = raw ? JSON.parse(raw) : {}; } catch { data = { raw }; }
-    if (evt === "meta") handlers.onMeta(data?.conversation_id ?? null);
-    else if (evt === "status") handlers.onStatus(data?.text ?? null);
+    if (evt === "meta") handlers.onMeta(typeof data?.conversation_id === "string" ? data.conversation_id : null);
+    else if (evt === "status") handlers.onStatus(typeof data?.text === "string" ? data.text : null);
     else if (evt === "delta") handlers.onDelta(typeof data?.text === "string" ? data.text : "");
     else if (evt === "reset") handlers.onReset();
     else if (evt === "done") handlers.onDone(data);

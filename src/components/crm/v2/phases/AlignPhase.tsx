@@ -70,7 +70,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
   const priorityCount = allFindings.filter(f => f.priorityLevel === 'priority').length;
 
   const stimPriorities = useMemo(() => {
-    const pattern = safeParse(appointment.priority_pattern, {});
+    const pattern = safeParse<Record<string, any>>(appointment.priority_pattern, {});
     return (pattern.priorities || {}) as Record<string, string>;
   }, [appointment.priority_pattern]);
 

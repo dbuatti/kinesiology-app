@@ -59,7 +59,7 @@ const Week3Worksheet = ({ submissionId, onComplete }) => {
       } else {
         const { data: created } = await supabase
           .from('week3_worksheets')
-          .insert({ user_id: userId, form_data })
+          .insert({ user_id: userId, form_data: formData })
           .select('id')
           .single();
         if (created) setLocalId(created.id);

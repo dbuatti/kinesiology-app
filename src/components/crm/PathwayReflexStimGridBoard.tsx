@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { StimXMark } from "./StimXMark";
 import { getMuscleInfo } from "@/data/muscle-info-data";
+import type { CranialNerve } from "@/data/cranial-nerve-data";
 import {
   INTRINSIC_GRID_MUSCLES,
   muscleMidlineKey,
@@ -267,19 +268,7 @@ const NerveBlock = ({
   onToggle,
   query,
 }: {
-  nerve: {
-    id: number;
-    name: string;
-    latinName: string;
-    nuclei: string;
-    reflexPoint: string;
-    isLateralized?: boolean;
-    toneEffect?: string;
-    functions?: string;
-    stimulus?: string;
-    clinicalPearl?: string;
-    color?: string;
-  };
+  nerve: CranialNerve;
   checked: Record<string, boolean>;
   onToggle: (key: string) => void;
   query: string;

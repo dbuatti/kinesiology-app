@@ -140,7 +140,6 @@ Please provide the final output ready to be reviewed.`;
  title="Marketing Engine"
  subtitle="Transform clinical wins and raw thoughts into distribution-ready assets for your Kit newsletter."
  icon={Mic}
- iconClassName="bg-primary"
 
 
  actions={

@@ -513,7 +513,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
       case 'VESTIBULAR_PROCESS':
         return <VestibularProcess onSave={handleSave} onInhibited={handleInhibited} onCancel={goBack} />;
 
-      case 'COMPLETION':
+      case 'COMPLETION': {
         const eyeMatch = EYE_POSITIONS.find(e => correctionSummary.includes(e.label));
         const eyeLabel = eyeMatch?.label ?? "";
         const eyeSub = eyeMatch?.sub ?? "";
@@ -571,6 +571,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
             </div>
           </div>
         );
+      }
 
       default:
         return null;

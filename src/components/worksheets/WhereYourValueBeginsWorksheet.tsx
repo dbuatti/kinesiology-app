@@ -58,7 +58,7 @@ const WhereYourValueBeginsWorksheet = ({ submissionId, onComplete, onBack }) => 
       } else {
         const { data: created } = await supabase
           .from('where_your_value_begins_worksheets')
-          .insert({ user_id: userId, form_data })
+          .insert({ user_id: userId, form_data: formData })
           .select('id')
           .single();
         if (created) setLocalId(created.id);

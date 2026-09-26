@@ -15,7 +15,6 @@ const VoiceNewClientPage = () => {
           title="New Student"
           subtitle="Add a new voice student to the Voice Studio client database."
           icon={Mic}
-          iconClassName="bg-destructive text-primary-foreground"
           actions={
             <Button
               variant="outline"

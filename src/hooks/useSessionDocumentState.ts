@@ -11,7 +11,7 @@ interface UseSessionDocumentStateProps {
   appointment: any;
   onUpdate: () => void;
   saveField: (field: string, value: any) => Promise<void>;
-  updatePriorityPattern: (category: string, itemName: string, status: 'Clear' | 'Inhibited' | null, side?: 'L' | 'R') => Promise<void>;
+  updatePriorityPattern: (category: string, itemName: string, status: string | null, side?: 'L' | 'R') => Promise<void>;
 }
 
 export function useSessionDocumentState({

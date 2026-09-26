@@ -1212,7 +1212,6 @@ export function ClientAuditTool() {
           title="Client Payment & Audit"
           subtitle="Review client rates, track appointment recency, identify follow-up needs, and perform financial audits with AI-driven pricing suggestions."
           icon={FileText}
-          iconClassName="bg-muted"
         />
 
         {loading ? (

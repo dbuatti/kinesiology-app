@@ -114,7 +114,6 @@ const PrintHubPage = () => {
  title="Clinical Print Hub"
  subtitle="A central repository for all landscape-optimized reference sheets and worksheets."
  icon={Printer}
- iconClassName="bg-card"
  actions={
    <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
      <ArrowLeft size={14} /> Back

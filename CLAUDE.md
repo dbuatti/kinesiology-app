@@ -6,12 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 pnpm dev          # start dev server on http://localhost:8080
-pnpm build        # production build (tsc + vite build)
+pnpm build        # production build (vite build only — does NOT typecheck)
+pnpm typecheck    # tsc --noEmit over src; keep this at zero errors
 pnpm lint         # eslint check
 pnpm preview      # preview production build
 ```
 
-There is no test suite.
+There is no test suite. Because `vite build` strips types without checking them, run `pnpm typecheck` before pushing — type errors here have hidden real runtime bugs (undefined variables, dropped props).
 
 ### Edge function deploys
 

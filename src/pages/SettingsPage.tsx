@@ -58,7 +58,6 @@ const SettingsPage = () => {
           title="Settings"
           subtitle="Manage your account, appearance, integrations, and client experience."
           icon={Settings}
-          iconClassName="bg-muted-foreground"
           actions={
             <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
               <ArrowLeft size={14} /> Back

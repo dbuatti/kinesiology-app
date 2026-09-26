@@ -68,16 +68,16 @@ export const buildCheckedMap = (args: {
   );
 
   const pattern = safeParse<Record<string, any>>(priorityPattern, {});
-  const statusOf = (lookup: Record<string, string> | undefined, keys: string[]): string => {
+  const statusOf = (lookup: Record<string, unknown> | undefined, keys: string[]): string => {
     if (!lookup) return "";
     for (const key of keys) {
-      const status = lookup[key] || "";
-      if (status) return status;
+      const status = lookup[key];
+      if (typeof status === "string" && status) return status;
     }
     return "";
   };
 
-  const nervePattern = (pattern.cranialNerves as Record<string, string>) || {};
+  const nervePattern = (pattern.cranialNerves as Record<string, unknown>) || {};
   NERVE_GROUPS.forEach((group) =>
     group.items.forEach((nerve) => {
       const nerveName = `${nerve.name}: ${nerve.latinName}`;
@@ -94,9 +94,9 @@ export const buildCheckedMap = (args: {
   );
 
   // Link primitive reflexes marked "Inhibited" in priority_pattern into the
-    // grid (Quick Assess, RE checkboxes). When a reflex has finer-grained
-    // stim_results, those take precedence so grid-level marks are never expanded.
-    const reflexPattern = (pattern.primitiveReflexes as Record<string, boolean>) || {};
+  // grid (Quick Assess, RE checkboxes). When a reflex has finer-grained
+  // stim_results, those take precedence so grid-level marks are never expanded.
+  const reflexPattern = (pattern.primitiveReflexes as Record<string, unknown>) || {};
   PRIMITIVE_TRACKS.forEach((track) =>
     track.reflexes.forEach((reflex) => {
       const test = reflexTests.find((t) => t.reflex_id === reflex.id);

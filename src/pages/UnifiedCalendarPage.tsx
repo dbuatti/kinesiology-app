@@ -796,7 +796,6 @@ const UnifiedCalendarPage = () => {
  title="Calendar"
  subtitle="Kinesiology appointments and voice lessons at a glance."
   icon={CalendarIcon}
-  iconClassName="bg-gradient-to-br from-amber-500 to-rose-500 text-primary-foreground shadow-lg shadow-amber-500/20"
   actions={
 <div className="flex gap-2 items-center">
   <CalendarReminderPanel />

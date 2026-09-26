@@ -140,7 +140,6 @@ const VoiceDashboardPage = () => {
           title="Voice Studio"
           subtitle="Your studio at a glance — students, lessons, and actions."
           icon={Mic}
-          iconClassName="bg-destructive text-primary-foreground "
           actions={
             <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="rounded-xl text-xs gap-2">
               <ArrowLeft size={14} /> Back

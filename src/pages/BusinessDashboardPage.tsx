@@ -69,20 +69,6 @@ export function BusinessDashboardTool() {
   const isLoading = !voiceData || !appointments || !clients;
   const queryError = voiceErr || apptErr;
 
-  if (queryError) {
-    return (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-          <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
-            <AlertCircle size={28} className="text-destructive" />
-          </div>
-          <p className="text-destructive font-semibold text-sm">Failed to load business dashboard</p>
-          <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="rounded-xl text-xs gap-2">
-            <RefreshCw size={14} /> Retry
-          </Button>
-        </div>
-    );
-  }
-
   const derived = useMemo(() => {
     if (!voiceData || !appointments || !clients) return null;
 
@@ -145,6 +131,20 @@ export function BusinessDashboardTool() {
       clientMap,
     };
   }, [voiceData, appointments, clients, now, todayStr, practitionerEmail]);
+
+  if (queryError) {
+    return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+          <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+            <AlertCircle size={28} className="text-destructive" />
+          </div>
+          <p className="text-destructive font-semibold text-sm">Failed to load business dashboard</p>
+          <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="rounded-xl text-xs gap-2">
+            <RefreshCw size={14} /> Retry
+          </Button>
+        </div>
+    );
+  }
 
   if (isLoading) {
     return (

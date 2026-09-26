@@ -22,6 +22,19 @@ interface RecentSession {
   tag?: string;
 }
 
+// PostgREST types an embedded `clients` relation as an array, but a many-to-one
+// join returns a single object at runtime — accept either shape.
+type AppointmentRow = { id: string; date: string; clients?: { name: string | null } | { name: string | null }[] | null; tag?: string | null };
+const toRecentSession = (a: AppointmentRow): RecentSession => {
+  const client = Array.isArray(a.clients) ? a.clients[0] : a.clients;
+  return {
+    id: a.id,
+    date: a.date,
+    client_name: client?.name || "Unknown",
+    tag: a.tag ?? undefined,
+  };
+};
+
 const ClinicalHubPage = () => {
   const { session } = useAuth();
   const navigate = useNavigate();
@@ -41,12 +54,7 @@ const ClinicalHubPage = () => {
       .limit(10)
       .then(({ data, error }) => {
         if (!error && data) {
-          setRecentSessions(data.map((a: { id: string; date: string; clients?: { name: string | null } | null; tag?: string | null }) => ({
-            id: a.id,
-            date: a.date,
-            client_name: a.clients?.name || "Unknown",
-            tag: a.tag,
-          })));
+          setRecentSessions(data.map(toRecentSession));
         }
         setLoading(false);
       });
@@ -66,12 +74,7 @@ const ClinicalHubPage = () => {
       .limit(12)
       .then(({ data, error }) => {
         if (!error && data) {
-          setUpNext(data.map((a: { id: string; date: string; clients?: { name: string | null } | null; tag?: string | null }) => ({
-            id: a.id,
-            date: a.date,
-            client_name: a.clients?.name || "Unknown",
-            tag: a.tag,
-          })));
+          setUpNext(data.map(toRecentSession));
         }
       });
   }, [session]);
@@ -312,7 +315,7 @@ const ClinicalHubPage = () => {
         </DialogContent>
       </Dialog>
 
-      <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} v2 />
+      <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} />
       <FooterLinks />
     </div>
   );

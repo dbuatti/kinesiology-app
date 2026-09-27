@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
-import { useParams, useSearchParams, Link as RouterLink } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate, Link as RouterLink } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { showError } from "@/utils/toast";
 import { useAssistantConversation } from "@/hooks/useAssistantConversation";
 import { isVoiceStudentId, emailFromVoiceStudentId } from "@/lib/voice-student-id";
+import { personRowId } from "@/lib/people";
 import { fetchNormalizedVoiceBookings } from "@/lib/voiceBookings";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
@@ -21,7 +22,9 @@ interface HubClient {
   name: string;
   email: string | null;
   phone: string | null;
+  /** A student addressed by "voice:<email>" with no record yet. */
   isVoice: boolean;
+  practices: string[];
 }
 
 // The dedicated "everything about this one client" business view — separate
@@ -34,11 +37,13 @@ export default function ClientHubPage() {
   const { id: rawId } = useParams<{ id: string }>();
   const id = rawId ? decodeURIComponent(rawId) : undefined;
   const isVoice = isVoiceStudentId(id || null);
+  const navigate = useNavigate();
   // Deep-link entry point from Follow-up/Needs-attention quick actions, e.g.
   // /clients/<id>/hub?prompt=<text> — same convention AssistantPage already uses.
   const [searchParams] = useSearchParams();
   const initialPrompt = searchParams.get("prompt") || "";
   const [client, setClient] = useState<HubClient | null>(null);
+  const doesLessons = !!client?.email && !!client?.practices.some((p) => p !== "kinesiology");
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"chat" | "email">(searchParams.get("view") === "email" ? "email" : "chat");
   const [mobileShowList, setMobileShowList] = useState(true);
@@ -48,7 +53,11 @@ export default function ClientHubPage() {
     let cancelled = false;
     (async () => {
       if (isVoice) {
+        // Older links address students by email; open their record when they have one.
         const email = emailFromVoiceStudentId(id);
+        const rowId = await personRowId(id, email);
+        if (cancelled) return;
+        if (rowId) { navigate(`/clients/${rowId}/hub${window.location.search}`, { replace: true }); return; }
         // fetchNormalizedVoiceBookings merges Notion-only lessons in too —
         // a raw voice_bookings query here missed anyone whose lessons were
         // only ever logged in Notion (real bug: Bella's Hub page showed her
@@ -57,18 +66,18 @@ export default function ClientHubPage() {
         const allBookings = await fetchNormalizedVoiceBookings();
         const match = allBookings.find((b) => b.studentEmail.toLowerCase() === email.toLowerCase());
         if (cancelled) return;
-        setClient({ id, name: match?.studentName || email, email, phone: null, isVoice: true });
+        setClient({ id, name: match?.studentName || email, email, phone: null, isVoice: true, practices: [match?.discipline || "voice"] });
         setLoading(false);
       } else {
-        const { data, error } = await supabase.from("clients").select("id, name, email, phone").eq("id", id).maybeSingle();
+        const { data, error } = await supabase.from("clients").select("id, name, email, phone, practices").eq("id", id).maybeSingle();
         if (cancelled) return;
         if (error || !data) { showError("Couldn't load this client."); setLoading(false); return; }
-        setClient({ ...data, isVoice: false });
+        setClient({ ...data, practices: data.practices?.length ? data.practices : ["kinesiology"], isVoice: false });
         setLoading(false);
       }
     })();
     return () => { cancelled = true; };
-  }, [id, isVoice]);
+  }, [id, isVoice, navigate]);
 
   const {
     conversations, activeId, messages, isSending, streamingText, statusText, pendingDraft, pendingBooking,
@@ -76,7 +85,9 @@ export default function ClientHubPage() {
     handleDraftSent, handleDraftDiscard, handleBookingConfirmed, handleBookingDiscard, deleteConversation,
   } = useAssistantConversation({
     clientId: isVoice ? null : (id || null),
-    voiceStudentEmail: isVoice && id ? emailFromVoiceStudentId(id) : null,
+    // Someone who does lessons is also found by email (older threads, and the
+    // server's lesson tools); both identifiers for one person (Phase 5).
+    voiceStudentEmail: isVoice && id ? emailFromVoiceStudentId(id) : client && doesLessons ? client.email : null,
     voiceStudentName: client?.name || null,
     filterToClient: true,
   });
@@ -144,7 +155,8 @@ export default function ClientHubPage() {
           title={client.name}
           subtitle={
             <span className="flex items-center gap-1.5">
-              {client.isVoice ? <Mic className="h-3.5 w-3.5 text-chart-destructive" /> : <Brain className="h-3.5 w-3.5 text-chart-purple" />}
+              {client.practices.includes("kinesiology") && <Brain className="h-3.5 w-3.5 text-chart-purple" />}
+              {client.practices.some((p) => p !== "kinesiology") && <Mic className="h-3.5 w-3.5 text-chart-destructive" />}
               {[client.email, client.phone].filter(Boolean).join(" · ") || "No contact details on file"}
             </span>
           }
@@ -153,7 +165,7 @@ export default function ClientHubPage() {
               <Button asChild variant="outline" size="sm" className="h-9 text-xs gap-1.5">
                 <RouterLink to="/assistant"><ArrowLeft className="h-3.5 w-3.5" /> Assistant</RouterLink>
               </Button>
-              {!client.isVoice && (
+              {client.practices.includes("kinesiology") && (
                 <Button asChild variant="outline" size="sm" className="h-9 text-xs gap-1.5">
                   <RouterLink to={`/clients/${client.id}`}><ExternalLink className="h-3.5 w-3.5" /> Clinical Profile</RouterLink>
                 </Button>
@@ -166,6 +178,8 @@ export default function ClientHubPage() {
             clientId={client.id}
             clientName={client.name}
             isVoice={client.isVoice}
+            email={client.email}
+            practices={client.isVoice ? undefined : client.practices}
             onDraftRateEmail={(prompt) => handleSend(prompt)}
           />
         </div>

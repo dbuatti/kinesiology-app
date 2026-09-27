@@ -160,9 +160,9 @@ export function ClientsTool() {
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
       people.push({
         ...c,
-        // Voice-only people open the voice hub (keyed by email) until the
-        // Assistant moves to client ids; anyone doing kinesiology opens their record.
-        id: !kin && key ? voiceStudentIdFor(key) : c.id,
+        // Everyone with a record is addressed by it; voice-only people open
+        // their hub, anyone doing kinesiology their clinical record.
+        id: c.id,
         kind: kin ? "kinesiology" : "voice",
         practice: kin ? "kinesiology" : practices.includes("voice") ? "voice" : "piano",
         practices,

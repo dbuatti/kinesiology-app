@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { isVoiceStudentId } from "@/lib/voice-student-id";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { showError } from "@/utils/toast";
@@ -150,7 +151,13 @@ export function useAssistantConversation({ clientId, voiceStudentEmail, voiceStu
   const loadConversations = useCallback(async () => {
     let query = supabase.from("assistant_conversations").select("*").is("deleted_at", null).order("updated_at", { ascending: false });
     if (filterToClient) {
-      query = voiceStudentEmail ? query.eq("voice_student_email", voiceStudentEmail) : query.eq("client_id", clientId);
+      // One person may have conversations saved under their client id, their
+      // student email (older voice-only threads), or both.
+      const byId = clientId && !isVoiceStudentId(clientId) ? `client_id.eq.${clientId}` : null;
+      const byEmail = voiceStudentEmail ? `voice_student_email.eq."${voiceStudentEmail.replace(/"/g, "")}"` : null;
+      const filters = [byId, byEmail].filter(Boolean).join(",");
+      if (!filters) { setConversations([]); return; }
+      query = query.or(filters);
     }
     const { data, error } = await query;
     if (error) { showError("Failed to load conversations."); return; }
@@ -266,7 +273,9 @@ export function useAssistantConversation({ clientId, voiceStudentEmail, voiceStu
     try {
       await streamedAssistantChat({
         conversation_id: activeId,
-        client_id: effectiveVoiceEmail ? null : effectiveClientId,
+        // Both when the person does kinesiology and lessons (Phase 5): the
+        // server resolves them to one record either way.
+        client_id: effectiveClientId && !isVoiceStudentId(effectiveClientId) ? effectiveClientId : null,
         voice_student_email: effectiveVoiceEmail || null,
         voice_student_name: effectiveVoiceEmail ? effectiveVoiceName || null : null,
         message: text,

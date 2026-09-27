@@ -7,6 +7,7 @@ import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import ConversationList from "@/components/assistant/ConversationList";
+import { loadPeopleOptions, type PersonOption } from "@/lib/people";
 import ClientPicker from "@/components/assistant/ClientPicker";
 import { voiceStudentIdFor, emailFromVoiceStudentId, isVoiceStudentId } from "@/lib/voice-student-id";
 import MessageList from "@/components/assistant/MessageList";
@@ -43,6 +44,8 @@ export default function AssistantPage({ initialTab }: { initialTab?: AssistantTa
 
   const [activeTab, setActiveTab] = useState<AssistantTab>(initialTab ?? (viewParam === "inbox" || viewParam === "followup" ? viewParam : "chat"));
   const [clients, setClients] = useState<ClientOption[]>([]);
+  // Everyone, one entry per person, whatever they do (Phase 5) — the picker's list.
+  const [people, setPeople] = useState<PersonOption[]>([]);
   const [voiceStudents, setVoiceStudents] = useState<VoiceStudentOption[]>([]);
   const [focusedClientId, setFocusedClientId] = useState<string | null>(initialClientId);
   // Mobile shows one pane at a time — the conversation list, or the active chat.
@@ -112,8 +115,20 @@ export default function AssistantPage({ initialTab }: { initialTab?: AssistantTa
     };
   }, []);
 
-  // Voice students use a "voice:<email>" pseudo-id (see ClientPicker) since they
-  // aren't rows in `clients` — resolve it back to the real student wherever focus matters.
+  // Older links and conversations address voice students as "voice:<email>";
+  // once People has loaded, that resolves to their record.
+  useEffect(() => {
+    if (!focusedClientId || !isVoiceStudentId(focusedClientId) || people.length === 0) return;
+    const email = emailFromVoiceStudentId(focusedClientId).toLowerCase();
+    const match = people.find((p) => (p.email || "").toLowerCase() === email);
+    if (match) setFocusedClientId(match.id);
+  }, [focusedClientId, people]);
+
+  const focusedPerson = focusedClientId && !isVoiceStudentId(focusedClientId)
+    ? people.find((p) => p.id === focusedClientId) || null
+    : null;
+  const personDoesLessons = !!focusedPerson?.email && focusedPerson.practices.some((x) => x !== "kinesiology");
+  // A student who booked but has no record yet (rare since the People backfill).
   const focusedVoiceStudent = focusedClientId && isVoiceStudentId(focusedClientId)
     ? voiceStudents.find((s) => s.email.toLowerCase() === emailFromVoiceStudentId(focusedClientId).toLowerCase()) || null
     : null;
@@ -123,9 +138,9 @@ export default function AssistantPage({ initialTab }: { initialTab?: AssistantTa
     loadConversations, selectConversation: selectConversationBase, startNewChat: startNewChatBase, handleSend,
     handleDraftSent, handleDraftDiscard, handleBookingConfirmed, handleBookingDiscard, deleteConversation,
   } = useAssistantConversation({
-    clientId: focusedVoiceStudent ? null : focusedClientId,
-    voiceStudentEmail: focusedVoiceStudent?.email || null,
-    voiceStudentName: focusedVoiceStudent?.name || null,
+    clientId: focusedPerson?.id || null,
+    voiceStudentEmail: personDoesLessons ? focusedPerson!.email : focusedVoiceStudent?.email || null,
+    voiceStudentName: personDoesLessons ? focusedPerson!.name : focusedVoiceStudent?.name || null,
   });
 
   const loadClients = useCallback(async () => {
@@ -147,6 +162,7 @@ export default function AssistantPage({ initialTab }: { initialTab?: AssistantTa
   useEffect(() => {
     loadClients();
     loadVoiceStudents();
+    loadPeopleOptions().then(setPeople);
   }, [loadClients, loadVoiceStudents]);
 
   // Thin wrappers adding this page's own concerns (client focus follows the
@@ -176,12 +192,14 @@ export default function AssistantPage({ initialTab }: { initialTab?: AssistantTa
     }
   };
 
-  const clientNameFor = (clientId: string | null) => clients.find((c) => c.id === clientId)?.name || null;
+  const clientNameFor = (clientId: string | null) => people.find((c) => c.id === clientId)?.name || clients.find((c) => c.id === clientId)?.name || null;
   // Client-specific threads now live on their own Client Hub page (see
   // ClientHubPage.tsx) — showing them here too, mixed in with general
   // EA conversations, was a real reported source of confusion.
   const generalConversations = conversations.filter((c) => !c.client_id && !c.voice_student_email);
-  const focusedClient = focusedVoiceStudent
+  const focusedClient = focusedPerson
+    ? { id: focusedPerson.id, name: focusedPerson.name, email: focusedPerson.email }
+    : focusedVoiceStudent
     ? { id: focusedClientId as string, name: focusedVoiceStudent.name, email: focusedVoiceStudent.email }
     : clients.find((c) => c.id === focusedClientId) || null;
 
@@ -200,7 +218,7 @@ export default function AssistantPage({ initialTab }: { initialTab?: AssistantTa
     return (
       <AppLayout variant="wide" className="min-h-0">
         {initialTab === "inbox" ? (
-          <CommsInbox clients={clients} voiceStudents={voiceStudents} asPage />
+          <CommsInbox clients={clients} voiceStudents={voiceStudents} people={people} asPage />
         ) : (
           <>
             <PageHeader
@@ -241,7 +259,7 @@ export default function AssistantPage({ initialTab }: { initialTab?: AssistantTa
                   {metricsCollapsed ? "Show metrics" : "Hide metrics"}
                 </Button>
               )}
-              <ClientPicker clients={clients} voiceStudents={voiceStudents} value={focusedClientId} onChange={setFocusedClientId} />
+              <ClientPicker people={people} voiceStudents={voiceStudents} value={focusedClientId} onChange={setFocusedClientId} />
             </div>
           }
         />
@@ -361,6 +379,8 @@ export default function AssistantPage({ initialTab }: { initialTab?: AssistantTa
                     clientId={focusedClient.id}
                     clientName={focusedClient.name}
                     isVoice={!!focusedVoiceStudent}
+                    email={focusedClient.email}
+                    practices={focusedPerson?.practices}
                     onDraftRateEmail={(prompt) => handleSend(prompt)}
                   />
                 </div>
@@ -432,6 +452,8 @@ export default function AssistantPage({ initialTab }: { initialTab?: AssistantTa
                   clientId={focusedClient.id}
                   clientName={focusedClient.name}
                   isVoice={!!focusedVoiceStudent}
+                  email={focusedClient.email}
+                  practices={focusedPerson?.practices}
                   onDraftRateEmail={(prompt) => handleSend(prompt)}
                 />
               </aside>
@@ -452,7 +474,7 @@ export default function AssistantPage({ initialTab }: { initialTab?: AssistantTa
         </TabsContent>
 
         <TabsContent value="inbox" className="m-0">
-          <CommsInbox clients={clients} voiceStudents={voiceStudents} />
+          <CommsInbox clients={clients} voiceStudents={voiceStudents} people={people} />
         </TabsContent>
 
         <TabsContent value="launch" className="m-0">

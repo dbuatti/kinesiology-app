@@ -46,3 +46,15 @@ export async function fetchClosedPeople(): Promise<{ ids: Set<string>; emails: S
     emails: new Set((data || []).map((r) => (r.email || "").toLowerCase()).filter(Boolean)),
   };
 }
+
+export interface PersonOption { id: string; name: string; email: string | null; practices: ("kinesiology" | "voice" | "piano")[] }
+
+/** Everyone you work with, one entry per person, for pickers. */
+export async function loadPeopleOptions(): Promise<PersonOption[]> {
+  const { data } = await supabase
+    .from("clients")
+    .select("id, name, email, practices")
+    .or("is_practitioner.eq.false,is_practitioner.is.null")
+    .order("name");
+  return ((data || []) as PersonOption[]).map((p) => ({ ...p, practices: p.practices?.length ? p.practices : ["kinesiology"] }));
+}

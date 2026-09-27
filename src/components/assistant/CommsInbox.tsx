@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import ClientEmailThread from "./ClientEmailThread";
+import type { PersonOption } from "@/lib/people";
 import ClientPicker from "./ClientPicker";
 import { voiceStudentIdFor, isVoiceStudentId, emailFromVoiceStudentId } from "@/lib/voice-student-id";
 import {
@@ -25,6 +26,8 @@ import {
 interface Props {
   clients: { id: string; name: string; email: string | null }[];
   voiceStudents: VoiceStudentOption[];
+  /** Everyone, one entry per person — the compose picker's list (Phase 5). */
+  people?: PersonOption[];
   // Rendered as its own page (/inbox) rather than a tab inside Assistant:
   // page-level title, and no extra padding on top of the layout's own.
   asPage?: boolean;
@@ -99,7 +102,7 @@ function statusLine(p: InboxPerson): { text: string; className: string } {
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
-export default function CommsInbox({ clients, voiceStudents, asPage = false }: Props) {
+export default function CommsInbox({ clients, voiceStudents, people: peopleOptions, asPage = false }: Props) {
   const [inbound, setInbound] = useState<InboundMessage[]>([]);
   const [sent, setSent] = useState<SentMessage[]>([]);
   const [manualSends, setManualSends] = useState<ManualSend[]>([]);
@@ -117,7 +120,7 @@ export default function CommsInbox({ clients, voiceStudents, asPage = false }: P
 
   // Only clients with an email on file can be addressed — the rest would just
   // hit ClientEmailThread's "no email address on file" empty state.
-  const emailClients = clients.filter((c) => c.email);
+  const emailPeople: PersonOption[] = (peopleOptions || clients.map((c) => ({ ...c, practices: ["kinesiology" as const] }))).filter((c) => c.email);
 
   const pickComposeRecipient = (id: string | null) => {
     setComposePickerValue(id);
@@ -128,8 +131,8 @@ export default function CommsInbox({ clients, voiceStudents, asPage = false }: P
       if (!st) return;
       setComposeTarget({ clientId: id, clientEmail: st.email, clientName: st.name });
     } else {
-      const c = clients.find((c) => c.id === id);
-      if (!c) return;
+      const c = emailPeople.find((c) => c.id === id);
+      if (!c?.email) return;
       setComposeTarget({ clientId: c.id, clientEmail: c.email, clientName: c.name });
     }
   };
@@ -365,7 +368,7 @@ export default function CommsInbox({ clients, voiceStudents, asPage = false }: P
               <PenSquare className="h-4 w-4 text-chart-primary shrink-0" />
               <span className="text-sm font-semibold text-foreground whitespace-nowrap">New email</span>
               <ClientPicker
-                clients={emailClients}
+                people={emailPeople}
                 voiceStudents={voiceStudents}
                 value={composePickerValue}
                 onChange={pickComposeRecipient}

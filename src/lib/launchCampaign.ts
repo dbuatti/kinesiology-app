@@ -33,8 +33,8 @@ export const DEFAULT_CAMPAIGN_CONFIG: CampaignConfig = {
 };
 
 export interface CampaignAudienceMember {
-  // Kinesiology: clientId set, voiceStudentEmail null. Voice: the reverse —
-  // mutually exclusive, same convention as assistant_conversations.
+  // Kinesiology sets clientId, voice/piano sets voiceStudentEmail; someone who
+  // does both (Phase 5) is one member with both set.
   clientId: string | null;
   voiceStudentEmail: string | null;
   clientName: string;
@@ -44,6 +44,8 @@ export interface CampaignAudienceMember {
   // Every completed appointment's day-of-week (0-6) + hour (24h, Melbourne) —
   // used to propose a recurring slot within the configured regular days.
   pattern: { day: number; hour: number }[];
+  /** Most recent completed or cancelled session/lesson (ms), to pick the lead history. */
+  lastAt?: number;
 }
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -101,7 +103,7 @@ async function computeKinesiologyAudience(): Promise<CampaignAudienceMember[]> {
     const result = classify(sorted);
     if (!result) continue;
     const pattern = sorted.filter((a) => a.status !== "Cancelled").map((a) => melbourneDayHour(a.date));
-    members.push({ clientId, voiceStudentEmail: null, clientName: name, clientEmail: email, pattern, ...result });
+    members.push({ clientId, voiceStudentEmail: null, clientName: name, clientEmail: email, pattern, lastAt: new Date(sorted[0].date).getTime(), ...result });
   }
   return members;
 }
@@ -132,7 +134,7 @@ async function computeVoiceAudience(): Promise<CampaignAudienceMember[]> {
     const result = classify(sorted);
     if (!result) continue;
     const pattern = sorted.filter((a) => a.status !== "Cancelled").map((a) => melbourneDayHour(a.date));
-    members.push({ clientId: null, voiceStudentEmail: email, clientName: name, clientEmail: email, pattern, ...result });
+    members.push({ clientId: null, voiceStudentEmail: email, clientName: name, clientEmail: email, pattern, lastAt: new Date(sorted[0].date).getTime(), ...result });
   }
   return members;
 }
@@ -143,7 +145,18 @@ async function computeVoiceAudience(): Promise<CampaignAudienceMember[]> {
 // instead of the standing lifecycle taxonomy.
 export async function computeCampaignAudience(): Promise<CampaignAudienceMember[]> {
   const [kinesiology, voice] = await Promise.all([computeKinesiologyAudience(), computeVoiceAudience()]);
-  return [...kinesiology, ...voice];
+  // One entry per person: someone in both lists keeps the segment and slot
+  // pattern of whichever practice they saw you for most recently, with both
+  // identifiers so the drafted message knows the whole relationship.
+  const voiceByEmail = new Map(voice.map((v) => [(v.voiceStudentEmail || "").toLowerCase(), v]));
+  const merged = kinesiology.map((k) => {
+    const v = k.clientEmail ? voiceByEmail.get(k.clientEmail.toLowerCase()) : undefined;
+    if (!v) return k;
+    voiceByEmail.delete(k.clientEmail!.toLowerCase());
+    const lead = (v.lastAt ?? 0) > (k.lastAt ?? 0) ? v : k;
+    return { ...lead, clientId: k.clientId, voiceStudentEmail: v.voiceStudentEmail, clientName: k.clientName, clientEmail: k.clientEmail };
+  });
+  return [...merged, ...voiceByEmail.values()];
 }
 
 // Finds the best day within `regularDays` for this client based on their real

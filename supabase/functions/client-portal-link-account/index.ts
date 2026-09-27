@@ -41,6 +41,24 @@ serve(async (req) => {
       .select("client_id, voice_student_email")
       .eq("auth_user_id", user.id)
       .maybeSingle();
+    if (existing?.client_id) {
+      // Repair: a lesson-only student linked by client_id right after the
+      // Phase 5 backfill would see an empty kinesiology portal — move them
+      // to their lessons.
+      const { data: linked } = await supabase.from("clients").select("practices").eq("id", existing.client_id).maybeSingle();
+      if (linked && !(linked.practices || ["kinesiology"]).includes("kinesiology")) {
+        const { error: fixErr } = await supabase
+          .from("client_portal_accounts")
+          .update({ client_id: null, voice_student_email: email })
+          .eq("auth_user_id", user.id);
+        if (!fixErr) {
+          return new Response(JSON.stringify({ client_id: null, voice_student_email: email }), {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
+    }
     if (existing) {
       return new Response(JSON.stringify({ client_id: existing.client_id, voice_student_email: existing.voice_student_email }), {
         status: 200,
@@ -52,16 +70,20 @@ serve(async (req) => {
     // an email could in principle exist in both if someone does both arms,
     // in which case kinesiology wins (matches the pre-existing precedent of
     // the assistant's own client_id-before-voice_student_email checks).
+    // Since Phase 5 every voice/piano student also has a `clients` row, so a
+    // row alone no longer means kinesiology: only link by client_id when the
+    // person actually does kinesiology; lesson-only students link by email
+    // (their portal shows lessons).
     const { data: client, error: clientErr } = await supabase
       .from("clients")
-      .select("id")
+      .select("id, practices")
       .eq("email", email)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
     if (clientErr) throw clientErr;
 
-    if (client) {
+    if (client && (client.practices || ["kinesiology"]).includes("kinesiology")) {
       const { error: insertErr } = await supabase
         .from("client_portal_accounts")
         .insert({ client_id: client.id, auth_user_id: user.id });
@@ -79,7 +101,8 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
     if (voiceErr) throw voiceErr;
-    if (!voiceRow) {
+    // A lesson-only student with a record (e.g. Notion-only, no Cal.com booking yet) can link too.
+    if (!voiceRow && !client) {
       return new Response(JSON.stringify({ error: "No client or student record found for this email. Contact your practitioner." }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

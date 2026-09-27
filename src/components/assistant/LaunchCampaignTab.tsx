@@ -175,7 +175,8 @@ export default function LaunchCampaignTab() {
       const { data, error } = await supabase.functions.invoke("assistant-chat", {
         body: {
           conversation_id: null,
-          client_id: entry.voice_student_email ? null : entry.client_id,
+          // Both for someone who does both; the Assistant resolves one person.
+          client_id: entry.client_id,
           voice_student_email: entry.voice_student_email,
           voice_student_name: entry.voice_student_name,
           message: `Draft ${template}.`,
@@ -258,7 +259,7 @@ export default function LaunchCampaignTab() {
                 <div key={e.id} className="rounded-xl border border-border p-3 space-y-2">
                   <div className="flex items-center gap-1.5">
                     <Checkbox checked={!e.excluded} onCheckedChange={(v) => updateEntry(e.id, { excluded: !v })} />
-                    {e.voice_student_email ? <Mic className="h-3 w-3 text-chart-destructive shrink-0" /> : <Brain className="h-3 w-3 text-chart-purple shrink-0" />}
+                    {e.client_id && <Brain className="h-3 w-3 text-chart-purple shrink-0" />}{e.voice_student_email && <Mic className="h-3 w-3 text-chart-destructive shrink-0" />}
                     <span className="font-semibold text-foreground text-sm">{e.client_name}</span>
                   </div>
                   {/* Full-width, one per row — not a 2-column grid. On a
@@ -327,7 +328,7 @@ export default function LaunchCampaignTab() {
                       <td className="p-2 font-semibold text-foreground align-top">
                         <div className="flex items-center gap-1.5">
                           <Checkbox checked={!e.excluded} onCheckedChange={(v) => updateEntry(e.id, { excluded: !v })} />
-                          {e.voice_student_email ? <Mic className="h-3 w-3 text-chart-destructive shrink-0" /> : <Brain className="h-3 w-3 text-chart-purple shrink-0" />}
+                          {e.client_id && <Brain className="h-3 w-3 text-chart-purple shrink-0" />}{e.voice_student_email && <Mic className="h-3 w-3 text-chart-destructive shrink-0" />}
                           {e.client_name}
                         </div>
                       </td>

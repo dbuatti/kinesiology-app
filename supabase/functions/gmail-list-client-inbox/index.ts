@@ -15,7 +15,7 @@ const corsHeaders = {
 // Keeps the Gmail search query (and round-trip cost) bounded — a practice with
 // more distinct client emails than this would need pagination, not a bigger cap.
 const MAX_ADDRESSES = 200;
-const MAX_MESSAGES = 60;
+const MAX_MESSAGES = 100;
 const MAX_SENT = 80;
 
 async function getAccessToken(clientId: string, clientSecret: string, refreshToken: string) {
@@ -138,7 +138,11 @@ serve(async (req) => {
     // the whole point is this stays fast enough to run every time the view opens.
     const fromClause = addresses.map((e) => `from:${e}`).join(" OR ");
     const listUrl = new URL("https://gmail.googleapis.com/gmail/v1/users/me/messages");
-    listUrl.searchParams.set("q", `in:inbox newer_than:90d (${fromClause})`);
+    // Not limited to in:inbox. daniele.buatti@gmail.com auto-forwards to
+    // info@ and its own copy leaves the Inbox, so a client replying to the
+    // gmail.com address was never found (seen live: a reply that only ever
+    // showed the practitioner's sent email). Spam/trash stay excluded (API default).
+    listUrl.searchParams.set("q", `newer_than:90d (${fromClause})`);
     listUrl.searchParams.set("maxResults", String(MAX_MESSAGES));
     const listRes = await fetch(listUrl.toString(), { headers: authHeaders });
     const listData = await listRes.json();
@@ -149,7 +153,7 @@ serve(async (req) => {
     // search above never finds them. Pick them up separately and attribute
     // them via Reply-To.
     const portalUrl = new URL("https://gmail.googleapis.com/gmail/v1/users/me/messages");
-    portalUrl.searchParams.set("q", `in:inbox newer_than:90d subject:"Client Portal"`);
+    portalUrl.searchParams.set("q", `newer_than:90d subject:"Client Portal"`);
     portalUrl.searchParams.set("maxResults", "30");
     const portalRes = await fetch(portalUrl.toString(), { headers: authHeaders });
     const portalData = portalRes.ok ? await portalRes.json() : {};

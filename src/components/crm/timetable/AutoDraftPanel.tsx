@@ -704,22 +704,24 @@ export default function AutoDraftPanel({
         continue;
       }
 
-      // Anchor the series AFTER their latest known session (past or already-booked
-      // future) so we don't re-draft weeks they're already covered for.
-      // "covered" band (skip weeks already booked) tracks the cadence, but the
-      // PLACEMENT band is kept tight so a fortnightly session can shuffle to its
-      // home weekday within the same week without ever slipping into the next/prev
-      // week onto the wrong day.
-      const coveredBand = Math.max(3, Math.floor(interval / 2));
-      const placeBand = Math.min(coveredBand, 3);
-      const upcoming = (c.upcomingSessions ?? []).map((d) => d.getTime());
-      const anchor = Math.max(c.lastSessionAt?.getTime() ?? 0, ...(upcoming.length ? upcoming : [0]));
+      // Anchor the series to their NEXT booked session (else their most recent
+      // past one) and count forward by the cadence, so drafts fill the gaps
+      // between existing bookings on the same rhythm (booked 27 Oct fortnightly
+      // → 10 Nov, 24 Nov…). Anchoring on the LATEST booking instead jumped past
+      // every gap and, once that pushed the series beyond the horizon, dropped
+      // to an untargeted draft that ignored the cadence entirely.
+      // The PLACEMENT band is kept tight so a session can shuffle to its home
+      // weekday within the same week without slipping into the next/prev week.
+      const placeBand = 3;
+      const upcoming = (c.upcomingSessions ?? []).map((d) => d.getTime()).filter((u) => !isNaN(u));
+      const bookedWeeks = new Set(upcoming.map((u) => practiceWeekKey(new Date(u))));
+      const anchor = upcoming.length ? Math.min(...upcoming) : c.lastSessionAt?.getTime() ?? 0;
       let t = anchor ? anchor + interval * DAY : nowMs;
       if (t < nowMs) t = nowMs;
       let i = 0;
       while (t <= windowEndMs && i < MAX_INSTANCES) {
-        // Skip any week they already have a real booking in.
-        const covered = upcoming.some((u) => Math.abs(u - t) <= coveredBand * DAY);
+        // Skip a cadence date whose week they're already booked in.
+        const covered = bookedWeeks.has(practiceWeekKey(new Date(t)));
         // Skip weeks with no Cal.com availability at all (don't manufacture an
         // "unplaceable" instance for an empty week).
         const hasSupply = weeksWithSupply.has(Math.floor((t - nowMs) / (7 * DAY)));
@@ -729,7 +731,9 @@ export default function AutoDraftPanel({
         t += interval * DAY;
         i++;
       }
-      if (i === 0) schedulerClients.push({ ...base, id: c.key });
+      // Nothing in range: a single next session — but only for someone with no
+      // bookings. A client booked through the horizon needs no draft at all.
+      if (i === 0 && upcoming.length === 0) schedulerClients.push({ ...base, id: c.key });
     }
     return schedulerClients;
     };

@@ -671,7 +671,9 @@ export function autoDraftScheduleAnchored(input: AutoDraftInput): DraftResult {
     );
     // Weeks this client already occupies, so two instances can't collide in one
     // calendar week (a weekly client should appear once per week, not Mon + Fri).
-    const usedWeeks = new Set<string>();
+    // Seeded with the weeks they're already booked in, so a draft never lands on
+    // top of a real booking even when that booking isn't in takenSlotStarts.
+    const usedWeeks = new Set<string>((rep.upcomingSessions ?? []).map(weekKeyOf));
     for (const inst of instances) {
       const cands = freeSlots.filter((slot) => {
         if (!gridOk(slot, inst)) return false; // this client's own kind + duration grid

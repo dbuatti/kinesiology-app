@@ -10,6 +10,7 @@ import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import ConversationList from "@/components/assistant/ConversationList";
 import MessageList from "@/components/assistant/MessageList";
+import PendingBookingsPanel from "@/components/assistant/PendingBookingsPanel";
 import AssistantInput from "@/components/assistant/AssistantInput";
 import ClientEmailThread from "@/components/assistant/ClientEmailThread";
 import ClientSnapshotPanel from "@/components/assistant/ClientSnapshotPanel";
@@ -80,9 +81,9 @@ export default function ClientHubPage() {
   }, [id, isVoice, navigate]);
 
   const {
-    conversations, activeId, messages, isSending, streamingText, statusText, pendingDraft, pendingBooking,
+    conversations, activeId, messages, isSending, streamingText, statusText, pendingDraft, pendingBookings,
     selectConversation, startNewChat, handleSend,
-    handleDraftSent, handleDraftDiscard, handleBookingConfirmed, handleBookingDiscard, deleteConversation,
+    handleDraftSent, handleDraftDiscard, handleBookingResolved, deleteConversation,
   } = useAssistantConversation({
     clientId: isVoice ? null : (id || null),
     // Someone who does lessons is also found by email (older threads, and the
@@ -222,6 +223,13 @@ export default function ClientHubPage() {
               </div>
             </div>
             <div className="flex min-h-0 flex-1 flex-col w-full max-w-[880px]">
+              {/* This person's pencilled bookings still to confirm. */}
+              <PendingBookingsPanel
+                contained
+                className="mb-3 shrink-0"
+                clientId={isVoice ? null : client.id}
+                email={isVoice && id ? emailFromVoiceStudentId(id) : doesLessons ? client.email : null}
+              />
               {viewMode === "email" ? (
                 <ClientEmailThread clientId={client.id} clientEmail={client.email} clientName={client.name} />
               ) : (
@@ -234,9 +242,8 @@ export default function ClientHubPage() {
                     pendingDraft={pendingDraft}
                     onDraftSent={handleDraftSent}
                     onDraftDiscard={handleDraftDiscard}
-                    pendingBooking={pendingBooking}
-                    onBookingConfirmed={handleBookingConfirmed}
-                    onBookingDiscard={handleBookingDiscard}
+                    pendingBookings={pendingBookings}
+                    onBookingResolved={handleBookingResolved}
                     onSuggestion={handleSend}
                     onRetry={(cid, text) => handleSend(text, cid)}
                   />

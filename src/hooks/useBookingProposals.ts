@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { confirmBooking, dropBooking, PROPOSALS_CHANGED } from "@/lib/booking-proposals";
 
 export type ProposalStatus = "suggested" | "proposed" | "confirmed" | "dropped";
 
@@ -17,6 +18,8 @@ export interface BookingProposal {
   calcom_booking_id: string | null;
   appointment_id: string | null;
   reason: string | null;
+  // Lesson proposals only: voice or piano (supabase_booking_proposals_discipline.sql).
+  discipline?: string | null;
   created_at: string;
   updated_at: string;
   confirmed_at: string | null;
@@ -72,16 +75,18 @@ async function resolveMissingVoiceDetails(
 /**
  * Loads booking proposals in the given [start, end] window and exposes
  * create + confirm + drop actions. Phase 2 is manual: we create directly
- * as 'proposed' (pencil-in), then 'confirm' calls the appropriate cal.com
- * edge function and marks the proposal confirmed.
+ * as 'proposed' (pencil-in), then 'confirm' books it in Cal.com via
+ * `confirmBooking` (src/lib/booking-proposals.ts) and marks it confirmed.
  */
 export function useBookingProposals(startISO: string, endISO: string) {
   const [proposals, setProposals] = useState<BookingProposal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProposals = useCallback(async () => {
-    setLoading(true);
+  // `quiet` refreshes without the loading state (so the Timetable doesn't blank
+  // when a proposal is confirmed somewhere else).
+  const fetchProposals = useCallback(async (quiet = false) => {
+    if (!quiet) setLoading(true);
     setError(null);
     try {
       const { data, error: fetchError } = await supabase
@@ -102,6 +107,10 @@ export function useBookingProposals(startISO: string, endISO: string) {
 
   useEffect(() => {
     fetchProposals();
+    // Confirmed or dropped from the Assistant or the Pending bookings panel.
+    const onChanged = () => fetchProposals(true);
+    window.addEventListener(PROPOSALS_CHANGED, onChanged);
+    return () => window.removeEventListener(PROPOSALS_CHANGED, onChanged);
   }, [fetchProposals]);
 
   const createProposal = useCallback(
@@ -144,44 +153,9 @@ export function useBookingProposals(startISO: string, endISO: string) {
 
   const confirmProposal = useCallback(
     async (proposal: BookingProposal) => {
-      if (proposal.kind === "fnh") {
-        if (!proposal.client_id) throw new Error("Missing client for FNH proposal.");
-
-        const { data, error: invokeError } = await supabase.functions.invoke(
-          "create-calcom-booking",
-          {
-            body: {
-              clientId: proposal.client_id,
-              startTime: proposal.slot_start,
-              eventTypeId: proposal.event_type_id || undefined,
-            },
-          }
-        );
-
-        if (invokeError) throw invokeError;
-        if (!data?.success) throw new Error(data?.error || "Cal.com booking failed.");
-
-        const { data: updated, error: updateError } = await supabase
-          .from("booking_proposals")
-          .update({
-            status: "confirmed",
-            calcom_booking_id: data.uid,
-            confirmed_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", proposal.id)
-          .select()
-          .single();
-
-        if (updateError) throw updateError;
-        setProposals((prev) => prev.map((p) => (p.id === proposal.id ? updated : p)) as BookingProposal[]);
-        return updated as BookingProposal;
-      }
-
-      // voice path
       let studentName = proposal.student_name?.trim() || null;
       let studentEmail = proposal.student_email?.trim() || null;
-      if (!studentName || !studentEmail) {
+      if (proposal.kind === "voice" && (!studentName || !studentEmail)) {
         const resolved = await resolveMissingVoiceDetails(studentName ?? "", studentEmail ?? "");
         studentName = resolved.name;
         studentEmail = resolved.email;
@@ -196,42 +170,25 @@ export function useBookingProposals(startISO: string, endISO: string) {
             .eq("id", proposal.id);
         }
       }
-      if (!studentName || !studentEmail) {
-        throw new Error(
-          "Missing student details for voice proposal — this pencil has no email anywhere in the system, so it can't be booked to Cal.com as-is. Drop it and re-pencil with the student's email."
-        );
-      }
 
-      const { data, error: invokeError } = await supabase.functions.invoke(
-        "voice-create-booking",
-        {
-          body: {
-            studentName,
-            studentEmail,
-            startTime: proposal.slot_start,
-            eventTypeId: proposal.event_type_id || undefined,
-          },
-        }
-      );
+      // Shared with the Assistant's cards and the Pending bookings panel.
+      await confirmBooking({
+        proposalId: proposal.id,
+        kind: proposal.kind,
+        clientId: proposal.client_id,
+        name: studentName || "",
+        email: studentEmail,
+        startISO: proposal.slot_start,
+        eventTypeId: proposal.event_type_id,
+        discipline: proposal.discipline,
+      });
 
-      if (invokeError) throw invokeError;
-      const uid =
-        data?.uid || data?.data?.data?.id || data?.booking?.uid || (typeof data === "string" ? data : null);
-      if (!uid) throw new Error(data?.error || "Voice booking failed (no uid).");
-
-      const { data: updated, error: updateError } = await supabase
+      const { data: updated, error: fetchError } = await supabase
         .from("booking_proposals")
-        .update({
-          status: "confirmed",
-          calcom_booking_id: String(uid),
-          confirmed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
+        .select("*")
         .eq("id", proposal.id)
-        .select()
         .single();
-
-      if (updateError) throw updateError;
+      if (fetchError) throw fetchError;
       setProposals((prev) => prev.map((p) => (p.id === proposal.id ? updated : p)) as BookingProposal[]);
       return updated as BookingProposal;
     },
@@ -239,12 +196,7 @@ export function useBookingProposals(startISO: string, endISO: string) {
   );
 
   const dropProposal = useCallback(async (id: string) => {
-    const { error: updateError } = await supabase
-      .from("booking_proposals")
-      .update({ status: "dropped", updated_at: new Date().toISOString() })
-      .eq("id", id);
-
-    if (updateError) throw updateError;
+    await dropBooking(id);
     setProposals((prev) => prev.filter((p) => p.id !== id));
   }, []);
 

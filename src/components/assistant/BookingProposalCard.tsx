@@ -1,16 +1,9 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { showError, showSuccess } from "@/utils/toast";
 import { PendingBooking } from "@/types/assistant";
-import { CalendarPlus, Check, Loader2, X, Mic, Brain } from "lucide-react";
-
-interface Props {
-  booking: PendingBooking;
-  onConfirmed: () => void;
-  onDiscard: () => void;
-}
+import { confirmBooking, dropBooking } from "@/lib/booking-proposals";
+import { CalendarPlus, Check, Loader2, X, Mic, Music, Brain } from "lucide-react";
 
 function fmtMelbourne(iso: string) {
   const d = new Date(iso);
@@ -20,98 +13,140 @@ function fmtMelbourne(iso: string) {
   return `${date} at ${time}`;
 }
 
-// The only place in the frontend that actually creates a booking — mirrors
-// DraftEmailCard: the model can only propose, this Confirm click is what makes it real.
-export default function BookingProposalCard({ booking, onConfirmed, onDiscard }: Props) {
-  const [isBooking, setIsBooking] = useState(false);
+function sessionLabel(b: PendingBooking) {
+  if (!b.voice_student_email) return "Kinesiology";
+  return (b.discipline || "voice").toLowerCase() === "piano" ? "Piano lesson" : "Voice lesson";
+}
 
-  const isVoice = !!booking.voice_student_email;
+// The model can only propose — this Confirm click is what makes a booking real.
+async function confirmPending(b: PendingBooking) {
+  return confirmBooking({
+    proposalId: b.proposal_id,
+    kind: b.voice_student_email ? "voice" : "fnh",
+    clientId: b.client_id,
+    name: b.client_name,
+    email: b.voice_student_email,
+    startISO: b.start_iso,
+    eventTypeId: b.event_type_id,
+    notes: b.notes,
+    discipline: b.discipline,
+  });
+}
 
-  const handleConfirm = async () => {
-    setIsBooking(true);
+interface Props {
+  bookings: PendingBooking[];
+  /** Called once per card that's confirmed or discarded. */
+  onResolved: (booking: PendingBooking) => void | Promise<void>;
+  /** No border/background of its own — when a panel already provides one. */
+  bare?: boolean;
+}
+
+/** Every booking the assistant pencilled in this reply, each with Confirm, plus Confirm all. */
+export default function BookingProposalCard({ bookings, onResolved, bare }: Props) {
+  const [working, setWorking] = useState<Set<PendingBooking>>(new Set());
+  const [confirmingAll, setConfirmingAll] = useState(false);
+
+  const mark = (b: PendingBooking, on: boolean) =>
+    setWorking((prev) => {
+      const next = new Set(prev);
+      if (on) next.add(b); else next.delete(b);
+      return next;
+    });
+
+  const confirmOne = async (b: PendingBooking, quiet = false) => {
+    mark(b, true);
     try {
-      // Mirrors useBookingProposals.confirmProposal's kind branch exactly — the
-      // Timetable Simulator already confirms voice bookings this way, so this
-      // reuses the same, already-live path rather than inventing a new one.
-      const { data, error } = isVoice
-        ? await supabase.functions.invoke("voice-create-booking", {
-            body: {
-              studentName: booking.client_name,
-              studentEmail: booking.voice_student_email,
-              startTime: booking.start_iso,
-              eventTypeId: booking.event_type_id || undefined,
-              notes: booking.notes || undefined,
-            },
-          })
-        : await supabase.functions.invoke("create-calcom-booking", {
-            body: {
-              clientId: booking.client_id,
-              startTime: booking.start_iso,
-              eventTypeId: booking.event_type_id || undefined,
-              title: `${booking.client_name} - Kinesiology`,
-              notes: booking.notes || undefined,
-            },
-          });
-      if (error || data?.error) throw new Error(data?.error || error?.message || "Booking failed.");
-      const uid = isVoice ? (data?.uid || data?.data?.data?.id || data?.booking?.uid) : data.uid;
-      if (isVoice && !uid) throw new Error("Voice booking failed (no uid).");
-
-      // Mirror useBookingProposals' confirmProposal exactly, so this shows as
-      // confirmed on the Timetable Simulator too, not just in this chat.
-      if (booking.proposal_id) {
-        await supabase.from("booking_proposals").update({
-          status: "confirmed",
-          calcom_booking_id: String(uid),
-          confirmed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }).eq("id", booking.proposal_id);
-      }
-
-      showSuccess(`Booked ${booking.client_name} for ${fmtMelbourne(booking.start_iso)}.`);
-      onConfirmed();
-    } catch (err: any) {
-      showError(err.message || "Failed to create the booking.");
+      const { alreadyBooked } = await confirmPending(b);
+      if (!quiet) showSuccess(alreadyBooked ? `${b.client_name} was already booked for ${fmtMelbourne(b.start_iso)}.` : `Booked ${b.client_name} for ${fmtMelbourne(b.start_iso)}.`);
+      await onResolved(b);
+      return true;
+    } catch (err) {
+      showError(`${fmtMelbourne(b.start_iso)}: ${(err as Error)?.message || "Failed to create the booking."}`);
+      return false;
     } finally {
-      setIsBooking(false);
+      mark(b, false);
     }
   };
 
-  const handleDiscard = async () => {
-    if (booking.proposal_id) {
-      await supabase.from("booking_proposals").update({ status: "dropped", updated_at: new Date().toISOString() }).eq("id", booking.proposal_id);
-    }
-    onDiscard();
+  // One at a time, so Cal.com sees them in order and a failure doesn't hide the rest.
+  const confirmAll = async () => {
+    setConfirmingAll(true);
+    let booked = 0;
+    for (const b of [...bookings]) if (await confirmOne(b, true)) booked += 1;
+    setConfirmingAll(false);
+    const failed = bookings.length - booked;
+    if (booked) showSuccess(`Booked ${booked} session${booked === 1 ? "" : "s"}${failed ? ` — ${failed} still to confirm` : ""}.`);
   };
+
+  const discard = async (b: PendingBooking) => {
+    mark(b, true);
+    try {
+      if (b.proposal_id) await dropBooking(b.proposal_id);
+      await onResolved(b);
+    } catch (err) {
+      showError((err as Error)?.message || "Couldn't discard that booking.");
+    } finally {
+      mark(b, false);
+    }
+  };
+
+  if (!bookings.length) return null;
+  const busy = confirmingAll || working.size > 0;
 
   return (
-    <Card className="border-chart-emerald/40 bg-chart-emerald/5">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-chart-emerald">
-          <CalendarPlus className="h-4 w-4" /> Proposed booking — not confirmed yet
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="rounded-xl bg-background/50 p-3 text-sm">
-          <p className="font-semibold text-foreground flex items-center gap-1.5">
-            {isVoice ? <Mic className="h-3.5 w-3.5 text-chart-destructive" /> : <Brain className="h-3.5 w-3.5 text-chart-purple" />}
-            {booking.client_name}
-          </p>
-          <p className="text-muted-foreground">{fmtMelbourne(booking.start_iso)}</p>
-          {booking.notes && <p className="text-xs text-muted-foreground mt-1">{booking.notes}</p>}
-        </div>
-        {booking.proposal_id && (
-          <p className="text-[10px] text-muted-foreground">Pencilled into the Timetable Simulator too — visible there until confirmed or discarded.</p>
+    <div className={bare ? "space-y-3" : "rounded-xl border border-chart-emerald/40 bg-chart-emerald/5 p-3 sm:p-4 space-y-3"}>
+      <div className={bare && bookings.length < 2 ? "hidden" : "flex flex-wrap items-center justify-between gap-2"}>
+        <p className={bare ? "text-xs text-muted-foreground" : "flex items-center gap-2 text-sm font-semibold text-chart-emerald"}>
+          {!bare && <CalendarPlus className="h-4 w-4" />}
+          {bare
+            ? "Not booked in Cal.com until you confirm."
+            : bookings.length === 1 ? "Proposed booking — not confirmed yet" : `${bookings.length} proposed bookings — not confirmed yet`}
+        </p>
+        {bookings.length > 1 && (
+          <Button size="sm" onClick={confirmAll} disabled={busy} className="bg-chart-emerald hover:bg-chart-emerald/90">
+            {confirmingAll ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
+            Confirm all {bookings.length}
+          </Button>
         )}
-        <div className="flex justify-end gap-2 pt-1">
-          <Button variant="ghost" size="sm" onClick={handleDiscard} disabled={isBooking}>
-            <X className="h-4 w-4 mr-1" /> Discard
-          </Button>
-          <Button size="sm" onClick={handleConfirm} disabled={isBooking} className="bg-chart-emerald hover:bg-chart-emerald/90">
-            {isBooking ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
-            Confirm booking
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      <ul className="divide-y divide-chart-emerald/20">
+        {bookings.map((b) => {
+          const isVoice = !!b.voice_student_email;
+          const isPiano = isVoice && (b.discipline || "").toLowerCase() === "piano";
+          const Icon = !isVoice ? Brain : isPiano ? Music : Mic;
+          const rowBusy = working.has(b);
+          return (
+            <li key={b.proposal_id || `${b.start_iso}-${b.client_name}`} className="flex flex-wrap items-center justify-between gap-2 py-2 first:pt-0 last:pb-0">
+              <div className="min-w-0 text-sm">
+                <p className="font-semibold text-foreground flex items-center gap-1.5">
+                  <Icon className={`h-3.5 w-3.5 ${isVoice ? "text-chart-destructive" : "text-chart-purple"}`} />
+                  {b.client_name}
+                  <span className="text-xs font-normal text-muted-foreground">· {sessionLabel(b)}</span>
+                </p>
+                <p className="text-muted-foreground">{fmtMelbourne(b.start_iso)}</p>
+                {b.notes && <p className="text-xs text-muted-foreground mt-0.5">{b.notes}</p>}
+              </div>
+              <div className="flex gap-1.5">
+                <Button variant="ghost" size="sm" onClick={() => discard(b)} disabled={busy}>
+                  <X className="h-4 w-4 mr-1" /> Discard
+                </Button>
+                <Button size="sm" variant={bookings.length > 1 ? "outline" : "default"} onClick={() => confirmOne(b)} disabled={busy}
+                  className={bookings.length > 1 ? "" : "bg-chart-emerald hover:bg-chart-emerald/90"}>
+                  {rowBusy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
+                  Confirm
+                </Button>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      {!bare && (
+        <p className="text-[11px] text-muted-foreground">
+          Nothing is booked in Cal.com until you confirm. Until then these stay in Pending bookings (top of the Assistant) and on the Timetable.
+        </p>
+      )}
+    </div>
   );
 }

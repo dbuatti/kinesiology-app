@@ -16,7 +16,9 @@ const corsHeaders = {
 };
 
 const GEMINI_MODEL = "gemini-2.5-flash";
-const MAX_TOOL_ROUNDS = 6;
+// Scheduling a run of sessions takes a lookup, a slot check and a proposal per
+// session; 6 rounds ran out partway through when the model proposed one per round.
+const MAX_TOOL_ROUNDS = 10;
 
 // Rounds that actually call out to tools are where chat wait time hides — the
 // model call itself is quick, but each tool round is a full extra interaction.
@@ -32,6 +34,7 @@ const TOOL_STATUS_LABEL: Record<string, string> = {
   get_available_slots: "Checking real availability…",
   get_past_booking_patterns: "Reviewing booking patterns…",
   propose_booking: "Pencilling in the booking…",
+  show_pending_proposals: "Gathering bookings to confirm…",
   update_client_availability: "Saving availability…",
   draft_email_reply: "Drafting your reply…",
   search_inbox: "Searching the inbox…",
@@ -241,8 +244,20 @@ const functionDeclarations = [
         start_iso: { type: "STRING", description: "Exact ISO datetime of the slot, taken verbatim from a prior get_available_slots result." },
         event_type_id: { type: "NUMBER", description: "Cal.com event type id. For a voice student, omit it to auto-default to THEIR session length (preferred_event_type_id from search_voice_client) — never let a voice student fall back to the 60-minute default without checking. Kinesiology omits to the FNH default." },
         notes: { type: "STRING", description: "Optional short note about why this slot / session." },
+        discipline: { type: "STRING", description: "Lesson students only: \"voice\" or \"piano\". Pass lesson_discipline from search_voice_client, or what Daniele asked for if he named one (\"book her a piano lesson\"). If omitted, it is worked out from their lesson history. Never guess piano from the words \"Voice Studio\"." },
       },
       required: ["client_name", "start_iso"],
+    },
+  },
+  {
+    name: "show_pending_proposals",
+    description: "Show pencilled bookings that are still waiting to be confirmed, as cards under your reply with a Confirm all button. Call this when Daniele says \"book them all in\", \"confirm them\", \"lock those in\" or asks what's still pencilled. You cannot confirm or create bookings yourself — this only puts the confirm buttons in front of him. Pass client_id or voice_student_email to show one person's, or neither for everyone's.",
+    parameters: {
+      type: "OBJECT",
+      properties: {
+        client_id: { type: "STRING", description: "Only this kinesiology client's pencilled bookings." },
+        voice_student_email: { type: "STRING", description: "Only this lesson student's pencilled bookings." },
+      },
     },
   },
   {
@@ -388,11 +403,15 @@ async function streamGeminiRound(
   const decoder = new TextDecoder();
   let buffer = "";
   let accText = "";
-  let accFnName: string | null = null;
-  const accArgs: string[] = [];
+  // One entry per function call. Gemini can return several calls in one
+  // response (e.g. four propose_booking calls for a run of fortnightly
+  // lessons); these used to be merged into a single call whose args were the
+  // first well-formed fragment, so only one of them ran — real bug: Anita's
+  // 10 Nov lesson was never pencilled.
+  const accCalls: { name: string; args: string[] }[] = [];
   let finishReason: string | null = null;
 
-  const combineArgs = () => {
+  const combineArgs = (accArgs: string[]) => {
     if (accArgs.length === 0) return {};
     const joined = accArgs.join("");
     try {
@@ -426,10 +445,12 @@ async function streamGeminiRound(
           onDelta(part.text);
         }
         if (part.functionCall) {
-          if (part.functionCall.name) accFnName = part.functionCall.name;
-          if (part.functionCall.args !== undefined) {
-            if (typeof part.functionCall.args === "string") accArgs.push(part.functionCall.args);
-            else if (typeof part.functionCall.args === "object") accArgs.push(JSON.stringify(part.functionCall.args));
+          // A named part starts a new call; a nameless one continues the last.
+          if (part.functionCall.name) accCalls.push({ name: part.functionCall.name, args: [] });
+          const current = accCalls[accCalls.length - 1];
+          if (current && part.functionCall.args !== undefined) {
+            if (typeof part.functionCall.args === "string") current.args.push(part.functionCall.args);
+            else if (typeof part.functionCall.args === "object") current.args.push(JSON.stringify(part.functionCall.args));
           }
         }
       }
@@ -438,7 +459,7 @@ async function streamGeminiRound(
 
   const parts: any[] = [];
   if (accText) parts.push({ text: accText });
-  if (accFnName) parts.push({ functionCall: { name: accFnName, args: combineArgs() } });
+  for (const call of accCalls) parts.push({ functionCall: { name: call.name, args: combineArgs(call.args) } });
   if (parts.length === 0) parts.push({});
   return { candidates: [{ finishReason, content: { parts } }] };
 }
@@ -545,11 +566,15 @@ function contentsToOpenAIMessages(contents: any[], systemInstruction: string) {
 function openAICompatToGeminiShape(data: any) {
   const msg = data?.choices?.[0]?.message;
   if (!msg) return { candidates: [] };
-  const toolCall = msg.tool_calls?.[0];
-  if (toolCall) {
-    let args: any = {};
-    try { args = JSON.parse(toolCall.function?.arguments || "{}"); } catch { /* leave empty on malformed args */ }
-    return { candidates: [{ content: { parts: [{ functionCall: { name: toolCall.function?.name, args } }] } }] };
+  // Every tool call, not just the first — parallel calls are run in order.
+  const toolCalls = (msg.tool_calls || []) as any[];
+  if (toolCalls.length) {
+    const parts = toolCalls.map((toolCall) => {
+      let args: any = {};
+      try { args = JSON.parse(toolCall.function?.arguments || "{}"); } catch { /* leave empty on malformed args */ }
+      return { functionCall: { name: toolCall.function?.name, args } };
+    });
+    return { candidates: [{ content: { parts } }] };
   }
   return { candidates: [{ content: { parts: [{ text: msg.content || "" }] } }] };
 }
@@ -937,6 +962,94 @@ async function runUpdateClientAvailability(supabase: any, userId: string, client
   };
 }
 
+// Told to the model after every proposal so its reply says where to click,
+// instead of a bare "once you confirm them".
+const WHERE_TO_CONFIRM = "Tell Daniele where to confirm: the Confirm button on each card under your reply (or Confirm all), and they stay under Assistant → Pending bookings and on the Timetable until confirmed or dropped. Nothing is booked in Cal.com until he clicks Confirm.";
+
+// Voice or piano for a lesson student. Order: what the model passed (the
+// lesson_discipline search_voice_client showed it, or what Daniele asked), then the student's most recent lesson that records one
+// (voice_bookings.discipline or Notion Lessons "Discipline"), then their People
+// record when it lists only one of voice/piano, else voice. A proposal used to
+// carry no discipline at all, and the model's own "piano" wording never reached
+// the booking — confirm always booked voice.
+async function resolveLessonDiscipline(supabase: any, email: string, historyRows: any[], explicit?: string | null): Promise<{ value: "voice" | "piano"; source: string }> {
+  const norm = (d: unknown) => {
+    const v = String(d || "").toLowerCase().trim();
+    return v === "piano" || v === "voice" ? v : null;
+  };
+  const asked = norm(explicit);
+  if (asked) return { value: asked, source: "as passed" };
+  const emailLower = String(email || "").toLowerCase().trim();
+
+  const { data: booked } = await supabase
+    .from("voice_bookings")
+    .select("discipline, lesson_date")
+    .ilike("student_email", emailLower.replace(/[\\%_]/g, (c: string) => `\\${c}`))
+    .not("discipline", "is", null)
+    .order("lesson_date", { ascending: false })
+    .limit(1);
+  const fromHistory = [
+    ...((booked || []) as any[]),
+    ...historyRows.filter((r: any) => r.student_email === emailLower && norm(r.discipline)),
+  ].sort((a, b) => new Date(b.lesson_date).getTime() - new Date(a.lesson_date).getTime())[0];
+  const historyValue = norm(fromHistory?.discipline);
+  if (historyValue) return { value: historyValue, source: "from their lesson history" };
+
+  const { data: people } = await supabase
+    .from("clients")
+    .select("practices")
+    .ilike("email", emailLower.replace(/[\\%_]/g, (c: string) => `\\${c}`))
+    .limit(2);
+  const lessonKinds = new Set<string>();
+  for (const p of (people || []) as any[]) for (const k of p.practices || []) if (k === "voice" || k === "piano") lessonKinds.add(k);
+  if (lessonKinds.size === 1) return { value: [...lessonKinds][0] as "voice" | "piano", source: "from their People record" };
+
+  return { value: "voice", source: "default — no discipline on record" };
+}
+
+// "Book them all in": gathers the person's (or everyone's) pencilled bookings
+// so the chat shows a card for each plus Confirm all. The model never books —
+// the Cal.com write stays on Daniele's click.
+async function runShowPendingProposals(supabase: any, userId: string, args: any) {
+  let query = supabase
+    .from("booking_proposals")
+    .select("*, clients(name)")
+    .eq("user_id", userId)
+    .eq("status", "proposed")
+    .gte("slot_start", new Date().toISOString())
+    .order("slot_start", { ascending: true })
+    .limit(20);
+  if (args.client_id) query = query.eq("client_id", args.client_id);
+  if (args.voice_student_email) query = query.ilike("student_email", String(args.voice_student_email).trim().replace(/[\\%_]/g, (c: string) => `\\${c}`));
+  const { data, error } = await query;
+  if (error) return { pendingBookings: [], result: { error: `Could not load pending bookings: ${error.message}` } };
+  const rows = (data || []) as any[];
+  const pendingBookings = rows.map((p) => {
+    const client = Array.isArray(p.clients) ? p.clients[0] : p.clients;
+    return {
+      client_id: p.kind === "fnh" ? p.client_id : null,
+      voice_student_email: p.kind === "voice" ? p.student_email : null,
+      client_name: p.student_name || client?.name || "Someone",
+      start_iso: p.slot_start,
+      event_type_id: p.event_type_id,
+      notes: p.reason || null,
+      discipline: p.kind === "voice" ? (p.discipline || null) : null,
+      proposal_id: p.id,
+    };
+  });
+  return {
+    pendingBookings,
+    result: rows.length
+      ? {
+        status: "shown",
+        count: rows.length,
+        bookings: pendingBookings.map((b) => ({ name: b.client_name, start_iso: b.start_iso, kind: b.voice_student_email ? (b.discipline || "voice") : "kinesiology" })),
+        note: "These are now shown as cards under your reply with a Confirm all button. They are NOT booked yet — tell Daniele to press Confirm all (or Confirm on each). Never say they are booked.",
+      }
+      : { status: "none", note: "No pencilled bookings are waiting to be confirmed." },
+  };
+}
+
 async function runProposeBooking(supabase: any, supabaseUrl: string, serviceKey: string, userId: string, args: any) {
   // Writes into the SAME booking_proposals table the Timetable Simulator's
   // fortnight view reads (useBookingProposals hook) — a slot proposed here
@@ -955,10 +1068,12 @@ async function runProposeBooking(supabase: any, supabaseUrl: string, serviceKey:
   // instead of always being +60 minutes.
   let eventTypeId = args.event_type_id ? String(args.event_type_id) : null;
   let durationMin: number | null = null;
+  let discipline: { value: "voice" | "piano"; source: string } | null = null;
   if (isVoice) {
     const prefs = await resolveVoiceSessionPrefs(supabase, supabaseUrl, serviceKey, userId, args.voice_student_email);
     if (!eventTypeId) eventTypeId = prefs?.eventTypeId ? String(prefs.eventTypeId) : "1945081";
     durationMin = prefs?.sessionLengthMin ?? 60;
+    discipline = await resolveLessonDiscipline(supabase, args.voice_student_email, prefs?.allVoiceRows || [], args.discipline);
   }
 
   const startISO = args.start_iso;
@@ -1002,42 +1117,57 @@ async function runProposeBooking(supabase: any, supabaseUrl: string, serviceKey:
     if (isVoice) return p.kind === "voice" && String(p.student_email || "").toLowerCase() === String(args.voice_student_email).toLowerCase().trim();
     return p.kind === "fnh" && p.client_id === args.client_id;
   });
+  if (existing?.status === "confirmed") {
+    return {
+      pendingBooking: null,
+      result: { status: "already_booked", note: "That slot is already confirmed in Cal.com for this person — nothing new to pencil in or confirm." },
+    };
+  }
   if (existing) {
     const label = isVoice && durationMin ? `${durationMin}-minute` : "standard";
     return {
-      pendingBooking: { client_id: isVoice ? null : args.client_id, voice_student_email: isVoice ? args.voice_student_email : null, client_name: args.client_name, start_iso: startISO, event_type_id: eventTypeId, notes: args.notes || null, proposal_id: existing.id },
-      result: { status: "proposed", note: `That exact slot is already pencilled in for this ${label} ${isVoice ? "voice" : "FNH"} session — I reused the existing pencil instead of creating a duplicate. If you want a different time, pick a new slot or drop the existing pencil first.` },
+      pendingBooking: { client_id: isVoice ? null : args.client_id, voice_student_email: isVoice ? args.voice_student_email : null, client_name: args.client_name, start_iso: startISO, event_type_id: eventTypeId, notes: args.notes || null, discipline: discipline?.value ?? null, proposal_id: existing.id },
+      result: { status: "proposed", note: `That exact slot is already pencilled in for this ${label} ${isVoice ? `${discipline?.value || "voice"} lesson` : "FNH session"} — I reused the existing pencil instead of creating a duplicate. If you want a different time, pick a new slot or drop the existing pencil first. ${WHERE_TO_CONFIRM}` },
     };
   }
 
-  const { data, error } = await supabase
+  const row = {
+    user_id: userId,
+    kind: isVoice ? "voice" : "fnh",
+    client_id: isVoice ? null : args.client_id,
+    student_name: args.client_name,
+    student_email: isVoice ? args.voice_student_email : null,
+    event_type_id: eventTypeId,
+    slot_start: startISO,
+    slot_end: endISO,
+    status: "proposed",
+    reason: args.notes || null,
+  };
+  let { data, error } = await supabase
     .from("booking_proposals")
-    .insert({
-      user_id: userId,
-      kind: isVoice ? "voice" : "fnh",
-      client_id: isVoice ? null : args.client_id,
-      student_name: args.client_name,
-      student_email: isVoice ? args.voice_student_email : null,
-      event_type_id: eventTypeId,
-      slot_start: startISO,
-      slot_end: endISO,
-      status: "proposed",
-      reason: args.notes || null,
-    })
+    .insert(discipline ? { ...row, discipline: discipline.value } : row)
     .select("id")
     .single();
+  // Until supabase_booking_proposals_discipline.sql is applied the column
+  // doesn't exist — save the pencil without it rather than losing it.
+  if (error && discipline && /discipline/i.test(error.message || "")) {
+    ({ data, error } = await supabase.from("booking_proposals").insert(row).select("id").single());
+  }
 
   const pendingBooking = {
     client_id: isVoice ? null : args.client_id,
     voice_student_email: isVoice ? args.voice_student_email : null,
     client_name: args.client_name, start_iso: startISO,
     event_type_id: eventTypeId, notes: args.notes || null,
+    discipline: discipline?.value ?? null,
     proposal_id: error ? null : data.id,
   };
+  if (error) console.error("[assistant-chat] PROPOSAL_INSERT_FAILED:", error.message);
   const durationLabel = isVoice && durationMin ? `${durationMin}-minute` : null;
+  const kindLabel = isVoice ? `${discipline?.value || "voice"} lesson (${discipline?.source || "default"})` : "kinesiology session";
   const result = error
-    ? { status: "proposed", note: "Booking proposed for human review (not yet saved to the shared timetable — it will still work, just won't show in the Timetable Simulator until confirmed)." }
-    : { status: "proposed", note: `Booking proposed for human review as a ${durationLabel || "standard"} session. It has not been created yet, and now also appears pencilled-in on the Timetable Simulator.` };
+    ? { status: "proposed", note: `Booking proposed for human review as a ${kindLabel}, but it could not be saved to the pending list (${error.message}) — it can only be confirmed from the card under this reply, so say so.` }
+    : { status: "proposed", discipline: discipline?.value ?? null, note: `Booking proposed for human review as a ${durationLabel || "standard"} ${kindLabel}. It has not been created yet. ${WHERE_TO_CONFIRM}` };
   return { pendingBooking, result };
 }
 
@@ -1468,6 +1598,13 @@ async function runSearchVoiceClient(supabaseUrl: string, serviceKey: string, sup
   // can have student_email NULL in this table, which a direct .ilike() query
   // by email would silently miss entirely.
   const bookings = allVoiceRows.filter((b: any) => b.student_email === studentEmail).slice(0, 20);
+  const notionDiscipline = String(student.discipline || "").toLowerCase();
+  const fromRecords = await resolveLessonDiscipline(supabase, studentEmail, allVoiceRows);
+  // The Notion Voice Clients "Discipline" field is the student's own setting —
+  // it wins over the fallback default, but not over real lesson history.
+  const lessonDiscipline = fromRecords.source.startsWith("default") && (notionDiscipline === "voice" || notionDiscipline === "piano")
+    ? { value: notionDiscipline, source: "from their Voice Clients record" }
+    : fromRecords;
 
   // Same day/time pattern detection used for anchors — a voice student's "usual
   // slot" shouldn't require a separate anchor-mode call to see; it's the same
@@ -1492,6 +1629,10 @@ async function runSearchVoiceClient(supabaseUrl: string, serviceKey: string, sup
 
   return {
     student: { name: student.name, email: student.email, phone: student.phone, discipline: student.discipline, tags: student.tags, notes: student.notes, last_communication: student.lastCommunication, latest_lesson_date: student.latestDate },
+    // Voice or piano, from their actual lessons first — what propose_booking
+    // will record unless Daniele asks for the other.
+    lesson_discipline: lessonDiscipline.value,
+    lesson_discipline_source: lessonDiscipline.source,
     recent_lessons: (bookings || []).map((b: any) => ({ date: b.lesson_date, time: b.lesson_time, cost: b.cost, status: b.status })),
     // This student's session length and the Cal.com event type that maps to it
     // — the fix for Nicole being pencilled as 60-min when she's a 45-min student.
@@ -2102,7 +2243,7 @@ serve(async (req) => {
     const contents = sanitized.map((r) => ({ role: r.role, parts: [{ text: r.content }] }));
     contents.push({ role: "user", parts: [{ text: message }] });
 
-    const systemInstruction = `You are the scheduling assistant inside Daniele's practice CRM, which runs TWO arms he treats as equally important: kinesiology/FNH clinical clients (in the clients table, use get_client_context / get_active_clients / get_revenue_opportunities) and Voice Studio piano/singing lesson students (lesson history is Notion-backed + voice_bookings, use search_voice_client — lessons have flat per-length pricing, not an individual rate). Everyone has one client record now, and some people do both kinesiology and lessons — they are ONE person, never two. get_anchor_candidates and get_available_slots both work identically across both arms already — a voice student is never a second-class case you should give up on or treat as less capable than a kinesiology client. If a tool call for a specific person fails, that means try the OTHER identifier (client_id vs voice_student_email) you may have gotten wrong, or say the lookup failed plainly — never conclude "the system doesn't support voice students" as an excuse, since for context/history/slots it does. Current time: ${melbourneNow()} (Australia/Melbourne).
+    const systemInstruction = `You are the scheduling assistant inside Daniele's practice CRM, which runs TWO arms he treats as equally important: kinesiology/FNH clinical clients (in the clients table, use get_client_context / get_active_clients / get_revenue_opportunities) and voice and piano lesson students — each student does voice OR piano (sometimes both), shown as lesson_discipline by search_voice_client; always call their lessons by that, never assume piano (lesson history is Notion-backed + voice_bookings, use search_voice_client — lessons have flat per-length pricing, not an individual rate). Everyone has one client record now, and some people do both kinesiology and lessons — they are ONE person, never two. get_anchor_candidates and get_available_slots both work identically across both arms already — a voice student is never a second-class case you should give up on or treat as less capable than a kinesiology client. If a tool call for a specific person fails, that means try the OTHER identifier (client_id vs voice_student_email) you may have gotten wrong, or say the lookup failed plainly — never conclude "the system doesn't support voice students" as an excuse, since for context/history/slots it does. Current time: ${melbourneNow()} (Australia/Melbourne).
 Clients communicate messily — vague times ("until 2pm", "health permitting"), same-day cancellations, and ambiguous confirmations ("that's perfect" meaning "yes to the last time you proposed"). Interpret them charitably but flag genuine ambiguity rather than guessing.
 Use the available tools to ground your answers in real data — never invent appointment times, client details, rates, or slot availability.
 ${doesKinesiology && doesLessons
@@ -2117,7 +2258,7 @@ ${doesKinesiology && doesLessons
 You can draft an email for review via draft_email_reply, but you can never send one yourself — always say the draft is ready for review, never that it has been sent. Never invent a recipient address (no "@example.com" placeholders) — always pull the real email from get_client_context, get_anchor_candidates, or search_voice_client first. Every drafted email body must read like Daniele personally typed it: first person singular ("I", never "we" or "our team" — he's one practitioner, not a business writing to a customer), plain conversational language, and absolutely no markdown syntax (no **bold**, no asterisk bullets, no # headings) — Gmail renders the literal asterisks, so markdown emphasis shows up as ugly stray characters in a real inbox. If something needs emphasis, just say it plainly instead. Avoid anything that reads like marketing copy (no "exciting news!", exclamation-heavy hooks, or salesy framing) — these are warm, low-key messages to people he already knows. Critical: after calling draft_email_reply, do NOT repeat the drafted subject/body in your text reply — it already renders as its own editable card with a Send button right above your message, and re-typing the same content is confusing (the practitioner can't tell if your text version or the card is "the real one," and on a small screen the card can get lost under a wall of repeated text). Just briefly confirm it's ready, e.g. "Draft's ready above — edit anything you like, then hit Send when you're happy with it."
 Whenever draft_email_reply is used for anything scheduling-flavoured ("let's find a time", proposing a session, re-engagement outreach that might lead to booking), call get_available_slots FIRST and embed 2-3 concrete suggested times with a one-line reason each in the draft body — never draft a vague "let me know what works for you" when real availability is one tool call away. get_available_slots also auto-widens its search window itself if the immediate range is fully booked, so it will still return real options even when the calendar looks packed short-term.
 Clients also have a self-serve portal at ${SITE_URL}/portal/login (email OTP, no password) where they can view their own upcoming/past sessions, cancel a booking, book a new one, and message Daniele directly. If a client seems unaware of it, or asks how to manage/cancel their own booking, or Daniele wants to point someone there, feel free to mention it and include the link in a drafted email — always as the full URL above, never a bare "/portal/login" (meaningless with no domain in plain email text).
-You can propose an actual booking via propose_booking (kinesiology or voice — same tool, pass client_id or voice_student_email), but you can never create one yourself — it only becomes real when the practitioner clicks Confirm on the proposal card, which creates a real Cal.com booking either way. Always call get_available_slots first and propose a real slot from that result, never a guessed time. When finding a slot for a specific person, always pass client_id (kinesiology) or voice_student_email (voice) to get_available_slots — it returns a ranked "suggested" shortlist (weighted by their availability_notes/booking history, not just chronological order), each with a "reason". Lead with the top suggested slot and its reason ("Tuesday 4pm usually works well for her, and it fits the note about after-work sessions") rather than defaulting to whichever slot happens to be soonest — the earliest slot is very often NOT the one they actually want.
+You can propose an actual booking via propose_booking (kinesiology or voice — same tool, pass client_id or voice_student_email), but you can never create one yourself — it only becomes real when the practitioner clicks Confirm on the proposal card, which creates a real Cal.com booking either way. Every proposal gets its own card under your reply (a run of sessions gets a Confirm all button); pencilled ones also stay under Assistant → Pending bookings and on the Timetable. After proposing, always say exactly that — never just "once you confirm them". When he says "book them all in" or "confirm them", call show_pending_proposals (for the person you are discussing, if any) and tell him to press Confirm all — never claim anything is booked. For a run of sessions (e.g. fortnightly follow-ups), propose every one of them — check each date with get_available_slots — and list which were pencilled and any that were not free. Always call get_available_slots first and propose a real slot from that result, never a guessed time. When finding a slot for a specific person, always pass client_id (kinesiology) or voice_student_email (voice) to get_available_slots — it returns a ranked "suggested" shortlist (weighted by their availability_notes/booking history, not just chronological order), each with a "reason". Lead with the top suggested slot and its reason ("Tuesday 4pm usually works well for her, and it fits the note about after-work sessions") rather than defaulting to whichever slot happens to be soonest — the earliest slot is very often NOT the one they actually want.
 Whenever the practitioner tells you something new about a client's OR voice student's availability (a day/time that works or doesn't), call update_client_availability right away to remember it for next time (client_id for kinesiology, voice_student_email for voice) — don't just acknowledge it in the chat and let it evaporate. Same rule for session length: if they say a student does 45-minute sessions (or any 30/45/60, or mentions which service they should book as), call update_client_availability with session_length_min / event_type_id so future proposals book the RIGHT length — never silently keep proposing the 60-minute default for a student who's really 45 (that exact mistake cost Nicole three 60-min proposals).
 You can search the inbox read-only via search_inbox (Gmail search syntax) to check for replies or past correspondence — you cannot send, modify, or delete anything through it.
 For business questions ("who's active", "who should I raise rates for", "what times are free"), use get_active_clients, get_revenue_opportunities, and get_practice_schedule_overview rather than guessing — they compute real numbers from appointment history.
@@ -2131,7 +2272,18 @@ If Daniele says to skip, move on, or otherwise declines the client currently bei
     // once even when the conversation needs several tool-calling rounds.
     const geminiRetryState: GeminiRetryState = { waited: false };
     let pendingDraft = null;
-    let pendingBooking = null;
+    // Every proposal from this turn, one per slot — not just the last one
+    // (a run of four fortnightly lessons used to leave a card for only the
+    // fourth). Stored as an array in assistant_messages.pending_booking; the
+    // app still reads an older single object.
+    const pendingBookings: any[] = [];
+    const addPendingBookings = (items: any[]) => {
+      for (const b of items) {
+        const dupe = pendingBookings.findIndex((p) => (b.proposal_id && p.proposal_id === b.proposal_id)
+          || (p.start_iso === b.start_iso && (p.client_id || p.voice_student_email) === (b.client_id || b.voice_student_email)));
+        if (dupe >= 0) pendingBookings[dupe] = b; else pendingBookings.push(b);
+      }
+    };
     let finalText = "";
 
     // Persist the user's message BEFORE the model loop runs. Previously both
@@ -2150,7 +2302,7 @@ If Daniele says to skip, move on, or otherwise declines the client currently bei
     //   event: meta   { conversation_id }              — conversation confirmed
     //   event: status { text }                         — a tool round just ran
     //   event: delta  { text }                         — streamed reply text
-    //   event: done   { conversation_id, reply, draft_email, pending_booking }
+    //   event: done   { conversation_id, reply, draft_email, pending_booking (array) }
     //   event: error  { error, quota_exceeded }        — generation failed
     const encoder = new TextEncoder();
     const sse = (event: string, payload: unknown) => encoder.encode(`event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`);
@@ -2167,56 +2319,72 @@ If Daniele says to skip, move on, or otherwise declines the client currently bei
             );
             if (servedBy !== "gemini") console.log(`[assistant-chat] served_by: ${servedBy}`);
             const candidate = resp?.candidates?.[0];
-            const part = candidate?.content?.parts?.[0];
+            const parts: any[] = candidate?.content?.parts || [];
+            const part = parts[0];
             if (!part) {
               console.error("[assistant-chat] EMPTY_MODEL_RESPONSE:", JSON.stringify(candidate?.finishReason || null), "candidates:", resp?.candidates?.length ?? 0);
               finalText = "I couldn't generate a response just then — could you try rephrasing?";
               break;
             }
 
-            if (part.functionCall) {
-              const { name, args } = part.functionCall;
-              let result: any;
-              if (name === "draft_email_reply") {
-                pendingDraft = { to: args.to, subject: stripMarkdown(args.subject), body: stripMarkdown(args.body), client_id: args.client_id || client_id || null, appointment_id: args.appointment_id || null };
-                result = { status: "drafted", note: "Draft created for human review. It has not been sent." };
-              } else if (name === "propose_booking") {
-                const proposed = await runProposeBooking(supabase, SUPABASE_URL, SERVICE_KEY, userId, args);
-                pendingBooking = proposed.pendingBooking;
-                result = proposed.result;
-              } else if (name === "update_client_availability") {
-                result = await runUpdateClientAvailability(supabase, userId, args.client_id, args.voice_student_email, args.availability_notes, args.session_length_min, args.event_type_id);
-              } else if (name === "search_inbox") {
-                result = await runSearchInbox(SUPABASE_URL, SERVICE_KEY, args.query);
-              } else if (name === "get_client_context") {
-                result = await runGetClientContext(supabase, userId, args.client_id);
-              } else if (name === "get_available_slots") {
-                result = await runGetAvailableSlots(supabase, SUPABASE_URL, SERVICE_KEY, userId, args.start, args.end, args.event_type_id, args.client_id, args.voice_student_email);
-              } else if (name === "get_past_booking_patterns") {
-                result = await runGetPastBookingPatterns(supabase, userId, args.client_id);
-              } else if (name === "search_voice_client") {
-                result = await runSearchVoiceClient(SUPABASE_URL, SERVICE_KEY, supabase, userId, args.query);
-              } else if (name === "get_active_clients") {
-                result = await runGetActiveClients(supabase, userId, args.months || 3);
-              } else if (name === "get_revenue_opportunities") {
-                result = await runGetRevenueOpportunities(supabase, userId, args.months || 3);
-              } else if (name === "get_practice_schedule_overview") {
-                result = await runGetPracticeScheduleOverview(supabase, userId, args.weeks || 8);
-              } else if (name === "get_anchor_candidates") {
-                result = await runGetAnchorCandidates(supabase, SUPABASE_URL, SERVICE_KEY, userId);
-              } else if (name === "get_clients_needing_attention") {
-                result = await runGetClientsNeedingAttention(supabase, SUPABASE_URL, SERVICE_KEY, userId);
-              } else {
-                result = { error: `Unknown tool: ${name}` };
+            // Run EVERY call in the response, in order. Only parts[0] used to be
+            // looked at, so a preamble ("I'll pencil those in…") followed by a
+            // call ended the turn with nothing done, and parallel calls after
+            // the first were dropped.
+            const calls = parts.filter((p) => p?.functionCall).map((p) => p.functionCall);
+            if (calls.length) {
+              // Any preamble text was already streamed — clear it so the final
+              // answer isn't glued onto it.
+              if (streamed && parts.some((p) => p?.text)) controller.enqueue(sse("reset", {}));
+              for (const call of calls) {
+                const name = call.name;
+                const args = call.args || {};
+                let result: any;
+                if (name === "draft_email_reply") {
+                  pendingDraft = { to: args.to, subject: stripMarkdown(args.subject), body: stripMarkdown(args.body), client_id: args.client_id || client_id || null, appointment_id: args.appointment_id || null };
+                  result = { status: "drafted", note: "Draft created for human review. It has not been sent." };
+                } else if (name === "propose_booking") {
+                  const proposed = await runProposeBooking(supabase, SUPABASE_URL, SERVICE_KEY, userId, args);
+                  addPendingBookings(proposed.pendingBooking ? [proposed.pendingBooking] : []);
+                  result = proposed.result;
+                } else if (name === "show_pending_proposals") {
+                  const pending = await runShowPendingProposals(supabase, userId, args);
+                  addPendingBookings(pending.pendingBookings);
+                  result = pending.result;
+                } else if (name === "update_client_availability") {
+                  result = await runUpdateClientAvailability(supabase, userId, args.client_id, args.voice_student_email, args.availability_notes, args.session_length_min, args.event_type_id);
+                } else if (name === "search_inbox") {
+                  result = await runSearchInbox(SUPABASE_URL, SERVICE_KEY, args.query);
+                } else if (name === "get_client_context") {
+                  result = await runGetClientContext(supabase, userId, args.client_id);
+                } else if (name === "get_available_slots") {
+                  result = await runGetAvailableSlots(supabase, SUPABASE_URL, SERVICE_KEY, userId, args.start, args.end, args.event_type_id, args.client_id, args.voice_student_email);
+                } else if (name === "get_past_booking_patterns") {
+                  result = await runGetPastBookingPatterns(supabase, userId, args.client_id);
+                } else if (name === "search_voice_client") {
+                  result = await runSearchVoiceClient(SUPABASE_URL, SERVICE_KEY, supabase, userId, args.query);
+                } else if (name === "get_active_clients") {
+                  result = await runGetActiveClients(supabase, userId, args.months || 3);
+                } else if (name === "get_revenue_opportunities") {
+                  result = await runGetRevenueOpportunities(supabase, userId, args.months || 3);
+                } else if (name === "get_practice_schedule_overview") {
+                  result = await runGetPracticeScheduleOverview(supabase, userId, args.weeks || 8);
+                } else if (name === "get_anchor_candidates") {
+                  result = await runGetAnchorCandidates(supabase, SUPABASE_URL, SERVICE_KEY, userId);
+                } else if (name === "get_clients_needing_attention") {
+                  result = await runGetClientsNeedingAttention(supabase, SUPABASE_URL, SERVICE_KEY, userId);
+                } else {
+                  result = { error: `Unknown tool: ${name}` };
+                }
+                toolTrace.push({ name, args, result });
+                contents.push({ role: "model", parts: [{ functionCall: { name, args } }] });
+                contents.push({ role: "function", parts: [{ functionResponse: { name, response: result } }] });
+                controller.enqueue(sse("status", { text: TOOL_STATUS_LABEL[name] || name.replace(/_/g, " ") }));
               }
-              toolTrace.push({ name, args, result });
-              contents.push({ role: "model", parts: [{ functionCall: { name, args } }] });
-              contents.push({ role: "function", parts: [{ functionResponse: { name, response: result } }] });
-              controller.enqueue(sse("status", { text: TOOL_STATUS_LABEL[name] || name.replace(/_/g, " ") }));
               continue;
             }
 
-            finalText = part.text || "";
+            finalText = parts.map((p) => p?.text || "").join("");
             if (!streamed) controller.enqueue(sse("delta", { text: finalText }));
             break;
           }
@@ -2228,12 +2396,12 @@ If Daniele says to skip, move on, or otherwise declines the client currently bei
           // after it (ORDER BY created_at drives Gemini's user/model alternation).
           await supabase.from("assistant_messages").insert({
             conversation_id: conversationId, role: "model", content: finalText,
-            tool_calls: toolTrace.length ? toolTrace : null, draft_email: pendingDraft, pending_booking: pendingBooking,
+            tool_calls: toolTrace.length ? toolTrace : null, draft_email: pendingDraft, pending_booking: pendingBookings.length ? pendingBookings : null,
             created_at: new Date().toISOString(),
           });
 
           controller.enqueue(sse("done", {
-            conversation_id: conversationId, reply: finalText, draft_email: pendingDraft, pending_booking: pendingBooking,
+            conversation_id: conversationId, reply: finalText, draft_email: pendingDraft, pending_booking: pendingBookings.length ? pendingBookings : null,
           }));
         } catch (error) {
           const msg = error.message || "Unknown error";

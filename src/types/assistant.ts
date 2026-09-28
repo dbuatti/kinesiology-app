@@ -11,8 +11,10 @@ export interface PendingBooking {
   voice_student_email?: string | null;
   client_name: string;
   start_iso: string;
-  event_type_id?: number | null;
+  event_type_id?: number | string | null;
   notes?: string | null;
+  // Lessons only: "voice" or "piano" — what Confirm books it as.
+  discipline?: string | null;
   // Row id in the shared `booking_proposals` table (same one the Timetable
   // Simulator reads/writes) — null if that insert failed for some reason,
   // in which case confirming still works but won't show on the Simulator.
@@ -26,7 +28,8 @@ export interface AssistantMessage {
   content: string | null;
   tool_calls?: { name: string; args: any; result: any }[] | null;
   draft_email?: DraftEmail | null;
-  pending_booking?: PendingBooking | null;
+  // One proposal per slot. Older messages stored a single object.
+  pending_booking?: PendingBooking[] | PendingBooking | null;
   created_at: string;
   // Local-only UI flag for a send that failed before the round-trip completed —
   // never persisted (a failed turn never reaches assistant_messages at all).

@@ -133,6 +133,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
       start_iso: data.slot_start,
       event_type_id: data.event_type_id ? Number(data.event_type_id) : null,
       notes: data.reason,
+      discipline: data.discipline ?? null,
       proposal_id: data.id,
     });
   }, [clientId, clientEmail, clientName]);
@@ -455,9 +456,8 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
               </p>
             )}
             <BookingProposalCard
-              booking={pendingProposal}
-              onConfirmed={() => setPendingProposal(null)}
-              onDiscard={() => setPendingProposal(null)}
+              bookings={[pendingProposal]}
+              onResolved={() => loadPendingProposal()}
             />
           </div>
         );

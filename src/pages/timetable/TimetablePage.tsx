@@ -52,6 +52,7 @@ import { useTimetableAppointments, EnrichedBooking } from "@/hooks/useTimetableA
 import { useSuggestionEngine, Suggestion } from "@/hooks/useSuggestionEngine";
 import AutoDraftPanel, { AutoDraftClient } from "@/components/crm/timetable/AutoDraftPanel";
 import { PageHeader } from "@/components/shared/PageHeader";
+import PendingBookingsPanel from "@/components/assistant/PendingBookingsPanel";
 import { OpenSlot, BusyBlock, Assignment, AvailabilityWindow } from "@/utils/timetable-scheduler";
 import { CALCOM_CONFIG } from "@/config/integrations";
 import {
@@ -1315,6 +1316,9 @@ const TimetablePage = () => {
           </>
         }
       />
+
+      {/* Every pencilled booking still to confirm, without paging fortnights to find it. */}
+      <PendingBookingsPanel />
 
       {/* Phase 3: iCloud calendar status */}
       <GcalStatusRow

@@ -11,6 +11,7 @@ import { loadPeopleOptions, type PersonOption } from "@/lib/people";
 import ClientPicker from "@/components/assistant/ClientPicker";
 import { voiceStudentIdFor, emailFromVoiceStudentId, isVoiceStudentId } from "@/lib/voice-student-id";
 import MessageList from "@/components/assistant/MessageList";
+import PendingBookingsPanel from "@/components/assistant/PendingBookingsPanel";
 import AssistantInput from "@/components/assistant/AssistantInput";
 import KeyMetricsBar from "@/components/assistant/KeyMetricsBar";
 import NeedsAttentionWidget from "@/components/assistant/NeedsAttentionWidget";
@@ -134,9 +135,9 @@ export default function AssistantPage({ initialTab }: { initialTab?: AssistantTa
     : null;
 
   const {
-    conversations, activeId, messages, isSending, streamingText, statusText, pendingDraft, pendingBooking,
+    conversations, activeId, messages, isSending, streamingText, statusText, pendingDraft, pendingBookings,
     loadConversations, selectConversation: selectConversationBase, startNewChat: startNewChatBase, handleSend,
-    handleDraftSent, handleDraftDiscard, handleBookingConfirmed, handleBookingDiscard, deleteConversation,
+    handleDraftSent, handleDraftDiscard, handleBookingResolved, deleteConversation,
   } = useAssistantConversation({
     clientId: focusedPerson?.id || null,
     voiceStudentEmail: personDoesLessons ? focusedPerson!.email : focusedVoiceStudent?.email || null,
@@ -387,6 +388,13 @@ export default function AssistantPage({ initialTab }: { initialTab?: AssistantTa
               )}
 
               <div className="mx-auto flex min-h-0 w-full max-w-[860px] flex-1 flex-col px-3 pb-3 sm:px-5 sm:pb-4">
+                {/* Pencilled bookings still to confirm — the focused person's, or everyone's. */}
+                <PendingBookingsPanel
+                  contained
+                  className="mt-3 shrink-0"
+                  clientId={focusedClient ? focusedPerson?.id || null : null}
+                  email={focusedClient ? focusedPerson?.email || focusedVoiceStudent?.email || null : null}
+                />
                 {viewMode === "email" && focusedClient ? (
                   <div className="min-h-0 flex-1 pt-3">
                     <ClientEmailThread clientId={focusedClient.id} clientEmail={focusedClient.email} clientName={focusedClient.name} />
@@ -401,9 +409,8 @@ export default function AssistantPage({ initialTab }: { initialTab?: AssistantTa
                       pendingDraft={pendingDraft}
                       onDraftSent={handleDraftSent}
                       onDraftDiscard={handleDraftDiscard}
-                      pendingBooking={pendingBooking}
-                      onBookingConfirmed={handleBookingConfirmed}
-                      onBookingDiscard={handleBookingDiscard}
+                      pendingBookings={pendingBookings}
+                      onBookingResolved={handleBookingResolved}
                       onSuggestion={handleSend}
                       onRetry={(id, text) => handleSend(text, id)}
                       heroTitle={focusedClient ? `Working on ${focusedClient.name.split(" ")[0]}` : undefined}

@@ -31,10 +31,16 @@ export interface ChatResult {
   conversation_id?: string | null;
   reply?: string | null;
   draft_email?: DraftEmail | null;
-  pending_booking?: PendingBooking | null;
+  pending_booking?: PendingBooking[] | PendingBooking | null;
   error?: string | null;
   quota_exceeded?: boolean | null;
   text?: string | null;
+}
+
+// A turn's proposals are an array now; messages saved before that hold one.
+function asBookingList(value: PendingBooking[] | PendingBooking | null | undefined): PendingBooking[] {
+  if (!value) return [];
+  return (Array.isArray(value) ? value : [value]).filter((b) => b && b.start_iso);
 }
 
 function notifyJob(job: ChatJob) {
@@ -145,8 +151,16 @@ export function useAssistantConversation({ clientId, voiceStudentEmail, voiceStu
   const [statusText, setStatusText] = useState<string | null>(null);
   const [pendingDraft, setPendingDraft] = useState<DraftEmail | null>(null);
   const [pendingDraftMessageId, setPendingDraftMessageId] = useState<string | null>(null);
-  const [pendingBooking, setPendingBooking] = useState<PendingBooking | null>(null);
+  const [pendingBookings, setPendingBookings] = useState<PendingBooking[]>([]);
   const [pendingBookingMessageId, setPendingBookingMessageId] = useState<string | null>(null);
+  // Mirrors pendingBookings so Confirm all, resolving several in a row, never
+  // works from a stale list.
+  const pendingBookingsRef = useRef<PendingBooking[]>([]);
+  const replacePendingBookings = useCallback((next: PendingBooking[], messageId: string | null) => {
+    pendingBookingsRef.current = next;
+    setPendingBookings(next);
+    setPendingBookingMessageId(next.length ? messageId : null);
+  }, []);
 
   const loadConversations = useCallback(async () => {
     let query = supabase.from("assistant_conversations").select("*").is("deleted_at", null).order("updated_at", { ascending: false });
@@ -179,9 +193,8 @@ export function useAssistantConversation({ clientId, voiceStudentEmail, voiceStu
     const last = data?.[data.length - 1];
     setPendingDraft(last?.draft_email || null);
     setPendingDraftMessageId(last?.draft_email ? last.id : null);
-    setPendingBooking(last?.pending_booking || null);
-    setPendingBookingMessageId(last?.pending_booking ? last.id : null);
-  }, []);
+    replacePendingBookings(asBookingList(last?.pending_booking), last?.id || null);
+  }, [replacePendingBookings]);
 
   const selectConversation = useCallback((id: string) => {
     setActiveId(id);
@@ -195,9 +208,8 @@ export function useAssistantConversation({ clientId, voiceStudentEmail, voiceStu
     setStatusText(null);
     setPendingDraft(null);
     setPendingDraftMessageId(null);
-    setPendingBooking(null);
-    setPendingBookingMessageId(null);
-  }, []);
+    replacePendingBookings([], null);
+  }, [replacePendingBookings]);
 
   // Mount: re-attach to any in-flight (or just-completed) job. This is the
   // navigation fix — generation kept running while the page was unmounted, and
@@ -294,7 +306,7 @@ export function useAssistantConversation({ clientId, voiceStudentEmail, voiceStu
           job.streamedText = typeof data?.reply === "string" ? data.reply : job.streamedText;
           setActiveId(cid || null);
           setPendingDraft(data?.draft_email || null);
-          setPendingBooking(data?.pending_booking || null);
+          replacePendingBookings(asBookingList(data?.pending_booking), null);
           notifyJob(job);
           try {
             if (cid) await Promise.all([loadMessages(cid), loadConversations()]);
@@ -326,7 +338,7 @@ export function useAssistantConversation({ clientId, voiceStudentEmail, voiceStu
       jobListeners.delete(listener);
       notifyJob(job);
     }
-  }, [activeId, clientId, voiceStudentEmail, voiceStudentName, loadMessages, loadConversations]);
+  }, [activeId, clientId, voiceStudentEmail, voiceStudentName, loadMessages, loadConversations, replacePendingBookings]);
 
   // Resolving a draft/booking (sent, confirmed, or discarded) clears it in the
   // DB, not just local state — otherwise reloading the conversation, or
@@ -340,13 +352,16 @@ export function useAssistantConversation({ clientId, voiceStudentEmail, voiceStu
     setPendingDraftMessageId(null);
   }, [pendingDraftMessageId]);
 
-  const clearPersistedBooking = useCallback(async () => {
+  // One card confirmed or discarded: keep the rest, and save what's left so a
+  // reload shows only the ones still to do.
+  const resolveBooking = useCallback(async (booking: PendingBooking) => {
+    const key = (b: PendingBooking) => b.proposal_id || `${b.start_iso}|${b.client_id || b.voice_student_email}`;
+    const next = pendingBookingsRef.current.filter((b) => key(b) !== key(booking));
+    replacePendingBookings(next, pendingBookingMessageId);
     if (pendingBookingMessageId) {
-      await supabase.from("assistant_messages").update({ pending_booking: null }).eq("id", pendingBookingMessageId);
+      await supabase.from("assistant_messages").update({ pending_booking: next.length ? next : null }).eq("id", pendingBookingMessageId);
     }
-    setPendingBooking(null);
-    setPendingBookingMessageId(null);
-  }, [pendingBookingMessageId]);
+  }, [pendingBookingMessageId, replacePendingBookings]);
 
   const deleteConversation = useCallback(async (id: string) => {
     setConversations((prev) => prev.filter((c) => c.id !== id));
@@ -365,10 +380,10 @@ export function useAssistantConversation({ clientId, voiceStudentEmail, voiceStu
   }, [activeId, startNewChat, loadConversations]);
 
   return {
-    conversations, activeId, messages, isSending, streamingText, statusText, pendingDraft, pendingBooking,
+    conversations, activeId, messages, isSending, streamingText, statusText, pendingDraft, pendingBookings,
     loadConversations, selectConversation, startNewChat, handleSend,
     handleDraftSent: clearPersistedDraft, handleDraftDiscard: clearPersistedDraft,
-    handleBookingConfirmed: clearPersistedBooking, handleBookingDiscard: clearPersistedBooking,
+    handleBookingResolved: resolveBooking,
     deleteConversation,
   };
 }

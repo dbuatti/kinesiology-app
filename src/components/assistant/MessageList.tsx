@@ -19,9 +19,8 @@ interface Props {
   pendingDraft: DraftEmail | null;
   onDraftSent: () => void;
   onDraftDiscard: () => void;
-  pendingBooking: PendingBooking | null;
-  onBookingConfirmed: () => void;
-  onBookingDiscard: () => void;
+  pendingBookings: PendingBooking[];
+  onBookingResolved: (booking: PendingBooking) => void | Promise<void>;
   onSuggestion: (text: string) => void;
   onRetry?: (id: string, text: string) => void;
   /** Empty-state starters; defaults to general practice prompts. */
@@ -39,12 +38,12 @@ const QUICK_PROMPTS: { label: string; prompt: string }[] = [
 ];
 
 export default function MessageList({
-  messages, isSending, streamingContent, streamingStatus, pendingDraft, onDraftSent, onDraftDiscard, pendingBooking, onBookingConfirmed, onBookingDiscard, onSuggestion, onRetry, prompts, heroTitle, heroSubtitle,
+  messages, isSending, streamingContent, streamingStatus, pendingDraft, onDraftSent, onDraftDiscard, pendingBookings, onBookingResolved, onSuggestion, onRetry, prompts, heroTitle, heroSubtitle,
 }: Props) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Deliberately depends only on messages.length (a genuinely new turn) — NOT on
-  // pendingDraft/pendingBooking object identity. Those null out on every Discard/
+  // pendingDraft/pendingBookings object identity. Those null out on every Discard/
   // Send click (see AssistantPage's clearPersistedDraft/Booking), which used to
   // re-trigger this scroll on every button click with no new message — the exact
   // "scrolls me down when I click a button" bug reported on iPad.
@@ -115,9 +114,9 @@ export default function MessageList({
           <DraftEmailCard draft={pendingDraft} onSent={onDraftSent} onDiscard={onDraftDiscard} />
         </div>
       )}
-      {pendingBooking && (
+      {pendingBookings.length > 0 && (
         <div className="max-w-[min(85%,42rem)] mr-auto">
-          <BookingProposalCard booking={pendingBooking} onConfirmed={onBookingConfirmed} onDiscard={onBookingDiscard} />
+          <BookingProposalCard bookings={pendingBookings} onResolved={onBookingResolved} />
         </div>
       )}
       {(isSending || hasStreaming) && (

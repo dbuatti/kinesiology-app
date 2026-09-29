@@ -9,25 +9,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
-
-// supabase.functions.invoke wraps non-2xx responses in a generic FunctionsHttpError
-// whose real message sits in `.context` (the raw Response). Pull it out so the
-// toast shows the actual server error (e.g. "Gmail Auth Error: invalid_grant").
-async function extractFnError(fnError: any, fallback: string): Promise<string> {
-  try {
-    const ctx = fnError?.context;
-    if (ctx && typeof ctx.json === "function") {
-      const body = await ctx.clone().json();
-      if (body?.error) return body.error;
-    } else if (ctx && typeof ctx.text === "function") {
-      const t = await ctx.clone().text();
-      if (t) return t;
-    }
-  } catch {
-    /* fall through */
-  }
-  return fnError?.message || fallback;
-}
+import { extractFnError } from "@/lib/function-error";
 
 interface ReminderStats {
   total: number;

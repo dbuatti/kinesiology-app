@@ -13,9 +13,57 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-// Drafts are short — capping output tokens keeps the generation tail short
-// without risking truncation of the actual email body.
-const MAX_OUTPUT_TOKENS = 700;
+// Drafts are short. gemini-2.5-flash counts its hidden "thinking" against
+// maxOutputTokens, so the old 700 cap with thinking on was often spent before
+// any draft was written — Gemini stopped with MAX_TOKENS and an empty or
+// half-written JSON body, and Suggest reply failed. Thinking is off for this
+// call (THINKING_BUDGET) and the cap has headroom for a full draft.
+const MAX_OUTPUT_TOKENS = 1024;
+const THINKING_BUDGET = 0;
+
+// Same key pool as assistant-chat: when one key's free-tier quota is spent,
+// try the next instead of failing the draft.
+function geminiKeys(): string[] {
+  return [
+    Deno.env.get("GEMINI_API_KEY"),
+    Deno.env.get("GEMINI_API_KEY_2"),
+    Deno.env.get("GEMINI_API_KEY_3"),
+    Deno.env.get("GEMINI_API_KEY_4"),
+  ].filter((k): k is string => !!k);
+}
+
+async function generateDraft(prompt: string): Promise<any> {
+  const keys = geminiKeys();
+  if (!keys.length) throw new Error("GEMINI_API_KEY is missing.");
+  let lastError = "Gemini error";
+  for (const key of keys) {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.5,
+            response_mime_type: "application/json",
+            maxOutputTokens: MAX_OUTPUT_TOKENS,
+            thinkingConfig: { thinkingBudget: THINKING_BUDGET },
+          },
+        }),
+      },
+    );
+    const resData = await response.json().catch(() => ({}));
+    if (response.ok) return resData;
+    lastError = resData?.error?.message || `Gemini error (status ${response.status})`;
+    // Only quota/overload is worth another key; anything else fails the same way.
+    if (response.status !== 429 && response.status !== 503) break;
+    console.error(`[suggest-email-reply] GEMINI_KEY_EXHAUSTED (${response.status}), trying next key`);
+  }
+  throw new Error(/quota|resource_exhausted|429/i.test(lastError)
+    ? "The AI is out of capacity right now — try Suggest reply again in a minute."
+    : lastError);
+}
 
 // Real Cal.com availability, fetched straight from this function so the reply
 // can name concrete times. Previously the CLIENT did this first (up to three
@@ -102,8 +150,6 @@ serve(async (req) => {
   try {
     const { client_id, client_name, is_voice, thread_messages, goal, available_slots } = await req.json();
 
-    const geminiKey = Deno.env.get("GEMINI_API_KEY");
-    if (!geminiKey) throw new Error("GEMINI_API_KEY is missing.");
     // Same fallback pattern used elsewhere (send-manual-onboarding etc.) —
     // if a draft mentions the self-serve portal, it needs the real domain,
     // not a bare "/portal/login" (meaningless with no host in email text).
@@ -155,25 +201,28 @@ Also suggest a short subject line (only needed if this reads as a fresh email ra
 
 Return ONLY a JSON object: {"subject": "...", "body": "..."} — body may contain \\n for paragraph breaks. No markdown, no preamble.`;
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.5, response_mime_type: "application/json", maxOutputTokens: MAX_OUTPUT_TOKENS },
-        }),
-      },
-    );
-    const resData = await response.json();
-    if (!response.ok) throw new Error(resData?.error?.message || "Gemini error");
+    const resData = await generateDraft(prompt);
+    const candidate = resData.candidates?.[0];
+    const finishReason = candidate?.finishReason;
 
-    let resultText = (resData.candidates?.[0]?.content?.parts?.[0]?.text || "").trim();
+    let resultText = (candidate?.content?.parts || []).map((p: any) => p?.text || "").join("").trim();
     resultText = resultText.replace(/```json\n?/, "").replace(/```\n?/, "").trim();
-    if (!resultText) throw new Error("Gemini returned an empty draft.");
+    if (!resultText) {
+      console.error("[suggest-email-reply] EMPTY_DRAFT finishReason:", finishReason);
+      throw new Error(finishReason === "SAFETY"
+        ? "Gemini declined to draft this reply — write it by hand, or try a different instruction."
+        : "Gemini returned an empty draft — try Suggest reply again.");
+    }
 
-    const parsed = JSON.parse(resultText);
+    let parsed: any;
+    try {
+      parsed = JSON.parse(resultText);
+    } catch {
+      console.error("[suggest-email-reply] UNPARSEABLE_DRAFT finishReason:", finishReason, "length:", resultText.length);
+      throw new Error(finishReason === "MAX_TOKENS"
+        ? "The draft was cut off before it finished — try Suggest reply again (a shorter instruction helps)."
+        : "Gemini's draft came back malformed — try Suggest reply again.");
+    }
     if (!parsed.body) throw new Error("Gemini's draft was missing a body.");
 
     return new Response(JSON.stringify({ subject: parsed.subject || "", body: parsed.body }), {

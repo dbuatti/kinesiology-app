@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { fetchContactMarks, saveContactMark } from "@/lib/inbox-marks";
 import { supabase } from "@/integrations/supabase/client";
 import { showError, showSuccess } from "@/utils/toast";
+import { extractFnError } from "@/lib/function-error";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -324,7 +325,10 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
           goal: suggestGoal.trim() || undefined,
         },
       });
-      if (error || data?.error) throw new Error(data?.error || error?.message || "Couldn't draft a reply.");
+      // A failed draft comes back as a non-2xx whose real reason is in the
+      // response body — show that, not "Edge Function returned a non-2xx…".
+      if (error) throw new Error(await extractFnError(error, "Couldn't draft a reply."));
+      if (data?.error) throw new Error(data.error);
       setReplyBody(data.body || "");
       if (data.subject) setSubject(data.subject);
       showSuccess("Draft ready — review before sending.");

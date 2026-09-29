@@ -13,14 +13,14 @@ import type { PersonOption } from "@/lib/people";
 import ClientPicker from "./ClientPicker";
 import { voiceStudentIdFor, isVoiceStudentId, emailFromVoiceStudentId } from "@/lib/voice-student-id";
 import {
-  buildInboxPeople, FOLLOW_UP_AFTER_DAYS,
+  buildInboxPeople, FOLLOW_UP_AFTER_DAYS, TIME_HINTS,
   type InboundMessage, type SentMessage, type ManualSend, type ContactInfo, type ContactMark,
   type InboxPerson, type PersonStatus,
 } from "@/lib/inbox-conversations";
 import { VoiceStudentOption } from "@/types/assistant";
 import { fetchContactMarks, saveContactMark } from "@/lib/inbox-marks";
 import {
-  Loader2, RefreshCw, Mic, Brain, PenSquare, X, Search, Check, CalendarCheck, ChevronDown, RotateCcw, Reply, Send,
+  Loader2, RefreshCw, Mic, Brain, PenSquare, X, Search, Check, CalendarCheck, ChevronDown, RotateCcw, Reply, Send, CalendarPlus,
 } from "lucide-react";
 
 interface Props {
@@ -260,6 +260,12 @@ export default function CommsInbox({ clients, voiceStudents, people: peopleOptio
             {p.status === "follow_up" && !isOpen && (
               <Button variant="outline" size="sm" className="h-7 gap-1 text-[11px]" onClick={() => setExpandedEmail(p.email)}>
                 <Send className="h-3 w-3" /> <span className="hidden sm:inline">Follow up</span>
+              </Button>
+            )}
+            {p.status === "needs_reply" && !isOpen && TIME_HINTS.test(p.focus.last.snippet || "") && (
+              // They may have picked a time — open straight onto "Book the time they asked for".
+              <Button size="sm" className="h-7 gap-1 bg-chart-emerald text-[11px] hover:bg-chart-emerald/90" onClick={() => setExpandedEmail(p.email)} title="They may have picked a time — open to book it">
+                <CalendarPlus className="h-3 w-3" /> <span className="hidden sm:inline">Book</span>
               </Button>
             )}
             {p.status === "needs_reply" && !isOpen && (

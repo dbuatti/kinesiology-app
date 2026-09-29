@@ -10,9 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import EmailTemplatePicker from "@/components/assistant/EmailTemplatePicker";
 import BookingProposalCard from "@/components/assistant/BookingProposalCard";
 import { PendingBooking } from "@/types/assistant";
-import { Mail, Loader2, Send, RefreshCw, CalendarClock, Sparkles, PenSquare, LayoutDashboard, Zap } from "lucide-react";
+import { Mail, Loader2, Send, RefreshCw, CalendarClock, Sparkles, PenSquare, LayoutDashboard, Zap, CalendarPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { splitQuotedReply } from "@/lib/inbox-conversations";
+import { splitQuotedReply, TIME_HINTS } from "@/lib/inbox-conversations";
 
 // A simple, deliberately conservative confirmation hint — never auto-books,
 // just draws the eye to a reply that LOOKS like a yes so the practitioner can
@@ -103,6 +103,9 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
   // Stable across renders so `load` doesn't re-run on every parent render.
   const threadIdsKey = (threadIds || []).join(",");
   const [pendingProposal, setPendingProposal] = useState<PendingBooking | null>(null);
+  const [bookingFromEmail, setBookingFromEmail] = useState(false);
+  // What "Book the time they asked for" found — shown above the confirm card.
+  const [bookedFrom, setBookedFrom] = useState<{ when: string; quote: string | null; available: boolean | null } | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Without this, a loaded thread renders scrolled to the OLDEST message —
@@ -123,9 +126,21 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
   // find the proposal card again.
   const loadPendingProposal = useCallback(async () => {
     const isVoice = clientId.startsWith("voice:");
-    let query = supabase.from("booking_proposals").select("*").eq("status", "proposed").order("created_at", { ascending: false }).limit(1);
-    query = isVoice ? query.eq("student_email", clientEmail || "") : query.eq("client_id", clientId);
-    const { data } = await query.maybeSingle();
+    // A person with a record can have kinesiology proposals (by client_id) and
+    // lesson proposals (by email) — look for either, upcoming only.
+    const emails = [...new Set([clientEmail, clientEmail?.toLowerCase()].filter(Boolean))] as string[];
+    const filters = [
+      !isVoice ? `client_id.eq.${clientId}` : null,
+      ...emails.map((e) => `student_email.eq."${e.replace(/"/g, "")}"`),
+    ].filter(Boolean).join(",");
+    if (!filters) { setPendingProposal(null); return; }
+    const { data } = await supabase.from("booking_proposals").select("*")
+      .eq("status", "proposed")
+      .gte("slot_start", new Date().toISOString())
+      .or(filters)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
     if (!data) { setPendingProposal(null); return; }
     setPendingProposal({
       client_id: data.client_id,
@@ -339,6 +354,34 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
     }
   };
 
+  // Reads their latest reply, works out the time (and session type/length)
+  // they asked for, and pencils it in — then it's one click on Confirm.
+  const handleBookFromEmail = async () => {
+    setBookingFromEmail(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("assistant-chat", {
+        body: {
+          mode: "book_from_email",
+          client_id: hasClientRecord ? clientId : null,
+          voice_student_email: clientEmail || null,
+          voice_student_name: clientName,
+          thread_messages: messages.map((m) => ({ direction: m.direction, date: m.date, body: m.body })),
+        },
+      });
+      if (error) throw new Error(await extractFnError(error, "Couldn't book from their email."));
+      if (data?.error) throw new Error(data.error);
+      if (data?.none) { showError(data.note || "No specific time found in their latest message."); return; }
+      if (!data?.pending_booking) throw new Error("Couldn't pencil that in.");
+      setPendingProposal(data.pending_booking);
+      setBookedFrom({ when: data.summary?.when || "", quote: data.summary?.quote || null, available: data.summary?.available ?? null });
+      showSuccess(`Pencilled in ${data.summary?.when || ""} — confirm below to book it.`);
+    } catch (err) {
+      showError((err as Error)?.message || "Couldn't book from their email.");
+    } finally {
+      setBookingFromEmail(false);
+    }
+  };
+
   const insertSlot = (slot: { iso: string; label: string }) => {
     const sentence = `Would ${slot.label} work for you?`;
     setReplyBody((prev) => (prev.trim() ? `${prev.trim()} ${sentence}` : sentence));
@@ -449,19 +492,46 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
         )}
       </div>
 
+      {/* They named a time and nothing's pencilled yet: make booking it the obvious next step. */}
+      {!pendingProposal && (() => {
+        const lastMsg = messages[messages.length - 1];
+        if (!lastMsg || lastMsg.direction !== "inbound" || !TIME_HINTS.test(splitQuotedReply(lastMsg.body || "").main || lastMsg.body || "")) return null;
+        return (
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-chart-emerald/40 bg-chart-emerald/5 px-3 py-2">
+            <p className="flex items-center gap-1.5 text-xs text-foreground">
+              <CalendarClock className="h-3.5 w-3.5 text-chart-emerald" />
+              {firstName || clientName} may have picked a time.
+            </p>
+            <Button size="sm" className="h-7 gap-1.5 bg-chart-emerald text-[11px] hover:bg-chart-emerald/90" onClick={handleBookFromEmail} disabled={bookingFromEmail}>
+              {bookingFromEmail ? <Loader2 className="h-3 w-3 animate-spin" /> : <CalendarPlus className="h-3 w-3" />}
+              Book the time they asked for
+            </Button>
+          </div>
+        );
+      })()}
+
       {pendingProposal && (() => {
         const lastMsg = messages[messages.length - 1];
         const looksConfirmed = !!lastMsg && lastMsg.direction === "inbound" && CONFIRMATION_HINTS.test(lastMsg.body || "");
         return (
           <div className="pt-3">
-            {looksConfirmed && (
+            {bookedFrom && (
+              <p className="text-[11px] text-muted-foreground mb-2">
+                Read from their email{bookedFrom.quote ? <> — “{bookedFrom.quote}”</> : null}.{" "}
+                {bookedFrom.available === false && (
+                  <span className="font-semibold text-chart-destructive">That time isn't open in Cal.com — check the calendar before confirming.</span>
+                )}
+                {bookedFrom.available === true && <span className="text-chart-emerald">It's free in Cal.com.</span>}
+              </p>
+            )}
+            {looksConfirmed && !bookedFrom && (
               <p className="flex items-center gap-1.5 text-[11px] font-semibold text-chart-emerald mb-2">
                 <Zap className="h-3 w-3" /> Their last reply looks like a yes — confirm below if so.
               </p>
             )}
             <BookingProposalCard
               bookings={[pendingProposal]}
-              onResolved={() => loadPendingProposal()}
+              onResolved={() => { setBookedFrom(null); loadPendingProposal(); }}
             />
           </div>
         );
@@ -485,6 +555,13 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
             {loadingSlots ? <Loader2 className="h-3 w-3 animate-spin" /> : <CalendarClock className="h-3 w-3" />}
             Suggest times
           </Button>
+          {messages.some((m) => m.direction === "inbound") && !pendingProposal && (
+            <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1.5" onClick={handleBookFromEmail} disabled={bookingFromEmail}
+              title="Read their latest reply and pencil in the time they asked for">
+              {bookingFromEmail ? <Loader2 className="h-3 w-3 animate-spin" /> : <CalendarPlus className="h-3 w-3" />}
+              Book from email
+            </Button>
+          )}
           <Button variant="outline" size="sm" className="h-7 text-[11px] gap-1.5" onClick={handleSuggestReply} disabled={loadingSuggestion}>
             {loadingSuggestion ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
             Suggest reply

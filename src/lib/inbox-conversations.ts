@@ -20,6 +20,11 @@
 //    email again.
 
 export const FOLLOW_UP_AFTER_DAYS = 3;
+
+// Their message mentions a day or time — they may have picked a session. Only
+// a hint for the UI (the "Book the time they asked for" prompt); the server
+// reads the actual email to work out the booking.
+export const TIME_HINTS = /\b(\d{1,2}(:\d{2})?\s*(am|pm)|\d{1,2}(:|\.)\d{2}|\d{1,2}(st|nd|rd|th)\b|mon(day)?|tue(s(day)?)?|wed(nesday)?|thu(rs(day)?)?|fri(day)?|sat(urday)?|sun(day)?|tomorrow|next week|lock (it|that) in|book (me|it) in)\b/i;
 const FOLLOW_UP_MAX_DAYS = 60;
 const DAY_MS = 86400000;
 

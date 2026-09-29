@@ -242,7 +242,7 @@ const functionDeclarations = [
         voice_student_email: { type: "STRING", description: "Voice student email. Provide this OR client_id." },
         client_name: { type: "STRING", description: "The client or voice student's display name." },
         start_iso: { type: "STRING", description: "Exact ISO datetime of the slot, taken verbatim from a prior get_available_slots result." },
-        event_type_id: { type: "NUMBER", description: "Cal.com event type id. For a voice student, omit it to auto-default to THEIR session length (preferred_event_type_id from search_voice_client) — never let a voice student fall back to the 60-minute default without checking. Kinesiology omits to the FNH default." },
+        event_type_id: { type: "NUMBER", description: "Cal.com event type id. For a voice student, omit it to auto-default to THEIR session length (preferred_event_type_id from search_voice_client) — never let a voice student fall back to the 60-minute default without checking. For kinesiology, omit it to book the client's own service (Timetable setting, else their last session's rate); pass 5302336 (client rate $100), 4279898 (new client $70) or 5927215 (community, free) only when Daniele names one." },
         notes: { type: "STRING", description: "Optional short note about why this slot / session." },
         discipline: { type: "STRING", description: "Lesson students only: \"voice\" or \"piano\". Pass lesson_discipline from search_voice_client, or what Daniele asked for if he named one (\"book her a piano lesson\"). If omitted, it is worked out from their lesson history. Never guess piano from the words \"Voice Studio\"." },
       },
@@ -962,6 +962,43 @@ async function runUpdateClientAvailability(supabase: any, userId: string, client
   };
 }
 
+// Kinesiology services (kept in sync with src/config/integrations.ts
+// DRAFT_SERVICES and calcom-webhook's pricing). All are 60-minute sessions;
+// what differs is the rate, so booking the wrong one charges the wrong price.
+const FNH_SERVICES: Record<string, { label: string; price: number }> = {
+  "5302336": { label: "FNH session · client rate ($100)", price: 100 },
+  "4279898": { label: "FNH session · new client ($70)", price: 70 },
+  "5927215": { label: "FNH community session (free)", price: 0 },
+};
+const FNH_DEFAULT_EVENT_TYPE = "4279898";
+
+// Which kinesiology service to book for this client. A proposal used to leave
+// it blank, so confirm always fell back to the $70 new-client type — even for
+// a regular on the $100 rate. Order: the service set for them in the Timetable,
+// then the rate of their most recent session, then the new-client default.
+async function resolveKinesiologyService(supabase: any, clientId: string): Promise<{ eventTypeId: string; label: string; source: string }> {
+  const describe = (id: string, source: string) => ({ eventTypeId: id, label: FNH_SERVICES[id]?.label || `event type ${id}`, source });
+  const { data: pref } = await supabase
+    .from("timetable_client_availability")
+    .select("event_type_id")
+    .eq("client_key", `fnh:${clientId}`)
+    .maybeSingle();
+  if (pref?.event_type_id && FNH_SERVICES[String(pref.event_type_id)]) return describe(String(pref.event_type_id), "set for them in the Timetable");
+
+  const { data: last } = await supabase
+    .from("appointments")
+    .select("price_amount, status, date")
+    .eq("client_id", clientId)
+    .not("price_amount", "is", null)
+    .order("date", { ascending: false })
+    .limit(5);
+  const lastReal = ((last || []) as any[]).find((a) => String(a.status || "").toLowerCase() !== "cancelled");
+  const byPrice = lastReal ? Object.entries(FNH_SERVICES).find(([, s]) => s.price === Number(lastReal.price_amount))?.[0] : null;
+  if (byPrice) return describe(byPrice, "same as their last session");
+
+  return describe(FNH_DEFAULT_EVENT_TYPE, lastReal ? "default — their last session's rate matched no service" : "default — no past sessions");
+}
+
 // Told to the model after every proposal so its reply says where to click,
 // instead of a bare "once you confirm them".
 const WHERE_TO_CONFIRM = "Tell Daniele where to confirm: the Confirm button on each card under your reply (or Confirm all), and they stay under Assistant → Pending bookings and on the Timetable until confirmed or dropped. Nothing is booked in Cal.com until he clicks Confirm.";
@@ -1069,6 +1106,15 @@ async function runProposeBooking(supabase: any, supabaseUrl: string, serviceKey:
   let eventTypeId = args.event_type_id ? String(args.event_type_id) : null;
   let durationMin: number | null = null;
   let discipline: { value: "voice" | "piano"; source: string } | null = null;
+  let fnhService: { eventTypeId: string; label: string; source: string } | null = null;
+  if (!isVoice && args.client_id) {
+    if (eventTypeId && FNH_SERVICES[eventTypeId]) {
+      fnhService = { eventTypeId, label: FNH_SERVICES[eventTypeId].label, source: "as passed" };
+    } else {
+      fnhService = await resolveKinesiologyService(supabase, args.client_id);
+      eventTypeId = fnhService.eventTypeId;
+    }
+  }
   if (isVoice) {
     const prefs = await resolveVoiceSessionPrefs(supabase, supabaseUrl, serviceKey, userId, args.voice_student_email);
     if (!eventTypeId) eventTypeId = prefs?.eventTypeId ? String(prefs.eventTypeId) : "1945081";
@@ -1164,10 +1210,12 @@ async function runProposeBooking(supabase: any, supabaseUrl: string, serviceKey:
   };
   if (error) console.error("[assistant-chat] PROPOSAL_INSERT_FAILED:", error.message);
   const durationLabel = isVoice && durationMin ? `${durationMin}-minute` : null;
-  const kindLabel = isVoice ? `${discipline?.value || "voice"} lesson (${discipline?.source || "default"})` : "kinesiology session";
+  const kindLabel = isVoice
+    ? `${discipline?.value || "voice"} lesson (${discipline?.source || "default"})`
+    : `${fnhService?.label || "kinesiology session"} (${fnhService?.source || "default"})`;
   const result = error
     ? { status: "proposed", note: `Booking proposed for human review as a ${kindLabel}, but it could not be saved to the pending list (${error.message}) — it can only be confirmed from the card under this reply, so say so.` }
-    : { status: "proposed", discipline: discipline?.value ?? null, note: `Booking proposed for human review as a ${durationLabel || "standard"} ${kindLabel}. It has not been created yet. ${WHERE_TO_CONFIRM}` };
+    : { status: "proposed", discipline: discipline?.value ?? null, service: fnhService?.label ?? null, note: `Booking proposed for human review as a ${durationLabel ? `${durationLabel} ` : ""}${kindLabel}. Say which service and length it is in your reply. It has not been created yet. ${WHERE_TO_CONFIRM}` };
   return { pendingBooking, result };
 }
 
@@ -2107,6 +2155,134 @@ async function runGetAnchorCandidates(supabase: any, supabaseUrl: string, servic
   };
 }
 
+// --- Inbox "Book the time they asked for" ---------------------------------
+// A client replies "Thursday 15th at 2pm works" and it should be one click to
+// pencil that in and one to confirm, without opening the Assistant. Reads the
+// thread, works out the time they chose and what kind of session it is, then
+// goes through runProposeBooking so the length, service, voice/piano and
+// dedup rules are exactly the same as a proposal made in chat.
+
+// "2026-10-15T14:00" in Melbourne time → the real instant (DST-aware).
+function melbourneLocalToUtc(local: string): Date | null {
+  const m = String(local || "").match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if (!m) return null;
+  const wall = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+  const fmt = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Australia/Melbourne", hourCycle: "h23",
+    year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
+  });
+  const offsetAt = (t: number) => {
+    const parts = fmt.formatToParts(new Date(t));
+    const g = (k: string) => Number(parts.find((p) => p.type === k)?.value);
+    return Date.UTC(g("year"), g("month") - 1, g("day"), g("hour"), g("minute")) - t;
+  };
+  let guess = wall - offsetAt(wall);
+  guess = wall - offsetAt(guess);
+  return new Date(guess);
+}
+
+async function extractRequestedTime(geminiKeys: string[], prompt: string): Promise<any> {
+  let lastError = "Couldn't read the email.";
+  for (const key of geminiKeys) {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0, response_mime_type: "application/json", maxOutputTokens: 512, thinkingConfig: { thinkingBudget: 0 } },
+        }),
+      },
+    );
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      const text = (data.candidates?.[0]?.content?.parts || []).map((p: any) => p?.text || "").join("").trim()
+        .replace(/```json\n?/, "").replace(/```\n?/, "").trim();
+      try { return JSON.parse(text); } catch { throw new Error("Couldn't read a time from the email — try again, or book it by hand."); }
+    }
+    lastError = data?.error?.message || `Gemini error (status ${res.status})`;
+    if (res.status !== 429 && res.status !== 503) break;
+  }
+  throw new Error(/quota|resource_exhausted|429/i.test(lastError) ? "The AI is out of capacity right now — try again in a minute." : lastError);
+}
+
+async function runBookFromEmail(ctx: {
+  supabase: any; supabaseUrl: string; serviceKey: string; userId: string; geminiKeys: string[];
+  clientId: string | null; email: string | null; name: string | null; practices: string[];
+  threadMessages: { direction: string; date?: string; body?: string }[];
+}) {
+  const { supabase, supabaseUrl, serviceKey, userId, geminiKeys, clientId, email, name, practices } = ctx;
+  const recent = (ctx.threadMessages || []).slice(-6);
+  if (!recent.some((m) => m.direction === "inbound")) return { error: "There's no message from them in this thread to book from." };
+
+  const fmtWhen = (iso?: string) => {
+    const d = iso ? new Date(iso) : null;
+    return d && !isNaN(d.getTime())
+      ? d.toLocaleString("en-AU", { weekday: "short", day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Australia/Melbourne" })
+      : "unknown date";
+  };
+  const transcript = recent.map((m) =>
+    `[${fmtWhen(m.date)}] ${m.direction === "inbound" ? (name || "Client") : "Daniele"}: ${String(m.body || "").slice(0, 1500)}`).join("\n\n");
+  const offered = practices.length ? practices.join(", ") : "kinesiology";
+
+  const prompt = `Today is ${melbourneNow()} in Melbourne, Australia. Daniele is a practitioner offering kinesiology (FNH) sessions and voice and piano lessons. ${name || "The client"} does: ${offered}.
+
+EMAIL THREAD (oldest first, times in Melbourne):
+${transcript}
+
+Find the session date and time ${name || "the client"} has asked to book or agreed to in their most recent message. Use the thread for context: "the Thursday one works" means the Thursday time Daniele offered. Resolve relative dates ("next Tuesday", "the 15th") against the date of THEIR message, always to a future date. If they offered several options and didn't pick one, or no specific time is given, set found to false and say why in note.
+
+Also decide the session kind: "kinesiology", "voice" or "piano" — from what they say, else from what they do (only choose one they do). Set length_min (30, 45 or 60) ONLY if they state a length; otherwise null.
+
+Return ONLY JSON: {"found": true|false, "start_local": "YYYY-MM-DDTHH:MM" (Melbourne time) or null, "session_kind": "kinesiology"|"voice"|"piano"|null, "length_min": 30|45|60|null, "quote": "the exact words they used for the time", "note": "short reason if not found or anything uncertain"}`;
+
+  const parsed = await extractRequestedTime(geminiKeys, prompt);
+  if (!parsed?.found || !parsed?.start_local) {
+    return { none: true, note: parsed?.note || "No specific time found in their latest message." };
+  }
+  const start = melbourneLocalToUtc(parsed.start_local);
+  if (!start || isNaN(start.getTime())) return { error: "Couldn't work out the date from their email — book it by hand." };
+  if (start.getTime() < Date.now()) return { error: `The time they mentioned (${fmtWhen(start.toISOString())}) has already passed.` };
+
+  // Kind: what they asked for if they do it; else their only practice.
+  const lessonKinds = practices.filter((p) => p === "voice" || p === "piano");
+  const does = (k: string) => practices.includes(k);
+  let kind: string = ["kinesiology", "voice", "piano"].includes(parsed.session_kind) && does(parsed.session_kind) ? parsed.session_kind : "";
+  if (!kind) kind = practices.length === 1 ? practices[0] : does("kinesiology") ? "kinesiology" : lessonKinds[0] || "kinesiology";
+  const isLesson = kind === "voice" || kind === "piano";
+  if (isLesson && !email) return { error: "They have no email on record, so a lesson can't be booked for them." };
+  if (!isLesson && !clientId) return { error: "They don't have a client record, so a kinesiology session can't be booked." };
+
+  const length = [30, 45, 60].includes(Number(parsed.length_min)) ? Number(parsed.length_min) : null;
+  const proposed = await runProposeBooking(supabase, supabaseUrl, serviceKey, userId, {
+    client_id: isLesson ? undefined : clientId,
+    voice_student_email: isLesson ? email : undefined,
+    client_name: name || email || "Client",
+    start_iso: start.toISOString(),
+    event_type_id: isLesson && length ? voiceEventTypeIdForLength(length) : undefined,
+    discipline: isLesson ? kind : undefined,
+    notes: parsed.quote ? `From their email: "${String(parsed.quote).slice(0, 160)}"` : "From their email",
+  });
+  if (!proposed.pendingBooking) return { error: proposed.result?.note || proposed.result?.error || "Couldn't pencil that in." };
+
+  // Is it actually open? Checked, not assumed — the card says so either way.
+  let available: boolean | null = null;
+  const CALCOM_KEY = Deno.env.get("CALCOM_API_KEY");
+  if (CALCOM_KEY) {
+    const dayStart = new Date(start.getTime() - 12 * 3600000).toISOString();
+    const dayEnd = new Date(start.getTime() + 12 * 3600000).toISOString();
+    const et = Number(proposed.pendingBooking.event_type_id) || undefined;
+    const { flatIsos, error } = await fetchCalcomSlots(CALCOM_KEY, dayStart, dayEnd, et);
+    if (!error) available = (flatIsos as string[]).some((iso) => new Date(iso).getTime() === start.getTime());
+  }
+
+  return {
+    pending_booking: proposed.pendingBooking,
+    summary: { when: fmtWhen(start.toISOString()), kind, quote: parsed.quote || null, note: parsed.note || null, available, result: proposed.result },
+  };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -2114,8 +2290,8 @@ serve(async (req) => {
   if (authErr) return authErr;
 
   try {
-    const { conversation_id, client_id, voice_student_email, voice_student_name, message } = await req.json();
-    if (!message) throw new Error("Missing message.");
+    const { conversation_id, client_id, voice_student_email, voice_student_name, message, mode, thread_messages } = await req.json();
+    if (mode !== "book_from_email" && !message) throw new Error("Missing message.");
 
     // Multiple Gemini keys give real redundancy against one key's quota running
     // out (a genuine daily-use risk, not just a testing artifact — see prior
@@ -2185,6 +2361,17 @@ serve(async (req) => {
     const userId = user.id;
 
     const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
+
+    // Inbox "Book the time they asked for" — one-shot, no conversation.
+    if (mode === "book_from_email") {
+      const out = await runBookFromEmail({
+        supabase, supabaseUrl: SUPABASE_URL, serviceKey: SERVICE_KEY, userId, geminiKeys,
+        clientId: person?.id || (client_id && !String(client_id).startsWith("voice:") ? client_id : null),
+        email: focusEmail, name: focusName, practices,
+        threadMessages: Array.isArray(thread_messages) ? thread_messages : [],
+      });
+      return new Response(JSON.stringify(out), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     // Load or create the conversation. A person who does both practices keeps
     // both identifiers on the conversation (client_id for kinesiology,

@@ -8,8 +8,8 @@
 //    several Gmail threads, and a reply sent as a fresh email lands in its own
 //    thread too. Grouping by thread alone showed the same exchange twice and
 //    kept "Needs reply" on a thread that had really been answered elsewhere.
-//  - needs_reply: their latest message in a conversation came after anything
-//    you sent in it.
+//  - needs_reply: their latest message came after anything you've sent them
+//    (in any conversation — a reply under a new subject still answers it).
 //  - follow_up: you wrote last, it's been FOLLOW_UP_AFTER_DAYS+ with no reply
 //    from them anywhere, and it was a real conversation (they'd written in it,
 //    or you wrote it yourself through the app). Automated reminders and
@@ -174,14 +174,23 @@ export function buildInboxPeople(args: {
     const lastInbound = Math.max(...events.filter((e) => e.direction === "inbound").map((e) => e.date.getTime()), -Infinity);
     const booked = upcoming[email] ?? null;
 
-    // Portal messages have no subject of the client's own, so a reply to one
-    // naturally goes out under a different subject — any later email to them
-    // counts as the answer.
+    // Any email you've sent them since their message counts as the answer, in
+    // whatever conversation it went out. A reply often goes under a new subject
+    // (portal messages have none of their own, and "about a future session" is
+    // a fresh email) — real bug: Ashna stayed in Needs reply on her August
+    // thread after a new email to her, because only portal messages were
+    // treated this way.
     const lastOutbound = Math.max(...events.filter((e) => e.direction === "outbound").map((e) => e.date.getTime()), -Infinity);
     const openReplies = conversations.filter((c) =>
-      c.needsReply && c.last.date.getTime() > markedAt && !(c.last.viaPortal && lastOutbound > c.last.date.getTime()));
+      c.needsReply && c.last.date.getTime() > markedAt && !(lastOutbound > c.last.date.getTime()));
+    // An email that answered one of their messages is a real exchange even
+    // when it went out under a new subject from Gmail (so it has no inbound of
+    // its own and isn't in the app's send log) — track it as waiting on them.
+    const answeredElsewhere = conversations.some((c) =>
+      c.needsReply && c.last.date.getTime() > markedAt && lastOutbound > c.last.date.getTime());
     const chases = conversations.filter(
-      (c) => c.chaseable && c.last.date.getTime() > lastInbound && c.last.date.getTime() > markedAt,
+      (c) => (c.chaseable || (answeredElsewhere && c.last.direction === "outbound" && c.last.date.getTime() === lastOutbound))
+        && c.last.date.getTime() > lastInbound && c.last.date.getTime() > markedAt,
     );
 
     let status: PersonStatus;

@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,17 +10,30 @@ import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 
-interface VoiceOnboardingFormProps {
-  onSuccess?: () => void;
+export interface VoiceOnboardingInitial {
+  name?: string;
+  email?: string;
+  phone?: string;
+  notes?: string;
+  practice?: "voice" | "piano";
 }
 
-const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [notes, setNotes] = useState("");
+interface VoiceOnboardingFormProps {
+  onSuccess?: () => void;
+  /** Prefill (e.g. from a transcript profile). Read on mount — remount with a new `key` to apply new values. */
+  initial?: VoiceOnboardingInitial;
+}
+
+const VoiceOnboardingForm = ({ onSuccess, initial }: VoiceOnboardingFormProps) => {
+  const navigate = useNavigate();
+  const [name, setName] = useState(initial?.name ?? "");
+  const [email, setEmail] = useState(initial?.email ?? "");
+  const [phone, setPhone] = useState(initial?.phone ?? "");
+  const [notes, setNotes] = useState(initial?.notes ?? "");
+  const [practice, setPractice] = useState<"voice" | "piano">(initial?.practice ?? "voice");
   const [submitting, setSubmitting] = useState(false);
   const [created, setCreated] = useState(false);
+  const [clientId, setClientId] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +47,7 @@ const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
           email: email.trim() || null,
           phone: phone.trim() || null,
           notes: notes.trim() || null,
+          practice,
         },
       });
 
@@ -40,6 +55,7 @@ const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
       if (!data?.success) throw new Error(data?.error || "Failed to create student");
 
       showSuccess(`${name.trim()} added to Voice Studio!`);
+      setClientId(data.clientId ?? null);
       setCreated(true);
     } catch (err: any) {
       showError(err.message || "Failed to onboard student");
@@ -59,10 +75,16 @@ const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
             Student Onboarded!
           </h3>
           <p className="text-sm text-muted-foreground font-medium">
-            {name} has been added to the Voice Studio client database in Notion.
+            {name} has been added to Voice Studio in Notion
+            {clientId ? " and to People." : email.trim() ? "." : ". Add an email to link them to People."}
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap justify-center gap-3">
+          {clientId && (
+            <Button className="h-11 rounded-2xl" onClick={() => navigate(`/clients/${clientId}/hub`)}>
+              Open their profile
+            </Button>
+          )}
           <Button
             className="bg-rose-500 hover:bg-rose-600 h-11 rounded-2xl font-semibold text-xs gap-2"
             onClick={() => {
@@ -70,6 +92,8 @@ const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
               setEmail("");
               setPhone("");
               setNotes("");
+              setPractice("voice");
+              setClientId(null);
               setCreated(false);
             }}
           >
@@ -131,6 +155,24 @@ const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
       </div>
 
       <div className="space-y-2">
+        <Label className="text-[13px] font-medium text-foreground/80">Lessons in</Label>
+        <div className="flex gap-2">
+          {(["voice", "piano"] as const).map((p) => (
+            <Button
+              key={p}
+              type="button"
+              variant={practice === p ? "default" : "outline"}
+              size="sm"
+              onClick={() => setPractice(p)}
+              className="capitalize"
+            >
+              {p}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="notes" className="text-[13px] font-medium text-foreground/80">
           Onboarding Notes <span className="text-muted-foreground font-normal normal-case tracking-normal">(optional)</span>
         </Label>
@@ -139,7 +181,7 @@ const VoiceOnboardingForm = ({ onSuccess }: VoiceOnboardingFormProps) => {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Any additional context about the student..."
-          className="min-h-[100px] rounded-2xl border-border dark:border-border bg-card dark:bg-card text-sm font-medium resize-none focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
+          className="min-h-[100px] max-h-[480px] rounded-2xl border-border dark:border-border bg-card dark:bg-card text-sm font-medium resize-y focus:ring-2 focus:ring-primary/30 focus:border-primary focus:outline-none transition-colors"
         />
       </div>
 

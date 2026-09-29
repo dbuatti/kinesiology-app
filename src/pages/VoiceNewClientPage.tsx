@@ -1,19 +1,30 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Mic } from "lucide-react";
 import AppLayout from "@/components/crm/AppLayout";
 import PageHeader from "@/components/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 import VoiceOnboardingForm from "@/components/crm/VoiceOnboardingForm";
+import TranscriptOnboarding from "@/components/crm/TranscriptOnboarding";
+import { formatProfileNotes, type TranscriptProfile } from "@/lib/transcriptProfile";
 
 const VoiceNewClientPage = () => {
   const navigate = useNavigate();
+  const [profile, setProfile] = useState<TranscriptProfile | null>(null);
+  // Bumped whenever a profile arrives or is cleared, so the form remounts with the new prefill.
+  const [formKey, setFormKey] = useState(0);
+
+  const handleProfile = (next: TranscriptProfile | null) => {
+    setProfile(next);
+    setFormKey((k) => k + 1);
+  };
 
   return (
     <AppLayout>
-      <div className="max-w-lg mx-auto space-y-8">
+      <div className="max-w-2xl mx-auto space-y-8">
         <PageHeader
-          title="New Student"
-          subtitle="Add a new voice student to the Voice Studio client database."
+          title="New student"
+          subtitle="Add a voice or piano student — start from your first conversation, or fill in the details."
           icon={Mic}
           actions={
             <Button
@@ -28,8 +39,25 @@ const VoiceNewClientPage = () => {
           }
         />
 
-        <div className="bg-card rounded-2xl border border-border p-8 shadow-xl">
-          <VoiceOnboardingForm onSuccess={() => navigate("/voice/clients")} />
+        <TranscriptOnboarding profile={profile} onProfile={handleProfile} />
+
+        <div className="space-y-4 border-t border-border pt-8">
+          <h2 className="text-[15px] font-semibold text-foreground">Details</h2>
+          <VoiceOnboardingForm
+            key={formKey}
+            initial={
+              profile
+                ? {
+                    name: profile.name,
+                    email: profile.email,
+                    phone: profile.phone,
+                    practice: profile.practice,
+                    notes: formatProfileNotes(profile),
+                  }
+                : undefined
+            }
+            onSuccess={() => navigate("/clients")}
+          />
         </div>
       </div>
     </AppLayout>

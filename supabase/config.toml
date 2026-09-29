@@ -105,3 +105,6 @@ verify_jwt = false
 
 [functions.people-backfill]
 verify_jwt = false
+
+[functions.voice-transcript-profile]
+verify_jwt = false

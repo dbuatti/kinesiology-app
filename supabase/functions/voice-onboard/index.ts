@@ -1,6 +1,8 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { requirePractitioner } from "../_shared/auth.ts";
+import { ensurePerson } from "../_shared/people.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,6 +11,38 @@ const corsHeaders = {
 };
 
 const VOICE_CLIENTS_DB_ID = "af3e38f400d84dc8975eff4b6269157b";
+
+// Notion caps each rich_text item at 2000 characters; a transcript profile is longer.
+const richText = (text: string) => {
+  const parts = [];
+  for (let i = 0; i < text.length && parts.length < 100; i += 2000) {
+    parts.push({ text: { content: text.slice(i, i + 2000) } });
+  }
+  return parts;
+};
+
+// The app is the main record for students: make sure they're in People and keep
+// the onboarding notes on their row. Non-fatal — Notion already has the copy.
+async function saveToPeople(opts: { email: string; name: string; practice: string; notes: string; notionPageId: string }) {
+  if (!opts.email) return null;
+  const admin = createClient(Deno.env.get("SUPABASE_URL"), Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"));
+  const clientId = await ensurePerson(admin, {
+    email: opts.email,
+    name: opts.name,
+    practice: opts.practice,
+    notionVoiceClientId: opts.notionPageId,
+  });
+  if (clientId && opts.notes) {
+    const { data: row } = await admin.from("clients").select("notes").eq("id", clientId).single();
+    const existing = (row?.notes || "").trim();
+    if (!existing.includes(opts.notes)) {
+      const notes = existing ? `${existing}\n\n${opts.notes}` : opts.notes;
+      const { error } = await admin.from("clients").update({ notes }).eq("id", clientId);
+      if (error) console.error("[voice-onboard] notes update failed:", error.message);
+    }
+  }
+  return clientId;
+}
 
 serve(async (req) => {
   const functionName = "voice-onboard";
@@ -23,7 +57,7 @@ serve(async (req) => {
     const NOTION_KEY = Deno.env.get("NOTION_API_KEY");
     if (!NOTION_KEY) throw new Error("Missing NOTION_API_KEY in Supabase Secrets.");
 
-    const { name, email, phone, notes } = await req.json();
+    const { name, email, phone, notes, practice } = await req.json();
     if (!name || !name.trim()) throw new Error("Full name is required.");
 
     const notionHeaders = {
@@ -72,7 +106,7 @@ serve(async (req) => {
       }
       if (notes && notes.trim()) {
         updateProperties["Additional Notes"] = {
-          rich_text: [{ text: { content: notes.trim() } }],
+          rich_text: richText(notes.trim()),
         };
       }
 
@@ -89,11 +123,19 @@ serve(async (req) => {
       }
 
       console.log(`[${functionName}] Existing client updated: ${existingPageId}`);
+      const clientId = await saveToPeople({
+        email: (email || "").trim(),
+        name: name.trim(),
+        practice: practice === "piano" ? "piano" : "voice",
+        notes: (notes || "").trim(),
+        notionPageId: existingPageId,
+      });
 
       return new Response(
         JSON.stringify({
           success: true,
           notionPageId: existingPageId,
+          clientId,
           updated: true,
           message: `Student ${name.trim()} already existed — updated their record.`,
         }),
@@ -119,7 +161,7 @@ serve(async (req) => {
     }
     if (notes && notes.trim()) {
       properties["Additional Notes"] = {
-        rich_text: [{ text: { content: notes.trim() } }],
+        rich_text: richText(notes.trim()),
       };
     }
 
@@ -140,12 +182,20 @@ serve(async (req) => {
     }
 
     console.log(`[${functionName}] Notion page created: ${data.id}`);
+    const clientId = await saveToPeople({
+      email: (email || "").trim(),
+      name: name.trim(),
+      practice: practice === "piano" ? "piano" : "voice",
+      notes: (notes || "").trim(),
+      notionPageId: data.id,
+    });
 
     return new Response(
       JSON.stringify({
         success: true,
         notionPageId: data.id,
         notionUrl: data.url,
+        clientId,
         updated: false,
         message: `Student ${name.trim()} onboarded successfully.`,
       }),

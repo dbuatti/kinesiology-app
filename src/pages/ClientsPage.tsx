@@ -280,8 +280,8 @@ export function ClientsTool() {
                   <Plus size={15} /> New client
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[550px] rounded-2xl p-0 overflow-hidden">
-                <div className="p-8">
+              <DialogContent className="w-[95vw] max-w-[550px] max-h-[90vh] overflow-y-auto rounded-2xl p-0">
+                <div className="p-6 sm:p-8">
                   <DialogHeader className="mb-6">
                     <DialogTitle className="text-xl font-serif font-medium tracking-tight">New client</DialogTitle>
                     <DialogDescription className="font-medium">Create a new client profile in your clinical database.</DialogDescription>
@@ -433,8 +433,8 @@ export function ClientsTool() {
       </div>
 
       <Dialog open={bookOpen} onOpenChange={setBookOpen}>
-        <DialogContent className="sm:max-w-[550px] rounded-2xl p-0 overflow-hidden">
-          <div className="p-8">
+        <DialogContent className="w-[95vw] max-w-[550px] max-h-[90vh] overflow-y-auto rounded-2xl p-0">
+          <div className="p-6 sm:p-8">
             <DialogHeader className="mb-6">
               <DialogTitle className="text-2xl font-semibold">Quick Book Session</DialogTitle>
               <DialogDescription className="font-medium">Schedule a new appointment for this client.</DialogDescription>

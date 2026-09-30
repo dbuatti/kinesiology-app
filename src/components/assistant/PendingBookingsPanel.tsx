@@ -18,6 +18,7 @@ interface Props {
 type Row = {
   id: string; kind: "fnh" | "voice"; client_id: string | null; student_name: string | null; student_email: string | null;
   event_type_id: string | null; slot_start: string; reason: string | null; discipline?: string | null;
+  reschedule_uid?: string | null; reschedule_from?: string | null;
   clients: { name: string | null } | { name: string | null }[] | null;
 };
 
@@ -32,6 +33,8 @@ function toPending(p: Row): PendingBooking {
     notes: p.reason,
     discipline: p.kind === "voice" ? p.discipline ?? null : null,
     proposal_id: p.id,
+    reschedule_uid: p.reschedule_uid ?? null,
+    reschedule_from: p.reschedule_from ?? null,
   };
 }
 

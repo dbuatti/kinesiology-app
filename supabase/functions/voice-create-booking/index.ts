@@ -25,26 +25,32 @@ serve(async (req) => {
     const NOTION_KEY = Deno.env.get('NOTION_API_KEY');
 
     const body = await req.json();
-    let { studentName, studentEmail } = body;
-    const { startTime, eventTypeId, title, notes, bookingUid, notionLessonId1, notionLessonId2, force, discipline } = body;
+    let { studentName, studentEmail, notionLessonId1, notionLessonId2 } = body;
+    const { startTime, eventTypeId, title, notes, bookingUid, force, discipline } = body;
 
     if (!startTime) throw new Error("Missing startTime.");
 
     // For a RESCHEDULE we already have an existing booking — backfill the student
     // from voice_bookings if the caller didn't supply name/email (e.g. a Notion
-    // lesson with no email on file). New bookings still require them (checked below).
+    // lesson with no email on file), and its Notion lesson pages (a reschedule
+    // made from an email reply only knows the Cal.com uid) so they move too.
+    // New bookings still require name/email (checked below).
     const isReschedule = bookingUid && bookingUid !== "undefined" && bookingUid !== "null" && bookingUid !== "";
-    if (isReschedule && (!studentName || !studentEmail)) {
+    if (isReschedule && (!studentName || !studentEmail || (!notionLessonId1 && !notionLessonId2))) {
       try {
         const lookup = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
         const { data: existing } = await lookup
           .from("voice_bookings")
-          .select("student_name, student_email")
+          .select("student_name, student_email, notion_lesson_id_1, notion_lesson_id_2")
           .eq("calcom_booking_id", bookingUid)
           .maybeSingle();
         if (existing) {
           studentName = studentName || existing.student_name;
           studentEmail = studentEmail || existing.student_email;
+          if (!notionLessonId1 && !notionLessonId2) {
+            notionLessonId1 = existing.notion_lesson_id_1 || null;
+            notionLessonId2 = existing.notion_lesson_id_2 || null;
+          }
         }
       } catch (e) {
         console.error(`[${functionName}] Reschedule student lookup failed:`, e.message);

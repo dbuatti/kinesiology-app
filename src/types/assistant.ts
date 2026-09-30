@@ -19,6 +19,11 @@ export interface PendingBooking {
   // Simulator reads/writes) — null if that insert failed for some reason,
   // in which case confirming still works but won't show on the Simulator.
   proposal_id?: string | null;
+  // Set when this pencil MOVES an existing booking (e.g. from an email asking
+  // to reschedule): the Cal.com uid to reschedule and its current start.
+  // Confirm then moves that booking instead of creating a second one.
+  reschedule_uid?: string | null;
+  reschedule_from?: string | null;
 }
 
 export interface AssistantMessage {

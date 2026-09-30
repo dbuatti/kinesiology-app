@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 
 // Pencilled bookings (`booking_proposals`) are confirmed from three places —
@@ -22,11 +23,14 @@ export interface ConfirmBookingInput {
   eventTypeId?: string | number | null;
   notes?: string | null;
   discipline?: string | null;
+  /** Cal.com uid of an existing booking this pencil moves (reschedule, not a new booking). */
+  rescheduleUid?: string | null;
 }
 
 export interface ConfirmBookingResult {
   uid: string;
   alreadyBooked: boolean;
+  rescheduled: boolean;
 }
 
 function normDiscipline(d: unknown): LessonDiscipline | null {
@@ -37,6 +41,7 @@ function normDiscipline(d: unknown): LessonDiscipline | null {
 /** Books one pencilled slot in Cal.com and marks its proposal confirmed. */
 export async function confirmBooking(input: ConfirmBookingInput): Promise<ConfirmBookingResult> {
   let discipline = normDiscipline(input.discipline);
+  let rescheduleUid = input.rescheduleUid || null;
 
   // Re-read the row first: it may have been confirmed or dropped elsewhere
   // (Timetable, another tab) since this card was drawn.
@@ -48,10 +53,13 @@ export async function confirmBooking(input: ConfirmBookingInput): Promise<Confir
       .maybeSingle();
     if (row?.status === "confirmed") {
       notifyProposalsChanged();
-      return { uid: String(row.calcom_booking_id || ""), alreadyBooked: true };
+      return { uid: String(row.calcom_booking_id || ""), alreadyBooked: true, rescheduled: false };
     }
     if (row?.status === "dropped") throw new Error(`${input.name}'s pencil for this time was dropped — nothing booked.`);
     discipline = discipline || normDiscipline((row as { discipline?: string | null } | null)?.discipline);
+    // Set by supabase_booking_proposals_reschedule.sql — a pencil that moves
+    // an existing booking, whichever screen it's confirmed from.
+    rescheduleUid = rescheduleUid || (row as { reschedule_uid?: string | null } | null)?.reschedule_uid || null;
   }
 
   let uid: string | null = null;
@@ -64,10 +72,19 @@ export async function confirmBooking(input: ConfirmBookingInput): Promise<Confir
         eventTypeId: input.eventTypeId || undefined,
         title: `${input.name} - Kinesiology`,
         notes: input.notes || undefined,
+        bookingUid: rescheduleUid || undefined,
       },
     });
     if (error || !data?.success) throw new Error(data?.error || error?.message || "Cal.com booking failed.");
     uid = data.uid;
+    // Same as the Calendar's Reschedule: keep the session row on the new
+    // Cal.com uid and time so it isn't left on the old date.
+    if (rescheduleUid && uid) {
+      const start = new Date(input.startISO);
+      await supabase.from("appointments")
+        .update({ calcom_booking_id: uid, date: start.toISOString(), time: format(start, "h:mm a") })
+        .eq("calcom_booking_id", rescheduleUid);
+    }
   } else {
     if (!input.name || !input.email) {
       throw new Error("Missing student details for this lesson — it has no email, so it can't be booked to Cal.com. Drop it and pencil it in again with the student's email.");
@@ -82,6 +99,7 @@ export async function confirmBooking(input: ConfirmBookingInput): Promise<Confir
         notes: input.notes || undefined,
         title: lesson === "piano" ? "Piano Lesson" : "Voice Lesson",
         discipline: lesson,
+        bookingUid: rescheduleUid || undefined,
       },
     });
     if (error || data?.error) throw new Error(data?.error || error?.message || "Lesson booking failed.");
@@ -99,7 +117,7 @@ export async function confirmBooking(input: ConfirmBookingInput): Promise<Confir
     if (error) throw error;
   }
   notifyProposalsChanged();
-  return { uid: String(uid), alreadyBooked: false };
+  return { uid: String(uid), alreadyBooked: false, rescheduled: !!rescheduleUid };
 }
 
 export async function dropBooking(proposalId: string) {

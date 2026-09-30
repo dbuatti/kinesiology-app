@@ -30,6 +30,7 @@ async function confirmPending(b: PendingBooking) {
     eventTypeId: b.event_type_id,
     notes: b.notes,
     discipline: b.discipline,
+    rescheduleUid: b.reschedule_uid,
   });
 }
 
@@ -56,8 +57,8 @@ export default function BookingProposalCard({ bookings, onResolved, bare }: Prop
   const confirmOne = async (b: PendingBooking, quiet = false) => {
     mark(b, true);
     try {
-      const { alreadyBooked } = await confirmPending(b);
-      if (!quiet) showSuccess(alreadyBooked ? `${b.client_name} was already booked for ${fmtMelbourne(b.start_iso)}.` : `Booked ${b.client_name} for ${fmtMelbourne(b.start_iso)}.`);
+      const { alreadyBooked, rescheduled } = await confirmPending(b);
+      if (!quiet) showSuccess(alreadyBooked ? `${b.client_name} was already booked for ${fmtMelbourne(b.start_iso)}.` : rescheduled ? `Moved ${b.client_name} to ${fmtMelbourne(b.start_iso)}.` : `Booked ${b.client_name} for ${fmtMelbourne(b.start_iso)}.`);
       await onResolved(b);
       return true;
     } catch (err) {
@@ -124,7 +125,14 @@ export default function BookingProposalCard({ bookings, onResolved, bare }: Prop
                   {b.client_name}
                   <span className="text-xs font-normal text-muted-foreground">· {sessionLabel(b)}</span>
                 </p>
-                <p className="text-muted-foreground">{fmtMelbourne(b.start_iso)}</p>
+                {b.reschedule_uid ? (
+                  <p className="text-muted-foreground">
+                    {b.reschedule_from ? <><span className="line-through">{fmtMelbourne(b.reschedule_from)}</span> → </> : "Move to "}
+                    <span className="font-medium text-foreground">{fmtMelbourne(b.start_iso)}</span>
+                  </p>
+                ) : (
+                  <p className="text-muted-foreground">{fmtMelbourne(b.start_iso)}</p>
+                )}
                 {b.notes && <p className="text-xs text-muted-foreground mt-0.5">{b.notes}</p>}
               </div>
               <div className="flex gap-1.5">
@@ -134,7 +142,7 @@ export default function BookingProposalCard({ bookings, onResolved, bare }: Prop
                 <Button size="sm" variant={bookings.length > 1 ? "outline" : "default"} onClick={() => confirmOne(b)} disabled={busy}
                   className={bookings.length > 1 ? "" : "bg-chart-emerald hover:bg-chart-emerald/90"}>
                   {rowBusy ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
-                  Confirm
+                  {b.reschedule_uid ? "Confirm move" : "Confirm"}
                 </Button>
               </div>
             </li>

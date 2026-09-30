@@ -6,6 +6,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { requirePractitioner } from "../_shared/auth.ts";
+import { findUpcomingBookings, fmtBookingWhen } from "../_shared/upcoming-bookings.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -66,55 +67,51 @@ async function generateDraft(prompt: string): Promise<any> {
 }
 
 // Real Cal.com availability, fetched straight from this function so the reply
-// can name concrete times. Previously the CLIENT did this first (up to three
-// sequential get-calcom-slots edge-function calls — 14/45/90-day widening)
-// and forwarded the labels here; moving it server-side removes up to three
-// full function cold-start round-trips from the critical path. Same widening
-// behaviour, same label format, and callers can still pass `available_slots`
-// to override (used by nothing today, kept for compatibility).
-async function fetchSlotsLabels(): Promise<string[]> {
+// can name concrete times. One line per day over the next 10 weeks — it used
+// to be the first 40 slots of the soonest non-empty window (14/45/90 days),
+// so a client asking about a date a month out ("is Tuesday 3 November still
+// an option?") got told nothing matched when that day was wide open. Callers
+// can still pass `available_slots` to override (used by nothing today).
+const SLOT_WINDOW_DAYS = 70;
+const MAX_TIMES_PER_DAY = 12;
+
+async function fetchSlotsLabels(eventTypeId = "4279898"): Promise<string[]> {
   const CALCOM_KEY = Deno.env.get("CALCOM_API_KEY");
   if (!CALCOM_KEY) return [];
-  const eventTypeId = "4279898";
-  const windowsToTry = [14, 45, 90];
-  for (const days of windowsToTry) {
-    const start = new Date();
-    const end = new Date();
-    end.setDate(end.getDate() + days);
-    const url = new URL("https://api.cal.com/v2/slots");
-    url.searchParams.set("start", start.toISOString());
-    url.searchParams.set("end", end.toISOString());
-    url.searchParams.set("eventTypeId", eventTypeId);
-    url.searchParams.set("timeZone", "Australia/Melbourne");
-    let res: Response;
-    try {
-      res = await fetch(url.toString(), {
-        method: "GET",
-        headers: { Authorization: `Bearer ${CALCOM_KEY}`, "cal-api-version": "2024-09-04", "Content-Type": "application/json" },
-      });
-    } catch {
-      continue;
-    }
-    if (!res.ok) continue;
-    const data = await res.json().catch(() => ({}));
-    const raw = data?.data?.slots || data?.data || {};
-    const labels: string[] = [];
-    for (const entries of Object.values<any>(raw)) {
-      for (const e of entries || []) {
-        const iso = e?.start || e?.time;
-        if (!iso) continue;
-        const d = new Date(iso);
-        const label = d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: "Australia/Melbourne" }) +
-          " " + d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Australia/Melbourne" });
-        labels.push(label);
-        if (labels.length >= 40) break;
-      }
-      if (labels.length >= 40) break;
-    }
-    // First non-empty window wins — prefer the soonest real availability.
-    if (labels.length) return labels;
+  const start = new Date();
+  const end = new Date();
+  end.setDate(end.getDate() + SLOT_WINDOW_DAYS);
+  const url = new URL("https://api.cal.com/v2/slots");
+  url.searchParams.set("start", start.toISOString());
+  url.searchParams.set("end", end.toISOString());
+  url.searchParams.set("eventTypeId", eventTypeId);
+  url.searchParams.set("timeZone", "Australia/Melbourne");
+  let res: Response;
+  try {
+    res = await fetch(url.toString(), {
+      method: "GET",
+      headers: { Authorization: `Bearer ${CALCOM_KEY}`, "cal-api-version": "2024-09-04", "Content-Type": "application/json" },
+    });
+  } catch {
+    return [];
   }
-  return [];
+  if (!res.ok) return [];
+  const data = await res.json().catch(() => ({}));
+  const raw = data?.data?.slots || data?.data || {};
+  const byDay = new Map<string, string[]>();
+  const isos = Object.values<any>(raw).flat()
+    .map((e: any) => (typeof e === "string" ? e : e?.start || e?.time))
+    .filter(Boolean)
+    .sort((a: string, b: string) => new Date(a).getTime() - new Date(b).getTime());
+  for (const iso of isos) {
+    const d = new Date(iso);
+    const day = d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: "Australia/Melbourne" });
+    const time = d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Australia/Melbourne" });
+    if (!byDay.has(day)) byDay.set(day, []);
+    byDay.get(day)!.push(time);
+  }
+  return [...byDay.entries()].map(([day, times]) =>
+    `${day}: ${times.slice(0, MAX_TIMES_PER_DAY).join(", ")}${times.length > MAX_TIMES_PER_DAY ? ` (+${times.length - MAX_TIMES_PER_DAY} more)` : ""}`);
 }
 
 async function loadClientContext(client_id: string) {
@@ -148,7 +145,7 @@ serve(async (req) => {
   if (authErr) return authErr;
 
   try {
-    const { client_id, client_name, is_voice, thread_messages, goal, available_slots } = await req.json();
+    const { client_id, client_name, client_email, is_voice, thread_messages, goal, available_slots } = await req.json();
 
     // Same fallback pattern used elsewhere (send-manual-onboarding etc.) —
     // if a draft mentions the self-serve portal, it needs the real domain,
@@ -162,10 +159,20 @@ serve(async (req) => {
     // Client context and real availability in ONE parallel fetch — neither
     // depends on the other, so serialising them (as the old client-side flow
     // implicitly did via sequenced edge-function calls) just added latency.
+    // Their upcoming bookings first: a reply to "I can't make the 26th" should
+    // know what the 26th is, and offer times for that same kind and length.
+    const upcoming = await findUpcomingBookings(
+      createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""),
+      client_email || null, client_id || null,
+    ).catch(() => []);
+    const slotEventType = upcoming.find((b) => b.eventTypeId)?.eventTypeId || undefined;
     const [{ styleSummary, sessionNotesBlock }, availableSlots] = await Promise.all([
       client_id ? loadClientContext(client_id) : Promise.resolve({ styleSummary: "", sessionNotesBlock: "" }),
-      (available_slots || []).length ? Promise.resolve((available_slots as string[]).slice(0, 40)) : fetchSlotsLabels(),
+      (available_slots || []).length ? Promise.resolve((available_slots as string[]).slice(0, 40)) : fetchSlotsLabels(slotEventType),
     ]);
+    const upcomingBlock = upcoming.length
+      ? `THEIR UPCOMING BOOKINGS (already in the calendar — if they're asking to move or can't make one of these, reply about THAT booking by its date, and only offer times from the slots list as the new time):\n${upcoming.map((b) => `- ${fmtBookingWhen(b.start)}${b.kind ? ` (${b.kind})` : ""}`).join("\n")}\n`
+      : "";
 
     // Keep only the last handful of messages — enough context, not the whole history.
     const recent = (thread_messages || []).slice(-8);
@@ -174,7 +181,7 @@ serve(async (req) => {
       : "(no prior messages — this will be a fresh email, not a reply)";
 
     const slotsBlock = availableSlots.length
-      ? `Daniele's REAL AVAILABLE SLOTS right now (only source of truth for times — never invent one outside this list):\n${availableSlots.map((s) => `- ${s}`).join("\n")}\n`
+      ? `Daniele's REAL AVAILABLE SLOTS right now, by day (only source of truth for times — never invent one outside this list; a day that isn't listed has nothing free):\n${availableSlots.map((s) => `- ${s}`).join("\n")}\n`
       : "";
 
     const prompt = `You are drafting an email reply on behalf of Daniele, a solo kinesiology/voice-lesson practitioner, to his client ${client_name || "the client"}.
@@ -184,6 +191,7 @@ ${transcript}
 
 ${sessionNotesBlock ? `RECENT SESSION HISTORY (from Daniele's own clinical notes — use this to sound like someone who actually knows this client, e.g. referencing real progress or what was flagged for next time, not generic pleasantries):\n${sessionNotesBlock}\n` : ""}
 ${styleSummary ? `HOW THIS CLIENT TYPICALLY COMMUNICATES:\n${styleSummary}\n` : ""}
+${upcomingBlock}
 ${slotsBlock}
 ${goal ? `WHAT DANIELE WANTS THIS REPLY TO ACHIEVE (follow this closely — it's a direct instruction from Daniele, not a suggestion): ${goal}\n` : ""}
 

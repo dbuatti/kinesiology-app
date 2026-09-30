@@ -8,6 +8,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { requirePractitioner } from "../_shared/auth.ts";
+import { findUpcomingBookings, fmtBookingWhen } from "../_shared/upcoming-bookings.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -1169,10 +1170,17 @@ async function runProposeBooking(supabase: any, supabaseUrl: string, serviceKey:
       result: { status: "already_booked", note: "That slot is already confirmed in Cal.com for this person — nothing new to pencil in or confirm." },
     };
   }
+  // A pencil that MOVES an existing booking (from an email asking to
+  // reschedule) records which one, so Confirm reschedules it in Cal.com
+  // instead of creating a second booking.
+  const move = args.reschedule_uid
+    ? { reschedule_uid: String(args.reschedule_uid), reschedule_from: args.reschedule_from || null }
+    : null;
   if (existing) {
     const label = isVoice && durationMin ? `${durationMin}-minute` : "standard";
+    if (move) await supabase.from("booking_proposals").update(move).eq("id", existing.id);
     return {
-      pendingBooking: { client_id: isVoice ? null : args.client_id, voice_student_email: isVoice ? args.voice_student_email : null, client_name: args.client_name, start_iso: startISO, event_type_id: eventTypeId, notes: args.notes || null, discipline: discipline?.value ?? null, proposal_id: existing.id },
+      pendingBooking: { client_id: isVoice ? null : args.client_id, voice_student_email: isVoice ? args.voice_student_email : null, client_name: args.client_name, start_iso: startISO, event_type_id: eventTypeId, notes: args.notes || null, discipline: discipline?.value ?? null, proposal_id: existing.id, ...(move || {}) },
       result: { status: "proposed", note: `That exact slot is already pencilled in for this ${label} ${isVoice ? `${discipline?.value || "voice"} lesson` : "FNH session"} — I reused the existing pencil instead of creating a duplicate. If you want a different time, pick a new slot or drop the existing pencil first. ${WHERE_TO_CONFIRM}` },
     };
   }
@@ -1189,15 +1197,24 @@ async function runProposeBooking(supabase: any, supabaseUrl: string, serviceKey:
     status: "proposed",
     reason: args.notes || null,
   };
+  const extras: Record<string, unknown> = {
+    ...(discipline ? { discipline: discipline.value } : {}),
+    ...(move || {}),
+  };
   let { data, error } = await supabase
     .from("booking_proposals")
-    .insert(discipline ? { ...row, discipline: discipline.value } : row)
+    .insert({ ...row, ...extras })
     .select("id")
     .single();
-  // Until supabase_booking_proposals_discipline.sql is applied the column
-  // doesn't exist — save the pencil without it rather than losing it.
-  if (error && discipline && /discipline/i.test(error.message || "")) {
-    ({ data, error } = await supabase.from("booking_proposals").insert(row).select("id").single());
+  // Until supabase_booking_proposals_discipline.sql / _reschedule.sql are
+  // applied those columns don't exist — save the pencil without them rather
+  // than losing it. (A move still confirms correctly from the card it came
+  // with, which carries the booking to move.)
+  for (let tries = 0; error && tries < 3; tries++) {
+    const missing = Object.keys(extras).filter((k) => (error.message || "").includes(k));
+    if (!missing.length) break;
+    for (const k of missing) delete extras[k];
+    ({ data, error } = await supabase.from("booking_proposals").insert({ ...row, ...extras }).select("id").single());
   }
 
   const pendingBooking = {
@@ -1207,6 +1224,7 @@ async function runProposeBooking(supabase: any, supabaseUrl: string, serviceKey:
     event_type_id: eventTypeId, notes: args.notes || null,
     discipline: discipline?.value ?? null,
     proposal_id: error ? null : data.id,
+    ...(move || {}),
   };
   if (error) console.error("[assistant-chat] PROPOSAL_INSERT_FAILED:", error.message);
   const durationLabel = isVoice && durationMin ? `${durationMin}-minute` : null;
@@ -2226,43 +2244,71 @@ async function runBookFromEmail(ctx: {
     `[${fmtWhen(m.date)}] ${m.direction === "inbound" ? (name || "Client") : "Daniele"}: ${String(m.body || "").slice(0, 1500)}`).join("\n\n");
   const offered = practices.length ? practices.join(", ") : "kinesiology";
 
+  // What they're already booked for — so "I can't make the 26th, is the 3rd
+  // ok?" moves that booking instead of adding a second one.
+  const upcoming = await findUpcomingBookings(supabase, email, clientId);
+  const upcomingBlock = upcoming.length
+    ? upcoming.map((b, i) => `[${i + 1}] ${fmtBookingWhen(b.start)}${b.kind ? ` — ${b.kind}` : ""}`).join("\n")
+    : "(none)";
+
   const prompt = `Today is ${melbourneNow()} in Melbourne, Australia. Daniele is a practitioner offering kinesiology (FNH) sessions and voice and piano lessons. ${name || "The client"} does: ${offered}.
+
+THEIR UPCOMING BOOKINGS (already in the calendar):
+${upcomingBlock}
 
 EMAIL THREAD (oldest first, times in Melbourne):
 ${transcript}
 
-Find the session date and time ${name || "the client"} has asked to book or agreed to in their most recent message. Use the thread for context: "the Thursday one works" means the Thursday time Daniele offered. Resolve relative dates ("next Tuesday", "the 15th") against the date of THEIR message, always to a future date. If they offered several options and didn't pick one, or no specific time is given, set found to false and say why in note.
+Find the session date and time ${name || "the client"} has asked to book or agreed to in their most recent message. Use the thread for context: "the Thursday one works" means the Thursday time Daniele offered. Resolve relative dates ("next Tuesday", "the 15th") against the date of THEIR message, always to a future date. If they give a first choice with fallbacks ("is Tuesday the 3rd still an option? otherwise any Monday or Tuesday"), use the first choice. If they offered several options and didn't pick one, or no specific time is given, set found to false and say why in note.
+
+If their most recent message asks to move, reschedule or can't make one of THEIR UPCOMING BOOKINGS, set moves_booking to that booking's number (else null) — even when no new time is given. When they're moving a booking and name a new date but no time, use the same time of day as the booking they're moving, and say so in note.
 
 Also decide the session kind: "kinesiology", "voice" or "piano" — from what they say, else from what they do (only choose one they do). Set length_min (30, 45 or 60) ONLY if they state a length; otherwise null.
 
-Return ONLY JSON: {"found": true|false, "start_local": "YYYY-MM-DDTHH:MM" (Melbourne time) or null, "session_kind": "kinesiology"|"voice"|"piano"|null, "length_min": 30|45|60|null, "quote": "the exact words they used for the time", "note": "short reason if not found or anything uncertain"}`;
+Return ONLY JSON: {"found": true|false, "start_local": "YYYY-MM-DDTHH:MM" (Melbourne time) or null, "moves_booking": number|null, "session_kind": "kinesiology"|"voice"|"piano"|null, "length_min": 30|45|60|null, "quote": "the exact words they used for the time", "note": "short reason if not found or anything uncertain"}`;
 
   const parsed = await extractRequestedTime(geminiKeys, prompt);
+  const moveIdx = Number(parsed?.moves_booking);
+  const moving = Number.isInteger(moveIdx) && moveIdx >= 1 && moveIdx <= upcoming.length ? upcoming[moveIdx - 1] : null;
+  const movingSummary = moving ? { when: fmtBookingWhen(moving.start), start_iso: moving.start, kind: moving.kind } : null;
   if (!parsed?.found || !parsed?.start_local) {
-    return { none: true, note: parsed?.note || "No specific time found in their latest message." };
+    const note = moving
+      ? `${name || "They"} want${name ? "s" : ""} to move ${fmtBookingWhen(moving.start)} but didn't give a new time — Suggest reply can offer some.`
+      : parsed?.note || "No specific time found in their latest message.";
+    return { none: true, note, moving: movingSummary };
   }
   const start = melbourneLocalToUtc(parsed.start_local);
   if (!start || isNaN(start.getTime())) return { error: "Couldn't work out the date from their email — book it by hand." };
   if (start.getTime() < Date.now()) return { error: `The time they mentioned (${fmtWhen(start.toISOString())}) has already passed.` };
+  if (moving && new Date(moving.start).getTime() === start.getTime()) {
+    return { error: `They're already booked for ${fmtBookingWhen(moving.start)} — nothing to move.` };
+  }
 
-  // Kind: what they asked for if they do it; else their only practice.
+  // Kind: a move keeps the kind of the booking being moved; otherwise what
+  // they asked for if they do it; else their only practice.
   const lessonKinds = practices.filter((p) => p === "voice" || p === "piano");
   const does = (k: string) => practices.includes(k);
-  let kind: string = ["kinesiology", "voice", "piano"].includes(parsed.session_kind) && does(parsed.session_kind) ? parsed.session_kind : "";
+  let kind: string = moving?.kind || (["kinesiology", "voice", "piano"].includes(parsed.session_kind) && does(parsed.session_kind) ? parsed.session_kind : "");
   if (!kind) kind = practices.length === 1 ? practices[0] : does("kinesiology") ? "kinesiology" : lessonKinds[0] || "kinesiology";
   const isLesson = kind === "voice" || kind === "piano";
   if (isLesson && !email) return { error: "They have no email on record, so a lesson can't be booked for them." };
   if (!isLesson && !clientId) return { error: "They don't have a client record, so a kinesiology session can't be booked." };
 
+  // A move keeps the moved booking's service and length (Cal.com reschedules
+  // it as the same event type anyway).
   const length = [30, 45, 60].includes(Number(parsed.length_min)) ? Number(parsed.length_min) : null;
+  const eventTypeId = moving?.eventTypeId || (isLesson && length ? voiceEventTypeIdForLength(length) : undefined);
+  const quoteNote = parsed.quote ? `From their email: "${String(parsed.quote).slice(0, 160)}"` : "From their email";
   const proposed = await runProposeBooking(supabase, supabaseUrl, serviceKey, userId, {
     client_id: isLesson ? undefined : clientId,
     voice_student_email: isLesson ? email : undefined,
     client_name: name || email || "Client",
     start_iso: start.toISOString(),
-    event_type_id: isLesson && length ? voiceEventTypeIdForLength(length) : undefined,
+    event_type_id: eventTypeId,
     discipline: isLesson ? kind : undefined,
-    notes: parsed.quote ? `From their email: "${String(parsed.quote).slice(0, 160)}"` : "From their email",
+    notes: moving ? `Moved from ${fmtBookingWhen(moving.start)}. ${quoteNote}` : quoteNote,
+    reschedule_uid: moving?.uid,
+    reschedule_from: moving?.start,
   });
   if (!proposed.pendingBooking) return { error: proposed.result?.note || proposed.result?.error || "Couldn't pencil that in." };
 
@@ -2279,7 +2325,7 @@ Return ONLY JSON: {"found": true|false, "start_local": "YYYY-MM-DDTHH:MM" (Melbo
 
   return {
     pending_booking: proposed.pendingBooking,
-    summary: { when: fmtWhen(start.toISOString()), kind, quote: parsed.quote || null, note: parsed.note || null, available, result: proposed.result },
+    summary: { when: fmtWhen(start.toISOString()), kind, quote: parsed.quote || null, note: parsed.note || null, available, moving: movingSummary, result: proposed.result },
   };
 }
 

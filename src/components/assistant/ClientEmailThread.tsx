@@ -105,7 +105,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
   const [pendingProposal, setPendingProposal] = useState<PendingBooking | null>(null);
   const [bookingFromEmail, setBookingFromEmail] = useState(false);
   // What "Book the time they asked for" found — shown above the confirm card.
-  const [bookedFrom, setBookedFrom] = useState<{ when: string; quote: string | null; available: boolean | null } | null>(null);
+  const [bookedFrom, setBookedFrom] = useState<{ when: string; quote: string | null; available: boolean | null; note: string | null } | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Without this, a loaded thread renders scrolled to the OLDEST message —
@@ -151,6 +151,8 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
       notes: data.reason,
       discipline: data.discipline ?? null,
       proposal_id: data.id,
+      reschedule_uid: data.reschedule_uid ?? null,
+      reschedule_from: data.reschedule_from ?? null,
     });
   }, [clientId, clientEmail, clientName]);
 
@@ -335,6 +337,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
         body: {
           client_id: hasClientRecord ? clientId : null,
           client_name: clientName,
+          client_email: clientEmail || null,
           is_voice: !hasClientRecord,
           thread_messages: messages.map((m) => ({ direction: m.direction, body: m.body })),
           goal: suggestGoal.trim() || undefined,
@@ -370,11 +373,15 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
       });
       if (error) throw new Error(await extractFnError(error, "Couldn't book from their email."));
       if (data?.error) throw new Error(data.error);
+      // "Can't make the 26th" with no new time: say which booking they mean,
+      // so the next step (Suggest reply) is obvious.
       if (data?.none) { showError(data.note || "No specific time found in their latest message."); return; }
       if (!data?.pending_booking) throw new Error("Couldn't pencil that in.");
       setPendingProposal(data.pending_booking);
-      setBookedFrom({ when: data.summary?.when || "", quote: data.summary?.quote || null, available: data.summary?.available ?? null });
-      showSuccess(`Pencilled in ${data.summary?.when || ""} — confirm below to book it.`);
+      setBookedFrom({ when: data.summary?.when || "", quote: data.summary?.quote || null, available: data.summary?.available ?? null, note: data.summary?.note || null });
+      showSuccess(data.summary?.moving
+        ? `Pencilled a move from ${data.summary.moving.when} to ${data.summary?.when || ""} — confirm below to move it.`
+        : `Pencilled in ${data.summary?.when || ""} — confirm below to book it.`);
     } catch (err) {
       showError((err as Error)?.message || "Couldn't book from their email.");
     } finally {
@@ -518,6 +525,8 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
             {bookedFrom && (
               <p className="text-[11px] text-muted-foreground mb-2">
                 Read from their email{bookedFrom.quote ? <> — “{bookedFrom.quote}”</> : null}.{" "}
+                {pendingProposal.reschedule_uid && <span>This moves their existing booking, it doesn't add a second one. </span>}
+                {bookedFrom.note && <span>{bookedFrom.note} </span>}
                 {bookedFrom.available === false && (
                   <span className="font-semibold text-chart-destructive">That time isn't open in Cal.com — check the calendar before confirming.</span>
                 )}

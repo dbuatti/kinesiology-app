@@ -285,7 +285,7 @@ serve(async (req) => {
             event_type: 'onboarding-email',
             reference: calcomId,
             detail: `Onboarding email failed for ${email} (${resp.status}): ${errText}`.slice(0, 500),
-          }).catch(() => {});
+          });
         } else {
           console.log(`[${functionName}] Onboarding email dispatched for ${email}`);
         }
@@ -297,7 +297,7 @@ serve(async (req) => {
           event_type: 'onboarding-email',
           reference: calcomId,
           detail: `Onboarding email error for ${email}: ${e.message}`.slice(0, 500),
-        }).catch(() => {});
+        });
       }
     }
 

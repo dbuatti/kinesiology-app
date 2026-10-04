@@ -78,6 +78,102 @@ async function sendFnhPaymentConfirmation(to: string | null, name: string | null
   }
 }
 
+// One shape for a successful payment, whichever event announced it. The Stripe
+// endpoint is subscribed to payment_intent.* — a PaymentIntent created by Checkout
+// carries no metadata, customer or email, so look up its Checkout Session, which
+// holds the appointment_id/client_id (send-manual-onboarding) and the payer's email.
+async function resolvePayment(stripe: Stripe, event: any) {
+  const obj = event.data.object;
+  let session: any = null;
+  let intent: any = null;
+
+  if (event.type === 'checkout.session.completed') {
+    if (obj.payment_status !== 'paid') return null;
+    session = obj;
+  } else {
+    intent = obj;
+    try {
+      const list = await stripe.checkout.sessions.list({ payment_intent: intent.id, limit: 1 });
+      session = list.data[0] || null;
+    } catch (e) {
+      console.log(`[stripe-webhook] Checkout Session lookup failed for ${intent.id}: ${e.message}`);
+    }
+  }
+
+  const customerId = session?.customer || intent?.customer || null;
+  let email = session?.customer_details?.email || session?.customer_email || intent?.receipt_email || null;
+  if (!email && customerId) {
+    try {
+      const customer = await stripe.customers.retrieve(customerId);
+      if (!customer.deleted) email = customer.email;
+    } catch (e) {
+      console.log(`[stripe-webhook] Failed to retrieve customer ${customerId}: ${e.message}`);
+    }
+  }
+
+  const metadata = { ...(intent?.metadata || {}), ...(session?.metadata || {}) };
+  return {
+    paymentIntentId: intent?.id || session?.payment_intent || session?.id || null,
+    appointmentId: metadata.appointment_id || null,
+    clientIds: [session?.client_reference_id, metadata.client_id].filter(Boolean),
+    customerId,
+    email: email ? email.toLowerCase().trim() : null,
+    name: session?.customer_details?.name || metadata.student_name || null,
+    amountCents: session?.amount_total ?? intent?.amount_received ?? intent?.amount ?? null,
+    currency: session?.currency || intent?.currency || 'aud',
+  };
+}
+
+// Which appointment this payment is for. The appointment_id from the Checkout
+// Session wins — a Cal.com reschedule keeps the same row (calcom-webhook updates
+// it in place), so it still points at the moved session. Otherwise fall back to
+// the client's latest unpaid, not-cancelled appointment.
+async function findAppointment(supabase: any, payment: any) {
+  if (payment.paymentIntentId) {
+    const { data, error } = await supabase
+      .from('appointments')
+      .select('id')
+      .eq('stripe_payment_intent_id', payment.paymentIntentId)
+      .limit(1);
+    // A missing column just means the migration isn't applied yet — carry on.
+    if (!error && data?.length) return { id: data[0].id, via: 'payment intent', method: 'Stripe' };
+  }
+
+  if (payment.appointmentId) {
+    const { data } = await supabase.from('appointments').select('id').eq('id', payment.appointmentId).maybeSingle();
+    if (data) return { id: data.id, via: 'metadata', method: 'Stripe' };
+    console.log(`[stripe-webhook] Appointment ${payment.appointmentId} from metadata no longer exists — falling back`);
+  }
+
+  const candidates: { clientId: string; via: string; method: string }[] = [];
+  for (const id of payment.clientIds) {
+    const { data } = await supabase.from('clients').select('id').eq('id', id).maybeSingle();
+    if (data) candidates.push({ clientId: data.id, via: 'client id', method: 'Stripe' });
+  }
+  if (payment.customerId) {
+    const { data } = await supabase.from('clients').select('id').eq('stripe_customer_id', payment.customerId).maybeSingle();
+    if (data) candidates.push({ clientId: data.id, via: 'stripe customer', method: 'Stripe (Mobile App)' });
+  }
+  if (payment.email) {
+    const { data } = await supabase.from('clients').select('id').eq('email', payment.email).maybeSingle();
+    if (data) candidates.push({ clientId: data.id, via: 'email', method: 'Stripe' });
+  }
+
+  for (const c of candidates) {
+    const { data: app } = await supabase
+      .from('appointments')
+      .select('id')
+      .eq('client_id', c.clientId)
+      .eq('payment_received', false)
+      .or('status.is.null,status.not.ilike.cancelled')
+      .order('date', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (app) return { id: app.id, via: c.via, method: c.method };
+  }
+  return null;
+}
+
 serve(async (req) => {
   const signature = req.headers.get('stripe-signature');
   const STRIPE_KEY = Deno.env.get('STRIPE_SECRET_KEY');
@@ -103,160 +199,76 @@ serve(async (req) => {
     console.log(`[stripe-webhook] Processing event: ${event.type}`);
 
     if (event.type === 'payment_intent.succeeded' || event.type === 'checkout.session.completed') {
-      const data = event.data.object;
-      const customerId = data.customer;
-      const appointmentId = data.metadata?.appointment_id;
+      const payment = await resolvePayment(stripe, event);
+      if (!payment) {
+        return new Response(JSON.stringify({ received: true, skipped: 'not paid' }), {
+          status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
 
       const supabase = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       );
 
-      let matched = false;
+      const match = await findAppointment(supabase, payment);
+      let sendConfirmation = false;
 
-      if (appointmentId) {
-        console.log(`[stripe-webhook] Success: Updating appointment ${appointmentId} via metadata`);
-        await supabase
+      if (match) {
+        // Only flip unpaid → paid. A resent event, or the PaymentIntent and the
+        // Checkout Session events for the same payment, find it already paid
+        // and change nothing — so the client is emailed once.
+        const markPaid = (fields: Record<string, unknown>) => supabase
           .from('appointments')
-          .update({ payment_received: true, payment_method: 'Stripe' })
-          .eq('id', appointmentId);
-        matched = true;
-      }
-
-      // Match by client_reference_id (UUID passed when creating the Checkout Session)
-      if (!matched && data.client_reference_id) {
-        const refId = data.client_reference_id;
-        console.log(`[stripe-webhook] client_reference_id: Looking up client ${refId}`);
-        const { data: refClient } = await supabase
-          .from('clients')
+          .update({ payment_received: true, payment_method: match.method, ...fields })
+          .eq('id', match.id)
+          .eq('payment_received', false)
+          .select('id');
+        let { data: flipped, error } = await markPaid(
+          payment.paymentIntentId ? { stripe_payment_intent_id: payment.paymentIntentId } : {},
+        );
+        if (error && /stripe_payment_intent_id/.test(error.message)) {
+          console.warn(`[stripe-webhook] stripe_payment_intent_id column missing — apply supabase_appointments_stripe_payment.sql`);
+          ({ data: flipped, error } = await markPaid({}));
+        }
+        // 500 so Stripe retries: the payment is real and must land on the appointment.
+        if (error) {
+          console.error(`[stripe-webhook] Failed to mark appointment ${match.id} paid: ${error.message}`);
+          return new Response(JSON.stringify({ error: 'Failed to record payment' }), {
+            status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        sendConfirmation = (flipped?.length ?? 0) > 0;
+        console.log(`[stripe-webhook] ${payment.paymentIntentId}: appointment ${match.id} via ${match.via} — ${sendConfirmation ? 'marked paid' : 'already paid'}`);
+      } else {
+        // Money came in but we couldn't match an appointment — never lose this silently.
+        // Keyed on the PaymentIntent so a resend doesn't log (or email) twice.
+        const reference = payment.paymentIntentId || payment.email;
+        const { data: logged, error: lookupError } = await supabase
+          .from('webhook_failures')
           .select('id')
-          .eq('id', refId)
-          .maybeSingle();
-
-        if (refClient) {
-          const { data: refApp } = await supabase
-            .from('appointments')
-            .select('id, calcom_booking_id')
-            .eq('client_id', refClient.id)
-            .eq('payment_received', false)
-            .order('date', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          if (refApp) {
-            console.log(`[stripe-webhook] client_reference_id Match: Updating appointment ${refApp.id}`);
-            await supabase
-              .from('appointments')
-              .update({ payment_received: true, payment_method: 'Stripe' })
-              .eq('id', refApp.id);
-            matched = true;
-          }
+          .eq('source', 'stripe-webhook')
+          .eq('reference', reference)
+          .limit(1);
+        if (lookupError) console.error(`[stripe-webhook] webhook_failures lookup failed:`, lookupError.message);
+        if (!logged?.length) {
+          const { error: insertError } = await supabase.from('webhook_failures').insert({
+            source: 'stripe-webhook',
+            event_type: event.type,
+            reference,
+            amount: payment.amountCents ? payment.amountCents / 100 : null,
+            detail: `Paid but unmatched (email: ${payment.email || 'none'})`,
+          });
+          if (insertError) console.error(`[stripe-webhook] failed to log webhook_failure:`, insertError.message);
+          sendConfirmation = true;
         }
-      }
-
-      if (!matched && customerId) {
-        console.log(`[stripe-webhook] Smart Match: Searching for latest unpaid for customer ${customerId}`);
-        
-        const { data: client } = await supabase
-          .from('clients')
-          .select('id')
-          .eq('stripe_customer_id', customerId)
-          .maybeSingle();
-
-        if (client) {
-          const { data: app } = await supabase
-            .from('appointments')
-            .select('id')
-            .eq('client_id', client.id)
-            .eq('payment_received', false)
-            .order('date', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          if (app) {
-            console.log(`[stripe-webhook] Match Found (stripe_customer_id): Updating appointment ${app.id}`);
-            await supabase
-              .from('appointments')
-              .update({ payment_received: true, payment_method: 'Stripe (Mobile App)' })
-              .eq('id', app.id);
-            matched = true;
-          } else {
-            console.log(`[stripe-webhook] No unpaid appointments found for client ${client.id}`);
-          }
-        } else {
-          console.log(`[stripe-webhook] No CRM client found for Stripe Customer ${customerId} — will try email fallback`);
-        }
-      }
-
-      // Fallback: match by customer email (handles cal.com bookings where
-      // stripe_customer_id isn't stored in the CRM)
-      if (!matched) {
-        let customerEmail: string | null = null;
-        if (event.type === 'checkout.session.completed') {
-          customerEmail = data.customer_details?.email || data.customer_email || null;
-        } else if (event.type === 'payment_intent.succeeded') {
-          customerEmail = data.receipt_email || null;
-          if (!customerEmail && data.customer) {
-            try {
-              const customer = await stripe.customers.retrieve(data.customer);
-              if (!customer.deleted) customerEmail = customer.email;
-            } catch (e) {
-              console.log(`[stripe-webhook] Failed to retrieve customer ${data.customer}: ${e.message}`);
-            }
-          }
-        }
-
-        if (customerEmail) {
-          console.log(`[stripe-webhook] Email Fallback: Searching for client with email ${customerEmail}`);
-          const { data: clientByEmail } = await supabase
-            .from('clients')
-            .select('id')
-            .eq('email', customerEmail.toLowerCase().trim())
-            .maybeSingle();
-
-          if (clientByEmail) {
-            const { data: app } = await supabase
-              .from('appointments')
-              .select('id, calcom_booking_id')
-              .eq('client_id', clientByEmail.id)
-              .eq('payment_received', false)
-              .order('date', { ascending: false })
-              .limit(1)
-              .maybeSingle();
-
-            if (app) {
-              console.log(`[stripe-webhook] Email Fallback Match: Updating appointment ${app.id}`);
-              await supabase
-                .from('appointments')
-                .update({ payment_received: true, payment_method: 'Stripe' })
-                .eq('id', app.id);
-              matched = true;
-            } else {
-              console.log(`[stripe-webhook] Email Fallback: No unpaid appointments found for client ${clientByEmail.id}`);
-            }
-          } else {
-            console.log(`[stripe-webhook] Email Fallback: No CRM client found with email ${customerEmail}`);
-          }
-        }
-      }
-
-      // Money came in but we couldn't match an appointment — never lose this silently.
-      if (!matched) {
-        const refEmail = data.customer_details?.email || data.customer_email || data.receipt_email || null;
-        await supabase.from("webhook_failures").insert({
-          source: "stripe-webhook",
-          event_type: event.type,
-          reference: data.id || refEmail,
-          amount: (data.amount_total ?? data.amount) ? (data.amount_total ?? data.amount) / 100 : null,
-          detail: `Paid but unmatched (email: ${refEmail || "none"})`,
-        }).catch((e) => console.error(`[stripe-webhook] failed to log webhook_failure:`, e.message));
+        console.log(`[stripe-webhook] ${payment.paymentIntentId}: no appointment matched (email: ${payment.email || 'none'})`);
       }
 
       // Email the client a payment confirmation (non-fatal).
-      const confEmail = data.customer_details?.email || data.customer_email || data.receipt_email || null;
-      const confName = data.customer_details?.name || data.metadata?.student_name || null;
-      const confAmount = data.amount_total ?? data.amount ?? null;
-      await sendFnhPaymentConfirmation(confEmail, confName, confAmount, data.currency || "aud");
+      if (sendConfirmation) {
+        await sendFnhPaymentConfirmation(payment.email, payment.name, payment.amountCents, payment.currency);
+      }
     }
 
     return new Response(JSON.stringify({ received: true }), {

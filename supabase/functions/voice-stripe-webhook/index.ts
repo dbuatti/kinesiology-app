@@ -175,13 +175,14 @@ serve(async (req) => {
       } else {
         console.log(`[${functionName}] Could not resolve lessonId — logging to webhook_failures`);
         // Money came in but we couldn't match a booking — never lose this silently.
-        await supabase.from("webhook_failures").insert({
+        const { error: logError } = await supabase.from("webhook_failures").insert({
           source: functionName,
           event_type: event.type,
           reference: session.id,
           amount: session.amount_total ? session.amount_total / 100 : null,
           detail: `Paid but unmatched (email: ${customerEmail || "none"}, calcom_uid: ${session.metadata?.calcom_booking_uid || "none"})`,
-        }).catch((e) => console.error(`[${functionName}] failed to log webhook_failure:`, e.message));
+        });
+        if (logError) console.error(`[${functionName}] failed to log webhook_failure:`, logError.message);
       }
 
       // NOTE: No Cal.com payment sync needed. The event type no longer has "Require payment"

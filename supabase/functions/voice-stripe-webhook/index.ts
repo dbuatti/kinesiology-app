@@ -109,6 +109,18 @@ serve(async (req) => {
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
+
+      // FNH checkouts (send-manual-onboarding) live on the same Stripe account and
+      // reach this endpoint too; stripe-webhook records them. Voice checkouts never
+      // carry appointment_id. Without this, an FNH payment matches no lesson and
+      // gets a made-up paid voice booking plus a voice "lesson confirmed" email.
+      if (session.metadata?.appointment_id) {
+        console.log(`[${functionName}] ${session.id} is an FNH session payment — skipping`);
+        return new Response(JSON.stringify({ received: true, skipped: "fnh" }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       let lessonId = session.metadata?.lesson_id || session.metadata?.lessonId;
       let calcomBookingId = null;
       const customerEmail = session.customer_details?.email || session.customer_email;

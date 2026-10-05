@@ -55,6 +55,10 @@ interface Props {
   hideStatus?: boolean;
   // Pre-fills the "Suggest reply" steer, e.g. for a follow-up.
   initialGoal?: string;
+  // Inline in page flow (Inbox rows, Compose) instead of filling a fixed-height
+  // parent: the messages get their own capped scroll area and the booking
+  // card + composer flow below, so a proposal can't squeeze the history away.
+  inline?: boolean;
 }
 
 // One conversation status for everyone (Phase 5): needs reply / waiting on
@@ -78,7 +82,7 @@ function fmtDate(dateStr: string) {
     " · " + d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Australia/Melbourne" });
 }
 
-export default function ClientEmailThread({ clientId, clientEmail, clientName, composeMode = false, threadIds, hideStatus = false, initialGoal = "" }: Props) {
+export default function ClientEmailThread({ clientId, clientEmail, clientName, composeMode = false, threadIds, hideStatus = false, initialGoal = "", inline = false }: Props) {
   const firstName = clientName.split(" ")[0];
   // Voice-only students are still addressed by a "voice:<email>" pseudo-id here.
   const hasClientRecord = !clientId.startsWith("voice:");
@@ -405,7 +409,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
   }
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col">
+    <div className={cn("flex flex-col", !inline && "flex-1 min-h-0")}>
       <div className="flex items-center justify-between gap-2 pb-3 border-b border-border mb-3">
         <div className="flex items-center gap-2">
           <Mail className="h-4 w-4 text-muted-foreground" />
@@ -449,7 +453,7 @@ export default function ClientEmailThread({ clientId, clientEmail, clientName, c
         </Select>
       </div>
 
-      <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-y-auto space-y-3 px-1">
+      <div ref={scrollContainerRef} className={cn("overflow-y-auto space-y-3 px-1", inline ? "max-h-[min(520px,60vh)]" : "flex-1 min-h-0")}>
         {loading ? (
           <div className="flex justify-center py-10"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
         ) : messages.length === 0 ? (

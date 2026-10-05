@@ -299,8 +299,9 @@ export default function CommsInbox({ clients, voiceStudents, people: peopleOptio
 
         {isOpen && (
           <div className="pb-4 pl-0 sm:pl-12">
-            <div className="h-[560px] flex flex-col">
+            <div>
               <ClientEmailThread
+                inline
                 clientId={p.clientId || voiceStudentIdFor(p.email)}
                 clientEmail={p.email}
                 clientName={p.name}
@@ -385,8 +386,9 @@ export default function CommsInbox({ clients, voiceStudents, people: peopleOptio
             </Button>
           </div>
           {composeTarget ? (
-            <div className="h-[560px] p-3 flex flex-col">
+            <div className="p-3">
               <ClientEmailThread
+                inline
                 key={composeTarget.clientId + ":" + composeTarget.clientEmail}
                 composeMode
                 clientId={composeTarget.clientId}

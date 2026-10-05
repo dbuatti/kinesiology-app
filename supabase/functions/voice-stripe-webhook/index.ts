@@ -172,29 +172,51 @@ serve(async (req) => {
         }
       }
 
-      // Update voice_bookings status to paid
+      // Update voice_bookings status to paid. Only a booking that actually flipped
+      // to paid counts as "changed": a resent event (or the same event delivered
+      // again) finds it already paid, changes nothing, and must not email again.
+      let matchedPaid = false;
+      let unmatchedLogged = false;
       if (lessonId) {
-        const { error: bookingError } = await supabase
+        const { data: paidRows, error: bookingError } = await supabase
           .from("voice_bookings")
           .update({ status: "paid" })
-          .eq("notion_lesson_id_1", lessonId);
+          .eq("notion_lesson_id_1", lessonId)
+          .neq("status", "paid")
+          .select("id");
 
         if (bookingError) {
           console.error(`[${functionName}] Failed to update voice_bookings:`, bookingError.message);
         } else {
-          console.log(`[${functionName}] Updated voice_bookings for lesson ${lessonId}`);
+          matchedPaid = (paidRows?.length ?? 0) > 0;
+          console.log(`[${functionName}] Updated voice_bookings for lesson ${lessonId}${matchedPaid ? "" : " (already paid)"}`);
         }
       } else {
         console.log(`[${functionName}] Could not resolve lessonId — logging to webhook_failures`);
         // Money came in but we couldn't match a booking — never lose this silently.
-        const { error: logError } = await supabase.from("webhook_failures").insert({
-          source: functionName,
-          event_type: event.type,
-          reference: session.id,
-          amount: session.amount_total ? session.amount_total / 100 : null,
-          detail: `Paid but unmatched (email: ${customerEmail || "none"}, calcom_uid: ${session.metadata?.calcom_booking_uid || "none"})`,
-        });
-        if (logError) console.error(`[${functionName}] failed to log webhook_failure:`, logError.message);
+        // Log it once per checkout session: a resent event must not create a second
+        // row (or a second confirmation email).
+        const { data: logged, error: lookupError } = await supabase
+          .from("webhook_failures")
+          .select("id")
+          .eq("source", functionName)
+          .eq("reference", session.id)
+          .limit(1);
+        if (lookupError) console.error(`[${functionName}] webhook_failures lookup failed:`, lookupError.message);
+        if (!logged?.length) {
+          const { error: logError } = await supabase.from("webhook_failures").insert({
+            source: functionName,
+            event_type: event.type,
+            reference: session.id,
+            amount: session.amount_total ? session.amount_total / 100 : null,
+            detail: `Paid but unmatched (email: ${customerEmail || "none"}, calcom_uid: ${session.metadata?.calcom_booking_uid || "none"})`,
+          });
+          if (logError) {
+            console.error(`[${functionName}] failed to log webhook_failure:`, logError.message);
+          } else {
+            unmatchedLogged = true;
+          }
+        }
       }
 
       // NOTE: No Cal.com payment sync needed. The event type no longer has "Require payment"
@@ -232,28 +254,12 @@ serve(async (req) => {
         }
       }
 
-      // If we still couldn't find the booking, try creating one from session data
-      if (!lessonId && customerEmail) {
-        console.log(`[${functionName}] Creating voice_bookings record from session data`);
-        const { error: insertError } = await supabase
-          .from("voice_bookings")
-          .insert({
-            student_email: customerEmail,
-            student_name: session.customer_details?.name || customerEmail,
-            lesson_date: new Date().toISOString().split("T")[0],
-            status: "paid",
-            cost: session.amount_total ? session.amount_total / 100 : null,
-          });
-
-        if (insertError) {
-          console.error(`[${functionName}] Failed to insert booking from session:`, insertError.message);
-        } else {
-          console.log(`[${functionName}] Inserted new paid booking for ${customerEmail}`);
-        }
+      // Email the client a payment confirmation (non-fatal) — once, when this
+      // event actually changed a booking to paid, or first logged an unmatched
+      // payment. A resent event must not email twice.
+      if (matchedPaid || unmatchedLogged) {
+        await sendVoicePaymentConfirmation(session);
       }
-
-      // Email the client a payment confirmation (non-fatal).
-      await sendVoicePaymentConfirmation(session);
     }
 
     return new Response(JSON.stringify({ received: true }), {

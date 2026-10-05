@@ -114,6 +114,7 @@ async function resolvePayment(stripe: Stripe, event: any) {
   const metadata = { ...(intent?.metadata || {}), ...(session?.metadata || {}) };
   return {
     paymentIntentId: intent?.id || session?.payment_intent || session?.id || null,
+    metadata,
     appointmentId: metadata.appointment_id || null,
     clientIds: [session?.client_reference_id, metadata.client_id].filter(Boolean),
     customerId,
@@ -202,6 +203,22 @@ serve(async (req) => {
       const payment = await resolvePayment(stripe, event);
       if (!payment) {
         return new Response(JSON.stringify({ received: true, skipped: 'not paid' }), {
+          status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      // Voice/piano checkouts (voice-payment-link, voice-send-onboarding) are recorded
+      // by voice-stripe-webhook. They carry type: "voice_lesson", or
+      // student_email/lesson_date without an appointment_id. If one reaches this
+      // endpoint the accounts are crossed — skip it so it can't match an FNH
+      // appointment by email or fire the FNH confirmation email.
+      const voiceMeta = payment.metadata || {};
+      const isVoiceCheckout =
+        voiceMeta.type === "voice_lesson" ||
+        ((voiceMeta.lesson_date || voiceMeta.student_email) && !payment.appointmentId);
+      if (isVoiceCheckout) {
+        console.log(`[stripe-webhook] ${payment.paymentIntentId}: voice/piano checkout — skipping`);
+        return new Response(JSON.stringify({ received: true, skipped: "voice" }), {
           status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }

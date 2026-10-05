@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { format } from "date-fns";
-import { Mic, User, MoreHorizontal, CalendarClock, X, CreditCard, Loader2, ExternalLink, Plus, CheckCircle2, Circle, Gift, Copy } from "lucide-react";
+import { Mic, User, MoreHorizontal, CalendarClock, X, CreditCard, Loader2, ExternalLink, Plus, CheckCircle2, Circle, Gift, Copy, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { TIMEZONE } from "@/config/integrations";
 import { Badge } from "@/components/ui/badge";
@@ -220,6 +220,24 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
       }
     } catch (err: any) {
       showError(err.message || "Failed to send payment link");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  // Resend the booking's confirmation email (right template, price and Stripe
+  // link for its Cal.com event type) — resend-booking-confirmation.
+  const resendConfirmation = async (item: BookingListItem) => {
+    if (!item.calcomUid) return;
+    setBusyId(item.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("resend-booking-confirmation", {
+        body: { calcomBookingUid: item.calcomUid },
+      });
+      if (error || data?.error) throw new Error(data?.error || error?.message);
+      showSuccess(`Confirmation sent to ${data?.email || "the client"}.`);
+    } catch (err) {
+      showError((err instanceof Error && err.message) || "Failed to resend confirmation");
     } finally {
       setBusyId(null);
     }
@@ -852,6 +870,11 @@ const BookingsList = ({ items, onChanged, onNewBooking, onRebook }: BookingsList
                         <Gift size={14} className="mr-2 text-muted-foreground" /> Mark as free
                       </DropdownMenuItem>
                     )
+                  )}
+                  {!item.cancelled && item.calcomUid && !item.calcomUid.startsWith("force-") && (
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); resendConfirmation(item); }}>
+                      <Mail size={14} className="mr-2" /> Resend confirmation
+                    </DropdownMenuItem>
                   )}
                   {!item.cancelled && item.calcomUid && (
                     <DropdownMenuItem

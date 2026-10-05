@@ -26,7 +26,7 @@ serve(async (req) => {
 
     const body = await req.json();
     let { studentName, studentEmail, notionLessonId1, notionLessonId2 } = body;
-    const { startTime, eventTypeId, title, notes, bookingUid, force, discipline } = body;
+    const { startTime, eventTypeId, title, notes, bookingUid, force, discipline, confirmation } = body;
 
     if (!startTime) throw new Error("Missing startTime.");
 
@@ -232,6 +232,11 @@ serve(async (req) => {
           crm_notes: notes || "",
           source: "Voice Studio CRM",
           discipline: discipline || "voice",
+          // Who emails the student their confirmation, read by calcom-voice-webhook:
+          // "webhook" (it sends — e.g. confirming a pencilled booking), "app" (the
+          // caller sends its own, like Simple Book) or "none". Omitted = the old
+          // rule (the webhook skips app bookings) so older callers never double-send.
+          ...(["webhook", "app", "none"].includes(confirmation) ? { confirmation } : {}),
         },
       }),
     });

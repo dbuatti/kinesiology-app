@@ -231,6 +231,8 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
             : `Booked via Simple Book (${duration} min)`,
           force: forceBooking,
           discipline,
+          // This dialog sends its own confirmation (or none, if unticked).
+          confirmation: sendOnboarding ? "app" : "none",
         },
       });
       if (bookingError) throw bookingError;

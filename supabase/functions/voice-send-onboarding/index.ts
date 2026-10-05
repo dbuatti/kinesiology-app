@@ -111,11 +111,14 @@ serve(async (req) => {
     // including the internal organizer notification below.
     const FROM_ADDRESS = "Daniele Buatti <info@danielebuatti.com>";
 
-    const { studentName, studentEmail, date, time, duration, cost, calcomBookingUid, discipline } = await req.json();
+    const { studentName, studentEmail, date, time, duration, cost, calcomBookingUid, discipline, sessionName } = await req.json();
     if (!studentName || !studentEmail || !date || !time) {
       throw new Error("Missing required fields: studentName, studentEmail, date, time");
     }
     const isPiano = discipline === "piano";
+    // The Cal.com event's own name ("Voice and Piano Coaching (60 min)") when the
+    // webhook or a resend supplies it; otherwise the generic product name.
+    const productName = String(sessionName || "Voice & Piano Coaching").trim();
 
     // Human-friendly formatting for the emails. The raw `date` is ISO
     // ("2026-09-01") and `time` carries a technical "GMT+10" suffix from the
@@ -217,8 +220,8 @@ serve(async (req) => {
             price_data: {
               currency: 'aud',
               product_data: {
-                name: 'Voice & Piano Coaching',
-                description: `${duration} min lesson on ${date} at ${time}`,
+                name: productName,
+                description: `${duration ? `${duration} min lesson` : "Lesson"} on ${friendlyDate} at ${friendlyTime}`,
               },
               unit_amount: cost * 100,
             },
@@ -289,7 +292,7 @@ serve(async (req) => {
 
                 <div style="text-align: left; margin-top: 40px; line-height: 1.8; font-size: 16px; color: #475569;">
                   <p>Hi ${studentName.split(' ')[0]},</p>
-                  <p>Thanks for booking a ${isPiano ? "piano" : "voice"} lesson! Here's your session details:</p>
+                  <p>Thanks for booking ${sessionName ? productName : `a ${isPiano ? "piano" : "voice"} lesson`}! Here are your session details:</p>
 
                   <div style="background-color: #F8FAFC; border-radius: 24px; padding: 28px; margin: 28px 0; border: 1px solid #E2E8F0;">
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
@@ -345,9 +348,11 @@ ${duration ? `                          <div style="font-size: 14px; color: #94A
     // 4b. Send a dedicated organizer notification directly to the studio inbox.
     // This is the reliable "you've got a booking" notice — it is addressed TO you
     // (not a BCC of the student email) so it can't be lost to BCC filtering/spam.
+    // Declared outside the try so the catch below can log them (they were
+    // block-scoped before, so a failed send threw a ReferenceError instead).
+    const organizerEmail = "info@danielebuatti.com";
+    const organizerSubject = `New ${isPiano ? "Piano" : "Voice"} Studio booking — ${studentName} · ${date} ${time}`;
     try {
-      const organizerEmail = "info@danielebuatti.com";
-      const organizerSubject = `New ${isPiano ? "Piano" : "Voice"} Studio booking — ${studentName} · ${date} ${time}`;
       const organizerHtml = `
         <!DOCTYPE html>
         <html>

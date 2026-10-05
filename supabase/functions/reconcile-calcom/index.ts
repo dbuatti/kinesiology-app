@@ -2,6 +2,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { requireServiceRole } from "../_shared/auth.ts";
+import { classifyEventType } from "../_shared/event-types.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,9 +18,6 @@ const corsHeaders = {
 // Runs on a schedule (pg_cron) and can be triggered manually.
 
 const GRACE_MS = 15 * 60 * 1000; // don't touch rows created in the last 15 min (avoid racing a fresh booking)
-
-const VOICE_EVENT_IDS = new Set([1945081, 5925021, 6488157]);
-const FNH_EVENT_IDS = new Set([4279898, 5302336, 5927215]);
 
 async function archiveNotionPages(notionKey: string, pageIds: (string | null | undefined)[]) {
   if (!notionKey) return;
@@ -133,14 +131,17 @@ serve(async (req) => {
       if (!uid || known.has(uid)) continue;
       if ((b.status || "").toLowerCase() === "cancelled") continue;
       if (b.createdAt && (Date.now() - new Date(b.createdAt).getTime()) < GRACE_MS) continue; // let the live webhook handle fresh ones
-      const etid = Number(b.eventTypeId);
-      const isVoice = VOICE_EVENT_IDS.has(etid);
-      const isFnh = FNH_EVENT_IDS.has(etid);
+      const kind = classifyEventType(b);
+      const isVoice = kind === "voice";
+      const isFnh = kind === "fnh";
       if (!isVoice && !isFnh) continue;
 
       const target = isVoice ? "calcom-voice-webhook" : "calcom-webhook";
       const replay = {
         triggerEvent: "BOOKING_CREATED",
+        // Record the missed booking without emailing: a late or duplicate
+        // confirmation is worse than none. Resend one from Bookings if needed.
+        suppressEmail: true,
         payload: { uid, startTime: b.start, endTime: b.end, eventTypeId: b.eventTypeId, attendees: b.attendees, responses: b.responses, metadata: b.metadata },
       };
       let replayed = false;

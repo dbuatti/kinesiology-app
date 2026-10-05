@@ -165,6 +165,10 @@ Income has two shapes and the plan keeps them apart: **steady work** (kinesiolog
 
 Two views: **Booked** (default) counts only what is actually booked — sessions, lessons and work in The Plan — against the floor, with "Weeks to fill" for the next 8 weeks; **Forecast** (`?view=forecast`) shows the typical-week averages. "Add upcoming work" writes a row into The Plan (`plan-income` with `action: "create"`), so forward income is recorded once, in Notion.
 
+## Booking confirmations (`supabase/functions/_shared/event-types.ts`)
+
+Both Cal.com webhooks receive every booking; `classifyEventType` decides which one owns it (known ids, then the event title/slug, so a new event type needs no code change): **fnh** → `calcom-webhook` (appointments row + `send-manual-onboarding`), **voice** → `calcom-voice-webhook` (Notion lessons + `voice-send-onboarding`), **other** (15/30 Min Meeting, 2 hour meeting…) → `calcom-webhook` sends `send-booking-confirmation`. `resolveEventType` gives the session name, length and price (event_pricing first). For coaching, `voice-create-booking`'s `confirmation` (`webhook` | `app` | `none`, stamped on the booking metadata) says who emails the student: `confirmBooking` passes `webhook`, Simple Book sends its own (`app`/`none`); no flag on an app booking = the webhook skips. Reconcile replays (`suppressEmail`) record missed bookings without emailing. Bookings list → "Resend confirmation" calls `resend-booking-confirmation` (`{ calcomBookingUid }`), which reads the booking from Cal.com and routes it to the right sender. Cal.com writes bookings to Apple Calendar; Google shows them only through the imported "General" calendar subscription.
+
 ## Voice Calendar Fallback (`src/lib/calendarItems.ts`, used by `UnifiedCalendarPage.tsx`)
 
 Notion voice lessons and Cal.com voice_bookings are merged in `buildCalendarItems` (`src/lib/calendarItems.ts`). The logic:

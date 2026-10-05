@@ -100,6 +100,9 @@ export async function confirmBooking(input: ConfirmBookingInput): Promise<Confir
         title: lesson === "piano" ? "Piano Lesson" : "Voice Lesson",
         discipline: lesson,
         bookingUid: rescheduleUid || undefined,
+        // Nothing else emails the student for a confirmed pencil — let the
+        // Cal.com webhook send the confirmation, as it does for FNH bookings.
+        confirmation: "webhook",
       },
     });
     if (error || data?.error) throw new Error(data?.error || error?.message || "Lesson booking failed.");

@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { classifyEventType, resolveEventType } from "../_shared/event-types.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,7 +10,6 @@ const corsHeaders = {
 };
 
 const VOICE_CLIENTS_DB_ID = "af3e38f400d84dc8975eff4b6269157b";
-const VOICE_EVENT_TYPE_IDS = [1945081, 5925021, 6488157];
 
 async function verifyCalSignature(rawBody: string, signatureHeader: string | null, secret: string): Promise<boolean> {
   if (!signatureHeader) return false;
@@ -34,7 +34,12 @@ serve(async (req) => {
 
     const WEBHOOK_SECRET = Deno.env.get("CALCOM_VOICE_WEBHOOK_SECRET") || Deno.env.get("CALCOM_WEBHOOK_SECRET");
     const rawBody = await req.text();
-    if (WEBHOOK_SECRET) {
+    // Internal replays (reconcile-calcom, resend-booking-confirmation) carry the
+    // service-role key instead of a Cal.com signature — without this every
+    // replay was rejected as unsigned, so missed bookings were never recovered.
+    const bearer = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
+    const isInternal = !!bearer && bearer === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (WEBHOOK_SECRET && !isInternal) {
       const valid = await verifyCalSignature(rawBody, req.headers.get("x-cal-signature-256"), WEBHOOK_SECRET);
       if (!valid) {
         console.error(`[${functionName}] Invalid or missing Cal.com signature — rejecting.`);
@@ -46,6 +51,8 @@ serve(async (req) => {
 
     const body = JSON.parse(rawBody);
     const triggerEvent = body.triggerEvent || body.type;
+    // Set by reconcile-calcom's replays — only trusted from internal callers.
+    const suppressEmail = isInternal && body.suppressEmail === true;
     console.log(`[${functionName}] Event: ${triggerEvent}`);
 
     // Acknowledge PING health checks from Cal.com
@@ -238,8 +245,10 @@ serve(async (req) => {
     // lesson — without this, registering this function as a live Cal.com
     // webhook (it receives ALL bookings, not just voice ones) would create
     // an incorrect Notion voice-lesson record for every clinical booking too.
+    // Ownership is shared with calcom-webhook via _shared/event-types.ts, so a
+    // new coaching event type on Cal.com is picked up here by its title.
     const eventTypeIdEarly = payload.eventTypeId || payload.eventType?.id || payload.type?.id || null;
-    if (eventTypeIdEarly && !VOICE_EVENT_TYPE_IDS.includes(Number(eventTypeIdEarly))) {
+    if (eventTypeIdEarly && classifyEventType(payload) !== "voice") {
       console.log(`[${functionName}] Skipping non-voice event type: ${eventTypeIdEarly}`);
       return new Response(JSON.stringify({ success: true, message: "Not a voice event type" }), {
         status: 200,
@@ -293,6 +302,23 @@ serve(async (req) => {
       : "";
     const lessonTime = endTimeStr ? `${startTimeStr} – ${endTimeStr}` : startTimeStr;
 
+    // Cal.com re-deliveries (and replays) of a booking already logged: skip, so
+    // the student isn't emailed twice and no second pair of Notion lessons is made.
+    if (calcomBookingUid) {
+      const { data: alreadyLogged } = await supabase
+        .from("voice_bookings")
+        .select("calcom_booking_id")
+        .eq("calcom_booking_id", calcomBookingUid)
+        .maybeSingle();
+      if (alreadyLogged) {
+        console.log(`[${functionName}] Booking ${calcomBookingUid} already logged — skipping.`);
+        return new Response(JSON.stringify({ success: true, message: "Already logged" }), {
+          status: 200,
+          headers: corsHeaders,
+        });
+      }
+    }
+
     // Guard against duplicate creation: Cal.com fires both BOOKING_RESCHEDULED and
     // BOOKING_CREATED for a reschedule. If the reschedule handler already updated an
     // existing voice_bookings row for this student+date, skip creating new Notion pages.
@@ -314,6 +340,81 @@ serve(async (req) => {
       }
     }
 
+    // Name, length and price for this event type (event_pricing table first).
+    // Must happen BEFORE calling voice-schedule-lesson so cost is persisted in voice_bookings.
+    const eventInfo = await resolveEventType(supabase, payload);
+    const cost = eventInfo.price;
+    const duration = eventInfo.durationMin;
+
+    // Who emails the student (voice-create-booking stamps metadata.confirmation):
+    //   "webhook" or absent on an embed booking → send from here
+    //   "app" (the booking dialog sends its own) or "none" → skip
+    // App bookings from before that flag existed (source "Voice Studio CRM", no
+    // flag) keep the old rule and skip, so an older client never double-sends.
+    const metadata = payload.metadata || payload.data?.metadata || {};
+    const confirmation = suppressEmail
+      ? "none"
+      : metadata.confirmation || (metadata.source === "Voice Studio CRM" ? "app" : "webhook");
+    let confirmationHandled = false;
+    // Sent even when the Notion side fails below — the student's confirmation
+    // must never depend on Notion being up.
+    const sendConfirmation = async () => {
+      if (confirmationHandled) return;
+      confirmationHandled = true;
+      if (confirmation !== "webhook") {
+        console.log(`[${functionName}] Confirmation left to the app (confirmation: ${confirmation}).`);
+        return;
+      }
+      try {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/voice-send-onboarding`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+          },
+          body: JSON.stringify({
+            studentName: attendee.name || attendeeEmail.split("@")[0],
+            studentEmail: attendeeEmail,
+            date: lessonDate,
+            time: lessonTime,
+            duration,
+            cost,
+            calcomBookingUid,
+            discipline: metadata.discipline || undefined,
+            sessionName: eventInfo.name,
+          }),
+        });
+        if (!res.ok) throw new Error(`voice-send-onboarding ${res.status}: ${(await res.text().catch(() => "")).slice(0, 300)}`);
+        console.log(`[${functionName}] Confirmation email sent for ${attendeeEmail} (${eventInfo.name}, cost ${cost}).`);
+      } catch (onboardErr) {
+        console.error(`[${functionName}] Confirmation send failed (non-fatal):`, onboardErr.message);
+        await supabase.from("webhook_failures").insert({
+          source: functionName,
+          event_type: "confirmation-email",
+          reference: calcomBookingUid,
+          detail: `Confirmation email failed for ${attendeeEmail}: ${onboardErr.message}`.slice(0, 500),
+        }).then(() => {}, () => {});
+      }
+    };
+
+    // When the Notion side fails, still record the booking (same minimal row the
+    // reconcile sweep writes) so the Calendar shows it and later replays see it
+    // as logged — otherwise each reconcile run would replay it and re-email.
+    const logBookingWithoutNotion = async () => {
+      if (!calcomBookingUid) return;
+      const { error: fbErr } = await supabase.from("voice_bookings").upsert({
+        calcom_booking_id: calcomBookingUid,
+        student_name: attendee.name || attendeeEmail.split("@")[0],
+        student_email: attendeeEmail,
+        lesson_date: lessonDate,
+        lesson_time: lessonTime,
+        cost: cost || null,
+        discipline: metadata.discipline || "voice",
+        status: "scheduled",
+      }, { onConflict: "calcom_booking_id", ignoreDuplicates: true });
+      if (fbErr) console.error(`[${functionName}] fallback voice_bookings row failed:`, fbErr.message);
+    };
+
     // Find the student in Notion Voice Clients DB by email
     console.log(`[${functionName}] Searching for student by email: ${attendeeEmail}`);
 
@@ -334,6 +435,8 @@ serve(async (req) => {
 
     const queryData = await queryRes.json();
     if (!queryRes.ok) {
+      await sendConfirmation();
+      await logBookingWithoutNotion();
       throw new Error(
         `Notion query failed: ${queryData.message || JSON.stringify(queryData)}`
       );
@@ -393,6 +496,8 @@ serve(async (req) => {
         const createData = await createRes.json();
         if (!createRes.ok) {
           console.error(`[${functionName}] Fallback creation failed:`, JSON.stringify(createData));
+          await sendConfirmation();
+          await logBookingWithoutNotion();
           return new Response(
             JSON.stringify({
               success: true,
@@ -407,25 +512,6 @@ serve(async (req) => {
     }
 
     console.log(`[${functionName}] Resolved student ${studentId}. Invoking voice-schedule-lesson...`);
-
-    // Resolve the price for this event type from the editable event_pricing table.
-    // Must happen BEFORE calling voice-schedule-lesson so cost is persisted in voice_bookings.
-    const eventTypeId = payload.eventTypeId || payload.eventType?.id || payload.type?.id || null;
-    let cost = 0;
-    let duration = null;
-    let sendLink = true;
-    if (eventTypeId) {
-      const { data: pricing } = await supabase
-        .from("event_pricing")
-        .select("price, duration_minutes, send_payment_link")
-        .eq("calcom_event_type_id", eventTypeId)
-        .maybeSingle();
-      if (pricing) {
-        sendLink = pricing.send_payment_link;
-        duration = pricing.duration_minutes;
-        cost = sendLink ? Number(pricing.price) || 0 : 0;
-      }
-    }
 
     // Invoke the voice-schedule-lesson edge function internally
     const scheduleRes = await fetch(
@@ -453,6 +539,8 @@ serve(async (req) => {
 
     if (!scheduleData.success) {
       console.error(`[${functionName}] voice-schedule-lesson failed:`, scheduleData);
+      await sendConfirmation();
+      await logBookingWithoutNotion();
       try {
         const sbFail = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
         await sbFail.from("webhook_failures").insert({ source: functionName, event_type: triggerEvent, reference: attendeeEmail, detail: `voice-schedule-lesson failed: ${scheduleData.error || "unknown"}` });
@@ -472,33 +560,8 @@ serve(async (req) => {
 
     console.log(`[${functionName}] Lesson successfully logged for ${attendeeEmail}`);
 
-    // Send the Stripe "Pay Now" / onboarding email — but ONLY for bookings made via the
-    // embedded Cal.com page. CRM bookings (source "Voice Studio CRM") already trigger the
-    // onboarding email from the booking dialog, so we skip them here to avoid a double-send.
-    const bookingSource = payload.metadata?.source || payload.data?.metadata?.source || null;
-    if (bookingSource !== "Voice Studio CRM") {
-      try {
-        await fetch(`${SUPABASE_URL}/functions/v1/voice-send-onboarding`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
-          },
-          body: JSON.stringify({
-            studentName: attendee.name || attendeeEmail.split("@")[0],
-            studentEmail: attendeeEmail,
-            date: lessonDate,
-            time: lessonTime,
-            duration,
-            cost,
-            calcomBookingUid,
-          }),
-        });
-        console.log(`[${functionName}] Onboarding/payment email triggered for embed booking (cost ${cost}).`);
-      } catch (onboardErr) {
-        console.error(`[${functionName}] Onboarding send failed (non-fatal):`, onboardErr.message);
-      }
-    }
+    // Send the confirmation (Stripe "Pay Now" + student profile link).
+    await sendConfirmation();
 
     return new Response(
       JSON.stringify({ success: true, message: "Lesson scheduled in both Notion databases." }),

@@ -1,15 +1,13 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
+import { classifyEventType, resolveEventType } from '../_shared/event-types.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
-
-// Only process these specific clinical event types
-const ALLOWED_EVENT_IDS = [4279898, 5302336, 5927215];
 
 // Cal.com signs every webhook delivery with HMAC-SHA256 over the raw request
 // body, sent as the X-Cal-Signature-256 header (hex-encoded) — verifying it
@@ -39,7 +37,12 @@ serve(async (req) => {
 
     const WEBHOOK_SECRET = Deno.env.get('CALCOM_WEBHOOK_SECRET');
     const rawBody = await req.text();
-    if (WEBHOOK_SECRET) {
+    // Internal replays (reconcile-calcom, resend-booking-confirmation) carry the
+    // service-role key instead of a Cal.com signature — without this every
+    // replay was rejected as unsigned, so missed bookings were never recovered.
+    const bearer = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+    const isInternal = !!bearer && bearer === SUPABASE_SERVICE_ROLE_KEY;
+    if (WEBHOOK_SECRET && !isInternal) {
       const valid = await verifyCalSignature(rawBody, req.headers.get('x-cal-signature-256'), WEBHOOK_SECRET);
       if (!valid) {
         console.error(`[${functionName}] Invalid or missing Cal.com signature — rejecting.`);
@@ -54,6 +57,8 @@ serve(async (req) => {
 
     const body = JSON.parse(rawBody);
     const triggerEvent = body.triggerEvent || body.type;
+    // Set by reconcile-calcom's replays — only trusted from internal callers.
+    const suppressEmail = isInternal && body.suppressEmail === true;
     
     console.log(`[${functionName}] Event Type: ${triggerEvent}`);
 
@@ -122,11 +127,50 @@ serve(async (req) => {
       return new Response(JSON.stringify({ success: true }), { status: 200, headers: corsHeaders });
     }
 
-    // SECURITY FILTER: Check if this is a clinical event (creation/reschedule only)
+    // Route by event type (_shared/event-types.ts): FNH is handled below,
+    // coaching by calcom-voice-webhook, and anything else (15/30 Min Meeting,
+    // 2 hour meeting, new types) only gets a confirmation email from here —
+    // before, those fell through both webhooks and nobody was emailed.
     const eventTypeId = parseInt(payload.eventTypeId);
-    if (eventTypeId && !ALLOWED_EVENT_IDS.includes(eventTypeId)) {
-      console.log(`[${functionName}] Skipping non-clinical event type: ${eventTypeId}`);
-      return new Response(JSON.stringify({ success: true, message: "Skipped: Non-clinical event type" }), { status: 200, headers: corsHeaders });
+    const kind = classifyEventType(payload);
+    if (eventTypeId && kind === 'voice') {
+      console.log(`[${functionName}] Skipping coaching event type ${eventTypeId} (calcom-voice-webhook handles it)`);
+      return new Response(JSON.stringify({ success: true, message: "Skipped: coaching event type" }), { status: 200, headers: corsHeaders });
+    }
+    if (eventTypeId && kind === 'other') {
+      if (triggerEvent !== 'BOOKING_CREATED' || suppressEmail) {
+        return new Response(JSON.stringify({ success: true, message: "Ignored" }), { status: 200, headers: corsHeaders });
+      }
+      const other = (payload.attendees && payload.attendees[0]) || (payload.responses && { name: payload.responses.name, email: payload.responses.email });
+      if (!other?.email) {
+        return new Response(JSON.stringify({ success: true, message: "Ignored: no attendee email" }), { status: 200, headers: corsHeaders });
+      }
+      const info = await resolveEventType(supabase, payload);
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-booking-confirmation`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: other.name,
+          email: String(other.email).toLowerCase().trim(),
+          startTime: payload.startTime || payload.start,
+          sessionName: info.name,
+          durationMin: info.durationMin,
+          price: info.price,
+          calcomBookingUid: calcomId,
+          location: typeof payload.location === 'string' ? payload.location : null,
+        }),
+      });
+      if (!resp.ok) {
+        const errText = await resp.text().catch(() => '');
+        console.error(`[${functionName}] Confirmation for ${info.name} failed (${resp.status}): ${errText}`);
+        await supabase.from('webhook_failures').insert({
+          source: functionName,
+          event_type: 'confirmation-email',
+          reference: calcomId,
+          detail: `Confirmation email failed for ${other.email} (${info.name}, ${resp.status}): ${errText}`.slice(0, 500),
+        });
+      }
+      return new Response(JSON.stringify({ success: true, message: `Confirmation sent for ${info.name}` }), { status: 200, headers: corsHeaders });
     }
 
     const attendee = (payload.attendees && payload.attendees[0]) || 
@@ -227,6 +271,7 @@ serve(async (req) => {
     if (String(eventTypeId) === "4279898") priceAmount = 70;
     else if (String(eventTypeId) === "5927215") priceAmount = 0;
     else if (String(eventTypeId) === "5302336") priceAmount = 100;
+    else if (eventTypeId) priceAmount = (await resolveEventType(supabase, payload)).price; // a new FNH event type
     if (payload.payment && payload.payment[0]) priceAmount = payload.payment[0].amount / 100;
 
     const { error: appError } = await supabase
@@ -256,7 +301,7 @@ serve(async (req) => {
     // (`!existingApp`, matched by calcom_booking_id). Cal.com re-delivers webhooks
     // (retries) and the reconcile replay can re-POST the same event — every repeat
     // finds the row already saved and skips, so a client is never emailed twice.
-    if (triggerEvent === 'BOOKING_CREATED' && !existingApp) {
+    if (triggerEvent === 'BOOKING_CREATED' && !existingApp && !suppressEmail) {
       try {
         // Resolve the appointment id we just wrote so onboarding attaches the right session.
         let onboardAppointmentId = targetId;

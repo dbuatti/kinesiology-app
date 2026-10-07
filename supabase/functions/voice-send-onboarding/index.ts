@@ -140,7 +140,7 @@ serve(async (req) => {
           day: "numeric",
           month: "long",
           year: "numeric",
-          timeZone: "UTC",
+          timeZone: "Australia/Melbourne",
         });
     const friendlyTime = (time || "")
       .replace(/\s*GMT\+[\d]+/g, "")
@@ -200,6 +200,7 @@ serve(async (req) => {
 
     // 2. Create Stripe payment link (primary) with Cal.com booking UID for webhook matching
     let paymentUrl = null;
+    let stripeErrMsg = null;
     if (cost && STRIPE_KEY) {
       try {
         const stripe = new Stripe(STRIPE_KEY, {
@@ -239,7 +240,18 @@ serve(async (req) => {
         });
         paymentUrl = session.url;
       } catch (stripeErr) {
-        console.error(`[${functionName}] Stripe error (non-fatal):`, stripeErr.message);
+        const msg = stripeErr?.message || String(stripeErr);
+        console.error(`[${functionName}] Stripe error (non-fatal):`, msg);
+        stripeErrMsg = msg;
+        try {
+          const sb = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
+          await sb.from('webhook_failures').insert({
+            source: functionName,
+            event_type: 'payment_link_create',
+            reference: studentEmail,
+            detail: `Stripe Checkout create failed for ${calcomBookingUid || studentEmail}: ${msg}`,
+          });
+        } catch (_e) { /* non-fatal */ }
       }
     }
 
@@ -266,6 +278,14 @@ serve(async (req) => {
         <a href="${paymentUrl}" style="display: inline-block; background-color: #E11D48; color: #ffffff; padding: 14px 32px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 14px;">Pay Now</a>
       </div>
     ` : '';
+
+    // Organizer notice rendered when a fee was expected but no link was created.
+    // Includes the Stripe error reason (if any) so the failure isn't only in logs.
+    const paymentNotice = !paymentUrl
+      ? `No payment link was generated for this booking${cost
+        ? ` (a fee was set but the link was not created — check Stripe)${stripeErrMsg ? ` · Reason: ${stripeErrMsg.slice(0, 240).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}` : ""}.`
+        : "."}`
+      : "";
 
     const pianoTitle = "Piano Lesson";
     const voiceTitle = "Voice Lesson";
@@ -379,7 +399,7 @@ ${duration ? `                    <div style="font-size: 14px; color: #94A3B8; m
                   <p style="font-size: 14px; color: #475569; line-height: 1.6; margin: 0;">
                     ${paymentUrl
                       ? `A payment link was sent to the student. You can view or copy it here: <a href="${paymentUrl}" style="color: #E11D48; word-break: break-all;">${paymentUrl}</a>`
-                      : `No payment link was generated for this booking${cost ? " (a fee was set but the link was not created — check Stripe)." : "."}`}
+                      : paymentNotice}
                   </p>
                   <p style="font-size: 13px; color: #94A3B8; margin-top: 16px;">A separate "Welcome to ${studioName}" email with these details was sent to the student.</p>
                 </td>

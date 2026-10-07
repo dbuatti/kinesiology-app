@@ -11,6 +11,24 @@ const corsHeaders = {
 
 const VOICE_CLIENTS_DB_ID = "af3e38f400d84dc8975eff4b6269157b";
 
+// Cal.com sends timestamps in UTC, so the date of a lesson must be derived in
+// the lesson's timezone (Australia/Melbourne). Taking the date from the UTC
+// timestamp directly shifts an evening lesson to the previous day — e.g. a
+// 10:00 AEDT lesson on Thursday 15 Oct is "2026-10-14T23:00:00.000Z" and would
+// otherwise be recorded as Wednesday 14 Oct.
+function melbourneDate(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso.split("T")[0] || iso;
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Australia/Melbourne",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(d);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return `${get("year")}-${get("month")}-${get("day")}`;
+}
+
 async function verifyCalSignature(rawBody: string, signatureHeader: string | null, secret: string): Promise<boolean> {
   if (!signatureHeader) return false;
   const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
@@ -207,7 +225,7 @@ serve(async (req) => {
         }
 
         if (booking) {
-          const newDate = newStart.split("T")[0];
+          const newDate = melbourneDate(newStart);
           const newTime = new Date(newStart).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "Australia/Melbourne" });
           await supabase.from("voice_bookings")
             .update({ calcom_booking_id: newUid || booking.calcom_booking_id, lesson_date: newDate, status: "scheduled" })
@@ -285,7 +303,7 @@ serve(async (req) => {
       throw new Error("Missing startTime in Cal.com payload");
     }
 
-    const lessonDate = startTime.split("T")[0];
+    const lessonDate = melbourneDate(startTime);
     const startTimeStr = new Date(startTime).toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",

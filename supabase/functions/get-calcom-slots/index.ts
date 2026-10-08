@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { requirePractitioner } from "../_shared/auth.ts";
 
 const corsHeaders = {
@@ -20,6 +21,14 @@ const normalizeSlots = (raw) => {
     });
   }
   return out;
+};
+
+// A slot instant falls inside a busy window when startAt <= t < endAt.
+const slotFallsInBusyWindow = (iso, busyWindows) => {
+  if (!busyWindows.length) return false;
+  const t = new Date(iso).getTime();
+  if (Number.isNaN(t)) return false;
+  return busyWindows.some((w) => t >= new Date(w.startAt).getTime() && t < new Date(w.endAt).getTime());
 };
 
 serve(async (req) => {
@@ -74,9 +83,39 @@ serve(async (req) => {
       })
     }
 
-    const slotsMap = normalizeSlots(slotsData?.data?.slots || slotsData?.data || {});
+    let slotsMap = normalizeSlots(slotsData?.data?.slots || slotsData?.data || {});
     const slotDates = Object.keys(slotsMap);
     console.log(`[get-calcom-slots] Got ${slotDates.length} available dates with slots`);
+
+    // 1b. Drop slots that fall inside a practitioner busy window (work clashes,
+    // personal commitments) so nothing downstream ever proposes them. Read with
+    // the service role — edge functions are privileged.
+    let busyWindows = [];
+    try {
+      if (start && end) {
+        const supabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
+        const { data: busyRows } = await supabase
+          .from("practitioner_busy")
+          .select("start_at, end_at, reason")
+          .lt("start_at", end)
+          .gt("end_at", start)
+          .order("start_at", { ascending: true });
+        busyWindows = (busyRows || []).map((r) => ({ startAt: r.start_at, endAt: r.end_at, reason: r.reason || null }));
+      }
+    } catch (e) {
+      console.error("[get-calcom-slots] busy window fetch failed:", e.message);
+    }
+
+    if (busyWindows.length) {
+      const filtered = {};
+      for (const [date, slots] of Object.entries(slotsMap)) {
+        const kept = slots.filter((s) => !slotFallsInBusyWindow(s.start, busyWindows));
+        if (kept.length) filtered[date] = kept;
+      }
+      slotsMap = filtered;
+      console.log(`[get-calcom-slots] Dropped slots overlapping ${busyWindows.length} busy window(s)`);
+    }
+
     // 2. Fetch Out-of-Office Blocks
     const oooResponse = await fetch('https://api.cal.com/v2/me/ooo', { method: 'GET', headers })
     const oooData = await oooResponse.json()
@@ -126,7 +165,8 @@ serve(async (req) => {
       status: 'success',
       data: slotsMap,
       blockedDates: blockedDates,
-      bookings: bookingsByDate
+      bookings: bookingsByDate,
+      busyWindows: busyWindows,
     }), { 
       status: 200, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

@@ -37,8 +37,7 @@ const TOOL_STATUS_LABEL: Record<string, string> = {
   propose_booking: "Pencilling in the booking…",
   show_pending_proposals: "Gathering bookings to confirm…",
   update_client_availability: "Saving availability…",
-  update_practitioner_busy: "Updating blocked times…",
-  get_practitioner_busy: "Reading blocked times…",
+  manage_calcom_availability: "Updating Cal.com availability…",
   send_reschedule_offer: "Sending the reschedule offer…",
   draft_email_reply: "Drafting your reply…",
   search_inbox: "Searching the inbox…",
@@ -280,23 +279,16 @@ const functionDeclarations = [
     },
   },
   {
-    name: "update_practitioner_busy",
-    description: "Block or unblock a time window when Daniele cannot see clients (\"I have work clashing with Thursday morning\", \"block the 22nd between 10:30 and 11:30\"). Blocked windows are excluded from get_available_slots AND from the booking calendar every time availability is read, so no one downstream ever gets proposed a clash. action \"block\" records the window (startISO/endISO are full ISO datetimes); action \"clear\" removes any window overlapping the given range. Use this whenever Daniele tells you about times he's now unavailable — this is a low-stakes internal record, save it directly rather than asking permission.",
+    name: "manage_calcom_availability",
+    description: "Block or unblock a WHOLE DAY as out-of-office in Cal.com (\"I've got work clashing with Thursday\"). Cal.com is the single source of truth for availability: a blocked day disappears from get_available_slots AND from the public booking page automatically, so no one gets proposed or can book a clashing time. action \"blockDay\" makes the given date (YYYY-MM-DD) unavailable; action \"clearDay\" removes the block. Only whole days are supported — for a timespan within a day, block the whole day. Save the block directly rather than asking permission whenever Daniele says he can't see clients on a day.",
     parameters: {
       type: "OBJECT",
       properties: {
-        action: { type: "STRING", enum: ["block", "clear"], description: "block records the window; clear removes overlapping windows." },
-        startISO: { type: "STRING", description: "ISO datetime the window starts, e.g. 2026-10-21T23:30:00Z." },
-        endISO: { type: "STRING", description: "ISO datetime the window ends, e.g. 2026-10-22T00:30:00Z." },
-        reason: { type: "STRING", description: "Short note why (e.g. \"work clash\"). Optional." },
+        action: { type: "STRING", enum: ["blockDay", "clearDay"], description: "blockDay hides the whole day in Cal.com; clearDay removes an existing block." },
+        date: { type: "STRING", description: "The date, e.g. 2026-10-22." },
       },
-      required: ["action", "startISO", "endISO"],
+      required: ["action", "date"],
     },
-  },
-  {
-    name: "get_practitioner_busy",
-    description: "List the time windows currently blocked for the practitioner (practitioner_busy), with start/end as ISO datetimes and the reason. Use this when Daniele asks what's blocked, or before suggesting new times, to avoid proposing a window that's already marked busy.",
-    parameters: { type: "OBJECT", properties: {}, },
   },
   {
     name: "send_reschedule_offer",
@@ -1293,7 +1285,7 @@ function melbourneHHMM(d: Date): string {
 // results the Email Thread pane does, rather than looking comparatively broken.
 const WIDENING_STEPS_DAYS = [45, 90];
 
-async function fetchCalcomSlots(calcomKey: string, start: string, endISO: string, eventTypeId: number | undefined, busy: any[] = []) {
+async function fetchCalcomSlots(calcomKey: string, start: string, endISO: string, eventTypeId: number | undefined) {
   const headers = { Authorization: `Bearer ${calcomKey}`, "cal-api-version": "2024-09-04", "Content-Type": "application/json" };
   const url = new URL("https://api.cal.com/v2/slots");
   url.searchParams.set("start", start);
@@ -1309,45 +1301,11 @@ async function fetchCalcomSlots(calcomKey: string, start: string, endISO: string
   const slots: Record<string, string[]> = {};
   const flatIsos: string[] = [];
   for (const [date, entries] of Object.entries<any>(raw)) {
-    const isos = (entries || [])
-      .map((e: any) => (typeof e === "string" ? e : (e?.start || e?.time)))
-      .filter(Boolean)
-      .filter((iso: string) => !slotFallsInBusyWindow(iso, busy));
-    if (isos.length === 0) continue;
+    const isos = (entries || []).map((e: any) => (typeof e === "string" ? e : (e?.start || e?.time))).filter(Boolean);
     slots[date] = isos.map(fmtMelbourne);
     flatIsos.push(...isos);
   }
   return { slots, flatIsos };
-}
-
-// Practitioner busy windows (practitioner_busy) — everything the assistant
-// proposes must fall outside these. Note: only windows that END after the
-// requested range start are loaded; that (plus in-slot comparisons) is enough
-// to exclude anything overlapping the queried range.
-async function fetchPractitionerBusy(supabase: any, fromISO: string) {
-  try {
-    const { data } = await supabase
-      .from("practitioner_busy")
-      .select("id, start_at, end_at, reason")
-      .gt("end_at", fromISO)
-      .order("start_at", { ascending: true });
-    return (data || []).map((r: any) => ({
-      id: r.id,
-      startAt: r.start_at,
-      endAt: r.end_at,
-      reason: r.reason || null,
-    }));
-  } catch (_e) {
-    return [];
-  }
-}
-
-// startAt <= t < endAt.
-function slotFallsInBusyWindow(iso: string, busy: any[]): boolean {
-  if (!busy?.length) return false;
-  const t = new Date(iso).getTime();
-  if (Number.isNaN(t)) return false;
-  return busy.some((w) => t >= new Date(w.startAt).getTime() && t < new Date(w.endAt).getTime());
 }
 
 async function runGetAvailableSlots(supabase: any, supabaseUrl: string, serviceKey: string, userId: string, start: string, end: string, eventTypeId: number | undefined, clientId?: string, voiceStudentEmail?: string) {
@@ -1370,17 +1328,15 @@ async function runGetAvailableSlots(supabase: any, supabaseUrl: string, serviceK
     }
   }
 
-  const busy = await fetchPractitionerBusy(supabase, new Date(start).toISOString());
-
   let widenedNote: string | null = null;
-  let { slots, flatIsos, error } = await fetchCalcomSlots(CALCOM_KEY, start, end, eventTypeId, busy);
+  let { slots, flatIsos, error } = await fetchCalcomSlots(CALCOM_KEY, start, end, eventTypeId);
   if (error) return { error };
 
   const startDate = new Date(start);
   for (const widenDays of WIDENING_STEPS_DAYS) {
     if ((flatIsos as string[]).length > 0) break;
     const widerEnd = new Date(startDate.getTime() + widenDays * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-    const wider = await fetchCalcomSlots(CALCOM_KEY, start, widerEnd, eventTypeId, busy);
+    const wider = await fetchCalcomSlots(CALCOM_KEY, start, widerEnd, eventTypeId);
     if (!wider.error && wider.flatIsos.length > 0) {
       slots = wider.slots; flatIsos = wider.flatIsos;
       widenedNote = `The originally requested range had nothing open, so this was automatically widened to ${widenDays} days out to find real availability.`;
@@ -1493,51 +1449,16 @@ async function runGetAvailableSlots(supabase: any, supabaseUrl: string, serviceK
   return { slots, suggested, note: combinedNote };
 }
 
-async function runUpdatePractitionerBusy(supabase: any, userId: string, action: string, startISO: string, endISO: string, reason?: string) {
-  const start = new Date(startISO);
-  const end = new Date(endISO);
-  if (isNaN(start.getTime()) || isNaN(end.getTime())) return { error: "Invalid startISO/endISO." };
-  if (end.getTime() <= start.getTime()) return { error: "endISO must be after startISO." };
-
-  if (action === "clear") {
-    const { error } = await supabase
-      .from("practitioner_busy")
-      .delete()
-      .lte("start_at", endISO)
-      .gte("end_at", startISO);
-    if (error) return { error: error.message };
-    return { success: true, note: "Overlapping busy windows removed." };
-  }
-
-  const { data: existing } = await supabase
-    .from("practitioner_busy")
-    .select("id")
-    .eq("start_at", startISO)
-    .eq("end_at", endISO)
-    .maybeSingle();
-  if (existing) return { success: true, note: "That window is already blocked." };
-
-  const { error } = await supabase
-    .from("practitioner_busy")
-    .insert([{ user_id: userId, start_at: startISO, end_at: endISO, reason: reason || null }]);
-  if (error) return { error: error.message };
-  return { success: true, note: "Window blocked." };
-}
-
-async function runGetPractitionerBusy(supabase: any) {
-  const { data, error } = await supabase
-    .from("practitioner_busy")
-    .select("start_at, end_at, reason")
-    .order("start_at", { ascending: true });
-  if (error) return { error: error.message };
-  return {
-    busy: (data || []).map((r: any) => ({
-      startIso: r.start_at,
-      endIso: r.end_at,
-      reason: r.reason || null,
-      when: `${fmtMelbourne(r.start_at)} – ${fmtMelbourne(r.end_at)}`,
-    })),
-  };
+async function runManageCalcomAvailability(supabaseUrl: string, serviceKey: string, action: string, date: string) {
+  const calAction = action === "clearDay" ? "unblock-day" : "block-day";
+  const res = await fetch(`${supabaseUrl}/functions/v1/manage-calcom-availability`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${serviceKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ action: calAction, date }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.status === "error") return { error: data?.message || data?.error || "Cal.com availability update failed." };
+  return { success: true, message: data?.message || `Cal.com day ${date} updated.` };
 }
 
 async function runSendRescheduleOffer(supabaseUrl: string, serviceKey: string, args: any) {
@@ -2622,7 +2543,7 @@ ${doesKinesiology && doesLessons
   ? `This conversation is focused on one specific kinesiology client (client_id: ${focusClientId}). Call get_client_context first to load their history, current rate vs target rate, and communication style, and match their tone when drafting anything. If Daniele mentions he just changed or increased their rate, draft a warm email via draft_email_reply that references the specific old and new numbers already visible from get_client_context — and never claim it's been sent, only that it's ready for review.`
   : `This is a general conversation, not focused on one client. Default to an anchor mindset — this is how EVERY general conversation should run, not an opt-in mode: prioritise securing and deepening relationships with clients who are close to converting or renewing over chasing volume for its own sake. Don't get distracted trying to bring in everyone at once — securing one real relationship beats a scattershot list. When scheduling, prioritisation, or "who should I focus on" comes up, call get_anchor_candidates ONCE (it reflects the full current picture — don't re-call it on later turns unless something genuinely changed, like a booking confirmed or a cancellation mentioned) and work through it in this order: (1) open_anchors first — long, consistent track record, seen recently, nothing booked yet. Check get_available_slots around their usual_slot and offer to draft outreach proposing exactly that slot — don't make them re-decide a day/time they've already established. Present 2-3 at a time, not the whole list. (2) lapsed_anchors next — same strong pattern, gone quiet. Do NOT assume their old slot still holds; frame it as a warm, no-pressure re-engagement check-in and only get into scheduling specifics once they've responded with interest. (3) needs_conversion_support only once both anchor buckets are addressed — mention these ARE lower priority. (4) already_secured_anchors need no action. Keep momentum: after handling one, proactively suggest the next rather than waiting to be asked "who's next". Also check get_clients_needing_attention for anyone genuinely at risk of falling through the cracks (a cancelled-and-gone-quiet client, for example) — mention them even if the conversation didn't ask about follow-up specifically. Daniele finds scheduling decisions genuinely effortful (this tool exists specifically to lower that friction), so ALWAYS lead with any is_quick_win entries from get_clients_needing_attention before anything else — a recent cancellation from an otherwise-consistent client is the single easiest thing to resolve (check get_available_slots around their usual pattern and offer one concrete slot to propose), and surfacing it first means he secures a real win in one click instead of sifting through a long list to find it himself.`}
 You can draft an email for review via draft_email_reply, but you can never send one yourself — always say the draft is ready for review, never that it has been sent. Never invent a recipient address (no "@example.com" placeholders) — always pull the real email from get_client_context, get_anchor_candidates, or search_voice_client first. Every drafted email body must read like Daniele personally typed it: first person singular ("I", never "we" or "our team" — he's one practitioner, not a business writing to a customer), plain conversational language, and absolutely no markdown syntax (no **bold**, no asterisk bullets, no # headings) — Gmail renders the literal asterisks, so markdown emphasis shows up as ugly stray characters in a real inbox. If something needs emphasis, just say it plainly instead. Avoid anything that reads like marketing copy (no "exciting news!", exclamation-heavy hooks, or salesy framing) — these are warm, low-key messages to people he already knows. Critical: after calling draft_email_reply, do NOT repeat the drafted subject/body in your text reply — it already renders as its own editable card with a Send button right above your message, and re-typing the same content is confusing (the practitioner can't tell if your text version or the card is "the real one," and on a small screen the card can get lost under a wall of repeated text). Just briefly confirm it's ready, e.g. "Draft's ready above — edit anything you like, then hit Send when you're happy with it." The ONE exception to "never send" is send_reschedule_offer: when Daniele explicitly asks you to notify a client that you're moving their booked session, you call get_available_slots for that person first to find and agree a genuinely free time, then call send_reschedule_offer — it sends a short "does {date} work?" email to the client from Daniele's Gmail. Never use it to send anything but a reschedule offer, and never without his explicit instruction to contact the client about moving a session.
-When Daniele says he has work, travel or anything else coming up ("I've got work clashing with Thursday", "avoid the 22nd between 10:30 and 11:30"), call update_practitioner_busy to record a blocked window — blocked windows are automatically excluded from get_available_slots and the booking calendar, so you'd never propose a clash. Call get_practitioner_busy whenever the current blocked windows might matter, so you don't re-propose a window that's already busy.
+Cal.com is the single source of truth for Daniele's availability: when he says work or anything else is coming up on a day ("I've got work clashing with Thursday", "I can't teach on the 22nd"), call manage_calcom_availability with action blockDay — it marks the whole day out-of-office in Cal.com, so the public booking page AND get_available_slots both stop offering it automatically. Use clearDay to reopen the day. Times within a day aren't separable — block the whole day.
 Whenever draft_email_reply is used for anything scheduling-flavoured ("let's find a time", proposing a session, re-engagement outreach that might lead to booking), call get_available_slots FIRST and embed 2-3 concrete suggested times with a one-line reason each in the draft body — never draft a vague "let me know what works for you" when real availability is one tool call away. get_available_slots also auto-widens its search window itself if the immediate range is fully booked, so it will still return real options even when the calendar looks packed short-term.
 Clients also have a self-serve portal at ${SITE_URL}/portal/login (email OTP, no password) where they can view their own upcoming/past sessions, cancel a booking, book a new one, and message Daniele directly. If a client seems unaware of it, or asks how to manage/cancel their own booking, or Daniele wants to point someone there, feel free to mention it and include the link in a drafted email — always as the full URL above, never a bare "/portal/login" (meaningless with no domain in plain email text).
 You can propose an actual booking via propose_booking (kinesiology or voice — same tool, pass client_id or voice_student_email), but you can never create one yourself — it only becomes real when the practitioner clicks Confirm on the proposal card, which creates a real Cal.com booking either way. Every proposal gets its own card under your reply (a run of sessions gets a Confirm all button); pencilled ones also stay under Assistant → Pending bookings and on the Timetable. After proposing, always say exactly that — never just "once you confirm them". When he says "book them all in" or "confirm them", call show_pending_proposals (for the person you are discussing, if any) and tell him to press Confirm all — never claim anything is booked. For a run of sessions (e.g. fortnightly follow-ups), propose every one of them — check each date with get_available_slots — and list which were pencilled and any that were not free. Always call get_available_slots first and propose a real slot from that result, never a guessed time. When finding a slot for a specific person, always pass client_id (kinesiology) or voice_student_email (voice) to get_available_slots — it returns a ranked "suggested" shortlist (weighted by their availability_notes/booking history, not just chronological order), each with a "reason". Lead with the top suggested slot and its reason ("Tuesday 4pm usually works well for her, and it fits the note about after-work sessions") rather than defaulting to whichever slot happens to be soonest — the earliest slot is very often NOT the one they actually want.
@@ -2720,10 +2641,8 @@ If Daniele says to skip, move on, or otherwise declines the client currently bei
                   result = pending.result;
                 } else if (name === "update_client_availability") {
                   result = await runUpdateClientAvailability(supabase, userId, args.client_id, args.voice_student_email, args.availability_notes, args.session_length_min, args.event_type_id);
-                } else if (name === "update_practitioner_busy") {
-                  result = await runUpdatePractitionerBusy(supabase, userId, args.action, args.startISO, args.endISO, args.reason);
-                } else if (name === "get_practitioner_busy") {
-                  result = await runGetPractitionerBusy(supabase);
+                } else if (name === "manage_calcom_availability") {
+                  result = await runManageCalcomAvailability(SUPABASE_URL, SERVICE_KEY, args.action, args.date);
                 } else if (name === "send_reschedule_offer") {
                   result = await runSendRescheduleOffer(SUPABASE_URL, SERVICE_KEY, args);
                 } else if (name === "search_inbox") {

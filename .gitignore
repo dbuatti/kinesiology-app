@@ -25,3 +25,4 @@ dist-ssr
 .dyad/
 .vercel
 deno.lock
+supabase/.temp/

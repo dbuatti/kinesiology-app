@@ -355,6 +355,10 @@ export default function LandingPage() {
             <a href="https://danielebuatti.com/voice-piano-services" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-foreground">
               Also teaches voice and piano <ArrowUpRight size={12} />
             </a>
+            {/* The practitioner's own side of the app. Without this the only
+                way in was to know the address — "Client log in" above goes to
+                the client portal, which is a separate sign-in. */}
+            <Link to="/login" className="hover:text-foreground">Practitioner sign in</Link>
           </span>
         </div>
       </footer>

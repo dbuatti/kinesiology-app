@@ -6,6 +6,7 @@ import { CALCOM_CONFIG } from "@/config/integrations";
 import { ArrowRight, ArrowUpRight, Clock, MapPin, Shirt, Wind } from "lucide-react";
 import { BrandMark } from "@/components/layout/BrandMark";
 import { cn } from "@/lib/utils";
+import { PROFILE_IMAGE_URL } from "@/config/integrations";
 
 const BookButton = ({ className = "", size = "lg" }: { className?: string; size?: "lg" | "sm" }) => (
   <Button
@@ -127,7 +128,7 @@ export default function LandingPage() {
             <div className="absolute -inset-6 rounded-[40px] bg-[radial-gradient(closest-side,hsl(var(--chart-purple)/0.22),transparent)] blur-2xl" aria-hidden />
             <figure className="relative overflow-hidden rounded-[28px] border border-border bg-card p-3 shadow-2xl">
               <div className="relative aspect-[4/5] overflow-hidden rounded-[20px] bg-muted">
-                <img src="/headshot.jpeg" alt="Daniele Buatti" className="h-full w-full object-cover" />
+                <img src={PROFILE_IMAGE_URL} alt="Daniele Buatti" className="h-full w-full object-cover" />
                 <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/55 to-transparent" />
                 <figcaption className="absolute inset-x-4 bottom-4 text-white">
                   <p className="font-serif text-xl leading-tight">Daniele Buatti</p>
@@ -279,7 +280,7 @@ export default function LandingPage() {
         <section id="about" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-20 sm:px-8">
           <div className="grid items-center gap-10 md:grid-cols-[280px_1fr] lg:gap-16">
             <img
-              src="/headshot.jpeg"
+              src={PROFILE_IMAGE_URL}
               alt="Daniele Buatti"
               className="mx-auto aspect-square w-48 rounded-full object-cover shadow-xl ring-8 ring-card md:w-full md:rounded-[28px]"
               loading="lazy"

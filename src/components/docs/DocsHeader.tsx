@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { PROFILE_IMAGE_URL } from '@/config/integrations';
 
 const DocsHeader = () => {
   const menuItems = ["File", "Edit", "View", "Insert", "Format", "Tools", "Extensions", "Help"];
@@ -70,7 +71,7 @@ const DocsHeader = () => {
           <div className="flex items-center gap-3 ml-2">
             <Sparkles size={20} className="text-muted-foreground" />
             <Avatar className="h-8 w-8 border border-border">
-              <AvatarImage src="https://github.com/shadcn.png" />
+              <AvatarImage src={PROFILE_IMAGE_URL} alt="Daniele Buatti" className="object-cover" />
               <AvatarFallback>DB</AvatarFallback>
             </Avatar>
           </div>

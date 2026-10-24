@@ -8,6 +8,8 @@ import { ZONES, ZONE_ORDER, activeNavPath } from "@/lib/zones";
 import { useAppMode } from "@/components/ModeProvider";
 import { useAuth } from "@/components/AuthProvider";
 import { cn } from "@/lib/utils";
+import { PROFILE_IMAGE_URL } from "@/config/integrations";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -312,9 +314,12 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
                 isRail ? "justify-center px-0" : "px-1.5"
               )}
             >
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-indigo-700 text-[11px] font-semibold text-white">
-                {initials || "DB"}
-              </span>
+              <Avatar className="h-7 w-7 shrink-0">
+                <AvatarImage src={PROFILE_IMAGE_URL} alt={displayName} className="object-cover" />
+                <AvatarFallback className="bg-gradient-to-br from-indigo-400 to-indigo-700 text-[11px] font-semibold text-white">
+                  {initials || "DB"}
+                </AvatarFallback>
+              </Avatar>
               {!isRail && (
                 <>
                   <span className="min-w-0 flex-1 leading-tight">

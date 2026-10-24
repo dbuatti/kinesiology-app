@@ -107,3 +107,5 @@ export const NOTION_CONFIG = {
   VOICE_LESSONS_DB_1_ID: "8d6369c637c8425fb007adf261f8e576",
   VOICE_LESSONS_DB_2_ID: "11caad21cd0980d8a3eeeffb27fc43c0"
 };
+/** The practitioner's profile photo — landing page, sidebar account menu, docs header. */
+export const PROFILE_IMAGE_URL = "https://resonance-kinesiology.vercel.app/daniele-buatti-hero.jpeg";

@@ -23,6 +23,8 @@ export default {
         serif: ["Newsreader", "ui-serif", "Georgia", "serif"],
       },
       colors: {
+        // Logo navy (public website)
+        brand: "hsl(var(--brand) / <alpha-value>)",
         // Hardcoded indigo-* utilities (800+ uses) are remapped onto the brand
         // hue so they sit in the same family as --primary instead of fighting it.
         indigo: {

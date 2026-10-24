@@ -129,6 +129,7 @@ CSS variables are defined in `src/globals.css` and wired in `tailwind.config.ts`
 | Chart rose accent | `hsl(var(--chart-destructive))` — use in Recharts `stroke`/`stopColor` |
 | Chart emerald accent | `hsl(var(--chart-emerald))` |
 | Chart piano (amber) accent | `hsl(var(--chart-piano))` — validated for both modes; kinesiology = chart-primary, voice = chart-destructive |
+| Website brand navy (logo, `#172B5F`) | `hsl(var(--brand))` via `text-brand`/`bg-brand` — public landing page; logo is `layout/BrandLogo` (`BrandLogo`, `BrandStar`), and `.landing` scopes the website's warm, lighter surface tokens |
 | Google Docs-style page bg | `hsl(var(--docs-surface))` |
 | Google Docs-style toolbar | `hsl(var(--docs-toolbar))` |
 

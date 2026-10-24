@@ -2,17 +2,16 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CALCOM_CONFIG } from "@/config/integrations";
+import { CALCOM_CONFIG, PROFILE_IMAGE_URL } from "@/config/integrations";
 import { ArrowRight, ArrowUpRight, Clock, MapPin, Shirt, Wind } from "lucide-react";
-import { BrandMark } from "@/components/layout/BrandMark";
+import { BrandLogo, BrandStar } from "@/components/layout/BrandLogo";
 import { cn } from "@/lib/utils";
-import { PROFILE_IMAGE_URL } from "@/config/integrations";
 
 const BookButton = ({ className = "", size = "lg" }: { className?: string; size?: "lg" | "sm" }) => (
   <Button
     asChild
     className={cn(
-      "group gap-2 rounded-full bg-chart-purple text-white shadow-[inset_0_1px_0_hsl(0_0%_100%/0.2),0_0_0_1px_hsl(var(--chart-purple)),0_10px_28px_-10px_hsl(var(--chart-purple)/0.7)] hover:bg-chart-purple hover:brightness-110",
+      "group gap-2 rounded-full bg-brand font-normal text-white !shadow-[0_8px_24px_-12px_hsl(var(--brand)/0.55)] hover:bg-brand hover:brightness-125 dark:text-background",
       size === "lg" ? "h-12 px-6 text-[15px]" : "h-9 px-4 text-[13px]",
       className
     )}
@@ -28,14 +27,14 @@ const BookButton = ({ className = "", size = "lg" }: { className?: string; size?
 const Rings = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 600 600" className={className} aria-hidden>
     {[60, 120, 180, 240, 300].map((r, i) => (
-      <circle key={r} cx="300" cy="300" r={r} fill="none" stroke="currentColor" strokeOpacity={0.14 - i * 0.022} strokeWidth="1" />
+      <circle key={r} cx="300" cy="300" r={r} fill="none" stroke="currentColor" strokeOpacity={0.09 - i * 0.015} strokeWidth="1" />
     ))}
   </svg>
 );
 
 const Eyebrow = ({ children }: { children: React.ReactNode }) => (
-  <p className="mb-4 flex items-center gap-2 text-[13px] font-medium text-chart-purple">
-    <span className="h-px w-6 bg-chart-purple/50" />
+  <p className="mb-4 flex items-center gap-2 text-[13px] font-medium text-brand">
+    <span className="h-px w-6 bg-brand/50" />
     {children}
   </p>
 );
@@ -50,11 +49,11 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
+    <div className="landing relative min-h-screen overflow-x-hidden bg-background text-foreground">
       {/* Atmosphere */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-[900px] overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_20%_0%,hsl(var(--chart-purple)/0.16),transparent_70%),radial-gradient(50%_50%_at_90%_10%,hsl(var(--primary)/0.10),transparent_70%)]" />
-        <Rings className="absolute -right-40 -top-40 h-[760px] w-[760px] text-chart-purple" />
+        <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_20%_0%,hsl(var(--brand)/0.06),transparent_70%),radial-gradient(50%_50%_at_90%_10%,hsl(205_80%_60%/0.07),transparent_70%)]" />
+        <Rings className="absolute -right-40 -top-40 h-[760px] w-[760px] text-brand" />
         <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-b from-transparent to-background" />
       </div>
 
@@ -62,16 +61,12 @@ export default function LandingPage() {
       <header
         className={cn(
           "sticky top-0 z-40 transition-[background-color,border-color,box-shadow] duration-300",
-          scrolled ? "border-b border-border/70 bg-background/75 backdrop-blur-xl" : "border-b border-transparent"
+          scrolled ? "border-b border-border/60 bg-background/80 backdrop-blur-xl" : "border-b border-transparent"
         )}
       >
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-5 pt-[env(safe-area-inset-top)] sm:px-8">
-          <a href="#top" className="flex items-center gap-2.5">
-            <BrandMark className="h-8 w-8" />
-            <span className="leading-none">
-              <span className="block font-serif text-[19px] font-medium tracking-[-0.02em]">Resonance</span>
-              <span className="mt-0.5 block text-[11px] text-muted-foreground">Kinesiology · Toorak</span>
-            </span>
+          <a href="#top" aria-label="Resonance Kinesiology" className="flex items-center">
+            <BrandLogo className="text-[19px] sm:text-[21px]" />
           </a>
           <nav className="ml-6 hidden items-center gap-1 text-[14px] text-muted-foreground md:flex">
             {[
@@ -98,8 +93,8 @@ export default function LandingPage() {
         <section className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-20 pt-10 sm:px-8 md:grid-cols-[1.25fr_1fr] md:pt-20 lg:gap-20">
           <div>
             <Eyebrow>FNH kinesiology with Daniele Buatti</Eyebrow>
-            <h1 className="font-serif text-[44px] font-medium leading-[1.02] tracking-[-0.03em] sm:text-[58px] lg:text-[68px]">
-              Some things don't respond to <em className="italic text-chart-purple">trying harder.</em>
+            <h1 className="font-serif text-[44px] font-light leading-[1.04] tracking-[-0.025em] text-brand sm:text-[58px] lg:text-[68px]">
+              Some things don't respond to <em className="italic">trying harder.</em>
             </h1>
             <p className="mt-6 max-w-xl text-[17px] leading-relaxed text-muted-foreground">
               FNH kinesiology is hands-on nervous system work: assessment, movement, breath, and the patterns sitting underneath them. 60 minutes, on a table, in a Toorak studio. You keep your clothes on.
@@ -108,7 +103,7 @@ export default function LandingPage() {
               <BookButton />
               <p className="text-[13px] text-muted-foreground">Opens Cal.com. Pick a time, no account needed.</p>
             </div>
-            <dl className="mt-10 grid max-w-lg grid-cols-3 divide-x divide-border rounded-2xl border border-border bg-card/70 backdrop-blur">
+            <dl className="mt-10 grid max-w-lg grid-cols-3 divide-x divide-border/70 rounded-2xl border border-border/70 bg-card/80 backdrop-blur">
               {[
                 { icon: Clock, k: "Session", v: "60 minutes" },
                 { icon: MapPin, k: "Studio", v: "Toorak" },
@@ -125,11 +120,11 @@ export default function LandingPage() {
           </div>
 
           <div className="relative mx-auto w-full max-w-sm md:max-w-none">
-            <div className="absolute -inset-6 rounded-[40px] bg-[radial-gradient(closest-side,hsl(var(--chart-purple)/0.22),transparent)] blur-2xl" aria-hidden />
-            <figure className="relative overflow-hidden rounded-[28px] border border-border bg-card p-3 shadow-2xl">
+            <div className="absolute -inset-6 rounded-[40px] bg-[radial-gradient(closest-side,hsl(var(--brand)/0.08),transparent)] blur-2xl" aria-hidden />
+            <figure className="relative overflow-hidden rounded-[28px] border border-border/70 bg-card p-3 shadow-[0_30px_70px_-40px_hsl(var(--brand)/0.35)]">
               <div className="relative aspect-[4/5] overflow-hidden rounded-[20px] bg-muted">
                 <img src={PROFILE_IMAGE_URL} alt="Daniele Buatti" className="h-full w-full object-cover" />
-                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/55 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/45 to-transparent" />
                 <figcaption className="absolute inset-x-4 bottom-4 text-white">
                   <p className="font-serif text-xl leading-tight">Daniele Buatti</p>
                   <p className="text-[12.5px] text-white/80">Diploma of Kinesiology · Functional Neuro Health</p>
@@ -142,7 +137,7 @@ export default function LandingPage() {
                   "We track the same markers session to session, so progress isn't just a feeling",
                 ].map((line) => (
                   <li key={line} className="flex items-start gap-2.5 text-[13.5px] leading-snug">
-                    <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-chart-purple" />
+                    <span className="mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
                     {line}
                   </li>
                 ))}
@@ -156,7 +151,7 @@ export default function LandingPage() {
           <div className="mx-auto grid max-w-6xl gap-10 px-5 py-20 sm:px-8 md:grid-cols-[1fr_1.4fr] lg:gap-20">
             <div>
               <Eyebrow>Who this is for</Eyebrow>
-              <h2 className="font-serif text-[34px] font-medium leading-[1.1] tracking-[-0.025em] sm:text-[40px]">
+              <h2 className="font-serif text-[34px] font-light leading-[1.12] tracking-[-0.02em] text-brand sm:text-[40px]">
                 People usually arrive with something specific and physical.
               </h2>
             </div>
@@ -170,7 +165,7 @@ export default function LandingPage() {
                   "thoughts on a loop that no amount of understanding has interrupted",
                 ].map((line, i) => (
                   <li key={line} className="flex items-baseline gap-5 py-4 text-[16px] leading-relaxed">
-                    <span className="w-6 shrink-0 font-serif text-sm tabular-nums text-chart-purple">0{i + 1}</span>
+                    <span className="w-6 shrink-0 font-serif text-sm tabular-nums text-brand">0{i + 1}</span>
                     {line}
                   </li>
                 ))}
@@ -184,12 +179,12 @@ export default function LandingPage() {
         </section>
 
         {/* What actually happens */}
-        <section id="how" className="scroll-mt-20 bg-muted/40">
+        <section id="how" className="scroll-mt-20 bg-muted/50">
           <div className="mx-auto max-w-6xl px-5 py-20 sm:px-8">
             <Eyebrow>What actually happens</Eyebrow>
             <div className="grid gap-5 md:grid-cols-[1.35fr_1fr]">
-              <div className="rounded-3xl border border-border bg-card p-7 shadow-sm sm:p-9">
-                <h3 className="font-serif text-[28px] font-medium tracking-[-0.02em]">Your first session</h3>
+              <div className="rounded-3xl border border-border/70 bg-card p-7 sm:p-9">
+                <h3 className="font-serif text-[28px] font-normal tracking-[-0.015em] text-brand">Your first session</h3>
                 <ol className="relative mt-6 space-y-5 before:absolute before:bottom-2 before:left-[11px] before:top-2 before:w-px before:bg-border">
                   {[
                     "We talk first, and for longer than you might expect. History, what you've already tried, what your body is doing.",
@@ -199,7 +194,7 @@ export default function LandingPage() {
                     "Written notes by email afterwards, plus one or two small practices. Not a program. Two things.",
                   ].map((line, i) => (
                     <li key={line} className="relative flex gap-4">
-                      <span className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-chart-purple/30 bg-card text-[11px] font-medium tabular-nums text-chart-purple">
+                      <span className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-brand/30 bg-card text-[11px] font-medium tabular-nums text-brand">
                         {i + 1}
                       </span>
                       <span className="pt-0.5 text-[15px] leading-relaxed">{line}</span>
@@ -208,20 +203,20 @@ export default function LandingPage() {
                 </ol>
               </div>
               <div className="flex flex-col gap-5">
-                <div className="rounded-3xl border border-border bg-card p-7 shadow-sm sm:p-9">
-                  <h3 className="font-serif text-[28px] font-medium tracking-[-0.02em]">Every session after that</h3>
+                <div className="rounded-3xl border border-border/70 bg-card p-7 sm:p-9">
+                  <h3 className="font-serif text-[28px] font-normal tracking-[-0.015em] text-brand">Every session after that</h3>
                   <ul className="mt-5 space-y-3 text-[15px] leading-relaxed text-muted-foreground">
                     <li>We start with what's happened since.</li>
                     <li>We return to what was left unfinished.</li>
                     <li className="text-foreground">Some sessions follow the plan. Some follow whatever you walked in carrying. Both count as the work.</li>
                   </ul>
                 </div>
-                <div className="relative flex-1 overflow-hidden rounded-3xl bg-[hsl(262_40%_14%)] p-7 text-white shadow-lg sm:p-9">
-                  <Rings className="absolute -bottom-40 -right-40 h-[420px] w-[420px] text-white" />
-                  <Shirt className="relative h-5 w-5 text-white/60" />
-                  <p className="relative mt-4 font-serif text-[22px] leading-snug">Something you can move in. Everything stays on.</p>
+                <div className="relative flex-1 overflow-hidden rounded-3xl border border-brand/10 bg-brand/[0.05] p-7 text-brand sm:p-9">
+                  <Rings className="absolute -bottom-40 -right-40 h-[420px] w-[420px] text-brand" />
+                  <Shirt className="relative h-5 w-5 text-brand/50" />
+                  <p className="relative mt-4 font-serif text-[22px] font-light leading-snug">Something you can move in. Everything stays on.</p>
                   <div className="relative mt-6">
-                    <BookButton size="sm" className="bg-white text-[hsl(262_40%_14%)] shadow-none hover:bg-white" />
+                    <BookButton size="sm" />
                   </div>
                 </div>
               </div>
@@ -234,7 +229,7 @@ export default function LandingPage() {
           <div className="grid gap-10 md:grid-cols-[1fr_1.4fr] lg:gap-20">
             <div>
               <Eyebrow>How long this takes</Eyebrow>
-              <h2 className="font-serif text-[34px] font-medium leading-[1.1] tracking-[-0.025em] sm:text-[40px]">Not one session.</h2>
+              <h2 className="font-serif text-[34px] font-light leading-[1.12] tracking-[-0.02em] text-brand sm:text-[40px]">Not one session.</h2>
             </div>
             <div>
               <div className="mb-8 grid grid-cols-3 gap-2" aria-hidden>
@@ -244,7 +239,7 @@ export default function LandingPage() {
                   ["5+", "Where it lasts"],
                 ].map(([n, label], i) => (
                   <div key={n} className="relative">
-                    <div className={cn("h-1.5 rounded-full", i === 0 ? "bg-chart-purple/35" : i === 1 ? "bg-chart-purple/65" : "bg-chart-purple")} />
+                    <div className={cn("h-1.5 rounded-full", i === 0 ? "bg-brand/35" : i === 1 ? "bg-brand/65" : "bg-brand")} />
                     <p className="mt-3 font-serif text-2xl tabular-nums">{n}</p>
                     <p className="text-[13px] text-muted-foreground">{label}</p>
                   </div>
@@ -264,7 +259,7 @@ export default function LandingPage() {
         {/* What this isn't */}
         <section className="border-y border-border/70 bg-muted/30">
           <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-12 sm:px-8 md:flex-row md:items-center">
-            <p className="shrink-0 font-serif text-2xl tracking-[-0.02em]">What this isn't</p>
+            <p className="shrink-0 font-serif text-2xl font-light tracking-[-0.015em] text-brand">What this isn't</p>
             <ul className="flex flex-wrap gap-2 md:ml-auto md:justify-end">
               {["Not a massage.", "Not a diagnosis.", "Not a single-session fix."].map((line) => (
                 <li key={line} className="rounded-full border border-border bg-card px-4 py-2 text-[14px] shadow-xs">{line}</li>
@@ -282,12 +277,12 @@ export default function LandingPage() {
             <img
               src={PROFILE_IMAGE_URL}
               alt="Daniele Buatti"
-              className="mx-auto aspect-square w-48 rounded-full object-cover shadow-xl ring-8 ring-card md:w-full md:rounded-[28px]"
+              className="mx-auto aspect-square w-48 rounded-full object-cover shadow-[0_24px_60px_-34px_hsl(var(--brand)/0.4)] ring-8 ring-card md:w-full md:rounded-[28px]"
               loading="lazy"
             />
             <div>
               <Eyebrow>About</Eyebrow>
-              <p className="font-serif text-[28px] font-medium leading-snug tracking-[-0.02em]">
+              <p className="font-serif text-[28px] font-light leading-snug tracking-[-0.015em] text-brand">
                 Hi, I'm Daniele. I hold a Diploma of Kinesiology from the College of Complementary Medicine, and work within the Functional Neuro Health framework.
               </p>
               <p className="mt-5 text-[17px] leading-relaxed text-muted-foreground">
@@ -305,7 +300,7 @@ export default function LandingPage() {
           <div className="mx-auto grid max-w-6xl gap-10 px-5 py-20 sm:px-8 md:grid-cols-[1fr_1.4fr] lg:gap-20">
             <div>
               <Eyebrow>Questions</Eyebrow>
-              <h2 className="font-serif text-[34px] font-medium leading-[1.1] tracking-[-0.025em] sm:text-[40px]">Before you book</h2>
+              <h2 className="font-serif text-[34px] font-light leading-[1.12] tracking-[-0.02em] text-brand sm:text-[40px]">Before you book</h2>
               <p className="mt-4 text-[15px] text-muted-foreground">
                 Anything else —{" "}
                 <a href="mailto:info@danielebuatti.com" className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
@@ -333,17 +328,17 @@ export default function LandingPage() {
 
         {/* Closing */}
         <section className="px-5 pb-24 sm:px-8">
-          <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[32px] bg-[hsl(262_40%_14%)] px-6 py-16 text-center text-white shadow-2xl sm:px-12 sm:py-20">
-            <Rings className="absolute left-1/2 top-1/2 h-[900px] w-[900px] -translate-x-1/2 -translate-y-1/2 text-white" />
-            <div className="absolute inset-0 bg-[radial-gradient(60%_80%_at_50%_0%,hsl(var(--chart-purple)/0.45),transparent_70%)]" aria-hidden />
+          <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[32px] border border-brand/10 bg-brand/[0.045] px-6 py-16 text-center text-brand sm:px-12 sm:py-20">
+            <Rings className="absolute left-1/2 top-1/2 h-[900px] w-[900px] -translate-x-1/2 -translate-y-1/2 text-brand" />
+            <div className="absolute inset-0 bg-[radial-gradient(60%_80%_at_50%_0%,hsl(0_0%_100%/0.7),transparent_70%)] dark:hidden" aria-hidden />
             <div className="relative">
-              <BrandMark className="mx-auto h-11 w-11" />
-              <h2 className="mx-auto mt-6 max-w-2xl font-serif text-[36px] font-medium leading-[1.08] tracking-[-0.025em] sm:text-[48px]">
+              <BrandStar className="mx-auto h-8 w-8" />
+              <h2 className="mx-auto mt-6 max-w-2xl font-serif text-[36px] font-light leading-[1.1] tracking-[-0.02em] sm:text-[48px]">
                 Some things don't respond to trying harder.
               </h2>
-              <p className="mt-4 text-[15px] text-white/70">60 minutes · Toorak studio · $70</p>
+              <p className="mt-4 text-[15px] text-muted-foreground">60 minutes · Toorak studio · $70</p>
               <div className="mt-8 flex justify-center">
-                <BookButton className="bg-white text-[hsl(262_40%_14%)] shadow-none hover:bg-white" />
+                <BookButton />
               </div>
             </div>
           </div>
@@ -353,7 +348,7 @@ export default function LandingPage() {
       <footer className="relative z-10 border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-8 pb-[calc(2rem+env(safe-area-inset-bottom))] text-[13px] text-muted-foreground sm:flex-row sm:items-center sm:px-8">
           <span className="flex items-center gap-2">
-            <BrandMark className="h-5 w-5" /> Resonance Kinesiology · Daniele Buatti
+            <BrandLogo className="text-[15px]" /> <span>· Daniele Buatti</span>
           </span>
           <span className="flex flex-wrap items-center gap-x-4 gap-y-1 sm:ml-auto">
             <a href="mailto:info@danielebuatti.com" className="hover:text-foreground">info@danielebuatti.com</a>

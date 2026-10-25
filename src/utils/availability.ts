@@ -118,16 +118,30 @@ export function parseVoiceTime(dateStr: string, timeStr: string | null): Date {
 export function voiceDateISO(date: string, time: string): string {
   const [year, month, day] = date.split("-").map(Number);
   if (!year || !month || !day) return date;
-  const isUTC = /UTC/i.test(time);
-  const t = time.replace(/[\s]*[\u2013\u2014\u2212\u002D]+.*/, "").trim().replace(/UTC/i, "").trim();
-  const m = t.match(/^(\d+):(\d+)\s*(AM|PM)$/i);
+  // Use only the start portion of a range (before the dash).
+  const startPart = (time || "").split(/[\u2013\u2014\u2212-]/)[0].trim();
+  const m = startPart.match(/^(\d+):(\d+)\s*(AM|PM)/i);
   if (!m) return date;
   let h = parseInt(m[1]);
   const min = parseInt(m[2]);
   if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
   if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
-  const d = isUTC
-    ? new Date(Date.UTC(year, month - 1, day, h, min))
-    : new Date(year, month - 1, day, h, min);
-  return d.toISOString();
+
+  // Determine the timezone offset of the supplied wall-clock time, if any.
+  // "UTC" / "GMT+0" → 0; "GMT+11" → +11h; no tz → treat as local wall-clock.
+  const gmtMatch = (time || "").match(/GMT\s*([+-])\s*(\d+)/i);
+  const isUTC = /UTC/i.test(time || "") || !!gmtMatch;
+  let offsetMin = 0;
+  if (gmtMatch) {
+    const sign = gmtMatch[1] === "+" ? 1 : -1;
+    offsetMin = sign * parseInt(gmtMatch[2]) * 60;
+  }
+
+  if (isUTC) {
+    // Wall-clock time is at `offsetMin`; convert to a UTC instant.
+    const utcMs = Date.UTC(year, month - 1, day, h, min) - offsetMin * 60000;
+    return new Date(utcMs).toISOString();
+  }
+  // No timezone supplied: keep the original local-wall-clock behaviour.
+  return new Date(year, month - 1, day, h, min).toISOString();
 }

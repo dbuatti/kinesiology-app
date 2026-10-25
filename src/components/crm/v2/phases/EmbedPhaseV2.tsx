@@ -349,7 +349,7 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
       <PhaseHeader icon={ClipboardCheck} title="Embed" description="Re-challenge all inhibited findings, confirm integration, document homework, and schedule the follow-up session." />
 
       {/* Clinical Verification (Re-challenge) */}
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center">
@@ -373,7 +373,7 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
               const Icon = getIcon(item.category);
               const isClearing = clearingId === item.id;
               return (
-                <div key={item.id} className="bg-card border border-border rounded-xl p-5 flex items-center justify-between gap-4 hover:shadow-md transition-all">
+                <div key={item.id} className="border border-border rounded-lg p-4 flex items-center justify-between gap-4 transition-colors">
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="w-10 h-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center shrink-0">
                       <Icon size={20} />
@@ -405,7 +405,7 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
           </div>
         ) : inhibitedItems.length > 0 ? (
           <div className="text-center py-16 bg-muted rounded-xl border border-dashed border-border">
-            <div className="w-16 h-16 bg-card rounded-xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+            <div className="w-12 h-12 bg-muted/40 rounded-lg flex items-center justify-center mx-auto mb-3">
               <ShieldCheck size={32} className="text-chart-emerald" />
             </div>
             <h3 className="text-lg font-semibold text-foreground">All Findings Integrated</h3>
@@ -415,7 +415,7 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
           </div>
         ) : (
           <div className="text-center py-16 bg-muted rounded-xl border border-dashed border-border">
-            <div className="w-16 h-16 bg-card rounded-xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+            <div className="w-12 h-12 bg-muted/40 rounded-lg flex items-center justify-center mx-auto mb-3">
               <ClipboardCheck size={32} className="text-muted-foreground" />
             </div>
             <h3 className="text-lg font-semibold text-foreground">No Items to Verify</h3>
@@ -472,14 +472,14 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
       </div>
 
       {/* Session Summary */}
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex items-center gap-3 pb-3 border-b border-border">
           <FileText size={18} className="text-muted-foreground" />
           <h3 className="text-sm font-bold text-foreground">Session Summary</h3>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Intake & Vitals */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div>
               <p className="text-[10px] font-medium text-muted-foreground mb-1">Goal</p>
               <p className="text-xs font-medium text-foreground leading-relaxed">{appointment.goal || 'Not set'}</p>
@@ -537,7 +537,7 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
       </div>
 
       {/* Rebook */}
-      <div className="p-6 bg-primary rounded-xl text-primary-foreground relative overflow-hidden">
+      <div className="p-4 bg-primary rounded-lg text-primary-foreground relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none"><CalendarPlus size={150} /></div>
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
           <div className="flex items-center gap-4">
@@ -587,7 +587,7 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
                 </div>
                 <div className="overflow-y-auto flex-1 px-8 py-6">
                   {selectedSlot ? (
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                       <div className="p-4 bg-card rounded-xl border border-border flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <Calendar size={20} className="text-muted-foreground" />

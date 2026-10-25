@@ -141,7 +141,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <PhaseHeader icon={GitBranch} title="Align" description="Review inhibited findings, set priorities, and choose the primary correction." />
 
       {/* Filter toggles */}
@@ -174,7 +174,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
 
       {/* Findings grouped by category */}
       {filteredFindings.length > 0 ? (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {(() => {
             const groups: Record<string, Finding[]> = {};
             filteredFindings.forEach(f => {

@@ -5,7 +5,7 @@ import type { PhaseProps } from "@/components/crm/v2/v2-types";
 
 const EasePhase = ({ appointment, saveField }: PhaseProps) => {
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <PhaseHeader icon={Zap} title="Ease" description="Down-regulate the sympathetic nervous system before deeper assessment." />
 
       <SectionHeading icon={Shield} title="SNS Down-Regulation" />

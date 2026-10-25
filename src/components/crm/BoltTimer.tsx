@@ -105,7 +105,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
         )}>
           <div className="flex items-baseline gap-1">
             <span className={cn(
-              "text-5xl font-semibold tabular-nums transition-colors",
+              "text-3xl font-semibold tabular-nums transition-colors",
               isRunning ? "text-indigo-600" : getScoreColor(displayTime)
             )}>
               {displayTime}

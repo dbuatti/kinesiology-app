@@ -39,8 +39,8 @@ const NeurologicalAssessments = ({
       <div className="flex items-center gap-3">
         <Brain size={16} className="text-muted-foreground" />
         <div>
-          <h3 className="text-base font-semibold text-foreground tracking-tight">Neurological Global</h3>
-          <p className="text-xs text-muted-foreground">Cerebellum & Proprioception</p>
+          <h3 className="text-xs font-bold text-foreground tracking-tight uppercase tracking-wider">Neurological Global</h3>
+          <p className="text-[10px] text-muted-foreground">Cerebellum & Proprioception</p>
         </div>
         <span className="ml-auto text-xs font-medium text-muted-foreground">
           {hasAnyNotes ? "Recorded" : "Not yet recorded"}

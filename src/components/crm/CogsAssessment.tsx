@@ -143,8 +143,8 @@ const CogsAssessment = ({
       <div className="flex items-center gap-3">
         <Move size={16} className="text-muted-foreground" />
         <div>
-          <h3 className="text-base font-semibold text-foreground">COGS — Visual Assessment</h3>
-          <p className="text-xs text-muted-foreground">Anatomy in Motion · Pelvis, Rib Cage &amp; Cranium coordination</p>
+          <h3 className="text-xs font-bold text-foreground tracking-tight uppercase tracking-wider">COGS — Visual Assessment</h3>
+          <p className="text-[10px] text-muted-foreground">Anatomy in Motion · Pelvis, Rib Cage &amp; Cranium coordination</p>
         </div>
         {hasSavedNotes && <span className="text-xs font-medium text-muted-foreground ml-auto">Recorded</span>}
       </div>

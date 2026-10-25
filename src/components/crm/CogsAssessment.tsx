@@ -195,7 +195,7 @@ const CogsAssessment = ({
             {activePlane && (
               <div className="animate-in slide-in-from-top-2 duration-300">
                 {PLANES.filter(p => p.id === activePlane).map(plane => (
-                  <div key={plane.id} className={cn("p-4 rounded-lg space-y-4", plane.color)}>
+                  <div key={plane.id} className="pt-3 space-y-3 border-t border-border">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <plane.icon size={18} className={plane.accentText} />

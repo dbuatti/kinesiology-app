@@ -70,6 +70,17 @@ export function PathwayReflexStimGrid({
   const [view, setView] = useState<'board' | 'summary'>('board');
   const [confirmClear, setConfirmClear] = useState(false);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const touchStartX = useRef<number | null>(null);
+  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(dx) < 50) return;
+    const idx = GRID_TABS.findIndex((t) => t.id === activeTab);
+    if (dx < 0 && idx < GRID_TABS.length - 1) setActiveTab(GRID_TABS[idx + 1].id);
+    if (dx > 0 && idx > 0) setActiveTab(GRID_TABS[idx - 1].id);
+  };
   const seeded = useRef(false);
   const confirmTimer = useRef<number | undefined>(undefined);
   const pendingWrites = useRef(0);
@@ -517,7 +528,7 @@ export function PathwayReflexStimGrid({
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      "flex items-center gap-2 px-4 h-10 rounded-xl text-xs font-bold transition-all cursor-pointer",
+                      "flex items-center gap-2 px-4 h-10 rounded-xl text-xs font-bold transition-all cursor-pointer touch-manipulation",
                       active
                         ? "bg-primary text-primary-foreground shadow-md ring-2 ring-chart-primary/30"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -542,7 +553,11 @@ export function PathwayReflexStimGrid({
           {view === 'summary' ? (
             <PathwayReflexStimGridSummary checked={checked} muscleState={muscleState} />
           ) : (
-            <div className="overflow-x-auto border border-border rounded-xl shadow-sm print:overflow-visible print:border-0 print:shadow-none">
+            <div
+              className="overflow-x-auto border border-border rounded-xl shadow-sm print:overflow-visible print:border-0 print:shadow-none touch-manipulation"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
               <PathwayReflexStimGridBoard
                 checked={checked}
                 onToggle={handleToggle}

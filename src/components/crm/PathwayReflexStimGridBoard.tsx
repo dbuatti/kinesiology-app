@@ -75,7 +75,7 @@ const MarkButton = ({
     aria-pressed={marked}
     title={title}
     className={cn(
-      "relative flex h-10 w-10 items-center justify-center rounded-lg border-2 transition-all cursor-pointer active:scale-95",
+      "relative flex h-10 w-10 items-center justify-center rounded-lg border-2 transition-all cursor-pointer active:scale-95 touch-manipulation",
       marked
         ? "border-chart-destructive/60 bg-chart-destructive/15 text-chart-destructive"
         : active
@@ -115,7 +115,7 @@ const SideSplit = ({
           aria-pressed={marked}
           title={`${side} — ${marked ? "showing, click to unmark" : itemTitle}`}
           className={cn(
-            "relative flex h-10 w-11 items-center justify-center transition-colors cursor-pointer active:scale-95",
+            "relative flex h-10 w-11 items-center justify-center transition-colors cursor-pointer active:scale-95 touch-manipulation",
             i === 0 && "border-r border-border",
             marked
               ? "bg-chart-destructive/15 text-chart-destructive"
@@ -156,7 +156,7 @@ const NerveInhib = ({
               aria-pressed={marked}
               title={`${side} ${nerve.name} — ${marked ? "inhibited, click to unmark" : "mark inhibited"}`}
               className={cn(
-                "relative flex h-8 w-8 items-center justify-center transition-colors cursor-pointer active:scale-95",
+                "relative flex h-8 w-8 items-center justify-center transition-colors cursor-pointer active:scale-95 touch-manipulation",
                 i === 0 && "border-r border-border",
                 marked
                   ? "bg-chart-destructive/15 text-chart-destructive"
@@ -375,7 +375,7 @@ const MuscleMarkButton = ({
     aria-pressed={!!state}
     title={title}
     className={cn(
-      "relative flex h-10 w-10 items-center justify-center rounded-lg border-2 transition-all cursor-pointer active:scale-95",
+      "relative flex h-10 w-10 items-center justify-center rounded-lg border-2 transition-all cursor-pointer active:scale-95 touch-manipulation",
       state === "Hypotonic" && "border-sky-500/70 bg-sky-500/15 text-sky-700",
       state === "Inhibited" && "border-chart-destructive/60 bg-chart-destructive/15 text-chart-destructive",
       state === "Hypertonic" && "border-amber-500/70 bg-amber-100/80 text-amber-700",
@@ -413,7 +413,7 @@ const MuscleSideSplit = ({
         aria-pressed={!!state}
         title={`${side} — ${itemTitle}`}
         className={cn(
-          "relative flex h-10 w-11 items-center justify-center transition-colors cursor-pointer active:scale-95",
+          "relative flex h-10 w-11 items-center justify-center transition-colors cursor-pointer active:scale-95 touch-manipulation",
           i === 0 && "border-r border-border",
           state === "Hypotonic" && "bg-sky-500/15 text-sky-700",
           state === "Inhibited" && "bg-chart-destructive/15 text-chart-destructive",

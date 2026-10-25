@@ -100,8 +100,8 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
 
       <div className="relative">
         <div className={cn(
-          "flex flex-col items-center justify-center p-3 rounded-lg border transition-all",
-          isRunning ? "bg-indigo-50 border-indigo-300 animate-pulse" : "bg-muted/30 border-border"
+          "flex flex-col items-center justify-center p-3 rounded-lg transition-all",
+          isRunning ? "bg-indigo-50 animate-pulse" : "bg-muted/20"
         )}>
           <div className="flex items-baseline gap-1">
             <span className={cn(

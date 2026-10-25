@@ -1,4 +1,3 @@
-import EmptyState from "@/components/shared/EmptyState";
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -152,13 +151,11 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
 
   if (!previousSession || rawItems.length === 0) {
     return (
-      <EmptyState
-        icon={RotateCcw}
-        title="Nothing to recheck"
-        description={previousSession
-          ? `No unresolved findings from the previous session (${format(new Date(previousSession.date), "d MMM yyyy")}).`
-          : "This appears to be the client's first recorded session."}
-      />
+      <p className="text-xs text-muted-foreground">
+        {previousSession
+          ? `Nothing to recheck — no unresolved findings from ${format(new Date(previousSession.date), "d MMM yyyy")}.`
+          : "First recorded session — nothing to recheck."}
+      </p>
     );
   }
 

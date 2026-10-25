@@ -7,10 +7,12 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { showError } from "@/utils/toast";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
 import {
   ArrowLeft, Loader2, Activity, FileText,
   Maximize2, Minimize2, Calendar, Clock, User, BookOpen,
-  Plus, BookMarked, LayoutGrid, Archive, StickyNote
+  Plus, BookMarked, LayoutGrid, Archive, StickyNote, MoreHorizontal, X
 } from "lucide-react";
 import {
   HoverCard, HoverCardContent, HoverCardTrigger,
@@ -39,13 +41,14 @@ const AppointmentV2Page = () => {
     refresh
   } = useAppointment(id);
 
-  const [viewMode, setViewMode] = useState<'peace' | 'grid' | 'doc' | 'manual'>(() => {
+  const [viewMode, setViewMode] = useState<'peace' | 'grid' | 'doc'>(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get('view') === 'doc' ? 'doc' : 'peace';
   });
   const [isFullScreen, setIsFullScreen] = useState(() => localStorage.getItem('rk_v2_fullscreen') === 'true');
   const [quickSessionOpen, setQuickSessionOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
 
   useEffect(() => {
     const handler = () => setIsFullScreen(localStorage.getItem('rk_v2_fullscreen') === 'true');
@@ -102,7 +105,6 @@ const AppointmentV2Page = () => {
     { id: 'peace' as const, label: 'PEACE', icon: Activity },
     { id: 'grid' as const, label: 'Grid', icon: LayoutGrid },
     { id: 'doc' as const, label: 'Doc', icon: FileText },
-    { id: 'manual' as const, label: 'Manual', icon: BookMarked },
   ];
 
   return (
@@ -199,25 +201,31 @@ const AppointmentV2Page = () => {
               <StickyNote size={13} /> <span className="hidden md:inline">Notes</span>
             </button>
             <div className="w-px h-6 bg-border mx-0.5 shrink-0" />
-            <Button
-              variant="ghost"
-              size="sm"
-              asChild
-              className="rounded-xl text-muted-foreground shrink-0"
-              title="Open the archived (legacy) session page"
+            <button
+              onClick={() => setManualOpen(true)}
+              className="flex items-center gap-1.5 px-2 md:px-2.5 h-8 text-[13px] font-medium border border-border bg-card shadow-xs hover:bg-muted rounded-lg shrink-0 whitespace-nowrap"
+              title="Corrections manual — reference"
             >
-              <Link to={`/appointments/${id}/archive`}>
-                <Archive size={16} />
-              </Link>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleFullScreen}
-              className="rounded-xl text-muted-foreground shrink-0"
-            >
-              {isFullScreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-            </Button>
+              <BookMarked size={13} /> <span className="hidden md:inline">Manual</span>
+            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="rounded-xl text-muted-foreground shrink-0 h-8 w-8 p-0">
+                  <MoreHorizontal size={16} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="rounded-xl">
+                <DropdownMenuItem asChild>
+                  <Link to={`/appointments/${id}/archive`} className="flex items-center gap-2">
+                    <Archive size={14} /> Archived (legacy) view
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={toggleFullScreen} className="flex items-center gap-2">
+                  {isFullScreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+                  {isFullScreen ? "Exit fullscreen" : "Fullscreen"}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
@@ -274,9 +282,17 @@ const AppointmentV2Page = () => {
         />
       )}
 
-      {viewMode === 'manual' && (
-        <div className="h-[calc(100vh-3.5rem)]">
-          <CorrectionsManualContent />
+      {manualOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={() => setManualOpen(false)}>
+          <div className="bg-card rounded-2xl border border-border shadow-lg max-w-3xl w-full max-h-[85vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4 sticky top-0 bg-card pb-2">
+              <h2 className="text-lg font-semibold text-foreground">Corrections Manual</h2>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setManualOpen(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <CorrectionsManualContent />
+          </div>
         </div>
       )}
 

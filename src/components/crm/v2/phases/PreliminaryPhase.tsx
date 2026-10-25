@@ -1,5 +1,7 @@
 import { useState, Fragment } from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 import {
   Compass, ClipboardList, Activity, ShieldAlert, AlertTriangle,
   Dumbbell, Baby, Zap, Brain, RotateCcw, Eye, CheckCircle2,
@@ -27,7 +29,6 @@ import type { PhaseProps } from "@/components/crm/v2/v2-types";
 type SubTab = 'recheck' | 'intake' | 'quick' | 'intrinsic' | 'muscles' | 'reflexes' | 'nerves' | 'zones';
 
 const SUB_TABS: { id: SubTab; label: string; icon: any }[] = [
-  { id: 'recheck', label: 'Recheck', icon: RotateCcw },
   { id: 'intake', label: 'Intake & Vitals', icon: Activity },
   { id: 'quick', label: 'Quick Assess', icon: CheckCircle2 },
   { id: 'intrinsic', label: 'Intrinsic', icon: ShieldAlert },
@@ -83,6 +84,46 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
         </Alert>
       )}
 
+      {/* Completed summary strip */}
+      {(() => {
+        const chips: string[] = [];
+        if (appointment.bolt_score != null) chips.push(`BOLT ${appointment.bolt_score}s`);
+        if (appointment.coherence_score != null) chips.push(`Coherence ${appointment.coherence_score}`);
+        if (appointment.sagittal_plane_notes || appointment.frontal_plane_notes || appointment.transverse_plane_notes) chips.push("COGS ✓");
+        if (appointment.fakuda_notes || appointment.sharpened_rhombergs_notes || appointment.frontal_lobe_notes || appointment.righting_reflex_notes) chips.push("Neuro ✓");
+        const pattern = safeParse(appointment.priority_pattern, {} as any);
+        const zones = pattern?.brainZones || {};
+        const reflexDone = Object.keys(zones).filter(k => k !== "Fakuda Step Test" && k !== "Sharpened Rhombergs Test" && k !== "Frontal Lobe Assessment" && k !== "Righting Reflexes").length;
+        // count completed primitive reflexes/cranial/muscles from priority_pattern
+        const completedChecks = (Object.values(pattern || {}) as any[]).reduce((n: number, v: any) => {
+          if (Array.isArray(v)) return n + v.filter((x: any) => x && x.status && x.status !== "Clear").length;
+          return n;
+        }, 0);
+        if (completedChecks > 0) chips.push(`${completedChecks} checks`);
+        if (chips.length === 0) return null;
+        return (
+          <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">
+            {chips.map((c, i) => (
+              <span key={i} className="px-2 py-0.5 rounded-md bg-muted/50 border border-border">{c}</span>
+            ))}
+          </div>
+        );
+      })()}
+
+      {/* Recheck — persistent top strip */}
+      {(history?.length ?? 0) >= 2 && (
+        <div className="border-b border-border pb-4">
+          <RecheckTabV2
+            appointment={appointment}
+            history={history}
+            onUpdate={onUpdate}
+            updatePriorityPattern={updatePriorityPattern}
+            saveField={saveField}
+            onJumpToPhase={onJumpToPhase}
+          />
+        </div>
+      )}
+
       {/* Sub-tab bar */}
       <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
         {SUB_TABS.map(tab => (
@@ -115,7 +156,7 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
         )}
 
         {subTab === 'intake' && (
-          <div className="space-y-8">
+          <div className="space-y-6">
             {/* Goal & Concern */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -307,6 +348,15 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
           />
         )}
       </div>
+
+      {/* Done affordance */}
+      {onJumpToPhase && (
+        <div className="pt-4 border-t border-border flex justify-end">
+          <Button onClick={() => onJumpToPhase(1)} className="h-9 rounded-md text-xs font-medium gap-1.5">
+            Preliminary complete <ArrowRight size={13} />
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

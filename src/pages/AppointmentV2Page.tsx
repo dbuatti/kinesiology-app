@@ -320,6 +320,8 @@ const AppointmentV2Page = () => {
         onSave={saveField}
         title={`Quick Notes — ${appointment.clients?.name || "Session"}`}
         subtitle={format(new Date(appointment.date), "EEE, MMM d · h:mm a")}
+        goal={appointment.goal}
+        issue={appointment.issue}
       />
     </div>
   );

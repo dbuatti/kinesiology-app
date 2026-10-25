@@ -175,6 +175,17 @@ const QuickNotesDialog = ({
               )}
             </div>
             <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={async () => {
+                  const parts = [goal ? `Session Goal: ${goal}` : "", issue ? `Primary Concern: ${issue}` : "", draft].filter(Boolean);
+                  try { await navigator.clipboard.writeText(parts.join("\\n\\n")); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch {}
+                }}
+                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                title="Copy goal, concern and notes"
+              >
+                {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? "Copied" : "Copy all"}
+              </button>
               <span className="hidden sm:inline text-xs font-medium text-muted-foreground/40">
                 ⌘/Ctrl + Enter
               </span>

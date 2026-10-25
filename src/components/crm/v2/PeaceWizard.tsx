@@ -254,11 +254,11 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
       </div>
 
       {/* Phase content */}
-      <div className="bg-card border border-border rounded-2xl shadow-sm">
+      <div>
         <div
           key={activePhase}
           className={cn(
-            "p-6 md:p-10",
+            "py-2",
             "animate-in fade-in duration-400",
             phaseDirection === 'forward' ? 'slide-in-from-right-4' : 'slide-in-from-left-4'
           )}

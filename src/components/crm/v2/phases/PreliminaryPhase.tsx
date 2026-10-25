@@ -95,11 +95,7 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
         const zones = pattern?.brainZones || {};
         const reflexDone = Object.keys(zones).filter(k => k !== "Fakuda Step Test" && k !== "Sharpened Rhombergs Test" && k !== "Frontal Lobe Assessment" && k !== "Righting Reflexes").length;
         // count completed primitive reflexes/cranial/muscles from priority_pattern
-        const completedChecks = (Object.values(pattern || {}) as any[]).reduce((n: number, v: any) => {
-          if (Array.isArray(v)) return n + v.filter((x: any) => x && x.status && x.status !== "Clear").length;
-          return n;
-        }, 0);
-        if (completedChecks > 0) chips.push(`${completedChecks} checks`);
+        // (quick-assess counts intentionally omitted — too noisy; sub-tab dots already show state)
         if (chips.length === 0) return null;
         return (
           <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">

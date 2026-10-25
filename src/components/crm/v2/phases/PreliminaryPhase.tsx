@@ -73,7 +73,7 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
   const isStale = daysSinceLast > 30;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {/* Stale alert */}
       {isStale && (
         <p className="text-xs text-amber-600 dark:text-amber-400 border-l-2 border-amber-500/60 pl-3 py-1">
@@ -149,7 +149,7 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
         )}
 
         {subTab === 'intake' && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Goal & Concern */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">

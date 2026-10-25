@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { StickyNote, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { StickyNote, Loader2, CheckCircle2, AlertCircle, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -15,6 +15,8 @@ interface QuickNotesDialogProps {
   field?: string;
   title?: string;
   subtitle?: string;
+  goal?: string | null;
+  issue?: string | null;
 }
 
 const QuickNotesDialog = ({
@@ -25,11 +27,14 @@ const QuickNotesDialog = ({
   field = "notes",
   title = "Quick Notes",
   subtitle,
+  goal,
+  issue,
 }: QuickNotesDialogProps) => {
   const [draft, setDraft] = useState(initialValue || "");
   const [isFocused, setIsFocused] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "saved" | "error">("idle");
+  const [copied, setCopied] = useState(false);
   const taRef = useRef<HTMLTextAreaElement>(null);
   const debounceTimer = useRef<number | undefined>(undefined);
   const lastCommittedRef = useRef(initialValue || "");
@@ -120,6 +125,22 @@ const QuickNotesDialog = ({
         </DialogHeader>
 
         <div className="flex flex-col flex-1 min-h-0 px-6 py-4">
+          {(goal || issue) && (
+            <div className="mb-3 space-y-2 text-xs">
+              {goal && (
+                <div>
+                  <p className="font-semibold text-muted-foreground mb-0.5">Session Goal</p>
+                  <p className="text-foreground leading-relaxed">{goal}</p>
+                </div>
+              )}
+              {issue && (
+                <div>
+                  <p className="font-semibold text-muted-foreground mb-0.5">Primary Concern</p>
+                  <p className="text-foreground leading-relaxed">{issue}</p>
+                </div>
+              )}
+            </div>
+          )}
           <textarea
             ref={taRef}
             value={draft}

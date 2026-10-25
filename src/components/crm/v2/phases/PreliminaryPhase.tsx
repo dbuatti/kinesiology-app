@@ -76,12 +76,9 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
     <div className="space-y-8">
       {/* Stale alert */}
       {isStale && (
-        <Alert className="bg-amber-500/10 border-amber-500/20 rounded-xl animate-in slide-in-from-top-2 duration-500">
-          <AlertTriangle className="h-5 w-5 text-amber-500" />
-          <AlertDescription className="text-sm text-amber-600 dark:text-amber-300 font-medium">
-            It has been over {Math.floor(daysSinceLast / 30)} months since the last session. Baseline findings and CO₂ tolerance may have shifted significantly.
-          </AlertDescription>
-        </Alert>
+        <p className="text-xs text-amber-600 dark:text-amber-400 border-l-2 border-amber-500/60 pl-3 py-1">
+          Over {Math.floor(daysSinceLast / 30)} months since last session — baseline findings and CO₂ tolerance may have shifted.
+        </p>
       )}
 
       {/* Completed summary strip */}
@@ -163,7 +160,7 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                 <EditableField
                   key={`goal-${appointment.id}`}
                   field="goal"
-                  label="What is the primary objective?"
+                  label=""
                   value={appointment.goal}
                   multiline
                   placeholder="e.g. Resolve chronic neck pain, improve sleep quality..."

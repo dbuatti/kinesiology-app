@@ -178,12 +178,12 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
       {/* Progress + Phase Stepper */}
       <div className="space-y-4">
         {/* PEACE rail — five stations on one line; the line fills as phases complete */}
-        <div className="relative px-2 pt-1 sm:px-6">
+        <div className="relative px-2 pt-0 sm:px-6">
           <div className="relative grid grid-cols-5">
-            <div aria-hidden className="absolute left-[10%] right-[10%] top-[25px] h-[2px] rounded-full bg-border" />
+            <div aria-hidden className="absolute left-[10%] right-[10%] top-[20px] h-[2px] rounded-full bg-border" />
             <div
               aria-hidden
-              className="absolute left-[10%] top-[25px] h-[2px] rounded-full bg-gradient-to-r from-chart-emerald to-primary transition-[width] duration-700 ease-out-expo"
+              className="absolute left-[10%] top-[20px] h-[2px] rounded-full bg-gradient-to-r from-chart-emerald to-primary transition-[width] duration-700 ease-out-expo"
               style={{ width: `${(activePhase / (PEACE_PHASES.length - 1)) * 80}%` }}
             />
             {PEACE_PHASES.map((phase, index) => {
@@ -202,16 +202,16 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
                 >
                   <span
                     className={cn(
-                      "relative flex h-[52px] w-[52px] items-center justify-center rounded-full border transition-all duration-500 ease-out-expo",
+                      "relative flex h-8 w-8 items-center justify-center rounded-full border transition-all duration-200",
                       isActive
-                        ? "border-primary bg-primary text-primary-foreground shadow-button ring-[6px] ring-primary/12"
+                        ? "border-primary bg-primary text-primary-foreground ring-2 ring-primary/15"
                         : isCompleted
                           ? "border-chart-emerald/40 bg-card text-chart-emerald"
                           : "border-border bg-card text-muted-foreground",
-                      canJump && !isActive && "group-hover:-translate-y-0.5 group-hover:border-foreground/25 group-hover:shadow-md"
+                      canJump && !isActive && "group-hover:border-foreground/30"
                     )}
                   >
-                    <span className="font-serif text-[22px] font-medium leading-none">{phase.label}</span>
+                    <span className="font-serif text-sm font-medium leading-none">{phase.label}</span>
                     {isCompleted && !isActive && (
                       <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-chart-emerald text-white ring-2 ring-background">
                         <CheckCircle2 size={11} strokeWidth={3} />
@@ -219,7 +219,7 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
                     )}
                   </span>
                   <span className="flex flex-col items-center leading-tight">
-                    <span className={cn("text-[12.5px] font-medium", isActive ? "text-foreground" : "text-muted-foreground")}>
+                    <span className={cn("text-xs font-medium", isActive ? "text-foreground" : "text-muted-foreground")}>
                       {phase.fullLabel}
                     </span>
                     <span className={cn("mt-0.5 hidden items-center gap-1 text-[11px] sm:flex", isActive ? "text-primary" : "text-muted-foreground/60")}>

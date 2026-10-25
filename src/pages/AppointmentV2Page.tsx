@@ -51,6 +51,16 @@ const AppointmentV2Page = () => {
   const [notesOpen, setNotesOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
 
+  const phaseStatus = useMemo(() => ({
+    p: !!(appointment?.goal && appointment?.issue),
+    e1: !!(appointment?.lymphatic_notes || appointment?.harmonic_rocking_notes ||
+           appointment?.t1_reset_notes || appointment?.diaphragm_reset_notes || appointment?.vagus_nerve_notes),
+    a: !!(appointment?.priority_pattern && appointment?.priority_pattern !== "{}"),
+    c: !!(appointment?.modes_balances),
+    e2: !!(appointment?.session_north_star),
+  }), [appointment]);
+  const phaseProgress = (Object.values(phaseStatus).filter(Boolean).length / 5) * 100;
+
   useEffect(() => {
     const handler = () => setIsFullScreen(localStorage.getItem('rk_v2_fullscreen') === 'true');
     window.addEventListener('antigravity_fullscreen_change', handler);
@@ -112,6 +122,9 @@ const AppointmentV2Page = () => {
     <div className={cn("min-h-screen bg-background", isFullScreen && "fixed inset-0 z-50 overflow-y-auto")}>
       {/* Top Bar */}
       <header className="sticky top-0 z-40 bg-background/85 backdrop-blur-xl border-b border-border">
+        <div className="h-0.5 w-full bg-border/40">
+          <div className="h-full bg-primary transition-all duration-500" style={{ width: `${phaseProgress}%` }} />
+        </div>
         <div className="px-4 md:px-8 h-14 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
             <Button

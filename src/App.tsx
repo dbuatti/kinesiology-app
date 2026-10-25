@@ -33,7 +33,6 @@ const ClientHubPage = lazy(() => import("./pages/ClientHubPage"));
 const AssistantPage = lazy(() => import("./pages/AssistantPage"));
 const SchedulePage = lazy(() => import("./pages/SchedulePage"));
 const TimetablePage = lazy(() => import("./pages/timetable/TimetablePage"));
-const AppointmentDetailPage = lazy(() => import("./pages/AppointmentDetailPage"));
 const AppointmentV2Page = lazy(() => import("./pages/AppointmentV2Page"));
 const ClinicalProtocolsPage = lazy(() => import("./pages/ClinicalProtocolsPage"));
 const AllAppointmentsPage = lazy(() => import("./pages/AllAppointmentsPage"));
@@ -185,7 +184,7 @@ const AppRoutes = () => {
           {/* Consolidated: sessions now live in the unified Calendar */}
           <Route path="/schedule" element={<Navigate to="/calendar" replace />} />
           <Route path="/appointments/:id" element={<AppointmentV2Page />} />
-          <Route path="/appointments/:id/archive" element={<AppointmentDetailPage />} />
+          <Route path="/appointments/:id/archive" element={<Navigate to="/appointments/:id" replace />} />
           <Route path="/appointments/:id/v2" element={<AppointmentV2Redirect />} />
           <Route path="/appointments/:id/protocols" element={<ClinicalProtocolsPage />} />
           {/* Clinical Oversight — consolidated into Clients hub */}

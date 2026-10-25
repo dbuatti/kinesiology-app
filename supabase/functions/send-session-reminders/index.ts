@@ -296,7 +296,7 @@ serve(async (req) => {
     // them) and a direct service-role curl (sends to GMAIL_USER_EMAIL) so the
     // pipeline can be verified without touching real clients.
     if (isDebug) {
-      const testRecipient = user?.email || GMAIL_USER_EMAIL;
+      const testRecipient = (body.to || body.recipient || user?.email || GMAIL_USER_EMAIL || "").trim();
       console.log(`[send-session-reminders] Debug mode: sending test email to ${testRecipient}`);
       if (!testRecipient) throw new Error("No test recipient (no user email and GMAIL_USER_EMAIL unset)");
 

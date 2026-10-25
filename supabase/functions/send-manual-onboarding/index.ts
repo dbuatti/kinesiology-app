@@ -112,6 +112,7 @@ serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     const { clientId, appointmentId, force } = body;
+    const overrideEmail = String(body.to || body.email || "").trim();
 
     if (!clientId) throw new Error("Missing clientId");
 
@@ -128,7 +129,8 @@ serve(async (req) => {
     const supabase = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_SERVICE_ROLE_KEY'));
 
     const { data: client } = await supabase.from('clients').select('*').eq('id', clientId).single();
-    if (!client?.email) throw new Error("Client email missing");
+    if (!client?.email && !overrideEmail) throw new Error("Client email missing");
+    const recipientEmail = overrideEmail || client.email;
 
     // Resolve the appointment: a specific id, else the client's most recent.
     let appointment: any = null;
@@ -162,7 +164,7 @@ serve(async (req) => {
           httpClient: Stripe.createFetchHttpClient(),
         });
         const session = await stripe.checkout.sessions.create({
-          customer_email: client.email,
+          customer_email: recipientEmail,
           line_items: [{
             price_data: {
               currency: 'aud',
@@ -264,12 +266,12 @@ serve(async (req) => {
 
     const accessToken = await getGmailAccessToken(GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN);
     try {
-      await sendGmail(accessToken, FROM_ADDRESS, client.email, subject, htmlBody);
-      console.log(`[send-manual-onboarding] Confirmation email sent to ${client.email}`);
-      await logEmail(supabase, { fn: "send-manual-onboarding", to: client.email, subject, status: "sent", appointment_id: appointment?.id, client_id: clientId });
+      await sendGmail(accessToken, FROM_ADDRESS, recipientEmail, subject, htmlBody);
+      console.log(`[send-manual-onboarding] Confirmation email sent to ${recipientEmail}`);
+      await logEmail(supabase, { fn: "send-manual-onboarding", to: recipientEmail, subject, status: "sent", appointment_id: appointment?.id, client_id: clientId });
     } catch (sendErr) {
       console.error(`[send-manual-onboarding] Send failed:`, sendErr?.message || sendErr);
-      await logEmail(supabase, { fn: "send-manual-onboarding", to: client.email, subject, status: "failed", error: sendErr?.message || String(sendErr), appointment_id: appointment?.id, client_id: clientId });
+      await logEmail(supabase, { fn: "send-manual-onboarding", to: recipientEmail, subject, status: "failed", error: sendErr?.message || String(sendErr), appointment_id: appointment?.id, client_id: clientId });
     }
 
     return new Response(JSON.stringify({

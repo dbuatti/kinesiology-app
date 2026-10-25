@@ -6,7 +6,7 @@ import { CALCOM_CONFIG } from "@/config/integrations";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { showError, showSuccess } from "@/utils/toast";
-import { Loader2, CalendarPlus, LogOut, Send, X, Mail, ExternalLink } from "lucide-react";
+import { Loader2, CalendarPlus, LogOut, Send, X, Mail, ExternalLink, Activity } from "lucide-react";
 
 type Service = "fnh" | "voice";
 const SERVICE_EVENT_TYPE_ID: Record<Service, number> = { fnh: 4279898, voice: 1945081 };
@@ -88,6 +88,7 @@ export default function ClientPortalPage() {
   const [slots, setSlots] = useState<{ iso: string; label: string }[] | null>(null);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [bookingSlot, setBookingSlot] = useState<string | null>(null);
+  const [selfCheckOpen, setSelfCheckOpen] = useState(false);
   // "Resonance Kinesiology" was hardcoded in the header regardless of which
   // arm the logged-in client actually belongs to — a real, client-facing
   // instance of "this tool must always be for voice, piano, and
@@ -233,6 +234,11 @@ export default function ClientPortalPage() {
           <div className="text-lg font-serif font-bold text-foreground">✦ {isVoiceClient ? "Voice Studio — Daniele Buatti" : "Resonance Kinesiology"}</div>
           {profile && <div className="text-sm text-muted-foreground mt-0.5">Welcome back, {firstName}</div>}
         </div>
+        {profile?.email === "daniele.buatti@gmail.com" && (
+          <Button variant="ghost" size="sm" onClick={() => setSelfCheckOpen(true)} className="gap-1.5 text-xs">
+            <Activity className="h-3.5 w-3.5" /> Self-check
+          </Button>
+        )}
         <Button variant="ghost" size="sm" onClick={handleSignOut} className="gap-1.5 text-xs">
           <LogOut className="h-3.5 w-3.5" /> Sign out
         </Button>
@@ -355,6 +361,40 @@ export default function ClientPortalPage() {
           </>
         )}
       </main>
+
+      {selfCheckOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={() => setSelfCheckOpen(false)}>
+          <div className="bg-background rounded-2xl border border-border shadow-lg max-w-md w-full p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-foreground">Practitioner self-check</h2>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSelfCheckOpen(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Run the full PEACE process on yourself. This opens your most recent self-session in the practitioner workspace, where all assessments save to your own record.
+            </p>
+            {(() => {
+              const target = upcoming[0] || past[0] || null;
+              if (!target) {
+                return <p className="text-sm text-muted-foreground italic">No self-session found. Create one from the practitioner app (Sessions → New) and reopen this modal.</p>;
+              }
+              return (
+                <div className="space-y-3">
+                  <div className="rounded-xl bg-muted/50 px-4 py-3">
+                    <div className="text-sm font-semibold text-foreground">{target.label}</div>
+                    <div className="text-xs text-muted-foreground">{fmtDate(target.date)}</div>
+                  </div>
+                  <Button className="w-full gap-1.5" onClick={() => { window.open(`/appointments/${target.id}`, "_blank"); setSelfCheckOpen(false); }}>
+                    <Activity className="h-4 w-4" /> Open PEACE session
+                  </Button>
+                </div>
+              );
+            })()}
+            <p className="text-[11px] text-muted-foreground">Opens in a new tab. Requires you to be signed in to the practitioner app.</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

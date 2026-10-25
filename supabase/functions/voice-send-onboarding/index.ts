@@ -376,32 +376,64 @@ ${duration ? `                          <div style="font-size: 14px; color: #94A
       const organizerHtml = `
         <!DOCTYPE html>
         <html>
-        <body style="margin: 0; padding: 0; font-family: sans-serif;">
-          <center style="width: 100%; padding: 40px 0;">
-            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 40px; overflow: hidden;">
+        <body style="margin: 0; padding: 0; background-color: #FDFCFB; font-family: sans-serif;">
+          <center style="width: 100%; background-color: #FDFCFB; padding: 40px 0;">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 40px; overflow: hidden; border: 1px solid #F1E9EF;">
               <tr><td style="height: 6px; background-color: #E11D48;"></td></tr>
               <tr>
                 <td style="padding: 48px 40px;">
-                  <div style="font-size: 11px; font-weight: 900; letter-spacing: 0.4em; text-transform: uppercase; color: #E11D48;">New Booking</div>
-                  <div style="color: #1E293B; font-size: 26px; font-weight: 700; margin-top: 8px;">${studentName}</div>
-                  <div style="color: #475569; font-size: 14px; margin-top: 4px;">${studentEmail}</div>
-
-                  <div style="background-color: #F8FAFC; border-radius: 24px; padding: 24px; margin: 28px 0; border: 1px solid #E2E8F0;">
-                    <div style="font-size: 10px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px;">Date</div>
-                    <div style="font-size: 20px; font-weight: 700; color: #1E293B;">${friendlyDate}</div>
-                    <div style="font-size: 10px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.1em; margin: 18px 0 6px;">Time</div>
-                    <div style="font-size: 20px; font-weight: 700; color: #1E293B;">${friendlyTime}</div>
-${duration ? `                    <div style="font-size: 14px; color: #94A3B8; margin-top: 6px;">${duration} minutes</div>` : ""}
-                    <div style="font-size: 10px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.1em; margin: 18px 0 6px;">Fee</div>
-                    <div style="font-size: 20px; font-weight: 700; color: #1E293B;">${cost ? `AU $${cost}` : "—"}</div>
+                  <!-- Header -->
+                  <div style="text-align: center; margin-bottom: 8px;">
+                    <div style="font-size: 32px; margin-bottom: 8px;">${emoji}</div>
+                    <div style="font-size: 11px; font-weight: 900; letter-spacing: 0.4em; text-transform: uppercase; color: #E11D48;">New Booking</div>
+                    <div style="color: #1E293B; font-size: 24px; font-weight: 700; margin-top: 6px;">${studioName}</div>
                   </div>
 
-                  <p style="font-size: 14px; color: #475569; line-height: 1.6; margin: 0;">
-                    ${paymentUrl
-                      ? `A payment link was sent to the student. You can view or copy it here: <a href="${paymentUrl}" style="color: #E11D48; word-break: break-all;">${paymentUrl}</a>`
-                      : paymentNotice}
-                  </p>
-                  <p style="font-size: 13px; color: #94A3B8; margin-top: 16px;">A separate "Welcome to ${studioName}" email with these details was sent to the student.</p>
+                  <!-- Student card -->
+                  <div style="background-color: #FFF1F2; border-radius: 24px; padding: 24px 28px; margin: 28px 0 20px; border: 1px solid #FECDD3;">
+                    <div style="font-size: 10px; font-weight: 800; color: #BE123C; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 6px;">Student</div>
+                    <div style="font-size: 20px; font-weight: 700; color: #1E293B;">${studentName}</div>
+                    <div style="font-size: 14px; color: #475569; margin-top: 2px;">${studentEmail}</div>
+                  </div>
+
+                  <!-- Details -->
+                  <div style="background-color: #F8FAFC; border-radius: 24px; padding: 24px 28px; margin: 0 0 24px; border: 1px solid #E2E8F0;">
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                      <tr>
+                        <td style="padding: 0 0 16px 0; border-bottom: 1px solid #E2E8F0;">
+                          <div style="font-size: 10px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Date</div>
+                          <div style="font-size: 18px; font-weight: 700; color: #1E293B;">${friendlyDate}</div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 16px 0; border-bottom: 1px solid #E2E8F0;">
+                          <div style="font-size: 10px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Time</div>
+                          <div style="font-size: 18px; font-weight: 700; color: #1E293B;">${friendlyTime}${duration ? ` <span style="font-size: 13px; color: #94A3B8; font-weight: 500;">(${duration} min)</span>` : ""}</div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 16px 0 0 0;">
+                          <div style="font-size: 10px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Fee</div>
+                          <div style="font-size: 18px; font-weight: 700; color: #1E293B;">${cost ? `AU $${cost}` : "—"}</div>
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  <!-- Payment link -->
+                  ${paymentUrl ? `
+                  <div style="background-color: #F0FDF4; border-radius: 24px; padding: 20px 24px; margin: 0 0 24px; border: 1px solid #BBF7D0; text-align: center;">
+                    <div style="font-size: 10px; font-weight: 800; color: #166534; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px;">Payment link sent to student</div>
+                    <a href="${paymentUrl}" style="display: inline-block; background-color: #16A34A; color: #ffffff; padding: 10px 24px; border-radius: 100px; text-decoration: none; font-weight: 700; font-size: 13px;">Open payment link</a>
+                    <div style="font-size: 11px; color: #6B7280; margin-top: 10px; word-break: break-all;">${paymentUrl}</div>
+                  </div>
+                  ` : (cost ? `
+                  <div style="background-color: #FEF3C7; border-radius: 16px; padding: 16px 20px; margin: 0 0 24px; border: 1px solid #FDE68A; font-size: 13px; color: #92400E; text-align: center;">
+                    ${paymentNotice}
+                  </div>
+                  ` : "")}
+
+                  <p style="font-size: 13px; color: #94A3B8; margin: 0; text-align: center;">A separate "Welcome to ${studioName}" email with these details was sent to the student.</p>
                 </td>
               </tr>
             </table>

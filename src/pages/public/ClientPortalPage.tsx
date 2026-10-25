@@ -85,10 +85,12 @@ export default function ClientPortalPage() {
   const [message, setMessage] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
   const [bookingService, setBookingService] = useState<Service | null>(null);
+  const [chooserOpen, setChooserOpen] = useState(false);
   const [slots, setSlots] = useState<{ iso: string; label: string }[] | null>(null);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [bookingSlot, setBookingSlot] = useState<string | null>(null);
   const [selfCheckOpen, setSelfCheckOpen] = useState(false);
+  const [expandedPast, setExpandedPast] = useState<string | null>(null);
   // "Resonance Kinesiology" was hardcoded in the header regardless of which
   // arm the logged-in client actually belongs to — a real, client-facing
   // instance of "this tool must always be for voice, piano, and
@@ -248,23 +250,38 @@ export default function ClientPortalPage() {
         {loading ? (
           <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : linkError ? (
-          <div className="bg-background rounded-2xl border border-border p-8 text-center space-y-3">
+          <div className="text-center space-y-3">
             <p className="text-foreground font-semibold">{linkError}</p>
             <p className="text-sm text-muted-foreground">If you've booked with Daniele before, make sure you're using the same email address. Otherwise, get in touch and he'll sort it out.</p>
           </div>
         ) : (
           <>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button size="lg" className="h-12 rounded-xl font-bold gap-2 flex-1" onClick={() => openPicker("fnh")} disabled={loadingSlots && bookingService === "fnh"}>
-                {loadingSlots && bookingService === "fnh" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CalendarPlus className="h-4 w-4" />} Book an FNH session
-              </Button>
-              <Button size="lg" variant="outline" className="h-12 rounded-xl font-bold gap-2 flex-1" onClick={() => openPicker("voice")} disabled={loadingSlots && bookingService === "voice"}>
-                {loadingSlots && bookingService === "voice" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CalendarPlus className="h-4 w-4" />} Book a lesson
-              </Button>
-            </div>
+            <Button size="lg" className="h-12 rounded-xl font-bold gap-2 w-full sm:w-auto" onClick={() => setChooserOpen(true)} disabled={loadingSlots}>
+              {loadingSlots ? <Loader2 className="h-4 w-4 animate-spin" /> : <CalendarPlus className="h-4 w-4" />} Book a session
+            </Button>
+
+            {chooserOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={() => setChooserOpen(false)}>
+                <div className="bg-background rounded-2xl border border-border shadow-lg max-w-sm w-full p-6 space-y-3" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-foreground">Book a session</h2>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setChooserOpen(false)}><X className="h-4 w-4" /></Button>
+                  </div>
+                  <p className="text-sm text-muted-foreground">What would you like to book?</p>
+                  <div className="grid grid-cols-1 gap-2">
+                    <Button className="h-12 rounded-xl font-bold gap-2" onClick={() => { setChooserOpen(false); openPicker("fnh"); }}>
+                      <CalendarPlus className="h-4 w-4" /> FNH session
+                    </Button>
+                    <Button variant="outline" className="h-12 rounded-xl font-bold gap-2" onClick={() => { setChooserOpen(false); openPicker("voice"); }}>
+                      <CalendarPlus className="h-4 w-4" /> Voice / piano lesson
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {bookingService && (
-              <section className="bg-background rounded-2xl border border-border p-6">
+              <section className="space-y-3">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">Pick a time — {SERVICE_LABEL[bookingService]}</h2>
                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setBookingService(null); setSlots(null); }}>
@@ -299,8 +316,8 @@ export default function ClientPortalPage() {
               </section>
             )}
 
-            <section className="bg-background rounded-2xl border border-border p-6">
-              <h2 className="text-sm font-bold text-foreground uppercase tracking-wide mb-4">Upcoming sessions</h2>
+            <section className="space-y-3">
+              <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">Upcoming sessions</h2>
               {upcoming.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Nothing booked right now.</p>
               ) : (
@@ -320,8 +337,8 @@ export default function ClientPortalPage() {
               )}
             </section>
 
-            <section className="bg-background rounded-2xl border border-border p-6">
-              <h2 className="text-sm font-bold text-foreground uppercase tracking-wide mb-4">Past sessions</h2>
+            <section className="space-y-3">
+              <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">Past sessions</h2>
               {past.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No past sessions yet.</p>
               ) : (
@@ -333,7 +350,17 @@ export default function ClientPortalPage() {
                         <div className="text-xs text-muted-foreground">{fmtDate(s.date)}</div>
                       </div>
                       {s.nextSessionNote && (
-                        <p className="text-xs text-muted-foreground mt-1.5 italic">"{s.nextSessionNote}"</p>
+                        <div className="mt-1.5">
+                          <button
+                            onClick={() => setExpandedPast(expandedPast === s.id ? null : s.id)}
+                            className="text-xs text-primary hover:underline"
+                          >
+                            {expandedPast === s.id ? "Hide details" : "View details"}
+                          </button>
+                          {expandedPast === s.id && (
+                            <p className="text-xs text-muted-foreground mt-1.5 italic">"{s.nextSessionNote}"</p>
+                          )}
+                        </div>
                       )}
                     </div>
                   ))}
@@ -341,8 +368,8 @@ export default function ClientPortalPage() {
               )}
             </section>
 
-            <section className="bg-background rounded-2xl border border-border p-6">
-              <h2 className="text-sm font-bold text-foreground uppercase tracking-wide mb-4 flex items-center gap-1.5">
+            <section className="space-y-3">
+              <h2 className="text-sm font-bold text-foreground uppercase tracking-wide flex items-center gap-1.5">
                 <Mail className="h-3.5 w-3.5" /> Message Daniele
               </h2>
               <Textarea

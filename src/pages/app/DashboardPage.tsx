@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Zap, AlertCircle, RefreshCw } from "lucide-react";
+import { Zap, AlertCircle, RefreshCw, Activity, X, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/crm/AppLayout";
+import { supabase } from "@/integrations/supabase/client";
 import { QuickSessionDialog } from "@/components/crm/QuickSessionDialog";
 import TodayTimeline, { type TimelineEntry } from "@/components/crm/TodayTimeline";
 import { DayStats, TodayList, NeedsYou, ComingUp, PracticeRow, type NeedLine } from "@/components/today/TodaySections";
@@ -40,6 +41,9 @@ const firstName = (n: string) => n.split(" ")[0];
 const TodayPage = () => {
   const [now, setNow] = useState(new Date());
   const [quickSessionOpen, setQuickSessionOpen] = useState(false);
+  const [selfCheckOpen, setSelfCheckOpen] = useState(false);
+  const [selfAppt, setSelfAppt] = useState<{ id: string; date: string; tag: string } | null>(null);
+  const [selfApptLoading, setSelfApptLoading] = useState(false);
   const [morningDone] = useState(readMorningDone);
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 60000);
@@ -51,6 +55,25 @@ const TodayPage = () => {
   const followQ = useQuery({ queryKey: ["today-follow-ups"], queryFn: loadFollowUps, staleTime: 300_000 });
   const pencilQ = useQuery({ queryKey: ["today-pencilled"], queryFn: loadPencilled, staleTime: 60_000 });
   const alertsQ = useQuery({ queryKey: ["today-alerts"], queryFn: loadClinicalAlerts, staleTime: 300_000 });
+
+  const openSelfCheck = async () => {
+    setSelfCheckOpen(true);
+    setSelfApptLoading(true);
+    try {
+      const { data } = await supabase
+        .from("appointments")
+        .select("id, date, tag, status")
+        .eq("client_id", "083d3518-449e-43c6-bdda-c31c116b3984")
+        .order("date", { ascending: false })
+        .limit(1);
+      const row = (data || [])[0];
+      setSelfAppt(row ? { id: row.id, date: row.date, tag: row.tag || "Session" } : null);
+    } catch {
+      setSelfAppt(null);
+    } finally {
+      setSelfApptLoading(false);
+    }
+  };
 
   const day = useMemo(() => splitToday(itemsQ.data || [], now), [itemsQ.data, now]);
   const unpaid = useMemo(() => unpaidItems(itemsQ.data || [], now), [itemsQ.data, now]);
@@ -123,13 +146,23 @@ const TodayPage = () => {
             </h1>
             <p className="mt-1.5 text-sm text-muted-foreground blur-sensitive">{itemsQ.isLoading ? "Loading your day…" : summary}</p>
           </div>
-          <Button
-            onClick={() => setQuickSessionOpen(true)}
-            className="h-10 shrink-0 gap-2 rounded-xl px-4 text-sm font-medium shadow-[inset_0_1px_0_hsl(0_0%_100%/0.16),0_1px_2px_hsl(var(--shadow-color)/0.2),0_8px_20px_-8px_hsl(var(--primary)/0.5)]"
-          >
-            <Zap size={16} className="shrink-0" />
-            Start quick session
-          </Button>
+          <div className="flex gap-2 shrink-0">
+            <Button
+              onClick={openSelfCheck}
+              variant="outline"
+              className="h-10 gap-2 rounded-xl px-4 text-sm font-medium"
+            >
+              <Activity size={16} className="shrink-0" />
+              Self-check
+            </Button>
+            <Button
+              onClick={() => setQuickSessionOpen(true)}
+              className="h-10 gap-2 rounded-xl px-4 text-sm font-medium shadow-[inset_0_1px_0_hsl(0_0%_100%/0.16),0_1px_2px_hsl(var(--shadow-color)/0.2),0_8px_20px_-8px_hsl(var(--primary)/0.5)]"
+            >
+              <Zap size={16} className="shrink-0" />
+              Start quick session
+            </Button>
+          </div>
         </div>
 
         {itemsQ.isError ? (
@@ -178,6 +211,38 @@ const TodayPage = () => {
           </figcaption>
         </figure>
       </div>
+
+      {selfCheckOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={() => setSelfCheckOpen(false)}>
+          <div className="bg-card rounded-2xl border border-border shadow-lg max-w-md w-full p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-foreground">Practitioner self-check</h2>
+              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSelfCheckOpen(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Run the full PEACE process on yourself. Opens your most recent self-session, where all assessments save to your own record.
+            </p>
+            {selfApptLoading ? (
+              <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+            ) : selfAppt ? (
+              <div className="space-y-3">
+                <div className="rounded-xl bg-muted/50 px-4 py-3">
+                  <div className="text-sm font-semibold text-foreground">{selfAppt.tag}</div>
+                  <div className="text-xs text-muted-foreground">{new Date(selfAppt.date).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Australia/Melbourne" })}</div>
+                </div>
+                <Button className="w-full gap-1.5" onClick={() => { window.open(`/appointments/${selfAppt.id}`, "_blank"); setSelfCheckOpen(false); }}>
+                  <Activity className="h-4 w-4" /> Open PEACE session
+                </Button>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground italic">No self-session found. Create one from Sessions → New, then reopen.</p>
+            )}
+            <p className="text-[11px] text-muted-foreground">Opens in a new tab.</p>
+          </div>
+        </div>
+      )}
 
       <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} />
     </AppLayout>

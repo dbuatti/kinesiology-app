@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import EditableField from "@/components/shared/EditableField";
 import SessionTimer from "@/components/crm/SessionTimer";
 import AppLayout from "@/components/crm/AppLayout";
-import SessionContentSwitcher from "@/components/crm/SessionContentSwitcher";
+import PeaceWizard from "@/components/crm/v2/PeaceWizard";
 import { calculateAge, getStarSign } from "@/utils/crm-utils";
 import {
  Select,
@@ -207,19 +207,13 @@ const DemoSessionPage = () => {
  </div>
  </Card>
 
- <SessionContentSwitcher 
- appointment={appointment} 
- onUpdate={() => {}} 
- saveField={saveField} 
+ <PeaceWizard
+ appointment={appointment}
+ history={[...mockHistory, appointment]}
+ onUpdate={() => {}}
+ saveField={saveField}
  updatePriorityPattern={updatePriorityPattern}
- history={[...mockHistory, appointment]} 
- showSidebar={showSidebar}
- onToggleSidebar={() => setShowSidebar(!showSidebar)}
- onClonePrevious={() => showSuccess("Clone simulated (Demo Mode)")}
- onPrint={() => window.print()}
- onCopySummary={handleCopySummary}
- onDelete={() => showSuccess("Delete simulated (Demo Mode)")}
- isCopied={copied}
+ onFinalise={() => showSuccess("Finalised (Demo Mode)")}
  />
  </div>
 

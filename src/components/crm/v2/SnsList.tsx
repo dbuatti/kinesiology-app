@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
   Droplets, Heart, Zap, Wind, Activity,
-  ChevronDown, Timer, Play, Pause, RotateCcw,
+  Timer, Play, Pause, RotateCcw,
   CheckCircle2, Check
 } from "lucide-react";
 import { safeParse } from "@/utils/safe-json";
@@ -26,7 +26,6 @@ interface SnsItemProps {
 }
 
 const SnsItem = ({ title, subtitle, icon: Icon, iconColor, notes, notesField, hasTimer, protocol, purpose, completed, onToggleComplete, onSaveField }: SnsItemProps) => {
-  const [open, setOpen] = useState(false);
   const [localNotes, setLocalNotes] = useState(notes || "");
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [isActive, setIsActive] = useState(false);
@@ -54,18 +53,14 @@ const SnsItem = ({ title, subtitle, icon: Icon, iconColor, notes, notesField, ha
   return (
     <div className="border-b border-border last:border-b-0">
       {/* Row header */}
-      <div className="group flex items-center justify-between gap-4 py-4 px-2 hover:bg-muted/30 transition-colors">
-        <button
-          onClick={() => setOpen(!open)}
-          className="flex items-center gap-3 min-w-0 text-left"
-          aria-expanded={open}
-        >
-          <Icon size={18} className={cn("shrink-0", iconColor)} />
+      <div className="flex items-center justify-between gap-4 py-3 px-1">
+        <div className="flex items-center gap-3 min-w-0">
+          <Icon size={16} className={cn("shrink-0", iconColor)} />
           <div className="min-w-0">
             <p className="text-sm font-semibold text-foreground truncate">{title}</p>
             <p className="text-[10px] text-muted-foreground font-medium">{subtitle}</p>
           </div>
-        </button>
+        </div>
         <div className="flex items-center gap-3 shrink-0">
           {onToggleComplete && (
             <button
@@ -74,86 +69,74 @@ const SnsItem = ({ title, subtitle, icon: Icon, iconColor, notes, notesField, ha
               title={completed ? "Mark as not completed in this session" : "Mark as completed in this session"}
               aria-label={`${completed ? "Un-tick" : "Tick"} ${title} as completed`}
               className={cn(
-                "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all shrink-0",
+                "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0",
                 completed
                   ? "bg-chart-emerald border-chart-emerald text-white"
                   : "border-border text-transparent hover:border-chart-emerald hover:bg-chart-emerald/10"
               )}
             >
-              <Check size={13} strokeWidth={3} />
+              <Check size={11} strokeWidth={3} />
             </button>
           )}
           {hasNotes ? (
-            <Badge variant="outline" className="text-[10px] font-medium uppercase tracking-wider bg-chart-emerald/10 text-chart-emerald border-chart-emerald/20">
-              Recorded
-            </Badge>
+            <span className="text-[10px] font-medium uppercase tracking-wider text-chart-emerald">Recorded</span>
           ) : (
             <span className="text-[10px] text-muted-foreground/50">Not yet recorded</span>
           )}
-          <button
-            onClick={() => setOpen(!open)}
-            className="p-1 -mr-1 rounded-md hover:bg-muted transition-colors"
-            aria-label={open ? "Collapse" : "Expand"}
-          >
-            <ChevronDown size={16} className={cn("text-muted-foreground transition-transform", open && "rotate-180")} />
-          </button>
         </div>
       </div>
 
-      {/* Expanded content */}
-      {open && (
-        <div className="px-2 pb-6 space-y-4 animate-in fade-in slide-in-from-top-1 duration-300">
-          {purpose && (
-            <p className="text-xs text-muted-foreground leading-relaxed pl-7">
-              <span className="font-semibold text-foreground">Purpose:</span> {purpose}
-            </p>
-          )}
-
-          {protocol && protocol.length > 0 && (
-            <div className="pl-7">
-              <p className="text-xs font-medium text-muted-foreground mb-2">Protocol</p>
-              <ol className="space-y-1.5 text-xs text-muted-foreground list-decimal list-inside">
-                {protocol.map((step, i) => (
-                  <li key={i} className="leading-relaxed">{step}</li>
-                ))}
-              </ol>
-            </div>
-          )}
-
-          {/* Timer */}
-          {hasTimer && (
-            <div className="pl-7 flex items-center gap-3">
-              <Timer size={16} className="text-muted-foreground" />
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => startTimer(45)} className="h-8 px-4 text-xs rounded-lg">45s</Button>
-                <Button variant="outline" size="sm" onClick={() => startTimer(90)} className="h-8 px-4 text-xs rounded-lg">90s</Button>
+      {/* Content (always expanded) — two columns on wide screens */}
+      <div className="px-1 pb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="space-y-3">
+            {purpose && (
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                <span className="font-semibold text-foreground">Purpose:</span> {purpose}
+              </p>
+            )}
+            {protocol && protocol.length > 0 && (
+              <div>
+                <p className="text-xs font-medium text-muted-foreground mb-1.5">Protocol</p>
+                <ol className="space-y-1 text-xs text-muted-foreground list-decimal list-inside">
+                  {protocol.map((step, i) => (
+                    <li key={i} className="leading-relaxed">{step}</li>
+                  ))}
+                </ol>
               </div>
-              {timeLeft !== null && (
-                <div className="flex items-center gap-2 ml-auto">
-                  <span className="text-2xl font-bold tabular-nums text-foreground">{fmt(timeLeft)}</span>
-                  <Button variant="ghost" size="icon" onClick={toggleTimer} className="h-8 w-8 rounded-lg">
-                    {isActive ? <Pause size={16} /> : <Play size={16} />}
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={resetTimer} className="h-8 w-8 rounded-lg">
-                    <RotateCcw size={16} />
-                  </Button>
+            )}
+          </div>
+          <div className="space-y-3">
+            {hasTimer && (
+              <div className="flex items-center gap-3">
+                <Timer size={14} className="text-muted-foreground" />
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => startTimer(45)} className="h-7 px-3 text-xs rounded-md">45s</Button>
+                  <Button variant="outline" size="sm" onClick={() => startTimer(90)} className="h-7 px-3 text-xs rounded-md">90s</Button>
                 </div>
-              )}
-            </div>
-          )}
-
-          {/* Notes */}
-          <div className="pl-7">
+                {timeLeft !== null && (
+                  <div className="flex items-center gap-2 ml-auto">
+                    <span className="text-xl font-bold tabular-nums text-foreground">{fmt(timeLeft)}</span>
+                    <Button variant="ghost" size="icon" onClick={toggleTimer} className="h-7 w-7 rounded-md">
+                      {isActive ? <Pause size={14} /> : <Play size={14} />}
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={resetTimer} className="h-7 w-7 rounded-md">
+                      <RotateCcw size={14} />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
             <Textarea
               value={localNotes}
               onChange={(e) => setLocalNotes(e.target.value)}
               onBlur={() => onSaveField(notesField, localNotes || null)}
               placeholder="Notes..."
-              className="rounded-lg border-border min-h-[80px] text-sm"
+              className="rounded-md border-border min-h-[80px] text-sm"
             />
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

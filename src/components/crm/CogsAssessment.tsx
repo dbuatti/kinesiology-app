@@ -161,8 +161,8 @@ const CogsAssessment = ({
                   </Link>
                 </Button>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                The pelvis and cranium move in <strong>the same direction</strong>, while the rib cage moves in <strong>the opposite direction</strong>. When these three cogs don't coordinate, movement becomes disintegrated — often due to stress, injury, or neurological locking. <strong>Watching someone move is the most accurate way to assess their nervous system.</strong>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Pelvis and cranium move <strong>together</strong>; rib cage moves <strong>opposite</strong>. When they don't coordinate, movement disintegrates. <strong>Watching someone move is the most accurate way to assess their nervous system.</strong>
               </p>
             </div>
 

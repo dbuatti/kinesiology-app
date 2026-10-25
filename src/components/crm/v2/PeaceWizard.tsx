@@ -239,12 +239,12 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
             return (
               <>
                 <span className={cn(
-                  "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium",
+                  "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium",
                   activeIsComplete ? "bg-chart-emerald/10 text-chart-emerald" : "bg-foreground/[0.05] text-muted-foreground"
                 )}>
-                  {activeIsComplete ? "Phase complete" : "To complete"}
+                  {activeIsComplete ? "Done" : "To do"}
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-[11px] text-muted-foreground">
                   {PEACE_PHASES[activePhase].hint}
                 </span>
               </>

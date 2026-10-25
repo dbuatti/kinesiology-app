@@ -636,7 +636,7 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
             multiline
             placeholder="Document final re-test results and prescribed homework..."
             onSave={saveField}
-            className="bg-card p-6 rounded-xl border border-border shadow-sm min-h-[200px]"
+            className="border border-border p-4 rounded-md min-h-[200px]"
           />
         </div>
         <div className="space-y-4">
@@ -653,7 +653,7 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
             multiline
             placeholder="What to check at the next session? (e.g. Re-check Moro, sleep quality...)"
             onSave={saveField}
-            className="bg-card border border-border p-6 rounded-xl shadow-sm min-h-[200px]"
+            className="border border-border p-4 rounded-md min-h-[200px]"
           />
         </div>
       </div>

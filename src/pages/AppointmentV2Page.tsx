@@ -173,6 +173,7 @@ const AppointmentV2Page = () => {
                   <button
                     key={tab.id}
                     onClick={() => setViewMode(tab.id)}
+                    title={tab.id === 'grid' ? 'Free-form pathway stimulation (iPad-friendly notepad)' : tab.id === 'doc' ? 'Document view of the session' : 'Guided PEACE flow'}
                     className={cn(
                       "flex items-center gap-1.5 px-2.5 md:px-3 h-7 text-[13px] font-medium rounded-md shrink-0 whitespace-nowrap",
                       isActive

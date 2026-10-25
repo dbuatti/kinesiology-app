@@ -173,7 +173,7 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
           multiline
           placeholder="Document the coordinates, polarity, and methods applied..."
           onSave={saveField}
-          className="bg-card border border-border p-6 rounded-xl shadow-sm min-h-[200px]"
+          className="border border-border p-4 rounded-md min-h-[200px]"
         />
       </div>
 
@@ -189,7 +189,7 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
           multiline
           placeholder="Record any acupressure points held..."
           onSave={saveField}
-          className="bg-card border border-border p-6 rounded-xl shadow-sm min-h-[120px]"
+          className="border border-border p-4 rounded-md min-h-[120px]"
         />
       </div>
 

@@ -24,6 +24,7 @@ import CorrectionsManualContent from "@/components/crm/CorrectionsManualContent"
 import { QuickSessionDialog } from "@/components/crm/QuickSessionDialog";
 import PathwayReflexStimGrid from "@/components/crm/PathwayReflexStimGrid";
 import QuickNotesDialog from "@/components/crm/QuickNotesDialog";
+import HowToSearch from "@/components/crm/HowToSearch";
 import { parseClientJournal } from "@/utils/journal-helper";
 
 
@@ -209,6 +210,7 @@ const AppointmentV2Page = () => {
             >
               <BookMarked size={13} /> <span className="hidden md:inline">Manual</span>
             </button>
+            <HowToSearch />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="rounded-xl text-muted-foreground shrink-0 h-8 w-8 p-0">

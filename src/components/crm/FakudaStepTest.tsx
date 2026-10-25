@@ -261,26 +261,24 @@ const FakudaStepTest = ({
           <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
             <ArrowRightLeft size={13} /> Clinical Metrics
           </h4>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 text-xs tabular-nums">
-              <Timer size={13} className="text-muted-foreground" />
-              <span className="font-semibold">{timerSeconds}s</span>
-              <span className="text-muted-foreground">/ {timerDuration}s</span>
-            </div>
-            <button onClick={() => setTimerDuration(d => d === 30 ? 60 : d === 60 ? 90 : 30)} className="text-[10px] text-muted-foreground hover:text-foreground px-1.5 py-0.5 rounded border border-border">
+          <div className="flex items-center gap-1.5 text-xs tabular-nums">
+            <Timer size={13} className="text-muted-foreground" />
+            <span className="font-semibold">{timerSeconds}s</span>
+            <span className="text-muted-foreground">/ {timerDuration}s</span>
+            <button onClick={() => setTimerDuration(d => d === 30 ? 60 : d === 60 ? 90 : 30)} className="text-[10px] text-muted-foreground hover:text-foreground px-1 py-0.5 rounded border border-border">
               {timerDuration}s
             </button>
             {!timerRunning ? (
-              <Button variant="ghost" size="sm" onClick={startTimer} className="h-7 w-7 rounded-md p-0" disabled={timerSeconds >= timerDuration}>
-                <Play size={13} />
+              <Button variant="ghost" size="sm" onClick={startTimer} className="h-6 w-6 rounded-md p-0" disabled={timerSeconds >= timerDuration}>
+                <Play size={12} />
               </Button>
             ) : (
-              <Button variant="ghost" size="sm" onClick={pauseTimer} className="h-7 w-7 rounded-md p-0">
-                <Pause size={13} />
+              <Button variant="ghost" size="sm" onClick={pauseTimer} className="h-6 w-6 rounded-md p-0">
+                <Pause size={12} />
               </Button>
             )}
-            <Button variant="ghost" size="sm" onClick={resetTimer} className="h-7 w-7 rounded-md p-0 text-muted-foreground">
-              <RotateCcw size={13} />
+            <Button variant="ghost" size="sm" onClick={resetTimer} className="h-6 w-6 rounded-md p-0 text-muted-foreground">
+              <RotateCcw size={12} />
             </Button>
           </div>
         </div>

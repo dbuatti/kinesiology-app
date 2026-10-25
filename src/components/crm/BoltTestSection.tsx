@@ -108,52 +108,43 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
             ) : (
               <>
                 {needsImprovement && (
-                  <div className="bg-rose-500/10 border border-rose-500/20 p-3 rounded-2xl flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <AlertCircle size={18} className="text-rose-600 dark:text-rose-400 shrink-0" />
-                      <p className="text-[10px] font-bold text-rose-900 dark:text-rose-100 uppercase tracking-tight">Clinical Alert: Low CO2 Tolerance</p>
+                  <div className="flex items-center justify-between gap-3 py-2 border-l-2 border-rose-500/60 pl-3">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle size={14} className="text-rose-600 dark:text-rose-400 shrink-0" />
+                      <p className="text-xs font-medium text-rose-600 dark:text-rose-400">Low CO₂ tolerance — consider running the recovery exercise.</p>
                     </div>
-                    <Button onClick={() => setShowExercise(true)} variant="ghost" size="sm" className="h-7 text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 rounded-lg">
-                      Run Exercise
+                    <Button onClick={() => setShowExercise(true)} variant="ghost" size="sm" className="h-7 text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 rounded-md">
+                      Run
                     </Button>
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                  <div className="max-w-xs mx-auto w-full">
+                <div className="flex flex-col sm:flex-row gap-6 items-start">
+                  <div className="w-full sm:max-w-[240px]">
                     <BoltTimer initialScore={initialBoltScore} onScoreRecorded={handleSaveScore} isSaving={loading} startSignal={timerStartSignal} />
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 gap-2">
-                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/50 border border-border">
-                        <span className="text-xs font-medium text-muted-foreground">Below 20s</span>
-                        <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400">Compromised</span>
-                      </div>
-                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-muted/50 border border-border">
-                        <span className="text-xs font-medium text-muted-foreground">25-35s</span>
-                        <span className="text-[10px] font-bold text-primary dark:text-primary">Functional</span>
-                      </div>
-                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                        <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">40s+</span>
-                        <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-400" />
-                      </div>
+                  <div className="flex-1 space-y-4">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500" /> &lt;20s compromised</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-primary" /> 25–35s functional</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500" /> 40s+ optimal</span>
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button 
                         variant="outline" 
                         onClick={() => setShowExercise(true)} 
-                        className="flex-1 rounded-xl border-indigo-100 text-indigo-600 h-9 font-bold text-[11px] hover:bg-indigo-50"
+                        className="h-8 rounded-md text-xs font-medium"
                       >
-                        <PlayCircle size={14} className="mr-2" /> Run Exercise
+                        <PlayCircle size={13} className="mr-1.5" /> Run Exercise
                       </Button>
-                      <Button variant="outline" onClick={() => setResourcesOpen(true)} className="flex-1 rounded-xl border-border text-muted-foreground h-9 font-bold text-[11px]">
-                        <BookOpen size={14} className="mr-2" /> Resources
+                      <Button variant="outline" onClick={() => setResourcesOpen(true)} className="h-8 rounded-md text-xs font-medium">
+                        <BookOpen size={13} className="mr-1.5" /> Resources
                       </Button>
                       {initialBoltScore !== null && (
-                        <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 h-9 px-3 rounded-xl font-bold text-[11px]">
-                          <RotateCcw size={14} />
+                        <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="h-8 px-2 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 rounded-md text-xs">
+                          <RotateCcw size={13} />
                         </Button>
                       )}
                     </div>

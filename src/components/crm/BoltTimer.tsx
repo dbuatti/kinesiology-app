@@ -100,8 +100,8 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
 
       <div className="relative">
         <div className={cn(
-          "flex flex-col items-center justify-center p-4 rounded-xl border transition-all",
-          isRunning ? "bg-indigo-50 border-indigo-300 animate-pulse" : "bg-muted/50 border-border"
+          "flex flex-col items-center justify-center p-3 rounded-lg border transition-all",
+          isRunning ? "bg-indigo-50 border-indigo-300 animate-pulse" : "bg-muted/30 border-border"
         )}>
           <div className="flex items-baseline gap-1">
             <span className={cn(
@@ -132,7 +132,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
         {!isRunning && !isFinished && (
           <Button 
             onClick={startTimer} 
-            className="flex-1 bg-indigo-600 hover:bg-indigo-700 rounded-xl h-10 text-xs font-bold"
+            className="flex-1 bg-indigo-600 hover:bg-indigo-700 rounded-md h-9 text-xs font-bold"
           >
             <Play size={16} className="mr-2" /> Start BOLT
           </Button>
@@ -141,7 +141,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
         {isRunning && (
           <Button 
             onClick={stopTimer} 
-            className="flex-1 bg-destructive hover:bg-red-700 rounded-xl h-10 text-xs font-bold"
+            className="flex-1 bg-destructive hover:bg-red-700 rounded-md h-9 text-xs font-bold"
           >
             <Square size={16} className="mr-2" /> Stop
           </Button>
@@ -152,7 +152,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
             <Button 
               onClick={handleSave} 
               disabled={isSaving}
-              className="flex-1 bg-emerald-600 hover:bg-emerald-700 rounded-xl h-10 text-xs font-bold"
+              className="flex-1 bg-emerald-600 hover:bg-emerald-700 rounded-md h-9 text-xs font-bold"
             >
               {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save size={16} className="mr-2" />}
               Save ({time}s)
@@ -160,7 +160,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
             <Button 
               onClick={resetTimer} 
               variant="outline" 
-              className="px-4 rounded-xl border-border hover:bg-muted h-10"
+              className="px-3 rounded-md border-border hover:bg-muted h-9"
               disabled={isSaving}
             >
               <RotateCcw size={16} />

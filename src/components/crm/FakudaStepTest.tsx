@@ -287,28 +287,22 @@ const FakudaStepTest = ({
             <div className="h-full bg-emerald-500 transition-all duration-1000" style={{ width: `${Math.min(100, (timerSeconds / timerDuration) * 100)}%` }} />
           </div>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-muted-foreground">Drift Direction</Label>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="space-y-1">
+            <Label className="text-[10px] font-medium text-muted-foreground">Drift</Label>
             <ToggleGroup type="single" value={driftDirection} onValueChange={handleDriftChange} className="justify-start gap-1">
-              <ToggleGroupItem value="Left" className="rounded-md border border-border text-xs font-bold px-3 py-1.5 data-[state=on]:bg-indigo-600 data-[state=on]:text-primary-foreground">L</ToggleGroupItem>
-              <ToggleGroupItem value="Right" className="rounded-md border border-border text-xs font-bold px-3 py-1.5 data-[state=on]:bg-indigo-600 data-[state=on]:text-primary-foreground">R</ToggleGroupItem>
-              <ToggleGroupItem value="Forward" className="rounded-md border border-border text-xs font-bold px-3 py-1.5 data-[state=on]:bg-indigo-600 data-[state=on]:text-primary-foreground">Fwd</ToggleGroupItem>
+              <ToggleGroupItem value="Left" className="rounded border border-border text-[10px] font-bold px-2 py-1 data-[state=on]:bg-indigo-600 data-[state=on]:text-primary-foreground">L</ToggleGroupItem>
+              <ToggleGroupItem value="Right" className="rounded border border-border text-[10px] font-bold px-2 py-1 data-[state=on]:bg-indigo-600 data-[state=on]:text-primary-foreground">R</ToggleGroupItem>
+              <ToggleGroupItem value="Forward" className="rounded border border-border text-[10px] font-bold px-2 py-1 data-[state=on]:bg-indigo-600 data-[state=on]:text-primary-foreground">F</ToggleGroupItem>
             </ToggleGroup>
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-muted-foreground">Angle of Rotation</Label>
-            <div className="relative">
-              <Input type="number" placeholder="e.g. 30" value={angleRotation} onChange={(e) => handleAngleChange(e.target.value)} className="h-10 rounded-md pr-8 text-xs font-bold" />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">°</span>
-            </div>
+          <div className="space-y-1">
+            <Label className="text-[10px] font-medium text-muted-foreground">Angle (°)</Label>
+            <Input type="number" placeholder="30" value={angleRotation} onChange={(e) => handleAngleChange(e.target.value)} className="h-8 rounded-md px-2 text-xs font-bold" />
           </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-muted-foreground">Distance Displaced</Label>
-            <div className="relative">
-              <Input type="number" placeholder="e.g. 50" value={distanceDisplaced} onChange={(e) => handleDistanceChange(e.target.value)} className="h-10 rounded-md pr-10 text-xs font-bold" />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">cm</span>
-            </div>
+          <div className="space-y-1">
+            <Label className="text-[10px] font-medium text-muted-foreground">Distance (cm)</Label>
+            <Input type="number" placeholder="50" value={distanceDisplaced} onChange={(e) => handleDistanceChange(e.target.value)} className="h-8 rounded-md px-2 text-xs font-bold" />
           </div>
         </div>
       </div>

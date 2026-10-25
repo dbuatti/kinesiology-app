@@ -39,20 +39,20 @@ const NeurologicalAssessments = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <Card className="border border-border shadow-sm rounded-2xl bg-card overflow-hidden transition-all hover:shadow-md">
+      <div className={cn(
+        "transition-colors",
+        hasAnyNotes && !isOpen && "bg-emerald-500/5"
+      )}>
         <CollapsibleTrigger asChild>
           <div className={cn(
-            "p-4 flex items-center justify-between cursor-pointer transition-all duration-300",
-            isOpen ? "bg-muted/50" : "hover:bg-muted/30",
-            hasAnyNotes && !isOpen && "bg-emerald-500/10"
+            "py-3 flex items-center justify-between cursor-pointer transition-colors",
+            isOpen ? "" : "hover:bg-muted/20"
           )}>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center">
-                <Brain size={18} />
-              </div>
+            <div className="flex items-center gap-3">
+              <Brain size={16} className="text-muted-foreground" />
               <div>
                 <h3 className="text-base font-semibold text-foreground tracking-tight">Neurological Global</h3>
-                <p className="text-sm text-muted-foreground">Cerebellum & Proprioception</p>
+                <p className="text-xs text-muted-foreground">Cerebellum & Proprioception</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -61,17 +61,15 @@ const NeurologicalAssessments = ({
               ) : (
                 <span className="text-xs text-muted-foreground/50 font-medium">Not yet recorded</span>
               )}
-              <div className="w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground">
-                <ChevronDown className={cn("h-4 w-4 transition-transform duration-300", isOpen && "rotate-180")} />
-              </div>
+              <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-300", isOpen && "rotate-180")} />
             </div>
           </div>
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <div className="p-8 border-t border-border space-y-8 animate-in fade-in slide-in-from-top-2 duration-500">
+          <div className="pt-4 pb-2 space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
             <Tabs defaultValue="fakuda" className="w-full">
-              <TabsList className="grid w-full sm:w-auto sm:inline-grid grid-cols-4 h-10 bg-muted p-1 rounded-xl">
+              <TabsList className="grid w-full sm:w-auto sm:inline-grid grid-cols-4 h-9 bg-muted/50 p-0.5 rounded-md">
                 <TabsTrigger value="fakuda" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px] relative">
                   <Footprints size={16} /> <span className="hidden sm:inline">Fakuda</span>
                   {hasFakudaNotes && <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full" />}
@@ -151,20 +149,12 @@ const NeurologicalAssessments = ({
               </TabsContent>
             </Tabs>
 
-            <div className="p-6 bg-muted/50 rounded-2xl border border-border flex items-start gap-4">
-              <div className="w-10 h-10 bg-card rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm shrink-0">
-                <Info size={20} />
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs font-semibold text-foreground uppercase tracking-tight">Clinical Note</p>
-                <p className="text-xs text-muted-foreground font-medium leading-relaxed">
-                  Global assessments provide a baseline for the client's nervous system stability. If significant imbalances are found, prioritize <strong>SNS Down-regulation</strong> before proceeding with deep emotional or structural work.
-                </p>
-              </div>
-            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed border-t border-border pt-4">
+              <span className="font-semibold text-foreground">Clinical note:</span> Global assessments provide a baseline for the client's nervous system stability. If significant imbalances are found, prioritize SNS down-regulation before proceeding with deep emotional or structural work.
+            </p>
           </div>
         </CollapsibleContent>
-      </Card>
+      </div>
     </Collapsible>
   );
 };

@@ -144,45 +144,38 @@ const CogsAssessment = ({
   const anyNotes = !!(sagittalNotes || frontalNotes || transverseNotes);
 
   return (
-    <div className="bg-card rounded-xl border border-border shadow-sm overflow-hidden transition-all">
+    <div className="overflow-hidden transition-all">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <div className={cn(
-            "p-4 flex items-center justify-between cursor-pointer transition-all",
-            isOpen ? "bg-muted/50" : "hover:bg-muted/30",
+            "py-3 flex items-center justify-between cursor-pointer transition-colors",
+            isOpen ? "" : "hover:bg-muted/20",
             hasSavedNotes && !isOpen && "bg-chart-primary/5"
           )}>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center">
-                <Move size={18} />
-              </div>
+            <div className="flex items-center gap-3">
+              <Move size={16} className="text-muted-foreground" />
               <div>
                 <h3 className="text-base font-semibold text-foreground">COGS — Visual Assessment</h3>
-                <p className="text-sm text-muted-foreground">Anatomy in Motion · Pelvis, Rib Cage &amp; Cranium coordination</p>
+                <p className="text-xs text-muted-foreground">Anatomy in Motion · Pelvis, Rib Cage &amp; Cranium coordination</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               {hasSavedNotes && <span className="text-xs font-medium text-muted-foreground">Recorded</span>}
-              <div className="w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground">
-                <ChevronDown className={cn("h-4 w-4 transition-transform duration-300", isOpen && "rotate-180")} />
-              </div>
+              <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-300", isOpen && "rotate-180")} />
             </div>
           </div>
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <div className="p-6 border-t border-border space-y-6 animate-in fade-in slide-in-from-top-1 duration-300">
+          <div className="pt-4 pb-2 space-y-5 animate-in fade-in slide-in-from-top-1 duration-300">
             
             {/* Introduction */}
-            <div className="p-4 rounded-xl bg-muted/30 border border-border space-y-2">
+            <div className="space-y-2 border-l-2 border-muted pl-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Eye size={16} className="text-muted-foreground" />
-                  <span className="text-sm font-semibold text-foreground">COGS Principle</span>
-                </div>
-                <Button variant="ghost" size="sm" asChild className="h-7 text-xs rounded-lg">
+                <span className="text-xs font-semibold text-foreground uppercase tracking-wide">COGS Principle</span>
+                <Button variant="ghost" size="sm" asChild className="h-7 text-xs rounded-md">
                   <Link to="/library?tab=cogs" target="_blank">
-                    <BookOpen size={13} className="mr-1" /> Learn COGS
+                    <BookOpen size={13} className="mr-1" /> Learn
                   </Link>
                 </Button>
               </div>
@@ -220,7 +213,7 @@ const CogsAssessment = ({
             {activePlane && (
               <div className="animate-in slide-in-from-top-2 duration-300">
                 {PLANES.filter(p => p.id === activePlane).map(plane => (
-                  <div key={plane.id} className={cn("p-5 rounded-xl border space-y-4", plane.color)}>
+                  <div key={plane.id} className={cn("p-4 rounded-lg space-y-4", plane.color)}>
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <plane.icon size={18} className={plane.accentText} />
@@ -252,10 +245,9 @@ const CogsAssessment = ({
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-lg bg-card border border-border">
-                      <Label className="text-xs font-medium text-muted-foreground mb-1.5 block">Example</Label>
-                      <p className="text-sm text-muted-foreground italic">{plane.example}</p>
-                    </div>
+                    <p className="text-sm text-muted-foreground italic">
+                      <span className="text-xs font-medium text-muted-foreground not-italic">Example: </span>{plane.example}
+                    </p>
 
                     <div className="space-y-2">
                       <Label className="text-xs font-medium text-muted-foreground">Quick tags</Label>
@@ -298,8 +290,8 @@ const CogsAssessment = ({
                       key={plane.id}
                       onClick={() => setActivePlane(plane.id)}
                       className={cn(
-                        "p-4 rounded-xl border text-left transition-all hover:shadow-sm",
-                        notes ? plane.color : "bg-muted/20 border-border hover:bg-muted/40"
+                        "p-3 rounded-md border text-left transition-colors",
+                        notes ? plane.color : "bg-transparent border-border hover:bg-muted/40"
                       )}
                     >
                       <div className="flex items-center gap-2 mb-2">

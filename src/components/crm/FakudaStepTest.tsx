@@ -218,14 +218,14 @@ const FakudaStepTest = ({
 
   return (
     <div className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-muted/50 rounded-2xl border border-border/50">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-1.5">
           <Button 
             size="sm" 
             onClick={() => handleSetStatus('Clear')}
             className={cn(
-              "h-9 px-4 rounded-xl font-semibold text-[11px] transition-all",
-              currentStatus === 'Clear' ? "bg-emerald-600 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-emerald-50"
+              "h-9 px-4 rounded-md font-semibold text-[11px] transition-all",
+              currentStatus === 'Clear' ? "bg-emerald-600 text-primary-foreground" : "bg-transparent text-muted-foreground border border-border hover:bg-emerald-500/10 hover:text-emerald-600"
             )}
           >
             <CheckCircle2 size={13} className="mr-1.5" /> Clear
@@ -234,8 +234,8 @@ const FakudaStepTest = ({
             size="sm" 
             onClick={() => handleSetStatus('Inhibited')}
             className={cn(
-              "h-9 px-4 rounded-xl font-semibold text-[11px] transition-all",
-              currentStatus === 'Inhibited' ? "bg-rose-600 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-rose-50"
+              "h-9 px-4 rounded-md font-semibold text-[11px] transition-all",
+              currentStatus === 'Inhibited' ? "bg-rose-600 text-primary-foreground" : "bg-transparent text-muted-foreground border border-border hover:bg-rose-500/10 hover:text-rose-600"
             )}
           >
             <Zap size={13} className="mr-1.5" /> Inhibited
@@ -244,45 +244,45 @@ const FakudaStepTest = ({
             size="sm" 
             onClick={() => handleSetStatus('Recheck')}
             className={cn(
-              "h-9 px-4 rounded-xl font-semibold text-[11px] transition-all",
-              currentStatus === 'Recheck' ? "bg-amber-500 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-amber-50"
+              "h-9 px-4 rounded-md font-semibold text-[11px] transition-all",
+              currentStatus === 'Recheck' ? "bg-amber-500 text-primary-foreground" : "bg-transparent text-muted-foreground border border-border hover:bg-amber-500/10 hover:text-amber-600"
             )}
           >
             <RefreshCw size={13} className="mr-1.5" /> Recheck
           </Button>
         </div>
         {currentStatus && (
-          <Badge className="bg-indigo-600 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
-            Auto-synced to Align phase
-          </Badge>
+          <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+            Synced to Align phase
+          </span>
         )}
       </div>
 
-      <div className="p-5 bg-muted/50 rounded-2xl border border-border/50 space-y-4">
-        <div className="flex items-center justify-between">
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
           <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
-            <ArrowRightLeft size={14} className="text-indigo-500" /> Clinical Metrics
+            <ArrowRightLeft size={13} /> Clinical Metrics
           </h4>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 text-xs">
+            <div className="flex items-center gap-1.5 text-xs tabular-nums">
               <Timer size={13} className="text-muted-foreground" />
-              <span className="font-semibold tabular-nums">{timerSeconds}s</span>
+              <span className="font-semibold">{timerSeconds}s</span>
               <span className="text-muted-foreground">/ {timerDuration}s</span>
             </div>
             <button onClick={() => setTimerDuration(d => d === 30 ? 60 : d === 60 ? 90 : 30)} className="text-[10px] text-muted-foreground hover:text-foreground px-1.5 py-0.5 rounded border border-border">
               {timerDuration}s
             </button>
             {!timerRunning ? (
-              <Button variant="ghost" size="sm" onClick={startTimer} className="h-7 w-7 rounded-lg p-0" disabled={timerSeconds >= timerDuration}>
-                <Play size={14} />
+              <Button variant="ghost" size="sm" onClick={startTimer} className="h-7 w-7 rounded-md p-0" disabled={timerSeconds >= timerDuration}>
+                <Play size={13} />
               </Button>
             ) : (
-              <Button variant="ghost" size="sm" onClick={pauseTimer} className="h-7 w-7 rounded-lg p-0">
-                <Pause size={14} />
+              <Button variant="ghost" size="sm" onClick={pauseTimer} className="h-7 w-7 rounded-md p-0">
+                <Pause size={13} />
               </Button>
             )}
-            <Button variant="ghost" size="sm" onClick={resetTimer} className="h-7 w-7 rounded-lg p-0 text-muted-foreground">
-              <RotateCcw size={14} />
+            <Button variant="ghost" size="sm" onClick={resetTimer} className="h-7 w-7 rounded-md p-0 text-muted-foreground">
+              <RotateCcw size={13} />
             </Button>
           </div>
         </div>
@@ -295,22 +295,22 @@ const FakudaStepTest = ({
           <div className="space-y-1.5">
             <Label className="text-xs font-medium text-muted-foreground">Drift Direction</Label>
             <ToggleGroup type="single" value={driftDirection} onValueChange={handleDriftChange} className="justify-start gap-1">
-              <ToggleGroupItem value="Left" className="rounded-lg border border-border text-xs font-bold px-3 py-1.5 data-[state=on]:bg-indigo-600 data-[state=on]:text-primary-foreground">L</ToggleGroupItem>
-              <ToggleGroupItem value="Right" className="rounded-lg border border-border text-xs font-bold px-3 py-1.5 data-[state=on]:bg-indigo-600 data-[state=on]:text-primary-foreground">R</ToggleGroupItem>
-              <ToggleGroupItem value="Forward" className="rounded-lg border border-border text-xs font-bold px-3 py-1.5 data-[state=on]:bg-indigo-600 data-[state=on]:text-primary-foreground">Fwd</ToggleGroupItem>
+              <ToggleGroupItem value="Left" className="rounded-md border border-border text-xs font-bold px-3 py-1.5 data-[state=on]:bg-indigo-600 data-[state=on]:text-primary-foreground">L</ToggleGroupItem>
+              <ToggleGroupItem value="Right" className="rounded-md border border-border text-xs font-bold px-3 py-1.5 data-[state=on]:bg-indigo-600 data-[state=on]:text-primary-foreground">R</ToggleGroupItem>
+              <ToggleGroupItem value="Forward" className="rounded-md border border-border text-xs font-bold px-3 py-1.5 data-[state=on]:bg-indigo-600 data-[state=on]:text-primary-foreground">Fwd</ToggleGroupItem>
             </ToggleGroup>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs font-medium text-muted-foreground">Angle of Rotation</Label>
             <div className="relative">
-              <Input type="number" placeholder="e.g. 30" value={angleRotation} onChange={(e) => handleAngleChange(e.target.value)} className="h-10 rounded-xl pr-8 text-xs font-bold" />
+              <Input type="number" placeholder="e.g. 30" value={angleRotation} onChange={(e) => handleAngleChange(e.target.value)} className="h-10 rounded-md pr-8 text-xs font-bold" />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">°</span>
             </div>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs font-medium text-muted-foreground">Distance Displaced</Label>
             <div className="relative">
-              <Input type="number" placeholder="e.g. 50" value={distanceDisplaced} onChange={(e) => handleDistanceChange(e.target.value)} className="h-10 rounded-xl pr-10 text-xs font-bold" />
+              <Input type="number" placeholder="e.g. 50" value={distanceDisplaced} onChange={(e) => handleDistanceChange(e.target.value)} className="h-10 rounded-md pr-10 text-xs font-bold" />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">cm</span>
             </div>
           </div>

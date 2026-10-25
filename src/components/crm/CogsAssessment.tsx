@@ -173,10 +173,10 @@ const CogsAssessment = ({
                   key={plane.id}
                   onClick={() => setActivePlane(activePlane === plane.id ? null : plane.id)}
                   className={cn(
-                    "shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors border",
+                    "shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors border",
                     activePlane === plane.id 
                       ? plane.color + " " + plane.accentText + " border-current"
-                      : "bg-muted/30 border-border text-muted-foreground hover:bg-muted"
+                      : "bg-transparent border-border text-muted-foreground hover:bg-muted/40"
                   )}
                 >
                   <plane.icon size={15} />
@@ -259,36 +259,6 @@ const CogsAssessment = ({
                     />
                   </div>
                 ))}
-              </div>
-            )}
-
-            {/* All three summary when no plane selected */}
-            {!activePlane && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {PLANES.map(plane => {
-                  const notes = getNotesFor(plane.id);
-                  return (
-                    <button
-                      key={plane.id}
-                      onClick={() => setActivePlane(plane.id)}
-                      className={cn(
-                        "p-3 rounded-md border text-left transition-colors",
-                        notes ? plane.color : "bg-transparent border-border hover:bg-muted/40"
-                      )}
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <plane.icon size={15} className={plane.accentText} />
-                        <span className="text-sm font-medium text-foreground">{plane.title}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mb-2">{plane.subtitle}</p>
-                      {notes ? (
-                        <p className="text-xs text-muted-foreground line-clamp-2">{notes}</p>
-                      ) : (
-                        <p className="text-xs text-muted-foreground/50">Tap to assess</p>
-                      )}
-                    </button>
-                  );
-                })}
               </div>
             )}
 

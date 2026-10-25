@@ -349,8 +349,8 @@ const FakudaStepTest = ({
           <p className="text-[10px] text-muted-foreground">Fakuda (Fukuda) Step Test protocol & images</p>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <img src="/images/fakuda-1.png" alt="Fakuda Reference 1" className="w-full h-40 object-cover rounded-md" />
-          <img src="/images/fakuda-2.png" alt="Fakuda Reference 2" className="w-full h-40 object-cover rounded-md" />
+          <img src="/images/fakuda-1.png" alt="Fakuda Reference 1" className="w-full h-28 object-cover rounded-md border border-border" />
+          <img src="/images/fakuda-2.png" alt="Fakuda Reference 2" className="w-full h-28 object-cover rounded-md border border-border" />
         </div>
         <ol className="space-y-1.5 text-sm text-muted-foreground list-decimal list-inside">
           <li>Client stands with eyes closed and shoulders flexed to 90 degrees.</li>

@@ -11,7 +11,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { safeParse } from "@/utils/safe-json";
 
 interface SharpenedRhombergsTestProps {
@@ -28,7 +27,7 @@ const SharpenedRhombergsTest = ({
   const [loading, setLoading] = useState(false);
   const [notes, setNotes] = useState(initialNotes || '');
   const [currentStatus, setCurrentStatus] = useState<'Clear' | 'Inhibited' | 'Recheck' | null>(null);
-  const [isProtocolOpen, setIsProtocolOpen] = useState(false);
+
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -346,37 +345,24 @@ const SharpenedRhombergsTest = ({
         <p className="text-[10px] text-muted-foreground font-medium">Your notes auto-save as you type.</p>
       </div>
 
-      <Collapsible open={isProtocolOpen} onOpenChange={setIsProtocolOpen} className="border border-border/50 rounded-2xl overflow-hidden">
-        <CollapsibleTrigger className="w-full">
-          <div className="flex items-center justify-between p-3 hover:bg-muted/50 transition-colors cursor-pointer">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
-                <Scale size={15} />
-              </div>
-              <div className="text-left">
-                <p className="text-xs font-semibold text-foreground/80">Protocol Reference</p>
-                <p className="text-[10px] text-muted-foreground font-medium">Sharpened Rhomberg's Test protocol & diagram</p>
-              </div>
-            </div>
-            <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-300", isProtocolOpen && "rotate-180")} />
-          </div>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="p-4 border-t border-border/50 space-y-4">
-            <div className="rounded-xl overflow-hidden">
-              <img src="/images/sharpened-rhombergs-test.png" alt="Sharpened Rhombergs Test" className="w-full h-auto rounded-lg object-cover" />
-            </div>
-            <ol className="space-y-1.5 text-sm text-muted-foreground list-decimal list-inside">
-              <li>Client places feet together with toes pointing forward (heel-to-toe stance).</li>
-              <li>Instruct client to lengthen through the spine.</li>
-              <li>Fixate on a target with the eyes.</li>
-              <li>Raise arms to shoulder height.</li>
-              <li>Close the eyes.</li>
-              <li>Maintain posture for a minimum of 20 seconds.</li>
-            </ol>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Scale size={14} className="text-muted-foreground" />
+          <p className="text-xs font-semibold text-foreground/80">Protocol Reference</p>
+          <p className="text-[10px] text-muted-foreground">Sharpened Rhomberg's Test protocol & diagram</p>
+        </div>
+        <div className="rounded-lg overflow-hidden">
+          <img src="/images/sharpened-rhombergs-test.png" alt="Sharpened Rhombergs Test" className="w-full h-auto rounded-md object-cover" />
+        </div>
+        <ol className="space-y-1.5 text-sm text-muted-foreground list-decimal list-inside">
+          <li>Client places feet together with toes pointing forward (heel-to-toe stance).</li>
+          <li>Instruct client to lengthen through the spine.</li>
+          <li>Fixate on a target with the eyes.</li>
+          <li>Raise arms to shoulder height.</li>
+          <li>Close the eyes.</li>
+          <li>Maintain posture for a minimum of 20 seconds.</li>
+        </ol>
+      </div>
 
       <ConfirmDialog
         open={showResetConfirm}

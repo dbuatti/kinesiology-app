@@ -84,16 +84,16 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
       )}
 
       {/* Sub-tab bar */}
-      <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-xl overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
         {SUB_TABS.map(tab => (
           <button
             key={tab.id}
             onClick={() => setSubTab(tab.id)}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all",
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold whitespace-nowrap transition-all",
               subTab === tab.id
-                ? "bg-card text-primary shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-muted text-primary"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
             )}
           >
             <tab.icon size={14} /> {tab.label}
@@ -117,13 +117,10 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
         {subTab === 'intake' && (
           <div className="space-y-8">
             {/* Goal & Concern */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className={cn(
-                "rounded-xl p-6 transition-all",
-                !appointment.goal ? "bg-muted/30 border border-dashed border-border" : "bg-card border border-border shadow-sm"
-              )}>
-                <div className="flex items-center gap-3 mb-4">
-                  <Compass size={18} className="text-muted-foreground" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Compass size={14} className="text-muted-foreground" />
                   <h3 className="text-xs font-medium text-muted-foreground">Session Goal</h3>
                 </div>
                 <EditableField
@@ -138,12 +135,9 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                 />
               </div>
 
-              <div className={cn(
-                "rounded-xl p-6 transition-all",
-                !appointment.issue ? "bg-muted/30 border border-dashed border-border" : "bg-card border border-border shadow-sm"
-              )}>
-                <div className="flex items-center gap-3 mb-4">
-                  <ClipboardList size={18} className="text-muted-foreground" />
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <ClipboardList size={14} className="text-muted-foreground" />
                   <h3 className="text-xs font-medium text-muted-foreground">Primary Concern</h3>
                 </div>
                 <EditableField
@@ -160,9 +154,9 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
             </div>
 
             {/* Baseline Vitals */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 pb-3 border-b border-border">
-                <Activity size={18} className="text-muted-foreground" />
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Activity size={14} className="text-muted-foreground" />
                 <h3 className="text-xs font-bold text-foreground tracking-tight uppercase tracking-wider">Baseline Vitals</h3>
               </div>
               <BoltTestSection

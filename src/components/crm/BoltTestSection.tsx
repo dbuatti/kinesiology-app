@@ -9,11 +9,7 @@ import BoltTimer from "./BoltTimer";
 import BoltResourcesModal from "./BoltResourcesModal";
 import BreathingRecoveryTimer from "./BreathingRecoveryTimer";
 import { cn } from "@/lib/utils";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 
@@ -26,7 +22,6 @@ interface BoltTestSectionProps {
 
 const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = [] }: BoltTestSectionProps) => {
   const [loading, setLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
   const [showExercise, setShowExercise] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -34,7 +29,6 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
 
   const handleStartBoltFromResources = () => {
     setResourcesOpen(false);
-    setIsOpen(true);
     setTimerStartSignal(s => s + 1);
   };
 
@@ -84,40 +78,20 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
   const isOptimal = initialBoltScore !== null && initialBoltScore !== undefined && initialBoltScore >= 40;
 
   return (
-    <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden transition-all hover:shadow-md">
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger asChild>
-          <div className={cn(
-            "p-4 flex items-center justify-between cursor-pointer transition-all duration-300",
-            isOpen ? "bg-muted/50" : "hover:bg-muted/30",
-            initialBoltScore && !isOpen && (isOptimal ? "bg-emerald-500/10" : needsImprovement ? "bg-rose-500/10" : "bg-indigo-500/10")
-          )}>
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-muted text-muted-foreground flex items-center justify-center">
-                <FlaskConical size={18} />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-foreground tracking-tight">BOLT Test</h3>
-                <p className="text-sm text-muted-foreground">
-                  {initialBoltScore !== null && initialBoltScore !== undefined 
-                    ? `Current: ${initialBoltScore}s` 
-                    : "Not yet recorded"}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              {initialBoltScore !== null && initialBoltScore !== undefined && (
-                <span className="text-xs font-medium text-muted-foreground">{initialBoltScore}s</span>
-              )}
-              <div className="w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground">
-                <ChevronDown className={cn("h-4 w-4 transition-transform duration-300", isOpen && "rotate-180")} />
-              </div>
-            </div>
-          </div>
-        </CollapsibleTrigger>
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <FlaskConical size={16} className="text-muted-foreground" />
+        <div>
+          <h3 className="text-base font-semibold text-foreground tracking-tight">BOLT Test</h3>
+          <p className="text-xs text-muted-foreground">
+            {initialBoltScore !== null && initialBoltScore !== undefined 
+              ? `Current: ${initialBoltScore}s` 
+              : "Not yet recorded"}
+          </p>
+        </div>
+      </div>
 
-        <CollapsibleContent>
-          <div className="p-6 border-t border-border space-y-6 animate-in fade-in slide-in-from-top-1 duration-300">
+      <div className="space-y-4">
             {showExercise ? (
               <div className="space-y-4 animate-in zoom-in-95 duration-300">
                 <div className="flex items-center justify-between">
@@ -188,8 +162,6 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
               </>
             )}
           </div>
-        </CollapsibleContent>
-      </Collapsible>
 
       {pastBoltScores.length > 0 && (
         <div className="px-4 pb-4">

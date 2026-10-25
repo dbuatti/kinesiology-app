@@ -10,7 +10,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { safeParse } from "@/utils/safe-json";
 
@@ -29,7 +28,6 @@ const FakudaStepTest = ({
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [fakudaNotes, setFakudaNotes] = useState(initialFakudaNotes || '');
   const [currentStatus, setCurrentStatus] = useState<'Clear' | 'Inhibited' | 'Recheck' | null>(null);
-  const [isProtocolOpen, setIsProtocolOpen] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const initialLoadDone = useRef(false);
@@ -344,35 +342,22 @@ const FakudaStepTest = ({
         <p className="text-[10px] text-muted-foreground font-medium">Your notes auto-save as you type.</p>
       </div>
 
-      <Collapsible open={isProtocolOpen} onOpenChange={setIsProtocolOpen} className="border border-border/50 rounded-2xl overflow-hidden">
-        <CollapsibleTrigger className="w-full">
-          <div className="flex items-center justify-between p-3 hover:bg-muted/50 transition-colors cursor-pointer">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                <Footprints size={15} />
-              </div>
-              <div className="text-left">
-                <p className="text-xs font-semibold text-foreground/80">Protocol Reference</p>
-                <p className="text-[10px] text-muted-foreground font-medium">Fakuda (Fukuda) Step Test protocol & images</p>
-              </div>
-            </div>
-            <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-300", isProtocolOpen && "rotate-180")} />
-          </div>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <div className="p-4 border-t border-border/50 space-y-4">
-            <div className="grid grid-cols-2 gap-2 rounded-xl overflow-hidden">
-              <img src="/images/fakuda-1.png" alt="Fakuda Reference 1" className="w-full h-40 object-cover rounded-lg" />
-              <img src="/images/fakuda-2.png" alt="Fakuda Reference 2" className="w-full h-40 object-cover rounded-lg" />
-            </div>
-            <ol className="space-y-1.5 text-sm text-muted-foreground list-decimal list-inside">
-              <li>Client stands with eyes closed and shoulders flexed to 90 degrees.</li>
-              <li>Instruct the client to march on the spot for 30-60 seconds.</li>
-              <li>Observe final position relative to start position.</li>
-            </ol>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Footprints size={14} className="text-muted-foreground" />
+          <p className="text-xs font-semibold text-foreground/80">Protocol Reference</p>
+          <p className="text-[10px] text-muted-foreground">Fakuda (Fukuda) Step Test protocol & images</p>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <img src="/images/fakuda-1.png" alt="Fakuda Reference 1" className="w-full h-40 object-cover rounded-md" />
+          <img src="/images/fakuda-2.png" alt="Fakuda Reference 2" className="w-full h-40 object-cover rounded-md" />
+        </div>
+        <ol className="space-y-1.5 text-sm text-muted-foreground list-decimal list-inside">
+          <li>Client stands with eyes closed and shoulders flexed to 90 degrees.</li>
+          <li>Instruct the client to march on the spot for 30-60 seconds.</li>
+          <li>Observe final position relative to start position.</li>
+        </ol>
+      </div>
 
       <ConfirmDialog
         open={showResetConfirm}

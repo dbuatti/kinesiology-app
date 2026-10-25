@@ -1,13 +1,9 @@
 
 import { useState } from "react";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Move, Save, Loader2, RotateCcw, Zap, RefreshCw, Eye, ArrowUpDown, RotateCw, BookOpen } from "lucide-react";
+import { Move, Save, Loader2, RotateCcw, Zap, RefreshCw, Eye, ArrowUpDown, RotateCw, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
@@ -82,7 +78,6 @@ const CogsAssessment = ({
   onUpdate 
 }: CogsAssessmentProps) => {
   const [loading, setLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
   const [activePlane, setActivePlane] = useState<string | null>(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   
@@ -144,30 +139,17 @@ const CogsAssessment = ({
   const anyNotes = !!(sagittalNotes || frontalNotes || transverseNotes);
 
   return (
-    <div className="overflow-hidden transition-all">
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger asChild>
-          <div className={cn(
-            "py-3 flex items-center justify-between cursor-pointer transition-colors",
-            isOpen ? "" : "hover:bg-muted/20",
-            hasSavedNotes && !isOpen && "bg-chart-primary/5"
-          )}>
-            <div className="flex items-center gap-3">
-              <Move size={16} className="text-muted-foreground" />
-              <div>
-                <h3 className="text-base font-semibold text-foreground">COGS — Visual Assessment</h3>
-                <p className="text-xs text-muted-foreground">Anatomy in Motion · Pelvis, Rib Cage &amp; Cranium coordination</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              {hasSavedNotes && <span className="text-xs font-medium text-muted-foreground">Recorded</span>}
-              <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-300", isOpen && "rotate-180")} />
-            </div>
-          </div>
-        </CollapsibleTrigger>
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <Move size={16} className="text-muted-foreground" />
+        <div>
+          <h3 className="text-base font-semibold text-foreground">COGS — Visual Assessment</h3>
+          <p className="text-xs text-muted-foreground">Anatomy in Motion · Pelvis, Rib Cage &amp; Cranium coordination</p>
+        </div>
+        {hasSavedNotes && <span className="text-xs font-medium text-muted-foreground ml-auto">Recorded</span>}
+      </div>
 
-        <CollapsibleContent>
-          <div className="pt-4 pb-2 space-y-5 animate-in fade-in slide-in-from-top-1 duration-300">
+      <div className="space-y-5">
             
             {/* Introduction */}
             <div className="space-y-2 border-l-2 border-muted pl-4">
@@ -325,8 +307,6 @@ const CogsAssessment = ({
               </div>
             )}
           </div>
-        </CollapsibleContent>
-      </Collapsible>
 
       <ConfirmDialog
         open={showResetConfirm}

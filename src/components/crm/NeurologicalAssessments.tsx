@@ -1,14 +1,13 @@
 
 import React, { useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Footprints, Scale, Brain, ChevronDown, Hand, Info, RefreshCw } from "lucide-react";
+import { Footprints, Scale, Brain, Hand, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import FakudaStepTest from "./FakudaStepTest";
 import SharpenedRhombergsTest from "./SharpenedRhombergsTest";
 import FrontalLobeAssessment from "./FrontalLobeAssessment";
 import RightingReflexesAssessment from "./RightingReflexesAssessment";
 import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 
@@ -29,8 +28,6 @@ const NeurologicalAssessments = ({
   initialRightingReflexNotes,
   onUpdate,
 }: NeurologicalAssessmentsProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-
   const hasFakudaNotes = !!initialFakudaNotes;
   const hasRhombergsNotes = !!initialRhombergsNotes;
   const hasFrontalLobeNotes = !!initialFrontalLobeNotes;
@@ -38,36 +35,19 @@ const NeurologicalAssessments = ({
   const hasAnyNotes = hasFakudaNotes || hasRhombergsNotes || hasFrontalLobeNotes || hasRightingNotes;
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <div className={cn(
-        "transition-colors",
-        hasAnyNotes && !isOpen && "bg-emerald-500/5"
-      )}>
-        <CollapsibleTrigger asChild>
-          <div className={cn(
-            "py-3 flex items-center justify-between cursor-pointer transition-colors",
-            isOpen ? "" : "hover:bg-muted/20"
-          )}>
-            <div className="flex items-center gap-3">
-              <Brain size={16} className="text-muted-foreground" />
-              <div>
-                <h3 className="text-base font-semibold text-foreground tracking-tight">Neurological Global</h3>
-                <p className="text-xs text-muted-foreground">Cerebellum & Proprioception</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              {hasAnyNotes ? (
-                <span className="text-xs font-medium text-muted-foreground">Recorded</span>
-              ) : (
-                <span className="text-xs text-muted-foreground/50 font-medium">Not yet recorded</span>
-              )}
-              <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform duration-300", isOpen && "rotate-180")} />
-            </div>
-          </div>
-        </CollapsibleTrigger>
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <Brain size={16} className="text-muted-foreground" />
+        <div>
+          <h3 className="text-base font-semibold text-foreground tracking-tight">Neurological Global</h3>
+          <p className="text-xs text-muted-foreground">Cerebellum & Proprioception</p>
+        </div>
+        <span className="ml-auto text-xs font-medium text-muted-foreground">
+          {hasAnyNotes ? "Recorded" : "Not yet recorded"}
+        </span>
+      </div>
 
-        <CollapsibleContent>
-          <div className="pt-4 pb-2 space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+      <div className="space-y-4">
             <Tabs defaultValue="fakuda" className="w-full">
               <TabsList className="grid w-full sm:w-auto sm:inline-grid grid-cols-4 h-9 bg-muted/50 p-0.5 rounded-md">
                 <TabsTrigger value="fakuda" className="flex items-center gap-2 data-[state=active]:bg-card data-[state=active]:text-emerald-600 data-[state=active]:shadow-sm rounded-lg h-8 font-medium text-[13px] relative">
@@ -88,7 +68,7 @@ const NeurologicalAssessments = ({
                 </TabsTrigger>
               </TabsList>
               
-              <TabsContent value="fakuda" className="mt-8 space-y-6">
+              <TabsContent value="fakuda" className="mt-4 space-y-4">
                 <div className="flex items-center justify-between px-2">
                   <div className="space-y-1">
                     <h4 className="text-lg font-semibold text-foreground">Fakuda Step Test</h4>
@@ -103,7 +83,7 @@ const NeurologicalAssessments = ({
                 />
               </TabsContent>
               
-              <TabsContent value="rhombergs" className="mt-8 space-y-6">
+              <TabsContent value="rhombergs" className="mt-4 space-y-4">
                 <div className="flex items-center justify-between px-2">
                   <div className="space-y-1">
                     <h4 className="text-lg font-semibold text-foreground">Sharpened Rhombergs Test</h4>
@@ -118,7 +98,7 @@ const NeurologicalAssessments = ({
                 />
               </TabsContent>
 
-              <TabsContent value="frontal-lobe" className="mt-8 space-y-6">
+              <TabsContent value="frontal-lobe" className="mt-4 space-y-4">
                 <div className="flex items-center justify-between px-2">
                   <div className="space-y-1">
                     <h4 className="text-lg font-semibold text-foreground">Frontal Lobe Assessment</h4>
@@ -133,7 +113,7 @@ const NeurologicalAssessments = ({
                 />
               </TabsContent>
 
-              <TabsContent value="righting" className="mt-8 space-y-6">
+              <TabsContent value="righting" className="mt-4 space-y-4">
                 <div className="flex items-center justify-between px-2">
                   <div className="space-y-1">
                     <h4 className="text-lg font-semibold text-foreground">Righting Reflexes</h4>
@@ -153,9 +133,7 @@ const NeurologicalAssessments = ({
               <span className="font-semibold text-foreground">Clinical note:</span> Global assessments provide a baseline for the client's nervous system stability. If significant imbalances are found, prioritize SNS down-regulation before proceeding with deep emotional or structural work.
             </p>
           </div>
-        </CollapsibleContent>
       </div>
-    </Collapsible>
   );
 };
 

@@ -183,10 +183,6 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
 
             {/* COGS — Visual Assessment */}
             <div className="space-y-4">
-              <div className="flex items-center gap-3 pb-3 border-b border-border">
-                <Eye size={18} className="text-muted-foreground" />
-                <h3 className="text-xs font-bold text-foreground tracking-tight uppercase tracking-wider">COGS — Visual Assessment</h3>
-              </div>
               <CogsAssessment
                 appointmentId={appointment.id}
                 initialSagittalNotes={appointment.sagittal_plane_notes}
@@ -198,10 +194,6 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
 
             {/* Neurological Baseline */}
             <div className="space-y-4">
-              <div className="flex items-center gap-3 pb-3 border-b border-border">
-                <ShieldAlert size={18} className="text-muted-foreground" />
-                <h3 className="text-xs font-bold text-foreground tracking-tight uppercase tracking-wider">Neurological Baseline</h3>
-              </div>
               <NeurologicalAssessments
                 appointmentId={appointment.id}
                 initialFakudaNotes={appointment.fakuda_notes}

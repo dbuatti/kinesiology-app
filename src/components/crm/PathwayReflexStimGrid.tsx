@@ -568,7 +568,7 @@ export function PathwayReflexStimGrid({
             <div
               className={cn(
                 "overflow-x-auto border border-border rounded-xl shadow-sm print:overflow-visible print:border-0 print:shadow-none touch-manipulation transition-transform",
-                touchMode && "scale-110 origin-top-left"
+                touchMode && "touch-mode scale-110 origin-top-left"
               )}
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}

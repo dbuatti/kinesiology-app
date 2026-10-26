@@ -5,14 +5,14 @@ import {
   ArrowDownCircle, ArrowUpCircle, ArrowRightCircle, ArrowDown,
   Activity, AlertTriangle, Droplets, Brain, Zap, Heart,
   Search, Layers, Hand, RefreshCw, Eye, MessageSquare,
-  Printer
+  Printer, ChevronLeft
 } from "lucide-react";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
 import type { BrainReflexPoint } from "@/data/brain-reflex-data";
 import BrainReflexModal from "@/components/crm/BrainReflexModal";
 import { Input } from "@/components/ui/input";
 import CorrectionsSidebar from "@/components/crm/CorrectionsSidebar";
-import type { CorrectionTab, CorrectionTarget } from "@/components/crm/corrections/CorrectionDockContext";
+import type { CorrectionTab, CorrectionSelection, CorrectionTarget } from "@/components/crm/corrections/CorrectionDockContext";
 
 type SidebarItem = { id: string; label: string; icon: typeof Activity; group?: string };
 
@@ -181,8 +181,12 @@ const lbCheckpoints = [
 interface CorrectionsManualContentProps {
   /** Deep-link request from the correction dock / finding rows. */
   target?: CorrectionTarget | null;
+  /** Where the list was pointing last time — highlighted, but not opened. */
+  initialSelection?: CorrectionSelection | null;
   /** Reports the current tab+item so hosts can remember it. */
   onSelectionChange?: (tab: CorrectionTab, item: string) => void;
+  /** Compact mode: tells the host when instructions are showing (so it can widen). */
+  onExpandedChange?: (open: boolean) => void;
   /** Narrow container (the dock): chips instead of the 192px sidebar. */
   compact?: boolean;
   /** Fill the parent's height instead of sizing to content. */
@@ -191,13 +195,22 @@ interface CorrectionsManualContentProps {
 
 const CorrectionsManualContent = ({
   target,
+  initialSelection,
   onSelectionChange,
+  onExpandedChange,
   compact = false,
   fill = false,
 }: CorrectionsManualContentProps = {}) => {
-  const [activeTab, setActiveTab] = useState("afferent");
-  const [afferentActive, setAfferentActive] = useState("mechanoreceptor");
-  const [efferentActive, setEfferentActive] = useState("cortical");
+  const [activeTab, setActiveTab] = useState<string>(() => initialSelection?.tab ?? "afferent");
+  const [afferentActive, setAfferentActive] = useState(
+    () => (initialSelection?.tab === "afferent" ? initialSelection.item : "mechanoreceptor")
+  );
+  const [efferentActive, setEfferentActive] = useState(
+    () => (initialSelection?.tab === "efferent" ? initialSelection.item : "cortical")
+  );
+  // Compact mode starts on the list alone; tapping a process slides its
+  // instructions in beside it.
+  const [instructionsOpen, setInstructionsOpen] = useState(false);
   const [modalPoint, setModalPoint] = useState<BrainReflexPoint | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -221,12 +234,18 @@ const CorrectionsManualContent = ({
     setActiveTab(target.tab);
     if (target.tab === "afferent") setAfferentActive(target.item);
     else setEfferentActive(target.item);
+    setInstructionsOpen(true);
   }, [target]);
 
   // Tell the host what's showing so it can be remembered next time.
   useEffect(() => {
     onSelectionChange?.(activeTab as CorrectionTab, activeId);
   }, [activeTab, activeId, onSelectionChange]);
+
+  // Compact hosts widen the dock while instructions are on screen.
+  useEffect(() => {
+    onExpandedChange?.(compact ? instructionsOpen : true);
+  }, [compact, instructionsOpen, onExpandedChange]);
 
   const filteredBrainZones = (points: BrainReflexPoint[]) => {
     if (!searchQuery) return points;

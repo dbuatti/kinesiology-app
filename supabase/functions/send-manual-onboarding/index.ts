@@ -143,7 +143,9 @@ serve(async (req) => {
     }
 
     const priceAmount = appointment?.price_amount ?? 0;
-    const alreadyPaid = appointment?.is_paid === true || appointment?.payment_received === true;
+    // is_paid only means "chargeable" (set at booking) — NOT "already paid".
+    // Use payment_received as the real paid signal (see CLAUDE.md money rules).
+    const alreadyPaid = appointment?.payment_received === true;
     const existingLink = appointment?.payment_link;
     const needsPayment = priceAmount > 0 && !alreadyPaid && !existingLink;
 

@@ -50,6 +50,7 @@ const AppointmentV2Page = () => {
   const [quickSessionOpen, setQuickSessionOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
+  const [activePhase, setActivePhase] = useState(0);
 
   const phaseStatus = useMemo(() => ({
     p: !!(appointment?.goal && appointment?.issue),
@@ -59,7 +60,8 @@ const AppointmentV2Page = () => {
     c: !!(appointment?.modes_balances),
     e2: !!(appointment?.session_north_star),
   }), [appointment]);
-  const phaseProgress = (Object.values(phaseStatus).filter(Boolean).length / 5) * 100;
+  // Track current position through the process (where the practitioner is now).
+  const phaseProgress = ((activePhase + 1) / 5) * 100;
 
   useEffect(() => {
     const handler = () => setIsFullScreen(localStorage.getItem('rk_v2_fullscreen') === 'true');
@@ -256,6 +258,7 @@ const AppointmentV2Page = () => {
               onUpdate={refresh}
               saveField={saveField}
               updatePriorityPattern={updatePriorityPattern}
+              onPhaseChange={setActivePhase}
               onFinalise={async () => {
                 try {
                   const { error } = await supabase

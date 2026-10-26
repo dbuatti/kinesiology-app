@@ -1,10 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import { lessons } from "@/data/mechano-lessons-data";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { PEACE_PHASES } from "@/components/crm/v2/PeaceWizard";
+import { CORRECTION_PROCESSES } from "@/data/correction-processes";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   CommandDialog,
   CommandEmpty,
@@ -13,26 +12,26 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Search, BookOpen, Brain, Activity, X } from "lucide-react";
+import { Search, BookOpen, Brain, Activity, X, ChevronRight } from "lucide-react";
 
 interface HowToItem {
   id: string;
   title: string;
   subtitle: string;
-  kind: "lesson" | "nerve" | "peace";
-  path: string;
+  kind: "lesson" | "nerve" | "peace" | "process";
   icon: any;
+  steps?: string[];
+  group?: string;
 }
 
 const HowToSearch = () => {
   const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
+  const [selected, setSelected] = useState<HowToItem | null>(null);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
-      // Cmd/Ctrl + Shift + K  OR  "?"  opens the how-to search
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setOpen(true);
@@ -48,39 +47,21 @@ const HowToSearch = () => {
   const items: HowToItem[] = useMemo(() => {
     const out: HowToItem[] = [];
     for (const l of lessons) {
-      out.push({
-        id: `lesson-${l.id}`,
-        title: l.title,
-        subtitle: l.description,
-        kind: "lesson",
-        path: `/library?tab=mechano`,
-        icon: BookOpen,
-      });
+      out.push({ id: `lesson-${l.id}`, title: l.title, subtitle: l.description, kind: "lesson", icon: BookOpen });
     }
     for (const n of CRANIAL_NERVES) {
-      out.push({
-        id: `nerve-${n.name}`,
-        title: `${n.name}: ${n.latinName}`,
-        subtitle: n.reflexPoint,
-        kind: "nerve",
-        path: `/library?tab=cranial`,
-        icon: Brain,
-      });
+      out.push({ id: `nerve-${n.name}`, title: `${n.name}: ${n.latinName}`, subtitle: n.reflexPoint, kind: "nerve", icon: Brain });
     }
     for (const p of PEACE_PHASES) {
-      out.push({
-        id: `peace-${p.id}`,
-        title: `PEACE · ${p.fullLabel}`,
-        subtitle: p.hint,
-        kind: "peace",
-        path: `/library?tab=peace`,
-        icon: Activity,
-      });
+      out.push({ id: `peace-${p.id}`, title: `PEACE · ${p.fullLabel}`, subtitle: p.hint, kind: "peace", icon: Activity });
+    }
+    for (const c of CORRECTION_PROCESSES) {
+      out.push({ id: `proc-${c.id}`, title: c.title, subtitle: c.subtitle, kind: "process", icon: ChevronRight, steps: c.steps, group: c.group });
     }
     return out;
   }, []);
 
-  const [selected, setSelected] = useState<HowToItem | null>(null);
+  const handleClose = () => { setOpen(false); setSelected(null); };
 
   return (
     <>
@@ -94,19 +75,30 @@ const HowToSearch = () => {
         <Search size={14} /> <span className="hidden md:inline text-xs">How-to</span>
       </Button>
 
-      <CommandDialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setSelected(null); }}>
-        <CommandInput placeholder="Search mechano, cranial nerves, PEACE steps…" />
-        <CommandList className="max-h-[60vh]">
+      <CommandDialog open={open} onOpenChange={(v) => { if (!v) handleClose(); else setOpen(v); }}>
+        <CommandInput placeholder="Search processes, mechano, cranial nerves, PEACE…" />
+        <CommandList className="max-h-[45vh]">
           <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Mechano lessons">
-            {items.filter((i) => i.kind === "lesson").map((i) => (
+          <CommandGroup heading="Correction processes (afferent / efferent)">
+            {items.filter((i) => i.kind === "process").map((i) => (
               <CommandItem
                 key={i.id}
-                value={i.title + " " + i.subtitle}
+                value={i.title + " " + i.subtitle + " " + (i.group || "")}
                 onSelect={() => setSelected(i)}
                 className="flex items-center gap-2"
               >
-                <i.icon size={14} className="text-muted-foreground shrink-0" />
+                <ChevronRight size={14} className="text-muted-foreground shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-sm font-medium truncate">{i.title}</div>
+                  <div className="text-xs text-muted-foreground truncate">{i.group} · {i.subtitle}</div>
+                </div>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+          <CommandGroup heading="Mechano lessons">
+            {items.filter((i) => i.kind === "lesson").map((i) => (
+              <CommandItem key={i.id} value={i.title + " " + i.subtitle} onSelect={() => setSelected(i)} className="flex items-center gap-2">
+                <BookOpen size={14} className="text-muted-foreground shrink-0" />
                 <div className="min-w-0">
                   <div className="text-sm font-medium truncate">{i.title}</div>
                   <div className="text-xs text-muted-foreground truncate">{i.subtitle}</div>
@@ -116,13 +108,8 @@ const HowToSearch = () => {
           </CommandGroup>
           <CommandGroup heading="Cranial nerves">
             {items.filter((i) => i.kind === "nerve").map((i) => (
-              <CommandItem
-                key={i.id}
-                value={i.title + " " + i.subtitle}
-                onSelect={() => setSelected(i)}
-                className="flex items-center gap-2"
-              >
-                <i.icon size={14} className="text-muted-foreground shrink-0" />
+              <CommandItem key={i.id} value={i.title + " " + i.subtitle} onSelect={() => setSelected(i)} className="flex items-center gap-2">
+                <Brain size={14} className="text-muted-foreground shrink-0" />
                 <div className="min-w-0">
                   <div className="text-sm font-medium truncate">{i.title}</div>
                   <div className="text-xs text-muted-foreground truncate">{i.subtitle}</div>
@@ -132,13 +119,8 @@ const HowToSearch = () => {
           </CommandGroup>
           <CommandGroup heading="PEACE phases">
             {items.filter((i) => i.kind === "peace").map((i) => (
-              <CommandItem
-                key={i.id}
-                value={i.title + " " + i.subtitle}
-                onSelect={() => setSelected(i)}
-                className="flex items-center gap-2"
-              >
-                <i.icon size={14} className="text-muted-foreground shrink-0" />
+              <CommandItem key={i.id} value={i.title + " " + i.subtitle} onSelect={() => setSelected(i)} className="flex items-center gap-2">
+                <Activity size={14} className="text-muted-foreground shrink-0" />
                 <div className="min-w-0">
                   <div className="text-sm font-medium truncate">{i.title}</div>
                   <div className="text-xs text-muted-foreground truncate">{i.subtitle}</div>
@@ -149,24 +131,23 @@ const HowToSearch = () => {
         </CommandList>
 
         {selected && (
-          <div className="border-t border-border p-4 space-y-3">
+          <div className="border-t border-border p-4 space-y-3 max-h-[40vh] overflow-y-auto">
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
-                <div className="text-sm font-semibold text-foreground truncate">{selected.title}</div>
+                <div className="text-sm font-semibold text-foreground">{selected.title}</div>
                 <div className="text-xs text-muted-foreground">{selected.subtitle}</div>
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-                className="shrink-0 h-8 text-xs"
-                onClick={() => { window.open(selected.path, "_blank"); setOpen(false); setSelected(null); }}
-              >
-                Open in Library
+              <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => setSelected(null)}>
+                <X size={14} />
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Opens the full reference in a new tab so you stay on this page.
-            </p>
+            {selected.steps && selected.steps.length > 0 && (
+              <ol className="space-y-1.5 list-decimal list-inside">
+                {selected.steps.map((step, i) => (
+                  <li key={i} className="text-xs text-foreground/90 leading-relaxed">{step}</li>
+                ))}
+              </ol>
+            )}
           </div>
         )}
       </CommandDialog>

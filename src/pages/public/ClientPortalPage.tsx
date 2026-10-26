@@ -319,7 +319,7 @@ export default function ClientPortalPage() {
             <section className="space-y-3">
               <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">Upcoming sessions</h2>
               {upcoming.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nothing booked right now.</p>
+                <p className="text-sm text-muted-foreground">Nothing booked right now — use "Book a session" above to get started.</p>
               ) : (
                 <div className="space-y-2">
                   {upcoming.map((s) => (
@@ -340,7 +340,7 @@ export default function ClientPortalPage() {
             <section className="space-y-3">
               <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">Past sessions</h2>
               {past.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No past sessions yet.</p>
+                <p className="text-sm text-muted-foreground">No past sessions yet — your completed sessions will appear here.</p>
               ) : (
                 <div className="space-y-2">
                   {past.map((s) => (

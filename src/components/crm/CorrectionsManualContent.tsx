@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
@@ -12,6 +12,7 @@ import type { BrainReflexPoint } from "@/data/brain-reflex-data";
 import BrainReflexModal from "@/components/crm/BrainReflexModal";
 import { Input } from "@/components/ui/input";
 import CorrectionsSidebar from "@/components/crm/CorrectionsSidebar";
+import type { CorrectionTab, CorrectionTarget } from "@/components/crm/corrections/CorrectionDockContext";
 
 type SidebarItem = { id: string; label: string; icon: typeof Activity; group?: string };
 
@@ -177,12 +178,30 @@ const lbCheckpoints = [
   { id: "H", question: "Is there any scenario where this belief might still feel true?", noAdvance: "Session complete — belief resolved" },
 ];
 
-const CorrectionsManualContent = () => {
+interface CorrectionsManualContentProps {
+  /** Deep-link request from the correction dock / finding rows. */
+  target?: CorrectionTarget | null;
+  /** Reports the current tab+item so hosts can remember it. */
+  onSelectionChange?: (tab: CorrectionTab, item: string) => void;
+  /** Narrow container (the dock): chips instead of the 192px sidebar. */
+  compact?: boolean;
+  /** Fill the parent's height instead of sizing to content. */
+  fill?: boolean;
+}
+
+const CorrectionsManualContent = ({
+  target,
+  onSelectionChange,
+  compact = false,
+  fill = false,
+}: CorrectionsManualContentProps = {}) => {
   const [activeTab, setActiveTab] = useState("afferent");
   const [afferentActive, setAfferentActive] = useState("mechanoreceptor");
   const [efferentActive, setEfferentActive] = useState("cortical");
   const [modalPoint, setModalPoint] = useState<BrainReflexPoint | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const activeId = activeTab === "afferent" ? afferentActive : efferentActive;
 
   // Accent follows the active item so Heart Wall stays rose and Limiting
   // Beliefs stays red, even though both now sit under the Efferent tab.
@@ -195,6 +214,19 @@ const CorrectionsManualContent = () => {
   const tabAccent = activeTab === "afferent"
     ? "text-primary dark:text-blue-300 bg-primary/5 dark:bg-primary/50 border-primary/20 dark:border-blue-800"
     : efferentAccent;
+
+  // Apply a deep-link request (finding row, dock shortcut, keyboard).
+  useEffect(() => {
+    if (!target) return;
+    setActiveTab(target.tab);
+    if (target.tab === "afferent") setAfferentActive(target.item);
+    else setEfferentActive(target.item);
+  }, [target]);
+
+  // Tell the host what's showing so it can be remembered next time.
+  useEffect(() => {
+    onSelectionChange?.(activeTab as CorrectionTab, activeId);
+  }, [activeTab, activeId, onSelectionChange]);
 
   const filteredBrainZones = (points: BrainReflexPoint[]) => {
     if (!searchQuery) return points;
@@ -431,7 +463,7 @@ const CorrectionsManualContent = () => {
           </div>
         );
 
-  const getActiveId = () => (activeTab === "afferent" ? afferentActive : efferentActive);
+  const getActiveId = () => activeId;
 
   const setActiveId = (id: string) => {
     if (activeTab === "afferent") setAfferentActive(id);
@@ -450,7 +482,7 @@ const CorrectionsManualContent = () => {
   const handlePrint = () => window.print();
 
   return (
-    <div className="h-full flex flex-col">
+    <div className={cn("flex flex-col", fill && "h-full min-h-0")}>
       <div className="border-b shrink-0">
         <div className="px-4 py-2 flex items-center justify-between gap-4">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -465,7 +497,7 @@ const CorrectionsManualContent = () => {
           </Tabs>
           <div className="flex items-center gap-2">
             {getSearchPlaceholder() && (
-              <div className="relative w-48">
+              <div className={cn("relative", compact ? "w-28" : "w-48")}>
                 <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   value={searchQuery}
@@ -475,22 +507,66 @@ const CorrectionsManualContent = () => {
                 />
               </div>
             )}
-            <button
-              onClick={handlePrint}
-              className="h-7 px-2.5 rounded-lg text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center gap-1.5"
-            >
-              <Printer size={12} /> Print
-            </button>
+            {!compact && (
+              <button
+                onClick={handlePrint}
+                className="h-7 px-2.5 rounded-lg text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center gap-1.5"
+              >
+                <Printer size={12} /> Print
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        <CorrectionsSidebar items={getItems()} activeId={getActiveId()} setActiveId={setActiveId} tabAccent={tabAccent} />
-        <main className="flex-1 px-6 py-6 overflow-y-auto max-w-3xl">
-          {getContent()}
-        </main>
-      </div>
+      {compact ? (
+        <div className="flex flex-1 min-h-0 flex-col">
+          <div className="max-h-[40%] shrink-0 overflow-y-auto border-b border-border px-3 py-2.5 space-y-2">
+            {(() => {
+              const items = getItems();
+              const groups = items.reduce<{ group?: string; items: typeof items }[]>((acc, item) => {
+                const last = acc[acc.length - 1];
+                if (last && last.group === item.group) last.items.push(item);
+                else acc.push({ group: item.group, items: [item] });
+                return acc;
+              }, []);
+              return groups.map((g, gi) => (
+                <div key={g.group ?? gi} className="space-y-1">
+                  {g.group && (
+                    <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/50">{g.group}</p>
+                  )}
+                  <div className="flex flex-wrap gap-1">
+                    {g.items.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveId(item.id)}
+                        className={cn(
+                          "px-2 py-1 rounded-md border text-[10px] font-medium transition-colors",
+                          item.id === activeId
+                            ? tabAccent
+                            : "border-border bg-card text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ));
+            })()}
+          </div>
+          <div className="flex-1 min-h-0 overflow-y-auto px-3 py-3">
+            {getContent()}
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-1 min-h-0 overflow-hidden">
+          <CorrectionsSidebar items={getItems()} activeId={getActiveId()} setActiveId={setActiveId} tabAccent={tabAccent} />
+          <main className="min-w-0 flex-1 max-w-3xl px-6 py-6 overflow-y-auto">
+            {getContent()}
+          </main>
+        </div>
+      )}
 
       <BrainReflexModal
         point={modalPoint}

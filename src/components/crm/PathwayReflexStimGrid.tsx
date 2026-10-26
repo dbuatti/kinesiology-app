@@ -68,6 +68,7 @@ export function PathwayReflexStimGrid({
   const [activeTab, setActiveTab] = useState<GridTab>("reflexes");
   const [query, setQuery] = useState("");
   const [view, setView] = useState<'board' | 'summary'>('board');
+  const [touchMode, setTouchMode] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
   const touchStartX = useRef<number | null>(null);
@@ -403,6 +404,17 @@ export function PathwayReflexStimGrid({
             )}
           </div>
           <div className="flex items-center gap-1.5 ml-auto">
+            <button
+              type="button"
+              onClick={() => setTouchMode((v) => !v)}
+              className={cn(
+                "inline-flex items-center justify-center gap-1.5 h-9 px-3 rounded-lg text-xs font-semibold transition-colors cursor-pointer border",
+                touchMode ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border text-muted-foreground hover:text-foreground hover:bg-muted"
+              )}
+              title="Enlarge tap targets for iPad / touch use"
+            >
+              Touch
+            </button>
             <div className="inline-flex items-center gap-1 p-1 rounded-lg border border-border bg-background">
               <button
                 type="button"
@@ -554,7 +566,10 @@ export function PathwayReflexStimGrid({
             <PathwayReflexStimGridSummary checked={checked} muscleState={muscleState} />
           ) : (
             <div
-              className="overflow-x-auto border border-border rounded-xl shadow-sm print:overflow-visible print:border-0 print:shadow-none touch-manipulation"
+              className={cn(
+                "overflow-x-auto border border-border rounded-xl shadow-sm print:overflow-visible print:border-0 print:shadow-none touch-manipulation transition-transform",
+                touchMode && "scale-110 origin-top-left"
+              )}
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
             >

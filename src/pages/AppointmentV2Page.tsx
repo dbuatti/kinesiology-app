@@ -19,12 +19,14 @@ import {
 } from "@/components/ui/hover-card";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import PeaceWizard from "@/components/crm/v2/PeaceWizard";
+import { PEACE_PHASES } from "@/components/crm/v2/PeaceWizard";
 import AppointmentV2DocView from "@/components/crm/v2/AppointmentV2DocView";
 import CorrectionsManualContent from "@/components/crm/CorrectionsManualContent";
 import { QuickSessionDialog } from "@/components/crm/QuickSessionDialog";
 import PathwayReflexStimGrid from "@/components/crm/PathwayReflexStimGrid";
 import QuickNotesDialog from "@/components/crm/QuickNotesDialog";
 import HowToSearch from "@/components/crm/HowToSearch";
+import SessionTimer from "@/components/crm/SessionTimer";
 import { parseClientJournal } from "@/utils/journal-helper";
 
 
@@ -122,6 +124,13 @@ const AppointmentV2Page = () => {
 
   return (
     <div className={cn("min-h-screen bg-background", isFullScreen && "fixed inset-0 z-50 overflow-y-auto")}>
+      <SessionTimer
+        sessionId={appointment.id}
+        appointmentDate={appointment.date}
+        status={appointment.status}
+        clientName={appointment.clients?.name}
+        currentPhaseName={PEACE_PHASES[activePhase]?.fullLabel}
+      />
       {/* Top Bar */}
       <header className="sticky top-0 z-40 bg-background/85 backdrop-blur-xl border-b border-border">
         <div className="h-0.5 w-full bg-border/40">

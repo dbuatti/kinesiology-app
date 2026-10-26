@@ -19,7 +19,7 @@ interface CorrectionsSidebarProps {
 
 const CorrectionsSidebar = ({ items, activeId, setActiveId, tabAccent }: CorrectionsSidebarProps) => {
   return (
-    <aside className="w-48 shrink-0 border-r border-border p-3 space-y-1 overflow-y-auto">
+    <aside className="w-48 shrink-0 self-start max-h-full border-r border-border p-3 space-y-1 overflow-y-auto">
       {items.map((item, i) => {
         const Icon = item.icon;
         const isActive = activeId === item.id;

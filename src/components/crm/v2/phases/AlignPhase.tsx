@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { GitBranch, Target, Route, AlertCircle, Star } from "lucide-react";
+import { GitBranch, Target, Route, AlertCircle, Star, BookMarked } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { safeParse } from "@/utils/safe-json";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
   cranialSideKey,
 } from "@/components/crm/pathway-reflex-stim-data";
 import type { PhaseProps } from "@/components/crm/v2/v2-types";
+import { useCorrectionDock, type CorrectionTab } from "@/components/crm/corrections/CorrectionDockContext";
 
 interface Finding {
   name: string;
@@ -32,6 +33,14 @@ interface MarkedStimEntry {
 
 const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, onJumpToPhase }: PhaseProps) => {
   const { tests: nerveTests } = useCranialNerveTests(appointment.id, appointment.priority_pattern, updatePriorityPattern);
+  const { openDock } = useCorrectionDock();
+
+  // Brain-zone findings resolve efferently; everything else lands on the
+  // afferent entry point so the practitioner isn't hunting for the section.
+  const correctionTargetFor = (category: string): { tab: CorrectionTab; item: string } =>
+    category === 'brainZones'
+      ? { tab: 'efferent', item: 'cortical' }
+      : { tab: 'afferent', item: 'mechanoreceptor' };
 
   const meta = useMemo(() => {
     if (!appointment.metadata) return {};
@@ -237,6 +246,15 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                             >
                               1°
                             </button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              title="Open the corrections reference for this finding"
+                              className="text-[11px] font-bold text-purple-600 dark:text-purple-300 hover:bg-purple-500/10 rounded-lg ml-1 px-2"
+                              onClick={() => openDock(correctionTargetFor(item.category))}
+                            >
+                              <BookMarked size={11} />
+                            </Button>
                             <Button
                               variant="ghost"
                               size="sm"

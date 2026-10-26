@@ -12,7 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import {
   ArrowLeft, Loader2, Activity, FileText,
   Maximize2, Minimize2, Calendar, Clock, User, BookOpen,
-  Plus, BookMarked, LayoutGrid, Archive, StickyNote, MoreHorizontal, X
+  Plus, LayoutGrid, Archive, StickyNote, MoreHorizontal
 } from "lucide-react";
 import {
   HoverCard, HoverCardContent, HoverCardTrigger,
@@ -21,7 +21,10 @@ import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import PeaceWizard from "@/components/crm/v2/PeaceWizard";
 import { PEACE_PHASES } from "@/components/crm/v2/PeaceWizard";
 import AppointmentV2DocView from "@/components/crm/v2/AppointmentV2DocView";
-import CorrectionsManualContent from "@/components/crm/CorrectionsManualContent";
+import { CorrectionDockProvider } from "@/components/crm/corrections/CorrectionDockContext";
+import CorrectionDock from "@/components/crm/corrections/CorrectionDock";
+import CorrectionDockButton from "@/components/crm/corrections/CorrectionDockButton";
+import CorrectionDockShortcuts from "@/components/crm/corrections/CorrectionDockShortcuts";
 import { QuickSessionDialog } from "@/components/crm/QuickSessionDialog";
 import PathwayReflexStimGrid from "@/components/crm/PathwayReflexStimGrid";
 import QuickNotesDialog from "@/components/crm/QuickNotesDialog";
@@ -51,7 +54,6 @@ const AppointmentV2Page = () => {
   const [isFullScreen, setIsFullScreen] = useState(() => localStorage.getItem('rk_v2_fullscreen') === 'true');
   const [quickSessionOpen, setQuickSessionOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
-  const [manualOpen, setManualOpen] = useState(false);
   const [activePhase, setActivePhase] = useState(0);
 
   const phaseStatus = useMemo(() => ({
@@ -123,7 +125,9 @@ const AppointmentV2Page = () => {
   ];
 
   return (
-    <div className={cn("min-h-screen bg-background", isFullScreen && "fixed inset-0 z-50 overflow-y-auto")}>
+    <CorrectionDockProvider appointmentId={appointment.id}>
+      <CorrectionDockShortcuts />
+      <div className={cn("min-h-screen bg-background", isFullScreen && "fixed inset-0 z-50 overflow-y-auto")}>
       <SessionTimer
         sessionId={appointment.id}
         appointmentDate={appointment.date}
@@ -227,13 +231,7 @@ const AppointmentV2Page = () => {
               <StickyNote size={13} /> <span className="hidden md:inline">Notes</span>
             </button>
             <div className="w-px h-6 bg-border mx-0.5 shrink-0" />
-            <button
-              onClick={() => setManualOpen(true)}
-              className="flex items-center gap-1.5 px-2 md:px-2.5 h-8 text-[13px] font-medium border border-border bg-card shadow-xs hover:bg-muted rounded-lg shrink-0 whitespace-nowrap"
-              title="Corrections manual — reference"
-            >
-              <BookMarked size={13} /> <span className="hidden md:inline">Manual</span>
-            </button>
+            <CorrectionDockButton />
             <HowToSearch />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -257,7 +255,9 @@ const AppointmentV2Page = () => {
         </div>
       </header>
 
-      {/* Content */}
+      {/* Content + dock — the manual sits beside the finding, never on top of it. */}
+      <div className="flex items-start">
+        <div className="min-w-0 flex-1">
       {viewMode === 'peace' && (
         <div className="mx-auto w-full max-w-5xl px-4 py-6 md:px-8">
           <ErrorBoundary>
@@ -310,19 +310,9 @@ const AppointmentV2Page = () => {
         />
       )}
 
-      {manualOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={() => setManualOpen(false)}>
-          <div className="bg-card rounded-2xl border border-border shadow-lg max-w-4xl w-full max-h-[85vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4 sticky top-0 bg-card pb-2">
-              <h2 className="text-lg font-semibold text-foreground">Corrections Manual</h2>
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setManualOpen(false)}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            <CorrectionsManualContent />
-          </div>
         </div>
-      )}
+        <CorrectionDock />
+      </div>
 
       <QuickSessionDialog open={quickSessionOpen} onOpenChange={setQuickSessionOpen} />
       <QuickNotesDialog
@@ -335,7 +325,8 @@ const AppointmentV2Page = () => {
         goal={appointment.goal}
         issue={appointment.issue}
       />
-    </div>
+      </div>
+    </CorrectionDockProvider>
   );
 };
 

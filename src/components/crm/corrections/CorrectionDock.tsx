@@ -13,7 +13,7 @@ const CorrectionDock = () => {
 
   if (!isOpen) {
     return (
-      <aside className="sticky top-0 flex h-[calc(100dvh-3.5rem)] w-12 shrink-0 self-start flex-col items-center gap-1 border-l border-border bg-card py-3">
+      <aside className="sticky top-[3.625rem] flex h-[calc(100dvh-3.625rem)] w-12 shrink-0 self-start flex-col items-center gap-1 border-l border-border bg-card py-3">
         <button
           onClick={() => openDock({ tab: "afferent" })}
           title="Afferent corrections (A)"
@@ -50,7 +50,7 @@ const CorrectionDock = () => {
   return (
     <aside
       className={cn(
-        "sticky top-0 flex h-[calc(100dvh-3.5rem)] w-[400px] max-w-[70vw] shrink-0 self-start flex-col",
+        "sticky top-[3.625rem] flex h-[calc(100dvh-3.625rem)] w-[400px] max-w-[70vw] shrink-0 self-start flex-col",
         "border-l border-border bg-card"
       )}
     >

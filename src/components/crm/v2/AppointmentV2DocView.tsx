@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowLeft, Printer, Target
+  ArrowLeft, Printer, Target, Copy, Check
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -28,9 +28,9 @@ interface DocViewProps {
 }
 
 const SectionHeading = ({ num, label }: { num: string; label: string }) => (
-  <div className="flex items-baseline gap-2 mb-5">
-    <span className="text-[13px] font-bold text-foreground">{num}.</span>
-    <h2 className="text-[13px] font-bold text-foreground">{label}</h2>
+  <div className="flex items-baseline gap-2 mb-3">
+    <span className="text-[12px] font-bold text-foreground">{num}.</span>
+    <h2 className="text-[12px] font-bold text-foreground">{label}</h2>
   </div>
 );
 
@@ -129,6 +129,7 @@ const EditableNumberField = ({ label, value, field, onSave, editable = false, su
 const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, editable = false, saveField, updatePriorityPattern }: DocViewProps) => {
   const handlePrint = () => window.print();
   const [clientName, setClientName] = useState(appointment.clients?.name || "");
+  const [copied, setCopied] = useState(false);
   const [correctionEntries, setCorrectionEntries] = useState<CorrectionEntry[]>(() => {
     const meta = safeParse(appointment.metadata, {} as any);
     return (meta?.corrections || []).map((c: any) => ({
@@ -236,9 +237,28 @@ const AppointmentV2DocView = ({ appointment, history, onBack, hideToolbar, edita
             <Button variant="ghost" size="sm" onClick={onBack} className="rounded-lg text-muted-foreground h-8">
               <ArrowLeft size={15} className="mr-1.5" /> Back to Session
             </Button>
-            <Button variant="outline" size="sm" onClick={handlePrint} className="rounded-lg h-8">
-              <Printer size={15} className="mr-1.5" /> Print Document
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-lg h-8 gap-1.5"
+                onClick={async () => {
+                  const parts = [
+                    appointment.clients?.name,
+                    appointment.date ? new Date(appointment.date).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) : "",
+                    appointment.goal ? `Goal: ${appointment.goal}` : "",
+                    appointment.issue ? `Concern: ${appointment.issue}` : "",
+                    appointment.notes ? `Notes: ${appointment.notes}` : "",
+                  ].filter(Boolean);
+                  try { await navigator.clipboard.writeText(parts.join("\\n\\n")); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch {}
+                }}
+              >
+                {copied ? <Check size={14} /> : <Copy size={14} />} {copied ? "Copied" : "Copy all"}
+              </Button>
+              <Button variant="outline" size="sm" onClick={handlePrint} className="rounded-lg h-8">
+                <Printer size={15} className="mr-1.5" /> Print Document
+              </Button>
+            </div>
           </div>
         </header>
       )}

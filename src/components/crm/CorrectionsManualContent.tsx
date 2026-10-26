@@ -3,7 +3,6 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import {
   ArrowDownCircle, ArrowUpCircle, ArrowRightCircle, ArrowDown,
-  Shield, ShieldAlert,
   Activity, AlertTriangle, Droplets, Brain, Zap, Heart,
   Search, Layers, Hand, RefreshCw, Eye, MessageSquare,
   Printer
@@ -14,7 +13,7 @@ import BrainReflexModal from "@/components/crm/BrainReflexModal";
 import { Input } from "@/components/ui/input";
 import CorrectionsSidebar from "@/components/crm/CorrectionsSidebar";
 
-type SidebarItem = { id: string; label: string; icon: typeof Activity };
+type SidebarItem = { id: string; label: string; icon: typeof Activity; group?: string };
 
 const AFFERENT_ITEMS: SidebarItem[] = [
   { id: "mechanoreceptor", label: "Mechanoreceptor", icon: Activity },
@@ -22,22 +21,19 @@ const AFFERENT_ITEMS: SidebarItem[] = [
   { id: "physiological", label: "Physiological", icon: Droplets },
 ];
 
+// Emotional is part of Efferent: Cortical/Subcortical say WHERE, the emotional
+// protocols (ESR, Heart Wall, Limiting Beliefs) say HOW. They live in one list
+// so emotional work isn't split across unrelated top-level tabs.
 const EFFERENT_ITEMS: SidebarItem[] = [
-  { id: "cortical", label: "Cortical", icon: Brain },
-  { id: "subcortical", label: "Subcortical", icon: Zap },
-  { id: "emotional", label: "Emotional", icon: Heart },
-];
-
-const HEART_WALL_ITEMS: SidebarItem[] = [
-  { id: "hw-screen", label: "Screen", icon: Search },
-  { id: "hw-assessment", label: "Assessment", icon: Layers },
-  { id: "hw-correction", label: "Correction", icon: Hand },
-  { id: "hw-recheck", label: "Recheck", icon: RefreshCw },
-  { id: "hw-hidden", label: "Hidden HW", icon: Eye },
-];
-
-const LIMITING_BELIEF_ITEMS: SidebarItem[] = [
-  { id: "lb-process", label: "Process", icon: MessageSquare },
+  { id: "cortical", label: "Cortical", icon: Brain, group: "Brain" },
+  { id: "subcortical", label: "Subcortical", icon: Zap, group: "Brain" },
+  { id: "emotional", label: "ESR / Pulse Point", icon: Heart, group: "Emotional" },
+  { id: "hw-screen", label: "Screen", icon: Search, group: "Heart Wall" },
+  { id: "hw-assessment", label: "Assessment", icon: Layers, group: "Heart Wall" },
+  { id: "hw-correction", label: "Correction", icon: Hand, group: "Heart Wall" },
+  { id: "hw-recheck", label: "Recheck", icon: RefreshCw, group: "Heart Wall" },
+  { id: "hw-hidden", label: "Hidden HW", icon: Eye, group: "Heart Wall" },
+  { id: "lb-process", label: "Process", icon: MessageSquare, group: "Limiting Beliefs" },
 ];
 
 const corticalPoints = BRAIN_REFLEX_POINTS.filter(p => p.category === "Cortical");
@@ -185,18 +181,20 @@ const CorrectionsManualContent = () => {
   const [activeTab, setActiveTab] = useState("afferent");
   const [afferentActive, setAfferentActive] = useState("mechanoreceptor");
   const [efferentActive, setEfferentActive] = useState("cortical");
-  const [heartWallActive, setHeartWallActive] = useState("hw-screen");
-  const [limitingBeliefActive, setLimitingBeliefActive] = useState("lb-process");
   const [modalPoint, setModalPoint] = useState<BrainReflexPoint | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Accent follows the active item so Heart Wall stays rose and Limiting
+  // Beliefs stays red, even though both now sit under the Efferent tab.
+  const efferentAccent = efferentActive.startsWith("hw-")
+    ? "text-rose-600 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-800"
+    : efferentActive === "lb-process"
+    ? "text-destructive bg-destructive/10 border-destructive/20"
+    : "text-purple-600 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 border-purple-200 dark:border-purple-800";
+
   const tabAccent = activeTab === "afferent"
     ? "text-primary dark:text-blue-300 bg-primary/5 dark:bg-primary/50 border-primary/20 dark:border-blue-800"
-    : activeTab === "efferent"
-    ? "text-purple-600 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/50 border-purple-200 dark:border-purple-800"
-    : activeTab === "heart-wall"
-    ? "text-rose-600 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-800"
-    : "text-destructive bg-destructive/10 border-destructive/20";
+    : efferentAccent;
 
   const filteredBrainZones = (points: BrainReflexPoint[]) => {
     if (!searchQuery) return points;
@@ -262,18 +260,42 @@ const CorrectionsManualContent = () => {
         );
       }
       case "efferent": {
+        if (efferentActive.startsWith("hw-")) {
+          const content = heartWallContent[efferentActive];
+          if (!content) return null;
+          return (
+            <div className="space-y-4">
+              <h2 className="text-base font-bold tracking-tight">{content.title}</h2>
+              {renderSteps(content.steps, "text-rose-600")}
+            </div>
+          );
+        }
+
+        if (efferentActive === "lb-process") {
+          return renderLimitingBeliefs();
+        }
+
         const content = efferentContent[efferentActive];
         if (!content) return null;
-        const showZones = efferentActive === "cortical" || efferentActive === "subcortical";
         const isEmotional = efferentActive === "emotional";
+        const isBrainZone = efferentActive === "cortical" || efferentActive === "subcortical";
         return (
-          <div className={isEmotional ? "grid grid-cols-1 lg:grid-cols-5 gap-8" : "space-y-4"}>
-            <div className={isEmotional ? "lg:col-span-3 space-y-4" : "space-y-4"}>
+          <div className="space-y-6">
+            <div className="space-y-4">
               <h2 className="text-base font-bold tracking-tight">{content.title}</h2>
               {renderSteps(content.steps, "text-purple-600")}
             </div>
+            {isBrainZone && (
+              <div className="border-t border-border pt-4">
+                <BrainZoneList
+                  points={efferentActive === "cortical" ? corticalPoints : subcorticalPoints}
+                  label={efferentActive === "cortical" ? "Cortical zones" : "Subcortical zones"}
+                  accent="text-purple-600 dark:text-purple-400"
+                />
+              </div>
+            )}
             {isEmotional && (
-              <div className="lg:col-span-2 space-y-6">
+              <div className="space-y-4">
                 {/* NLP Eye Position Reference */}
                 <div className="panel p-4">
                   <h3 className="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 mb-3">NLP Eye Accessing Cues</h3>
@@ -288,7 +310,7 @@ const CorrectionsManualContent = () => {
                     ].map(row => (
                       <div key={row.pos} className="flex items-start gap-2 text-[10px]">
                         <span className="font-bold text-foreground shrink-0 w-16">{row.pos}</span>
-                        <span className="font-semibold text-foreground/80 shrink-0 w-22">{row.label}</span>
+                        <span className="font-semibold text-foreground/80 shrink-0 w-24">{row.label}</span>
                         <span className="text-muted-foreground">{row.desc}</span>
                       </div>
                     ))}
@@ -309,7 +331,7 @@ const CorrectionsManualContent = () => {
                       <div key={row.element} className="flex items-start gap-2 text-[10px]">
                         <span className="w-12 shrink-0 font-bold text-foreground">{row.element}</span>
                         <span className="w-10 shrink-0 text-muted-foreground">{row.emotion}</span>
-                        <span className="font-semibold text-foreground/80 shrink-0 w-18">{row.organ}</span>
+                        <span className="font-semibold text-foreground/80 shrink-0 w-24">{row.organ}</span>
                         <span className="text-muted-foreground">{row.note}</span>
                       </div>
                     ))}
@@ -323,18 +345,12 @@ const CorrectionsManualContent = () => {
           </div>
         );
       }
-      case "heart-wall": {
-        const content = heartWallContent[heartWallActive];
-        if (!content) return null;
-        return (
-          <div className="space-y-4">
-            <h2 className="text-base font-bold tracking-tight">{content.title}</h2>
-            {renderSteps(content.steps, "text-rose-600")}
-          </div>
-        );
-      }
-      case "limiting-beliefs": {
-        return (
+      default:
+        return null;
+    }
+  };
+
+  const renderLimitingBeliefs = () => (
           <div className="space-y-8">
             {/* A-E Core Cycle */}
             <div>
@@ -414,43 +430,20 @@ const CorrectionsManualContent = () => {
             </div>
           </div>
         );
-      }
-      default:
-        return null;
-    }
-  };
 
-  const getActiveId = () => {
-    switch (activeTab) {
-      case "afferent": return afferentActive;
-      case "efferent": return efferentActive;
-      case "heart-wall": return heartWallActive;
-      case "limiting-beliefs": return limitingBeliefActive;
-      default: return "";
-    }
-  };
+  const getActiveId = () => (activeTab === "afferent" ? afferentActive : efferentActive);
 
   const setActiveId = (id: string) => {
-    switch (activeTab) {
-      case "afferent": setAfferentActive(id); break;
-      case "efferent": setEfferentActive(id); break;
-      case "heart-wall": setHeartWallActive(id); break;
-      case "limiting-beliefs": setLimitingBeliefActive(id); break;
-    }
+    if (activeTab === "afferent") setAfferentActive(id);
+    else setEfferentActive(id);
   };
 
-  const getItems = (): SidebarItem[] => {
-    switch (activeTab) {
-      case "afferent": return AFFERENT_ITEMS;
-      case "efferent": return EFFERENT_ITEMS;
-      case "heart-wall": return HEART_WALL_ITEMS;
-      case "limiting-beliefs": return LIMITING_BELIEF_ITEMS;
-      default: return [];
-    }
-  };
+  const getItems = (): SidebarItem[] => (activeTab === "afferent" ? AFFERENT_ITEMS : EFFERENT_ITEMS);
 
   const getSearchPlaceholder = () => {
-    if (activeTab === "efferent") return "Search brain zones...";
+    if (activeTab === "efferent" && (efferentActive === "cortical" || efferentActive === "subcortical")) {
+      return "Search brain zones...";
+    }
     return undefined;
   };
 
@@ -467,12 +460,6 @@ const CorrectionsManualContent = () => {
               </TabsTrigger>
               <TabsTrigger value="efferent" className="text-[13px] h-7 px-3 data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700 data-[state=active]:shadow-sm">
                 <ArrowUpCircle size={12} className="mr-1.5" /> Efferent
-              </TabsTrigger>
-              <TabsTrigger value="heart-wall" className="text-[13px] h-7 px-3 data-[state=active]:bg-rose-50 data-[state=active]:text-rose-700 data-[state=active]:shadow-sm">
-                <Shield size={12} className="mr-1.5" /> Heart Wall
-              </TabsTrigger>
-              <TabsTrigger value="limiting-beliefs" className="text-[13px] h-7 px-3 data-[state=active]:bg-destructive/10 data-[state=active]:text-destructive data-[state=active]:shadow-sm">
-                <ShieldAlert size={12} className="mr-1.5" /> Limiting Beliefs
               </TabsTrigger>
             </TabsList>
           </Tabs>

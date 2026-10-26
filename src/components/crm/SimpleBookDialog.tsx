@@ -78,7 +78,6 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
         .from("clients")
         .select("id, name, email, phone")
         .contains("practices", ["kinesiology"])
-        .eq("user_id", (await supabase.auth.getUser()).data.user?.id)
         .not("is_practitioner", "eq", true);
       if (error) throw error;
       return (data || []).map((c) => ({ id: c.id, name: c.name, email: c.email, phone: c.phone, _source: "kinesiology" as const }));

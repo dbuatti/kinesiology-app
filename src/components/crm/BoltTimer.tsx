@@ -98,34 +98,26 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
         </Alert>
       )}
 
-      <div className="relative">
-        <div className={cn(
-          "flex flex-col items-center justify-center p-3 rounded-lg transition-all",
-          isRunning ? "bg-indigo-50 animate-pulse" : "bg-muted/20"
-        )}>
-          <div className="flex items-baseline gap-1">
-            <span className={cn(
-              "text-3xl font-semibold tabular-nums transition-colors",
-              isRunning ? "text-indigo-600" : getScoreColor(displayTime)
-            )}>
-              {displayTime}
-            </span>
-            <span className="text-xl font-semibold text-muted-foreground">s</span>
-          </div>
-          
-          {!isRunning && displayTime > 0 && (
-            <div className="mt-1 flex items-center gap-2">
-              <div className={cn(
-                "px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider",
-                displayTime >= 40 ? "bg-emerald-100 text-emerald-700" :
-                displayTime >= 25 ? "bg-primary/10 text-primary" :
-                "bg-amber-100 text-amber-700"
-              )}>
-                {getScoreLabel(displayTime)}
-              </div>
-            </div>
-          )}
+      <div className="flex items-center gap-3">
+        <div className="flex items-baseline gap-0.5">
+          <span className={cn(
+            "text-2xl font-semibold tabular-nums transition-colors",
+            isRunning ? "text-indigo-600" : getScoreColor(displayTime)
+          )}>
+            {displayTime}
+          </span>
+          <span className="text-sm font-medium text-muted-foreground">s</span>
         </div>
+        {!isRunning && displayTime > 0 && (
+          <span className={cn(
+            "text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded",
+            displayTime >= 40 ? "bg-emerald-500/10 text-emerald-600" :
+            displayTime >= 25 ? "bg-primary/10 text-primary" :
+            "bg-amber-500/10 text-amber-600"
+          )}>
+            {getScoreLabel(displayTime)}
+          </span>
+        )}
       </div>
 
       <div className="flex gap-2">

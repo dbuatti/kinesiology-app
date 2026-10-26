@@ -37,6 +37,7 @@ interface PeaceWizardProps {
   updatePriorityPattern: (category: string, itemName: string, status: string | null, side?: 'L' | 'R') => Promise<void>;
   onJumpToPhase?: (index: number) => void;
   onFinalise?: () => void;
+  onPhaseChange?: (index: number) => void;
 }
 
 const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriorityPattern, onFinalise }: PeaceWizardProps) => {

@@ -73,7 +73,7 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
   const isStale = daysSinceLast > 30;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Stale alert */}
       {isStale && (
         <p className="text-xs text-amber-600 dark:text-amber-400 border-l-2 border-amber-500/60 pl-3 py-1">
@@ -102,20 +102,6 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
           </div>
         );
       })()}
-
-      {/* Recheck — persistent top strip */}
-      {(history?.length ?? 0) >= 2 && (
-        <div className="border-b border-border pb-4">
-          <RecheckTabV2
-            appointment={appointment}
-            history={history}
-            onUpdate={onUpdate}
-            updatePriorityPattern={updatePriorityPattern}
-            saveField={saveField}
-            onJumpToPhase={onJumpToPhase}
-          />
-        </div>
-      )}
 
       {/* Sub-tab bar */}
       <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
@@ -149,9 +135,53 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
         )}
 
         {subTab === 'intake' && (
-          <div className="space-y-4">
-            {/* Goal & Concern */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
+            {/* Left: clinical measurements */}
+            <div className="space-y-4 min-w-0">
+              {/* Baseline Vitals */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Activity size={14} className="text-muted-foreground" />
+                  <h3 className="text-xs font-bold text-foreground tracking-tight uppercase tracking-wider">Baseline Vitals</h3>
+                </div>
+                <BoltTestSection
+                  appointmentId={appointment.id}
+                  initialBoltScore={appointment.bolt_score}
+                  onUpdate={onUpdate}
+                  history={history}
+                />
+                <CoherenceAssessment
+                  appointmentId={appointment.id}
+                  initialHeartRate={appointment.heart_rate}
+                  initialBreathRate={appointment.breath_rate}
+                  initialCoherenceScore={appointment.coherence_score}
+                  onUpdate={onUpdate}
+                  history={history}
+                />
+              </div>
+
+              {/* COGS — Visual Assessment */}
+              <CogsAssessment
+                appointmentId={appointment.id}
+                initialSagittalNotes={appointment.sagittal_plane_notes}
+                initialFrontalNotes={appointment.frontal_plane_notes}
+                initialTransverseNotes={appointment.transverse_plane_notes}
+                onUpdate={onUpdate}
+              />
+
+              {/* Neurological Baseline */}
+              <NeurologicalAssessments
+                appointmentId={appointment.id}
+                initialFakudaNotes={appointment.fakuda_notes}
+                initialRhombergsNotes={appointment.sharpened_rhombergs_notes}
+                initialFrontalLobeNotes={appointment.frontal_lobe_notes}
+                initialRightingReflexNotes={appointment.righting_reflex_notes}
+                onUpdate={onUpdate}
+              />
+            </div>
+
+            {/* Right: narrative/context (sticky) */}
+            <div className="space-y-4 lg:sticky lg:top-20">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Compass size={14} className="text-muted-foreground" />
@@ -185,51 +215,19 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                   className="border-none p-0 shadow-none bg-transparent"
                 />
               </div>
-            </div>
 
-            {/* Baseline Vitals */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Activity size={14} className="text-muted-foreground" />
-                <h3 className="text-xs font-bold text-foreground tracking-tight uppercase tracking-wider">Baseline Vitals</h3>
-              </div>
-              <BoltTestSection
-                appointmentId={appointment.id}
-                initialBoltScore={appointment.bolt_score}
-                onUpdate={onUpdate}
-                history={history}
-              />
-              <CoherenceAssessment
-                appointmentId={appointment.id}
-                initialHeartRate={appointment.heart_rate}
-                initialBreathRate={appointment.breath_rate}
-                initialCoherenceScore={appointment.coherence_score}
-                onUpdate={onUpdate}
-                history={history}
-              />
-            </div>
-
-            {/* COGS — Visual Assessment */}
-            <div className="space-y-4">
-              <CogsAssessment
-                appointmentId={appointment.id}
-                initialSagittalNotes={appointment.sagittal_plane_notes}
-                initialFrontalNotes={appointment.frontal_plane_notes}
-                initialTransverseNotes={appointment.transverse_plane_notes}
-                onUpdate={onUpdate}
-              />
-            </div>
-
-            {/* Neurological Baseline */}
-            <div className="space-y-4">
-              <NeurologicalAssessments
-                appointmentId={appointment.id}
-                initialFakudaNotes={appointment.fakuda_notes}
-                initialRhombergsNotes={appointment.sharpened_rhombergs_notes}
-                initialFrontalLobeNotes={appointment.frontal_lobe_notes}
-                initialRightingReflexNotes={appointment.righting_reflex_notes}
-                onUpdate={onUpdate}
-              />
+              {(history?.length ?? 0) >= 2 && (
+                <div className="border-t border-border pt-3">
+                  <RecheckTabV2
+                    appointment={appointment}
+                    history={history}
+                    onUpdate={onUpdate}
+                    updatePriorityPattern={updatePriorityPattern}
+                    saveField={saveField}
+                    onJumpToPhase={onJumpToPhase}
+                  />
+                </div>
+              )}
             </div>
           </div>
         )}

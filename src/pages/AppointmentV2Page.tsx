@@ -248,7 +248,7 @@ const AppointmentV2Page = () => {
 
       {/* Content */}
       {viewMode === 'peace' && (
-        <div className="px-4 md:px-8 py-6 w-full">
+        <div className="mx-auto w-full max-w-5xl px-4 py-6 md:px-8">
           <ErrorBoundary>
             <PeaceWizard
               appointment={appointment}
@@ -300,7 +300,7 @@ const AppointmentV2Page = () => {
 
       {manualOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4" onClick={() => setManualOpen(false)}>
-          <div className="bg-card rounded-2xl border border-border shadow-lg max-w-3xl w-full max-h-[85vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-card rounded-2xl border border-border shadow-lg max-w-4xl w-full max-h-[85vh] overflow-y-auto p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4 sticky top-0 bg-card pb-2">
               <h2 className="text-lg font-semibold text-foreground">Corrections Manual</h2>
               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setManualOpen(false)}>

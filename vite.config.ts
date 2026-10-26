@@ -1,5 +1,4 @@
 import { defineConfig } from "vite";
-import dyadComponentTagger from "@dyad-sh/react-vite-component-tagger";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
@@ -12,7 +11,7 @@ export default defineConfig(() => ({
     // down instead of the page being blocked.
     allowedHosts: [".ts.net", "macbook-pro-6.tailab1fd5.ts.net", "localhost", "127.0.0.1"],
   },
-  plugins: [dyadComponentTagger(), react()],
+  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

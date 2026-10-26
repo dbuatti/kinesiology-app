@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
 
 export type CorrectionTab = "afferent" | "efferent";
 
@@ -75,22 +75,24 @@ export const CorrectionDockProvider = ({
   const [target, setTarget] = useState<CorrectionTarget | null>(null);
   const [selection, setSelection] = useState<CorrectionSelection | null>(() => readSelection(appointmentId));
 
-  const openDock = useCallback<CorrectionDockContextValue["openDock"]>(
-    (request) => {
-      // No explicit request = just the list, at whatever tab it was on.
-      if (!request) {
-        setTarget(null);
-        setIsOpen(true);
-        return;
-      }
-      const tab = request.tab ?? selection?.tab ?? "afferent";
-      const item =
-        request.item ?? (selection?.tab === tab ? selection.item : DEFAULT_ITEM[tab]);
-      setTarget((prev) => ({ tab, item, nonce: (prev?.nonce ?? 0) + 1 }));
+  // openDock stays referentially stable so consumers' effects don't re-fire
+  // every time the practitioner moves around the manual.
+  const selectionRef = useRef(selection);
+  selectionRef.current = selection;
+
+  const openDock = useCallback<CorrectionDockContextValue["openDock"]>((request) => {
+    // No explicit request = just the list, at whatever tab it was on.
+    if (!request) {
+      setTarget(null);
       setIsOpen(true);
-    },
-    [selection]
-  );
+      return;
+    }
+    const sel = selectionRef.current;
+    const tab = request.tab ?? sel?.tab ?? "afferent";
+    const item = request.item ?? (sel?.tab === tab ? sel.item : DEFAULT_ITEM[tab]);
+    setTarget((prev) => ({ tab, item, nonce: (prev?.nonce ?? 0) + 1 }));
+    setIsOpen(true);
+  }, []);
 
   const closeDock = useCallback(() => {
     setIsOpen(false);

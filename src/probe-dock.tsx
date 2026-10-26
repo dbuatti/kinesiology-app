@@ -23,8 +23,11 @@ const report = () => {
     const overflowing = (Array.from(dock.querySelectorAll("*")) as HTMLElement[])
       .map((el) => ({ el, dx: el.scrollWidth - el.clientWidth }))
       .filter((x) => x.dx > 1);
-    lines.push(`DOCK w=${Math.round(r.width)} h=${Math.round(r.height)}`);
+    lines.push(`DOCK w=${Math.round(r.width)} h=${Math.round(r.height)} cls="${dock.className}"`);
     lines.push(`INSTRUCTIONS_OPEN=${!!back}`);
+    const cs = getComputedStyle(dock);
+    lines.push(`OFFSETW=${dock.offsetWidth} SOFFSETW=${dock.scrollWidth}`);
+    lines.push(`COMPUTED width=${cs.width} maxWidth=${cs.maxWidth} flex=${cs.flex} parentW=${Math.round(dock.parentElement!.getBoundingClientRect().width)} display=${cs.display}`);
     lines.push(`LIST_CHIPS=${dock.querySelectorAll("button").length}`);
     lines.push(`HORIZONTAL_OVERFLOWERS=${overflowing.length}`);
     overflowing.slice(0, 6).forEach(({ el, dx }) =>
@@ -40,7 +43,9 @@ const report = () => {
 };
 
 const Drive = () => {
-  const { openDock } = useCorrectionDock();
+  const ctx = useCorrectionDock();
+  const { openDock } = ctx;
+  (window as unknown as Record<string, unknown>).__dock = { isOpen: ctx.isOpen, target: ctx.target, selection: ctx.selection };
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const open = params.get("open");

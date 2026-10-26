@@ -65,7 +65,7 @@ const MuscleGroupGrid = ({ muscles, pattern, onToggle }: {
 
 const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePriorityPattern, onJumpToPhase }: PhaseProps) => {
   const hasHistory = history.length >= 2;
-  const [subTab, setSubTab] = useState<SubTab>(hasHistory ? 'recheck' : 'intake');
+  const [subTab, setSubTab] = useState<SubTab>('intake');
 
   const previousSession = history.length >= 2 ? history[1] : null;
   const lastSessionDate = previousSession?.date;

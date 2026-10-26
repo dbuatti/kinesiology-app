@@ -64,7 +64,7 @@ const CorrectionDock = () => {
         "sticky top-[3.625rem] flex h-[calc(100dvh-3.625rem)] shrink-0 self-start flex-col",
         "border-l border-border bg-card",
         "transition-[width] duration-200 ease-out",
-        instructionsOpen ? "w-[640px] max-w-[calc(100vw-8rem)]" : "w-[400px] max-w-[70vw]"
+        instructionsOpen ? "w-[640px] max-w-[60vw]" : "w-[400px] max-w-[70vw]"
       )}
     >
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-3 py-2">

@@ -104,7 +104,7 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
       })()}
 
       {/* Sub-tab bar */}
-      <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+      <div className="flex items-center justify-center gap-1 overflow-x-auto no-scrollbar">
         {SUB_TABS.map(tab => (
           <button
             key={tab.id}

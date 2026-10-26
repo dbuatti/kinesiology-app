@@ -587,7 +587,10 @@ const CorrectionsManualContent = ({
           </div>
 
           {instructionsOpen && (
-            <div className="flex min-w-0 flex-1 flex-col animate-in fade-in slide-in-from-right-4 duration-200">
+            <div
+              key={`${activeTab}:${activeId}`}
+              className="flex min-w-0 flex-1 flex-col animate-in fade-in slide-in-from-right-4 duration-200"
+            >
               <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-3 py-1.5">
                 <span className="truncate text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                   {getItems().find((i) => i.id === activeId)?.label ?? "Process"}

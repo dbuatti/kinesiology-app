@@ -15,109 +15,111 @@
    ───────────────────────────────────────────────────────────────────────── */
 @layer base {
   :root {
-    --background: 240 14% 98.8%;
-    --foreground: 240 12% 11%;
+    /* Exact design system tokens */
+    --background: 203 39% 98%;      /* #F8FAFC */
+    --foreground: 198 76% 5%;       /* #0F172A */
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 12% 11%;
+    --card: 0 0% 100%;              /* #FFFFFF */
+    --card-foreground: 198 76% 5%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 12% 11%;
+    --popover-foreground: 198 76% 5%;
 
-    --primary: 236 58% 54%;
+    --primary: 173 68% 31%;         /* #0D9488 */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 8% 95.5%;
-    --secondary-foreground: 240 10% 18%;
+    --primary-hover: 173 63% 27%;   /* #0F766E */
 
-    /* Accent is the neutral hover/selection wash used by menus, ghost and
-       outline buttons — NOT a brand colour (that's --primary). */
-    --accent: 240 8% 95%;
-    --accent-foreground: 240 12% 11%;
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 210 12% 18%;
 
-    --muted: 240 8% 95.5%;
-    --muted-foreground: 240 5% 44%;
+    --accent: 210 20% 94%;
+    --accent-foreground: 210 12% 18%;
+
+    --muted: 210 20% 96%;
+    --muted-foreground: 199 15% 42%; /* #64748B */
+
+    --success: 158 64% 31%;         /* #059669 */
+    --success-foreground: 0 0% 100%;
+
+    --warning: 32 88% 44%;          /* #D97706 */
+    --warning-foreground: 0 0% 100%;
 
     --destructive: 356 72% 52%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 8% 90.5%;
-    --input: 240 8% 88%;
-    --ring: 236 58% 54%;
+    --border: 214 32% 89%;          /* #E2E8F0 */
+    --input: 214 32% 89%;
+    --ring: 173 68% 31%;
 
-    --radius: 0.625rem;
+    --radius: 0.5rem;               /* 8px */
 
-    /* Shell surfaces */
-    --sidebar: 240 12% 97.2%;
-    --sidebar-border: 240 8% 91%;
+    --sidebar: 210 20% 97.5%;
+    --sidebar-border: 214 32% 89%;
     --sidebar-active: 0 0% 100%;
-    --topbar: 240 14% 98.8%;
+    --topbar: 203 39% 98%;
 
-    /* Shadow ink — shadows are tinted, never pure black */
-    --shadow-color: 240 24% 12%;
+    --shadow-color: 198 76% 5%;
 
-    /* Motion */
-    --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-    --ease-spring: cubic-bezier(0.34, 1.36, 0.64, 1);
+    --chart-primary: 173 68% 31%;
+    --chart-destructive: 346 62% 48%;
+    --chart-emerald: 158 64% 31%;
+    --chart-purple: 266 48% 54%;
+    --chart-amber: 32 88% 44%;
+    --chart-piano: 32 88% 44%;
 
-    /* Chart accents — categorical, deliberately stable across themes */
-    --chart-primary: 236 60% 58%;     /* indigo */
-    --chart-destructive: 346 62% 48%; /* rose (voice) */
-    --chart-emerald: 160 56% 36%;     /* emerald (earnings) */
-    --chart-purple: 266 48% 54%;      /* purple (FNH on the public landing page) */
-    --chart-amber: 36 86% 52%;        /* amber (at-risk / warning status) */
-    --chart-piano: 36 86% 52%;        /* piano series (validated with indigo/rose, light) */
-
-    /* Logo navy (#172B5F) — the public website's brand colour */
     --brand: 224 61% 23%;
-
-    /* Docs editor surface (Google Docs-style UI) */
-    --docs-surface: 240 14% 97.5%;
-    --docs-toolbar: 240 8% 94%;
   }
 
   .dark {
-    --background: 240 7% 7.5%;
-    --foreground: 240 8% 94%;
+    --background: 203 39% 6%;         /* dark #F8FAFC equivalent */
+    --foreground: 210 20% 98%;
 
-    --card: 240 6% 10%;
-    --card-foreground: 240 8% 94%;
+    --card: 203 39% 8%;
+    --card-foreground: 210 20% 98%;
 
-    --popover: 240 6% 11.5%;
-    --popover-foreground: 240 8% 94%;
+    --popover: 203 39% 8%;
+    --popover-foreground: 210 20% 98%;
 
-    --primary: 236 85% 72%;
-    --primary-foreground: 240 20% 8%;
+    --primary: 173 68% 45%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 5% 15%;
-    --secondary-foreground: 240 8% 94%;
+    --primary-hover: 173 63% 40%;
 
-    --accent: 240 5% 15.5%;
-    --accent-foreground: 240 8% 96%;
+    --secondary: 210 15% 15%;
+    --secondary-foreground: 210 20% 98%;
 
-    --muted: 240 5% 14%;
-    --muted-foreground: 240 5% 62%;
+    --accent: 210 15% 15%;
+    --accent-foreground: 210 20% 98%;
+
+    --muted: 210 15% 15%;
+    --muted-foreground: 210 10% 65%;
+
+    --success: 158 64% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 32 88% 50%;
+    --warning-foreground: 0 0% 100%;
 
     --destructive: 356 72% 60%;
-    --destructive-foreground: 240 20% 8%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 240 5% 16.5%;
-    --input: 240 5% 20%;
-    --ring: 236 85% 72%;
+    --border: 214 32% 18%;
+    --input: 214 32% 18%;
+    --ring: 173 68% 45%;
 
-    --sidebar: 240 7% 5.8%;
-    --sidebar-border: 240 5% 13.5%;
-    --sidebar-active: 240 5% 13%;
-    --topbar: 240 7% 7.5%;
+    --sidebar: 203 39% 6%;
+    --sidebar-border: 214 32% 18%;
+    --sidebar-active: 210 15% 15%;
+    --topbar: 203 39% 6%;
 
-    --shadow-color: 240 30% 2%;
+    --shadow-color: 210 30% 2%;
 
-    --chart-primary: 236 80% 70%;
+    --chart-primary: 173 68% 45%;
     --brand: 224 70% 78%;
-    --chart-piano: 34 88% 44%;        /* deeper in dark: validated lightness band vs #18181b */
-    --docs-surface: 240 6% 9%;
-    --docs-toolbar: 240 5% 13%;
+    --chart-piano: 34 88% 44%;
+    --docs-surface: 203 39% 7%;
+    --docs-toolbar: 210 15% 14%;
   }
 }
 
@@ -125,13 +127,13 @@
    the app. Light mode only; dark mode keeps the app tokens. */
 @layer base {
   :root:not(.dark) .landing {
-    --background: 30 25% 99.2%;
-    --foreground: 224 32% 17%;
+    --background: 203 39% 98%;
+    --foreground: 198 76% 5%;
     --card: 0 0% 100%;
-    --muted: 30 18% 96.5%;
-    --muted-foreground: 224 10% 42%;
-    --border: 30 12% 91%;
-    --shadow-color: 224 40% 20%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 199 15% 42%;
+    --border: 214 32% 89%;
+    --shadow-color: 198 76% 5%;
   }
 }
 
@@ -220,7 +222,7 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   COMPONENT PATTERNS
+   COMPONENT PATTERNS — Strict Design System
    ───────────────────────────────────────────────────────────────────────── */
 @layer components {
   .glass-panel {
@@ -230,30 +232,91 @@
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-  /* Surfaces */
-  .panel {
+  /* Card — white, 12px radius, 1px border, subtle shadow */
+  .card {
     @apply bg-card border border-border rounded-xl;
-    box-shadow: 0 1px 2px hsl(var(--shadow-color) / 0.04);
+    box-shadow: 0 1px 2px hsl(var(--shadow-color) / 0.04), 0 1px 3px hsl(var(--shadow-color) / 0.02);
   }
-  .panel-muted { @apply bg-muted/40 border border-border rounded-xl; }
-  .surface { @apply bg-muted/60 rounded-lg; }
-  .surface-hover { @apply hover:bg-muted transition-colors; }
-  .badge-step {
-    @apply inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] font-semibold shrink-0;
-  }
-  .txt-muted { @apply text-muted-foreground; }
-  .divider { @apply border-t border-border; }
 
-  /* Eyebrow / overline — the ONE way to do small uppercase labels */
+  .card-hover { @apply transition-shadow hover:shadow-md; }
+
+  /* Input — height 40px, soft border, teal focus ring */
+  .input {
+    @apply h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground
+           placeholder:text-muted-foreground/70
+           focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-transparent
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .textarea {
+    @apply min-h-[100px] w-full rounded-md border border-input bg-background p-3 text-sm text-foreground
+           placeholder:text-muted-foreground/70
+           focus:outline-none focus:ring-2 focus:ring-ring/50 focus:border-transparent
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* Buttons — primary solid teal 40px, secondary white+border */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 h-10 rounded-md bg-primary text-primary-foreground
+           font-medium text-sm px-4
+           hover:bg-[hsl(var(--primary-hover))] active:scale-[0.98]
+           focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 h-10 rounded-md border border-border
+           bg-background text-foreground font-medium text-sm px-4
+           hover:bg-muted active:scale-[0.98]
+           focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 h-10 rounded-md
+           bg-transparent text-foreground font-medium text-sm px-4
+           hover:bg-muted active:scale-[0.98]
+           focus:outline-none focus:ring-2 focus:ring-ring/50 focus:ring-offset-2
+           disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* Badge — soft rounded pills, one recipe everywhere */
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold;
+  }
+  .badge-success { @apply bg-success/10 text-success; }
+  .badge-warning { @apply bg-warning/10 text-warning; }
+  .badge-pending { @apply bg-muted text-muted-foreground; }
+  .badge-recorded { @apply bg-primary/10 text-primary; }
+
+  /* Typography scale */
+  .text-page-title { @apply text-[24px] font-semibold tracking-tight text-foreground; }
+  .text-section-title { @apply text-[18px] font-semibold tracking-tight text-foreground; }
+  .text-card-title { @apply text-[15px] font-semibold text-foreground; }
+  .text-body { @apply text-[14px] text-foreground; }
+  .text-meta { @apply text-[13px] text-muted-foreground; }
+  .text-tertiary { @apply text-[13px] text-[hsl(var(--muted-foreground))]; }
+
+  /* Progress stepper — thin numbered circles */
+  .stepper-circle {
+    @apply inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-semibold shrink-0
+           border-2 transition-all duration-200;
+  }
+  .stepper-active { @apply bg-primary border-primary text-primary-foreground; }
+  .stepper-complete { @apply bg-success border-success text-white; }
+  .stepper-inactive { @apply bg-transparent border-border text-muted-foreground/50; }
+  .stepper-line { @apply absolute left-1/2 top-3.5 h-0.5 w-full bg-border -translate-x-1/2; }
+
+  .divider { @apply border-t border-border; }
   .eyebrow {
-    @apply text-[11px] font-medium uppercase text-muted-foreground;
-    letter-spacing: 0.06em;
+    @apply text-[11px] font-medium uppercase text-muted-foreground/70;
+    letter-spacing: 0.08em;
   }
 
   /* Keyboard hint chip */
   .kbd {
-    @apply inline-flex h-5 min-w-5 items-center justify-center gap-0.5 rounded-[5px] border border-border bg-background px-1 font-sans text-[10.5px] font-medium text-muted-foreground;
-    box-shadow: 0 1px 0 hsl(var(--border));
+    @apply inline-flex h-5 min-w-5 items-center justify-center gap-0.5 rounded-[5px] border border-border/60 bg-background px-1 font-sans text-[10.5px] font-medium text-muted-foreground;
+    box-shadow: 0 1px 0 hsl(var(--border) / 0.5);
   }
 
   /* Dialog/modal consistency */
@@ -428,7 +491,7 @@
 }
 
 /* Command palette sits high on the screen, like Spotlight / Linear */
-[role="dialog"].fixed:has([cmdk-root]) {
+[role="dialog"].fixed:has([cmdk-root]):not(.howto-dialog) {
   top: 14vh !important;
   --tw-translate-y: 0 !important;
   max-width: min(640px, calc(100vw - 24px)) !important;
@@ -457,3 +520,4 @@
 }
 .spotlight:hover::after { opacity: 1; }
 @media (hover: none) { .spotlight::after { display: none; } }
+

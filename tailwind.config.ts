@@ -40,6 +40,15 @@ export default {
           900: "hsl(236 44% 28%)",
           950: "hsl(236 42% 17%)",
         },
+        // Design system colors
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar))",
           border: "hsl(var(--sidebar-border))",

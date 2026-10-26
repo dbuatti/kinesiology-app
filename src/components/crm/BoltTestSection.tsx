@@ -4,7 +4,6 @@ import { FlaskConical, ChevronDown, AlertCircle, BookOpen, RotateCcw, Info, Targ
 import { supabase } from "@/integrations/supabase/client";
 import { showSuccess, showError } from "@/utils/toast";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
-import { Badge } from "@/components/ui/badge";
 import BoltTimer from "./BoltTimer";
 import BoltResourcesModal from "./BoltResourcesModal";
 import BreathingRecoveryTimer from "./BreathingRecoveryTimer";
@@ -82,7 +81,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
       <div className="flex items-center gap-3">
         <FlaskConical size={16} className="text-muted-foreground" />
         <div>
-          <h3 className="text-base font-semibold text-foreground tracking-tight">BOLT Test</h3>
+          <h3 className="text-sm font-semibold text-foreground">BOLT test</h3>
           <p className="text-xs text-muted-foreground">
             {initialBoltScore !== null && initialBoltScore !== undefined 
               ? `Current: ${initialBoltScore}s` 
@@ -96,10 +95,10 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
               <div className="space-y-4 animate-in zoom-in-95 duration-300">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <PlayCircle size={16} className="text-indigo-600" />
+                    <PlayCircle size={16} className="text-primary" />
                     <span className="text-xs font-medium text-muted-foreground">Interactive Recovery Exercise</span>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => setShowExercise(false)} className="h-7 px-2 text-muted-foreground hover:text-rose-600">
+                  <Button variant="ghost" size="sm" onClick={() => setShowExercise(false)} className="h-8 px-2 text-muted-foreground hover:text-destructive">
                     <X size={14} className="mr-1" /> Close Timer
                   </Button>
                 </div>
@@ -108,12 +107,12 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
             ) : (
               <>
                 {needsImprovement && (
-                  <div className="flex items-center justify-between gap-3 py-2 border-l-2 border-rose-500/60 pl-3">
+                  <div className="flex items-center justify-between gap-3 py-2 border-l-2 border-destructive/40 pl-3">
                     <div className="flex items-center gap-2">
-                      <AlertCircle size={14} className="text-rose-600 dark:text-rose-400 shrink-0" />
-                      <p className="text-xs font-medium text-rose-600 dark:text-rose-400">Low CO₂ tolerance — consider running the recovery exercise.</p>
+                      <AlertCircle size={14} className="text-destructive shrink-0" />
+                      <p className="text-xs font-medium text-destructive">Low CO₂ tolerance — consider running the recovery exercise.</p>
                     </div>
-                    <Button onClick={() => setShowExercise(true)} variant="ghost" size="sm" className="h-7 text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 rounded-md">
+                    <Button onClick={() => setShowExercise(true)} variant="ghost" size="sm" className="h-8 text-[11px] font-semibold text-destructive hover:bg-destructive/10 rounded-md">
                       Run
                     </Button>
                   </div>
@@ -126,9 +125,9 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
 
                   <div className="flex-1 space-y-4">
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500" /> &lt;20s compromised</span>
-                      <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-primary" /> 25–35s functional</span>
-                      <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500" /> 40s+ optimal</span>
+                      <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-destructive" /> &lt;20s compromised</span>
+                      <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-primary" /> 25–35s functional</span>
+                      <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-success/50" /> 40s+ optimal</span>
                     </div>
 
                     <div className="flex flex-wrap gap-2">
@@ -137,13 +136,13 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
                         onClick={() => setShowExercise(true)} 
                         className="h-8 rounded-md text-xs font-medium"
                       >
-                        <PlayCircle size={13} className="mr-1.5" /> Run Exercise
+                        <PlayCircle size={13} className="mr-2" /> Run Exercise
                       </Button>
                       <Button variant="outline" onClick={() => setResourcesOpen(true)} className="h-8 rounded-md text-xs font-medium">
-                        <BookOpen size={13} className="mr-1.5" /> Resources
+                        <BookOpen size={13} className="mr-2" /> Resources
                       </Button>
                       {initialBoltScore !== null && (
-                        <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="h-8 px-2 text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 rounded-md text-xs">
+                        <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="h-8 px-2 text-destructive hover:bg-destructive/10 rounded-md text-xs">
                           <RotateCcw size={13} />
                         </Button>
                       )}
@@ -162,7 +161,7 @@ const BoltTestSection = ({ appointmentId, initialBoltScore, onUpdate, history = 
           </div>
           <div className="flex gap-2 overflow-x-auto">
             {pastBoltScores.map((entry: any, i: number) => (
-              <div key={i} className="shrink-0 text-center px-3 py-1.5 rounded-lg bg-muted/50 border border-border">
+              <div key={i} className="shrink-0 text-center px-3 py-2 rounded-lg bg-muted/50 border border-border">
                 <div className="text-sm font-semibold tabular-nums text-foreground">{entry.score}s</div>
                 <div className="text-[10px] text-muted-foreground">{format(entry.date, 'M/d')}</div>
               </div>

@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/components/AuthProvider";
 import { showError } from "@/utils/toast";
 import { useEventPricing } from "@/hooks/useEventPricing";
 import { cn } from "@/lib/utils";
@@ -60,9 +61,11 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [creatingNotion, setCreatingNotion] = useState(false);
+  const { session } = useAuth();
 
   const { data: voiceStudents = [] } = useQuery<VoiceStudent[]>({
     queryKey: ["voice-students"],
+    enabled: !!session,
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke("voice-clients");
       if (error) throw error;
@@ -73,6 +76,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
 
   const { data: kineClients = [] } = useQuery<VoiceStudent[]>({
     queryKey: ["kinesiology-clients"],
+    enabled: !!session,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("clients")
@@ -165,7 +169,7 @@ const SimpleBookDialog = ({ open, onOpenChange, prefillDate, prefillTime, prefil
         return match ? `${match[1]}:${match[2]}` : "09:00";
       });
     },
-    enabled: !!date && !!eventType,
+    enabled: !!date && !!eventType && !!session,
     staleTime: 30_000,
   });
 

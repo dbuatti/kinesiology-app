@@ -12,6 +12,14 @@ const CorrectionDockShortcuts = () => {
     const onKeyDown = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
+
+      // In session ⌘K opens corrections (the global search stands down there).
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k" && !e.altKey) {
+        e.preventDefault();
+        toggleDock();
+        return;
+      }
+
       if (e.metaKey || e.ctrlKey || e.altKey) return;
 
       switch (e.key.toLowerCase()) {

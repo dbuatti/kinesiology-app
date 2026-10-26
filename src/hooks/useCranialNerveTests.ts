@@ -6,6 +6,7 @@ import { showError } from "@/utils/toast";
 import { safeParse } from "@/utils/safe-json";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { isLateralStim, cranialSideKey, nerveStimLines } from "@/components/crm/pathway-reflex-stim-data";
+import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
 
 export function useCranialNerveTests(
   appointmentId: string | undefined,
@@ -14,9 +15,16 @@ export function useCranialNerveTests(
 ) {
   const [tests, setTests] = useState<CranialNerveTest[]>([]);
   const [loading, setLoading] = useState(true);
+  /** Demo fixture has no backend rows — stay in memory, stay silent. */
+  const isDemo = appointmentId === DEMO_APPOINTMENT_ID;
 
   const fetchTests = useCallback(async () => {
     if (!appointmentId) return;
+    if (isDemo) {
+      setTests([]);
+      setLoading(false);
+      return;
+    }
 
     try {
       const { data, error } = await supabase
@@ -32,7 +40,7 @@ export function useCranialNerveTests(
     } finally {
       setLoading(false);
     }
-  }, [appointmentId]);
+  }, [appointmentId, isDemo]);
 
   const updateTest = async (nerveId: string, updates: Partial<CranialNerveTest>, side?: 'L' | 'R') => {
     if (!appointmentId) return;
@@ -89,12 +97,31 @@ export function useCranialNerveTests(
       }
 
       if (updates.is_primary_priority) {
-        await supabase
-          .from('cranial_nerve_tests')
-          .update({ is_primary_priority: false })
-          .eq('appointment_id', appointmentId);
-        
+        if (!isDemo) {
+          await supabase
+            .from('cranial_nerve_tests')
+            .update({ is_primary_priority: false })
+            .eq('appointment_id', appointmentId);
+        }
+
         setTests(prev => prev.map(t => ({ ...t, is_primary_priority: false })));
+      }
+
+      // Demo writes stay in local state — never touch client tables.
+      if (isDemo) {
+        setTests(prev => {
+          const row = {
+            ...(prev.find(t => t.nerve_id === nerveId) ?? {}),
+            ...updates,
+            id: `demo-${nerveId}`,
+            appointment_id: appointmentId,
+            nerve_id: nerveId,
+          } as CranialNerveTest;
+          return prev.some(t => t.nerve_id === nerveId)
+            ? prev.map(t => (t.nerve_id === nerveId ? row : t))
+            : [...prev, row];
+        });
+        return;
       }
 
       const { data: existing } = await supabase

@@ -39,11 +39,11 @@ interface SessionTimerProps {
 }
 
 const SESSION_STAGES = [
-  { id: 'baseline', name: "PRELIMINARY", duration: 15, color: "bg-chart-primary", Icon: Target },
-  { id: 'sympathetic', name: "EASE", duration: 15, color: "bg-chart-destructive", Icon: Zap },
-  { id: 'pathway', name: "ALIGN", duration: 15, color: "bg-chart-primary", Icon: CheckCircle2 },
-  { id: 'calibration', name: "CORRECT", duration: 10, color: "bg-chart-emerald", Icon: AlertTriangle },
-  { id: 'reassessment', name: "EMBED", duration: 5, color: "bg-chart-primary", Icon: Home },
+  { id: 'baseline', name: "PRELIMINARY", duration: 15, color: "bg-primary", Icon: Target },
+  { id: 'sympathetic', name: "EASE", duration: 15, color: "bg-primary", Icon: Zap },
+  { id: 'pathway', name: "ALIGN", duration: 15, color: "bg-primary", Icon: CheckCircle2 },
+  { id: 'calibration', name: "CORRECT", duration: 10, color: "bg-success", Icon: AlertTriangle },
+  { id: 'reassessment', name: "EMBED", duration: 5, color: "bg-primary", Icon: Home },
 ];
 const TOTAL_DURATION_MINUTES = SESSION_STAGES.reduce((sum, stage) => sum + stage.duration, 0);
 
@@ -175,27 +175,27 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
     <div className="w-full">
       <div className={cn(
         "transition-colors duration-1000 py-1 px-3 md:px-4 flex items-center justify-between",
-        isOvertime && !isFinished ? "bg-chart-destructive/10 border-b border-chart-destructive/20" : "bg-card border-b border-border"
+        isOvertime && !isFinished ? "bg-destructive/10 border-b border-destructive/20" : "bg-card border-b border-border"
       )}>
         <div className="flex items-center gap-2 md:gap-3 overflow-hidden min-w-0 flex-1">
           <div className="flex items-center gap-1.5 shrink-0">
             {isFinished ? (
-              <div className="flex items-center gap-1 text-chart-emerald">
+              <div className="flex items-center gap-1 text-success">
                 <CheckCircle2 size={12} />
                 <span className="text-[10px] font-semibold uppercase tracking-wider hidden sm:inline">Session Complete</span>
               </div>
             ) : isOvertime ? (
-              <div className="flex items-center gap-1 text-chart-destructive">
+              <div className="flex items-center gap-1 text-destructive">
                 <AlertCircle size={12} />
                 <span className="text-[10px] font-semibold uppercase tracking-wider hidden sm:inline">Time Elapsed</span>
               </div>
             ) : isUpcoming ? (
-              <div className="flex items-center gap-1 text-chart-primary">
+              <div className="flex items-center gap-1 text-primary">
                 <Clock size={12} />
                 <span className="text-[10px] font-semibold uppercase tracking-wider hidden sm:inline">Upcoming</span>
               </div>
             ) : (
-              <div className="flex items-center gap-1 text-chart-emerald">
+              <div className="flex items-center gap-1 text-success">
                 <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
                 <span className="text-[10px] font-semibold uppercase tracking-wider hidden sm:inline">Live</span>
               </div>
@@ -207,7 +207,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
           {!isFinished && (
             <div className={cn(
               "text-[10px] md:text-xs font-semibold tabular-nums font-mono shrink-0",
-              isOvertime ? "text-chart-destructive" : "text-chart-emerald"
+              isOvertime ? "text-destructive" : "text-success"
             )}>
               {isOvertime ? `+${formatOvertime(overtimeSeconds)}` : timeRemainingInSession}
             </div>
@@ -253,7 +253,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
             <div 
               className={cn(
                 "h-full transition-all duration-500",
-                isFinished ? "bg-chart-emerald" : isOvertime ? "bg-muted" : "bg-chart-primary"
+                isFinished ? "bg-success" : isOvertime ? "bg-muted" : "bg-primary"
               )}
               style={{ width: isFinished ? '100%' : `${overallProgressPercent}%` }}
             />
@@ -275,7 +275,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
               {!isFinished && (
                 <DropdownMenuItem 
                   onClick={() => setShowCompleteConfirm(true)}
-                  className="rounded-xl py-2.5 md:py-3 px-4 cursor-pointer flex items-center gap-3 text-chart-emerald focus:text-chart-emerald focus:bg-chart-emerald/10"
+                  className="rounded-xl py-2.5 md:py-3 px-4 cursor-pointer flex items-center gap-3 text-success focus:text-success focus:bg-success/10"
                 >
                   <CheckCircle2 size={14} />
                   <span className="font-medium text-xs">Complete Session</span>
@@ -283,7 +283,7 @@ const SessionTimer = ({ sessionId, appointmentDate, status, clientName, currentP
               )}
               <DropdownMenuItem
                 onClick={() => navigate('/practice/clinical-hub')}
-                className="rounded-xl py-2.5 md:py-3 px-4 cursor-pointer flex items-center gap-3 text-chart-destructive focus:text-chart-destructive focus:bg-chart-destructive/10"
+                className="rounded-xl py-2.5 md:py-3 px-4 cursor-pointer flex items-center gap-3 text-destructive focus:text-destructive focus:bg-destructive/10"
               >
                 <LogOut size={14} />
                 <span className="font-medium text-xs">Pause / Exit</span>

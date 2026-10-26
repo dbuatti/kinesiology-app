@@ -106,8 +106,8 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
     return (
       <div className="py-20 flex flex-col items-center justify-center gap-4 text-center">
         <div className="relative">
-          <div className="w-16 h-16 rounded-2xl bg-indigo-600/10 animate-pulse" />
-          <Loader2 className="absolute inset-0 m-auto w-8 h-8 text-indigo-600 animate-spin" />
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 animate-pulse" />
+          <Loader2 className="absolute inset-0 m-auto w-8 h-8 text-primary animate-spin" />
         </div>
         <div className="space-y-1">
           <p className="text-sm font-bold text-foreground">Syncing Availability</p>
@@ -119,13 +119,13 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
 
   if (error) {
     return (
-      <div className="p-8 bg-rose-50 border-2 border-rose-100 rounded-2xl text-center space-y-4">
-        <AlertCircle className="mx-auto text-rose-500" size={32} />
+      <div className="p-8 bg-destructive/5 border border-destructive/20 rounded-2xl text-center space-y-4">
+        <AlertCircle className="mx-auto text-destructive" size={32} />
         <div className="space-y-1">
-          <p className="text-sm font-bold text-rose-900">Connection Error</p>
-          <p className="text-xs text-rose-700 leading-relaxed">{error}</p>
+          <p className="text-sm font-semibold text-foreground">Connection Error</p>
+          <p className="text-xs text-muted-foreground leading-relaxed">{error}</p>
         </div>
-        <Button variant="outline" onClick={fetchSlots} className="rounded-xl border-rose-200 text-rose-700 hover:bg-rose-100">
+        <Button variant="outline" onClick={fetchSlots} className="rounded-md border-destructive/30 text-destructive hover:bg-destructive/10">
           Retry Sync
         </Button>
       </div>
@@ -213,7 +213,7 @@ const CompactAvailabilityPicker = ({ onSlotSelect, eventTypeId }: CompactAvailab
                 <button
                   key={idx}
                   onClick={() => onSlotSelect(dateObj, format(dateObj, "HH:mm"), timeStr)}
-                  className="flex items-center justify-center gap-2 p-3.5 rounded-xl bg-card border border-border text-sm font-semibold text-foreground hover:bg-indigo-600 hover:border-indigo-600 hover:text-primary-foreground transition-all group shadow-sm"
+                  className="flex items-center justify-center gap-2 p-3.5 rounded-xl bg-card border border-border text-sm font-semibold text-foreground hover:bg-primary hover:border-primary hover:text-primary-foreground transition-all group shadow-sm"
                 >
                   <Clock size={13} className="opacity-40 group-hover:opacity-100 transition-opacity shrink-0" />
                   {format(dateObj, "h:mm a")}

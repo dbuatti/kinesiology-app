@@ -133,16 +133,16 @@ const MechanoreceptiveProcess = ({
             </p>
           </div>
 
-          <div className="p-4 rounded-lg bg-muted/50 border border-border space-y-3">
+          <div className="p-4 rounded-xl bg-muted/50 border border-border space-y-3">
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 text-xs font-bold">1</div>
+              <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 text-xs font-semibold">1</div>
               <div>
                 <p className="font-medium text-sm text-foreground">State <strong>&quot;Afferent&quot;</strong> in the mind</p>
                 <p className="text-xs text-muted-foreground">The inhibited muscle facilitates (locks). <strong>Thought is a stim:</strong> stating &quot;afferent&quot; locks it; an unrelated thought unlocks it. The X card is the objective way to hold the indication.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 text-xs font-bold">2</div>
+              <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 text-xs font-semibold">2</div>
               <div>
                 <p className="font-medium text-sm text-foreground">Show the <strong>X card</strong> for 5–10 seconds</p>
                 <p className="text-xs text-muted-foreground">The inhibited muscle facilitates → <strong>afferent unconscious mechanoreception confirmed</strong>. (TL of GV16 facilitates too — same test, same result.)</p>
@@ -152,15 +152,15 @@ const MechanoreceptiveProcess = ({
 
           <div className="p-3 rounded-lg bg-muted/50 border border-border">
             <div className="flex items-start gap-3">
-              <Info size={14} className="text-muted-foreground shrink-0 mt-0.5" />
+              <Info size={14} className="text-muted-foreground shrink-0 mt-1" />
               <div>
-                <p className="text-xs font-medium text-foreground">The X card is your mechanoreception check</p>
+                <p className="text-[13px] font-semibold text-foreground">The X card is your mechanoreception check</p>
                 <p className="text-xs text-muted-foreground">Viewing an X-pattern for 5–10s while testing an inhibited direct muscle is the quick confirmation. If it facilitates, it&apos;s unconscious mechanoreception via the spinocerebellar tract. The X card is <strong>more objective</strong> than stating it in the mind — use it as your primary confirm.</p>
               </div>
             </div>
           </div>
 
-          <Button onClick={() => goToStep('LOCALIZE')} className="w-full h-10 rounded-lg text-xs font-medium">
+          <Button onClick={() => goToStep('LOCALIZE')} className="w-full h-10 rounded-md text-xs font-medium">
             Confirmed — Localise the Ligament <ChevronRight size={14} className="ml-2" />
           </Button>
         </div>
@@ -185,7 +185,7 @@ const MechanoreceptiveProcess = ({
             <p className="text-xs font-medium text-muted-foreground">Region</p>
             <div className="grid grid-cols-2 gap-2">
               {REGIONS.map(r => (
-                <Button key={r} variant="outline" size="sm" className={cn("rounded-lg font-medium", region === r ? "border-primary bg-primary/10" : "border-border")} onClick={() => setRegion(r)}>
+                <Button key={r} variant="outline" size="sm" className={cn("rounded-md font-medium", region === r ? "border-primary bg-primary/10" : "border-border")} onClick={() => setRegion(r)}>
                   {r}
                 </Button>
               ))}
@@ -196,7 +196,7 @@ const MechanoreceptiveProcess = ({
             <p className="text-xs font-medium text-muted-foreground">Side</p>
             <div className="grid grid-cols-2 gap-2">
               {SIDES.map(s => (
-                <Button key={s} variant="outline" size="sm" className={cn("rounded-lg font-medium", side === s ? "border-primary bg-primary/10" : "border-border")} onClick={() => setSide(s)}>
+                <Button key={s} variant="outline" size="sm" className={cn("rounded-md font-medium", side === s ? "border-primary bg-primary/10" : "border-border")} onClick={() => setSide(s)}>
                   {s}
                 </Button>
               ))}
@@ -207,7 +207,7 @@ const MechanoreceptiveProcess = ({
             <p className="text-xs font-medium text-muted-foreground">Joint</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {JOINT_GROUPS.flatMap(g => g.joints).map(j => (
-                <Button key={j} variant="outline" size="sm" className={cn("rounded-lg text-xs font-medium", joint === j ? "border-primary bg-primary/10" : "border-border")} onClick={() => setJoint(j)}>
+                <Button key={j} variant="outline" size="sm" className={cn("rounded-md text-xs font-medium", joint === j ? "border-primary bg-primary/10" : "border-border")} onClick={() => setJoint(j)}>
                   {j}
                 </Button>
               ))}
@@ -223,7 +223,7 @@ const MechanoreceptiveProcess = ({
             </div>
             <Input
               placeholder="Lightly rub over the suspected ligament — if it momentarily facilitates, that's the one. Enter name or leave blank."
-              className="h-10 rounded-lg text-xs font-medium"
+              className="h-10 rounded-md text-xs font-medium"
               value={ligament}
               onChange={(e) => setLigament(e.target.value)}
             />
@@ -240,14 +240,14 @@ const MechanoreceptiveProcess = ({
 
           <div className="space-y-2 p-3 rounded-lg bg-muted/50 border border-border">
             <div className="flex items-start gap-3">
-              <Info size={14} className="text-muted-foreground shrink-0 mt-0.5" />
+              <Info size={14} className="text-muted-foreground shrink-0 mt-1" />
               <div>
-                <p className="text-xs font-medium text-foreground">Rub to confirm, stretch to correct</p>
+                <p className="text-[13px] font-semibold text-foreground">Rub to confirm, stretch to correct</p>
                 <p className="text-xs text-muted-foreground"><strong>Rubbing/compressing</strong> the tissue down-regulates the signal → the indicator momentarily facilitates (use this to confirm the spot). <strong>Stretching</strong> aggravates it → the indicator inhibits (this held with GV16 drives the correction). Same tissue, opposite readings.</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <Info size={14} className="text-muted-foreground shrink-0 mt-0.5" />
+              <Info size={14} className="text-muted-foreground shrink-0 mt-1" />
               <div>
                 <p className="text-xs font-medium text-foreground">Golgi receptors are everywhere</p>
                 <p className="text-xs text-muted-foreground">They sit in ligaments, tendons <strong>and fascia</strong>. That&apos;s why the tissue can be close (e.g. SC ligament → neck flexors) or distant and contralateral (e.g. anterior oblique sling → glute medius). When it doesn&apos;t &quot;make sense,&quot; follow the process anyway — it finds the tissue.</p>
@@ -256,8 +256,8 @@ const MechanoreceptiveProcess = ({
           </div>
 
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={goBack} className="flex-1 rounded-lg"><ChevronLeft size={14} className="mr-1" /> Back</Button>
-            <Button size="sm" disabled={!region || !side || !joint} onClick={() => goToStep('STRETCH')} className="flex-[2] rounded-lg font-medium">
+            <Button variant="ghost" size="sm" onClick={goBack} className="flex-1 rounded-md"><ChevronLeft size={14} className="mr-1" /> Back</Button>
+            <Button size="sm" disabled={!region || !side || !joint} onClick={() => goToStep('STRETCH')} className="flex-[2] rounded-md font-medium">
               Ligament Found <ChevronRight size={14} className="ml-1" />
             </Button>
           </div>
@@ -273,7 +273,7 @@ const MechanoreceptiveProcess = ({
             </p>
           </div>
 
-          <div className="p-4 rounded-lg bg-muted/50 border border-border space-y-3">
+          <div className="p-4 rounded-xl bg-muted/50 border border-border space-y-3">
             <div className="space-y-2">
               <Move size={20} className="text-muted-foreground" />
               <p className="text-sm font-medium text-foreground">
@@ -293,8 +293,8 @@ const MechanoreceptiveProcess = ({
           </div>
 
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={goBack} className="flex-1 rounded-lg"><ChevronLeft size={14} className="mr-1" /> Back</Button>
-            <Button size="sm" onClick={() => goToStep('CORRECT')} className="flex-[2] rounded-lg font-medium">
+            <Button variant="ghost" size="sm" onClick={goBack} className="flex-1 rounded-md"><ChevronLeft size={14} className="mr-1" /> Back</Button>
+            <Button size="sm" onClick={() => goToStep('CORRECT')} className="flex-[2] rounded-md font-medium">
               Direction Found <ChevronRight size={14} className="ml-1" />
             </Button>
           </div>
@@ -313,7 +313,7 @@ const MechanoreceptiveProcess = ({
           <div className="rounded-lg border border-border bg-muted/50 overflow-hidden">
             <div className="p-4 space-y-3">
               <div className="flex items-center gap-3 p-3 rounded-lg bg-background border border-border">
-                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">1</div>
+                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold shrink-0">1</div>
                 <Brain size={16} className="text-muted-foreground shrink-0" />
                 <div>
                   <p className="font-medium text-xs text-foreground">Hold GV16 (cerebellum point)</p>
@@ -322,7 +322,7 @@ const MechanoreceptiveProcess = ({
               </div>
 
               <div className="flex items-center gap-3 p-3 rounded-lg bg-background border border-border">
-                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">2</div>
+                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold shrink-0">2</div>
                 <Activity size={16} className="text-muted-foreground shrink-0" />
                 <div>
                   <p className="font-medium text-xs text-foreground">Take the ligament into the stretch</p>
@@ -331,7 +331,7 @@ const MechanoreceptiveProcess = ({
               </div>
 
               <div className="flex items-center gap-3 p-3 rounded-lg bg-background border border-border">
-                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">3</div>
+                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold shrink-0">3</div>
                 <Zap size={16} className="text-muted-foreground shrink-0" />
                 <div>
                   <p className="font-medium text-xs text-foreground">Tuning fork on bone + Rocking</p>
@@ -348,8 +348,8 @@ const MechanoreceptiveProcess = ({
           </div>
 
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={goBack} className="flex-1 rounded-lg"><ChevronLeft size={14} className="mr-1" /> Back</Button>
-            <Button size="sm" onClick={() => goToStep('REASSESS')} className="flex-[2] rounded-lg font-medium">
+            <Button variant="ghost" size="sm" onClick={goBack} className="flex-1 rounded-md"><ChevronLeft size={14} className="mr-1" /> Back</Button>
+            <Button size="sm" onClick={() => goToStep('REASSESS')} className="flex-[2] rounded-md font-medium">
               Correction Applied <ChevronRight size={14} className="ml-1" />
             </Button>
           </div>
@@ -360,7 +360,7 @@ const MechanoreceptiveProcess = ({
         <div className="space-y-4">
           <div className="bg-muted/50 p-4 rounded-lg border border-border">
             <div className="flex items-center gap-3 mb-3">
-              <RefreshCw size={16} className="text-chart-emerald" />
+              <RefreshCw size={16} className="text-success" />
               <h3 className="text-sm font-medium text-foreground">5. Re-assess</h3>
             </div>
             <p className="text-xs text-muted-foreground">
@@ -372,10 +372,10 @@ const MechanoreceptiveProcess = ({
           </div>
 
           <div className="grid grid-cols-1 gap-2">
-            <Button size="sm" className="rounded-lg font-medium" onClick={handleFinish}>
+            <Button size="sm" className="rounded-md font-medium" onClick={handleFinish}>
               Pathway is Clear <CheckCircle2 size={14} className="ml-1" />
             </Button>
-            <Button variant="outline" size="sm" className="rounded-lg font-medium" onClick={handleInhibited}>
+            <Button variant="outline" size="sm" className="rounded-md font-medium" onClick={handleInhibited}>
               Still Inhibited — Add Layer
             </Button>
           </div>

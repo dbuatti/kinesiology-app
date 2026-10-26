@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
+import type { ProtocolLog, ProtocolLogPatch } from "@/data/protocol-log";
 
 export type CorrectionTab = "afferent" | "efferent";
 
@@ -23,6 +24,9 @@ interface CorrectionDockContextValue {
   closeDock: () => void;
   toggleDock: () => void;
   rememberSelection: (tab: CorrectionTab, item: string) => void;
+  /** Per-process logs persisted on the appointment (`metadata.protocol_logs`). */
+  protocolLogs: Record<string, ProtocolLog>;
+  logProtocol: (processId: string, patch: ProtocolLogPatch) => void;
 }
 
 const DEFAULT_ITEM: Record<CorrectionTab, string> = {
@@ -33,6 +37,8 @@ const DEFAULT_ITEM: Record<CorrectionTab, string> = {
 const storageKey = (id?: string) => `rk_corrections_dock_${id || "default"}`;
 
 const noop = () => {};
+
+const EMPTY_LOGS: Record<string, ProtocolLog> = {};
 
 /**
  * Defaults are no-ops so a consumer outside a provider (sandbox, demo page)
@@ -46,6 +52,8 @@ const CorrectionDockContext = createContext<CorrectionDockContextValue>({
   closeDock: noop,
   toggleDock: noop,
   rememberSelection: noop,
+  protocolLogs: {},
+  logProtocol: noop,
 });
 
 export const useCorrectionDock = () => useContext(CorrectionDockContext);
@@ -66,9 +74,13 @@ const readSelection = (appointmentId?: string): CorrectionSelection | null => {
 
 export const CorrectionDockProvider = ({
   appointmentId,
+  protocolLogs = EMPTY_LOGS,
+  onLogProtocol,
   children,
 }: {
   appointmentId?: string;
+  protocolLogs?: Record<string, ProtocolLog>;
+  onLogProtocol?: (processId: string, patch: ProtocolLogPatch) => void;
   children: ReactNode;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -117,9 +129,34 @@ export const CorrectionDockProvider = ({
     [appointmentId]
   );
 
+  const logProtocol = useCallback<CorrectionDockContextValue["logProtocol"]>(
+    (processId, patch) => onLogProtocol?.(processId, patch),
+    [onLogProtocol]
+  );
+
   const value = useMemo(
-    () => ({ isOpen, target, selection, openDock, closeDock, toggleDock, rememberSelection }),
-    [isOpen, target, selection, openDock, closeDock, toggleDock, rememberSelection]
+    () => ({
+      isOpen,
+      target,
+      selection,
+      openDock,
+      closeDock,
+      toggleDock,
+      rememberSelection,
+      protocolLogs,
+      logProtocol,
+    }),
+    [
+      isOpen,
+      target,
+      selection,
+      openDock,
+      closeDock,
+      toggleDock,
+      rememberSelection,
+      protocolLogs,
+      logProtocol,
+    ]
   );
 
   return <CorrectionDockContext.Provider value={value}>{children}</CorrectionDockContext.Provider>;

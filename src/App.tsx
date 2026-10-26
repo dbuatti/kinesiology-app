@@ -150,6 +150,14 @@ const AppRoutes = () => {
         <Route path="/voice/paid" element={<VoicePaidPage />} />
         <Route path="/onboarding/success" element={<OnboardingSuccessPage />} />
 
+        <Route path="/session-workspace" element={<Navigate to="/appointments/demo" replace />} />
+        {/* Public in-session demo: the real appointment page on a fixture, so
+            the session layout can be reviewed without logging in or touching
+            a client record. Saves stay in memory. */}
+        <Route element={<MainLayout />}>
+          <Route path="/appointments/demo" element={<AppointmentV2Page />} />
+        </Route>
+
         {/* Protected App Routes */}
         <Route path="/notes-doc" element={session ? <PracticeNotes /> : <Navigate to="/login" replace />} />
         <Route path="/resources/cranial-nerves/print" element={session ? <CranialNervePrintPage /> : <Navigate to="/login" replace />} />

@@ -5,7 +5,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { showError } from "@/utils/toast";
+import { showError, showSuccess } from "@/utils/toast";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/hover-card";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import PeaceWizard from "@/components/crm/v2/PeaceWizard";
-import { PEACE_PHASES } from "@/components/crm/v2/PeaceWizard";
+import PeaceWizardV3 from "@/components/crm/v3/PeaceWizardV3";
 import AppointmentV2DocView from "@/components/crm/v2/AppointmentV2DocView";
 import { CorrectionDockProvider } from "@/components/crm/corrections/CorrectionDockContext";
 import CorrectionDock from "@/components/crm/corrections/CorrectionDock";
@@ -29,14 +29,21 @@ import { QuickSessionDialog } from "@/components/crm/QuickSessionDialog";
 import PathwayReflexStimGrid from "@/components/crm/PathwayReflexStimGrid";
 import QuickNotesDialog from "@/components/crm/QuickNotesDialog";
 import HowToSearch from "@/components/crm/HowToSearch";
-import SessionTimer from "@/components/crm/SessionTimer";
+import SessionClockPill from "@/components/crm/SessionClockPill";
 import { parseClientJournal } from "@/utils/journal-helper";
+import { safeParse } from "@/utils/safe-json";
+import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
+import type { ProtocolLog, ProtocolLogPatch } from "@/data/protocol-log";
 
 
 const AppointmentV2Page = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { session } = useAuth();
+  // The public demo route is a literal path, so there is no :id param.
+  const isDemo =
+    id === DEMO_APPOINTMENT_ID ||
+    window.location.pathname.replace(/\/+$/, "") === "/appointments/demo";
 
   const {
     appointment,
@@ -44,17 +51,53 @@ const AppointmentV2Page = () => {
     loading,
     saveField,
     updatePriorityPattern,
+    updateMetadata,
     refresh
-  } = useAppointment(id);
+  } = useAppointment(isDemo ? DEMO_APPOINTMENT_ID : id);
 
   const [viewMode, setViewMode] = useState<'peace' | 'grid' | 'doc'>(() => {
     const params = new URLSearchParams(window.location.search);
     return params.get('view') === 'doc' ? 'doc' : 'peace';
   });
-  const [isFullScreen, setIsFullScreen] = useState(() => localStorage.getItem('rk_v2_fullscreen') === 'true');
+  // The demo is a review surface: it should always open in the windowed app
+  // shell (sidebar visible), never inherit a persisted fullscreen choice that
+  // hides the chrome and reads as a different, older page.
+  const [isFullScreen, setIsFullScreen] = useState(() =>
+    isDemo ? false : localStorage.getItem('rk_v2_fullscreen') === 'true'
+  );
   const [quickSessionOpen, setQuickSessionOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
   const [activePhase, setActivePhase] = useState(0);
+
+  // Correction logs written at the table (metadata.protocol_logs).
+  const metadata = useMemo<Record<string, unknown>>(() => {
+    if (!appointment?.metadata) return {};
+    return typeof appointment.metadata === "string"
+      ? safeParse(appointment.metadata, {})
+      : (appointment.metadata as Record<string, unknown>);
+  }, [appointment?.metadata]);
+
+  const protocolLogs = useMemo(
+    () => (metadata.protocol_logs ?? {}) as Record<string, ProtocolLog>,
+    [metadata]
+  );
+
+  const handleLogProtocol = useCallback(
+    (processId: string, patch: ProtocolLogPatch) => {
+      updateMetadata((current) => {
+        const logs = { ...((current.protocol_logs as Record<string, ProtocolLog>) ?? {}) };
+        const previous = logs[processId] ?? {};
+        const resolved = typeof patch === "function" ? patch(previous) : patch;
+        logs[processId] = {
+          ...previous,
+          ...resolved,
+          updatedAt: new Date().toISOString(),
+        };
+        return { ...current, protocol_logs: logs };
+      });
+    },
+    [updateMetadata]
+  );
 
   const phaseStatus = useMemo(() => ({
     p: !!(appointment?.goal && appointment?.issue),
@@ -89,7 +132,9 @@ const AppointmentV2Page = () => {
 
   const toggleFullScreen = () => {
     const next = !isFullScreen;
-    localStorage.setItem('rk_v2_fullscreen', String(next));
+    // The demo keeps its fullscreen choice local to the session — it must not
+    // change what the practitioner's real appointment pages open into.
+    if (!isDemo) localStorage.setItem('rk_v2_fullscreen', String(next));
     setIsFullScreen(next);
     window.dispatchEvent(new Event('antigravity_fullscreen_change'));
   };
@@ -113,7 +158,7 @@ const AppointmentV2Page = () => {
     );
   }
 
-  if (!session) {
+  if (!session && !isDemo) {
     navigate("/login");
     return null;
   }
@@ -125,76 +170,101 @@ const AppointmentV2Page = () => {
   ];
 
   return (
-    <CorrectionDockProvider appointmentId={appointment.id}>
+    <CorrectionDockProvider
+      appointmentId={appointment.id}
+      protocolLogs={protocolLogs}
+      onLogProtocol={handleLogProtocol}
+    >
       <CorrectionDockShortcuts />
       <div className={cn("min-h-screen bg-background", isFullScreen && "fixed inset-0 z-50 overflow-y-auto")}>
-      <SessionTimer
-        sessionId={appointment.id}
-        appointmentDate={appointment.date}
-        status={appointment.status}
-        clientName={appointment.clients?.name}
-        currentPhaseName={PEACE_PHASES[activePhase]?.fullLabel}
-      />
-      {/* Top Bar */}
-      <header className="sticky top-0 z-40 bg-background/85 backdrop-blur-xl border-b border-border">
+      {/* Session bar — one row: identity, live clock, view switch, session
+          actions. It replaces the old timer strip + header + demo banner stack,
+          which put four rows of chrome above every phase. */}
+      <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-xl">
         <div className="h-0.5 w-full bg-border/40">
           <div className="h-full bg-primary transition-all duration-500" style={{ width: `${phaseProgress}%` }} />
         </div>
-        <div className="px-4 md:px-8 h-14 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4 min-w-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/practice/clinical-hub')}
-              className="rounded-xl text-muted-foreground shrink-0"
-            >
-              <ArrowLeft size={16} className="mr-1.5" /> Back
-            </Button>
-            <div className="h-6 w-px bg-border" />
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <User size={15} className="text-primary" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <Link
-                    to={`/clients/${appointment.clients?.id}`}
-                    className="text-sm font-semibold text-foreground truncate hover:text-chart-primary hover:underline underline-offset-2 transition-colors"
-                    title="Open client page"
+        <div className="flex h-14 items-center gap-1.5 px-3 sm:gap-2 sm:px-4 md:gap-3 md:px-8">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate(isDemo ? '/' : '/practice/clinical-hub')}
+            title={isDemo ? "Back to home" : "Back to Clinical Hub"}
+            className="-ml-2 h-9 shrink-0 rounded-lg px-2 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft size={16} />
+            <span className="ml-1 hidden text-xs font-medium lg:inline">Back</span>
+          </Button>
+
+          <div className="flex min-w-0 items-center gap-2.5">
+            {/* The avatar is decoration; on a phone its 42px buy a readable
+                client name instead. */}
+            <div className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 sm:flex">
+              <User size={15} className="text-primary" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <Link
+                  to={`/clients/${appointment.clients?.id}`}
+                  className="truncate text-sm font-semibold text-foreground underline-offset-2 transition-colors hover:text-primary hover:underline"
+                  title="Open client page"
+                >
+                  {appointment.clients?.name || "Unknown"}
+                </Link>
+                {(() => {
+                  const notes = appointment.clients?.journal ? parseClientJournal(appointment.clients.journal).notes : null;
+                  if (!notes) return null;
+                  return (
+                    <HoverCard openDelay={200} closeDelay={100}>
+                      <HoverCardTrigger asChild>
+                        <button className="hidden shrink-0 text-amber-500 transition-colors hover:text-amber-600 sm:block" title="View practitioner notes">
+                          <BookOpen size={14} />
+                        </button>
+                      </HoverCardTrigger>
+                      <HoverCardContent side="bottom" align="start" className="w-80 rounded-xl border-border p-4">
+                        <p className="whitespace-pre-wrap text-xs italic leading-relaxed text-muted-foreground">
+                          "{notes}"
+                        </p>
+                      </HoverCardContent>
+                    </HoverCard>
+                  );
+                })()}
+                {isDemo && (
+                  <span
+                    className="shrink-0 rounded-full border border-border bg-muted/60 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground"
+                    title="Public demo — nothing is saved. The side menu needs a practitioner sign-in."
                   >
-                    {appointment.clients?.name || "Unknown"}
-                  </Link>
-                  {(() => {
-                    const notes = appointment.clients?.journal ? parseClientJournal(appointment.clients.journal).notes : null;
-                    if (!notes) return null;
-                    return (
-                      <HoverCard openDelay={200} closeDelay={100}>
-                        <HoverCardTrigger asChild>
-                          <button className="shrink-0 text-amber-500 hover:text-amber-600 transition-colors" title="View practitioner notes">
-                            <BookOpen size={14} />
-                          </button>
-                        </HoverCardTrigger>
-                        <HoverCardContent side="bottom" align="start" className="w-80 rounded-xl p-4 border-border">
-                          <p className="text-xs text-muted-foreground whitespace-pre-wrap italic leading-relaxed">
-                            "{notes}"
-                          </p>
-                        </HoverCardContent>
-                      </HoverCard>
-                    );
-                  })()}
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground hidden min-[520px]:flex">
+                    Demo
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-1 whitespace-nowrap text-[11px] text-muted-foreground">
+                <span className="hidden items-center gap-1 min-[700px]:flex">
                   <Calendar size={10} />
                   <span>{format(new Date(appointment.date), "EEE, MMM d")}</span>
-                  <Clock size={10} className="ml-1" />
-                  <span>{format(new Date(appointment.date), "h:mm a")}</span>
-                </div>
+                  <span className="px-0.5 text-border">·</span>
+                </span>
+                <Clock size={10} />
+                <span>{format(new Date(appointment.date), "h:mm a")}</span>
+                {/* Phones have no room for the clock in the bar, so it rides
+                    here — right next to the time the session started. */}
+                <SessionClockPill
+                  appointmentDate={appointment.date}
+                  status={appointment.status}
+                  className="ml-1 sm:hidden"
+                />
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-1 min-w-0">
-            <div className="flex items-center gap-0.5 mr-2 md:mr-3 rounded-lg bg-foreground/[0.05] p-0.5 overflow-x-auto whitespace-nowrap min-w-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <SessionClockPill
+            appointmentDate={appointment.date}
+            status={appointment.status}
+            className="ml-0.5 hidden sm:inline-flex md:ml-1"
+          />
+
+          <div className="ml-auto flex min-w-0 items-center gap-1">
+            <div className="mr-1 flex min-w-0 items-center gap-0.5 rounded-lg border border-border/60 bg-muted/40 p-0.5 whitespace-nowrap">
               {MODE_TABS.map(tab => {
                 const Icon = tab.icon;
                 const isActive = viewMode === tab.id;
@@ -203,43 +273,55 @@ const AppointmentV2Page = () => {
                     key={tab.id}
                     onClick={() => setViewMode(tab.id)}
                     title={tab.id === 'grid' ? 'Free-form pathway stimulation (iPad-friendly notepad)' : tab.id === 'doc' ? 'Document view of the session' : 'Guided PEACE flow'}
+                    aria-pressed={isActive}
                     className={cn(
-                      "flex items-center gap-1.5 px-2.5 md:px-3 h-7 text-[13px] font-medium rounded-md shrink-0 whitespace-nowrap",
+                      "flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2 text-[12px] font-medium transition-colors xl:px-2.5",
                       isActive
                         ? "bg-card text-foreground shadow-sm ring-1 ring-border/60"
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <Icon size={14} className={cn(isActive && "text-primary")} />
-                    <span className="hidden sm:inline">{tab.label}</span>
+                    <span className="hidden xl:inline">{tab.label}</span>
                   </button>
                 );
               })}
             </div>
-            <button
-              onClick={() => setQuickSessionOpen(true)}
-              className="flex items-center gap-1.5 px-2 md:px-2.5 h-8 text-[13px] font-medium border border-border bg-card shadow-xs hover:bg-muted rounded-lg shrink-0 whitespace-nowrap"
-              title="FILE > NEW — Create a new session"
-            >
-              <Plus size={13} /> <span className="hidden md:inline">New</span>
-            </button>
+            {!isDemo && (
+              <button
+                onClick={() => setQuickSessionOpen(true)}
+                className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-border bg-card px-2 text-[12px] font-medium whitespace-nowrap shadow-xs hover:bg-muted md:px-2.5"
+                title="FILE > NEW — Create a new session"
+              >
+                <Plus size={13} /> <span className="hidden md:inline">New</span>
+              </button>
+            )}
             <button
               onClick={() => setNotesOpen(true)}
-              className="flex items-center gap-1.5 px-2 md:px-2.5 h-8 text-[13px] font-medium border border-border bg-card shadow-xs hover:bg-muted rounded-lg shrink-0 whitespace-nowrap"
+              className="hidden h-8 shrink-0 items-center gap-1.5 rounded-lg border border-border bg-card px-2 text-[12px] font-medium whitespace-nowrap shadow-xs hover:bg-muted sm:inline-flex md:px-2.5"
               title="Quick notes — open a notes box from anywhere (N)"
             >
-              <StickyNote size={13} /> <span className="hidden md:inline">Notes</span>
+              <StickyNote size={13} /> <span className="hidden xl:inline">Notes</span>
             </button>
-            <div className="w-px h-6 bg-border mx-0.5 shrink-0" />
+            <div className="mx-0.5 hidden h-6 w-px shrink-0 bg-border sm:block" />
             <CorrectionDockButton />
-            <HowToSearch />
+            <span className="hidden sm:inline-flex">
+              <HowToSearch />
+            </span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="rounded-xl text-muted-foreground shrink-0 h-8 w-8 p-0">
+                <Button variant="ghost" size="sm" className="h-8 w-8 shrink-0 rounded-lg p-0 text-muted-foreground" aria-label="More session actions">
                   <MoreHorizontal size={16} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="rounded-xl">
+                {isDemo && !session && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/login" className="flex items-center gap-2">
+                      <User size={14} /> Sign in to the full app
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem asChild>
                   <Link to={`/appointments/${id}/archive`} className="flex items-center gap-2">
                     <Archive size={14} /> Archived (legacy) view
@@ -259,29 +341,41 @@ const AppointmentV2Page = () => {
       <div className="flex items-start">
         <div className="min-w-0 flex-1">
       {viewMode === 'peace' && (
-        <div className="mx-auto w-full max-w-5xl px-4 py-6 md:px-8">
+        <div className="mx-auto w-full max-w-[1120px] px-4 py-5 md:px-8">
           <ErrorBoundary>
-            <PeaceWizard
-              appointment={appointment}
-              history={history}
-              onUpdate={refresh}
-              saveField={saveField}
-              updatePriorityPattern={updatePriorityPattern}
-              onPhaseChange={setActivePhase}
-              onFinalise={async () => {
-                try {
-                  const { error } = await supabase
-                    .from('appointments')
-                    .update({ status: 'Completed' })
-                    .eq('id', id);
-                  if (error) throw error;
-                  navigate(`/appointments/${id}`);
-                } catch (err) {
-                  console.error("Failed to finalise session:", err);
-                  showError("Failed to complete session. Please try again.");
-                }
-              }}
-            />
+            {isDemo ? (
+              <PeaceWizardV3
+                appointment={appointment}
+                history={history}
+                onUpdate={refresh}
+                saveField={saveField}
+                updatePriorityPattern={updatePriorityPattern}
+                onPhaseChange={setActivePhase}
+                onFinalise={() => showSuccess("Demo session — nothing was saved.")}
+              />
+            ) : (
+              <PeaceWizard
+                appointment={appointment}
+                history={history}
+                onUpdate={refresh}
+                saveField={saveField}
+                updatePriorityPattern={updatePriorityPattern}
+                onPhaseChange={setActivePhase}
+                onFinalise={async () => {
+                  try {
+                    const { error } = await supabase
+                      .from('appointments')
+                      .update({ status: 'Completed' })
+                      .eq('id', id);
+                    if (error) throw error;
+                    navigate(`/appointments/${id}`);
+                  } catch (err) {
+                    console.error("Failed to finalise session:", err);
+                    showError("Failed to complete session. Please try again.");
+                  }
+                }}
+              />
+            )}
           </ErrorBoundary>
         </div>
       )}

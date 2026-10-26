@@ -76,9 +76,9 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
 
   const displayTime = isRunning || isFinished ? time : (initialScore || 0);
   const getScoreColor = (score: number) => {
-    if (score >= 40) return 'text-emerald-600';
+    if (score >= 40) return 'text-success';
     if (score >= 25) return 'text-primary';
-    return 'text-amber-600';
+    return 'text-warning';
   };
 
   const getScoreLabel = (score: number) => {
@@ -99,10 +99,10 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
       )}
 
       <div className="flex items-center gap-3">
-        <div className="flex items-baseline gap-0.5">
+        <div className="flex items-baseline gap-1">
           <span className={cn(
             "text-2xl font-semibold tabular-nums transition-colors",
-            isRunning ? "text-indigo-600" : getScoreColor(displayTime)
+            isRunning ? "text-primary" : getScoreColor(displayTime)
           )}>
             {displayTime}
           </span>
@@ -110,10 +110,10 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
         </div>
         {!isRunning && displayTime > 0 && (
           <span className={cn(
-            "text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded",
-            displayTime >= 40 ? "bg-emerald-500/10 text-emerald-600" :
+            "text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded",
+            displayTime >= 40 ? "bg-success/10 text-success" :
             displayTime >= 25 ? "bg-primary/10 text-primary" :
-            "bg-amber-500/10 text-amber-600"
+            "bg-warning/10 text-warning"
           )}>
             {getScoreLabel(displayTime)}
           </span>
@@ -124,7 +124,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
         {!isRunning && !isFinished && (
           <Button 
             onClick={startTimer} 
-            className="flex-1 bg-indigo-600 hover:bg-indigo-700 rounded-md h-9 text-xs font-bold"
+            className="flex-1 bg-primary hover:bg-[hsl(var(--primary-hover))] rounded-md h-10 text-xs font-semibold"
           >
             <Play size={16} className="mr-2" /> Start BOLT
           </Button>
@@ -133,7 +133,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
         {isRunning && (
           <Button 
             onClick={stopTimer} 
-            className="flex-1 bg-destructive hover:bg-red-700 rounded-md h-9 text-xs font-bold"
+            className="flex-1 bg-destructive hover:bg-destructive/90 rounded-md h-10 text-xs font-semibold"
           >
             <Square size={16} className="mr-2" /> Stop
           </Button>
@@ -144,7 +144,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
             <Button 
               onClick={handleSave} 
               disabled={isSaving}
-              className="flex-1 bg-emerald-600 hover:bg-emerald-700 rounded-md h-9 text-xs font-bold"
+              className="flex-1 bg-success hover:bg-success/90 rounded-md h-10 text-xs font-semibold"
             >
               {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save size={16} className="mr-2" />}
               Save ({time}s)
@@ -152,7 +152,7 @@ const BoltTimer = ({ initialScore, onScoreRecorded, isSaving, startSignal }: Bol
             <Button 
               onClick={resetTimer} 
               variant="outline" 
-              className="px-3 rounded-md border-border hover:bg-muted h-9"
+              className="px-3 rounded-md border-border hover:bg-muted h-10"
               disabled={isSaving}
             >
               <RotateCcw size={16} />

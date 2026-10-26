@@ -5,13 +5,15 @@ import {
   ArrowDownCircle, ArrowUpCircle, ArrowRightCircle, ArrowDown,
   Activity, AlertTriangle, Droplets, Brain, Zap, Heart,
   Search, Layers, Hand, RefreshCw, Eye, MessageSquare,
-  Printer, ChevronLeft
+  Printer, ChevronLeft, Check, Maximize2
 } from "lucide-react";
 import { BRAIN_REFLEX_POINTS } from "@/data/brain-reflex-data";
 import type { BrainReflexPoint } from "@/data/brain-reflex-data";
 import BrainReflexModal from "@/components/crm/BrainReflexModal";
 import { Input } from "@/components/ui/input";
 import CorrectionsSidebar from "@/components/crm/CorrectionsSidebar";
+import ProtocolLogSheet, { ProtocolLogBar } from "@/components/crm/corrections/ProtocolLogSheet";
+import { PROTOCOL_FIELDS, EMOTION_ORGANS, EYE_POSITIONS, PROTOCOL_STEP_MAP, hasStepFields, type ProtocolLog, type ProtocolLogPatch } from "@/data/protocol-log";
 import type { CorrectionTab, CorrectionSelection, CorrectionTarget } from "@/components/crm/corrections/CorrectionDockContext";
 
 type SidebarItem = { id: string; label: string; icon: typeof Activity; group?: string };
@@ -25,17 +27,27 @@ const AFFERENT_ITEMS: SidebarItem[] = [
 // Emotional is part of Efferent: Cortical/Subcortical say WHERE, the emotional
 // protocols (ESR, Heart Wall, Limiting Beliefs) say HOW. They live in one list
 // so emotional work isn't split across unrelated top-level tabs.
+// Heart Wall is one process: screen → assess → correct → recheck → hidden,
+// scrolled through as a single page rather than five separate ones.
 const EFFERENT_ITEMS: SidebarItem[] = [
   { id: "cortical", label: "Cortical", icon: Brain, group: "Brain" },
   { id: "subcortical", label: "Subcortical", icon: Zap, group: "Brain" },
   { id: "emotional", label: "ESR / Pulse Point", icon: Heart, group: "Emotional" },
-  { id: "hw-screen", label: "Screen", icon: Search, group: "Heart Wall" },
-  { id: "hw-assessment", label: "Assessment", icon: Layers, group: "Heart Wall" },
-  { id: "hw-correction", label: "Correction", icon: Hand, group: "Heart Wall" },
-  { id: "hw-recheck", label: "Recheck", icon: RefreshCw, group: "Heart Wall" },
-  { id: "hw-hidden", label: "Hidden HW", icon: Eye, group: "Heart Wall" },
+  { id: "hw", label: "Heart Wall", icon: Hand, group: "Heart Wall" },
   { id: "lb-process", label: "Process", icon: MessageSquare, group: "Limiting Beliefs" },
 ];
+
+/** Older deep links point at `hw-screen`, `hw-assessment`… — all one page now. */
+const normalizeItemId = (id: string) => (id.startsWith("hw-") ? "hw" : id);
+
+/** Element dot for the organ reference — one colour per TCM element. */
+const ELEMENT_DOT: Record<string, string> = {
+  Wood: "bg-emerald-500",
+  Fire: "bg-rose-500",
+  Earth: "bg-amber-500",
+  Metal: "bg-slate-400",
+  Water: "bg-sky-500",
+};
 
 const corticalPoints = BRAIN_REFLEX_POINTS.filter(p => p.category === "Cortical");
 const subcorticalPoints = BRAIN_REFLEX_POINTS.filter(p => p.category === "Subcortical");
@@ -102,7 +114,7 @@ const efferentContent: Record<string, { title: string; steps: string[] }> = {
       "Permission — Ask 'Do we have permission to correct this?' If denied, do Harmonic Rocking first.",
       "Timeline — Determine if the stress is Current or Historic. If historic, narrow to specific age/month.",
       "Primary Emotion — Identify the core feeling: Hurt (Fire), Worry (Earth), Sadness (Metal), Fear (Water), Anger (Wood).",
-      "Priority Organ — Find the organ surrogate via pulse point. Match its element to the emotion.",
+      "Priority Organ — Find the organ surrogate via pulse point. Match its element to the emotion, then choose the specific organ: the Yin organ (deep) or the Yang organ (superficial).",
       "Energy Polarity — Challenge for Energy IN (+) or Energy OUT (−). Usually OUT to release.",
       "Eye Position — Identify NLP sensory access (visual/auditory/kinesthetic) for the stress memory.",
       "Correction — Hold ESR + Pulse Point + Eye Position simultaneously. Replay stress until therapeutic shift (yawn, sigh, swallow, gurgle, deep breath).",
@@ -178,6 +190,24 @@ const lbCheckpoints = [
   { id: "H", question: "Is there any scenario where this belief might still feel true?", noAdvance: "Session complete — belief resolved" },
 ];
 
+/** A reference diagram that opens full-screen — the dock is too narrow to read them. */
+const ReferenceImage = ({
+  src,
+  alt,
+  onOpen,
+}: {
+  src: string;
+  alt: string;
+  onOpen: (src: string) => void;
+}) => (
+  <button type="button" onClick={() => onOpen(src)} className="group relative block w-full">
+    <img src={src} alt={alt} loading="lazy" className="block w-full" />
+    <span className="absolute right-1.5 top-1.5 flex items-center gap-1 rounded-md bg-background/90 px-1.5 py-1 text-[9px] font-semibold text-foreground opacity-0 shadow-sm transition-opacity group-hover:opacity-100">
+      <Maximize2 size={10} /> Enlarge
+    </span>
+  </button>
+);
+
 interface CorrectionsManualContentProps {
   /** Deep-link request from the correction dock / finding rows. */
   target?: CorrectionTarget | null;
@@ -187,6 +217,9 @@ interface CorrectionsManualContentProps {
   onSelectionChange?: (tab: CorrectionTab, item: string) => void;
   /** Compact mode: tells the host when instructions are showing (so it can widen). */
   onExpandedChange?: (open: boolean) => void;
+  /** Per-process logs from the appointment. Omit for a reference-only manual. */
+  protocolLogs?: Record<string, ProtocolLog>;
+  onProtocolLogChange?: (processId: string, patch: ProtocolLogPatch) => void;
   /** Narrow container (the dock): chips instead of the 192px sidebar. */
   compact?: boolean;
   /** Fill the parent's height instead of sizing to content. */
@@ -198,6 +231,8 @@ const CorrectionsManualContent = ({
   initialSelection,
   onSelectionChange,
   onExpandedChange,
+  protocolLogs,
+  onProtocolLogChange,
   compact = false,
   fill = false,
 }: CorrectionsManualContentProps = {}) => {
@@ -206,19 +241,25 @@ const CorrectionsManualContent = ({
     () => (initialSelection?.tab === "afferent" ? initialSelection.item : "mechanoreceptor")
   );
   const [efferentActive, setEfferentActive] = useState(
-    () => (initialSelection?.tab === "efferent" ? initialSelection.item : "cortical")
+    () =>
+      initialSelection?.tab === "efferent"
+        ? normalizeItemId(initialSelection.item)
+        : "cortical"
   );
   // Compact mode starts on the list alone; tapping a process slides its
   // instructions in beside it.
   const [instructionsOpen, setInstructionsOpen] = useState(false);
   const [modalPoint, setModalPoint] = useState<BrainReflexPoint | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  /** Heart Wall is one page — a deep link scrolls to its section. */
+  const [hwFocus, setHwFocus] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState<string | null>(null);
 
   const activeId = activeTab === "afferent" ? afferentActive : efferentActive;
 
   // Accent follows the active item so Heart Wall stays rose and Limiting
   // Beliefs stays red, even though both now sit under the Efferent tab.
-  const efferentAccent = efferentActive.startsWith("hw-")
+  const efferentAccent = efferentActive === "hw"
     ? "text-rose-600 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-800"
     : efferentActive === "lb-process"
     ? "text-destructive bg-destructive/10 border-destructive/20"
@@ -232,10 +273,24 @@ const CorrectionsManualContent = ({
   useEffect(() => {
     if (!target) return;
     setActiveTab(target.tab);
-    if (target.tab === "afferent") setAfferentActive(target.item);
-    else setEfferentActive(target.item);
+    if (target.tab === "afferent") {
+      setAfferentActive(target.item);
+    } else if (target.item.startsWith("hw-")) {
+      setEfferentActive("hw");
+      setHwFocus(target.item);
+    } else {
+      setEfferentActive(target.item);
+    }
     setInstructionsOpen(true);
   }, [target]);
+
+  // Scroll the requested Heart Wall section into view once it's rendered.
+  useEffect(() => {
+    if (!hwFocus || efferentActive !== "hw") return;
+    const el = document.getElementById(`hw-section-${hwFocus}`);
+    el?.scrollIntoView({ block: "start", behavior: "smooth" });
+    setHwFocus(null);
+  }, [hwFocus, efferentActive]);
 
   // Tell the host what's showing so it can be remembered next time.
   useEffect(() => {
@@ -257,24 +312,161 @@ const CorrectionsManualContent = ({
     );
   };
 
-  const renderSteps = (steps: string[], accent: string) => (
-    <div className="space-y-1.5">
-      {steps.map((step, i) => (
-        <div key={step} className="flex gap-3 px-3 py-2 rounded-lg hover:bg-muted/40 transition-colors">
-          <span className={cn(
-            "badge-step mt-0.5",
-            accent === "text-primary" ? "bg-primary/10 dark:bg-primary/50 text-primary dark:text-blue-300" :
-            accent === "text-purple-600" ? "bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300" :
-            accent === "text-rose-600" ? "bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300" :
-            "bg-destructive/10 text-destructive"
-          )}>
-            {i + 1}
-          </span>
-          <span className="text-xs leading-relaxed text-foreground/90">{step}</span>
-        </div>
-      ))}
-    </div>
+  const renderSteps = (steps: string[], accent: string, processId?: string) => {
+    const done = (processId && protocolLogs?.[processId]?.steps) || [];
+    const canTick = !!(processId && onProtocolLogChange);
+
+    const toggle = (index: number) => {
+      if (!processId || !onProtocolLogChange) return;
+      // Functional patch: two quick taps compose instead of the second
+      // overwriting the first with the same stale step list.
+      onProtocolLogChange(processId, (previous) => {
+        const steps = previous.steps ?? [];
+        return {
+          steps: steps.includes(index)
+            ? steps.filter((i) => i !== index)
+            : [...steps, index].sort((a, b) => a - b),
+        };
+      });
+    };
+
+    return (
+      <div className="space-y-1.5">
+        {steps.map((step, i) => {
+          const isDone = done.includes(i);
+          return (
+            <div
+              key={step}
+              className={cn(
+                "flex gap-3 px-3 py-2 rounded-lg transition-colors",
+                isDone ? "bg-emerald-50/50 dark:bg-emerald-950/20" : "hover:bg-muted/40"
+              )}
+            >
+              <button
+                type="button"
+                onClick={() => toggle(i)}
+                disabled={!canTick}
+                title={canTick ? (isDone ? "Mark as not done" : "Mark as done") : undefined}
+                className={cn(
+                  "badge-step mt-0.5 transition-colors",
+                  canTick && "cursor-pointer",
+                  isDone
+                    ? "bg-emerald-500 text-white"
+                    : accent === "text-primary"
+                    ? "bg-primary/10 dark:bg-primary/50 text-primary dark:text-blue-300"
+                    : accent === "text-purple-600"
+                    ? "bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300"
+                    : accent === "text-rose-600"
+                    ? "bg-rose-100 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300"
+                    : "bg-destructive/10 text-destructive"
+                )}
+              >
+                {isDone ? <Check size={11} strokeWidth={3} /> : i + 1}
+              </button>
+              <div className="min-w-0 flex-1 space-y-0.5">
+                <span
+                  className={cn(
+                    "block text-xs leading-relaxed",
+                    isDone ? "text-muted-foreground" : "text-foreground/90"
+                  )}
+                >
+                  {step}
+                </span>
+                {processId && inlineLog(processId, i + 1)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const StepProgress = ({ processId, total }: { processId: string; total: number }) => {
+    const done = protocolLogs?.[processId]?.steps?.length ?? 0;
+    if (!onProtocolLogChange || done === 0) return null;
+    return (
+      <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+        {done}/{total}
+      </span>
+    );
+  };
+
+  const logSheet = (processId: string, heading?: string) => (
+    <ProtocolLogSheet
+      processId={processId}
+      fields={PROTOCOL_FIELDS[processId] ?? []}
+      log={protocolLogs?.[processId]}
+      onChange={
+        onProtocolLogChange
+          ? (patch) => onProtocolLogChange(processId, patch)
+          : undefined
+      }
+      heading={heading}
+    />
   );
+
+  /** The controls for one instruction step, rendered under that step. */
+  const inlineLog = (processId: string, step: number) => (
+    <ProtocolLogSheet
+      processId={processId}
+      fields={PROTOCOL_FIELDS[processId] ?? []}
+      log={protocolLogs?.[processId]}
+      onChange={
+        onProtocolLogChange
+          ? (patch) => onProtocolLogChange(processId, patch)
+          : undefined
+      }
+      step={step}
+      variant="inline"
+    />
+  );
+
+  /** Anything that belongs to the process but not to a single step (notes). */
+  const trailingFields = (processId: string) => {
+    const fields = PROTOCOL_FIELDS[processId] ?? [];
+    const mapped = PROTOCOL_STEP_MAP[processId] ?? {};
+    if (!onProtocolLogChange || !fields.some((f) => mapped[f.id] == null)) return null;
+
+    return (
+      <div className="mt-4 border-t border-border/70 pt-3">
+        <ProtocolLogSheet
+          processId={processId}
+          fields={fields}
+          log={protocolLogs?.[processId]}
+          onChange={(patch) => onProtocolLogChange(processId, patch)}
+          unassigned
+          variant="inline"
+        />
+      </div>
+    );
+  };
+
+  /** Summary + reset, pinned above the steps rather than in a log card. */
+  const logBar = (processId: string, heading?: string) => {
+    if (!hasStepFields(processId) || !onProtocolLogChange) return null;
+    return (
+      <ProtocolLogBar
+        processId={processId}
+        heading={heading}
+        log={protocolLogs?.[processId]}
+        onChange={(patch) => onProtocolLogChange(processId, patch)}
+      />
+    );
+  };
+
+  // The visual aids are part of the record, not just decoration: tapping an
+  // eye cue or an organ writes it back to the emotional log.
+  const emotionalValues = protocolLogs?.emotional?.values ?? {};
+  const pickedOrgan = typeof emotionalValues.organ === "string" ? emotionalValues.organ : undefined;
+  const pickedEye = typeof emotionalValues.eye === "string" ? emotionalValues.eye : undefined;
+  const canLogEmotional = !!onProtocolLogChange;
+
+  const pickEmotional = (patch: Record<string, unknown>) => {
+    if (!onProtocolLogChange) return;
+    onProtocolLogChange("emotional", (previous) => ({
+      values: { ...(previous.values ?? {}), ...patch },
+    }));
+  };
 
   const BrainZoneList = ({ points, label, accent }: {
     points: BrainReflexPoint[]; label: string; accent: string;
@@ -305,37 +497,36 @@ const CorrectionsManualContent = ({
         if (!content) return null;
         return (
           <div className="space-y-4">
-            <h2 className="text-base font-bold tracking-tight">{content.title}</h2>
-            {renderSteps(content.steps, "text-primary")}
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-bold tracking-tight">{content.title}</h2>
+              <StepProgress processId={afferentActive} total={content.steps.length} />
+            </div>
+            {logBar(afferentActive)}
+            {renderSteps(content.steps, "text-primary", afferentActive)}
+            {trailingFields(afferentActive)}
           </div>
         );
       }
       case "efferent": {
-        if (efferentActive.startsWith("hw-")) {
-          const content = heartWallContent[efferentActive];
-          if (!content) return null;
-          return (
-            <div className="space-y-4">
-              <h2 className="text-base font-bold tracking-tight">{content.title}</h2>
-              {renderSteps(content.steps, "text-rose-600")}
-            </div>
-          );
-        }
-
-        if (efferentActive === "lb-process") {
-          return renderLimitingBeliefs();
-        }
+        if (efferentActive === "hw") return renderHeartWall();
+        if (efferentActive === "lb-process") return renderLimitingBeliefs();
 
         const content = efferentContent[efferentActive];
         if (!content) return null;
         const isEmotional = efferentActive === "emotional";
         const isBrainZone = efferentActive === "cortical" || efferentActive === "subcortical";
         return (
-          <div className="space-y-6">
+          <div className="space-y-5">
             <div className="space-y-4">
-              <h2 className="text-base font-bold tracking-tight">{content.title}</h2>
-              {renderSteps(content.steps, "text-purple-600")}
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold tracking-tight">{content.title}</h2>
+                <StepProgress processId={efferentActive} total={content.steps.length} />
+              </div>
+              {logBar(efferentActive)}
+              {renderSteps(content.steps, "text-purple-600", efferentActive)}
+              {trailingFields(efferentActive)}
             </div>
+
             {isBrainZone && (
               <div className="border-t border-border pt-4">
                 <BrainZoneList
@@ -350,43 +541,114 @@ const CorrectionsManualContent = ({
                 {/* NLP Eye Position Reference */}
                 <div className="panel p-4">
                   <h3 className="text-[10px] font-bold uppercase tracking-wider text-purple-600 dark:text-purple-400 mb-3">NLP Eye Accessing Cues</h3>
-                  <div className="space-y-2">
-                    {[
-                      { pos: "Up & Left", label: "Visual Memory", desc: "Seeing a scene from the past" },
-                      { pos: "Up & Right", label: "Visual Constructed", desc: "Imagining something you haven't seen" },
-                      { pos: "Horizontal L", label: "Auditory Memory", desc: "Hearing sounds or words from the past" },
-                      { pos: "Horizontal R", label: "Auditory Constructed", desc: "Hearing sounds you haven't heard" },
-                      { pos: "Down & Left", label: "Internal Monologue", desc: "Talking to yourself" },
-                      { pos: "Down & Right", label: "Kinesthetic", desc: "Physical sensation or felt sense" },
-                    ].map(row => (
-                      <div key={row.pos} className="flex items-start gap-2 text-[10px]">
-                        <span className="font-bold text-foreground shrink-0 w-16">{row.pos}</span>
-                        <span className="font-semibold text-foreground/80 shrink-0 w-24">{row.label}</span>
-                        <span className="text-muted-foreground">{row.desc}</span>
-                      </div>
-                    ))}
+                  <div className="mb-3 overflow-hidden rounded-lg border border-border bg-white">
+                    <ReferenceImage
+                      src="/images/eye-modes.png"
+                      alt="NLP eye accessing cues — six eye positions and what they access"
+                      onOpen={setLightbox}
+                    />
                   </div>
+                  <div className="space-y-1">
+                    {EYE_POSITIONS.map((row) => {
+                      const active = pickedEye === row.label;
+                      return (
+                        <button
+                          key={row.label}
+                          type="button"
+                          disabled={!canLogEmotional}
+                          aria-pressed={active}
+                          onClick={() => pickEmotional({ eye: active ? null : row.label })}
+                          className={cn(
+                            "flex w-full items-start gap-2 rounded-md px-2 py-1 text-left text-[10px] transition-colors",
+                            active
+                              ? "bg-purple-50 text-purple-900 ring-1 ring-purple-200 dark:bg-purple-950/40 dark:text-purple-200 dark:ring-purple-800"
+                              : canLogEmotional && "hover:bg-muted/50"
+                          )}
+                        >
+                          <span className="flex w-[70px] shrink-0 items-center gap-1 font-bold text-foreground">
+                            {active && <Check size={10} strokeWidth={3} className="text-purple-600" />}
+                            {row.full}
+                          </span>
+                          <span className="w-24 shrink-0 font-semibold text-foreground/80">{row.cue}</span>
+                          <span className="text-muted-foreground">{row.desc}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {canLogEmotional && (
+                    <p className="mt-2 text-[9px] italic text-muted-foreground">
+                      Tap a cue to log the eye position.
+                    </p>
+                  )}
                 </div>
 
                 {/* Organ Pulse Point Reference */}
                 <div className="panel p-4">
                   <h3 className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-3">Organ Pulse Points</h3>
-                  <div className="space-y-2">
-                    {[
-                      { element: "Wood", emotion: "Anger", organ: "Liver / GB", note: "Left guan (deep)" },
-                      { element: "Fire", emotion: "Hurt", organ: "Heart / SI", note: "Left cun (deep)" },
-                      { element: "Earth", emotion: "Worry", organ: "Spleen / Stom.", note: "Right guan (deep)" },
-                      { element: "Metal", emotion: "Sadness", organ: "Lung / LI", note: "Left cun (superficial)" },
-                      { element: "Water", emotion: "Fear", organ: "Kidney / BL", note: "Left chi (deep)" },
-                    ].map(row => (
-                      <div key={row.element} className="flex items-start gap-2 text-[10px]">
-                        <span className="w-12 shrink-0 font-bold text-foreground">{row.element}</span>
-                        <span className="w-10 shrink-0 text-muted-foreground">{row.emotion}</span>
-                        <span className="font-semibold text-foreground/80 shrink-0 w-24">{row.organ}</span>
-                        <span className="text-muted-foreground">{row.note}</span>
-                      </div>
-                    ))}
+                  <div className="mb-3 overflow-hidden rounded-lg border border-border bg-white">
+                    <ReferenceImage
+                      src="/images/pulse-points.png"
+                      alt="Pulse point positions on the wrist — cun, guan and chi on left and right"
+                      onOpen={setLightbox}
+                    />
                   </div>
+                  <div className="space-y-1.5">
+                    {Object.entries(EMOTION_ORGANS).map(([emotion, organs]) => {
+                      const first = organs[0];
+                      return (
+                        <div
+                          key={emotion}
+                          className="rounded-lg border border-border/70 bg-card px-2.5 py-1.5"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="flex items-center gap-1.5 text-[10px] font-bold text-foreground">
+                              <span className={cn("h-1.5 w-1.5 rounded-full", ELEMENT_DOT[first.element])} />
+                              {emotion}
+                              <span className="font-medium text-muted-foreground">{first.element}</span>
+                            </span>
+                            <span className="text-[9px] font-semibold text-muted-foreground">
+                              {first.pulse}
+                            </span>
+                          </div>
+                          <div className="mt-1 grid grid-cols-2 gap-1.5">
+                            {organs.map((organ) => {
+                              const active = pickedOrgan === organ.name;
+                              return (
+                                <button
+                                  key={organ.id}
+                                  type="button"
+                                  disabled={!canLogEmotional}
+                                  aria-pressed={active}
+                                  onClick={() =>
+                                    pickEmotional(
+                                      active ? { organ: null } : { emotion, organ: organ.name }
+                                    )
+                                  }
+                                  className={cn(
+                                    "rounded-md px-1.5 py-1 text-left transition-colors",
+                                    active
+                                      ? "bg-emerald-50 ring-1 ring-emerald-300 dark:bg-emerald-950/40 dark:ring-emerald-800"
+                                      : canLogEmotional && "hover:bg-muted/50"
+                                  )}
+                                >
+                                  <p className="flex items-center gap-1 text-[10px] font-semibold text-foreground/90">
+                                    {active && <Check size={9} strokeWidth={3} className="text-emerald-600" />}
+                                    {organ.name}
+                                  </p>
+                                  <p className="text-[9px] text-muted-foreground">{organ.depth}</p>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {canLogEmotional && (
+                    <p className="mt-2 text-[9px] italic text-muted-foreground">
+                      Tap an organ to set it — and its emotion — on the record.
+                    </p>
+                  )}
                   <p className="text-[10px] text-muted-foreground mt-3 italic leading-relaxed">
                     Light pressure = Yang (superficial pulse). Deep pressure = Yin (deep pulse). Hold until therapeutic shift.
                   </p>
@@ -400,6 +662,43 @@ const CorrectionsManualContent = ({
         return null;
     }
   };
+
+  /** All five Heart Wall stages on one scrolling page. */
+  const renderHeartWall = () => (
+    <div className="space-y-8">
+      <div className="flex items-center gap-2">
+        <h2 className="text-base font-bold tracking-tight">Heart Wall</h2>
+        <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[9px] font-bold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
+          Screen → Assess → Correct → Recheck
+        </span>
+      </div>
+
+      {(["hw-screen", "hw-assessment", "hw-correction", "hw-recheck", "hw-hidden"] as const).map(
+        (sectionId, index) => {
+          const section = heartWallContent[sectionId];
+          if (!section) return null;
+          return (
+            <section
+              key={sectionId}
+              id={`hw-section-${sectionId}`}
+              className="scroll-mt-2 space-y-3 border-t border-border pt-5 first:border-t-0 first:pt-0"
+            >
+              <div className="flex items-center gap-2">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-rose-100 text-[10px] font-bold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
+                  {index + 1}
+                </span>
+                <h3 className="text-sm font-bold tracking-tight">{section.title}</h3>
+                <StepProgress processId={sectionId} total={section.steps.length} />
+              </div>
+              {logBar(sectionId, section.title)}
+              {renderSteps(section.steps, "text-rose-600", sectionId)}
+              {trailingFields(sectionId)}
+            </section>
+          );
+        }
+      )}
+    </div>
+  );
 
   const renderLimitingBeliefs = () => (
           <div className="space-y-8">
@@ -479,6 +778,8 @@ const CorrectionsManualContent = ({
                 </div>
               ))}
             </div>
+
+            {logSheet("lb-process", "Log the belief")}
           </div>
         );
 
@@ -504,16 +805,29 @@ const CorrectionsManualContent = ({
     <div className={cn("flex flex-col", fill && "h-full min-h-0")}>
       <div className="border-b shrink-0">
         <div className="px-4 py-2 flex items-center justify-between gap-4">
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="h-8 bg-muted/60">
-              <TabsTrigger value="afferent" className="text-[13px] h-7 px-3 data-[state=active]:bg-primary/5 data-[state=active]:text-primary data-[state=active]:shadow-sm">
-                <ArrowDownCircle size={12} className="mr-1.5" /> Afferent
-              </TabsTrigger>
-              <TabsTrigger value="efferent" className="text-[13px] h-7 px-3 data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700 data-[state=active]:shadow-sm">
-                <ArrowUpCircle size={12} className="mr-1.5" /> Efferent
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div className="flex min-w-0 items-center gap-1.5">
+            {compact && instructionsOpen && (
+              <button
+                type="button"
+                onClick={() => setInstructionsOpen(false)}
+                title="Back to the process list"
+                aria-label="Back to the process list"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <ChevronLeft size={15} />
+              </button>
+            )}
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="h-8 bg-muted/60">
+                <TabsTrigger value="afferent" className="text-[13px] h-7 px-3 data-[state=active]:bg-primary/5 data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                  <ArrowDownCircle size={12} className="mr-1.5" /> Afferent
+                </TabsTrigger>
+                <TabsTrigger value="efferent" className="text-[13px] h-7 px-3 data-[state=active]:bg-purple-50 data-[state=active]:text-purple-700 data-[state=active]:shadow-sm">
+                  <ArrowUpCircle size={12} className="mr-1.5" /> Efferent
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
           <div className="flex items-center gap-2">
             {getSearchPlaceholder() && (
               <div className={cn("relative", compact ? "w-28" : "w-48")}>
@@ -591,18 +905,8 @@ const CorrectionsManualContent = ({
               key={`${activeTab}:${activeId}`}
               className="flex min-w-0 flex-1 flex-col animate-in fade-in slide-in-from-right-4 duration-200"
             >
-              <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-3 py-1.5">
-                <span className="truncate text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                  {getItems().find((i) => i.id === activeId)?.label ?? "Process"}
-                </span>
-                <button
-                  onClick={() => setInstructionsOpen(false)}
-                  title="Back to the process list"
-                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                >
-                  <ChevronLeft size={14} />
-                </button>
-              </div>
+              {/* No pane header here — the process title inside the page is the
+                  only heading, so the name isn't printed twice. */}
               <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">{getContent()}</div>
             </div>
           )}
@@ -613,6 +917,28 @@ const CorrectionsManualContent = ({
           <main className="min-w-0 flex-1 max-w-3xl px-6 py-6 overflow-y-auto">
             {getContent()}
           </main>
+        </div>
+      )}
+
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-background/95 p-4 backdrop-blur-sm"
+          onClick={() => setLightbox(null)}
+          role="dialog"
+          aria-label="Reference image"
+        >
+          <img
+            src={lightbox}
+            alt=""
+            className="max-h-full max-w-full rounded-xl border border-border bg-white object-contain shadow-2xl"
+          />
+          <button
+            type="button"
+            onClick={() => setLightbox(null)}
+            className="absolute right-4 top-4 rounded-lg border border-border bg-card px-2.5 py-1.5 text-[11px] font-medium text-foreground shadow-sm"
+          >
+            Close
+          </button>
         </div>
       )}
 

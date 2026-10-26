@@ -3,17 +3,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   Activity, Zap, GitBranch, Target, ClipboardCheck,
-  ChevronLeft, ChevronRight, CheckCircle2, Heart, Brain, ExternalLink
+  ChevronLeft, ChevronRight, CheckCircle2, ExternalLink
 } from "lucide-react";
 import { AppointmentWithClient } from "@/types/crm";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Sheet, SheetContent, SheetHeader, SheetTitle,
-} from "@/components/ui/sheet";
-import EmotionsProtocolSimple from "@/components/crm/v2/EmotionsProtocolSimple";
-import LimitingBeliefsTool from "@/components/crm/LimitingBeliefsTool";
 
 import PreliminaryPhase from "./phases/PreliminaryPhase";
 import EasePhase from "./phases/EasePhase";
@@ -40,11 +32,9 @@ interface PeaceWizardProps {
   onPhaseChange?: (index: number) => void;
 }
 
-const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriorityPattern, onFinalise }: PeaceWizardProps) => {
+const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriorityPattern, onFinalise, onPhaseChange }: PeaceWizardProps) => {
   const [activePhase, setActivePhase] = useState(0);
   const [phaseDirection, setPhaseDirection] = useState<'forward' | 'backward'>('forward');
-  const [emotionsOpen, setEmotionsOpen] = useState(false);
-  const [limitingBeliefsOpen, setLimitingBeliefsOpen] = useState(false);
   const wizardRef = useRef<HTMLDivElement>(null);
 
   const phaseStatus = useMemo(() => ({
@@ -90,6 +80,11 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [goNext, goBack]);
 
+  // Report the position so the page frame can show it (session timer, top bar).
+  useEffect(() => {
+    onPhaseChange?.(activePhase);
+  }, [activePhase, onPhaseChange]);
+
   const jumpTo = useCallback((index: number) => {
     setPhaseDirection(index > activePhase ? 'forward' : 'backward');
     setActivePhase(index);
@@ -109,75 +104,54 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
   };
 
   return (
-    <div ref={wizardRef} className="space-y-8">
-      {/* Top Navigation */}
-      <div className="flex items-center justify-between gap-2 sm:gap-4">
+    <div ref={wizardRef} className="space-y-5">
+      {/* Toolbar — sticks below the page header so Back/Next never scroll away. */}
+      <div className="sticky top-[3.625rem] z-30 -mx-1 flex items-center justify-between gap-2 border-b border-border/60 bg-background/90 px-1 py-2 backdrop-blur-xl sm:gap-4">
         <Button
-          variant="outline"
+          variant="ghost"
           onClick={goBack}
           disabled={activePhase === 0}
           title="Previous phase (←)"
-          className="rounded-xl h-10 px-5 font-medium"
+          className="h-10 rounded-lg px-2 text-xs font-medium text-muted-foreground hover:text-foreground sm:px-3"
         >
-          <ChevronLeft size={18} className="mr-1.5" /> Back
+          <ChevronLeft size={16} className="mr-1" /> Back
         </Button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {appointment.notion_link && (
             <a
               href={appointment.notion_link}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-xl h-10 px-3 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              className="inline-flex h-10 items-center gap-1.5 rounded-lg px-2.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               title="Open appointment in Notion"
             >
-              <ExternalLink size={16} />
-              <span className="text-xs font-semibold">Notion</span>
+              <ExternalLink size={15} />
+              <span className="hidden text-xs font-medium sm:inline">Notion</span>
             </a>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setLimitingBeliefsOpen(true)}
-            className="rounded-xl h-10 px-3 text-chart-primary hover:bg-chart-primary/10"
-            title="Limiting Beliefs Procedure"
-          >
-            <Brain size={16} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setEmotionsOpen(true)}
-            className="rounded-xl h-10 px-3 text-chart-destructive hover:bg-chart-destructive/10"
-            title="Emotions Protocol Reference"
-          >
-            <Heart size={16} />
-          </Button>
-          <span className="hidden text-xs font-medium text-muted-foreground text-center sm:inline">
-            Step {activePhase + 1} of {PEACE_PHASES.length} · {PEACE_PHASES[activePhase].fullLabel}
-          </span>
         </div>
 
         {activePhase < PEACE_PHASES.length - 1 ? (
           <Button
             onClick={goNext}
             title="Next phase (→)"
-            className="rounded-xl h-10 px-5 font-medium"
+            className="h-10 rounded-lg px-4 text-xs font-medium"
           >
-            Next <ChevronRight size={18} className="ml-1.5" />
+            Next <ChevronRight size={16} className="ml-1" />
           </Button>
         ) : (
           <Button
             onClick={onFinalise || onUpdate}
-            className="rounded-xl h-10 px-5 font-medium bg-chart-emerald hover:bg-chart-emerald/90"
+            className="h-10 rounded-lg bg-chart-emerald px-4 text-xs font-medium text-white hover:bg-chart-emerald/90"
           >
-            <CheckCircle2 size={18} className="mr-1.5" /> Finalise
+            <CheckCircle2 size={15} className="mr-1.5" /> Finalise
           </Button>
         )}
       </div>
 
       {/* Progress + Phase Stepper */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         {/* PEACE rail — five stations on one line; the line fills as phases complete */}
         <div className="relative px-2 pt-0 sm:px-6">
           <div className="relative grid grid-cols-5">
@@ -198,14 +172,15 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
                   key={phase.id}
                   onClick={() => canJump && jumpTo(index)}
                   disabled={!canJump}
-                  className={cn("group flex flex-col items-center gap-2 outline-none", !canJump && "cursor-not-allowed opacity-45")}
+                  className={cn("group flex flex-col items-center gap-1.5 outline-none", !canJump && "cursor-not-allowed opacity-45")}
                   aria-current={isActive ? "step" : undefined}
+                  aria-label={`Phase ${index + 1}: ${phase.fullLabel}${isCompleted ? " (complete)" : ""}`}
                 >
                   <span
                     className={cn(
                       "relative flex h-8 w-8 items-center justify-center rounded-full border transition-all duration-200",
                       isActive
-                        ? "border-primary bg-primary text-primary-foreground ring-2 ring-primary/15"
+                        ? "border-primary bg-primary text-primary-foreground ring-4 ring-primary/10"
                         : isCompleted
                           ? "border-chart-emerald/40 bg-card text-chart-emerald"
                           : "border-border bg-card text-muted-foreground",
@@ -220,12 +195,19 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
                     )}
                   </span>
                   <span className="flex flex-col items-center leading-tight">
-                    <span className={cn("text-xs font-medium", isActive ? "text-foreground" : "text-muted-foreground")}>
+                    <span
+                      className={cn(
+                        "text-xs",
+                        isActive ? "font-semibold text-foreground" : "font-medium text-muted-foreground"
+                      )}
+                    >
                       {phase.fullLabel}
                     </span>
-                    <span className={cn("mt-0.5 hidden items-center gap-1 text-[11px] sm:flex", isActive ? "text-primary" : "text-muted-foreground/60")}>
-                      <phase.icon size={11} /> {isActive ? "In progress" : isCompleted ? "Done" : `Step ${index + 1}`}
-                    </span>
+                    {isActive && (
+                      <span className="mt-0.5 hidden items-center gap-1 text-[10px] font-medium text-primary sm:flex">
+                        <phase.icon size={10} /> {isCompleted ? "Complete" : "In progress"}
+                      </span>
+                    )}
                   </span>
                 </button>
               );
@@ -233,25 +215,25 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
           </div>
         </div>
 
-        {/* Phase completion hint */}
-        <div className="flex items-center justify-center gap-2 text-center">
-          {(() => {
-            const activeIsComplete = (phaseStatus as any)[PEACE_PHASES[activePhase].id];
-            return (
-              <>
-                <span className={cn(
-                  "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium",
-                  activeIsComplete ? "bg-chart-emerald/10 text-chart-emerald" : "bg-foreground/[0.05] text-muted-foreground"
-                )}>
-                  {activeIsComplete ? "Done" : "To do"}
-                </span>
-                <span className="text-[11px] text-muted-foreground">
-                  {PEACE_PHASES[activePhase].hint}
-                </span>
-              </>
-            );
-          })()}
-        </div>
+        {/* What this phase needs — one quiet line, no duplicate status pill. */}
+        {(() => {
+          const activeIsComplete = (phaseStatus as any)[PEACE_PHASES[activePhase].id];
+          return (
+            <p className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 px-2 text-center text-[11px] text-muted-foreground">
+              <span
+                className={cn(
+                  "h-1.5 w-1.5 shrink-0 rounded-full",
+                  activeIsComplete ? "bg-chart-emerald" : "bg-primary/50"
+                )}
+              />
+              <span className={cn("font-medium", activeIsComplete ? "text-chart-emerald" : "text-foreground/70")}>
+                {activeIsComplete ? "Complete" : "To complete"}
+              </span>
+              <span className="text-muted-foreground/50">·</span>
+              <span>{PEACE_PHASES[activePhase].hint}</span>
+            </p>
+          );
+        })()}
       </div>
 
       {/* Phase content */}
@@ -271,34 +253,6 @@ const PeaceWizard = ({ appointment, history, onUpdate, saveField, updatePriority
           {activePhase === 4 && <EmbedPhaseV2 {...phaseProps} />}
         </div>
       </div>
-
-      {/* Limiting Beliefs Sheet */}
-      <Sheet open={limitingBeliefsOpen} onOpenChange={setLimitingBeliefsOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto p-0">
-          <SheetHeader className="px-6 pt-6 pb-4 border-b border-border sticky top-0 bg-card z-10">
-            <SheetTitle className="text-lg font-semibold flex items-center gap-2">
-              <Brain size={20} className="text-chart-primary" /> Limiting Beliefs
-            </SheetTitle>
-          </SheetHeader>
-          <div className="p-6">
-            <LimitingBeliefsTool />
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      {/* Emotions Protocol Modal */}
-      <Dialog open={emotionsOpen} onOpenChange={setEmotionsOpen}>
-        <DialogContent className="sm:max-w-[700px] rounded-xl p-0 mx-4 w-[calc(100%-2rem)] flex flex-col max-h-[85vh]">
-          <DialogHeader className="px-6 pt-6 pb-4 border-b border-border shrink-0">
-            <DialogTitle className="text-lg font-semibold flex items-center gap-2">
-              <Heart size={20} className="text-chart-destructive" /> Emotions Protocol
-            </DialogTitle>
-          </DialogHeader>
-          <div className="overflow-y-auto flex-1 px-6 py-4">
-            <EmotionsProtocolSimple />
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

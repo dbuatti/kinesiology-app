@@ -27,6 +27,7 @@ import MechanoreceptiveProcess from './MechanoreceptiveProcess';
 import EmotionalIntegrationProcess from './EmotionalIntegrationProcess';
 import VestibularProcess from './VestibularProcess';
 import { supabase } from "@/integrations/supabase/client";
+import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
 
 import { BRAIN_REFLEX_POINTS } from '@/data/brain-reflex-data';
 import { getMuscleInfo } from '@/data/muscle-info-data';
@@ -57,17 +58,14 @@ interface PathwayLogicWizardProps {
 
 const DYSFUNCTIONAL_STATUSES = ['Inhibited', 'Hypertonic', 'Switching', 'Inhibition'];
 
-const STEP_LABELS: Record<Step, string> = {
-  SELECT_START: 'Select',
-  AFFERENT_SELECT: 'Afferent',
-  EFFERENT_SELECT: 'Efferent',
-  MECHANO_PROCESS: 'Mechano',
-  VESTIBULAR_PROCESS: 'Vestibular',
-  NOCICEPTIVE_PROCESS: 'Nociceptive',
-  EFFERENT_PROCESS: 'Brain',
-  EMOTIONS_PROCESS: 'Emotion',
-  COMPLETION: 'Done',
-};
+const STAGE_DEFS = [
+  { id: 'select', label: 'Select' },
+  { id: 'direction', label: 'Direction' },
+  { id: 'apply', label: 'Apply' },
+] as const;
+
+const stageIndexFor = (s: Step): number =>
+  s === 'SELECT_START' ? 0 : (s === 'AFFERENT_SELECT' || s === 'EFFERENT_SELECT') ? 1 : 2;
 
 const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, initialFinding, appointmentId }: PathwayLogicWizardProps) => {
   const [step, setStep] = useState<Step>('SELECT_START');
@@ -85,6 +83,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
   const onOpenLigamentCharts = () => setLigamentModalOpen(true);
 
   const isSandbox = !appointmentId || appointmentId.includes('00000000');
+  const isDemo = appointmentId === DEMO_APPOINTMENT_ID;
 
   useEffect(() => {
     if (initialFinding) {
@@ -96,7 +95,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
 
   useEffect(() => {
     const fetchMuscles = async () => {
-      if (isSandbox) return;
+      if (isDemo || isSandbox) return;
       setLoadingMuscles(true);
       try {
         const { data, error } = await supabase
@@ -297,7 +296,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
             <div className="py-8 flex flex-col items-center justify-center text-center space-y-4 animate-in fade-in duration-300">
               <div className={cn(
                 "w-12 h-12 rounded-xl flex items-center justify-center",
-                hasAnyTested ? "bg-chart-emerald/10 text-chart-emerald" : "bg-muted text-muted-foreground"
+                hasAnyTested ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"
               )}>
                 {hasAnyTested ? <CheckCircle2 size={24} /> : <ClipboardCheck size={24} />}
               </div>
@@ -324,29 +323,29 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
         }
 
         return (
-          <div className="space-y-5 animate-in fade-in duration-300">
+          <div className="space-y-6 animate-in fade-in duration-300">
             <div className="space-y-2">
               <label className="text-xs font-medium text-muted-foreground">Finding to Correct</label>
               <Select value={selectedFinding} onValueChange={(v) => setSelectedFinding(v)}>
-                <SelectTrigger className="h-10 rounded-lg border-border bg-card text-sm font-medium">
+                <SelectTrigger className="h-10 rounded-md border-border bg-card text-sm font-medium">
                   <SelectValue placeholder={loadingMuscles ? "Loading..." : "Select finding..."} />
                 </SelectTrigger>
                 <SelectContent className="rounded-lg border-border bg-card">
                   {inhibitedItems.map(item => (
                     <SelectItem key={item} value={item} className={cn(
                       "py-2 text-sm font-medium",
-                      item.includes('(Bilateral)') && "text-chart-primary"
+                      item.includes('(Bilateral)') && "text-primary"
                     )}>
                       {item}
                     </SelectItem>
                   ))}
-                  <SelectItem value="CUSTOM" className="py-2 text-sm font-medium text-chart-primary">+ Custom Entry</SelectItem>
+                  <SelectItem value="CUSTOM" className="py-2 text-sm font-medium text-primary">+ Custom Entry</SelectItem>
                 </SelectContent>
               </Select>
               {selectedFinding === 'CUSTOM' && (
                 <Input 
                   placeholder="Enter custom entry point..." 
-                  className="h-9 rounded-lg text-sm font-medium border-border animate-in slide-in-from-top-1 duration-200"
+                  className="h-10 rounded-md text-sm font-medium border-border animate-in slide-in-from-top-1 duration-200"
                   value={customText}
                   onChange={(e) => setCustomText(e.target.value)}
                   autoFocus
@@ -355,30 +354,30 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground">Correction Direction</label>
-              <div className="grid grid-cols-2 gap-2">
-                <button 
-                  onClick={() => goToStep('AFFERENT_SELECT')} 
-                  className="p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors text-left group"
+              <label className="text-[13px] font-medium text-muted-foreground">Correction Direction</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => goToStep('AFFERENT_SELECT')}
+                  className="min-h-[128px] rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-primary/50 hover:bg-primary/[0.03] hover:shadow-sm"
                 >
-                  <div className="flex items-center gap-2 mb-1">
-                    <GitBranch size={14} className="text-chart-primary" />
-                    <span className="text-[11px] font-medium text-chart-primary">Bottom-Up</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <GitBranch size={17} strokeWidth={1.75} />
                   </div>
-                  <p className="text-sm font-medium text-foreground">Afferent</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Sensory input</p>
+                  <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-primary">Bottom-Up</p>
+                  <p className="text-[15px] font-semibold text-foreground">Afferent</p>
+                  <p className="mt-1 text-[13px] leading-snug text-muted-foreground">Sensory input from the body</p>
                 </button>
 
-                <button 
-                  onClick={() => goToStep('EFFERENT_SELECT')} 
-                  className="p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors text-left group"
+                <button
+                  onClick={() => goToStep('EFFERENT_SELECT')}
+                  className="min-h-[128px] rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-primary/50 hover:bg-primary/[0.03] hover:shadow-sm"
                 >
-                  <div className="flex items-center gap-2 mb-1">
-                    <Sparkles size={14} className="text-muted-foreground" />
-                    <span className="text-[11px] font-medium text-muted-foreground">Top-Down</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted/60 text-muted-foreground">
+                    <Sparkles size={17} strokeWidth={1.75} />
                   </div>
-                  <p className="text-sm font-medium text-foreground">Efferent</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Processing</p>
+                  <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">Top-Down</p>
+                  <p className="text-[15px] font-semibold text-foreground">Efferent</p>
+                  <p className="mt-1 text-[13px] leading-snug text-muted-foreground">Brain processing & output</p>
                 </button>
               </div>
             </div>
@@ -396,22 +395,22 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                 {showClinicalTip && (
                   <div className="mt-2 p-3 bg-muted/50 rounded-lg border border-border space-y-2 animate-in fade-in duration-200">
                     <div className="flex gap-2">
-                      <Badge variant="outline" className="border-border text-muted-foreground font-medium text-xs px-1.5 py-0 rounded-full">
+                      <Badge variant="outline" className="border-border text-muted-foreground font-medium text-xs px-2 py-0 rounded-full">
                         {clinicalTip.type}
                       </Badge>
-                      <Badge className="bg-primary/10 text-primary border-none font-medium text-[10px] uppercase tracking-wider px-1.5 py-0 rounded-full">
+                      <Badge className="bg-primary/10 text-primary border-none font-medium text-[10px] uppercase tracking-wider px-2 py-0 rounded-full">
                         {clinicalTip.logic}
                       </Badge>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="p-2 bg-card rounded-md border border-border">
-                        <p className="text-xs font-medium text-muted-foreground mb-0.5">
+                        <p className="text-xs font-medium text-muted-foreground mb-1">
                           {clinicalTip.type === 'Primitive Reflex' ? 'Inhibition' : 'Reflex Point'}
                         </p>
                         <p className="text-[10px] font-medium text-foreground leading-tight">{clinicalTip.location}</p>
                       </div>
                       <div className="p-2 bg-card rounded-md border border-border">
-                        <p className="text-xs font-medium text-muted-foreground mb-0.5">Stimulus</p>
+                        <p className="text-xs font-medium text-muted-foreground mb-1">Stimulus</p>
                         <p className="text-[10px] font-medium text-foreground leading-tight">{clinicalTip.stimulus}</p>
                       </div>
                     </div>
@@ -433,12 +432,12 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
       case 'AFFERENT_SELECT':
         return (
           <div className="space-y-3 animate-in fade-in duration-200">
-            <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-lg border border-border">
+            <div className="flex items-center justify-between p-2 bg-muted/50 rounded-lg border border-border">
               <div>
                 <p className="text-xs font-medium text-muted-foreground">Correcting</p>
                 <p className="text-sm font-medium text-foreground">{effectiveItem || "General"}</p>
               </div>
-              <Badge className="bg-chart-primary/10 text-chart-primary border-none font-medium text-[10px] uppercase tracking-wider px-1.5 py-0 rounded-full">Afferent</Badge>
+              <Badge className="bg-primary/10 text-primary border-none font-medium text-[10px] uppercase tracking-wider px-2 py-0 rounded-full">Afferent</Badge>
             </div>
             {[
               { type: 'Mechanoreceptive', icon: Activity, step: 'MECHANO_PROCESS', desc: 'Joint and muscle receptor calibration' },
@@ -447,7 +446,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
               <button key={item.type} onClick={() => goToStep(item.step as Step)} className="p-3 rounded-lg border border-border bg-card hover:bg-muted transition-colors text-left group w-full">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <item.icon size={16} className="text-chart-primary shrink-0" />
+                    <item.icon size={16} className="text-primary shrink-0" />
                     <div>
                       <p className="text-sm font-medium text-foreground">{item.type}</p>
                       <p className="text-[10px] text-muted-foreground">{item.desc}</p>
@@ -463,12 +462,12 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
       case 'EFFERENT_SELECT':
         return (
           <div className="space-y-3 animate-in fade-in duration-200">
-            <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-lg border border-border">
+            <div className="flex items-center justify-between p-2 bg-muted/50 rounded-lg border border-border">
               <div>
                 <p className="text-xs font-medium text-muted-foreground">Correcting</p>
                 <p className="text-sm font-medium text-foreground">{effectiveItem || "General"}</p>
               </div>
-              <Badge className="bg-foreground/10 text-foreground border-none font-medium text-[10px] uppercase tracking-wider px-1.5 py-0 rounded-full">Efferent</Badge>
+              <Badge className="bg-foreground/10 text-foreground border-none font-medium text-[10px] uppercase tracking-wider px-2 py-0 rounded-full">Efferent</Badge>
             </div>
             {[
               { type: 'Brain Integration', icon: Brain, step: 'EFFERENT_PROCESS', desc: 'Cortical and subcortical zone pairing' },
@@ -521,7 +520,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
         return (
           <div className="py-4 space-y-4 animate-in fade-in duration-200">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-chart-emerald/10 text-chart-emerald flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-success/10 text-success flex items-center justify-center shrink-0">
                 <CheckCircle2 size={20} />
               </div>
               <div>
@@ -531,7 +530,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
             </div>
 
             {correctionSummary && (
-              <div className="bg-muted/50 border border-border rounded-lg p-3 space-y-1.5 text-left">
+              <div className="bg-muted/50 border border-border rounded-lg p-3 space-y-2 text-left">
                 <p className="text-xs font-medium text-muted-foreground">Details</p>
                 <div className="space-y-1">
                   {correctionSummary.split(" | ").map((part, i) => {
@@ -539,8 +538,8 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                     const val = rest.join(": ");
                     if (key === "Eye Position" && eyeMatch) {
                       return (
-                        <div key={i} className="flex items-start gap-1.5">
-                          <Eye size={12} className="text-chart-destructive mt-0.5 shrink-0" />
+                        <div key={i} className="flex items-start gap-2">
+                          <Eye size={12} className="text-destructive mt-1 shrink-0" />
                           <span className="text-xs text-muted-foreground">
                             <span className="font-medium text-foreground">{eyeLabel}</span> ({eyePos})
                             {eyeSub && <span className="text-[10px] block">{eyeSub}</span>}
@@ -549,8 +548,8 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
                       );
                     }
                     return (
-                      <div key={i} className="flex items-start gap-1.5">
-                        <CheckCircle2 size={12} className="text-chart-emerald mt-0.5 shrink-0" />
+                      <div key={i} className="flex items-start gap-2">
+                        <CheckCircle2 size={12} className="text-success mt-1 shrink-0" />
                         <span className="text-xs text-muted-foreground">
                           {key && val ? <><span className="font-medium text-foreground">{key}</span>: {val}</> : part}
                         </span>
@@ -562,11 +561,11 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
             )}
 
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={resetWizard} className="rounded-lg h-8 px-3 text-xs font-medium">
-                <RefreshCw size={12} className="mr-1.5" /> Another
+              <Button variant="outline" size="sm" onClick={resetWizard} className="rounded-md h-8 px-3 text-xs font-medium">
+                <RefreshCw size={12} className="mr-2" /> Another
               </Button>
-              <Button size="sm" onClick={() => { setStep('SELECT_START'); setHistory([]); setSelectedFinding(''); setCustomText(''); }} className="rounded-lg h-8 px-3 text-xs font-medium">
-                <Zap size={12} className="mr-1.5" /> Done
+              <Button size="sm" onClick={() => { setStep('SELECT_START'); setHistory([]); setSelectedFinding(''); setCustomText(''); }} className="rounded-md h-8 px-3 text-xs font-medium">
+                <Zap size={12} className="mr-2" /> Done
               </Button>
             </div>
           </div>
@@ -582,41 +581,63 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
 
   return (
     <>
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
-        {/* Compact header */}
-        <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-          <div className="flex items-center gap-3">
+      <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
+        {/* Compact header with Select → Direction → Apply indicator */}
+        <div className="px-4 py-3 border-b border-border/60 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
             {step !== 'SELECT_START' && (
-              <Button variant="ghost" size="sm" onClick={goBack} className="h-7 px-2 text-xs font-medium text-muted-foreground hover:text-foreground rounded-lg -ml-1">
+              <Button variant="ghost" size="sm" onClick={goBack} className="h-8 px-2 text-xs font-medium text-muted-foreground hover:text-foreground rounded-md -ml-1">
                 <ChevronLeft size={14} />
               </Button>
             )}
-            <div>
-              <h3 className="text-sm font-medium text-foreground">Correction Wizard</h3>
-              <p className="text-[10px] text-muted-foreground">
-                {step === 'COMPLETION' ? 'Correction logged' : `Step: ${STEP_LABELS[step]}`}
+            <div className="min-w-0">
+              <h3 className="text-[15px] font-semibold text-foreground">Correction Wizard</h3>
+              <p className="truncate text-[13px] text-muted-foreground">
+                {step === 'COMPLETION' ? 'Correction logged' : (effectiveItem || 'Choose a finding to correct')}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {/* Step dots */}
-            {!isProcessStep && step !== 'COMPLETION' && (
-              <div className="flex items-center gap-1">
-                {(['SELECT_START', 'AFFERENT_SELECT', 'EFFERENT_SELECT'] as Step[]).map((s, i) => (
-                  <div 
-                    key={s} 
-                    className={cn(
-                      "w-1.5 h-1.5 rounded-full transition-colors",
-                      step === s ? "bg-primary" : 
-                      history.includes(s) ? "bg-primary/30" : "bg-border"
-                    )} 
-                  />
-                ))}
+          <div className="flex items-center gap-2 shrink-0">
+            {isProcessStep || step === 'COMPLETION' ? (
+              <span className={cn(
+                'rounded-full px-2 py-1 text-[11px] font-semibold',
+                step === 'COMPLETION' ? 'bg-success/10 text-success' : 'bg-primary/10 text-primary'
+              )}>
+                {step === 'COMPLETION' ? 'Logged' : 'Applying…'}
+              </span>
+            ) : (
+              <div className="hidden items-center sm:flex" aria-label="Correction progress">
+                {STAGE_DEFS.map((s, i) => {
+                  const current = stageIndexFor(step);
+                  const doneS = i < current;
+                  const activeS = i === current;
+                  return (
+                    <span key={s.id} className="flex items-center">
+                      {i > 0 && <span className={cn('mx-1 h-px w-3', i <= current ? 'bg-primary/50' : 'bg-border')} />}
+                      <span className={cn(
+                        'rounded-full px-2 py-1 text-[10px] font-semibold',
+                        activeS ? 'bg-primary text-primary-foreground'
+                        : doneS ? 'bg-success/10 text-success'
+                        : 'bg-muted text-muted-foreground'
+                      )}>
+                        {s.label}
+                      </span>
+                    </span>
+                  );
+                })}
               </div>
             )}
             {step !== 'SELECT_START' && (
-              <Button variant="ghost" size="sm" onClick={resetWizard} className="h-7 px-2 text-[10px] font-medium text-muted-foreground hover:text-foreground rounded-lg">
-                <RefreshCw size={11} className="mr-1" /> Reset
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={resetWizard}
+                aria-label="Reset wizard"
+                title="Reset"
+                className="h-8 rounded-md px-2 text-[11px] font-medium text-muted-foreground hover:text-foreground"
+              >
+                <RefreshCw size={11} className="sm:mr-1" />
+                <span className="hidden sm:inline">Reset</span>
               </Button>
             )}
           </div>
@@ -631,7 +652,7 @@ const PathwayLogicWizard = ({ onSave, onClearItem, onCancel, priorityPattern, in
       <Dialog open={ligamentModalOpen} onOpenChange={setLigamentModalOpen}>
         <DialogContent className="sm:max-w-[80vw] max-h-[90vh] rounded-xl p-0 overflow-hidden border-none shadow-sm bg-card">
           <DialogHeader className="p-6 bg-muted text-foreground">
-            <DialogTitle className="text-base font-medium">Ligament Reference Images</DialogTitle>
+            <DialogTitle className="text-[15px] font-semibold">Ligament Reference Images</DialogTitle>
             <DialogDescription>Visual guides for mechanoreceptive ligament corrections.</DialogDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[70vh] p-6">

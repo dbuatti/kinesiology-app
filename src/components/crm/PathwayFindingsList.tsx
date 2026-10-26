@@ -1,6 +1,5 @@
 
 import React, { useMemo } from 'react';
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Baby, Zap, Brain, Dumbbell } from "lucide-react";
 import { PRIMITIVE_REFLEXES } from '@/data/primitive-reflex-data';
@@ -39,6 +38,8 @@ const PathwayFindingsList = ({ priorityPattern, className, showOnlyInhibited = t
     const items: { name: string; status: string; category: string }[] = [];
     
     Object.entries(parsed).forEach(([category, values]) => {
+      // The `priorities` map is bookkeeping, not a finding — never listed.
+      if (category === 'priorities') return;
       // 1. Normalize all items in this category first
       const sessionItems: { base: string, side: string, status: string }[] = [];
       Object.entries(values).forEach(([key, status]) => {
@@ -91,33 +92,33 @@ const PathwayFindingsList = ({ priorityPattern, className, showOnlyInhibited = t
       {findings.map((finding, idx) => {
         const isCleared = finding.status.endsWith('_Cleared') || finding.status === 'Normotonic';
         const displayStatus = finding.status.replace('_Cleared', ' (Cleared)');
-        
+        const tone = isCleared ? "success" : /primary|priority/i.test(finding.status) ? "primary" : "warning";
+
         return (
-          <div 
-            key={idx} 
+          <div
+            key={idx}
             className={cn(
-              "flex items-center justify-between p-2 rounded-lg border text-[10px] font-bold transition-all",
-              isCleared 
-                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
-                : "bg-destructive/10 border-destructive/30 text-destructive"
+              "flex items-center justify-between gap-2 rounded-xl border p-2 text-[13px] font-semibold",
+              isCleared ? "border-success/30 bg-success/10" : "border-border/60 bg-card"
             )}
           >
-            <div className="flex items-center gap-2 truncate mr-2">
+            <div className="mr-2 flex min-w-0 items-center gap-2 text-muted-foreground">
               {finding.category.toLowerCase().includes('primitive') ? <Baby size={12} /> :
                finding.category.toLowerCase().includes('cranial') ? <Zap size={12} /> :
                finding.category.toLowerCase().includes('muscle') ? <Dumbbell size={12} /> :
                <Brain size={12} />}
-              <span className={cn("truncate", isCleared && "line-through text-muted-foreground")}>{finding.name}</span>
+              <span className={cn("leading-snug", isCleared ? "text-muted-foreground line-through" : "text-foreground")}>{finding.name}</span>
             </div>
-            <Badge 
-              variant="outline" 
+            <span
               className={cn(
-                "h-4 px-1.5 text-[7px] font-semibold uppercase tracking-wider border-none",
-                isCleared ? "bg-emerald-600 text-primary-foreground" : "bg-rose-600 text-primary-foreground"
+                "shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider",
+                tone === "success" && "bg-success/10 text-success",
+                tone === "primary" && "bg-primary/10 text-primary",
+                tone === "warning" && "bg-warning/10 text-warning"
               )}
             >
               {displayStatus}
-            </Badge>
+            </span>
           </div>
         );
       })}

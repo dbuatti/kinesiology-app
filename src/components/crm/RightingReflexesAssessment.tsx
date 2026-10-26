@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Eye, EyeOff, Save, Loader2, RotateCcw, Zap, Activity, RefreshCw, CheckCircle2, ArrowRightLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
 import { showSuccess, showError } from "@/utils/toast";
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -39,7 +40,7 @@ const RightingReflexesAssessment = ({
   useEffect(() => {
     const fetchInitialState = async () => {
       try {
-        const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
+        const { data: app } = appointmentId === DEMO_APPOINTMENT_ID ? { data: null } : await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
         if (app?.priority_pattern) {
           const pattern = safeParse(app.priority_pattern, {} as any);
           const status = pattern.brainZones?.['Righting Reflexes'];
@@ -108,7 +109,7 @@ const RightingReflexesAssessment = ({
   const handleSetStatus = async (status: 'Clear' | 'Inhibited' | 'Recheck') => {
     setLoading(true);
     try {
-      const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
+      const { data: app } = appointmentId === DEMO_APPOINTMENT_ID ? { data: null } : await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
       const pattern = safeParse(app?.priority_pattern, {} as any);
       
       if (!pattern.brainZones) pattern.brainZones = {};
@@ -136,7 +137,7 @@ const RightingReflexesAssessment = ({
   const handleSaveNotes = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase.from("appointments").update({ righting_reflex_notes: notes || null }).eq("id", appointmentId);
+      const { error } = appointmentId === DEMO_APPOINTMENT_ID ? { error: null } : await supabase.from("appointments").update({ righting_reflex_notes: notes || null }).eq("id", appointmentId);
       if (error) throw error;
       showSuccess("Notes saved.");
       onUpdate();
@@ -151,11 +152,11 @@ const RightingReflexesAssessment = ({
     setShowResetConfirm(false);
     setLoading(true);
     try {
-      const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
+      const { data: app } = appointmentId === DEMO_APPOINTMENT_ID ? { data: null } : await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
       const pattern = safeParse(app?.priority_pattern, {} as any);
       if (pattern.brainZones) delete pattern.brainZones['Righting Reflexes'];
 
-      await supabase.from("appointments").update({ 
+      if (appointmentId !== DEMO_APPOINTMENT_ID) await supabase.from("appointments").update({ 
         righting_reflex_notes: null,
         priority_pattern: JSON.stringify(pattern)
       }).eq("id", appointmentId);
@@ -184,8 +185,8 @@ const RightingReflexesAssessment = ({
               size="sm" 
               onClick={() => handleSetStatus('Clear')}
               className={cn(
-                "h-9 px-3.5 rounded-lg font-medium text-[13px] transition-all",
-                currentStatus === 'Clear' ? "bg-emerald-600 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-emerald-50"
+                "h-10 px-4 rounded-md font-medium text-[13px] transition-all",
+                currentStatus === 'Clear' ? "bg-success text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-success/5"
               )}
             >
               <CheckCircle2 size={14} className="mr-2" /> Clear
@@ -194,8 +195,8 @@ const RightingReflexesAssessment = ({
               size="sm" 
               onClick={() => handleSetStatus('Inhibited')}
               className={cn(
-                "h-9 px-3.5 rounded-lg font-medium text-[13px] transition-all",
-                currentStatus === 'Inhibited' ? "bg-rose-600 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-rose-50"
+                "h-10 px-4 rounded-md font-medium text-[13px] transition-all",
+                currentStatus === 'Inhibited' ? "bg-destructive text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-destructive/5"
               )}
             >
               <Zap size={14} className="mr-2" /> Inhibited
@@ -204,8 +205,8 @@ const RightingReflexesAssessment = ({
               size="sm" 
               onClick={() => handleSetStatus('Recheck')}
               className={cn(
-                "h-9 px-3.5 rounded-lg font-medium text-[13px] transition-all",
-                currentStatus === 'Recheck' ? "bg-amber-500 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-amber-50"
+                "h-10 px-4 rounded-md font-medium text-[13px] transition-all",
+                currentStatus === 'Recheck' ? "bg-warning text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-warning/5"
               )}
             >
               <RefreshCw size={14} className="mr-2" /> Recheck
@@ -213,7 +214,7 @@ const RightingReflexesAssessment = ({
           </div>
         </div>
         {currentStatus && (
-          <Badge className="bg-indigo-600 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
+          <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
             Auto-synced to Align phase
           </Badge>
         )}
@@ -225,14 +226,14 @@ const RightingReflexesAssessment = ({
             <Button 
               variant={activeTest === 'ocular' ? 'default' : 'ghost'}
               onClick={() => setActiveTest('ocular')}
-              className={cn("flex-1 rounded-xl h-10 font-bold text-xs", activeTest === 'ocular' ? "bg-card text-indigo-600 shadow-sm" : "text-primary-foreground")}
+              className={cn("flex-1 rounded-xl h-10 font-semibold text-xs", activeTest === 'ocular' ? "bg-card text-primary shadow-sm" : "text-primary-foreground")}
             >
               <Eye size={16} className="mr-2" /> Ocular
             </Button>
             <Button 
               variant={activeTest === 'labyrinthine' ? 'default' : 'ghost'}
               onClick={() => setActiveTest('labyrinthine')}
-              className={cn("flex-1 rounded-xl h-10 font-bold text-xs", activeTest === 'labyrinthine' ? "bg-card text-indigo-600 shadow-sm" : "text-primary-foreground")}
+              className={cn("flex-1 rounded-xl h-10 font-semibold text-xs", activeTest === 'labyrinthine' ? "bg-card text-primary shadow-sm" : "text-primary-foreground")}
             >
               <EyeOff size={16} className="mr-2" /> Labyrinthine
             </Button>
@@ -240,7 +241,7 @@ const RightingReflexesAssessment = ({
 
           <div className="p-6 bg-card rounded-2xl border-2 border-border/50 space-y-4">
             <h4 className="font-semibold text-foreground flex items-center gap-2">
-              {activeTest === 'ocular' ? <Eye className="text-primary" /> : <Activity className="text-emerald-500" />}
+              {activeTest === 'ocular' ? <Eye className="text-primary" /> : <Activity className="text-success" />}
               {activeTest === 'ocular' ? 'Ocular Righting Reflex' : 'Labyrinthine Righting Reflex'}
             </h4>
             <div className="space-y-3">
@@ -251,7 +252,7 @@ const RightingReflexesAssessment = ({
               </p>
               <div className="p-4 bg-muted/50 rounded-xl border border-border/50">
                 <p className="text-xs font-medium text-muted-foreground mb-2">Expected Response</p>
-                <p className="text-sm font-bold text-foreground">Head should reflexivey tilt back towards the midline/horizon.</p>
+                <p className="text-sm font-semibold text-foreground">Head should reflexivey tilt back towards the midline/horizon.</p>
               </div>
             </div>
           </div>
@@ -259,28 +260,28 @@ const RightingReflexesAssessment = ({
           {/* Structured Clinical Fields */}
           <div className="p-6 bg-muted/50 rounded-2xl border border-border/50 space-y-4">
             <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
-              <ArrowRightLeft size={14} className="text-indigo-500" /> Clinical Metrics
+              <ArrowRightLeft size={14} className="text-primary" /> Clinical Metrics
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-muted-foreground">Ocular Righting</Label>
                 <ToggleGroup type="single" value={ocularStatus} onValueChange={handleOcularChange} className="justify-start gap-1">
-                  <ToggleGroupItem value="Pass" className="rounded-lg border border-border text-xs font-bold px-2 py-1.5">Pass</ToggleGroupItem>
-                  <ToggleGroupItem value="Fail" className="rounded-lg border border-border text-xs font-bold px-2 py-1.5">Fail</ToggleGroupItem>
+                  <ToggleGroupItem value="Pass" className="rounded-md border border-border text-xs font-semibold px-2 py-2">Pass</ToggleGroupItem>
+                  <ToggleGroupItem value="Fail" className="rounded-md border border-border text-xs font-semibold px-2 py-2">Fail</ToggleGroupItem>
                 </ToggleGroup>
               </div>
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-muted-foreground">Labyrinthine</Label>
                 <ToggleGroup type="single" value={labyrinthineStatus} onValueChange={handleLabyrinthineChange} className="justify-start gap-1">
-                  <ToggleGroupItem value="Pass" className="rounded-lg border border-border text-xs font-bold px-2 py-1.5">Pass</ToggleGroupItem>
-                  <ToggleGroupItem value="Fail" className="rounded-lg border border-border text-xs font-bold px-2 py-1.5">Fail</ToggleGroupItem>
+                  <ToggleGroupItem value="Pass" className="rounded-md border border-border text-xs font-semibold px-2 py-2">Pass</ToggleGroupItem>
+                  <ToggleGroupItem value="Fail" className="rounded-md border border-border text-xs font-semibold px-2 py-2">Fail</ToggleGroupItem>
                 </ToggleGroup>
               </div>
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-muted-foreground">Head Tilt Angle</Label>
                 <div className="relative">
-                  <Input type="number" placeholder="e.g. 15" value={headTiltAngle} onChange={(e) => handleTiltChange(e.target.value)} className="h-10 rounded-xl pr-8 text-xs font-bold" />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">°</span>
+                  <Input type="number" placeholder="e.g. 15" value={headTiltAngle} onChange={(e) => handleTiltChange(e.target.value)} className="h-10 rounded-md pr-8 text-xs font-semibold" />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">°</span>
                 </div>
               </div>
             </div>
@@ -288,7 +289,7 @@ const RightingReflexesAssessment = ({
         </div>
 
         <div className="space-y-4">
-          <Label htmlFor="rightingNotes" className="text-base font-bold text-foreground mb-2 block">
+          <Label htmlFor="rightingNotes" className="text-[15px] font-semibold text-foreground mb-2 block">
             Assessment Findings:
           </Label>
           <Textarea
@@ -303,7 +304,7 @@ const RightingReflexesAssessment = ({
               {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Save Notes"}
             </Button>
             {(initialNotes || currentStatus) && (
-              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-12 px-6 rounded-xl border-destructive/20 text-destructive hover:bg-destructive/5">
+              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-10 px-4 rounded-md border-destructive/20 text-destructive hover:bg-destructive/5">
                 <RotateCcw size={16} />
               </Button>
             )}

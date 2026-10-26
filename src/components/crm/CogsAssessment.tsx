@@ -31,8 +31,8 @@ const PLANES = [
     title: 'Sagittal Plane',
     subtitle: 'Forward-backward movement · View from side',
     icon: ArrowUpDown,
-    color: 'bg-chart-primary/5 border-chart-primary/20',
-    accentText: 'text-chart-primary',
+    color: 'bg-primary/5 border-primary/20',
+    accentText: 'text-primary',
     prompt: 'Pelvis tilts forward (bum out), rib cage rounds back, chin tucks',
     lookFor: 'Do pelvis, rib cage, and neck sequence together? Does the neck automatically tuck when the pelvis tips forward? Is there a disconnect between segments?',
     movement: 'First: isolate each segment. Then: move all three together.',
@@ -45,8 +45,8 @@ const PLANES = [
     title: 'Frontal Plane',
     subtitle: 'Side-to-side movement · View from front',
     icon: Move,
-    color: 'bg-chart-emerald/5 border-chart-emerald/20',
-    accentText: 'text-chart-emerald',
+    color: 'bg-primary/5 border-primary/20',
+    accentText: 'text-primary',
     prompt: 'Bend to the side — rib cage should tip, head tilts, pelvis shifts',
     lookFor: 'Is there lateral flexion through the neck? Does the pelvis shift or stay locked? Is most movement coming from the thoracic spine only?',
     movement: 'First: side-bend just the rib cage (head stays). Then: let the whole body follow.',
@@ -59,8 +59,8 @@ const PLANES = [
     title: 'Transverse Plane',
     subtitle: 'Rotational movement · View from above conceptually',
     icon: RotateCw,
-    color: 'bg-chart-destructive/5 border-chart-destructive/20',
-    accentText: 'text-chart-destructive',
+    color: 'bg-primary/5 border-primary/20',
+    accentText: 'text-primary',
     prompt: 'Rotate the rib cage while keeping pelvis and head still, then reverse',
     lookFor: 'Can the rib cage rotate independently of the pelvis? Does the head stay facing forward or follow? Is there overuse of upper traps?',
     movement: 'First: dissociate — rotate rib cage only. Then: integrate — rib cage right, pelvis left.',
@@ -143,13 +143,13 @@ const CogsAssessment = ({
       <div className="flex items-center gap-3">
         <Move size={16} className="text-muted-foreground" />
         <div>
-          <h3 className="text-xs font-bold text-foreground tracking-tight uppercase tracking-wider">COGS — Visual Assessment</h3>
-          <p className="text-[10px] text-muted-foreground">Anatomy in Motion · Pelvis, Rib Cage &amp; Cranium coordination</p>
+          <h3 className="text-sm font-semibold text-foreground">COGS · visual assessment</h3>
+          <p className="text-[11px] text-muted-foreground">Anatomy in Motion · pelvis, rib cage and cranium coordination</p>
         </div>
         {hasSavedNotes && <span className="text-xs font-medium text-muted-foreground ml-auto">Recorded</span>}
       </div>
 
-      <div className="space-y-5">
+      <div className="space-y-6">
             
             {/* Introduction */}
             <div className="space-y-2 border-l-2 border-muted pl-4">
@@ -173,7 +173,7 @@ const CogsAssessment = ({
                   key={plane.id}
                   onClick={() => setActivePlane(activePlane === plane.id ? null : plane.id)}
                   className={cn(
-                    "shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors border",
+                    "shrink-0 flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors border",
                     activePlane === plane.id 
                       ? plane.color + " " + plane.accentText + " border-current"
                       : "bg-transparent border-border text-muted-foreground hover:bg-muted/40"
@@ -199,7 +199,7 @@ const CogsAssessment = ({
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <plane.icon size={18} className={plane.accentText} />
-                        <h4 className="text-base font-semibold text-foreground">{plane.title}</h4>
+                        <h4 className="text-[15px] font-semibold text-foreground">{plane.title}</h4>
                       </div>
                       <p className="text-xs text-muted-foreground">{plane.subtitle}</p>
                     </div>
@@ -233,7 +233,7 @@ const CogsAssessment = ({
 
                     <div className="space-y-2">
                       <Label className="text-xs font-medium text-muted-foreground">Quick tags</Label>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-2">
                         {plane.tags.map(tag => (
                           <button
                             key={tag}

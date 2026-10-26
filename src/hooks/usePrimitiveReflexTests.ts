@@ -6,6 +6,7 @@ import { showError } from "@/utils/toast";
 import { safeParse } from "@/utils/safe-json";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { findGridReflex, primitiveSideKey } from "@/components/crm/pathway-reflex-stim-data";
+import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
 
 export function usePrimitiveReflexTests(
   appointmentId: string | undefined,
@@ -14,9 +15,16 @@ export function usePrimitiveReflexTests(
 ) {
   const [tests, setTests] = useState<PrimitiveReflexTest[]>([]);
   const [loading, setLoading] = useState(true);
+  /** Demo fixture has no backend rows — stay in memory, stay silent. */
+  const isDemo = appointmentId === DEMO_APPOINTMENT_ID;
 
   const fetchTests = useCallback(async () => {
     if (!appointmentId) return;
+    if (isDemo) {
+      setTests([]);
+      setLoading(false);
+      return;
+    }
 
     try {
       const { data, error } = await supabase
@@ -32,7 +40,7 @@ export function usePrimitiveReflexTests(
     } finally {
       setLoading(false);
     }
-  }, [appointmentId]);
+  }, [appointmentId, isDemo]);
 
   const updateTest = async (reflexId: string, updates: Partial<PrimitiveReflexTest>, side?: 'L' | 'R', reflexName?: string) => {
     if (!appointmentId) return;
@@ -89,12 +97,31 @@ export function usePrimitiveReflexTests(
       }
 
       if (updates.is_primary_priority) {
-        await supabase
-          .from('primitive_reflex_tests')
-          .update({ is_primary_priority: false })
-          .eq('appointment_id', appointmentId);
-        
+        if (!isDemo) {
+          await supabase
+            .from('primitive_reflex_tests')
+            .update({ is_primary_priority: false })
+            .eq('appointment_id', appointmentId);
+        }
+
         setTests(prev => prev.map(t => ({ ...t, is_primary_priority: false })));
+      }
+
+      // Demo writes stay in local state — never touch client tables.
+      if (isDemo) {
+        setTests(prev => {
+          const row = {
+            ...(prev.find(t => t.reflex_id === reflexId) ?? {}),
+            ...updates,
+            id: `demo-${reflexId}`,
+            appointment_id: appointmentId,
+            reflex_id: reflexId,
+          } as PrimitiveReflexTest;
+          return prev.some(t => t.reflex_id === reflexId)
+            ? prev.map(t => (t.reflex_id === reflexId ? row : t))
+            : [...prev, row];
+        });
+        return;
       }
 
       // Find existing record to decide insert vs update

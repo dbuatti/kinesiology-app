@@ -95,7 +95,7 @@ const BreathingRecoveryTimer = ({ onSessionComplete }: BreathingRecoveryTimerPro
         "relative p-8 rounded-3xl border-4 transition-all duration-500 flex flex-col items-center justify-center overflow-hidden",
         phase === 'idle' ? "bg-muted border-border" :
         phase === 'hold' ? "bg-primary border-primary text-primary-foreground shadow-2xl shadow-primary/20" :
-        phase === 'recover' ? "bg-emerald-500 border-emerald-300 text-primary-foreground shadow-2xl shadow-emerald-200" :
+        phase === 'recover' ? "bg-success/50 border-success text-primary-foreground shadow-2xl shadow-success/30" :
         "bg-foreground border-border text-background"
       )}>
         {/* Background Pulse for Breathing */}
@@ -109,7 +109,7 @@ const BreathingRecoveryTimer = ({ onSessionComplete }: BreathingRecoveryTimerPro
         {phase === 'idle' && (
           <div className="text-center space-y-4 py-4">
             <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-2">
-              <Wind size={40} className="text-chart-primary" />
+              <Wind size={40} className="text-primary" />
             </div>
             <h3 className="text-xl font-semibold text-foreground">Ready to start?</h3>
             <p className="text-sm text-muted-foreground max-w-[200px]">Follow the 5s hold and 15s recovery cycles.</p>
@@ -150,7 +150,7 @@ const BreathingRecoveryTimer = ({ onSessionComplete }: BreathingRecoveryTimerPro
 
         {phase === 'complete' && (
           <div className="text-center space-y-6 py-4 relative z-10">
-            <div className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-sm">
+            <div className="w-20 h-20 bg-success/50 rounded-full flex items-center justify-center mx-auto shadow-sm">
               <Trophy size={40} className="text-primary-foreground" />
             </div>
             <div>
@@ -183,8 +183,8 @@ const BreathingRecoveryTimer = ({ onSessionComplete }: BreathingRecoveryTimerPro
 
       {(phase === 'hold' || phase === 'recover') && (
         <div className="bg-muted p-4 rounded-xl border border-border flex items-start gap-3">
-          <Info size={18} className="text-chart-primary mt-0.5" />
-          <p className="text-xs text-indigo-900 leading-relaxed">
+          <Info size={18} className="text-primary mt-0.5" />
+          <p className="text-xs text-foreground leading-relaxed">
             <strong>Tip:</strong> Keep your body relaxed during the hold. If you feel significant air hunger, stop the timer and rest longer.
           </p>
         </div>

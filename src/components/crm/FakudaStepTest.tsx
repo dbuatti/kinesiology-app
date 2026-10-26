@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Footprints, Info, Save, Loader2, RotateCcw, CheckCircle2, Zap, RefreshCw, ArrowRightLeft, Timer, Play, Pause, ChevronDown, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
 import { showSuccess, showError } from "@/utils/toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -65,7 +66,7 @@ const FakudaStepTest = ({
   useEffect(() => {
     const fetchInitialState = async () => {
       try {
-        const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
+        const { data: app } = appointmentId === DEMO_APPOINTMENT_ID ? { data: null } : await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
         if (app?.priority_pattern) {
           const pattern = safeParse(app.priority_pattern, {} as any);
           const status = pattern.brainZones?.['Fakuda Step Test'];
@@ -111,13 +112,13 @@ const FakudaStepTest = ({
 
   const saveToSupabase = useCallback(async (notes: string, status: 'Clear' | 'Inhibited' | 'Recheck' | null) => {
     try {
-      const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
+      const { data: app } = appointmentId === DEMO_APPOINTMENT_ID ? { data: null } : await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
       const pattern = safeParse(app?.priority_pattern, {} as any);
       if (!pattern.brainZones) pattern.brainZones = {};
       if (status) pattern.brainZones['Fakuda Step Test'] = status;
       else if (currentStatus) pattern.brainZones['Fakuda Step Test'] = currentStatus;
       
-      await supabase.from("appointments").update({
+      if (appointmentId !== DEMO_APPOINTMENT_ID) await supabase.from("appointments").update({
         fakuda_notes: notes || null,
         priority_pattern: JSON.stringify(pattern)
       }).eq("id", appointmentId);
@@ -165,12 +166,12 @@ const FakudaStepTest = ({
   const handleSetStatus = async (status: 'Clear' | 'Inhibited' | 'Recheck') => {
     setLoading(true);
     try {
-      const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
+      const { data: app } = appointmentId === DEMO_APPOINTMENT_ID ? { data: null } : await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
       const pattern = safeParse(app?.priority_pattern, {} as any);
       if (!pattern.brainZones) pattern.brainZones = {};
       pattern.brainZones['Fakuda Step Test'] = status;
 
-      await supabase.from("appointments").update({ 
+      if (appointmentId !== DEMO_APPOINTMENT_ID) await supabase.from("appointments").update({ 
         priority_pattern: JSON.stringify(pattern),
         fakuda_notes: fakudaNotes || null 
       }).eq("id", appointmentId);
@@ -190,11 +191,11 @@ const FakudaStepTest = ({
     setShowResetConfirm(false);
     setLoading(true);
     try {
-      const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
+      const { data: app } = appointmentId === DEMO_APPOINTMENT_ID ? { data: null } : await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
       const pattern = safeParse(app?.priority_pattern, {} as any);
       if (pattern.brainZones) delete pattern.brainZones['Fakuda Step Test'];
 
-      await supabase.from("appointments").update({ 
+      if (appointmentId !== DEMO_APPOINTMENT_ID) await supabase.from("appointments").update({ 
         fakuda_notes: null,
         priority_pattern: JSON.stringify(pattern)
       }).eq("id", appointmentId);
@@ -215,38 +216,38 @@ const FakudaStepTest = ({
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-1.5">
+        <div className="flex gap-2">
           <Button 
             size="sm" 
             onClick={() => handleSetStatus('Clear')}
             className={cn(
-              "h-9 px-4 rounded-md font-semibold text-[11px] transition-all",
-              currentStatus === 'Clear' ? "bg-emerald-600 text-primary-foreground" : "bg-transparent text-muted-foreground border border-border hover:bg-emerald-500/10 hover:text-emerald-600"
+              "h-10 px-4 rounded-md font-semibold text-[11px] transition-all",
+              currentStatus === 'Clear' ? "bg-success text-primary-foreground" : "bg-transparent text-muted-foreground border border-border hover:bg-success/10 hover:text-success"
             )}
           >
-            <CheckCircle2 size={13} className="mr-1.5" /> Clear
+            <CheckCircle2 size={13} className="mr-2" /> Clear
           </Button>
           <Button 
             size="sm" 
             onClick={() => handleSetStatus('Inhibited')}
             className={cn(
-              "h-9 px-4 rounded-md font-semibold text-[11px] transition-all",
-              currentStatus === 'Inhibited' ? "bg-rose-600 text-primary-foreground" : "bg-transparent text-muted-foreground border border-border hover:bg-rose-500/10 hover:text-rose-600"
+              "h-10 px-4 rounded-md font-semibold text-[11px] transition-all",
+              currentStatus === 'Inhibited' ? "bg-destructive text-primary-foreground" : "bg-transparent text-muted-foreground border border-border hover:bg-destructive/10 hover:text-destructive"
             )}
           >
-            <Zap size={13} className="mr-1.5" /> Inhibited
+            <Zap size={13} className="mr-2" /> Inhibited
           </Button>
           <Button 
             size="sm" 
             onClick={() => handleSetStatus('Recheck')}
             className={cn(
-              "h-9 px-4 rounded-md font-semibold text-[11px] transition-all",
-              currentStatus === 'Recheck' ? "bg-amber-500 text-primary-foreground" : "bg-transparent text-muted-foreground border border-border hover:bg-amber-500/10 hover:text-amber-600"
+              "h-10 px-4 rounded-md font-semibold text-[11px] transition-all",
+              currentStatus === 'Recheck' ? "bg-warning text-primary-foreground" : "bg-transparent text-muted-foreground border border-border hover:bg-warning/10 hover:text-warning"
             )}
           >
-            <RefreshCw size={13} className="mr-1.5" /> Recheck
+            <RefreshCw size={13} className="mr-2" /> Recheck
           </Button>
         </div>
         {currentStatus && (
@@ -261,11 +262,11 @@ const FakudaStepTest = ({
           <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
             <ArrowRightLeft size={13} /> Clinical Metrics
           </h4>
-          <div className="flex items-center gap-1.5 text-xs tabular-nums">
+          <div className="flex items-center gap-2 text-xs tabular-nums">
             <Timer size={13} className="text-muted-foreground" />
             <span className="font-semibold">{timerSeconds}s</span>
             <span className="text-muted-foreground">/ {timerDuration}s</span>
-            <button onClick={() => setTimerDuration(d => d === 30 ? 60 : d === 60 ? 90 : 30)} className="text-[10px] text-muted-foreground hover:text-foreground px-1 py-0.5 rounded border border-border">
+            <button onClick={() => setTimerDuration(d => d === 30 ? 60 : d === 60 ? 90 : 30)} className="text-[10px] text-muted-foreground hover:text-foreground px-1 py-1 rounded border border-border">
               {timerDuration}s
             </button>
             {!timerRunning ? (
@@ -284,33 +285,33 @@ const FakudaStepTest = ({
         </div>
         {timerRunning && (
           <div className="w-full h-1 bg-muted rounded-full overflow-hidden">
-            <div className="h-full bg-emerald-500 transition-all duration-1000" style={{ width: `${Math.min(100, (timerSeconds / timerDuration) * 100)}%` }} />
+            <div className="h-full bg-success/50 transition-all duration-1000" style={{ width: `${Math.min(100, (timerSeconds / timerDuration) * 100)}%` }} />
           </div>
         )}
         <div className="grid grid-cols-3 gap-3">
           <div className="space-y-1">
             <Label className="text-[10px] font-medium text-muted-foreground">Drift</Label>
             <ToggleGroup type="single" value={driftDirection} onValueChange={handleDriftChange} className="justify-start gap-1">
-              <ToggleGroupItem value="Left" className="rounded border border-border text-[10px] font-bold px-2 py-1 data-[state=on]:bg-indigo-600 data-[state=on]:text-primary-foreground">L</ToggleGroupItem>
-              <ToggleGroupItem value="Right" className="rounded border border-border text-[10px] font-bold px-2 py-1 data-[state=on]:bg-indigo-600 data-[state=on]:text-primary-foreground">R</ToggleGroupItem>
-              <ToggleGroupItem value="Forward" className="rounded border border-border text-[10px] font-bold px-2 py-1 data-[state=on]:bg-indigo-600 data-[state=on]:text-primary-foreground">F</ToggleGroupItem>
+              <ToggleGroupItem value="Left" className="rounded-md border border-border text-[10px] font-semibold px-2 py-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">L</ToggleGroupItem>
+              <ToggleGroupItem value="Right" className="rounded-md border border-border text-[10px] font-semibold px-2 py-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">R</ToggleGroupItem>
+              <ToggleGroupItem value="Forward" className="rounded border border-border text-[10px] font-semibold px-2 py-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">F</ToggleGroupItem>
             </ToggleGroup>
           </div>
           <div className="space-y-1">
             <Label className="text-[10px] font-medium text-muted-foreground">Angle (°)</Label>
-            <Input type="number" placeholder="30" value={angleRotation} onChange={(e) => handleAngleChange(e.target.value)} className="h-8 rounded-md px-2 text-xs font-bold" />
+            <Input type="number" placeholder="30" value={angleRotation} onChange={(e) => handleAngleChange(e.target.value)} className="h-8 rounded-md px-2 text-xs font-semibold" />
           </div>
           <div className="space-y-1">
             <Label className="text-[10px] font-medium text-muted-foreground">Distance (cm)</Label>
-            <Input type="number" placeholder="50" value={distanceDisplaced} onChange={(e) => handleDistanceChange(e.target.value)} className="h-8 rounded-md px-2 text-xs font-bold" />
+            <Input type="number" placeholder="50" value={distanceDisplaced} onChange={(e) => handleDistanceChange(e.target.value)} className="h-8 rounded-md px-2 text-xs font-semibold" />
           </div>
         </div>
       </div>
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="fakudaNotes" className="text-sm font-bold text-foreground flex items-center gap-2">
-            <FileText size={15} className="text-chart-emerald" />
+          <Label htmlFor="fakudaNotes" className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <FileText size={15} className="text-success" />
             Observations
           </Label>
           <div className="flex items-center gap-3">
@@ -318,7 +319,7 @@ const FakudaStepTest = ({
               <span className="text-[10px] text-muted-foreground font-medium">Saved {lastSaved}</span>
             )}
             {(initialFakudaNotes || currentStatus) && (
-              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-7 px-3 rounded-lg border-destructive/20 text-destructive hover:bg-destructive/5 text-[10px]">
+              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-8 px-3 rounded-md border-destructive/20 text-destructive hover:bg-destructive/5 text-[11px] font-semibold">
                 <RotateCcw size={12} className="mr-1" /> Reset
               </Button>
             )}
@@ -344,7 +345,7 @@ const FakudaStepTest = ({
           <img src="/images/fakuda-1.png" alt="Fakuda Reference 1" className="w-full h-20 object-cover rounded-md border border-border" />
           <img src="/images/fakuda-2.png" alt="Fakuda Reference 2" className="w-full h-20 object-cover rounded-md border border-border" />
         </div>
-        <ol className="space-y-1.5 text-sm text-muted-foreground list-decimal list-inside">
+        <ol className="space-y-2 text-sm text-muted-foreground list-decimal list-inside">
           <li>Client stands with eyes closed and shoulders flexed to 90 degrees.</li>
           <li>Instruct the client to march on the spot for 30-60 seconds.</li>
           <li>Observe final position relative to start position.</li>

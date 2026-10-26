@@ -69,19 +69,17 @@ const SnsItem = ({ title, subtitle, icon: Icon, iconColor, notes, notesField, ha
               title={completed ? "Mark as not completed in this session" : "Mark as completed in this session"}
               aria-label={`${completed ? "Un-tick" : "Tick"} ${title} as completed`}
               className={cn(
-                "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0",
+                "flex h-7 w-7 items-center justify-center rounded-full border-2 transition-all shrink-0",
                 completed
                   ? "bg-chart-emerald border-chart-emerald text-white"
                   : "border-border text-transparent hover:border-chart-emerald hover:bg-chart-emerald/10"
               )}
             >
-              <Check size={11} strokeWidth={3} />
+              <Check size={13} strokeWidth={3} />
             </button>
           )}
-          {hasNotes ? (
+          {hasNotes && (
             <span className="text-[10px] font-medium uppercase tracking-wider text-chart-emerald">Recorded</span>
-          ) : (
-            <span className="text-[10px] text-muted-foreground/50">Not yet recorded</span>
           )}
         </div>
       </div>

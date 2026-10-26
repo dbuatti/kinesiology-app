@@ -1,6 +1,6 @@
 
-import { useState, useEffect } from "react"; import type { MouseEvent } from 'react';
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react"; import type { MouseEvent } from 'react';
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { TCM_CHANNELS } from "@/data/tcm-channel-data";
 import { ZONES, ZONE_ORDER, normaliseZone } from "@/lib/zones";
@@ -73,6 +73,11 @@ const SearchBar = ({ compact = false, responsive = false }: { compact?: boolean;
   const [loading, setLoading] = useState(false);
   const { setMode } = useAppMode();
   const navigate = useNavigate();
+  const location = useLocation();
+  // Read at keydown time: the listener is registered once, so a captured
+  // pathname would go stale after the first navigation.
+  const pathnameRef = useRef(location.pathname);
+  pathnameRef.current = location.pathname;
 
   useEffect(() => {
     const stored = localStorage.getItem(RECENT_SEARCHES_KEY);
@@ -85,10 +90,12 @@ const SearchBar = ({ compact = false, responsive = false }: { compact?: boolean;
     }
 
     const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setOpen((open) => !open);
-      }
+      if (e.key !== "k" || !(e.metaKey || e.ctrlKey) || e.shiftKey) return;
+      // In a live session ⌘K belongs to the corrections dock — opening the
+      // global search on top of it just stacks two dialogs.
+      if (/^\/appointments\/[^/]+\/?$/.test(pathnameRef.current)) return;
+      e.preventDefault();
+      setOpen((open) => !open);
     };
 
     document.addEventListener("keydown", down);

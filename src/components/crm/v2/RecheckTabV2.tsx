@@ -43,7 +43,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   primitiveReflexes: 'bg-primary/10 text-primary border-primary/20',
   cranialNerves: 'bg-muted text-muted-foreground border-border',
   muscles: 'bg-destructive/10 text-destructive border-destructive/20',
-  brainZones: 'bg-chart-emerald/10 text-chart-emerald border-chart-emerald/20',
+  brainZones: 'bg-success/10 text-success border-success/20',
 };
 
 const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, saveField, onJumpToPhase }: RecheckTabV2Props) => {
@@ -169,15 +169,15 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search findings..."
-            className="h-9 pl-9 rounded-lg text-xs bg-muted/50 border-border"
+            className="h-10 pl-9 rounded-md text-sm bg-muted/50 border-border"
           />
         </div>
         <button
           onClick={() => setOnlyInhibited(!onlyInhibited)}
           className={cn(
-            "px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all",
+            "h-8 px-3 rounded-md text-[11px] font-semibold border transition-all",
             onlyInhibited
-              ? "bg-rose-500/10 text-rose-600 border-rose-500/20"
+              ? "bg-destructive/10 text-destructive border-destructive/20"
               : "bg-muted/50 text-muted-foreground border-border hover:bg-muted"
           )}
         >
@@ -197,7 +197,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
             <div
               key={idx}
               className={cn(
-                "bg-card border rounded-xl p-5 transition-all",
+                "bg-card border rounded-xl p-4 transition-all",
                 priorityPathway.startsWith(item.name)
                   ? "border-destructive/30 ring-1 ring-destructive/10"
                   : "border-border",
@@ -207,31 +207,31 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
               {/* Top row */}
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2.5">
-                    <h4 className="text-sm font-bold text-foreground">{item.name}</h4>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-semibold text-foreground">{item.name}</h4>
                     {item.side && (
-                      <Badge variant="outline" className="text-[10px] font-bold px-1.5 py-0 rounded border-border text-muted-foreground">
+                      <Badge variant="outline" className="text-[10px] font-semibold px-2 py-0 rounded border-border text-muted-foreground">
                         {item.side}
                       </Badge>
                     )}
                   </div>
                   {item.reflex && (
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                    <p className="text-[11px] text-muted-foreground mt-1">
                       {[item.reflex.category, item.reflex.developmentalWindow].filter(Boolean).join(' • ')}
                     </p>
                   )}
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                   <span className={cn(
-                    "text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border",
+                    "text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border",
                     item.status === 'Hypertonic'
-                      ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
-                      : "bg-rose-500/10 text-rose-600 border-rose-500/20"
+                      ? "bg-warning/10 text-warning border-warning/20"
+                      : "bg-destructive/10 text-destructive border-destructive/20"
                   )}>
                     {item.status === 'Inhibition' ? 'Inhib' : item.status}
                   </span>
                   {item.wasPriority && (
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                       Prio
                     </span>
                   )}
@@ -240,7 +240,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
 
               {/* Info */}
               {item.reflex && (
-                <div className="text-xs text-muted-foreground leading-relaxed space-y-0.5 mb-4">
+                <div className="text-xs text-muted-foreground leading-relaxed space-y-1 mb-4">
                   <p>{item.reflex.stimulus}</p>
                   <p>{item.reflex.inhibitionPattern}</p>
                 </div>
@@ -254,24 +254,24 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
 
               {/* Category */}
               <div className="mb-4">
-                <span className={cn("inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border", catColor)}>
+                <span className={cn("inline-block text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full border", catColor)}>
                   {CATEGORY_LABELS[item.rawCategory] || item.rawCategory}
                 </span>
               </div>
 
               {/* Actions */}
               {act === 'carry_forward' && (
-                <div className="flex items-center gap-1.5 text-xs font-medium text-chart-emerald">
+                <div className="flex items-center gap-2 text-xs font-medium text-success">
                   <CheckCircle2 size={13} /> Added to assessment as {item.status}
                 </div>
               )}
               {act === 'unsure' && (
-                <div className="flex items-center gap-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+                <div className="flex items-center gap-2 text-xs font-medium text-warning">
                   <HelpCircle size={13} /> Flagged as Unsure
                 </div>
               )}
               {act === 'resolved' && (
-                <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                   <CheckCircle2 size={13} /> Cleared
                 </div>
               )}
@@ -283,7 +283,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
                     size="sm"
                     variant="outline"
                     title="Choose this finding as the correction pathway and open Correct"
-                    className="h-7 px-3 rounded-md text-[11px] font-bold border-primary/20 text-primary hover:bg-primary/5"
+                    className="h-7 px-3 rounded-md text-[11px] font-semibold border-primary/20 text-primary hover:bg-primary/5"
                   >
                     <Route size={11} className="mr-1" /> Set Pathway
                   </Button>
@@ -301,7 +301,7 @@ const RecheckTabV2 = ({ appointment, history, onUpdate, updatePriorityPattern, s
                     onClick={() => handleAction(item, 'unsure')}
                     disabled={isSaving}
                     label="Unsure"
-                    className="text-amber-600 dark:text-amber-400 border-amber-500/20 hover:bg-amber-500/10"
+                    className="text-warning border-warning/20 hover:bg-warning/10"
                   />
                 </div>
               )}
@@ -329,7 +329,7 @@ const ActionButton = ({
     size="sm"
     variant="outline"
     className={cn(
-      "h-7 px-3 rounded-md text-[11px] font-bold border-border text-muted-foreground hover:bg-muted",
+      "h-7 px-3 rounded-md text-[11px] font-semibold border-border text-muted-foreground hover:bg-muted",
       className
     )}
   >

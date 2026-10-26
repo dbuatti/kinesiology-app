@@ -14,7 +14,8 @@ import { useCorrectionDock } from "./CorrectionDockContext";
  * dock widens to make room — the list itself never moves.
  */
 const CorrectionDock = () => {
-  const { isOpen, target, selection, openDock, closeDock, rememberSelection } = useCorrectionDock();
+  const { isOpen, target, selection, openDock, closeDock, rememberSelection, protocolLogs, logProtocol } =
+    useCorrectionDock();
   const [instructionsOpen, setInstructionsOpen] = useState(false);
 
   // A closed dock always reopens on the list, not the last deep link.
@@ -24,7 +25,7 @@ const CorrectionDock = () => {
 
   if (!isOpen) {
     return (
-      <aside className="sticky top-[3.625rem] flex h-[calc(100dvh-3.625rem)] w-12 shrink-0 self-start flex-col items-center gap-1 border-l border-border bg-card py-3">
+      <aside className="sticky top-[59px] flex h-[calc(100dvh-59px)] w-12 shrink-0 self-start flex-col items-center gap-1 border-l border-border bg-card py-3">
         <button
           onClick={() => openDock({ tab: "afferent" })}
           title="Afferent corrections (A)"
@@ -61,7 +62,7 @@ const CorrectionDock = () => {
   return (
     <aside
       className={cn(
-        "sticky top-[3.625rem] flex h-[calc(100dvh-3.625rem)] shrink-0 self-start flex-col",
+        "sticky top-[59px] flex h-[calc(100dvh-59px)] shrink-0 self-start flex-col",
         "border-l border-border bg-card",
         "transition-[width] duration-200 ease-out",
         instructionsOpen ? "w-[640px] max-w-[60vw]" : "w-[400px] max-w-[70vw]"
@@ -91,6 +92,8 @@ const CorrectionDock = () => {
           initialSelection={selection}
           onSelectionChange={rememberSelection}
           onExpandedChange={setInstructionsOpen}
+          protocolLogs={protocolLogs}
+          onProtocolLogChange={logProtocol}
         />
       </div>
     </aside>

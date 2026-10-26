@@ -51,18 +51,18 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
   return (
     <div 
       className={cn(
-        "flex items-center justify-between p-1.5 transition-all cursor-pointer group border rounded-md",
+        "flex items-center justify-between p-2 transition-all cursor-pointer group border rounded-md",
         status === 'Inhibited' 
           ? isCleared 
-            ? "bg-chart-emerald/8 border-chart-emerald/25 text-foreground/80" 
+            ? "bg-success/8 border-success/25 text-foreground/80" 
             : "bg-destructive/8 border-destructive/25 text-destructive"
           : status === 'Hypertonic'
             ? isCleared
-              ? "bg-chart-emerald/8 border-chart-emerald/25 text-foreground/80"
-              : "bg-amber-500/8 border-amber-500/25 text-amber-600 dark:text-amber-300"
+              ? "bg-success/8 border-success/25 text-foreground/80"
+              : "bg-warning/10 border-warning/25 text-warning"
             : status === 'Hypotonic'
               ? isCleared
-                ? "bg-chart-emerald/8 border-chart-emerald/25 text-foreground/80"
+                ? "bg-success/8 border-success/25 text-foreground/80"
                 : "bg-sky-500/8 border-sky-500/25 text-sky-600 dark:text-sky-300"
               : "hover:bg-muted/50 border-transparent text-muted-foreground"
       )}
@@ -73,15 +73,15 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
           "w-4 h-4 border flex items-center justify-center transition-all shrink-0 rounded-sm",
           status === 'Inhibited' 
             ? isCleared 
-              ? "bg-chart-emerald border-chart-emerald text-primary-foreground" 
+              ? "bg-success border-success text-primary-foreground" 
               : "bg-destructive border-destructive text-primary-foreground"
             : status === 'Hypertonic'
               ? isCleared
-                ? "bg-chart-emerald border-chart-emerald text-primary-foreground"
-                : "bg-amber-500 border-amber-500 text-primary-foreground"
+                ? "bg-success border-success text-primary-foreground"
+                : "bg-warning border-warning text-primary-foreground"
               : status === 'Hypotonic'
                 ? isCleared
-                  ? "bg-chart-emerald border-chart-emerald text-primary-foreground"
+                  ? "bg-success border-success text-primary-foreground"
                   : "bg-sky-500 border-sky-500 text-primary-foreground"
                 : "border-border group-hover:border-foreground bg-background"
         )}>
@@ -92,9 +92,9 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
 
         <div className="flex flex-col min-w-0">
           <span className={cn(
-            "text-[10px] font-bold truncate",
+            "text-[10px] font-semibold truncate",
             status === 'Inhibited' && !isCleared && "text-destructive",
-            status === 'Hypertonic' && !isCleared && "text-amber-600 dark:text-amber-300",
+            status === 'Hypertonic' && !isCleared && "text-warning",
             status === 'Hypotonic' && !isCleared && "text-sky-600 dark:text-sky-300",
             isCleared && "text-muted-foreground line-through"
           )}>
@@ -105,17 +105,17 @@ const CheckItem = ({ category, name, side, pattern, description, testingInstruct
           )}
           {testingInstructions && (
             <span className={cn(
-              "text-[10px] text-chart-primary/70 leading-tight flex items-start gap-1",
+              "text-[10px] text-primary/70 leading-tight flex items-start gap-1",
               showFullInstructions ? "mt-1" : "truncate"
             )}>
-              <Zap size={8} className="shrink-0 mt-0.5" />{testingInstructions}
+              <Zap size={8} className="shrink-0 mt-1" />{testingInstructions}
             </span>
           )}
         </div>
       </div>
 
       {isCleared && (
-        <Badge className="bg-chart-emerald text-primary-foreground border-none font-semibold text-[7px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm shrink-0">
+        <Badge className="bg-success text-primary-foreground border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-1 rounded-sm shrink-0">
           Cleared
         </Badge>
       )}

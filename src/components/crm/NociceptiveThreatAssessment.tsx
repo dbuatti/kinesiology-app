@@ -116,7 +116,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
 
             {initialValue && (
               <div className="p-3 rounded-lg bg-muted border border-border flex items-center gap-3">
-                <AlertTriangle size={14} className="text-chart-primary shrink-0" />
+                <AlertTriangle size={14} className="text-primary shrink-0" />
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">Inhibited finding</p>
                   <p className="text-xs font-medium text-foreground">{initialValue}</p>
@@ -139,7 +139,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
 
             <div className="space-y-2">
               <p className="text-xs font-medium text-muted-foreground">Common sites</p>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {SITE_PRESETS.map(tag => (
                   <button
                     key={tag}
@@ -192,8 +192,8 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
             <div className="space-y-3">
               <div className="p-3 rounded-lg bg-muted border border-border space-y-2">
                 <div className="flex items-center gap-2">
-                  <Hand size={14} className="text-chart-primary" />
-                  <h4 className="font-medium text-foreground text-xs">Method A: Compression Test</h4>
+                  <Hand size={14} className="text-primary" />
+                  <h4 className="font-semibold text-foreground text-[13px]">Method A: Compression Test</h4>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   The muscle is inhibited in the clear. <strong>Compress over the suspected site</strong>. 
@@ -204,8 +204,8 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
 
               <div className="p-3 rounded-lg bg-muted border border-border space-y-2">
                 <div className="flex items-center gap-2">
-                  <Brain size={14} className="text-chart-primary" />
-                  <h4 className="font-medium text-foreground text-xs">Method B: Thalamus Point Test</h4>
+                  <Brain size={14} className="text-primary" />
+                  <h4 className="font-semibold text-foreground text-[13px]">Method B: Thalamus Point Test</h4>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   State <strong>"Afferent"</strong> — the inhibited muscle should lock. Then the client holds the{' '}
@@ -221,10 +221,10 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
                   type="checkbox"
                   checked={confirmedNociception}
                   onChange={(e) => setConfirmedNociception(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                  className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary"
                 />
                 <div>
-                  <p className="font-medium text-foreground text-xs">Nociception confirmed</p>
+                  <p className="font-semibold text-foreground text-[13px]">Nociception confirmed</p>
                   <p className="text-xs text-muted-foreground">I have verified this site carries nociception (compression locks or thalamus locks).</p>
                 </div>
               </label>
@@ -292,7 +292,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
                       {stimulus.id === 'pinch' && <AlertTriangle size={16} />}
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-foreground text-xs">{stimulus.label}</p>
+                      <p className="font-semibold text-foreground text-[13px]">{stimulus.label}</p>
                       <p className="text-[10px] text-muted-foreground">{stimulus.desc}</p>
                     </div>
                     <div className={cn(
@@ -308,9 +308,9 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
 
             <div className="p-3 rounded-lg bg-muted border border-border">
               <div className="flex items-start gap-2">
-                <AlertTriangle size={12} className="text-muted-foreground mt-0.5 shrink-0" />
+                <AlertTriangle size={12} className="text-muted-foreground mt-1 shrink-0" />
                 <div>
-                  <p className="text-xs font-medium text-foreground">Stretch is NOT nociception</p>
+                  <p className="text-[13px] font-semibold text-foreground">Stretch is NOT nociception</p>
                   <p className="text-[10px] text-muted-foreground">If the aggravating stimulus is a stretch, that's unconscious mechanoreception (Golgi receptors), not nociception. Only crude/light touch, joint impact, and pinch are nociceptive inputs.</p>
                 </div>
               </div>
@@ -346,47 +346,47 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
               <div className="p-4 space-y-3">
 
                 <div className="flex items-center gap-2 p-2 rounded-md bg-background border border-border">
-                  <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-[10px] shrink-0">1</div>
-                  <Brain size={14} className="text-chart-primary shrink-0" />
+                  <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-[10px] shrink-0">1</div>
+                  <Brain size={14} className="text-primary shrink-0" />
                   <div>
-                    <p className="font-medium text-xs text-foreground">Hold thalamus point (Bl9)</p>
-                    <p className="text-[10px] text-muted-foreground">You or the client. The spinothalamic tract terminates here — this is the top of the pathway.</p>
+                    <p className="font-semibold text-[13px] text-foreground">Hold thalamus point (Bl9)</p>
+                    <p className="text-xs text-muted-foreground">You or the client. The spinothalamic tract terminates here — this is the top of the pathway.</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 p-2 rounded-md bg-background border border-border">
-                  <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-[10px] shrink-0">2</div>
-                  {stimulusType?.id === 'crude_touch' && <Fingerprint size={14} className="text-chart-primary shrink-0" />}
-                  {stimulusType?.id === 'joint_impact' && <Hand size={14} className="text-chart-primary shrink-0" />}
-                  {stimulusType?.id === 'pinch' && <AlertTriangle size={14} className="text-chart-primary shrink-0" />}
+                  <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold text-[10px] shrink-0">2</div>
+                  {stimulusType?.id === 'crude_touch' && <Fingerprint size={14} className="text-primary shrink-0" />}
+                  {stimulusType?.id === 'joint_impact' && <Hand size={14} className="text-primary shrink-0" />}
+                  {stimulusType?.id === 'pinch' && <AlertTriangle size={14} className="text-primary shrink-0" />}
                   <div>
-                    <p className="font-medium text-xs text-foreground">Re-apply stimulus: <strong>{stimulusType?.label}</strong></p>
-                    <p className="text-[10px] text-muted-foreground">Activates the receptor level of the pathway.</p>
+                    <p className="font-semibold text-[13px] text-foreground">Re-apply stimulus: <strong>{stimulusType?.label}</strong></p>
+                    <p className="text-xs text-muted-foreground">Activates the receptor level of the pathway.</p>
                   </div>
                 </div>
 
                 <div className="border-t border-border pt-3">
                   <p className="text-xs font-medium text-muted-foreground mb-2">Stack the collateral inputs (all at once):</p>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <div className="flex items-center gap-2 p-2 rounded-md bg-background/80 border border-border">
-                      <Eye size={12} className="text-chart-primary shrink-0" />
+                      <Eye size={12} className="text-primary shrink-0" />
                       <div>
-                        <p className="font-medium text-[10px] text-foreground">Look at the site</p>
-                        <p className="text-[10px] text-muted-foreground">Eyes toward the site — activates <strong>spinotectal</strong> tract</p>
+                        <p className="text-xs font-semibold text-foreground">Look at the site</p>
+                        <p className="text-xs text-muted-foreground">Eyes toward the site — activates <strong>spinotectal</strong> tract</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 p-2 rounded-md bg-background/80 border border-border">
-                      <Wind size={12} className="text-chart-primary shrink-0" />
+                      <Wind size={12} className="text-primary shrink-0" />
                       <div>
-                        <p className="font-medium text-[10px] text-foreground">Breathe fast</p>
-                        <p className="text-[10px] text-muted-foreground">Activates sympathetics — <strong>spino-hypothalamic</strong> pathway</p>
+                        <p className="text-xs font-semibold text-foreground">Breathe fast</p>
+                        <p className="text-xs text-muted-foreground">Activates sympathetics — <strong>spino-hypothalamic</strong> pathway</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 p-2 rounded-md bg-background/80 border border-border">
-                      <AlertTriangle size={12} className="text-chart-primary shrink-0" />
+                      <AlertTriangle size={12} className="text-primary shrink-0" />
                       <div>
-                        <p className="font-medium text-[10px] text-foreground">Think of the suffering</p>
-                        <p className="text-[10px] text-muted-foreground">Activates <strong>spino-mesencephalic</strong> (limbic nociceptive)</p>
+                        <p className="text-xs font-semibold text-foreground">Think of the suffering</p>
+                        <p className="text-xs text-muted-foreground">Activates <strong>spino-mesencephalic</strong> (limbic nociceptive)</p>
                       </div>
                     </div>
                   </div>
@@ -396,8 +396,8 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
                   <div className="flex items-center gap-2 p-2 rounded-md bg-primary text-primary-foreground">
                     <RefreshCw size={14} className="shrink-0" />
                     <div>
-                      <p className="font-medium text-xs">Tuning Fork + Rocking</p>
-                      <p className="text-[10px] text-primary-foreground/70">The crescendo builds — then calibrate. Tuning fork on bone + rocking down-regulates (piezoelectric reset).</p>
+                      <p className="font-semibold text-[13px]">Tuning Fork + Rocking</p>
+                      <p className="text-xs text-primary-foreground/70">The crescendo builds — then calibrate. Tuning fork on bone + rocking down-regulates (piezoelectric reset).</p>
                     </div>
                   </div>
                 </div>
@@ -435,7 +435,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
                 Strong indicator → hand over thalamus → look away. 
                 Then re-aggravate the site — it should no longer inhibit.
               </p>
-              <p className="text-[10px] text-muted-foreground mt-2">
+              <p className="text-xs text-muted-foreground mt-2">
                 Test the originally inhibited muscle in the clear — it should be restored. 
                 Confirm you <strong>cannot re-aggravate</strong> it.
               </p>
@@ -443,7 +443,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
 
             <div className="grid grid-cols-1 gap-2">
               <Button
-                className="h-10 rounded-lg bg-chart-emerald hover:bg-chart-emerald/90 text-xs font-medium"
+                className="h-10 rounded-lg bg-success hover:bg-success/90 text-xs font-medium"
                 onClick={handleFinish}
               >
                 Site is Clear — Muscle Restored <CheckCircle2 size={14} className="ml-2" />
@@ -486,7 +486,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
         <div className="flex items-center justify-between mb-3 mt-4">
           <div>
             <h2 className="text-sm font-medium text-foreground">Nociception — Quick Screen</h2>
-            <Badge className="bg-muted text-muted-foreground border-none text-[10px] font-medium mt-0.5">
+            <Badge className="bg-muted text-muted-foreground border-none text-[10px] font-medium mt-1">
               Afferent — Spinothalamic
             </Badge>
           </div>
@@ -507,9 +507,9 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 mb-4">
+        <div className="flex items-center gap-2 mb-4">
           {stepOrder.map((step, i) => (
-            <div key={step} className="flex items-center gap-1.5">
+            <div key={step} className="flex items-center gap-2">
               <div className="flex flex-col items-center gap-1">
                 <span className={cn(
                   "text-[10px] font-medium hidden sm:block",
@@ -528,7 +528,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
               </div>
               {i < stepOrder.length - 1 && (
                 <div className={cn(
-                  "w-4 h-px mt-1.5",
+                  "w-4 h-px mt-2",
                   i < currentIndex ? "bg-primary/30" : "bg-border"
                 )} />
               )}
@@ -538,7 +538,7 @@ const NociceptiveThreatAssessment = ({ onSave, onInhibited, initialValue, onCanc
 
         {currentLayer.site && currentStep !== 'SITE' && (
           <div className="p-2 rounded-md bg-muted border border-border mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <AlertTriangle size={12} className="text-muted-foreground" />
               <span className="text-xs text-foreground">Site: <strong>{currentLayer.site}</strong></span>
             </div>

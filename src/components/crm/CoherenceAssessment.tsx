@@ -24,6 +24,8 @@ interface CoherenceAssessmentProps {
   onUpdate: () => void;
   onSave?: (data: { heart_rate: number; breath_rate: number; coherence_score: number }) => Promise<void>;
   history?: any[];
+  /** Drop the card chrome when the parent already provides a surface. */
+  flat?: boolean;
 }
 
 const CoherenceAssessment = ({ 
@@ -33,7 +35,8 @@ const CoherenceAssessment = ({
   initialCoherenceScore,
   onUpdate,
   onSave,
-  history = []
+  history = [],
+  flat = false
 }: CoherenceAssessmentProps) => {
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -138,13 +141,13 @@ const CoherenceAssessment = ({
   const hasSavedData = initialCoherenceScore !== null || initialHeartRate !== null || initialBreathRate !== null;
 
   return (
-    <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden transition-all hover:shadow-md">
+    <div className={cn(!flat && "bg-card rounded-xl border border-border shadow-sm overflow-hidden transition-all hover:shadow-md")}>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
           <div className={cn(
             "p-4 flex items-center justify-between cursor-pointer transition-all duration-300",
             isOpen ? "bg-muted/50" : "hover:bg-muted/30",
-            calculatedScore && !isOpen && (isCoherent ? "bg-emerald-50/10" : "bg-rose-50/10"),
+            calculatedScore && !isOpen && (isCoherent ? "bg-success/5/10" : "bg-destructive/5/10"),
             appointmentId === "temp" && "hidden"
           )}>
             <div className="flex items-center gap-4">
@@ -152,7 +155,7 @@ const CoherenceAssessment = ({
                 <Activity size={18} />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-foreground tracking-tight">Coherence</h3>
+                <h3 className="text-sm font-semibold text-foreground">Coherence</h3>
                 <p className="text-sm text-muted-foreground">
                   {calculatedScore !== null 
                     ? `Score: ${calculatedScore.toFixed(2)}` 
@@ -175,24 +178,24 @@ const CoherenceAssessment = ({
           <div className="p-6 border-t border-border space-y-6 animate-in fade-in slide-in-from-top-1 duration-300">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Heart Rate */}
-              <div className={cn("p-4 rounded-2xl border transition-all", heartTimerRunning ? "bg-rose-500/10 border-rose-500/20" : "bg-muted/50 border-border")}>
+              <div className={cn("p-4 rounded-xl border transition-all", heartTimerRunning ? "bg-destructive/10 border-destructive/20" : "bg-muted/50 border-border")}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <Heart size={14} className={cn("text-rose-500", heartTimerRunning && "animate-pulse")} />
+                    <Heart size={14} className={cn("text-destructive", heartTimerRunning && "animate-pulse")} />
                     <span className="text-xs font-medium text-muted-foreground">Heart (30s)</span>
                   </div>
                   <span className="text-xl font-semibold text-foreground tabular-nums">{heartTimer}s</span>
                 </div>
                 <div className="flex gap-2">
-                  <Input type="number" placeholder="Count" value={heartRateRaw} onChange={(e) => setHeartRateRaw(e.target.value)} className="h-9 rounded-xl font-bold text-center bg-card" />
-                  <Button onClick={() => { setHeartTimer(30); setHeartTimerRunning(!heartTimerRunning); }} variant={heartTimerRunning ? "outline" : "default"} className="h-9 rounded-xl px-3 text-[11px] font-semibold">
+                  <Input type="number" placeholder="Count" value={heartRateRaw} onChange={(e) => setHeartRateRaw(e.target.value)} className="h-10 rounded-md font-semibold text-center bg-card text-sm" />
+                  <Button onClick={() => { setHeartTimer(30); setHeartTimerRunning(!heartTimerRunning); }} variant={heartTimerRunning ? "outline" : "default"} className="h-10 rounded-md px-3 text-xs font-semibold">
                     {heartTimerRunning ? "Stop" : "Start"}
                   </Button>
                 </div>
               </div>
 
               {/* Breath Rate */}
-              <div className={cn("p-4 rounded-2xl border transition-all", breathTimerRunning ? "bg-primary/10 border-primary/20" : "bg-muted/50 border-border")}>
+              <div className={cn("p-4 rounded-xl border transition-all", breathTimerRunning ? "bg-primary/10 border-primary/20" : "bg-muted/50 border-border")}>
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Brain size={14} className={cn("text-primary", breathTimerRunning && "animate-bounce")} />
@@ -201,8 +204,8 @@ const CoherenceAssessment = ({
                   <span className="text-xl font-semibold text-foreground tabular-nums">{breathTimer}s</span>
                 </div>
                 <div className="flex gap-2">
-                  <Input type="number" placeholder="Count" value={breathRateRaw} onChange={(e) => setBreathRateRaw(e.target.value)} className="h-9 rounded-xl font-bold text-center bg-card" />
-                  <Button onClick={() => { setBreathTimer(30); setBreathTimerRunning(!breathTimerRunning); }} variant={breathTimerRunning ? "outline" : "default"} className="h-9 rounded-xl px-3 text-[11px] font-semibold">
+                  <Input type="number" placeholder="Count" value={breathRateRaw} onChange={(e) => setBreathRateRaw(e.target.value)} className="h-10 rounded-md font-semibold text-center bg-card text-sm" />
+                  <Button onClick={() => { setBreathTimer(30); setBreathTimerRunning(!breathTimerRunning); }} variant={breathTimerRunning ? "outline" : "default"} className="h-10 rounded-md px-3 text-xs font-semibold">
                     {breathTimerRunning ? "Stop" : "Start"}
                   </Button>
                 </div>
@@ -235,30 +238,30 @@ const CoherenceAssessment = ({
                 <p><strong className="text-foreground">How to measure:</strong></p>
                 <p>1. Press "Start" for Heart — count beats you feel in 30 seconds. Multiply by 2 for BPM.</p>
                 <p>2. Press "Start" for Breath — count full breath cycles in 30 seconds. Multiply by 2.</p>
-                <p>3. Click "Calculate" to get the coherence ratio (HR / BR). Ideal: <strong className="text-chart-emerald">4.5–5.5</strong></p>
+                <p>3. Click "Calculate" to get the coherence ratio (HR / BR). Ideal: <strong className="text-success">4.5–5.5</strong></p>
               </div>
 
               {calculatedScore !== null && (
                 <div className="text-center animate-in zoom-in-95 duration-300">
                   <p className="text-xs font-medium text-muted-foreground mb-1">Ratio</p>
                   <div className="text-4xl font-semibold text-foreground">{calculatedScore.toFixed(2)}</div>
-                  <Badge className={cn("mt-2 border-none font-semibold text-[10px] uppercase tracking-wider", isCoherent ? "bg-emerald-500" : "bg-rose-500")}>
+                  <Badge className={cn("mt-2 border-none font-semibold text-[10px] uppercase tracking-wider", isCoherent ? "bg-success/50" : "bg-destructive")}>
                     {isCoherent ? "Coherent" : "Discordant"}
                   </Badge>
                 </div>
               )}
 
               <div className="flex gap-2 w-full">
-                <Button onClick={calculateCoherence} className="flex-1 bg-primary hover:bg-primary/90 h-9 rounded-lg font-medium text-[13px]">
+                <Button onClick={calculateCoherence} className="flex-1 bg-primary hover:bg-primary/90 h-10 rounded-md font-medium text-sm">
                   Calculate
                 </Button>
                 {calculatedScore !== null && (
-                  <Button onClick={handleSave} disabled={loading} className="bg-indigo-600 hover:bg-indigo-700 h-9 px-3.5 rounded-lg font-medium text-[13px]">
+                  <Button onClick={handleSave} disabled={loading} className="bg-primary hover:bg-[hsl(var(--primary-hover))] h-10 px-4 rounded-md font-medium text-sm">
                     {loading ? <Loader2 className="animate-spin" /> : "Save"}
                   </Button>
                 )}
                 {hasSavedData && (
-                  <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 h-10 px-3 rounded-xl">
+                  <Button variant="ghost" onClick={() => setShowResetConfirm(true)} className="text-destructive hover:bg-destructive/10 h-10 px-3 rounded-md">
                     <RotateCcw size={14} />
                   </Button>
                 )}

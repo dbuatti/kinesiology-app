@@ -119,7 +119,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
             </div>
             <div className="p-3 bg-card rounded-lg border border-border">
               <p className="text-xs font-medium text-foreground">
-                If the indicator muscle <span className="text-primary underline">inhibits</span>, or a weak muscle <span className="text-chart-emerald underline">locks</span>, Emotional Integration is indicated.
+                If the indicator muscle <span className="text-primary underline">inhibits</span>, or a weak muscle <span className="text-success underline">locks</span>, Emotional Integration is indicated.
               </p>
             </div>
           </div>
@@ -294,7 +294,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
               <Zap size={20} className="text-foreground" />
               <div className="text-center">
                 <span className="font-medium block text-sm">Energy OUT (-)</span>
-                <span className="text-[11px] text-muted-foreground mt-0.5">Practitioner LEFT Hand</span>
+                <span className="text-[11px] text-muted-foreground mt-1">Practitioner LEFT Hand</span>
               </div>
             </Button>
             <Button 
@@ -308,7 +308,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
               <Zap size={20} className="text-foreground" />
               <div className="text-center">
                 <span className="font-medium block text-sm">Energy IN (+)</span>
-                <span className="text-[11px] text-muted-foreground mt-0.5">Practitioner RIGHT Hand</span>
+                <span className="text-[11px] text-muted-foreground mt-1">Practitioner RIGHT Hand</span>
               </div>
             </Button>
           </div>
@@ -373,7 +373,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
                     <p className="text-xs font-medium leading-relaxed">
                       {selectedEyePos.prompt}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Replay the stress over and over while holding the points.
                     </p>
                   </div>
@@ -382,7 +382,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
                     <p className="text-xs font-medium text-muted-foreground">Hold Simultaneously:</p>
                     <ul className="space-y-2 text-xs font-medium">
                       <li className="flex items-center gap-2"><CheckCircle2 size={12} className="text-primary" /> Frontal Lobe (ESR)</li>
-                      <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-primary mt-0.5 shrink-0" /> <span>Eye Position: <span className="text-primary">{selectedEyePos.pos}</span><br /><span className="text-[10px] text-muted-foreground">{selectedEyePos.label} — {selectedEyePos.sub}</span></span></li>
+                      <li className="flex items-start gap-2"><CheckCircle2 size={12} className="text-primary mt-1 shrink-0" /> <span>Eye Position: <span className="text-primary">{selectedEyePos.pos}</span><br /><span className="text-[10px] text-muted-foreground">{selectedEyePos.label} — {selectedEyePos.sub}</span></span></li>
                       <li className="flex items-center gap-2"><CheckCircle2 size={12} className="text-primary" /> {selectedOrgan} Pulse Point</li>
                     </ul>
                   </div>
@@ -400,7 +400,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
                       onClick={() => toggleShift(shift)}
                       className={cn(
                         "cursor-pointer transition-all border-none font-medium text-[10px] uppercase tracking-wider px-2 py-1",
-                        observedShifts.includes(shift) ? "bg-chart-emerald text-primary-foreground" : "bg-muted text-muted-foreground"
+                        observedShifts.includes(shift) ? "bg-success text-primary-foreground" : "bg-muted text-muted-foreground"
                       )}
                     >
                       {shift}
@@ -411,7 +411,7 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
 
               <div className="pt-3">
                 <CalibrationTimer duration={180} />
-                <p className="text-[10px] text-muted-foreground text-center mt-2 italic">Wait for a parasympathetic response (sigh, yawn, gurgle).</p>
+                <p className="text-xs text-muted-foreground text-center mt-2 italic">Wait for a parasympathetic response (sigh, yawn, gurgle).</p>
               </div>
             </div>
           </div>
@@ -467,13 +467,13 @@ const EmotionalIntegrationProcess = ({ onSave, onInhibited, onCancel }: Emotiona
 
       {step === 'REASSESS' && (
         <div className="space-y-6">
-          <div className="bg-chart-emerald/5 p-4 rounded-xl text-center">
-            <div className="w-14 h-14 rounded-full bg-card flex items-center justify-center mx-auto mb-4"><RefreshCw size={24} className="text-chart-emerald" /></div>
+          <div className="bg-success/5 p-4 rounded-xl text-center">
+            <div className="w-14 h-14 rounded-full bg-card flex items-center justify-center mx-auto mb-4"><RefreshCw size={24} className="text-success" /></div>
             <h3 className="text-sm font-medium text-foreground mb-1">Final Re-assessment</h3>
             <p className="text-xs text-muted-foreground">Re-challenge the ESR points and the original stimulus.</p>
           </div>
           <div className="grid grid-cols-1 gap-3">
-            <Button className="h-10 rounded-lg bg-chart-emerald text-primary-foreground text-xs font-medium" onClick={handleFinish}>Emotion is Integrated <CheckCircle2 size={14} className="ml-2" /></Button>
+            <Button className="h-10 rounded-lg bg-success text-primary-foreground text-xs font-medium" onClick={handleFinish}>Emotion is Integrated <CheckCircle2 size={14} className="ml-2" /></Button>
             <Button variant="outline" className="h-10 rounded-lg border-border text-foreground font-medium text-xs" onClick={handleInhibited}>Still Inhibited - Add Layer</Button>
           </div>
           <Button variant="ghost" size="sm" onClick={() => goToStep('POSITIVE_UPLOAD')} className="w-full h-10 rounded-lg text-xs font-medium"><ChevronLeft size={14} className="mr-1" /> Back</Button>

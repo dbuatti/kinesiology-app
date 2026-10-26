@@ -3,7 +3,7 @@ import { GitBranch, Target, Route, AlertCircle, Star, BookMarked } from "lucide-
 import { cn } from "@/lib/utils";
 import { safeParse } from "@/utils/safe-json";
 import { Button } from "@/components/ui/button";
-import { PhaseHeader } from "@/components/crm/v2/PhaseComponents";
+import { PhaseHeader, PhaseEmptyState, PathwayBanner } from "@/components/crm/v2/PhaseComponents";
 import { CATEGORY_LABELS, CATEGORY_ICONS } from "@/components/crm/v2/categoryConstants";
 import { getInhibitedFindings, priorityKey, findingLabel, stimPriorityKey } from "@/components/crm/v2/v2-utils";
 import { useCranialNerveTests } from "@/hooks/useCranialNerveTests";
@@ -153,37 +153,60 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
     <div className="space-y-4">
       <PhaseHeader icon={GitBranch} title="Align" description="Review inhibited findings, set priorities, and choose the primary correction." />
 
+      {/* The session's chosen correction, kept above the list so it never gets lost. */}
+      {priorityPathway && (
+        <PathwayBanner
+          icon={Target}
+          value={priorityPathway}
+          actions={
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 rounded-lg px-2 text-[11px] font-medium text-muted-foreground hover:bg-background/60"
+              onClick={() => setPriorityPathway('')}
+            >
+              Clear
+            </Button>
+          }
+        />
+      )}
+
       {/* Filter toggles */}
       {allFindings.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={() => setShowOnlyPriority(false)}
-            className={cn(
-              "px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all",
-              !showOnlyPriority
-                ? "bg-foreground text-primary-foreground border-foreground"
-                : "bg-card border-border text-muted-foreground hover:border-foreground/40"
-            )}
-          >
-            All ({allFindings.length})
-          </button>
-          <button
-            onClick={() => setShowOnlyPriority(!showOnlyPriority)}
-            className={cn(
-              "px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-all flex items-center gap-1.5",
-              showOnlyPriority
-                ? "bg-chart-emerald text-primary-foreground border-chart-emerald"
-                : "bg-card border-border text-muted-foreground hover:border-chart-emerald/40"
-            )}
-          >
-            <Target size={10} /> 1° ({priorityCount})
-          </button>
+          <div className="flex items-center gap-0.5 rounded-xl border border-border/60 bg-muted/40 p-1">
+            <button
+              onClick={() => setShowOnlyPriority(false)}
+              className={cn(
+                "flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-medium transition-colors",
+                !showOnlyPriority
+                  ? "bg-card text-foreground shadow-xs ring-1 ring-border/60"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              All <span className="tabular-nums text-muted-foreground/70">{allFindings.length}</span>
+            </button>
+            <button
+              onClick={() => setShowOnlyPriority(!showOnlyPriority)}
+              className={cn(
+                "flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-medium transition-colors",
+                showOnlyPriority
+                  ? "bg-card text-chart-emerald shadow-xs ring-1 ring-chart-emerald/30"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Target size={11} /> 1° <span className="tabular-nums text-muted-foreground/70">{priorityCount}</span>
+            </button>
+          </div>
+          <p className="hidden text-[11px] text-muted-foreground/70 sm:block">
+            {showOnlyPriority ? "Showing priority findings only" : "Tap 1° on a finding to mark it as priority"}
+          </p>
         </div>
       )}
 
       {/* Findings grouped by category */}
       {filteredFindings.length > 0 ? (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {(() => {
             const groups: Record<string, Finding[]> = {};
             filteredFindings.forEach(f => {
@@ -193,14 +216,17 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
             return Object.entries(groups).map(([catKey, findings]) => {
               const Icon = CATEGORY_ICONS[catKey];
               return (
-                <div key={catKey} className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    {Icon && <Icon size={13} className="text-muted-foreground" />}
-                    <h4 className="text-xs font-medium text-muted-foreground">{CATEGORY_LABELS[catKey] || catKey}</h4>
-                    <div className="flex-1 h-px bg-border" />
-                    <span className="text-[10px] font-medium text-muted-foreground">{findings.length}</span>
-                  </div>
-                  <div className="divide-y divide-border border border-border rounded-lg">
+                <section key={catKey} className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-xs">
+                  <header className="flex items-center gap-2 border-b border-border/60 bg-muted/20 px-3.5 py-2">
+                    {Icon && <Icon size={13} className="shrink-0 text-muted-foreground" />}
+                    <h4 className="text-[11px] font-semibold uppercase tracking-[0.11em] text-muted-foreground">
+                      {CATEGORY_LABELS[catKey] || catKey}
+                    </h4>
+                    <span className="ml-auto rounded-full bg-card px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-muted-foreground ring-1 ring-border/60">
+                      {findings.length}
+                    </span>
+                  </header>
+                  <div className="divide-y divide-border/60">
                     {findings.map((item, i) => {
                       const isPriority = item.priorityLevel === 'priority';
                       const itemPathway = findingLabel(item.category, item.name, item.side);
@@ -212,87 +238,89 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                       return (
                         <div key={`${item.category}-${item.name}-${item.side || ''}-${i}`} className={cn(
                           "transition-colors",
-                          isPriority ? "bg-chart-emerald/8" : "hover:bg-muted/30",
-                          isPathway && "ring-1 ring-inset ring-primary/30"
+                          isPriority ? "bg-chart-emerald/[0.06]" : "hover:bg-muted/30",
+                          isPathway && "bg-primary/[0.04] ring-1 ring-inset ring-primary/25"
                         )}>
-                          <div className="flex items-center justify-between gap-4 py-3 px-4">
-                          <div className="flex items-center gap-3 min-w-0">
-                            {Icon && <Icon size={16} className="shrink-0 text-muted-foreground" />}
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-foreground truncate">
-                                {item.name}
-                                {item.side && <span className="text-muted-foreground ml-1">({item.side})</span>}
-                                {isPathway && (
-                                  <span className="ml-1.5 inline-block align-middle text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
-                                    pathway
-                                  </span>
-                                )}
-                              </p>
-                              <p className="text-[10px] text-muted-foreground font-medium">
-                                {CATEGORY_LABELS[item.category] || item.category} · {item.status}
-                              </p>
+                          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-3.5 py-2.5 sm:flex-nowrap">
+                            <div className="flex min-w-0 items-center gap-2.5">
+                              {Icon && <Icon size={15} className="shrink-0 text-muted-foreground" />}
+                              <div className="min-w-0">
+                                <p className="truncate text-[13px] font-semibold text-foreground">
+                                  {item.name}
+                                  {item.side && <span className="ml-1 font-normal text-muted-foreground">({item.side})</span>}
+                                  {isPathway && (
+                                    <span className="ml-1.5 inline-block rounded bg-primary/10 px-1.5 py-0.5 align-middle text-[9px] font-semibold uppercase tracking-wider text-primary ring-1 ring-primary/20">
+                                      pathway
+                                    </span>
+                                  )}
+                                </p>
+                                <p className="text-[10px] font-medium text-muted-foreground">
+                                  {CATEGORY_LABELS[item.category] || item.category} · {item.status}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-1 shrink-0">
-                            <button
-                              title={isPriority ? "Remove from 1° priorities" : "Mark as 1° priority"}
-                              onClick={() => handleSetPriority(item)}
-                              className={cn(
-                                "px-2 py-1 rounded text-[11px] font-bold border transition-all",
-                                isPriority
-                                  ? "bg-chart-emerald text-primary-foreground border-chart-emerald"
-                                  : "bg-card border-border text-muted-foreground hover:border-chart-emerald/50 hover:text-chart-emerald"
-                              )}
-                            >
-                              1°
-                            </button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              title="Open the corrections reference for this finding"
-                              className="text-[11px] font-bold text-purple-600 dark:text-purple-300 hover:bg-purple-500/10 rounded-lg ml-1 px-2"
-                              onClick={() => openDock(correctionTargetFor(item.category))}
-                            >
-                              <BookMarked size={11} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              title="Choose this finding as the correction pathway and open Correct"
-                              className="text-[11px] font-bold text-primary hover:bg-primary/10 rounded-lg ml-1"
-                              onClick={() => setPriorityPathway(itemPathway)}
-                            >
-                              <Route size={11} className="mr-1" /> Set Pathway
-                            </Button>
-                          </div>
+                            <div className="flex shrink-0 items-center gap-1">
+                              <button
+                                title={isPriority ? "Remove from 1° priorities" : "Mark as 1° priority"}
+                                aria-pressed={isPriority}
+                                onClick={() => handleSetPriority(item)}
+                                className={cn(
+                                  "h-9 rounded-lg border px-2.5 text-[11px] font-semibold transition-colors",
+                                  isPriority
+                                    ? "border-chart-emerald bg-chart-emerald text-white"
+                                    : "border-border/70 bg-card text-muted-foreground hover:border-chart-emerald/50 hover:text-chart-emerald"
+                                )}
+                              >
+                                1°
+                              </button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                title="Open the corrections reference for this finding"
+                                aria-label="Open corrections reference"
+                                className="h-9 w-9 rounded-lg p-0 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                onClick={() => openDock(correctionTargetFor(item.category))}
+                              >
+                                <BookMarked size={13} />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                title="Choose this finding as the correction pathway and open Correct"
+                                className="h-9 rounded-lg px-2.5 text-[11px] font-medium text-primary hover:bg-primary/10"
+                                onClick={() => setPriorityPathway(itemPathway)}
+                              >
+                                <Route size={12} className="mr-1" /> Set pathway
+                              </Button>
+                            </div>
                           </div>
                           {stims.length > 0 && (
                             <div className="border-t border-border/50">
-                              <div className="flex items-center gap-1.5 px-4 pt-2.5 pb-1">
-                                <span className="text-xs font-medium text-muted-foreground">Stims</span>
-                                <span className="text-[10px] font-medium text-muted-foreground/60">{stims.length}</span>
+                              <div className="flex items-center gap-1.5 px-3.5 pt-2 pb-1">
+                                <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">Stims</span>
+                                <span className="text-[10px] tabular-nums text-muted-foreground/60">{stims.length}</span>
                               </div>
-                              <div className="px-4 pb-2.5 space-y-1">
+                              <div className="space-y-1 px-3.5 pb-2.5">
                                 {stims.map(entry => {
                                   const status = stimStatus(entry.stimKey);
                                   const isPriority = status === 'priority' || status === 'primary';
                                   const isPrimary = status === 'primary';
                                   return (
-                                    <div key={entry.stimKey} className="flex items-center justify-between gap-3 rounded-lg bg-background/60 border border-border/50 pl-3 pr-2 py-1">
-                                      <span className="text-xs text-foreground/80 min-w-0 truncate">
-                                        {entry.side && <span className="font-semibold text-chart-destructive mr-1">{entry.side}</span>}
+                                    <div key={entry.stimKey} className="flex items-center justify-between gap-3 rounded-lg border border-border/50 bg-background/60 py-1 pl-3 pr-2">
+                                      <span className="min-w-0 truncate text-xs text-foreground/80">
+                                        {entry.side && <span className="mr-1 font-semibold text-chart-destructive">{entry.side}</span>}
                                         {entry.label}
                                       </span>
-                                      <div className="flex items-center gap-1 shrink-0">
+                                      <div className="flex shrink-0 items-center gap-1">
                                         <button
                                           type="button"
                                           title={isPriority ? "Remove from stim priorities" : "Mark this stim as 1° priority"}
                                           onClick={() => setStimPriority(entry.stimKey, !isPriority)}
                                           className={cn(
-                                            "px-1.5 py-0.5 rounded text-[11px] font-bold border transition-all cursor-pointer",
+                                            "h-6 cursor-pointer rounded border px-1.5 text-[10px] font-semibold transition-colors",
                                             isPriority
-                                              ? "bg-chart-emerald text-primary-foreground border-chart-emerald"
-                                              : "bg-card border-border text-muted-foreground hover:border-chart-emerald/50 hover:text-chart-emerald"
+                                              ? "border-chart-emerald bg-chart-emerald text-white"
+                                              : "border-border bg-card text-muted-foreground hover:border-chart-emerald/50 hover:text-chart-emerald"
                                           )}
                                         >
                                           1°
@@ -302,10 +330,10 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                                           title={isPrimary ? "Remove primary stim (keeps 1°)" : "Set this stim as the primary priority"}
                                           onClick={() => setStimPrimary(entry.stimKey)}
                                           className={cn(
-                                            "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-bold border transition-all cursor-pointer",
+                                            "inline-flex h-6 cursor-pointer items-center gap-1 rounded border px-1.5 text-[10px] font-semibold transition-colors",
                                             isPrimary
-                                              ? "bg-primary text-primary-foreground border-primary"
-                                              : "bg-card border-border text-muted-foreground hover:border-primary/50 hover:text-primary"
+                                              ? "border-primary bg-primary text-primary-foreground"
+                                              : "border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-primary"
                                           )}
                                         >
                                           <Star size={9} /> Primary
@@ -321,39 +349,21 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
                       );
                     })}
                   </div>
-                </div>
+                </section>
               );
             });
           })()}
         </div>
       ) : (
-        <div className="text-center py-8 bg-muted/30 rounded-lg border border-dashed border-border">
-          <AlertCircle size={24} className="text-muted-foreground/50 mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground font-medium">
-            {allFindings.length === 0
-              ? "No inhibited findings yet. Complete assessments in Preliminary first."
-              : "No findings match the current filter."}
-          </p>
-        </div>
-      )}
-
-      {/* Priority Pathway */}
-      {priorityPathway && (
-        <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg flex items-center gap-3">
-          <Target size={18} className="text-primary shrink-0" />
-          <div>
-            <p className="text-[10px] font-bold text-primary uppercase tracking-wider">Priority Pathway</p>
-            <p className="text-sm font-semibold text-foreground">{priorityPathway}</p>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="ml-auto text-[10px] text-muted-foreground hover:bg-muted rounded-lg"
-            onClick={() => setPriorityPathway('')}
-          >
-            Clear
-          </Button>
-        </div>
+        <PhaseEmptyState
+          icon={AlertCircle}
+          title={allFindings.length === 0 ? "No inhibited findings yet" : "Nothing matches this filter"}
+          description={
+            allFindings.length === 0
+              ? "Complete the assessments in Preliminary and the inhibited findings will collect here."
+              : "Switch back to All to see every finding for this session."
+          }
+        />
       )}
     </div>
   );

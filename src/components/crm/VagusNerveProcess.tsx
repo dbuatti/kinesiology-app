@@ -272,8 +272,8 @@ const VagusNerveProcess = ({ appointmentId, initialNotes, onSaveField, onUpdate 
                     <Heart size={14} className="text-muted-foreground" /> 4. Organ / Gland Challenge
                   </label>
                   <ToggleGroup type="single" value={challengeType} onValueChange={(v) => v && setChallengeType(v as any)} className="bg-background p-1 rounded-xl border border-border">
-                    <ToggleGroupItem value="hand" className="rounded-lg px-4 py-1.5 text-[11px] font-medium data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">Hand Reflex</ToggleGroupItem>
-                    <ToggleGroupItem value="gland" className="rounded-lg px-4 py-1.5 text-[11px] font-medium data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">Gland Reflex</ToggleGroupItem>
+                    <ToggleGroupItem value="hand" className="rounded-md px-4 py-1.5 text-[11px] font-medium data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">Hand Reflex</ToggleGroupItem>
+                    <ToggleGroupItem value="gland" className="rounded-md px-4 py-1.5 text-[11px] font-medium data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">Gland Reflex</ToggleGroupItem>
                   </ToggleGroup>
                 </div>
 

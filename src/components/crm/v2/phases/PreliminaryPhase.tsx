@@ -4,10 +4,9 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import {
   Compass, ClipboardList, Activity, ShieldAlert, AlertTriangle,
-  Dumbbell, Baby, Zap, Brain, RotateCcw, Eye, CheckCircle2,
+  Dumbbell, Baby, Zap, Brain, RotateCcw, CheckCircle2,
 } from "lucide-react";
 import { differenceInDays } from "date-fns";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import EditableField from "@/components/shared/EditableField";
 import BoltTestSection from "@/components/crm/BoltTestSection";
 import CoherenceAssessment from "@/components/crm/CoherenceAssessment";
@@ -18,7 +17,7 @@ import { PrimitiveReflexAssessment } from "@/components/crm/PrimitiveReflexAsses
 import { BrainZoneAssessment } from "@/components/crm/BrainZoneAssessment";
 import RecheckTabV2 from "@/components/crm/v2/RecheckTabV2";
 import CheckItem from "@/components/crm/document-view/CheckItem";
-import { PhaseHeader } from "@/components/crm/v2/PhaseComponents";
+import { PhaseHeader, PhasePanel, SectionHeading } from "@/components/crm/v2/PhaseComponents";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import { PRIMITIVE_REFLEXES } from "@/data/primitive-reflex-data";
 import { MUSCLE_GROUPS, MIDLINE_MUSCLES } from "@/data/muscle-data";
@@ -66,6 +65,9 @@ const MuscleGroupGrid = ({ muscles, pattern, onToggle }: {
 const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePriorityPattern, onJumpToPhase }: PhaseProps) => {
   const hasHistory = history.length >= 2;
   const [subTab, setSubTab] = useState<SubTab>('intake');
+  const tabs = hasHistory
+    ? [{ id: 'recheck' as SubTab, label: 'Recheck', icon: RotateCcw }, ...SUB_TABS]
+    : SUB_TABS;
 
   const previousSession = history.length >= 2 ? history[1] : null;
   const lastSessionDate = previousSession?.date;
@@ -73,12 +75,21 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
   const isStale = daysSinceLast > 30;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      <PhaseHeader
+        icon={Compass}
+        title="Preliminary"
+        description="Set the session context, capture baseline vitals, then map the findings that will drive the correction."
+      />
+
       {/* Stale alert */}
       {isStale && (
-        <p className="text-xs text-amber-600 dark:text-amber-400 border-l-2 border-amber-500/60 pl-3 py-1">
-          Over {Math.floor(daysSinceLast / 30)} months since last session — baseline findings and CO₂ tolerance may have shifted.
-        </p>
+        <div className="flex items-start gap-2.5 rounded-xl border border-amber-500/25 bg-amber-500/[0.06] px-3.5 py-2.5">
+          <AlertTriangle size={14} className="mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
+          <p className="text-[11px] leading-relaxed text-amber-700 dark:text-amber-300">
+            Over {Math.floor(daysSinceLast / 30)} months since the last session — baseline findings and CO₂ tolerance may have shifted.
+          </p>
+        </div>
       )}
 
       {/* Completed summary strip */}
@@ -88,68 +99,80 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
         if (appointment.coherence_score != null) chips.push(`Coherence ${appointment.coherence_score}`);
         if (appointment.sagittal_plane_notes || appointment.frontal_plane_notes || appointment.transverse_plane_notes) chips.push("COGS ✓");
         if (appointment.fakuda_notes || appointment.sharpened_rhombergs_notes || appointment.frontal_lobe_notes || appointment.righting_reflex_notes) chips.push("Neuro ✓");
-        const pattern = safeParse(appointment.priority_pattern, {} as any);
-        const zones = pattern?.brainZones || {};
-        const reflexDone = Object.keys(zones).filter(k => k !== "Fakuda Step Test" && k !== "Sharpened Rhombergs Test" && k !== "Frontal Lobe Assessment" && k !== "Righting Reflexes").length;
-        // count completed primitive reflexes/cranial/muscles from priority_pattern
-        // (quick-assess counts intentionally omitted — too noisy; sub-tab dots already show state)
+        // Quick-assess counts are intentionally omitted — too noisy for a summary strip.
         if (chips.length === 0) return null;
         return (
           <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">
             {chips.map((c, i) => (
-              <span key={i} className="px-2 py-0.5 rounded-md bg-muted/50 border border-border">{c}</span>
+              <span key={i} className="rounded-lg border border-border/60 bg-muted/40 px-2 py-0.5 font-medium tabular-nums">
+                {c}
+              </span>
             ))}
           </div>
         );
       })()}
 
       {/* Sub-tab bar */}
-      <div className="flex items-center justify-center gap-1 overflow-x-auto no-scrollbar">
-        {SUB_TABS.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setSubTab(tab.id)}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold whitespace-nowrap transition-all",
-              subTab === tab.id
-                ? "bg-muted text-primary"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-            )}
-          >
-            <tab.icon size={14} /> {tab.label}
-          </button>
-        ))}
+      <div className="-mx-1 overflow-x-auto no-scrollbar">
+        <div className="mx-auto flex w-max items-center gap-0.5 rounded-xl border border-border/60 bg-muted/40 p-1">
+          {tabs.map(tab => {
+            const active = subTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setSubTab(tab.id)}
+                aria-pressed={active}
+                className={cn(
+                  "flex h-9 items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 text-[11px] font-medium transition-colors",
+                  active
+                    ? "bg-card text-foreground shadow-xs ring-1 ring-border/60"
+                    : "text-muted-foreground hover:bg-card/60 hover:text-foreground"
+                )}
+              >
+                <tab.icon size={13} className={active ? "text-primary" : undefined} /> {tab.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Sub-tab content */}
-      <div key={subTab} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div key={subTab} className="animate-in fade-in slide-in-from-bottom-2 duration-300">
         {subTab === 'recheck' && (
-          <RecheckTabV2
-            appointment={appointment}
-            history={history}
-            onUpdate={onUpdate}
-            updatePriorityPattern={updatePriorityPattern}
-            saveField={saveField}
-            onJumpToPhase={onJumpToPhase}
-          />
+          <PhasePanel className="space-y-4">
+            <SectionHeading
+              icon={RotateCcw}
+              title="Recheck since last visit"
+              hint="Carry forward or retire unresolved findings"
+            />
+            <RecheckTabV2
+              appointment={appointment}
+              history={history}
+              onUpdate={onUpdate}
+              updatePriorityPattern={updatePriorityPattern}
+              saveField={saveField}
+              onJumpToPhase={onJumpToPhase}
+            />
+          </PhasePanel>
         )}
 
         {subTab === 'intake' && (
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
+          <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_320px]">
             {/* Left: clinical measurements */}
-            <div className="space-y-4 min-w-0">
-              {/* Baseline Vitals */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Activity size={14} className="text-muted-foreground" />
-                  <h3 className="text-xs font-bold text-foreground tracking-tight uppercase tracking-wider">Baseline Vitals</h3>
-                </div>
+            <div className="order-2 min-w-0 space-y-4 lg:order-1">
+              <PhasePanel className="space-y-4">
+                <SectionHeading
+                  icon={Activity}
+                  title="Baseline vitals"
+                  hint="Breath, heart rate and CO₂ tolerance"
+                />
                 <BoltTestSection
                   appointmentId={appointment.id}
                   initialBoltScore={appointment.bolt_score}
                   onUpdate={onUpdate}
                   history={history}
                 />
+                <div className="h-px bg-border/60" />
                 <CoherenceAssessment
                   appointmentId={appointment.id}
                   initialHeartRate={appointment.heart_rate}
@@ -157,36 +180,38 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                   initialCoherenceScore={appointment.coherence_score}
                   onUpdate={onUpdate}
                   history={history}
+                  flat
                 />
-              </div>
+              </PhasePanel>
 
-              {/* COGS — Visual Assessment */}
-              <CogsAssessment
-                appointmentId={appointment.id}
-                initialSagittalNotes={appointment.sagittal_plane_notes}
-                initialFrontalNotes={appointment.frontal_plane_notes}
-                initialTransverseNotes={appointment.transverse_plane_notes}
-                onUpdate={onUpdate}
-              />
+              {/* COGS — visual assessment */}
+              <PhasePanel>
+                <CogsAssessment
+                  appointmentId={appointment.id}
+                  initialSagittalNotes={appointment.sagittal_plane_notes}
+                  initialFrontalNotes={appointment.frontal_plane_notes}
+                  initialTransverseNotes={appointment.transverse_plane_notes}
+                  onUpdate={onUpdate}
+                />
+              </PhasePanel>
 
-              {/* Neurological Baseline */}
-              <NeurologicalAssessments
-                appointmentId={appointment.id}
-                initialFakudaNotes={appointment.fakuda_notes}
-                initialRhombergsNotes={appointment.sharpened_rhombergs_notes}
-                initialFrontalLobeNotes={appointment.frontal_lobe_notes}
-                initialRightingReflexNotes={appointment.righting_reflex_notes}
-                onUpdate={onUpdate}
-              />
+              {/* Neurological baseline */}
+              <PhasePanel>
+                <NeurologicalAssessments
+                  appointmentId={appointment.id}
+                  initialFakudaNotes={appointment.fakuda_notes}
+                  initialRhombergsNotes={appointment.sharpened_rhombergs_notes}
+                  initialFrontalLobeNotes={appointment.frontal_lobe_notes}
+                  initialRightingReflexNotes={appointment.righting_reflex_notes}
+                  onUpdate={onUpdate}
+                />
+              </PhasePanel>
             </div>
 
             {/* Right: narrative/context (sticky) */}
-            <div className="space-y-4 lg:sticky lg:top-20">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Compass size={14} className="text-muted-foreground" />
-                  <h3 className="text-xs font-medium text-muted-foreground">Session Goal</h3>
-                </div>
+            <div className="order-1 space-y-4 lg:order-2 lg:sticky lg:top-32">
+              <PhasePanel className="space-y-3">
+                <SectionHeading icon={Compass} title="Session goal" />
                 <EditableField
                   key={`goal-${appointment.id}`}
                   field="goal"
@@ -197,37 +222,21 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                   onSave={saveField}
                   className="border-none p-0 shadow-none bg-transparent"
                 />
-              </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <ClipboardList size={14} className="text-muted-foreground" />
-                  <h3 className="text-xs font-medium text-muted-foreground">Primary Concern</h3>
-                </div>
+                <div className="h-px bg-border/60" />
+
+                <SectionHeading icon={ClipboardList} title="Primary concern" />
                 <EditableField
                   key={`issue-${appointment.id}`}
                   field="issue"
-                  label="Main Concern / Presenting Symptoms"
+                  label=""
                   value={appointment.issue}
                   multiline
                   placeholder="Describe the current symptoms and history..."
                   onSave={saveField}
                   className="border-none p-0 shadow-none bg-transparent"
                 />
-              </div>
-
-              {(history?.length ?? 0) >= 2 && (
-                <div className="border-t border-border pt-3">
-                  <RecheckTabV2
-                    appointment={appointment}
-                    history={history}
-                    onUpdate={onUpdate}
-                    updatePriorityPattern={updatePriorityPattern}
-                    saveField={saveField}
-                    onJumpToPhase={onJumpToPhase}
-                  />
-                </div>
-              )}
+              </PhasePanel>
             </div>
           </div>
         )}
@@ -238,11 +247,11 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
             updatePriorityPattern(cat, name, nextStatus === 'Clear' ? null : nextStatus, side);
           };
           return (
-            <div className="space-y-6">
+            <div className="space-y-4">
               {/* Primitive Reflexes */}
-              <div>
-                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Primitive Reflexes</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
+              <PhasePanel className="space-y-3">
+                <SectionHeading icon={Baby} title="Primitive reflexes" />
+                <div className="grid grid-cols-2 gap-1.5 md:grid-cols-3 lg:grid-cols-4">
                   {PRIMITIVE_REFLEXES.map(r => r.isLateralized ? (
                     <Fragment key={r.id}>
                       <CheckItem category="primitiveReflexes" name={r.name} side="L" pattern={pattern} onToggle={quickToggle} />
@@ -252,12 +261,12 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                     <CheckItem key={r.id} category="primitiveReflexes" name={r.name} pattern={pattern} onToggle={quickToggle} />
                   ))}
                 </div>
-              </div>
+              </PhasePanel>
 
               {/* Cranial Nerves */}
-              <div>
-                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Cranial Nerves</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5">
+              <PhasePanel className="space-y-3">
+                <SectionHeading icon={Zap} title="Cranial nerves" />
+                <div className="grid grid-cols-2 gap-1.5 md:grid-cols-3 lg:grid-cols-4">
                   {CRANIAL_NERVES.map(n => {
                     const nerveName = `${n.name}: ${n.latinName}`;
                     return n.isLateralized ? (
@@ -270,13 +279,13 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
                     );
                   })}
                 </div>
-              </div>
+              </PhasePanel>
 
               {/* Muscles — Intrinsic Stabilisation */}
-              <div>
-                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Intrinsic Stabilisation</h3>
+              <PhasePanel className="space-y-3">
+                <SectionHeading icon={Dumbbell} title="Intrinsic stabilisation" />
                 <MuscleGroupGrid muscles={MUSCLE_GROUPS['Intrinsic Stabilisation'] || []} pattern={pattern} onToggle={quickToggle} />
-              </div>
+              </PhasePanel>
             </div>
           );
         })()}
@@ -288,12 +297,10 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
           };
           const intrinsicMuscles = MUSCLE_GROUPS['Intrinsic Stabilisation'] || [];
           return (
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">Intrinsic Stabilisation</h3>
-                <MuscleGroupGrid muscles={intrinsicMuscles} pattern={pattern} onToggle={toggle} />
-              </div>
-            </div>
+            <PhasePanel className="space-y-3">
+              <SectionHeading icon={Dumbbell} title="Intrinsic stabilisation" />
+              <MuscleGroupGrid muscles={intrinsicMuscles} pattern={pattern} onToggle={toggle} />
+            </PhasePanel>
           );
         })()}
 
@@ -303,48 +310,61 @@ const PreliminaryPhase = ({ appointment, history, onUpdate, saveField, updatePri
             updatePriorityPattern(cat, name, nextStatus === 'Clear' ? null : nextStatus, side);
           };
           return (
-            <div className="space-y-6">
+            <div className="space-y-4">
               {Object.entries(MUSCLE_GROUPS).map(([groupName, muscles]) => (
-                <div key={groupName}>
-                  <h3 className="text-xs font-bold text-foreground uppercase tracking-wider mb-3">{groupName}</h3>
+                <PhasePanel key={groupName} className="space-y-3">
+                  <SectionHeading icon={Dumbbell} title={groupName} />
                   <MuscleGroupGrid muscles={muscles} pattern={pattern} onToggle={toggle} />
-                </div>
+                </PhasePanel>
               ))}
             </div>
           );
         })()}
 
         {subTab === 'reflexes' && (
-          <PrimitiveReflexAssessment
-            appointmentId={appointment.id}
-            priorityPattern={appointment.priority_pattern}
-            updatePriorityPattern={updatePriorityPattern}
-          />
+          <div className="space-y-3">
+            <SectionHeading icon={Baby} title="Primitive reflexes" hint="Tap a test to record its status" />
+            <PrimitiveReflexAssessment
+              appointmentId={appointment.id}
+              priorityPattern={appointment.priority_pattern}
+              updatePriorityPattern={updatePriorityPattern}
+            />
+          </div>
         )}
 
         {subTab === 'nerves' && (
-          <CranialNerveAssessment
-            appointmentId={appointment.id}
-            priorityPattern={appointment.priority_pattern}
-            updatePriorityPattern={updatePriorityPattern}
-            showImages
-          />
+          <div className="space-y-3">
+            <SectionHeading icon={Zap} title="Cranial nerves" hint="Laterality, stimulation and priority" />
+            <CranialNerveAssessment
+              appointmentId={appointment.id}
+              priorityPattern={appointment.priority_pattern}
+              updatePriorityPattern={updatePriorityPattern}
+              showImages
+            />
+          </div>
         )}
 
         {subTab === 'zones' && (
-          <BrainZoneAssessment
-            priorityPattern={appointment.priority_pattern}
-            updatePriorityPattern={updatePriorityPattern}
-            showImages
-          />
+          <div className="space-y-3">
+            <SectionHeading icon={Brain} title="Brain zones" hint="Cortical and subcortical points" />
+            <BrainZoneAssessment
+              priorityPattern={appointment.priority_pattern}
+              updatePriorityPattern={updatePriorityPattern}
+              showImages
+            />
+          </div>
         )}
       </div>
 
       {/* Done affordance */}
       {onJumpToPhase && (
-        <div className="pt-4 border-t border-border flex justify-end">
-          <Button onClick={() => onJumpToPhase(1)} className="h-9 rounded-md text-xs font-medium gap-1.5">
-            Preliminary complete <ArrowRight size={13} />
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card px-4 py-3 shadow-xs">
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-foreground">Done with Preliminary?</p>
+            <p className="text-[11px] text-muted-foreground">Next, down-regulate the nervous system.</p>
+          </div>
+          <Button onClick={() => onJumpToPhase(1)} className="h-9 gap-1.5 rounded-lg text-xs font-medium">
+            Continue to Ease <ArrowRight size={13} />
           </Button>
         </div>
       )}

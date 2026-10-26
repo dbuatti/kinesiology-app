@@ -13,7 +13,7 @@
 import {
   LayoutDashboard, CalendarDays, Activity, Users, Mail, UserRoundCheck, Bot,
   Wallet, ClipboardList, CalendarRange, Megaphone, Sunrise, MessageSquare, Heart,
-  Brain, BookOpen, FileText, type LucideIcon,
+  Brain, BookOpen, FileText, ShieldAlert, type LucideIcon,
 } from "lucide-react";
 
 export type Zone = "practice" | "business" | "growth";
@@ -48,6 +48,7 @@ const PRACTICE_HUB: NavItem = { label: "Practice Hub", icon: Heart, path: "/prac
 const IDENTITY: NavItem = { label: "Identity Work", icon: Brain, path: "/identity" };
 const LIBRARY: NavItem = { label: "Library", icon: BookOpen, path: "/library" };
 const WORKSHEETS: NavItem = { label: "Worksheets", icon: FileText, path: "/worksheets" };
+const LIMITING_BELIEFS: NavItem = { label: "Limiting Beliefs", icon: ShieldAlert, path: "/identity?tool=limiting" };
 
 export const ZONES: Record<Zone, ZoneDef> = {
   practice: {
@@ -56,7 +57,10 @@ export const ZONES: Record<Zone, ZoneDef> = {
     home: "/",
     dot: "bg-chart-primary",
     aura: ["hsl(236 80% 62% / 0.11)", "hsl(266 70% 60% / 0.07)"],
-    groups: [{ label: "Practice", items: [TODAY, CALENDAR, SESSIONS, PEOPLE] }],
+    groups: [
+      { label: "Practice", items: [TODAY, CALENDAR, SESSIONS, PEOPLE] },
+      { label: "Corrections", items: [LIMITING_BELIEFS] },
+    ],
     tabs: [TODAY, CALENDAR, SESSIONS, PEOPLE],
   },
   business: {
@@ -79,7 +83,7 @@ export const ZONES: Record<Zone, ZoneDef> = {
     aura: ["hsl(38 92% 55% / 0.10)", "hsl(18 90% 60% / 0.06)"],
     groups: [
       { label: "Daily", items: [MORNING, JOURNAL] },
-      { label: "Learn & practise", items: [PRACTICE_HUB, IDENTITY, LIBRARY, WORKSHEETS] },
+      { label: "Learn & practise", items: [PRACTICE_HUB, IDENTITY, LIMITING_BELIEFS, LIBRARY, WORKSHEETS] },
     ],
     tabs: [MORNING, JOURNAL, PRACTICE_HUB, LIBRARY],
   },
@@ -101,7 +105,7 @@ const startsWithAny = (pathname: string, prefixes: string[]) =>
 // sidebar never flips out from under you mid-task.
 const SHARED = ["/assistant", "/clients", "/calendar", "/settings", "/availability"];
 const BUSINESS = ["/inbox", "/follow-up", "/money", "/audit", "/marketing", "/business", "/timetable"];
-const GROWTH = ["/morning-program", "/journal", "/identity", "/library", "/worksheets", "/resources", "/peace-framework", "/lab"];
+const GROWTH = ["/morning-program", "/journal", "/identity", "/library", "/worksheets", "/resources", "/peace-framework", "/lab", "/limiting-beliefs"];
 
 /** The zone a URL belongs to, or null when it's shared and the zone should stay as it is. */
 export function zoneForPath(pathname: string): Zone | null {
@@ -145,5 +149,6 @@ export const BREADCRUMBS: Record<string, [string, string, string]> = {
   worksheets: ["Worksheets", "Growth", "/morning-program"],
   resources: ["Resources", "Library", "/library"],
   "peace-framework": ["PEACE Framework", "Library", "/library"],
+  limiting: ["Limiting Beliefs", "Growth", "/morning-program"],
   settings: ["Settings", "System", "/settings"],
 };

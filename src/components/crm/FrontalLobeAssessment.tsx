@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Hand, Info, Save, Loader2, RotateCcw, ImageOff, CheckCircle2, Zap, RefreshCw, ArrowRightLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
 import { showSuccess, showError } from "@/utils/toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -47,7 +48,7 @@ const FrontalLobeAssessment = ({
   useEffect(() => {
     const fetchInitialState = async () => {
       try {
-        const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
+        const { data: app } = appointmentId === DEMO_APPOINTMENT_ID ? { data: null } : await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
         if (app?.priority_pattern) {
           const pattern = safeParse(app.priority_pattern, {} as any);
           const status = pattern.brainZones?.['Frontal Lobe Assessment'];
@@ -116,7 +117,7 @@ const FrontalLobeAssessment = ({
   const handleSetStatus = async (status: 'Clear' | 'Inhibited' | 'Recheck') => {
     setLoading(true);
     try {
-      const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
+      const { data: app } = appointmentId === DEMO_APPOINTMENT_ID ? { data: null } : await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
       const pattern = safeParse(app?.priority_pattern, {} as any);
       
       if (!pattern.brainZones) pattern.brainZones = {};
@@ -144,7 +145,7 @@ const FrontalLobeAssessment = ({
   const handleSaveNotes = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase.from("appointments").update({ frontal_lobe_notes: notes || null }).eq("id", appointmentId);
+      const { error } = appointmentId === DEMO_APPOINTMENT_ID ? { error: null } : await supabase.from("appointments").update({ frontal_lobe_notes: notes || null }).eq("id", appointmentId);
       if (error) throw error;
       showSuccess("Notes saved.");
       onUpdate();
@@ -159,11 +160,11 @@ const FrontalLobeAssessment = ({
     setShowResetConfirm(false);
     setLoading(true);
     try {
-      const { data: app } = await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
+      const { data: app } = appointmentId === DEMO_APPOINTMENT_ID ? { data: null } : await supabase.from('appointments').select('priority_pattern').eq('id', appointmentId).single();
       const pattern = safeParse(app?.priority_pattern, {} as any);
       if (pattern.brainZones) delete pattern.brainZones['Frontal Lobe Assessment'];
 
-      await supabase.from("appointments").update({ 
+      if (appointmentId !== DEMO_APPOINTMENT_ID) await supabase.from("appointments").update({ 
         frontal_lobe_notes: null,
         priority_pattern: JSON.stringify(pattern)
       }).eq("id", appointmentId);
@@ -192,8 +193,8 @@ const FrontalLobeAssessment = ({
               size="sm" 
               onClick={() => handleSetStatus('Clear')}
               className={cn(
-                "h-9 px-3.5 rounded-lg font-medium text-[13px] transition-all",
-                currentStatus === 'Clear' ? "bg-emerald-600 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-emerald-50"
+                "h-10 px-4 rounded-md font-medium text-[13px] transition-all",
+                currentStatus === 'Clear' ? "bg-success text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-success/5"
               )}
             >
               <CheckCircle2 size={14} className="mr-2" /> Clear
@@ -202,8 +203,8 @@ const FrontalLobeAssessment = ({
               size="sm" 
               onClick={() => handleSetStatus('Inhibited')}
               className={cn(
-                "h-9 px-3.5 rounded-lg font-medium text-[13px] transition-all",
-                currentStatus === 'Inhibited' ? "bg-rose-600 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-rose-50"
+                "h-10 px-4 rounded-md font-medium text-[13px] transition-all",
+                currentStatus === 'Inhibited' ? "bg-destructive text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-destructive/5"
               )}
             >
               <Zap size={14} className="mr-2" /> Inhibited
@@ -212,8 +213,8 @@ const FrontalLobeAssessment = ({
               size="sm" 
               onClick={() => handleSetStatus('Recheck')}
               className={cn(
-                "h-9 px-3.5 rounded-lg font-medium text-[13px] transition-all",
-                currentStatus === 'Recheck' ? "bg-amber-500 text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-amber-50"
+                "h-10 px-4 rounded-md font-medium text-[13px] transition-all",
+                currentStatus === 'Recheck' ? "bg-warning text-primary-foreground shadow-lg" : "bg-card text-muted-foreground border-border hover:bg-warning/5"
               )}
             >
               <RefreshCw size={14} className="mr-2" /> Recheck
@@ -221,7 +222,7 @@ const FrontalLobeAssessment = ({
           </div>
         </div>
         {currentStatus && (
-          <Badge className="bg-indigo-600 text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
+          <Badge className="bg-primary text-primary-foreground border-none font-semibold text-[10px] uppercase tracking-wider px-3 py-1 rounded-full">
             Auto-synced to Align phase
           </Badge>
         )}
@@ -229,9 +230,9 @@ const FrontalLobeAssessment = ({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
-          <div className="bg-indigo-50 border-2 border-indigo-200 rounded-xl p-4">
-            <h3 className="text-lg font-bold text-indigo-900 mb-3 flex items-center gap-2">
-              <Hand size={20} className="text-indigo-600" />
+          <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
+            <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+              <Hand size={20} className="text-primary" />
               Test Protocol
             </h3>
             <div className="bg-card rounded-lg p-4 mb-4">
@@ -249,7 +250,7 @@ const FrontalLobeAssessment = ({
                 </div>
               )}
             </div>
-            <ol className="space-y-2 text-sm text-indigo-900 list-decimal list-inside">
+            <ol className="space-y-2 text-sm text-foreground list-decimal list-inside">
               <li>Practitioner demonstrates the rapid open/closed hand test (10 repetitions).</li>
               <li>Client closes their eyes.</li>
               <li>Client performs the test as fast and wide as possible with the left hand.</li>
@@ -261,13 +262,13 @@ const FrontalLobeAssessment = ({
           {/* Structured Clinical Fields */}
           <div className="p-6 bg-muted/50 rounded-2xl border border-border/50 space-y-4">
             <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
-              <ArrowRightLeft size={14} className="text-indigo-500" /> Clinical Metrics
+              <ArrowRightLeft size={14} className="text-primary" /> Clinical Metrics
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-muted-foreground">Left Hand Speed</Label>
                 <Select value={leftHandSpeed} onValueChange={handleLeftSpeedChange}>
-                  <SelectTrigger className="h-10 rounded-xl font-bold text-xs bg-card">
+                  <SelectTrigger className="h-10 rounded-md font-semibold text-xs bg-card">
                     <SelectValue placeholder="Rate 1-10" />
                   </SelectTrigger>
                   <SelectContent>
@@ -280,7 +281,7 @@ const FrontalLobeAssessment = ({
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-muted-foreground">Right Hand Speed</Label>
                 <Select value={rightHandSpeed} onValueChange={handleRightSpeedChange}>
-                  <SelectTrigger className="h-10 rounded-xl font-bold text-xs bg-card">
+                  <SelectTrigger className="h-10 rounded-md font-semibold text-xs bg-card">
                     <SelectValue placeholder="Rate 1-10" />
                   </SelectTrigger>
                   <SelectContent>
@@ -293,8 +294,8 @@ const FrontalLobeAssessment = ({
               <div className="space-y-2">
                 <Label className="text-xs font-medium text-muted-foreground">Asymmetry</Label>
                 <ToggleGroup type="single" value={asymmetryDetected} onValueChange={handleAsymChange} className="justify-start gap-1">
-                  <ToggleGroupItem value="Yes" className="rounded-lg border border-border text-xs font-bold px-3 py-1.5">Yes</ToggleGroupItem>
-                  <ToggleGroupItem value="No" className="rounded-lg border border-border text-xs font-bold px-3 py-1.5">No</ToggleGroupItem>
+                  <ToggleGroupItem value="Yes" className="rounded-md border border-border text-xs font-semibold px-3 py-2">Yes</ToggleGroupItem>
+                  <ToggleGroupItem value="No" className="rounded-md border border-border text-xs font-semibold px-3 py-2">No</ToggleGroupItem>
                 </ToggleGroup>
               </div>
             </div>
@@ -302,7 +303,7 @@ const FrontalLobeAssessment = ({
         </div>
 
         <div className="space-y-4">
-          <Label htmlFor="frontalLobeNotes" className="text-base font-bold text-foreground mb-2 block">
+          <Label htmlFor="frontalLobeNotes" className="text-[15px] font-semibold text-foreground mb-2 block">
             Frontal Lobe Assessment Notes:
           </Label>
           <Textarea
@@ -317,7 +318,7 @@ const FrontalLobeAssessment = ({
               {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Save Notes"}
             </Button>
             {(initialNotes || currentStatus) && (
-              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-12 px-6 rounded-xl border-destructive/20 text-destructive hover:bg-destructive/5">
+              <Button variant="outline" onClick={() => setShowResetConfirm(true)} disabled={loading} className="h-10 px-4 rounded-md border-destructive/20 text-destructive hover:bg-destructive/5">
                 <RotateCcw size={16} />
               </Button>
             )}

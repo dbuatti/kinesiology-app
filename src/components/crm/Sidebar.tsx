@@ -324,7 +324,7 @@ const Sidebar = ({ mobileOpen, onMobileOpenChange, drawerOnly = false }: Sidebar
                 <>
                   <span className="min-w-0 flex-1 leading-tight">
                     <span className="block truncate text-[13px] font-medium text-foreground">{displayName}</span>
-                    <span className="block truncate text-[11px] text-muted-foreground">{email || "Practitioner"}</span>
+                    <span className="block truncate text-[11px] text-muted-foreground">{email || "Not signed in"}</span>
                   </span>
                   <ChevronsUpDown size={14} className="shrink-0 text-muted-foreground" />
                 </>

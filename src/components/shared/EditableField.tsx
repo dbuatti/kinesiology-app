@@ -153,9 +153,9 @@ const EditableField = ({
  "group relative p-6 transition-all duration-500",
  !isNoBorder && "border border-border rounded-xl",
  isFocused 
- ? (isNoBorder ? "" : "bg-card border-indigo-500 shadow-premium ring-4 ring-indigo-500/5") 
+ ? (isNoBorder ? "" : "bg-card border-primary shadow-premium ring-4 ring-primary/5") 
  : hasError 
- ? (isNoBorder ? "" : "bg-chart-destructive/10 border-border ")
+ ? (isNoBorder ? "" : "bg-destructive/10 border-border ")
  : (isNoBorder ? "" : "bg-muted/20 border-transparent hover:bg-card hover:border-border hover:shadow-sm"),
  isNoBorder && "p-0", 
  className
@@ -167,40 +167,42 @@ const EditableField = ({
  }
  }}
  >
- <div className="flex items-center justify-between mb-4 h-5">
+ <div className={cn("flex items-center justify-between h-5", label ? "mb-4" : "mb-1")}>
  <div className="flex items-center gap-3">
+ {label && (
  <p className={cn(
  "font-semibold uppercase text-[10px] tracking-wider transition-colors",
- isFocused ? "text-chart-primary" : hasError ? "text-chart-destructive" : "text-muted-foreground/60"
+ isFocused ? "text-primary" : hasError ? "text-destructive" : "text-muted-foreground/60"
  )}>
  {label}
  </p>
+ )}
  {isPrivate && isSensitive && (
- <Badge variant="outline" className="h-4 px-1.5 text-[7px] font-semibold uppercase border-border text-destructive/70 bg-chart-destructive/10/50">
+ <Badge variant="outline" className="h-4 px-2 text-[7px] font-semibold uppercase border-border text-destructive/70 bg-destructive/10/50">
  <EyeOff size={8} className="mr-1" /> Private
  </Badge>
  )}
  </div>
  <div className="flex items-center gap-2 min-w-[60px] justify-end">
  {isSaving && (
- <div className="flex items-center gap-1.5 text-[10px] font-semibold text-chart-primary animate-pulse">
+ <div className="flex items-center gap-2 text-[10px] font-semibold text-primary animate-pulse">
  <Loader2 size={10} className="animate-spin" /> SYNCING
  </div>
  )}
  {showSaved && !isSaving && (
- <div className="flex items-center gap-1.5 text-[10px] font-semibold text-chart-emerald animate-in fade-in slide-in-from-right-2">
+ <div className="flex items-center gap-2 text-[10px] font-semibold text-success animate-in fade-in slide-in-from-right-2">
  <CheckCircle2 size={10} /> SAVED
  </div>
  )}
  {hasError && !isSaving && (
- <div className="flex items-center gap-1.5 text-[10px] font-semibold text-chart-destructive">
+ <div className="flex items-center gap-2 text-[10px] font-semibold text-destructive">
  <AlertCircle size={10} /> ERROR
  </div>
  )}
  {!isFocused && !isSaving && !showSaved && !hasError && (
- <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300">
- <Button variant="ghost" size="icon" className="h-7 w-7 rounded-xl text-muted-foreground hover:text-chart-primary hover:bg-muted" onClick={handleCopy}>
- {isCopied ? <Check size={14} className="text-chart-emerald" /> : <Copy size={14} />}
+ <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
+ <Button variant="ghost" size="icon" className="h-7 w-7 rounded-xl text-muted-foreground hover:text-primary hover:bg-muted" onClick={handleCopy}>
+ {isCopied ? <Check size={14} className="text-success" /> : <Copy size={14} />}
  </Button>
  <Edit3 size={14} className="text-muted-foreground/20" />
  </div>
@@ -210,7 +212,7 @@ const EditableField = ({
  
  <div className={cn("relative", multiline && "h-full")}>
  {isFocused ? (
- <div className={cn("space-y-5", multiline && "h-full flex flex-col")}>
+ <div className={cn("space-y-6", multiline && "h-full flex flex-col")}>
  <InputComponent
  ref={inputRef}
  value={localValue}
@@ -225,7 +227,7 @@ const EditableField = ({
  )}
  />
  <div className="flex flex-wrap gap-2 pt-4 border-t border-border animate-in fade-in slide-in-from-bottom-2 duration-500 shrink-0 pb-1">
- <div className="flex items-center gap-1.5 mr-3 text-xs font-medium text-muted-foreground/60">
+ <div className="flex items-center gap-2 mr-3 text-xs font-medium text-muted-foreground/60">
  <Sparkles size={12} className="text-primary/70" /> Quick Tags:
  </div>
  {SMART_CHIPS.map(chip => (

@@ -36,17 +36,17 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
 
   return (
     <section className={cn(
-      "p-4 rounded-2xl border transition-all",
-      hasInhibition ? "bg-rose-50 border-rose-200" : 
-      isFullyClear ? "bg-emerald-50/10 border-emerald-100 opacity-80" :
+      "p-4 rounded-xl border transition-all",
+      hasInhibition ? "bg-primary/[0.04] border-primary/20" : 
+      isFullyClear ? "bg-success/[0.04] border-success/20 opacity-80" :
       "border-border bg-card"
     )}>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-border/50 pb-2 mb-3">
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-serif font-bold text-foreground">
+          <h2 className="text-[15px] font-semibold text-foreground">
             {point.name}
           </h2>
-          <Badge variant="outline" className="border-border text-muted-foreground font-semibold text-[7px] uppercase tracking-wider px-1.5 py-0 rounded-none">
+          <Badge variant="outline" className="border-border text-muted-foreground font-semibold text-[7px] uppercase tracking-wider px-2 py-0 rounded-full">
             {point.category} • {point.lateralization}
           </Badge>
         </div>
@@ -55,23 +55,23 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
           <div className="flex items-center gap-3 border-r border-border pr-4">
             {isLateralized ? (
               <>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <Checkbox 
                     id={`inhib-l-${point.id}`}
                     checked={statusL === 'Inhibited'}
                     onCheckedChange={(checked) => onUpdate('brainZones', point.name, checked ? 'Inhibited' : 'Clear', 'L')}
-                    className="h-3.5 w-3.5 border-muted-foreground rounded-none"
+                    className="h-3.5 w-3.5 border-muted-foreground rounded-sm"
                   />
                   <label htmlFor={`inhib-l-${point.id}`} className="text-xs font-medium cursor-pointer text-muted-foreground">
                     L Inhib
                   </label>
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <Checkbox 
                     id={`inhib-r-${point.id}`}
                     checked={statusR === 'Inhibited'}
                     onCheckedChange={(checked) => onUpdate('brainZones', point.name, checked ? 'Inhibited' : 'Clear', 'R')}
-                    className="h-3.5 w-3.5 border-muted-foreground rounded-none"
+                    className="h-3.5 w-3.5 border-muted-foreground rounded-sm"
                   />
                   <label htmlFor={`inhib-r-${point.id}`} className="text-xs font-medium cursor-pointer text-muted-foreground">
                     R Inhib
@@ -79,12 +79,12 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
                 </div>
               </>
             ) : (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-2">
                 <Checkbox 
                   id={`inhib-mid-${point.id}`}
                   checked={statusMidline === 'Inhibited'}
                   onCheckedChange={(checked) => onUpdate('brainZones', point.name, checked ? 'Inhibited' : 'Clear')}
-                  className="h-3.5 w-3.5 border-muted-foreground rounded-none"
+                  className="h-3.5 w-3.5 border-muted-foreground rounded-sm"
                 />
                 <label htmlFor={`inhib-mid-${point.id}`} className="text-xs font-medium cursor-pointer text-muted-foreground">
                   Inhibited
@@ -96,7 +96,7 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
             variant="ghost" 
             size="sm" 
             onClick={() => isLateralized ? (onUpdate('brainZones', point.name, 'Clear', 'L'), onUpdate('brainZones', point.name, 'Clear', 'R')) : onUpdate('brainZones', point.name, 'Clear')}
-            className="h-5 px-2 text-[7px] font-semibold text-emerald-600 hover:bg-emerald-50 rounded-md"
+            className="h-5 px-2 text-[7px] font-semibold text-success hover:bg-success/10 rounded-md"
           >
             <CheckCircle2 size={10} className="mr-1" /> Clear
           </Button>
@@ -107,25 +107,25 @@ const ZoneTestItem = ({ point, statusL, statusR, statusMidline, isLateralized, i
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           <div className="lg:col-span-8 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
                   <Hand size={10} /> Location
                 </div>
-                <p className="text-xs font-bold text-foreground leading-tight">{point.location}</p>
+                <p className="text-xs font-semibold text-foreground leading-tight">{point.location}</p>
               </div>
               
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
                   <PlayCircle size={10} /> Stimulus
                 </div>
-                <p className="text-xs font-bold text-foreground leading-tight">{point.stimulus || point.technique || ""}</p>
+                <p className="text-xs font-semibold text-foreground leading-tight">{point.stimulus || point.technique || ""}</p>
               </div>
             </div>
           </div>
 
           <div className="lg:col-span-4">
             {showImage && imageUrl ? (
-              <div className="aspect-video border border-border p-0.5 rounded-lg bg-muted/50 overflow-hidden">
+              <div className="aspect-video border border-border p-1 rounded-lg bg-muted/50 overflow-hidden">
                 <img src={imageUrl} alt="Reference" className="w-full h-full object-cover rounded-md opacity-80" />
               </div>
             ) : showImage && (
@@ -194,7 +194,7 @@ export function BrainZoneAssessment({
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <Input
             placeholder="Search brain zones..."
-            className="pl-8 h-7 rounded-lg border-border bg-card text-[10px]"
+            className="pl-8 h-10 rounded-md border-border bg-card text-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />

@@ -8,7 +8,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import EditableField from "@/components/shared/EditableField";
 import PathwayLogicWizard from "@/components/crm/PathwayLogicWizard";
-import { PhaseHeader } from "@/components/crm/v2/PhaseComponents";
+import { PhaseHeader, PhasePanel, SectionHeading, PathwayBanner } from "@/components/crm/v2/PhaseComponents";
 import { getInhibitedFindings, findingLabel } from "@/components/crm/v2/v2-utils";
 import { safeParse } from "@/utils/safe-json";
 import type { PhaseProps } from "@/components/crm/v2/v2-types";
@@ -63,51 +63,51 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-5">
       <PhaseHeader icon={Target} title="Correct" description="Determine afferent vs efferent, identify coordinates, and apply the correction." />
 
-      {/* Priority Pathway Banner */}
+      {/* Priority pathway — same object, same treatment as Align. */}
       {priorityPathway && priorityPathway !== 'CUSTOM' && (
-        <div className="flex items-center gap-3 p-4 bg-destructive/5 border border-destructive/20 rounded-xl">
-          <div className="w-9 h-9 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
-            <Target size={16} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-bold text-destructive uppercase tracking-wider">Priority Pathway</p>
-            <p className="text-sm font-semibold text-foreground truncate">{priorityPathway}</p>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setPathModalOpen(true)}
-            className="rounded-lg h-8 px-2.5 text-[11px] font-bold text-muted-foreground hover:bg-destructive/10 shrink-0"
-          >
-            Change
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setPathModalOpen(true)}
-            className="rounded-lg h-8 w-8 p-0 text-muted-foreground hover:bg-destructive/10 shrink-0"
-          >
-            <Info size={16} />
-          </Button>
-        </div>
+        <PathwayBanner
+          icon={Target}
+          value={priorityPathway}
+          actions={
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setPathModalOpen(true)}
+                className="h-8 rounded-lg px-2.5 text-[11px] font-medium text-muted-foreground hover:bg-background/60"
+              >
+                Change
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setPathModalOpen(true)}
+                aria-label="Priority pathway details"
+                className="h-8 w-8 rounded-lg p-0 text-muted-foreground hover:bg-background/60"
+              >
+                <Info size={15} />
+              </Button>
+            </>
+          }
+        />
       )}
 
-      <div>
+      <div className="space-y-4">
         {/* Inhibition/Hypertonic Finding Selector (hidden once a real pathway is set) */}
         {pathwayFindings.length > 0 && (!priorityPathway || isCustom || customMode) && (
-          <div className="mb-4 p-3 bg-muted/50 rounded-xl border border-border">
-            <p className="text-xs font-medium text-muted-foreground mb-2">Select Finding to Correct</p>
+          <PhasePanel className="space-y-3">
+            <SectionHeading icon={Target} title="Select finding to correct" />
             <Select
               value={priorityPathway && priorityPathway !== 'CUSTOM' ? priorityPathway : ''}
               onValueChange={selectPathway}
             >
-              <SelectTrigger className="w-full h-10 rounded-lg border-border text-xs">
+              <SelectTrigger className="h-10 w-full rounded-lg border-border text-xs">
                 <SelectValue placeholder="Choose an inhibited finding..." />
               </SelectTrigger>
-              <SelectContent className="rounded-xl border-border max-h-[200px]">
+              <SelectContent className="max-h-[200px] rounded-xl border-border">
                 {pathwayFindings.map(f => (
                   <SelectItem key={f.value} value={f.value} className="rounded-lg py-2 text-xs font-medium">
                     {f.value}
@@ -119,7 +119,7 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
               </SelectContent>
             </Select>
             {(isCustom || customMode) && (
-              <div className="flex items-center gap-2 mt-2">
+              <div className="flex items-center gap-2">
                 <Input
                   value={customPathway}
                   onChange={e => setCustomPathway(e.target.value)}
@@ -131,13 +131,13 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
                   size="sm"
                   disabled={!customPathway.trim()}
                   onClick={saveCustom}
-                  className="rounded-lg h-9 px-3 text-xs font-medium"
+                  className="h-9 rounded-lg px-3 text-xs font-medium"
                 >
                   Save
                 </Button>
               </div>
             )}
-          </div>
+          </PhasePanel>
         )}
 
         <PathwayLogicWizard
@@ -161,11 +161,12 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
         />
       </div>
 
-      <div className="space-y-4">
-        <div className="flex items-center gap-3 pb-3 border-b border-border">
-          <Target size={18} className="text-muted-foreground" />
-          <h3 className="text-sm font-bold text-foreground tracking-tight">Corrections & Balances Applied</h3>
-        </div>
+      <PhasePanel className="space-y-3">
+        <SectionHeading
+          icon={Target}
+          title="Corrections & balances applied"
+          hint="Coordinates, polarity and method"
+        />
         <EditableField
           field="modes_balances"
           label=""
@@ -173,15 +174,12 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
           multiline
           placeholder="Document the coordinates, polarity, and methods applied..."
           onSave={saveField}
-          className="border border-border p-4 rounded-md min-h-[200px]"
+          className="min-h-[200px] rounded-xl border border-border/60 bg-background/50 p-4"
         />
-      </div>
+      </PhasePanel>
 
-      <div className="space-y-4">
-        <div className="flex items-center gap-3 pb-3 border-b border-border">
-          <Activity size={18} className="text-muted-foreground" />
-          <h3 className="text-sm font-bold text-foreground tracking-tight">Acupoints</h3>
-        </div>
+      <PhasePanel className="space-y-3">
+        <SectionHeading icon={Activity} title="Acupoints" hint="Any points held or needled" />
         <EditableField
           field="acupoints"
           label=""
@@ -189,16 +187,16 @@ const CorrectPhase = ({ appointment, onUpdate, saveField }: PhaseProps) => {
           multiline
           placeholder="Record any acupressure points held..."
           onSave={saveField}
-          className="border border-border p-4 rounded-md min-h-[120px]"
+          className="min-h-[120px] rounded-xl border border-border/60 bg-background/50 p-4"
         />
-      </div>
+      </PhasePanel>
 
       {/* Priority Pathway Modal */}
       <Dialog open={pathModalOpen} onOpenChange={setPathModalOpen}>
         <DialogContent className="sm:max-w-[500px] rounded-xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Target size={18} className="text-destructive" /> Priority Pathway
+              <Target size={18} className="text-primary" /> Priority Pathway
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-6 py-4">

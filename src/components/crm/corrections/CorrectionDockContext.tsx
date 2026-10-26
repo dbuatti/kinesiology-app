@@ -17,6 +17,8 @@ export interface CorrectionSelection {
 interface CorrectionDockContextValue {
   isOpen: boolean;
   target: CorrectionTarget | null;
+  /** Last tab+item visited — highlighted on open, not auto-opened. */
+  selection: CorrectionSelection | null;
   openDock: (request?: { tab?: CorrectionTab; item?: string }) => void;
   closeDock: () => void;
   toggleDock: () => void;
@@ -39,6 +41,7 @@ const noop = () => {};
 const CorrectionDockContext = createContext<CorrectionDockContextValue>({
   isOpen: false,
   target: null,
+  selection: null,
   openDock: noop,
   closeDock: noop,
   toggleDock: noop,
@@ -74,8 +77,9 @@ export const CorrectionDockProvider = ({
 
   const openDock = useCallback<CorrectionDockContextValue["openDock"]>(
     (request) => {
-      // No explicit request = just reveal the dock at whatever it last showed.
+      // No explicit request = just the list, at whatever tab it was on.
       if (!request) {
+        setTarget(null);
         setIsOpen(true);
         return;
       }
@@ -88,18 +92,16 @@ export const CorrectionDockProvider = ({
     [selection]
   );
 
-  const closeDock = useCallback(() => setIsOpen(false), []);
+  const closeDock = useCallback(() => {
+    setIsOpen(false);
+    // Drop the deep link so reopening starts on the list, not the last target.
+    setTarget(null);
+  }, []);
 
   const toggleDock = useCallback(() => {
-    if (isOpen) {
-      setIsOpen(false);
-      return;
-    }
-    setTarget((prev) =>
-      prev ?? { tab: selection?.tab ?? "afferent", item: selection?.item ?? DEFAULT_ITEM.afferent, nonce: 1 }
-    );
-    setIsOpen(true);
-  }, [isOpen, selection]);
+    setIsOpen((open) => !open);
+    setTarget(null);
+  }, []);
 
   const rememberSelection = useCallback<CorrectionDockContextValue["rememberSelection"]>(
     (tab, item) => {
@@ -114,8 +116,8 @@ export const CorrectionDockProvider = ({
   );
 
   const value = useMemo(
-    () => ({ isOpen, target, openDock, closeDock, toggleDock, rememberSelection }),
-    [isOpen, target, openDock, closeDock, toggleDock, rememberSelection]
+    () => ({ isOpen, target, selection, openDock, closeDock, toggleDock, rememberSelection }),
+    [isOpen, target, selection, openDock, closeDock, toggleDock, rememberSelection]
   );
 
   return <CorrectionDockContext.Provider value={value}>{children}</CorrectionDockContext.Provider>;

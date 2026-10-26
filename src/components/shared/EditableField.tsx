@@ -219,8 +219,8 @@ const EditableField = ({
   onBlur={handleBlur}
  placeholder={placeholder}
  className={cn(
- "transition-all duration-300 border-none focus-visible:ring-0 text-lg font-medium text-foreground placeholder:text-muted-foreground/10 bg-transparent w-full",
- isNoBorder ? "p-2" : "p-0",
+ "transition-all duration-300 border-none focus-visible:ring-0 text-sm font-medium text-foreground placeholder:text-muted-foreground/30 bg-transparent w-full",
+ isNoBorder ? "p-1" : "p-0",
  multiline ? "resize-none flex-1 min-h-[120px]" : ""
  )}
  />
@@ -245,9 +245,9 @@ const EditableField = ({
  </div>
  ) : (
  <p className={cn(
- "text-lg leading-relaxed whitespace-pre-wrap transition-all duration-700",
- isNoBorder ? "p-2" : "p-0",
- isEmpty ? "text-muted-foreground/20 italic font-medium" : "text-foreground font-medium",
+ "text-sm leading-relaxed whitespace-pre-wrap transition-all duration-200",
+ isNoBorder ? "p-1" : "p-0",
+ isEmpty ? "text-muted-foreground/40" : "text-foreground",
  shouldBlur && "blur-sensitive"
  )}>
  {isEmpty ? placeholder : localValue}

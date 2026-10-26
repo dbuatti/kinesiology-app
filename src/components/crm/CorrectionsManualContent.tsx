@@ -539,8 +539,15 @@ const CorrectionsManualContent = ({
       </div>
 
       {compact ? (
-        <div className="flex flex-1 min-h-0 flex-col">
-          <div className="max-h-[40%] shrink-0 overflow-y-auto border-b border-border px-3 py-2.5 space-y-2">
+        <div className="flex flex-1 min-h-0">
+          {/* The list never moves: full width until a process is tapped, then a
+              left column while its instructions slide in beside it. */}
+          <div
+            className={cn(
+              "min-h-0 overflow-y-auto px-3 py-2.5 space-y-2",
+              instructionsOpen ? "w-[164px] shrink-0 border-r border-border" : "flex-1"
+            )}
+          >
             {(() => {
               const items = getItems();
               const groups = items.reduce<{ group?: string; items: typeof items }[]>((acc, item) => {
@@ -554,13 +561,17 @@ const CorrectionsManualContent = ({
                   {g.group && (
                     <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/50">{g.group}</p>
                   )}
-                  <div className="flex flex-wrap gap-1">
+                  <div className={cn("gap-1", instructionsOpen ? "flex flex-col" : "flex flex-wrap")}>
                     {g.items.map((item) => (
                       <button
                         key={item.id}
-                        onClick={() => setActiveId(item.id)}
+                        onClick={() => {
+                          setActiveId(item.id);
+                          setInstructionsOpen(true);
+                        }}
                         className={cn(
                           "px-2 py-1 rounded-md border text-[10px] font-medium transition-colors",
+                          instructionsOpen && "w-full text-left",
                           item.id === activeId
                             ? tabAccent
                             : "border-border bg-card text-muted-foreground hover:text-foreground"
@@ -574,9 +585,24 @@ const CorrectionsManualContent = ({
               ));
             })()}
           </div>
-          <div className="flex-1 min-h-0 overflow-y-auto px-3 py-3">
-            {getContent()}
-          </div>
+
+          {instructionsOpen && (
+            <div className="flex min-w-0 flex-1 flex-col animate-in fade-in slide-in-from-right-4 duration-200">
+              <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-3 py-1.5">
+                <span className="truncate text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  {getItems().find((i) => i.id === activeId)?.label ?? "Process"}
+                </span>
+                <button
+                  onClick={() => setInstructionsOpen(false)}
+                  title="Back to the process list"
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">{getContent()}</div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex flex-1 min-h-0 overflow-hidden">

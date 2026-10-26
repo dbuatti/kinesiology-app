@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { ArrowDownCircle, ArrowUpCircle, BookMarked, ChevronRight, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import CorrectionsManualContent from "@/components/crm/CorrectionsManualContent";
@@ -7,9 +8,19 @@ import { useCorrectionDock } from "./CorrectionDockContext";
  * Persistent correction reference that sits beside the session instead of on
  * top of it. Stays mounted across PEACE / Grid / Doc so a pathway reference
  * opened mid-muscle-test survives every phase change.
+ *
+ * Collapsed it's a 48px rail. Open, it's the process list alone. When the
+ * practitioner taps a process, the instructions slide in on the right and the
+ * dock widens to make room — the list itself never moves.
  */
 const CorrectionDock = () => {
-  const { isOpen, target, openDock, closeDock, rememberSelection } = useCorrectionDock();
+  const { isOpen, target, selection, openDock, closeDock, rememberSelection } = useCorrectionDock();
+  const [instructionsOpen, setInstructionsOpen] = useState(false);
+
+  // A closed dock always reopens on the list, not the last deep link.
+  useEffect(() => {
+    if (!isOpen) setInstructionsOpen(false);
+  }, [isOpen]);
 
   if (!isOpen) {
     return (
@@ -50,8 +61,10 @@ const CorrectionDock = () => {
   return (
     <aside
       className={cn(
-        "sticky top-[3.625rem] flex h-[calc(100dvh-3.625rem)] w-[400px] max-w-[70vw] shrink-0 self-start flex-col",
-        "border-l border-border bg-card"
+        "sticky top-[3.625rem] flex h-[calc(100dvh-3.625rem)] shrink-0 self-start flex-col",
+        "border-l border-border bg-card",
+        "transition-[width] duration-200 ease-out",
+        instructionsOpen ? "w-[640px] max-w-[calc(100vw-8rem)]" : "w-[400px] max-w-[70vw]"
       )}
     >
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-3 py-2">
@@ -71,7 +84,14 @@ const CorrectionDock = () => {
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col">
-        <CorrectionsManualContent compact fill target={target} onSelectionChange={rememberSelection} />
+        <CorrectionsManualContent
+          compact
+          fill
+          target={target}
+          initialSelection={selection}
+          onSelectionChange={rememberSelection}
+          onExpandedChange={setInstructionsOpen}
+        />
       </div>
     </aside>
   );

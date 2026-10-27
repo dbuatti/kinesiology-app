@@ -5,12 +5,11 @@ import { useCranialNerveTests } from "@/hooks/useCranialNerveTests";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  ImageIcon, 
-  Loader2, 
-  Hand, 
+import {
+  ImageIcon,
+  Loader2,
+  Hand,
   PlayCircle,
-  FileText,
   CheckCircle2,
   ArrowRightLeft,
   Info,
@@ -19,7 +18,7 @@ import {
   ChevronDown,
   ChevronRight,
   AlertTriangle,
-  Stethoscope
+  Stethoscope,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -111,7 +110,7 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
             {nerve.nuclei} • {nerve.toneEffect}
           </Badge>
           {!isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') && (
-            <Badge className="bg-success/10 text-success border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-0 rounded-full">
+            <Badge className="bg-success/10 text-success-strong border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-0 rounded-full">
               <CheckCircle2 size={8} className="mr-1" /> Clear
             </Badge>
           )}
@@ -244,9 +243,6 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
             )}
 
             <div className="space-y-1">
-              <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                <FileText size={10} /> Notes
-              </div>
               <textarea 
                 value={localNotes}
                 onChange={(e) => handleNotesChange(e.target.value)}
@@ -304,12 +300,12 @@ const NerveTestItem = ({ nerve, test, statusL, statusR, statusMidline, isLateral
               <div className="flex h-32 rounded-lg overflow-hidden border border-border">
                 {images.primary && (
                   <div className="flex-1 bg-muted overflow-hidden">
-                    <img src={images.primary} alt="Primary" className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
+                    <img loading="lazy" decoding="async" src={images.primary} alt="Primary" className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
                   </div>
                 )}
                 {images.secondary && (
                   <div className="flex-1 bg-muted overflow-hidden">
-                    <img src={images.secondary} alt="Secondary" className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
+                    <img loading="lazy" decoding="async" src={images.secondary} alt="Secondary" className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
                   </div>
                 )}
               </div>

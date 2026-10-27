@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import plugin from "tailwindcss/plugin";
 
 export default {
   darkMode: ["class"],
@@ -148,5 +149,16 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    /**
+     * Pointer-aware variants. `coarse` is iPad/iPhone (a finger), `fine` is a
+     * Mac trackpad. Hover-only affordances and 36px icon buttons are fine with
+     * a pointer; on glass they have to be visible and ≥44px.
+     */
+    plugin(({ addVariant }) => {
+      addVariant("coarse", "@media (pointer: coarse)");
+      addVariant("fine", "@media (pointer: fine)");
+    }),
+  ],
 } satisfies Config;

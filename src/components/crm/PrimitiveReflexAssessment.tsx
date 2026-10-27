@@ -5,16 +5,15 @@ import { usePrimitiveReflexTests } from "@/hooks/usePrimitiveReflexTests";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Zap, 
-  Loader2, 
-  Activity, 
-  FileText,
+  Zap,
+  Loader2,
+  Activity,
   Search,
   CheckCircle2,
   ChevronDown,
   ChevronRight,
   Crown,
-  Brain
+  Brain,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -36,7 +35,7 @@ function HighlightPattern({ text }: { text: string }) {
           return <span key={i} className="font-semibold text-primary">{part}</span>;
         }
         if (lower === 'extensors' || lower === 'extensor') {
-          return <span key={i} className="font-semibold text-warning">{part}</span>;
+          return <span key={i} className="font-semibold text-warning-strong">{part}</span>;
         }
         return <span key={i}>{part}</span>;
       })}
@@ -101,7 +100,6 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
     await onUpdate(reflex.id, { is_inhibited: checked }, 'R', reflex.name);
   };
 
-  const hasImages = images?.primary || images?.secondary;
   const isAnyInhibited = statusL === 'Inhibited' || statusR === 'Inhibited' || statusMidline === 'Inhibited' || test.is_inhibited;
   const isBilateral = statusL === 'Inhibited' && statusR === 'Inhibited';
 
@@ -121,7 +119,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
               {reflex.name}
             </h2>
             {reflex.isBoss && (
-              <Badge className="bg-primary/10 text-primary border-primary/30 font-semibold text-[7px] uppercase tracking-wider px-2 py-0 rounded-full gap-1">
+              <Badge className="bg-primary/10 text-primary-strong border-primary/30 font-semibold text-[7px] uppercase tracking-wider px-2 py-0 rounded-full gap-1">
                 <Crown size={8} /> Boss
               </Badge>
             )}
@@ -134,7 +132,7 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
               {reflex.category} • {reflex.developmentalWindow}
             </span>
             {!isAnyInhibited && (statusL === 'Clear' || statusR === 'Clear' || statusMidline === 'Clear') && (
-              <Badge className="bg-success/10 text-success border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-0 rounded-full">
+              <Badge className="bg-success/10 text-success-strong border-none font-semibold text-[7px] uppercase tracking-wider px-2 py-0 rounded-full">
                 <CheckCircle2 size={8} className="mr-1" /> Clear
               </Badge>
             )}
@@ -158,12 +156,12 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
           <div className="hidden md:flex items-center gap-2 shrink-0">
             {images?.primary && (
               <div className="h-8 w-12 rounded border border-border overflow-hidden bg-muted">
-                <img src={images.primary} alt="P" className="w-full h-full object-cover opacity-80" />
+                <img loading="lazy" decoding="async" src={images.primary} alt="P" className="w-full h-full object-cover opacity-80" />
               </div>
             )}
             {images?.secondary && (
               <div className="h-8 w-12 rounded border border-border overflow-hidden bg-muted">
-                <img src={images.secondary} alt="S" className="w-full h-full object-cover opacity-80" />
+                <img loading="lazy" decoding="async" src={images.secondary} alt="S" className="w-full h-full object-cover opacity-80" />
               </div>
             )}
           </div>
@@ -266,9 +264,6 @@ const ReflexTestItem = ({ reflex, test, statusL, statusR, statusMidline, isLater
       {!compact && (
         <>
           <div className="mt-2 pt-2 border-t border-border/50 space-y-1">
-            <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-              <FileText size={10} /> Notes
-            </div>
             <textarea 
               value={localNotes}
               onChange={(e) => handleNotesChange(e.target.value)}

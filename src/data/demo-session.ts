@@ -69,7 +69,12 @@ export const demoAppointment = (): AppointmentWithClient => ({
   priority_pattern: JSON.stringify({
     muscles: {
       "Psoas (R)": "Inhibited",
-      "Glute Max (L)": "Inhibited",
+      "Diaphragm": "Inhibited",
+      "Transverse abdominis (L)": "Inhibited",
+    },
+    primitiveReflexes: {
+      "Fear Paralysis Reflex": "Inhibited",
+      "Babinski": "Inhibited",
     },
     brainZones: {
       "Cerebellum (R)": "Inhibited",
@@ -129,6 +134,23 @@ export const demoAppointment = (): AppointmentWithClient => ({
           corrected: true,
           retest: "Locks",
         },
+        // One archived correction so the manual's "logged this session" and
+        // the multi-entry list have something real to show.
+        entries: [
+          {
+            id: "demo-entry-mechano-1",
+            values: {
+              confirmation: "Afferent facilitates",
+              region: "Left ankle",
+              ligament: "Anterior talofibular",
+              stretch: "Plantarflexion + inversion",
+              corrected: true,
+              retest: "Locks",
+            },
+            steps: [1, 2, 3, 4, 5],
+            savedAt: iso(23),
+          },
+        ],
         updatedAt: iso(14),
       },
     },

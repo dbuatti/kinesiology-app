@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useAppointment } from "@/hooks/useAppointment";
 import { useAuth } from "@/components/AuthProvider";
@@ -10,13 +10,23 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 import {
-  ArrowLeft, Loader2, Activity, FileText,
-  Maximize2, Minimize2, Calendar, Clock, User, BookOpen,
-  Plus, LayoutGrid, Archive, StickyNote, MoreHorizontal
+  ArrowLeft,
+  Loader2,
+  Activity,
+  FileText,
+  Maximize2,
+  Minimize2,
+  Calendar,
+  Clock,
+  User,
+  BookOpen,
+  Plus,
+  LayoutGrid,
+  Archive,
+  StickyNote,
+  MoreHorizontal,
 } from "lucide-react";
-import {
-  HoverCard, HoverCardContent, HoverCardTrigger,
-} from "@/components/ui/hover-card";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import PeaceWizard from "@/components/crm/v2/PeaceWizard";
 import PeaceWizardV3 from "@/components/crm/v3/PeaceWizardV3";
@@ -34,7 +44,6 @@ import { parseClientJournal } from "@/utils/journal-helper";
 import { safeParse } from "@/utils/safe-json";
 import { DEMO_APPOINTMENT_ID } from "@/data/demo-session";
 import type { ProtocolLog, ProtocolLogPatch } from "@/data/protocol-log";
-
 
 const AppointmentV2Page = () => {
   const { id } = useParams<{ id: string }>();
@@ -99,14 +108,6 @@ const AppointmentV2Page = () => {
     [updateMetadata]
   );
 
-  const phaseStatus = useMemo(() => ({
-    p: !!(appointment?.goal && appointment?.issue),
-    e1: !!(appointment?.lymphatic_notes || appointment?.harmonic_rocking_notes ||
-           appointment?.t1_reset_notes || appointment?.diaphragm_reset_notes || appointment?.vagus_nerve_notes),
-    a: !!(appointment?.priority_pattern && appointment?.priority_pattern !== "{}"),
-    c: !!(appointment?.modes_balances),
-    e2: !!(appointment?.session_north_star),
-  }), [appointment]);
   // Track current position through the process (where the practitioner is now).
   const phaseProgress = ((activePhase + 1) / 5) * 100;
 
@@ -124,6 +125,10 @@ const AppointmentV2Page = () => {
       if (e.key.toLowerCase() === 'n') {
         e.preventDefault();
         setNotesOpen(true);
+      }
+      if (e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        toggleFullScreen();
       }
     };
     window.addEventListener('keydown', onKeyDown);
@@ -172,6 +177,7 @@ const AppointmentV2Page = () => {
   return (
     <CorrectionDockProvider
       appointmentId={appointment.id}
+      priorityPattern={safeParse(appointment.priority_pattern || "{}", {})}
       protocolLogs={protocolLogs}
       onLogProtocol={handleLogProtocol}
     >

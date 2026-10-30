@@ -155,7 +155,7 @@ export const MULTI_STIMS: Record<number, string[]> = {
     "Open eyelid slowly",
   ],
   4: [
-    "Eye towards tip of nose",
+    "Move eyes towards the tip of the nose (downward and inward convergence). CN IV is the only cranial nerve that exits dorsally from the brainstem.",
   ],
   6: [
     "Look as far left as possible",
@@ -202,8 +202,44 @@ export const MULTI_STIMS: Record<number, string[]> = {
   ],
 };
 
+/**
+ * Stim lines that must not render but must KEEP THEIR SLOT. Stim results are
+ * keyed by position (`cn-<nerve>-<index>-<side>`), so deleting an entry from
+ * MULTI_STIMS would silently re-point every saved result after it at a
+ * different action in historical sessions. Hide it instead.
+ */
+export const HIDDEN_STIMS: Record<number, number[]> = {
+  // CN III — convergence-to-the-bridge line removed; "eyes towards the tip of
+  // the nose" is CN IV's stim, not CN III's.
+  3: [2],
+};
+
+export interface NerveStimEntry {
+  line: string;
+  /** Position in the original MULTI_STIMS array — this is what keys use. */
+  index: number;
+}
+
+export const nerveStimEntries = (nerve: CranialNerve): NerveStimEntry[] => {
+  const lines = MULTI_STIMS[nerve.id] ?? [nerve.stimulus];
+  const hidden = HIDDEN_STIMS[nerve.id] ?? [];
+  return lines
+    .map((line, index) => ({ line, index }))
+    .filter(({ index }) => !hidden.includes(index));
+};
+
 export const nerveStimLines = (nerve: CranialNerve): string[] =>
-  MULTI_STIMS[nerve.id] ?? [nerve.stimulus];
+  nerveStimEntries(nerve).map((entry) => entry.line);
+
+/**
+ * Every original slot, hidden ones included — for clearing saved results, where
+ * leaving a stale hidden key behind would silently re-attach old data if that
+ * slot is ever restored.
+ */
+export const nerveStimAllIndexes = (nerve: CranialNerve): number[] => {
+  const lines = MULTI_STIMS[nerve.id] ?? [nerve.stimulus];
+  return lines.map((_, index) => index);
+};
 
 export const LATERAL_STIMS: Record<number, number[]> = {
   1: [0],
@@ -308,7 +344,7 @@ export const describeNerveStims = (
 ): MarkedStim[] => {
   if (!stimResults) return [];
   const entries: MarkedStim[] = [];
-  nerveStimLines(nerve).forEach((line, i) => {
+  nerveStimEntries(nerve).forEach(({ line, index: i }) => {
     if (isLateralStim(nerve.id, i)) {
       (["L", "R"] as const).forEach((side) => {
         const key = cranialSideKey(nerve.id, i, side);

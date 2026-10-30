@@ -28,6 +28,7 @@ import {
   cranialStimKey,
   cranialSideKey,
   isLateralStim,
+  nerveStimEntries,
   primitiveReflexMatches,
   cranialLineMatches,
 } from "./pathway-reflex-stim-data";
@@ -256,9 +257,9 @@ export function PathwayReflexStimGrid({
     } else if (activeTab === "nerves") {
       for (const group of NERVE_GROUPS) {
         for (const n of group.items) {
-          const lines = nerveStimLines(n);
-          for (let i = 0; i < lines.length; i++) {
-            if (cranialLineMatches(n, lines[i], q)) return `cn-row-${n.id}-${i}`;
+          const entries = nerveStimEntries(n);
+          for (let i = 0; i < entries.length; i++) {
+            if (cranialLineMatches(n, entries[i].line, q)) return `cn-row-${n.id}-${entries[i].index}`;
           }
         }
       }
@@ -282,7 +283,7 @@ export function PathwayReflexStimGrid({
     } else if (activeTab === "nerves") {
       NERVE_GROUPS.forEach((g) =>
         g.items.forEach((n) =>
-          nerveStimLines(n).forEach((line) => {
+          nerveStimEntries(n).forEach(({ line }) => {
             if (cranialLineMatches(n, line, q)) count++;
           })
         )
@@ -319,8 +320,8 @@ export function PathwayReflexStimGrid({
         group.items.reduce(
           (acc, nerve) =>
             acc +
-            nerveStimLines(nerve).reduce(
-              (a, _, i) =>
+            nerveStimEntries(nerve).reduce(
+              (a, { index: i }) =>
                 a +
                 (isLateralStim(nerve.id, i)
                   ? [cranialSideKey(nerve.id, i, "L"), cranialSideKey(nerve.id, i, "R")]

@@ -36,7 +36,8 @@ import {
   primitiveSideKey,
   primitiveStimKey,
   primitiveStimKeyAt,
-  nerveStimLines,
+  nerveStimEntries,
+  nerveStimAllIndexes,
   isLateralStim,
   cranialSideKey,
   cranialStimKey,
@@ -138,7 +139,7 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
       const test = nerve && nerveTests.find(t => t.nerve_id === nerve.id.toString());
       if (!nerve || !test?.stim_results) return null;
       const stims: { key: string; label: string; side?: 'L' | 'R' }[] = [];
-      nerveStimLines(nerve).forEach((line, i) => {
+      nerveStimEntries(nerve).forEach(({ line, index: i }) => {
         if (isLateralStim(nerve.id, i)) {
           (['L', 'R'] as const).forEach((side) => {
             const key = cranialSideKey(nerve.id, i, side);
@@ -247,11 +248,11 @@ const EmbedPhaseV2 = ({ appointment, history, onUpdate, saveField, updatePriorit
       if (nerve && test?.stim_results) {
         const next = { ...test.stim_results };
         if (item.side && nerve.isLateralized) {
-          nerveStimLines(nerve).forEach((_, i) => {
+          nerveStimAllIndexes(nerve).forEach((i) => {
             if (isLateralStim(nerve.id, i)) delete next[cranialSideKey(nerve.id, i, item.side!)];
           });
         } else {
-          nerveStimLines(nerve).forEach((_, i) => {
+          nerveStimAllIndexes(nerve).forEach((i) => {
             if (isLateralStim(nerve.id, i)) {
               delete next[cranialSideKey(nerve.id, i, 'L')];
               delete next[cranialSideKey(nerve.id, i, 'R')];

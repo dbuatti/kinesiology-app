@@ -9,7 +9,7 @@ import { getInhibitedFindings, priorityKey, findingLabel, stimPriorityKey } from
 import { useCranialNerveTests } from "@/hooks/useCranialNerveTests";
 import { CRANIAL_NERVES } from "@/data/cranial-nerve-data";
 import {
-  nerveStimLines,
+  nerveStimEntries,
   isLateralStim,
   cranialStimKey,
   cranialSideKey,
@@ -96,7 +96,7 @@ const AlignPhase = ({ appointment, onUpdate, saveField, updatePriorityPattern, o
     const test = nerveTests.find(t => t.nerve_id === nerve.id.toString());
     const stimResults = test?.stim_results;
     const out: MarkedStimEntry[] = [];
-    nerveStimLines(nerve).forEach((line, i) => {
+    nerveStimEntries(nerve).forEach(({ line, index: i }) => {
       if (isLateralStim(nerve.id, i)) {
         (['L', 'R'] as const).forEach(s => {
           if (!side || s === side) {

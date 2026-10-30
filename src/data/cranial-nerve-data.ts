@@ -101,12 +101,12 @@ export const CRANIAL_NERVES: CranialNerve[] = [
       "Eyelid elevation (levator palpebrae)",
       "Lens accommodation (near focus)"
     ],
-    stimulus: "Move eyes up, down, medial towards bridge of nose, up and left, down and left, open eyelid slowly. Shares midbrain housing with CN IV.",
+    stimulus: "Move eyes up, down, up and left, down and left, open eyelid slowly. Shares midbrain housing with CN IV.",
     clinicalPearl: "CN III shares midbrain nuclei with CN IV. Midbrain stim (GV26 + clavicle + ear cupping) addresses both simultaneously. Ptosis and pupil asymmetry are red flags — rule out structural causes before applying stim. In FNH, CN III dysfunction often presents alongside CN IV and is addressed as a midbrain complex.",
     color: "bg-amber-500",
     isLateralized: true,
     dysfunctionConsequences: "CN III dysfunction causes ptosis (drooping eyelid) and a characteristic 'down and out' eye position due to unopposed action of CN IV and CN VI. Pupil dilation (mydriasis) and loss of accommodation impair near vision and light adaptation. In FNH clinical practice, CN III dysfunction is a common finding in post-concussion presentations — even subtle asymmetry in eyelid height or pupil response is clinically significant. Because CN III shares midbrain housing with CN IV, dysfunction in one is often accompanied by the other. Midbrain dysregulation also affects arousal, alertness, and the dopaminergic reward system.",
-    assessmentProtocol: "Lightly touch the eye lids as the reflex point. Stimulus: move eyes up, down, medial towards bridge of nose, up and left, down and left, open eyelid slowly. Shares midbrain housing with CN IV.",
+    assessmentProtocol: "Lightly touch the eye lids as the reflex point. Stimulus: move eyes up, down, up and left, down and left, open eyelid slowly. Shares midbrain housing with CN IV.",
     videoUrl: "https://embed-ssl.wistia.com/deliveries/e469a668620604adbb0a0c69a192e7af50579078.mp4",
     pageUrl: "https://functional-neuro-health.mykajabi.com/products/functional-neuro-approach-foundations/categories/2152127437/posts/2167779787"
   },

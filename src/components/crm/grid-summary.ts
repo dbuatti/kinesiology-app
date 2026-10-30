@@ -7,7 +7,7 @@ import {
   cranialSideKey,
   cranialStimKey,
   isLateralStim,
-  nerveStimLines,
+  nerveStimEntries,
   primitiveSideKey,
   primitiveStimKey,
   primitiveStimKeyAt,
@@ -77,7 +77,7 @@ const nerveChips = (
   } else if (checked[cranialNerveInhibKey(nerve.id)]) {
     chips.push({ label: "Nerve inhibited", inhib: true });
   }
-  nerveStimLines(nerve).forEach((line, i) => {
+  nerveStimEntries(nerve).forEach(({ line, index: i }) => {
     if (isLateralStim(nerve.id, i)) {
       (["L", "R"] as const).forEach((s) => {
         if (checked[cranialSideKey(nerve.id, i, s)]) chips.push({ label: line, side: s });

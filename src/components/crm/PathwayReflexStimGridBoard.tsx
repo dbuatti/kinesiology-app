@@ -18,6 +18,7 @@ import {
   NERVE_GROUPS,
   NUCLEI_COLORS,
   nerveStimLines,
+  nerveStimEntries,
   primitiveStimKey,
   primitiveStimKeyAt,
   primitiveSideKey,
@@ -274,7 +275,7 @@ const NerveBlock = ({
   onToggle: (key: string) => void;
   query: string;
 }) => {
-  const lines = nerveStimLines(nerve);
+  const entries = nerveStimEntries(nerve);
   const nerveInhibited =
     !nerve.isLateralized && !!checked[cranialNerveInhibKey(nerve.id)];
   return (
@@ -303,7 +304,7 @@ const NerveBlock = ({
           <NerveInhib nerve={nerve} checked={checked} onToggle={onToggle} />
         </div>
       </div>
-      {lines.map((line, i) => {
+      {entries.map(({ line, index: i }) => {
         const lateral = isLateralStim(nerve.id, i);
         const match = cranialLineMatches(nerve, line, query);
         let activeSide: "L" | "R" | "both" | undefined;
@@ -543,8 +544,7 @@ export function PathwayReflexStimGridBoard({
           {NERVE_GROUPS.map((group) => {
             const filteredNerves = showOnlyInhibited
               ? group.items.filter((nerve) => {
-                  const lines = nerveStimLines(nerve);
-                  return lines.some((_, i) => {
+                  return nerveStimEntries(nerve).some(({ index: i }) => {
                     const keys = isLateralStim(nerve.id, i)
                       ? [cranialSideKey(nerve.id, i, "L"), cranialSideKey(nerve.id, i, "R")]
                       : [cranialStimKey(nerve.id, i)];

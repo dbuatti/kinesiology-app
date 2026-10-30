@@ -131,10 +131,10 @@ export const guideContent: GuideContent = {
 
   images: {
     studio: {
-      src: "",
-      alt: "The Toorak studio room where sessions take place.",
+      src: "/brand/studio-3x2-crop.webp",
+      alt: "The Toorak studio — natural light, a table, and a calm workspace.",
       aspect: "3/2",
-      label: "Studio photo — 3:2",
+      label: "Studio — 3:2",
     },
     portrait: {
       src: PROFILE_IMAGE_URL,
@@ -259,7 +259,7 @@ export const guideContent: GuideContent = {
       id: "about-me",
       heading: "About me",
       paragraphs: [
-        "I'm Daniele. I hold a Diploma of Kinesiology [MY DIPLOMA WORDING] and work within the Functional Neuro-Health framework [MY WORDING].",
+        "I'm Daniele. I hold a Diploma of Kinesiology (Advanced Diploma in Kinesiology, 2024) and work within the Functional Neuro-Health framework as a certified practitioner.",
         "I also spend much of my week as a music director and vocal coach. That's less of a detour than it sounds. Both jobs are about what a body does under pressure, and how much of that is old habit rather than fact.",
         "The voice, and the body it lives in.",
       ],
@@ -273,7 +273,7 @@ export const guideContent: GuideContent = {
       facts: [
         { label: "Where", value: 'Toorak studio (address on booking)' },
         { label: "How long", value: "60 minutes" },
-        { label: "Cost", value: "$180 per session" },
+        { label: "Cost", value: "$70 per session" },
         { label: "What to wear", value: "something you can move in. Everything stays on." },
         { label: "Cancellations", value: "24 hours' notice required; cancellations with less than 24 hours' notice are charged the full session fee." },
         { label: "Booking", value: "online, no account needed" },

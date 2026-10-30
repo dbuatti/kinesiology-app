@@ -74,7 +74,7 @@ function GuideCta({ label }: { label: string }) {
       href={BOOKING_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className="group inline-flex h-12 items-center gap-2 rounded-full bg-brand px-6 text-[15px] font-normal text-white shadow-[0_8px_24px_-12px_hsl(var(--brand)/0.55)] transition-[filter] duration-200 hover:brightness-125 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40 dark:text-background"
+      className="guide-cta group inline-flex h-12 items-center gap-2 rounded-full bg-ink px-6 text-[15px] font-normal text-ground shadow-[0_8px_24px_-12px_var(--dawn-ink)] transition-[filter,box-shadow] duration-200 hover:brightness-110 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-[var(--dawn-rose)]/40 dark:text-ground"
     >
       {label}
       <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true" />

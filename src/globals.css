@@ -590,13 +590,18 @@
   --dawn-hairline-dark: #34364F;
   --dawn-placeholder-bg: #FCE7B8;
   --dawn-placeholder-text: #5A4A22;
+  --ink: #24264A;
+  --ground: #FBF5F0;
 }
 
 .guide.dark { color-scheme: dark; }
-}
 
-/* Reveal: only when JS has confirmed it will observe elements. Without JS
-   (or under reduced motion) nothing is ever hidden. */
+/* Subtle warm gradient on page bg */
+.guide.light { background: linear-gradient(180deg, var(--dawn-ground) 0%, var(--dawn-surface) 100%); }
+.guide.dark { background: linear-gradient(180deg, var(--dawn-ground-dark) 0%, var(--dawn-surface-dark) 100%); }
+
+/* CTA accent glow on hover */
+.guide-cta:hover { filter: brightness(1.15); box-shadow: 0 0 0 4px var(--dawn-peach); }
 .guide[data-motion="on"] .guide-reveal {
   opacity: 0;
   transform: translateY(12px);

@@ -99,6 +99,7 @@ function PanelShell({
   children: React.ReactNode;
   tone?: "plain" | "brand";
   index?: number;
+  warm?: boolean;
 }) {
   return (
     <section
@@ -170,12 +171,14 @@ function SequencePanel({ panel, index }: { panel: Extract<GuidePanel, { kind: "s
 function FactsPanel({
   panel,
   ctaLabel,
+  warm,
 }: {
   panel: Extract<GuidePanel, { kind: "facts" }>;
   ctaLabel: string;
+  warm?: boolean;
 }) {
   return (
-    <PanelShell id={panel.id} heading={panel.heading}>
+    <PanelShell id={panel.id} heading={panel.heading} warm={warm}>
       <dl className="mt-8 max-w-[65ch] divide-y divide-border border-y border-border">
         {panel.facts.map((fact) => (
           <div key={fact.label} className="guide-reveal grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
@@ -216,6 +219,7 @@ function TextPanel({
 }: {
   panel: Extract<GuidePanel, { kind: "text" }>;
   image?: GuideImage;
+  index?: number;
 }) {
   const isDifferentiator = panel.weight === "differentiator";
   const hasImage = Boolean(image);

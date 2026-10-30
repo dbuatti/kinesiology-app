@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useLayoutEffect, type KeyboardEvent } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowUp, Loader2, Sparkles } from "lucide-react";
+import { ArrowUp, ClipboardPaste, Loader2, Sparkles } from "lucide-react";
+import { showError } from "@/utils/toast";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -25,6 +26,39 @@ export default function AssistantInput({ onSend, disabled, initialValue, autoSen
     if (!trimmed || disabled) return;
     onSend(trimmed);
     setValue("");
+  };
+
+  // A client's message arrives as an SMS or an email, not in Daniele's words.
+  // This lifts the raw text off the clipboard and frames it as the scheduling
+  // question it is, so the assistant knows to identify the sender and check
+  // real availability before proposing anything.
+  const pasteClientMessage = async () => {
+    if (disabled) return;
+    if (!navigator.clipboard?.readText) {
+      ref.current?.focus();
+      showError("Clipboard not available here — paste the message into the box instead.");
+      return;
+    }
+    let text = "";
+    try {
+      text = (await navigator.clipboard.readText()).trim();
+    } catch {
+      ref.current?.focus();
+      showError("Couldn't read the clipboard — paste the message into the box instead.");
+      return;
+    }
+    if (!text) {
+      ref.current?.focus();
+      showError("Clipboard is empty — copy the client's message first.");
+      return;
+    }
+    const framed =
+      "A client sent me this message. Work out who they are, check the day and time " +
+      "they're asking about, and propose a slot if one is genuinely free:\n\n\"\"\"" +
+      text +
+      "\"\"\"";
+    setValue((previous) => (previous.trim() ? `${previous.trim()}\n\n${framed}` : framed));
+    ref.current?.focus();
   };
 
   // A deep-linked quick action (Follow-up's "Book") is already a complete
@@ -79,15 +113,29 @@ export default function AssistantInput({ onSend, disabled, initialValue, autoSen
           <span className="hidden text-[11px] text-muted-foreground/70 md:inline">
             <kbd className="kbd">↵</kbd> send · <kbd className="kbd">⇧</kbd><kbd className="kbd">↵</kbd> new line
           </span>
-          <Button
-            onClick={() => submit()}
-            disabled={!canSend}
-            size="icon"
-            className={cn("ml-auto h-8 w-8 rounded-full transition-transform", canSend && "scale-100", !canSend && "opacity-40")}
-            aria-label="Send message"
-          >
-            {disabled ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" strokeWidth={2.5} />}
-          </Button>
+          <div className="ml-auto flex items-center gap-1.5">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={pasteClientMessage}
+              disabled={disabled}
+              title="Paste a client's message and ask the assistant to sort out the booking"
+              className="h-8 gap-1.5 rounded-full px-2.5 text-[12px] font-medium text-muted-foreground hover:text-foreground"
+            >
+              <ClipboardPaste className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Paste client message</span>
+            </Button>
+            <Button
+              onClick={() => submit()}
+              disabled={!canSend}
+              size="icon"
+              className={cn("h-8 w-8 rounded-full transition-transform", canSend && "scale-100", !canSend && "opacity-40")}
+              aria-label="Send message"
+            >
+              {disabled ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" strokeWidth={2.5} />}
+            </Button>
+          </div>
         </div>
       </div>
       {suggestions && suggestions.length > 0 && !value && !disabled && (

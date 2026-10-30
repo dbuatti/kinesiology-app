@@ -566,6 +566,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .guide-progress__fill { transition: none; }
+}
 
 /* Dawn brand kit — scoped to .guide only */
 .guide {

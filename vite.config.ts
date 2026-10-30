@@ -15,17 +15,6 @@ export default defineConfig(() => ({
   },
   plugins: [
     react({ reactRefresh: false }),
-    {
-      name: "guide-rewrite",
-      configureServer(server) {
-        server.middlewares.use((req: any, res: any, next: any) => {
-          if (req.url === "/guide" || req.url === "/guide/") {
-            req.url = "/guide.html";
-          }
-          next();
-        });
-      },
-    },
   ],
   resolve: {
     alias: {
@@ -41,6 +30,10 @@ export default defineConfig(() => ({
           "vendor-motion": ["framer-motion"],
           "vendor-supabase": ["@supabase/supabase-js", "@supabase/auth-ui-react", "@supabase/auth-ui-shared"],
         },
+      },
+      input: {
+        main: "index.html",
+        guide: "guide.html",
       },
     },
   },

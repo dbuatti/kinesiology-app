@@ -11,7 +11,20 @@ export default defineConfig(() => ({
     // down instead of the page being blocked.
     allowedHosts: [".ts.net", "macbook-pro-6.tailab1fd5.ts.net", "localhost", "127.0.0.1"],
   },
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: "guide-rewrite",
+      configureServer(server) {
+        server.middlewares.use((req: any, res: any, next: any) => {
+          if (req.url === "/guide" || req.url === "/guide/") {
+            req.url = "/guide.html";
+          }
+          next();
+        });
+      },
+    },
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

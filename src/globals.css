@@ -41,12 +41,19 @@
 
     --success: 158 64% 31%;         /* #059669 */
     --success-foreground: 0 0% 100%;
+    /* Text-safe companions to the hues above. The fills stay exactly on spec;
+       these darker steps exist so 11–13px text clears WCAG AA when it sits on
+       its own 10% tint (a badge, a soft chip) instead of plain white. */
+    --success-strong: 158 72% 25%;
 
     --warning: 32 88% 44%;          /* #D97706 */
     --warning-foreground: 0 0% 100%;
+    --warning-strong: 32 88% 30%;
 
     --destructive: 356 72% 52%;
     --destructive-foreground: 0 0% 100%;
+    --destructive-strong: 356 72% 46%;
+    --primary-strong: 173 68% 25%;
 
     --border: 214 32% 89%;          /* #E2E8F0 */
     --input: 214 32% 89%;
@@ -97,12 +104,16 @@
 
     --success: 158 64% 40%;
     --success-foreground: 0 0% 100%;
+    --success-strong: 158 64% 40%;
 
     --warning: 32 88% 50%;
     --warning-foreground: 0 0% 100%;
+    --warning-strong: 32 88% 50%;
 
     --destructive: 356 72% 60%;
     --destructive-foreground: 0 0% 100%;
+    --destructive-strong: 356 76% 66%;
+    --primary-strong: 173 68% 45%;
 
     --border: 214 32% 18%;
     --input: 214 32% 18%;
@@ -284,10 +295,17 @@
   .badge {
     @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold;
   }
-  .badge-success { @apply bg-success/10 text-success; }
-  .badge-warning { @apply bg-warning/10 text-warning; }
+  .badge-success { @apply bg-success/10 text-[hsl(var(--success-strong))]; }
+  .badge-warning { @apply bg-warning/10 text-[hsl(var(--warning-strong))]; }
   .badge-pending { @apply bg-muted text-muted-foreground; }
-  .badge-recorded { @apply bg-primary/10 text-primary; }
+  .badge-recorded { @apply bg-primary/10 text-[hsl(var(--primary-strong))]; }
+
+  /* Text-safe semantic colours — use on tinted surfaces where the plain
+     brand hue would fall under 4.5:1. */
+  .text-success-strong { color: hsl(var(--success-strong)); }
+  .text-warning-strong { color: hsl(var(--warning-strong)); }
+  .text-primary-strong { color: hsl(var(--primary-strong)); }
+  .text-destructive-strong { color: hsl(var(--destructive-strong)); }
 
   /* Typography scale */
   .text-page-title { @apply text-[24px] font-semibold tracking-tight text-foreground; }
@@ -521,3 +539,200 @@
 .spotlight:hover::after { opacity: 1; }
 @media (hover: none) { .spotlight::after { display: none; } }
 
+
+/* ─────────────────────────────────────────────────────────────────────────
+   /guide — digital brochure
+   Everything here is scoped under `.guide` so it can't leak into the app or
+   the marketing landing page. Only `@page` is inherently global, and it is
+   set inside the print block below for this route's A4 layout.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Scroll progress — a 2px hairlines at the very top, brand-coloured. */
+.guide-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  height: 2px;
+  pointer-events: none;
+  background: hsl(var(--border) / 0.5);
+}
+.guide-progress__fill {
+  height: 100%;
+  width: 0;
+  background: hsl(var(--brand));
+  transition: width 120ms linear;
+}
+@media (prefers-reduced-motion: reduce) {
+  .guide-progress__fill { transition: none; }
+}
+
+/* Reveal: only when JS has confirmed it will observe elements. Without JS
+   (or under reduced motion) nothing is ever hidden. */
+.guide[data-motion="on"] .guide-reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.guide[data-motion="on"] .guide-reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .guide .guide-reveal,
+  .guide[data-motion="on"] .guide-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* Visible only on paper. */
+.guide-print-only { display: none; }
+
+/* ── Print / Save as PDF ───────────────────────────────────────────────── */
+@media print {
+  @page {
+    size: A4;
+    margin: 16mm 18mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .guide {
+    background: #fff !important;
+    color: #000 !important;
+    overflow: visible !important;
+    min-height: 0 !important;
+  }
+
+  /* Chrome that has no meaning on a page. */
+  .guide .guide-progress,
+  .guide .guide-noprint,
+  .guide .guide-cta-strip {
+    display: none !important;
+  }
+
+  .guide .guide-print-only { display: block !important; }
+
+  /* Flatten every tinted surface to paper. */
+  .guide section,
+  .guide footer,
+  .guide div {
+    background: transparent !important;
+  }
+  .guide *,
+  .guide *::before,
+  .guide *::after {
+    color: #000 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Reveal state must never hide content on paper. */
+  .guide .guide-reveal,
+  .guide[data-motion="on"] .guide-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  /* Cover sits on its own first page, optically centred on the sheet. */
+  .guide .guide-cover {
+    min-height: 258mm !important;
+    padding: 0 !important;
+    justify-content: center;
+    gap: 14mm;
+    page-break-after: avoid;
+  }
+  .guide .guide-cover > * {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  /* The scroll cue is meaningless on paper. */
+  .guide .guide-scroll-cue { display: none !important; }
+
+  /* One panel per page where it fits. */
+  .guide .guide-panel {
+    page-break-before: always;
+    page-break-inside: avoid;
+    border-top: 0 !important;
+    padding: 0 !important;
+  }
+  .guide .guide-panel > div { padding: 0 !important; max-width: none !important; }
+
+  /* Type: compact, black, no display sizes. */
+  .guide h1 {
+    font-size: 26pt !important;
+    line-height: 1.08 !important;
+    max-width: 12ch !important;
+    margin: 0 0 6mm !important;
+  }
+  .guide h2 {
+    font-size: 15pt !important;
+    line-height: 1.2 !important;
+    margin: 0 0 4mm !important;
+  }
+  .guide h3 { font-size: 11pt !important; }
+  .guide p,
+  .guide li,
+  .guide dd,
+  .guide dt,
+  .guide figcaption {
+    font-size: 11pt !important;
+    line-height: 1.45 !important;
+    max-width: 70ch !important;
+  }
+  /* The one serif pull-line keeps its hierarchy on paper. */
+  .guide p.font-serif {
+    font-size: 15pt !important;
+    line-height: 1.3 !important;
+  }
+  .guide footer > div {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Placeholder highlights stay legible in mono. */
+  .guide mark {
+    background: transparent !important;
+    color: #000 !important;
+    outline: 1px dashed #666;
+    outline-offset: 1px;
+  }
+
+  /* Photo slots print as a bordered box, never a broken image. */
+  .guide figure,
+  .guide [role="img"] {
+    page-break-inside: avoid;
+  }
+  .guide [role="img"] {
+    height: 55mm !important;
+    aspect-ratio: auto !important;
+    border: 1pt dashed #999 !important;
+    background: transparent !important;
+  }
+
+  /* Panels with a photo keep the booklet's two-column setting on paper. */
+  .guide .guide-panel-grid {
+    display: grid !important;
+    grid-template-columns: 1.15fr 0.85fr !important;
+    gap: 10mm !important;
+    align-items: start !important;
+  }
+  .guide .guide-panel-grid > figure {
+    margin: 0 !important;
+    max-width: none !important;
+  }
+
+  .guide a[href^="mailto"] { text-decoration: underline; }
+}

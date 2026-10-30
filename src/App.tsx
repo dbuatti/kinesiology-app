@@ -21,6 +21,7 @@ const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
 const OnboardingPage = lazy(() => import("./pages/public/OnboardingPage"));
 const OnboardingLookupPage = lazy(() => import("./pages/public/OnboardingLookupPage"));
 const LandingPage = lazy(() => import("./pages/public/LandingPage"));
+const KinesiologyGuidePage = lazy(() => import("./pages/public/KinesiologyGuidePage"));
 const PortalLoginPage = lazy(() => import("./pages/public/PortalLoginPage"));
 const ClientPortalPage = lazy(() => import("./pages/public/ClientPortalPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -142,6 +143,10 @@ const AppRoutes = () => {
             session guard below — each page checks its own session state. */}
         <Route path="/portal/login" element={<PortalLoginPage />} />
         <Route path="/portal" element={<ClientPortalPage />} />
+
+        {/* Digital brochure — unlisted, noindex. Renders entirely from
+            src/content/kinesiology-guide.ts. No auth, no app chrome. */}
+        <Route path="/guide" element={<KinesiologyGuidePage />} />
 
         {/* Public Voice Onboarding (no auth required) */}
         <Route path="/voice-onboarding/:email" element={<VoiceOnboardingPage />} />

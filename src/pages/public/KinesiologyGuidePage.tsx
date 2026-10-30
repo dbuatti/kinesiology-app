@@ -91,11 +91,13 @@ function PanelShell({
   heading,
   children,
   tone = "plain",
+  index,
 }: {
   id: string;
   heading: string;
   children: React.ReactNode;
   tone?: "plain" | "brand";
+  index?: number;
 }) {
   return (
     <section
@@ -106,6 +108,13 @@ function PanelShell({
       )}
     >
       <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 md:py-28">
+        {index !== undefined && (
+          <p
+            className="guide-reveal text-[12px] uppercase tracking-widest text-brand/60 mb-3"
+          >
+            {String(index + 1).padStart(2, "0")}
+          </p>
+        )}
         <h2
           id={`${id}-heading`}
           className="guide-reveal max-w-[65ch] font-serif text-[32px] font-light leading-[1.1] tracking-[-0.02em] text-brand sm:text-[40px]"
@@ -118,9 +127,9 @@ function PanelShell({
   );
 }
 
-function SequencePanel({ panel }: { panel: Extract<GuidePanel, { kind: "sequence" }> }) {
+function SequencePanel({ panel, index }: { panel: Extract<GuidePanel, { kind: "sequence" }>; index?: number; }) {
   return (
-    <PanelShell id={panel.id} heading={panel.heading}>
+    <PanelShell id={panel.id} heading={panel.heading} index={index}>
       {panel.intro && (
         <p className="guide-reveal mt-5 max-w-[65ch] text-[18px] leading-[1.6] text-muted-foreground">
           <RichText text={panel.intro} />
@@ -201,6 +210,7 @@ function FactsPanel({
 function TextPanel({
   panel,
   image,
+  index,
 }: {
   panel: Extract<GuidePanel, { kind: "text" }>;
   image?: GuideImage;
@@ -442,12 +452,9 @@ export default function KinesiologyGuidePage() {
         >
           <div className="absolute inset-0 bg-[#FBF5F0]/0.55 dark:bg-[#1C1D33]/0.75" aria-hidden="true" />
           <div className="relative mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 md:py-24">
-            <p className="font-serif text-[15px] tracking-[-0.01em] text-ink-mutable">
-              {cover.headline}
-            </p>
             <h1
               id="cover-heading"
-              className="mt-6 max-w-[16ch] font-serif text-[42px] font-light leading-[1.04] tracking-[-0.025em] text-ink sm:text-[60px] lg:text-[72px]"
+              className="font-serif text-[42px] font-light leading-[1.04] tracking-[-0.025em] text-ink sm:text-[60px] lg:text-[72px]"
             >
               {cover.headline}
             </h1>

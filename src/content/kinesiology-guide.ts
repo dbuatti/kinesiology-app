@@ -137,7 +137,7 @@ export const guideContent: GuideContent = {
       label: "Studio — 3:2",
     },
     portrait: {
-      src: PROFILE_IMAGE_URL,
+      src: "/brand/portrait-4x5.webp",
       alt: "Portrait of Daniele Buatti.",
       aspect: "4/5",
       label: "Portrait — 4:5",
@@ -259,7 +259,7 @@ export const guideContent: GuideContent = {
       id: "about-me",
       heading: "About me",
       paragraphs: [
-        "I'm Daniele. I hold a Diploma of Kinesiology (Advanced Diploma in Kinesiology, 2024) and work within the Functional Neuro-Health framework as a certified practitioner.",
+        "I'm Daniele. I hold a Diploma of Kinesiology (2025) and am training in Functional Neuro-Health.",
         "I also spend much of my week as a music director and vocal coach. That's less of a detour than it sounds. Both jobs are about what a body does under pressure, and how much of that is old habit rather than fact.",
         "The voice, and the body it lives in.",
       ],

@@ -26,12 +26,18 @@ export interface PendingBooking {
   reschedule_from?: string | null;
 }
 
+export interface AssistantToolCall {
+  name: string;
+  args: any;
+  result: any;
+}
+
 export interface AssistantMessage {
   id: string;
   conversation_id: string;
   role: "user" | "model" | "tool";
   content: string | null;
-  tool_calls?: { name: string; args: any; result: any }[] | null;
+  tool_calls?: AssistantToolCall[] | null;
   draft_email?: DraftEmail | null;
   // One proposal per slot. Older messages stored a single object.
   pending_booking?: PendingBooking[] | PendingBooking | null;

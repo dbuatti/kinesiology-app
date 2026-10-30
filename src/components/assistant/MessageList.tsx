@@ -62,6 +62,22 @@ export default function MessageList({
 
   const hasStreaming = !!streamingContent && streamingContent.trim() !== "";
 
+  // The turn a live proposal belongs to: the newest message that actually
+  // carries bookings, falling back to the newest one that ran tools. That way
+  // "Why this slot?" still shows the reasoning if you resolve a later turn
+  // without touching the pencil.
+  const lastTurnTools = (() => {
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+      const m = messages[i];
+      if (m.role === "model" && m.pending_booking && m.tool_calls?.length) return m.tool_calls;
+    }
+    for (let i = messages.length - 1; i >= 0; i -= 1) {
+      const m = messages[i];
+      if (m.role === "model" && m.tool_calls?.length) return m.tool_calls;
+    }
+    return null;
+  })();
+
   if (messages.length === 0 && !isSending && !hasStreaming) {
     return (
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 overflow-y-auto py-8 text-center sm:py-16">
@@ -116,7 +132,7 @@ export default function MessageList({
       )}
       {pendingBookings.length > 0 && (
         <div className="max-w-[min(85%,42rem)] mr-auto">
-          <BookingProposalCard bookings={pendingBookings} onResolved={onBookingResolved} />
+          <BookingProposalCard bookings={pendingBookings} onResolved={onBookingResolved} tools={lastTurnTools} />
         </div>
       )}
       {(isSending || hasStreaming) && (

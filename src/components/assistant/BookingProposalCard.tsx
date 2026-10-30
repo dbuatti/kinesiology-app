@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { showError, showSuccess } from "@/utils/toast";
-import { PendingBooking } from "@/types/assistant";
+import { PendingBooking, AssistantToolCall } from "@/types/assistant";
 import { confirmBooking, dropBooking } from "@/lib/booking-proposals";
-import { CalendarPlus, Check, Loader2, X, Mic, Music, Brain } from "lucide-react";
+import { CalendarPlus, Check, Loader2, X, Mic, Music, Brain, ChevronDown, AlertTriangle } from "lucide-react";
 
 function fmtMelbourne(iso: string) {
   const d = new Date(iso);
@@ -40,10 +40,118 @@ interface Props {
   onResolved: (booking: PendingBooking) => void | Promise<void>;
   /** No border/background of its own — when a panel already provides one. */
   bare?: boolean;
+  /**
+   * The tool calls behind this reply, straight from assistant_messages —
+   * this is the "why did it pick that slot?" surface. Optional because the
+   * Pending bookings panel and email threads read rows, not a turn.
+   */
+  tools?: AssistantToolCall[] | null;
+}
+
+function fmtWindowDay(iso: string) {
+  const d = new Date(`${iso}T00:00:00`);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", timeZone: "Australia/Melbourne" });
+}
+
+/**
+ * The reasoning behind a proposal, in the practitioner's words rather than a
+ * raw JSON dump: which window was searched, which slots Cal.com actually
+ * returned, why each was ranked where it was, and the time that got picked.
+ * Answers the one question a human asks before confirming: "is this real?"
+ */
+function SlotEvidence({ tools, bookings, bare }: { tools: AssistantToolCall[]; bookings: PendingBooking[]; bare?: boolean }) {
+  const [open, setOpen] = useState(false);
+
+  const slotCalls = tools.filter((t) => t?.name === "get_available_slots");
+  const suggested = slotCalls.flatMap((t) =>
+    Array.isArray(t?.result?.suggested) ? (t.result.suggested as { iso: string; label: string; reason?: string }[]) : []
+  );
+  const window = slotCalls[0]?.args || {};
+  const notes = slotCalls.map((t) => t?.result?.note).filter(Boolean) as string[];
+  const failures = tools.filter((t) => t?.result?.error);
+  const otherTools = tools.filter((t) => t?.name !== "get_available_slots").map((t) => t.name);
+
+  const bookedIsos = new Set(bookings.map((b) => b.start_iso));
+  const bookedLabels = new Set(bookings.map((b) => fmtMelbourne(b.start_iso)));
+
+  const title = suggested.length ? "Why this slot?" : "What the assistant checked";
+
+  return (
+    <div className={bare ? "pt-1" : "border-t border-chart-emerald/20 pt-2"}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <ChevronDown className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
+        {title}
+      </button>
+
+      {open && (
+        <div className="mt-2 space-y-2 rounded-lg border border-border/60 bg-muted/30 p-2.5 text-[11px] leading-relaxed">
+          {failures.length > 0 && (
+            <div className="space-y-1">
+              {failures.map((t, i) => (
+                <p key={i} className="flex items-start gap-1.5 text-chart-destructive">
+                  <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
+                  <span>{t.name}: {String(t.result.error)}</span>
+                </p>
+              ))}
+            </div>
+          )}
+
+          {slotCalls.length > 0 && (
+            <p className="text-muted-foreground">
+              Checked Cal.com
+              {window.start && window.end ? ` for ${fmtWindowDay(window.start)} – ${fmtWindowDay(window.end)}` : ""}
+              {window.client_id ? ", ranked against this client's own history" : ""}.
+            </p>
+          )}
+
+          {notes.map((n, i) => (
+            <p key={i} className="text-muted-foreground italic">{n}</p>
+          ))}
+
+          {suggested.length > 0 ? (
+            <ul className="space-y-1">
+              {suggested.map((s) => {
+                const picked = bookedIsos.has(s.iso) || bookedLabels.has(s.label);
+                return (
+                  <li key={s.iso} className="flex items-start gap-1.5">
+                    <span
+                      className={`mt-1 h-1.5 w-1.5 shrink-0 rounded-full ${picked ? "bg-chart-emerald" : "bg-muted-foreground/40"}`}
+                      aria-hidden
+                    />
+                    <span className={picked ? "font-semibold text-foreground" : "text-foreground"}>
+                      {s.label}
+                      {picked && <span className="ml-1.5 font-medium text-chart-emerald">picked</span>}
+                      {s.reason && <span className="text-muted-foreground"> — {s.reason}</span>}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            slotCalls.length > 0 && !failures.some((t) => t.name === "get_available_slots") && (
+              <p className="text-muted-foreground">No ranked shortlist came back for this search.</p>
+            )
+          )}
+
+          {otherTools.length > 0 && (
+            <p className="text-muted-foreground/80">
+              Also ran: <span className="font-mono text-[10px]">{otherTools.join(", ")}</span>
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 /** Every booking the assistant pencilled in this reply, each with Confirm, plus Confirm all. */
-export default function BookingProposalCard({ bookings, onResolved, bare }: Props) {
+export default function BookingProposalCard({ bookings, onResolved, bare, tools }: Props) {
   const [working, setWorking] = useState<Set<PendingBooking>>(new Set());
   const [confirmingAll, setConfirmingAll] = useState(false);
 
@@ -155,6 +263,8 @@ export default function BookingProposalCard({ bookings, onResolved, bare }: Prop
           Nothing is booked in Cal.com until you confirm. Until then these stay in Pending bookings (top of the Assistant) and on the Timetable.
         </p>
       )}
+
+      {tools && tools.length > 0 && <SlotEvidence tools={tools} bookings={bookings} bare={bare} />}
     </div>
   );
 }

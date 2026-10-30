@@ -152,23 +152,21 @@ const CorrectionDock = () => {
           <div className="flex items-center gap-1">
             <DropdownMenu>
               <DropdownMenuTrigger>
-                <button className={cn("flex h-8 items-center gap-2 rounded-lg border px-3 text-[11px] font-medium transition-all", !inhibitionPathway ? "border-border/60 bg-card text-muted-foreground hover:border-foreground/20 hover:bg-muted/40" : inhibitionPathway?.status === "clear" ? "border-success/30 bg-success/5 text-success-strong hover:bg-success/10" : inhibitionPathway?.status === "hypertonic" ? "border-amber/30 bg-amber/5 text-amber-700 hover:bg-amber/10" : inhibitionPathway?.status === "priority" || inhibitionPathway?.status === "primary_priority" ? "border-amber/30 bg-amber/5 text-amber-700 hover:bg-amber/10" : "border-rose/30 bg-rose/5 text-rose-700 hover:bg-rose/10")}>
-                  {inhibitionPathway ? (
-                    <span className="flex items-center gap-2 min-w-0">
-                      <span className="truncate max-w-[140px] tracking-tight">
-                        {inhibitionPathway.pathway?.notes}
-                      </span>
-                      {(inhibitionPathway.pathway?.side === "L" || inhibitionPathway.pathway?.side === "R") && (
-                        <span className="text-[9px] text-muted-foreground/60">
-                          {inhibitionPathway.pathway.side} · {statusLabel(inhibitionPathway.status).toLowerCase()}
-                        </span>
-                      )}
+                {inhibitionPathway ? (
+                  <span className="flex items-center gap-2 min-w-0">
+                    <span className="truncate max-w-[140px] tracking-tight">
+                      {inhibitionPathway.pathway?.notes}
                     </span>
-                  ) : (
-                    <span className="text-muted-foreground/70">Select pathway</span>
-                  )}
-                  <ChevronDown className="shrink-0 h-3.5 w-3.5 text-muted-foreground/40" />
-                </button>
+                    {(inhibitionPathway.pathway?.side === "L" || inhibitionPathway.pathway?.side === "R") && (
+                      <span className="text-[9px] text-muted-foreground/60">
+                        {inhibitionPathway.pathway.side} · {statusLabel(inhibitionPathway.status).toLowerCase()}
+                      </span>
+                    )}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground/70">Select pathway</span>
+                )}
+                <ChevronDown className="shrink-0 h-3.5 w-3.5 text-muted-foreground/40" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" sideOffset={4} className="z-20 w-[360px] rounded-2xl border border-border/80 bg-card p-0 text-sm shadow-2xl ring-1 ring-border/20">
                 <div className="px-5 py-3 border-b border-border/60 bg-muted/20">

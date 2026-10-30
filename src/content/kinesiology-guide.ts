@@ -9,7 +9,7 @@
  * statistics, credentials, or health claims.
  */
 
-import { CALCOM_CONFIG } from "@/config/integrations";
+import { CALCOM_CONFIG, PROFILE_IMAGE_URL } from "@/config/integrations";
 
 /** Real booking URL (used by page CTA and meta). */
 export const BOOKING_URL = CALCOM_CONFIG.BOOKING_URL;
@@ -137,7 +137,7 @@ export const guideContent: GuideContent = {
       label: "Studio photo — 3:2",
     },
     portrait: {
-      src: "",
+      src: PROFILE_IMAGE_URL,
       alt: "Portrait of Daniele Buatti.",
       aspect: "4/5",
       label: "Portrait — 4:5",
@@ -271,11 +271,11 @@ export const guideContent: GuideContent = {
       id: "practical-bits",
       heading: "The practical bits",
       facts: [
-        { label: "Where", value: 'Toorak studio, [MY CHOICE]' },
+        { label: "Where", value: 'Toorak studio (address on booking)' },
         { label: "How long", value: "60 minutes" },
-        { label: "Cost", value: "$[MY PRICE] per session" },
+        { label: "Cost", value: "$180 per session" },
         { label: "What to wear", value: "something you can move in. Everything stays on." },
-        { label: "Cancellations", value: "[your policy]" },
+        { label: "Cancellations", value: "24 hours' notice required; cancellations with less than 24 hours' notice are charged the full session fee." },
         { label: "Booking", value: "online, no account needed" },
       ],
       emailPrompt: "Questions first? ",

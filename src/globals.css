@@ -566,6 +566,33 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .guide-progress__fill { transition: none; }
+
+/* Dawn brand kit — scoped to .guide only */
+.guide {
+  --dawn-ground: #FBF5F0;
+  --dawn-ground-dark: #1C1D33;
+  --dawn-surface: #FFFFFF;
+  --dawn-surface-dark: #25273F;
+  --dawn-surface-warm: #F8E6DF;
+  --dawn-surface-warm-dark: #2E2A44;
+  --dawn-ink: #24264A;
+  --dawn-ink-dark: #F3EAE6;
+  --dawn-ink-muted: #5E5A78;
+  --dawn-ink-muted-dark: #A9A3B8;
+  --dawn-accent: #7A4A6E;
+  --dawn-accent-dark: #E8B4BF;
+  --dawn-peach: #F4D4CB;
+  --dawn-rose: #DFABB8;
+  --dawn-lavender: #B6A2C5;
+  --dawn-sky: #B9C5D5;
+  --dawn-sky-dark: #8FA0BA;
+  --dawn-hairline: #E7DCD6;
+  --dawn-hairline-dark: #34364F;
+  --dawn-placeholder-bg: #FCE7B8;
+  --dawn-placeholder-text: #5A4A22;
+}
+
+.guide.dark { color-scheme: dark; }
 }
 
 /* Reveal: only when JS has confirmed it will observe elements. Without JS

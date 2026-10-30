@@ -6,13 +6,15 @@ export default defineConfig(() => ({
   server: {
     host: "::",
     port: 8080,
+    hmr: false, // disables React Refresh preamble (SWC plugin) — avoids @vitejs/plugin-react-swc preamble error
+
     // Reviewing the demo from the iPad goes through tailscale, and Vite
     // rejects unknown Host headers with a 403 — which looks like the app is
     // down instead of the page being blocked.
     allowedHosts: [".ts.net", "macbook-pro-6.tailab1fd5.ts.net", "localhost", "127.0.0.1"],
   },
   plugins: [
-    react(),
+    react({ reactRefresh: false }),
     {
       name: "guide-rewrite",
       configureServer(server) {

@@ -433,31 +433,42 @@ export default function KinesiologyGuidePage() {
         {/* Panel 1 — cover */}
         <section
           aria-labelledby="cover-heading"
-          className="guide-cover flex min-h-[100svh] flex-col justify-between px-5 pb-10 pt-[calc(2.5rem+env(safe-area-inset-top))] sm:px-8 md:pb-16"
+          className="guide-cover relative flex min-h-[100svh] flex-col justify-center overflow-hidden bg-background"
+          style={{
+            backgroundImage: "url(/brand/dawn-sky.png)",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
         >
-          <p className="mx-auto w-full max-w-6xl font-serif text-[15px] tracking-[-0.01em] text-brand">
-            {cover.brandName}
-          </p>
-
-          <div className="mx-auto w-full max-w-6xl py-16">
+          <div className="absolute inset-0 bg-[#FBF5F0]/0.55 dark:bg-[#1C1D33]/0.75" aria-hidden="true" />
+          <div className="relative mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 md:py-24">
+            <p className="font-serif text-[15px] tracking-[-0.01em] text-ink-mutable">
+              {cover.headline}
+            </p>
             <h1
               id="cover-heading"
-              className="max-w-[16ch] font-serif text-[42px] font-light leading-[1.04] tracking-[-0.025em] text-brand sm:text-[60px] lg:text-[72px]"
+              className="mt-6 max-w-[16ch] font-serif text-[42px] font-light leading-[1.04] tracking-[-0.025em] text-ink sm:text-[60px] lg:text-[72px]"
             >
               {cover.headline}
             </h1>
-            <p className="mt-7 max-w-[52ch] text-[19px] leading-[1.55] text-foreground sm:text-[21px]">
+            <p className="mt-7 max-w-[52ch] text-[19px] leading-[1.55] text-ink sm:text-[21px]">
               {cover.subline}
             </p>
-            <p className="mt-3 max-w-[52ch] text-[18px] leading-[1.6] text-muted-foreground">
+            <p className="mt-3 max-w-[52ch] text-[18px] leading-[1.6] text-ink-muted">
               {cover.line}
             </p>
           </div>
-
-          <div className="guide-scroll-cue mx-auto flex w-full max-w-6xl items-center gap-3 text-[12px] uppercase tracking-[0.18em] text-muted-foreground">
-            <span className="h-8 w-px bg-border" aria-hidden="true" />
+          <span
+            aria-hidden="true"
+            className="guide-scroll-cue absolute bottom-8 left-1/2 mx-auto flex -translate-x-1/2 items-center gap-2 text-[12px] uppercase tracking-[0.18em] text-ink-muted"
+          >
+            <span className="h-8 w-8 flex items-center justify-center text-accent">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </span>
             {cover.scrollCue}
-          </div>
+          </span>
         </section>
 
         {/* Panels 2–10 */}

@@ -72,12 +72,14 @@ export default function AssistantInput({ onSend, disabled, initialValue, autoSen
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoSend, disabled]);
 
-  // Auto-grow: the field hugs its content up to ~8 lines, then scrolls.
+  // Auto-grow: the field starts tall enough to see a pasted message without
+  // scrolling, hugs its content, then scrolls past ~16 lines.
+  const MAX_INPUT_PX = 320;
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
     el.style.height = "0px";
-    el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
+    el.style.height = `${Math.min(el.scrollHeight, MAX_INPUT_PX)}px`;
   }, [value]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -107,7 +109,7 @@ export default function AssistantInput({ onSend, disabled, initialValue, autoSen
           rows={1}
           disabled={disabled}
           // 16px on phones stops iOS Safari zooming the page on focus.
-          className="block max-h-[200px] min-h-[52px] w-full resize-none bg-transparent px-4 pb-1 pt-3.5 text-base leading-relaxed outline-none placeholder:text-muted-foreground/70 md:text-[14.5px]"
+          className="block max-h-[320px] min-h-[116px] w-full resize-none bg-transparent px-4 pb-1 pt-3.5 text-base leading-relaxed outline-none placeholder:text-muted-foreground/70 md:min-h-[132px] md:text-[14.5px]"
         />
         <div className="flex items-center gap-2 px-2.5 pb-2.5">
           <span className="hidden text-[11px] text-muted-foreground/70 md:inline">

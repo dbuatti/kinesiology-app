@@ -274,6 +274,7 @@ export const guideContent: GuideContent = {
         { label: "Where", value: 'Toorak studio (address on booking)' },
         { label: "How long", value: "60 minutes" },
         { label: "Cost", value: "$70 per session" },
+        { label: "Rate", value: "Introductory rate for your first sessions" },
         { label: "What to wear", value: "something you can move in. Everything stays on." },
         { label: "Cancellations", value: "24 hours' notice required; cancellations with less than 24 hours' notice are charged the full session fee." },
         { label: "Booking", value: "online, no account needed" },

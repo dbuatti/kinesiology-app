@@ -92,6 +92,7 @@ function PanelShell({
   children,
   tone = "plain",
   index,
+  warm = false,
 }: {
   id: string;
   heading: string;
@@ -104,7 +105,8 @@ function PanelShell({
       aria-labelledby={`${id}-heading`}
       className={cn(
         "guide-panel border-t border-border/70",
-        tone === "brand" && "bg-brand/[0.045]"
+        tone === "brand" && "bg-brand/[0.045]",
+        warm && "bg-[var(--dawn-surface-warm)]"
       )}
     >
       <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 md:py-28">
@@ -148,7 +150,7 @@ function SequencePanel({ panel, index }: { panel: Extract<GuidePanel, { kind: "s
                   className="absolute left-5 top-12 h-[calc(100%-1.25rem)] w-px bg-border min-[900px]:left-10 min-[900px]:right-[-1.25rem] min-[900px]:top-5 min-[900px]:h-px min-[900px]:w-auto"
                 />
               )}
-              <span className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-brand/30 bg-card font-serif text-[17px] text-brand">
+              <span className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-dawn-rose text-ink font-serif text-[17px] font-semibold">
                 {stage.letter}
               </span>
               <div className="min-w-0">
@@ -260,7 +262,7 @@ function TextPanel({
                 "guide-reveal text-foreground",
                 isDifferentiator
                   ? "grid grid-cols-[2.5rem_1fr] gap-x-4 gap-y-1 py-7 sm:grid-cols-[3.5rem_1fr] sm:gap-x-6"
-                  : "relative pl-5 text-[18px] leading-[1.6] before:absolute before:left-0 before:top-[0.72em] before:h-1.5 before:w-1.5 before:rounded-full before:bg-brand/60"
+                  : "relative pl-5 text-[18px] leading-[1.6] before:absolute before:left-0 before:top-[0.72em] before:h-2.5 before:w-2.5 before:rounded-full before:bg-dawn-rose"
               )}
             >
               {isDifferentiator && (
@@ -482,13 +484,14 @@ export default function KinesiologyGuidePage() {
         {panels.map((panel, index) => {
           const rendered =
             panel.kind === "sequence" ? (
-              <SequencePanel key={panel.id} panel={panel} />
+              <SequencePanel key={panel.id} panel={panel} index={index} />
             ) : panel.kind === "facts" ? (
-              <FactsPanel key={panel.id} panel={panel} ctaLabel={ctaLabel} />
+              <FactsPanel key={panel.id} panel={panel} ctaLabel={ctaLabel} warm={panel.id === "practical-bits"} />
             ) : (
               <TextPanel
                 key={panel.id}
                 panel={panel}
+                index={index}
                 image={panel.imageKey ? images[panel.imageKey] : undefined}
               />
             );

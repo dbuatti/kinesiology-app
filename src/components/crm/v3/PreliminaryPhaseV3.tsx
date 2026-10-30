@@ -399,30 +399,31 @@ const PreliminaryPhaseV3 = ({ appointment, history, onUpdate, saveField, updateP
                           </div>
                           <div className="space-y-2">
                             {(() => {
-                              // Pair TLR flexion/extension and STNR flexion/extension on same row
+                              // Pair TLR flexion/extension and STNR flexion/extension on
+                              // the same row, but keep the track's declared order
+                              // (Moro → Startle → TLR → STNR → FPR). Building the pairs
+                              // first and appending `others` afterwards used to drag
+                              // TLR/STNR to the top, contradicting the header.
                               const paired: any[] = [];
-                              const tlrFlex = groupReflexes.find(r => r.id === 'tlr-flexion');
-                              const tlrExt = groupReflexes.find(r => r.id === 'tlr-extension');
-                              const stnrFlex = groupReflexes.find(r => r.id === 'stnr-flexion');
-                              const stnrExt = groupReflexes.find(r => r.id === 'stnr-extension');
-                              const others = groupReflexes.filter(r => !r.id.startsWith('tlr-') && !r.id.startsWith('stnr-'));
-
-                              if (tlrFlex && tlrExt) {
-                                paired.push({ type: 'pair', items: [tlrFlex, tlrExt] });
-                              } else if (tlrFlex) {
-                                paired.push({ type: 'single', items: [tlrFlex] });
-                              } else if (tlrExt) {
-                                paired.push({ type: 'single', items: [tlrExt] });
-                              }
-                              if (stnrFlex && stnrExt) {
-                                paired.push({ type: 'pair', items: [stnrFlex, stnrExt] });
-                              } else if (stnrFlex) {
-                                paired.push({ type: 'single', items: [stnrFlex] });
-                              } else if (stnrExt) {
-                                paired.push({ type: 'single', items: [stnrExt] });
-                              }
-                              for (const r of others) {
-                                paired.push({ type: r.isLateralized ? 'lateral' : 'single', items: [r] });
+                              const seen = new Set<string>();
+                              const PARTNER: Record<string, string> = {
+                                'tlr-flexion': 'tlr-extension',
+                                'tlr-extension': 'tlr-flexion',
+                                'stnr-flexion': 'stnr-extension',
+                                'stnr-extension': 'stnr-flexion',
+                              };
+                              for (const r of groupReflexes) {
+                                if (seen.has(r.id)) continue;
+                                seen.add(r.id);
+                                const partnerId = PARTNER[r.id];
+                                if (partnerId) {
+                                  const partner = groupReflexes.find(x => x.id === partnerId);
+                                  if (partner) seen.add(partnerId);
+                                  const items = partner ? [r, partner] : [r];
+                                  paired.push({ type: items.length === 2 ? 'pair' : 'single', items });
+                                } else {
+                                  paired.push({ type: r.isLateralized ? 'lateral' : 'single', items: [r] });
+                                }
                               }
 
                               return paired.map((p, pi) => {
